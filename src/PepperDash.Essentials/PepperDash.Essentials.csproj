@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ProjectType>Program</ProjectType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>PepperDash.Essentials</RootNamespace>
+    <AssemblyName>PepperDash.Essentials</AssemblyName>
+    <TargetFramework>net472</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <Title>PepperDash Essentials</Title>
+    <PackageId>PepperDashEssentials</PackageId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Example Configuration\EssentialsHuddleSpaceRoom\configurationFile-HuddleSpace-2-Source.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Example Configuration\EssentialsHuddleVtc1Room\configurationFile-mockVideoCodec_din-ap3_-_dm4x1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Example Configuration\SIMPLBridging\configurationFile-dmps3300c-avRouting.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Example Configuration\SIMPLBridging\SIMPLBridgeExample_configurationFile.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="SGD\PepperDash Essentials iPad.sgd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="SGD\PepperDash Essentials TSW-560.sgd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="SGD\PepperDash Essentials TSW-760.sgd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.19.36" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2">
+      <Aliases>Full</Aliases>
+    </PackageReference>
+    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-318" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />
+    <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj" />
+    <ProjectReference Include="..\PepperDash.Essentials.DM\PepperDash.Essentials.DM.csproj" />
+  </ItemGroup>
+</Project>

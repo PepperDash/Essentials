@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ProjectType>ProgramLibrary</ProjectType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AssemblyName>PepperDash.Essentials.Core</AssemblyName>
+    <RootNamespace>PepperDash.Essentials.Core</RootNamespace>
+    <Title>PepperDash Essentials Core</Title>
+    <PackageId>$(AssemblyName)</PackageId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Web\**" />
+    <EmbeddedResource Remove="Web\**" />
+    <None Remove="Web\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.19.36" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2">
+      <Aliases>Full</Aliases>
+    </PackageReference>
+    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-318" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Crestron\CrestronGenericBaseDevice.cs.orig" />
+    <None Include="Occupancy\EssentialsGlsOccupancySensorBaseController.cs.orig" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ProjectType>ProgramLibrary</ProjectType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>PepperDash.Essentials.DM</RootNamespace>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyTitle>PepperDash.Essentials.DM</AssemblyTitle>
+    <Product>PepperDash.Essentials.DM</Product>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <Title>PepperDash Essentials DM</Title>
+    <PackageId>$(AssemblyName)</PackageId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Chassis\Config\Schema\DmChassisControllerPropertiesConfigSchema.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.19.36">
+      <IncludeAssets>all</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2">
+      <Aliases>Full</Aliases>
+    </PackageReference>
+    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-318" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+</Project>

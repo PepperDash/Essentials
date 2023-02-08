@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <Version>2.0.0-local</Version>
+    <Authors>PepperDash Technologies</Authors>
+    <Company>PepperDash Technologies</Company>
+    <Product>PepperDash Essentials</Product>
+    <Copyright>Copyright ©  2023</Copyright>
+    <RepositoryUrl>https://github.com/PepperDash/Essentials</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Crestron; 4series</PackageTags>
+    <PackageOutputPath>../../output</PackageOutputPath>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath=""/>
+    <None Include="..\..\README.md" Pack="true" PackagePath=""/>
+  </ItemGroup>
+</Project>
