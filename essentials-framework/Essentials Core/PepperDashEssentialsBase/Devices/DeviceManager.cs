@@ -433,7 +433,7 @@ namespace PepperDash.Essentials.Core
 
             if (device == null)
             {
-                Debug.Console(0, "Unable to get device with key: {0}", deviceKey);
+                CrestronConsole.ConsoleCommandResponse("Unable to get device with key: {0}", deviceKey);
                 return;
             }
 
@@ -445,7 +445,7 @@ namespace PepperDash.Essentials.Core
             }
             catch
             {
-                Debug.Console(0, "Unable to convert setting value.  Please use off/rx/tx/both");
+                CrestronConsole.ConsoleCommandResponse("Unable to convert setting value.  Please use off/rx/tx/both");
                 return;
             }
 
@@ -456,18 +456,18 @@ namespace PepperDash.Essentials.Core
                     var min = Convert.ToUInt32(timeout);
 
                     device.StreamDebugging.SetDebuggingWithSpecificTimeout(debugSetting, min);
-                    Debug.Console(0, "Device: '{0}' debug level set to {1} for {2} minutes", deviceKey, debugSetting, min);
+                    CrestronConsole.ConsoleCommandResponse("Device: '{0}' debug level set to {1} for {2} minutes", deviceKey, debugSetting, min);
 
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(0, "Unable to convert minutes or settings value.  Please use an integer value for minutes. Errro: {0}", e);
+                    CrestronConsole.ConsoleCommandResponse("Unable to convert minutes or settings value.  Please use an integer value for minutes. Error: {0}", e);
                 }
             }
             else
             {
                 device.StreamDebugging.SetDebuggingWithDefaultTimeout(debugSetting);
-                Debug.Console(0, "Device: '{0}' debug level set to {1} for default time (30 minutes)", deviceKey, debugSetting);
+                CrestronConsole.ConsoleCommandResponse("Device: '{0}' debug level set to {1} for default time (30 minutes)", deviceKey, debugSetting);
             }
         }
 
