@@ -17,10 +17,10 @@ namespace PepperDash.Essentials.Core.Web
 		/// http(s)://{ipaddress}/cws/{basePath}
 		/// http(s)://{ipaddress}/VirtualControl/Rooms/{roomId}/cws/{basePath}
 		/// </example>
-		private readonly string _defaultBasePath =
-			CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? string.Format("/app{0:00}/api", InitialParametersClass.ApplicationNumber) : "/api";
+		private readonly string _defaultBasePath = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance 
+			? string.Format("/app{0:00}/api", InitialParametersClass.ApplicationNumber) 
+			: "/api";
 
-		// TODO [ ] Reset debug levels to proper value Trace = 0, Info = 1, Verbose = 2
 		private const int DebugTrace = 0;
 		private const int DebugInfo = 1;
 		private const int DebugVerbose = 2;
@@ -95,11 +95,6 @@ namespace PepperDash.Essentials.Core.Web
 					Name = "DevProps",
 					RouteHandler = new DevPropsRequestHandler()
 				},
-				//new HttpCwsRoute("devprops/{key}")
-				//{
-				//    Name = "DevProps",
-				//    RouteHandler = new DevPropsRequestHandler()
-				//},
 				new HttpCwsRoute("devjson")
 				{
 					Name = "DevJson",
@@ -110,11 +105,6 @@ namespace PepperDash.Essentials.Core.Web
 				    Name = "SetDeviceStreamDebug",
 				    RouteHandler = new SetDeviceStreamDebugRequestHandler()
 				},
-				//new HttpCwsRoute("setdevicestreamdebug/{deviceKey}/{state}")
-				//{
-				//    Name = "SetDeviceStreamDebug",
-				//    RouteHandler = new SetDeviceStreamDebugRequestHandler()
-				//},
 				new HttpCwsRoute("disableallstreamdebug")
 				{
 					Name = "DisableAllStreamDebug",
@@ -170,12 +160,7 @@ namespace PepperDash.Essentials.Core.Web
 			if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
 			{
 				/*
-					RMC4>
 					WEBSERVER [ON | OFF | TIMEOUT <VALUE IN SECONDS> | MAXSESSIONSPERUSER <Number of sessions>]
-					WEBSERVER [TIMEOUT] will display current session timeout value
-					WEBSERVER MAXSESSIONSPERUSER will display current max web sessions per user
-					WEBSERVER ALLOWSHAREDSESSION will display whether 'samesite = none' would be set on cookies
-							No parameter - displays current setting
 				*/
 				var response = string.Empty;
 				CrestronConsole.SendControlSystemCommand("webserver", ref response);
