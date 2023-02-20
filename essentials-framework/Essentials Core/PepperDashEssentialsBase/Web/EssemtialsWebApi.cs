@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
-using Crestron.SimplSharpPro.Diagnostics;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Web;
 using PepperDash.Essentials.Core.Web.RequestHandlers;
@@ -25,8 +22,8 @@ namespace PepperDash.Essentials.Core.Web
 
 		// TODO [ ] Reset debug levels to proper value Trace = 0, Info = 1, Verbose = 2
 		private const int DebugTrace = 0;
-		private const int DebugInfo = 0;
-		private const int DebugVerbose = 0;
+		private const int DebugInfo = 1;
+		private const int DebugVerbose = 2;
 
 		/// <summary>
 		/// CWS base path
