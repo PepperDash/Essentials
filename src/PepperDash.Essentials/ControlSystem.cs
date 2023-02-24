@@ -3,12 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Diagnostics;
-using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -147,13 +147,13 @@ namespace PepperDash.Essentials
 
                 string directoryPrefix;
 
-                directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+                directoryPrefix = Directory.GetApplicationRootDirectory();
 
                 var fullVersion = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
 
-                AssemblyInformationalVersionAttribute fullVersionAtt = fullVersion[0] as AssemblyInformationalVersionAttribute;
+                var fullVersionAtt = fullVersion.FirstOrDefault() as AssemblyInformationalVersionAttribute;
 
-                Global.SetAssemblyVersion(fullVersionAtt.InformationalVersion);
+                Global.SetAssemblyVersion(fullVersionAtt?.InformationalVersion ?? "0.0.0.");
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {

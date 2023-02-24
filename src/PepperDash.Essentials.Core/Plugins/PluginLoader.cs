@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -358,7 +358,7 @@ namespace PepperDash.Essentials
                 try
                 {
                     var assy = loadedAssembly.Assembly;
-                    CType[] types = {};
+                    Type[] types = {};
                     try
                     {
                         types = assy.GetTypes();
@@ -452,7 +452,7 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="type"></param>
         /// <param name="loadPlugin"></param>
-        static void LoadCustomLegacyPlugin(CType type, MethodInfo loadPlugin, LoadedAssembly loadedAssembly)
+        static void LoadCustomLegacyPlugin(Type type, MethodInfo loadPlugin, LoadedAssembly loadedAssembly)
         {
             Debug.Console(2, "LoadPlugin method found in {0}", type.Name);
 

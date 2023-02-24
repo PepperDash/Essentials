@@ -3,11 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.GeneralIO;
-using Crestron.SimplSharp.Reflection;
 using PepperDash.Core;
 using Full.Newtonsoft.Json.Linq;
 using Full.Newtonsoft.Json;
@@ -20,7 +19,7 @@ namespace PepperDash.Essentials.Core
 {
     public class DeviceFactoryWrapper
     {
-        public CType CType { get; set; }
+        public Type CType { get; set; }
         public string Description { get; set; }
         public Func<DeviceConfig, IKeyed> FactoryMethod { get; set; }
 
@@ -75,7 +74,7 @@ namespace PepperDash.Essentials.Core
             DeviceFactory.FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method});
 		}
 
-        public static void AddFactoryForType(string typeName, string description, CType cType, Func<DeviceConfig, IKeyed> method)
+        public static void AddFactoryForType(string typeName, string description, Type cType, Func<DeviceConfig, IKeyed> method)
         {
             //Debug.Console(1, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
 
