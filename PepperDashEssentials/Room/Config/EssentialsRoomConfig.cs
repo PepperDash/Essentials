@@ -55,22 +55,33 @@ namespace PepperDash.Essentials.Room.Config
 		        }
 		    }
 		}
-
-        /// <summary>
+		
+		/// <summary>
         /// Gets and operating, standalone emergegncy object that can be plugged into a room.
         /// Returns null if there is no emergency defined
         /// </summary>
-        public static EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, IEssentialsRoom room)
+        public static EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, IEssentialsRoom room)		
         {
-            // This emergency 
+	        // This emergency 
             var emergency = props.Emergency;
-            if (emergency != null)
-            {
-                //switch on emergency type here.  Right now only contact and shutdown
-                var e = new EssentialsRoomEmergencyContactClosure(room.Key + "-emergency", props.Emergency, room);
-                DeviceManager.AddDevice(e);
-            }
-            return null;
+	        if (emergency == null || room == null) return null;
+	        
+			Debug.Console(0, @"emergency config values:
+behavior: {0}
+portDeviceKey: {1}
+type: {2}
+number: {3}
+triggerOnClose: {4}", 
+ emergency.Behavior,
+ emergency.Trigger.PortDeviceKey,
+ emergency.Trigger.Type,
+ emergency.Trigger.Number,
+ emergency.Trigger.TriggerOnClose);
+
+	        //switch on emergency type here.  Right now only contact and shutdown
+	        var e = new EssentialsRoomEmergencyContactClosure(room.Key + "-emergency", emergency, room);	        
+	        DeviceManager.AddDevice(e);
+	        return e;
         }
 
 		/// <summary>

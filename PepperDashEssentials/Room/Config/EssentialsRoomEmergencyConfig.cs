@@ -21,6 +21,11 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsRoomEmergencyTriggerConfig
     {
+		/// <summary>
+		/// String representing the port device used to access the type
+		/// </summary>
+		public string PortDeviceKey { get; set; }
+
         /// <summary>
         /// contact,
         /// </summary>
