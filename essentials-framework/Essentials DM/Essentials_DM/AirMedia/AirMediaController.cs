@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.DM.AirMedia
     [Description("Wrapper class for an AM-200 or AM-300")]
     public class AirMediaController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IIROutputPorts, IComPorts
     {
-        public AmX00 AirMedia { get; private set; }
+        public Am3x00 AirMedia { get; private set; }
 
         public DeviceConfig DeviceConfig { get; private set; }
 
@@ -44,7 +44,7 @@ namespace PepperDash.Essentials.DM.AirMedia
         public StringFeedback SerialNumberFeedback { get; private set; }
         public BoolFeedback AutomaticInputRoutingEnabledFeedback { get; private set; }
 
-        public AirMediaController(string key, string name, AmX00 device, DeviceConfig dc, AirMediaPropertiesConfig props)
+        public AirMediaController(string key, string name, Am3x00 device, DeviceConfig dc, AirMediaPropertiesConfig props)
             : base(key, name, device)
         {
 
@@ -202,8 +202,6 @@ namespace PepperDash.Essentials.DM.AirMedia
 
         void DisplayControl_DisplayControlChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
         {
-            if (args.EventId == AmX00.VideoOutFeedbackEventId)
-            {
                 VideoOutFeedback.FireUpdate();
 
                 var localInputPort =
@@ -211,8 +209,7 @@ namespace PepperDash.Essentials.DM.AirMedia
 
                 OnSwitchChange(new RoutingNumericEventArgs(1, VideoOutFeedback.UShortValue, OutputPorts.First(),
                     localInputPort, eRoutingSignalType.AudioVideo));
-            }
-            else if (args.EventId == AmX00.EnableAutomaticRoutingFeedbackEventId)
+            
                 AutomaticInputRoutingEnabledFeedback.FireUpdate();
         }
 
@@ -342,7 +339,7 @@ namespace PepperDash.Essentials.DM.AirMedia
     {
         public AirMediaControllerFactory()
         {
-            TypeNames = new List<string>() { "am200", "am300" };
+            TypeNames = new List<string>() { "am200", "am300", "am3200" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
@@ -352,11 +349,25 @@ namespace PepperDash.Essentials.DM.AirMedia
             Debug.Console(1, "Factory Attempting to create new AirMedia Device");
 
             var props = JsonConvert.DeserializeObject<AirMediaPropertiesConfig>(dc.Properties.ToString());
-            AmX00 amDevice = null;
-            if (type == "am200")
-                amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am200(props.Control.IpIdInt, Global.ControlSystem);
-            else if (type == "am300")
-                amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am300(props.Control.IpIdInt, Global.ControlSystem);
+            Am3x00 amDevice = null;
+            switch (type)
+            {
+                case "am200" :
+                {
+                    amDevice = new Am200(props.Control.IpIdInt, Global.ControlSystem);
+                    break;
+                }
+                case "am300" :
+                {
+                    amDevice = new Am300(props.Control.IpIdInt, Global.ControlSystem);
+                    break;
+                }
+                case "am3200" :
+                {
+                    amDevice = new Am3200(props.Control.IpIdInt, Global.ControlSystem);
+                    break;
+                }
+            }
 
             return new AirMediaController(dc.Key, dc.Name, amDevice, dc, props);
 
