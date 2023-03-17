@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.DM
 
 
     [Description("Wrapper class for DM-TX-4K-Z-302-C")]
-    public class DmTx4kz302CController : DmTxControllerBase, ITxRoutingWithFeedback, IHasFeedback,
+    public class DmTx4kz302CController : DmTxControllerBase, ITxRoutingWithFeedback,
         IIROutputPorts, IComPorts
     {
         public DmTx4kz302C Tx { get; private set; }
@@ -34,6 +34,7 @@ namespace PepperDash.Essentials.DM
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiIn1HdcpCapabilityFeedback { get; protected set; }
         public IntFeedback HdmiIn2HdcpCapabilityFeedback { get; protected set; }
+        public IntFeedback DisplayPortInHdcpCapabilityFeedback { get; protected set; }
         public BoolFeedback Hdmi1VideoSyncFeedback { get; protected set; }
         public BoolFeedback Hdmi2VideoSyncFeedback { get; protected set; }
         public BoolFeedback DisplayPortVideoSyncFeedback { get; protected set; }
@@ -131,12 +132,23 @@ namespace PepperDash.Essentials.DM
 
             HdmiIn2HdcpCapabilityFeedback = new IntFeedback("HdmiIn2HdcpCapability", () => (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
 
+            DisplayPortInHdcpCapabilityFeedback = new IntFeedback("DisplayPortHdcpCapability",
+                () => (int) tx.DisplayPortInput.HdcpCapabilityFeedback);
+
+            
+            /*
             HdcpStateFeedback =
                 new IntFeedback(
                     () =>
                         tx.HdmiInputs[1].HdcpCapabilityFeedback > tx.HdmiInputs[2].HdcpCapabilityFeedback
                             ? (int)tx.HdmiInputs[1].HdcpCapabilityFeedback
                             : (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
+             */
+
+            //yeah this is gross - but it's the quickest way to do this...
+            HdcpStateFeedback = new IntFeedback(() => Math.Max((int) tx.DisplayPortInput.HdcpCapabilityFeedback,
+                Math.Max((int) tx.HdmiInputs[1].HdcpCapabilityFeedback,
+                    (int) tx.HdmiInputs[2].HdcpCapabilityFeedback)));
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
 
