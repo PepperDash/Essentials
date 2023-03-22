@@ -303,11 +303,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					{
 						var contact = new InvitableDirectoryContact { Name = c.ScreenName, ContactId = c.Jid };
 
-                        contact.ContactMethods.Add(new ContactMethod() { Number = c.Jid, Device = eContactMethodDevice.Video, CallType = eContactMethodCallType.Video, ContactMethodId = c.Jid });
+                        contact.ContactMethods.Add(new ContactMethod()
+                        {
+	                        Number = c.Jid, 
+							Device = eContactMethodDevice.Video, 
+							CallType = eContactMethodCallType.Video, 
+							ContactMethodId = c.Jid
+                        });
 
 						if (folders.Count > 0)
 						{
-							contact.ParentFolderId = c.IsZoomRoom ? "rooms" : "contacts";
+							contact.ParentFolderId = c.IsZoomRoom
+								? roomFolder.FolderId // "rooms" 
+								: contactFolder.FolderId; // "contacts"
 						}
 
 						contacts.Add(contact);
