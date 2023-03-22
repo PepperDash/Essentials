@@ -122,7 +122,7 @@ namespace PepperDash.Essentials.DM.AirMedia
             else
                 AirMedia.DisplayControl.DisableAutomaticRouting();
 
-            return base.CustomActivate();
+            return true;
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
@@ -179,25 +179,49 @@ namespace PepperDash.Essentials.DM.AirMedia
         /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
         private void OnSwitchChange(RoutingNumericEventArgs e)
         {
-            var newEvent = NumericSwitchChange;
-            if (newEvent != null) newEvent(this, e);
+            var handler = NumericSwitchChange;
+
+            if (handler == null) return;
+                
+            handler(this, e);
         }
 
 
         void AirMedia_AirMediaChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
         {
-            if (args.EventId == AirMediaInputSlot.AirMediaStatusFeedbackEventId)
-                IsInSessionFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaErrorFeedbackEventId)
-                ErrorFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaNumberOfUserConnectedEventId)
-                NumberOfUsersConnectedFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaLoginCodeEventId)
-                LoginCodeFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaConnectionAddressFeedbackEventId)
-                ConnectionAddressFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaHostNameFeedbackEventId)
-                HostnameFeedback.FireUpdate();
+            switch (args.EventId)
+            {
+                case AirMediaInputSlot.AirMediaStatusFeedbackEventId:
+                    {
+                        IsInSessionFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaErrorFeedbackEventId:
+                    {
+                        ErrorFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaNumberOfUserConnectedEventId:
+                    {
+                        NumberOfUsersConnectedFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaLoginCodeEventId:
+                    {
+                        LoginCodeFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaConnectionAddressFeedbackEventId:
+                    {
+                        ConnectionAddressFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaHostNameFeedbackEventId:
+                    {
+                        HostnameFeedback.FireUpdate();
+                        break;
+                    }
+            }
         }
 
         void DisplayControl_DisplayControlChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
