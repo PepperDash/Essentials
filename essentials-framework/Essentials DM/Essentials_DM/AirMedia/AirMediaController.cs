@@ -110,9 +110,16 @@ namespace PepperDash.Essentials.DM.AirMedia
             VideoOutFeedback = new IntFeedback(() => Convert.ToInt16(AirMedia.DisplayControl.VideoOutFeedback));
             AutomaticInputRoutingEnabledFeedback = new BoolFeedback(() => AirMedia.DisplayControl.EnableAutomaticRoutingFeedback.BoolValue);
 
-            AirMedia.HdmiIn.StreamChange += HdmiIn_StreamChange;
+            // Not all AirMedia versions support HDMI In like the 3200
+            if (AirMedia.HdmiIn != null)
+            {
+                AirMedia.HdmiIn.StreamChange += HdmiIn_StreamChange;
+                HdmiVideoSyncDetectedFeedback = new BoolFeedback(() => AirMedia.HdmiIn.SyncDetectedFeedback.BoolValue);
+                return;
+            }
 
-            HdmiVideoSyncDetectedFeedback = new BoolFeedback(() => AirMedia.HdmiIn.SyncDetectedFeedback.BoolValue);
+            // Return false if the AirMedia device doesn't support HDMI Input
+            HdmiVideoSyncDetectedFeedback = new BoolFeedback(() => false);
         }
 
         public override bool CustomActivate()
