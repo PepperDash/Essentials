@@ -394,6 +394,26 @@ namespace PepperDash.Essentials.DM
                     }
                 }
 
+                if (txR.InputPorts[DmPortName.DisplayPortIn] != null)
+                {
+                    var inputPort = txR.InputPorts[DmPortName.DisplayPortIn];
+
+                    if (tx.Feedbacks["DisplayPortInHdcpCapability"] != null)
+                    {
+                        var intFeedback = tx.Feedbacks["DisplayPortInHdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port3HdcpState.JoinNumber]);
+                    }
+
+                    if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
+                    {
+                        var port = inputPort.Port as EndpointDisplayPortInput;
+
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port3HdcpState.JoinNumber, trilist);
+                    }
+
+                }
+
             }
 
             var txFreeRun = tx as IHasFreeRun;
@@ -441,6 +461,20 @@ namespace PepperDash.Essentials.DM
                         });
             }
         }
+
+	    private void SetHdcpCapabilityAction(bool hdcpTypeSimple, EndpointDisplayPortInput port, uint join,
+	        BasicTriList trilist)
+	    {
+
+
+	        trilist.SetUShortSigAction(join,
+	            s =>
+	            {
+	                port.HdcpCapability = (eHdcpCapabilityType) s;
+	            });
+
+	    }
+
 	}
 
     public class DmTxControllerFactory : EssentialsDeviceFactory<DmTxControllerBase>
