@@ -126,6 +126,7 @@ namespace PepperDash.Essentials.DM
             var parentDev = DeviceManager.GetDeviceForKey(pKey);
             DMInput dmInput;
             BasicDmTxControllerBase tx;
+            bool useChassisForOfflineFeedback = false;
 
 		    if (parentDev is DmChassisController)
             {
@@ -155,15 +156,23 @@ namespace PepperDash.Essentials.DM
                         chassis is DmMd128x128 || chassis is DmMd64x64)
                     {
                         tx = GetDmTxForChassisWithoutIpId(key, name, typeName, dmInput);
-                        Debug.Console(0, "DM endpoint output {0} is for Cpu3, changing online feedback to chassis", num);
-                        tx.IsOnline.SetValueFunc(() => switchDev.InputEndpointOnlineFeedbacks[num].BoolValue);
-                        switchDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
-                        return tx;
+                        useChassisForOfflineFeedback = true;
                     }
                     else
                     {
-                        return GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                        tx = GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                        if (typeName == "hdbasettx" || typeName == "dmtx4k100c1g")
+                        {
+                            useChassisForOfflineFeedback = true;
+                        }                        
                     }
+                    if (useChassisForOfflineFeedback)
+                    {
+                        Debug.Console(0, "DM endpoint output {0} does not have direct online feedback, changing online feedback to chassis", num);
+                        tx.IsOnline.SetValueFunc(() => switchDev.InputEndpointOnlineFeedbacks[num].BoolValue);
+                        switchDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
+                    }
+                    return tx;
                 }
                 catch (Exception e)
                 {
@@ -203,15 +212,23 @@ namespace PepperDash.Essentials.DM
                     if(Global.ControlSystemIsDmps4kType)
                     {
                         tx = GetDmTxForChassisWithoutIpId(key, name, typeName, dmInput);
-                        Debug.Console(0, "DM endpoint output {0} is for DMPS3-4K, changing online feedback to chassis", num);
-                        tx.IsOnline.SetValueFunc(() => dmpsDev.InputEndpointOnlineFeedbacks[num].BoolValue);
-                        dmpsDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
-                        return tx;
+                        useChassisForOfflineFeedback = true;
                     }
                     else
                     {
-                        return GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                        tx = GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                        if (typeName == "hdbasettx" || typeName == "dmtx4k100c1g")
+                        {
+                            useChassisForOfflineFeedback = true;
+                        }                        
                     }
+                    if (useChassisForOfflineFeedback)
+                    {
+                        Debug.Console(0, "DM endpoint output {0} does not have direct online feedback, changing online feedback to chassis", num);
+                        tx.IsOnline.SetValueFunc(() => dmpsDev.InputEndpointOnlineFeedbacks[num].BoolValue);
+                        dmpsDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
+                    }
+                    return tx;
                 }
                 catch (Exception e)
                 {

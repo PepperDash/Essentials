@@ -9,25 +9,14 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	public class GetJoinMapForBridgeKeyRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
-		/// Handles CONNECT method requests
+		/// Constructor
 		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleConnect(HttpCwsContext context)
+		/// <remarks>
+		/// base(true) enables CORS support by default
+		/// </remarks>
+		public GetJoinMapForBridgeKeyRequestHandler()
+			: base(true)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles DELETE method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleDelete(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
 		}
 
 		/// <summary>
@@ -84,74 +73,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.Write(js, false);
 			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles HEAD method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleHead(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles OPTIONS method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleOptions(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles PATCH method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandlePatch(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles POST method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandlePost(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles PUT method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandlePut(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles TRACE method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleTrace(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		
+		}		
 	}
 }

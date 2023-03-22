@@ -329,6 +329,9 @@ namespace PepperDash.Essentials.DM
 	        DmRmcPropertiesConfig props, string pKey, uint ipid)
 	    {
 	        var parentDev = DeviceManager.GetDeviceForKey(pKey);
+            CrestronGenericBaseDevice rx;
+            bool useChassisForOfflineFeedback = false;
+
 	        if (parentDev is DmpsRoutingController)
 	        {
                 var dmps = parentDev as DmpsRoutingController;
@@ -342,22 +345,33 @@ namespace PepperDash.Essentials.DM
                     return null;
                 }
                 // Must use different constructor for DMPS4K types. No IPID
-                if (Global.ControlSystemIsDmps4kType || typeName == "hdbasetrx" || typeName == "dmrmc4k100c1g")
+                if (Global.ControlSystemIsDmps4kType)
                 {
-                    var rmc = GetDmRmcControllerForDmps4k(key, name, typeName, dmps, props.ParentOutputNumber);
-                    Debug.Console(0, "DM endpoint output {0} is for Dmps4k, changing online feedback to chassis", num);
-                    rmc.IsOnline.SetValueFunc(() => dmps.OutputEndpointOnlineFeedbacks[num].BoolValue);
+                    rx = GetDmRmcControllerForDmps4k(key, name, typeName, dmps, props.ParentOutputNumber);
+                    useChassisForOfflineFeedback = true;                   
+                }
+                else 
+                {
+                    rx = GetDmRmcControllerForDmps(key, name, typeName, ipid, dmps, props.ParentOutputNumber);
+                    if (typeName == "hdbasetrx" || typeName == "dmrmc4k100c1g")
+                    {
+                        useChassisForOfflineFeedback = true;
+                    }
+                }
+                if (useChassisForOfflineFeedback)
+                {
+                    Debug.Console(0, "DM endpoint output {0} does not have direct online feedback, changing online feedback to chassis", num);
+                    rx.IsOnline.SetValueFunc(() => dmps.OutputEndpointOnlineFeedbacks[num].BoolValue);
                     dmps.OutputEndpointOnlineFeedbacks[num].OutputChange += (o, a) =>
                     {
-                        foreach (var feedback in rmc.Feedbacks)
+                        foreach (var feedback in rx.Feedbacks)
                         {
                             if (feedback != null)
                                 feedback.FireUpdate();
                         }
                     };
-                    return rmc;
                 }
-                return GetDmRmcControllerForDmps(key, name, typeName, ipid, dmps, props.ParentOutputNumber);
+                return rx;
 	        }
             else if (parentDev is DmChassisController)
             {
@@ -380,23 +394,33 @@ namespace PepperDash.Essentials.DM
                     if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
                         chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
                         chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
-                        chassis is DmMd128x128 || chassis is DmMd64x64
-                        || typeName == "hdbasetrx" || typeName == "dmrmc4k100c1g")
+                        chassis is DmMd128x128 || chassis is DmMd64x64)
                     {
-                        var rmc = GetDmRmcControllerForCpu3Chassis(key, name, typeName, chassis, num, parentDev);
-                        Debug.Console(0, "DM endpoint output {0} is for Cpu3, changing online feedback to chassis", num);
-                        rmc.IsOnline.SetValueFunc(() => controller.OutputEndpointOnlineFeedbacks[num].BoolValue);
-                        controller.OutputEndpointOnlineFeedbacks[num].OutputChange += (o, a) =>
-                            {
-                                foreach (var feedback in rmc.Feedbacks)
-                                {
-                                    if (feedback != null)
-                                        feedback.FireUpdate();
-                                }
-                            };
-                        return rmc;
+                        rx = GetDmRmcControllerForCpu3Chassis(key, name, typeName, chassis, num, parentDev);
+                        useChassisForOfflineFeedback = true;
                     }
-                    return GetDmRmcControllerForCpu2Chassis(key, name, typeName, ipid, chassis, num, parentDev);
+                    else
+                    {
+                        rx = GetDmRmcControllerForCpu2Chassis(key, name, typeName, ipid, chassis, num, parentDev);
+                        if (typeName == "hdbasetrx" || typeName == "dmrmc4k100c1g")
+                        {
+                            useChassisForOfflineFeedback = true;
+                        }
+                    }
+                    if (useChassisForOfflineFeedback)
+                    {
+                        Debug.Console(0, "DM endpoint output {0} does not have direct online feedback, changing online feedback to chassis", num);
+                        rx.IsOnline.SetValueFunc(() => controller.OutputEndpointOnlineFeedbacks[num].BoolValue);
+                        controller.OutputEndpointOnlineFeedbacks[num].OutputChange += (o, a) =>
+                        {
+                            foreach (var feedback in rx.Feedbacks)
+                            {
+                                if (feedback != null)
+                                    feedback.FireUpdate();
+                            }
+                        };
+                    }
+                    return rx;
                 }
                 catch (Exception e)
                 {
@@ -499,9 +523,7 @@ namespace PepperDash.Essentials.DM
 	            Debug.Console(0, "[{0}] WARNING: Cannot create DM-RMC device: {1}", key, e.Message);
                 return null;
 	        }
-	    }
-
-        
+	    }        
 	}
 
     public class DmRmcControllerFactory : EssentialsDeviceFactory<DmRmcControllerBase>
