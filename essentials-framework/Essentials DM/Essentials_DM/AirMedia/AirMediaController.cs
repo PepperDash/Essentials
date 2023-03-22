@@ -95,24 +95,24 @@ namespace PepperDash.Essentials.DM.AirMedia
 
             AirMedia.AirMedia.AirMediaChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(AirMedia_AirMediaChange);
 
-            IsInSessionFeedback = new BoolFeedback(new Func<bool>(() => AirMedia.AirMedia.StatusFeedback.UShortValue == 0));
-            ErrorFeedback = new IntFeedback(new Func<int>(() => AirMedia.AirMedia.ErrorFeedback.UShortValue));
-            NumberOfUsersConnectedFeedback = new IntFeedback(new Func<int>(() => AirMedia.AirMedia.NumberOfUsersConnectedFeedback.UShortValue));
-            LoginCodeFeedback = new IntFeedback(new Func<int>(() => AirMedia.AirMedia.LoginCodeFeedback.UShortValue));
-            ConnectionAddressFeedback = new StringFeedback(new Func<string>(() => AirMedia.AirMedia.ConnectionAddressFeedback.StringValue));
-            HostnameFeedback = new StringFeedback(new Func<string>(() => AirMedia.AirMedia.HostNameFeedback.StringValue));
+            IsInSessionFeedback = new BoolFeedback(() => AirMedia.AirMedia.StatusFeedback.UShortValue == 0);
+            ErrorFeedback = new IntFeedback(() => AirMedia.AirMedia.ErrorFeedback.UShortValue);
+            NumberOfUsersConnectedFeedback = new IntFeedback(() => AirMedia.AirMedia.NumberOfUsersConnectedFeedback.UShortValue);
+            LoginCodeFeedback = new IntFeedback(() => AirMedia.AirMedia.LoginCodeFeedback.UShortValue);
+            ConnectionAddressFeedback = new StringFeedback(() => AirMedia.AirMedia.ConnectionAddressFeedback.StringValue);
+            HostnameFeedback = new StringFeedback(() => AirMedia.AirMedia.HostNameFeedback.StringValue);
 
             // TODO: Figure out if we can actually get the TSID/Serial
-            SerialNumberFeedback = new StringFeedback(new Func<string>(() => "unknown"));
+            SerialNumberFeedback = new StringFeedback(() => "unknown");
 
-            AirMedia.DisplayControl.DisplayControlChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(DisplayControl_DisplayControlChange);
+            AirMedia.DisplayControl.DisplayControlChange += DisplayControl_DisplayControlChange;
 
-            VideoOutFeedback = new IntFeedback(new Func<int>(() => Convert.ToInt16(AirMedia.DisplayControl.VideoOutFeedback)));
-            AutomaticInputRoutingEnabledFeedback = new BoolFeedback(new Func<bool>(() => AirMedia.DisplayControl.EnableAutomaticRoutingFeedback.BoolValue));
+            VideoOutFeedback = new IntFeedback(() => Convert.ToInt16(AirMedia.DisplayControl.VideoOutFeedback));
+            AutomaticInputRoutingEnabledFeedback = new BoolFeedback(() => AirMedia.DisplayControl.EnableAutomaticRoutingFeedback.BoolValue);
 
-            AirMedia.HdmiIn.StreamChange += new Crestron.SimplSharpPro.DeviceSupport.StreamEventHandler(HdmiIn_StreamChange);
+            AirMedia.HdmiIn.StreamChange += HdmiIn_StreamChange;
 
-            HdmiVideoSyncDetectedFeedback = new BoolFeedback(new Func<bool>(() => AirMedia.HdmiIn.SyncDetectedFeedback.BoolValue));
+            HdmiVideoSyncDetectedFeedback = new BoolFeedback(() => AirMedia.HdmiIn.SyncDetectedFeedback.BoolValue);
         }
 
         public override bool CustomActivate()
@@ -348,7 +348,7 @@ namespace PepperDash.Essentials.DM.AirMedia
 
             Debug.Console(1, "Factory Attempting to create new AirMedia Device");
 
-            var props = JsonConvert.DeserializeObject<AirMediaPropertiesConfig>(dc.Properties.ToString());
+            var props = dc.Properties.ToObject<AirMediaPropertiesConfig>();
             Am3x00 amDevice = null;
             switch (type)
             {
