@@ -6,6 +6,17 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	public class DefaultRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <remarks>
+		/// base(true) enables CORS support by default
+		/// </remarks>		
+		public DefaultRequestHandler()
+			: base(true)
+		{
+		}
+
+		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
 		/// <param name="context"></param>
