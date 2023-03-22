@@ -146,9 +146,11 @@ namespace PepperDash.Essentials.DM
              */
 
             //yeah this is gross - but it's the quickest way to do this...
-            HdcpStateFeedback = new IntFeedback(() => Math.Max((int) tx.DisplayPortInput.HdcpCapabilityFeedback,
-                Math.Max((int) tx.HdmiInputs[1].HdcpCapabilityFeedback,
-                    (int) tx.HdmiInputs[2].HdcpCapabilityFeedback)));
+            HdcpStateFeedback = new IntFeedback(() => {
+                var states = new[] {(int) tx.DisplayPortInput.HdcpCapabilityFeedback, (int) tx.HdmiInputs[1].HdcpCapabilityFeedback, (int) tx.HdmiInputs[2].HdcpCapabilityFeedback};
+
+                return states.Max();
+            });
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
 
@@ -157,7 +159,6 @@ namespace PepperDash.Essentials.DM
             Hdmi2VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue);
 
             DisplayPortVideoSyncFeedback = new BoolFeedback(() => (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue);
-
 
             var combinedFuncs = new VideoStatusFuncsWrapper
             {
@@ -423,8 +424,7 @@ namespace PepperDash.Essentials.DM
                     AnyVideoInput.VideoStatus.VideoResolutionFeedback.FireUpdate();
                     break;
             }
-        }
-
+        }       
 
         #region IIROutputPorts Members
         public CrestronCollection<IROutputPort> IROutputPorts { get { return Tx.IROutputPorts; } }
