@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharp.CrestronIO;
@@ -103,22 +101,22 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void PrintJoinMapInfo()
         {
-            Debug.Console(0, "{0}:\n", GetType().Name);
+            CrestronConsole.ConsoleCommandResponse("{0}:\n", GetType().Name);
 
             // Get the joins of each type and print them
-            Debug.Console(0, "Digitals:");
+            CrestronConsole.ConsoleCommandResponse("Digitals:");
             var digitals = Joins.Where(j => (j.Value.JoinType & eJoinType.Digital) == eJoinType.Digital).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Digital Joins", digitals.Count); 
+            CrestronConsole.ConsoleCommandResponse("Found {0} Digital Joins", digitals.Count); 
             PrintJoinList(GetSortedJoins(digitals));
 
-            Debug.Console(0, "Analogs:");
+            CrestronConsole.ConsoleCommandResponse("Analogs:");
             var analogs = Joins.Where(j => (j.Value.JoinType & eJoinType.Analog) == eJoinType.Analog).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Analog Joins", analogs.Count); 
+            CrestronConsole.ConsoleCommandResponse("Found {0} Analog Joins", analogs.Count); 
             PrintJoinList(GetSortedJoins(analogs));
 
-            Debug.Console(0, "Serials:");
+            CrestronConsole.ConsoleCommandResponse("Serials:");
             var serials = Joins.Where(j => (j.Value.JoinType & eJoinType.Serial) == eJoinType.Serial).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Serial Joins", serials.Count);
+            CrestronConsole.ConsoleCommandResponse("Found {0} Serial Joins", serials.Count);
             PrintJoinList(GetSortedJoins(serials));
 
         }
@@ -141,7 +139,7 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var join in joins)
             {
-                Debug.Console(0,
+                CrestronConsole.ConsoleCommandResponse(
                     @"Join Number: {0} | Label: '{1}' | JoinSpan: '{2}' | Type: '{3}' | Capabilities: '{4}'",
                         join.Value.JoinNumber,
                         join.Value.Label,
@@ -236,25 +234,45 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void PrintJoinMapInfo()
         {
-            Debug.Console(0, "{0}:\n", GetType().Name);
+            var sb = JoinmapStringBuilder();
+
+            CrestronConsole.ConsoleCommandResponse(sb.ToString());
+        }
+
+        private StringBuilder JoinmapStringBuilder()
+        {
+            var sb = new StringBuilder();
 
             // Get the joins of each type and print them
-            Debug.Console(0, "Digitals:");
-            var digitals = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Digital) == eJoinType.Digital).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Digital Joins", digitals.Count);
-            PrintJoinList(GetSortedJoins(digitals));
+            sb.AppendLine(String.Format("# {0}", GetType().Name));
+            sb.AppendLine();
+            sb.AppendLine("## Digitals");
+            sb.AppendLine();
+            // Get the joins of each type and print them
+            var digitals =
+                Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Digital) == eJoinType.Digital)
+                    .ToDictionary(j => j.Key, j => j.Value);
+            var digitalSb = AppendJoinList(GetSortedJoins(digitals));
+            digitalSb.AppendLine("## Analogs");
+            digitalSb.AppendLine();
 
-            Debug.Console(0, "Analogs:");
-            var analogs = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Analog) == eJoinType.Analog).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Analog Joins", analogs.Count);
-            PrintJoinList(GetSortedJoins(analogs));
+            var analogs =
+                Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Analog) == eJoinType.Analog)
+                    .ToDictionary(j => j.Key, j => j.Value);
+            var analogSb = AppendJoinList(GetSortedJoins(analogs));
+            analogSb.AppendLine("## Serials");
+            analogSb.AppendLine();
 
-            Debug.Console(0, "Serials:");
-            var serials = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Serial) == eJoinType.Serial).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Serial Joins", serials.Count);
-            PrintJoinList(GetSortedJoins(serials));
+            var serials =
+                Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Serial) == eJoinType.Serial)
+                    .ToDictionary(j => j.Key, j => j.Value);
+            var serialSb = AppendJoinList(GetSortedJoins(serials));
 
+            sb.EnsureCapacity(sb.Length + digitalSb.Length + analogSb.Length + serialSb.Length);
+            sb.Append(digitalSb).Append(analogSb).Append(serialSb);
+            return sb;
         }
+
         /// <summary>
         /// Prints the join information to console
         /// </summary>
@@ -262,37 +280,11 @@ namespace PepperDash.Essentials.Core
         {
             var pluginType = GetType().Name;
 
-            Debug.Console(0, "{0}:\n", pluginType);
+            CrestronConsole.ConsoleCommandResponse("{0}:\n", pluginType);
 
-            var sb = new StringBuilder();
 
-            sb.AppendLine(String.Format("# {0}", GetType().Name));
-            sb.AppendLine(String.Format("Generated from '{0}' on bridge '{1}'", deviceKey, bridgeKey));
-            sb.AppendLine();
-            sb.AppendLine("## Digitals");
-            // Get the joins of each type and print them
-            var digitals = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Digital) == eJoinType.Digital).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Digital Joins", digitals.Count);
-            var digitalSb = AppendJoinList(GetSortedJoins(digitals));
-            digitalSb.AppendLine("## Analogs");
-            digitalSb.AppendLine();
 
-            Debug.Console(0, "Analogs:");
-            var analogs = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Analog) == eJoinType.Analog).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Analog Joins", analogs.Count);
-            var analogSb = AppendJoinList(GetSortedJoins(analogs));
-            analogSb.AppendLine("## Serials");
-            analogSb.AppendLine();
-
-            Debug.Console(0, "Serials:");
-            var serials = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Serial) == eJoinType.Serial).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Serial Joins", serials.Count);
-            var serialSb = AppendJoinList(GetSortedJoins(serials));
-
-            sb.EnsureCapacity(sb.Length + digitalSb.Length + analogSb.Length + serialSb.Length);
-            sb.Append(digitalSb).Append(analogSb).Append(serialSb);
-
-            WriteJoinmapMarkdown(sb, pluginType, bridgeKey, deviceKey);
+            WriteJoinmapMarkdown(JoinmapStringBuilder(), pluginType, bridgeKey, deviceKey);
 
         }
 
@@ -303,7 +295,7 @@ namespace PepperDash.Essentials.Core
             using (var sw = new StreamWriter(fileName))
             {
                 sw.WriteLine(stringBuilder.ToString());
-                Debug.Console(0, "Joinmap Readme generated and written to {0}", fileName);
+                CrestronConsole.ConsoleCommandResponse("Joinmap Readme generated and written to {0}", fileName);
             }
 
         }
@@ -313,7 +305,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="joins"></param>
         /// <returns></returns>
-        List<KeyValuePair<string, JoinDataComplete>> GetSortedJoins(Dictionary<string, JoinDataComplete> joins)
+        static List<KeyValuePair<string, JoinDataComplete>> GetSortedJoins(Dictionary<string, JoinDataComplete> joins)
         {
             var sortedJoins = joins.ToList();
 
@@ -322,20 +314,6 @@ namespace PepperDash.Essentials.Core
             return sortedJoins;
         }
 
-        void PrintJoinList(List<KeyValuePair<string, JoinDataComplete>> joins)
-        {
-            foreach (var join in joins)
-            {
-                Debug.Console(0,
-                    @"Join Number: {0} | JoinSpan: '{1}' | JoinName: {2} | Description: '{3}' | Type: '{4}' | Capabilities: '{5}'",
-                        join.Value.JoinNumber,
-                        join.Value.JoinSpan,
-                        join.Key,
-                        String.IsNullOrEmpty(join.Value.AttributeName) ? join.Value.Metadata.Label : join.Value.AttributeName,
-                        join.Value.Metadata.JoinType.ToString(),
-                        join.Value.Metadata.JoinCapabilities.ToString());
-            }
-        }
 
         static StringBuilder AppendJoinList(List<KeyValuePair<string, JoinDataComplete>> joins)
         {
@@ -579,7 +557,7 @@ namespace PepperDash.Essentials.Core
                 var errorKey = string.Empty;
                 foreach (var item in dataArray)
                 {
-                    if (item.Value.TrimEnd() == placeholder) ;
+                    if (item.Value.TrimEnd() == placeholder) continue;
                     errorKey = item.Key;
                     break;
                 }
