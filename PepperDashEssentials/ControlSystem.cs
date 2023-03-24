@@ -13,6 +13,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Fusion;
+using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
@@ -46,28 +47,29 @@ namespace PepperDash.Essentials
         /// </summary>
         public override void InitializeSystem()
         {
-            _startTimer = new CTimer(StartSystem,StartupTime);
-
-
             // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
             // to allow any HD-BaseT DM endpoints to register first.
-            if (Global.ControlSystemIsDmpsType)
+            bool preventInitializationComplete = Global.ControlSystemIsDmpsType;
+            if (preventInitializationComplete)
             {
                 Debug.Console(1, "******************* InitializeSystem() Entering **********************");
-
-                _initializeEvent = new CEvent();
-
+                _startTimer = new CTimer(StartSystem, preventInitializationComplete, StartupTime);
+                _initializeEvent = new CEvent(true, false);
                 DeviceManager.AllDevicesRegistered += (o, a) =>
                 {
                     _initializeEvent.Set();
-                    Debug.Console(1, "******************* InitializeSystem() Exiting **********************");
                 };
-
                 _initializeEvent.Wait(30000);
+                Debug.Console(1, "******************* InitializeSystem() Exiting **********************");
+                SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            }
+            else
+            {
+                _startTimer = new CTimer(StartSystem, preventInitializationComplete, StartupTime);
             }
         }
 
-        private void StartSystem(object obj)
+        private void StartSystem(object preventInitialization)
         {
             DeterminePlatform();
 
@@ -79,7 +81,7 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(PepperDash.Essentials.Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -124,7 +126,10 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            if (!(bool)preventInitialization)
+            {
+                SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            }
         }
 
         /// <summary>
@@ -353,6 +358,7 @@ namespace PepperDash.Essentials
 
             // Build the processor wrapper class
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+			DeviceManager.AddDevice(new EssemtialsWebApi("essentialsWebApi","Essentials Web API"));
 
             // Add global System Monitor device
             if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)

@@ -43,7 +43,20 @@ namespace PepperDash.Essentials.Core.Monitoring
         public StringFeedback UptimeFeedback { get; set; }
         public StringFeedback LastStartFeedback { get; set; }
 
-        public SystemMonitorController(string key)
+		public BoolFeedback IsApplianceFeedback { get; protected set; }
+	    private bool _isApplianceFb
+	    {
+			get { return CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance; }
+	    }
+
+		public BoolFeedback IsServerFeedback { get; protected set; }
+	    private bool _isServerFb
+	    {
+			get { return CrestronEnvironment.DevicePlatform == eDevicePlatform.Server; }
+	    }
+
+
+	    public SystemMonitorController(string key)
             : base(key)
         {
             Debug.Console(2, this, "Adding SystemMonitorController.");
@@ -62,6 +75,9 @@ namespace PepperDash.Essentials.Core.Monitoring
             ModelFeedback = new StringFeedback(() => InitialParametersClass.ControllerPromptName);
             UptimeFeedback = new StringFeedback(() => _uptime);
             LastStartFeedback = new StringFeedback(()=> _lastStart);
+
+			IsApplianceFeedback = new BoolFeedback(() => _isApplianceFb);
+			IsServerFeedback = new BoolFeedback(() => _isServerFb);
 
             ProgramStatusFeedbackCollection = new Dictionary<uint, ProgramStatusFeedbacks>();
 
@@ -122,6 +138,26 @@ namespace PepperDash.Essentials.Core.Monitoring
             //4 => "for " to get what's on the right
             _uptime = uptimeRaw.Substring(forIndex + 4);
         }
+
+	    private static void ProcessorReboot()
+	    {
+		    if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Server) return;
+
+		    var response = string.Empty;
+		    CrestronConsole.SendControlSystemCommand("reboot", ref response);
+	    }
+
+		private static void ProgramReset(uint index)
+		{
+			if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Server) return;
+
+			if (index <= 0 || index > 10) return;
+
+			var cmd = string.Format("progreset -p:{0}", index);
+
+			var response = string.Empty;
+			CrestronConsole.SendControlSystemCommand(cmd, ref response);
+		}
 
         private void CrestronEnvironmentOnEthernetEventHandler(EthernetEventArgs ethernetEventArgs)
         {
@@ -185,6 +221,9 @@ namespace PepperDash.Essentials.Core.Monitoring
             SerialNumberFeedback.FireUpdate();
             ModelFeedback.FireUpdate();
 
+			IsApplianceFeedback.FireUpdate();
+			IsServerFeedback.FireUpdate();
+
             OnSystemMonitorPropertiesChanged();
         }
 
@@ -236,6 +275,11 @@ namespace PepperDash.Essentials.Core.Monitoring
             ModelFeedback.LinkInputSig(trilist.StringInput[joinMap.Model.JoinNumber]);
             UptimeFeedback.LinkInputSig(trilist.StringInput[joinMap.Uptime.JoinNumber]);
             LastStartFeedback.LinkInputSig(trilist.StringInput[joinMap.LastBoot.JoinNumber]);
+
+	        trilist.SetSigHeldAction(joinMap.ProcessorReboot.JoinNumber, 10000, ProcessorReboot);
+
+			IsApplianceFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsAppliance.JoinNumber]);
+			IsServerFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsServer.JoinNumber]);
 
             // iterate the program status feedback collection and map all the joins
             LinkProgramInfoJoins(this, trilist, joinMap);
@@ -301,11 +345,13 @@ namespace PepperDash.Essentials.Core.Monitoring
                 p.Value.AggregatedProgramInfoFeedback.LinkInputSig(
                     trilist.StringInput[programSlotJoinStart + joinMap.AggregatedProgramInfo.JoinNumber]);
 
+				trilist.SetSigHeldAction(programSlotJoinStart + joinMap.ProgramReset.JoinNumber, 10000, () => ProgramReset(programNumber));
+
                 programSlotJoinStart = programSlotJoinStart + joinMap.ProgramOffsetJoin.JoinSpan;
             }
-        }
+        }	    
 
-        //// Sets the time zone
+	    //// Sets the time zone
         //public void SetTimeZone(int timeZone)
         //{
         //    SystemMonitor.TimeZoneInformation.TimeZoneNumber = timeZone;

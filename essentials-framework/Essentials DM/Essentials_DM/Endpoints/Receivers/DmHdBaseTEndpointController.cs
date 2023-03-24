@@ -28,6 +28,8 @@ namespace PepperDash.Essentials.DM
 
             InputPorts = new RoutingPortCollection<RoutingInputPort> {DmIn};
             OutputPorts = new RoutingPortCollection<RoutingOutputPort> {HDBaseTSink};
+            PreventRegistration = true;
+            rmc.Register();
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)

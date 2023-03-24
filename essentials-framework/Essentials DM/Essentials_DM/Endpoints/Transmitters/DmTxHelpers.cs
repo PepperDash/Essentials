@@ -126,6 +126,7 @@ namespace PepperDash.Essentials.DM
             var parentDev = DeviceManager.GetDeviceForKey(pKey);
             DMInput dmInput;
             BasicDmTxControllerBase tx;
+            bool useChassisForOfflineFeedback = false;
 
 		    if (parentDev is DmChassisController)
             {
@@ -155,15 +156,23 @@ namespace PepperDash.Essentials.DM
                         chassis is DmMd128x128 || chassis is DmMd64x64)
                     {
                         tx = GetDmTxForChassisWithoutIpId(key, name, typeName, dmInput);
-                        Debug.Console(0, "DM endpoint output {0} is for Cpu3, changing online feedback to chassis", num);
-                        tx.IsOnline.SetValueFunc(() => switchDev.InputEndpointOnlineFeedbacks[num].BoolValue);
-                        switchDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
-                        return tx;
+                        useChassisForOfflineFeedback = true;
                     }
                     else
                     {
-                        return GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                        tx = GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                        if (typeName == "hdbasettx" || typeName == "dmtx4k100c1g")
+                        {
+                            useChassisForOfflineFeedback = true;
+                        }                        
                     }
+                    if (useChassisForOfflineFeedback)
+                    {
+                        Debug.Console(0, "DM endpoint output {0} does not have direct online feedback, changing online feedback to chassis", num);
+                        tx.IsOnline.SetValueFunc(() => switchDev.InputEndpointOnlineFeedbacks[num].BoolValue);
+                        switchDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
+                    }
+                    return tx;
                 }
                 catch (Exception e)
                 {
@@ -203,15 +212,23 @@ namespace PepperDash.Essentials.DM
                     if(Global.ControlSystemIsDmps4kType)
                     {
                         tx = GetDmTxForChassisWithoutIpId(key, name, typeName, dmInput);
-                        Debug.Console(0, "DM endpoint output {0} is for DMPS3-4K, changing online feedback to chassis", num);
-                        tx.IsOnline.SetValueFunc(() => dmpsDev.InputEndpointOnlineFeedbacks[num].BoolValue);
-                        dmpsDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
-                        return tx;
+                        useChassisForOfflineFeedback = true;
                     }
                     else
                     {
-                        return GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                        tx = GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                        if (typeName == "hdbasettx" || typeName == "dmtx4k100c1g")
+                        {
+                            useChassisForOfflineFeedback = true;
+                        }                        
                     }
+                    if (useChassisForOfflineFeedback)
+                    {
+                        Debug.Console(0, "DM endpoint output {0} does not have direct online feedback, changing online feedback to chassis", num);
+                        tx.IsOnline.SetValueFunc(() => dmpsDev.InputEndpointOnlineFeedbacks[num].BoolValue);
+                        dmpsDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
+                    }
+                    return tx;
                 }
                 catch (Exception e)
                 {
@@ -377,6 +394,26 @@ namespace PepperDash.Essentials.DM
                     }
                 }
 
+                if (txR.InputPorts[DmPortName.DisplayPortIn] != null)
+                {
+                    var inputPort = txR.InputPorts[DmPortName.DisplayPortIn];
+
+                    if (tx.Feedbacks["DisplayPortInHdcpCapability"] != null)
+                    {
+                        var intFeedback = tx.Feedbacks["DisplayPortInHdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port3HdcpState.JoinNumber]);
+                    }
+
+                    if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
+                    {
+                        var port = inputPort.Port as EndpointDisplayPortInput;
+
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port3HdcpState.JoinNumber, trilist);
+                    }
+
+                }
+
             }
 
             var txFreeRun = tx as IHasFreeRun;
@@ -424,6 +461,20 @@ namespace PepperDash.Essentials.DM
                         });
             }
         }
+
+	    private void SetHdcpCapabilityAction(bool hdcpTypeSimple, EndpointDisplayPortInput port, uint join,
+	        BasicTriList trilist)
+	    {
+
+
+	        trilist.SetUShortSigAction(join,
+	            s =>
+	            {
+	                port.HdcpCapability = (eHdcpCapabilityType) s;
+	            });
+
+	    }
+
 	}
 
     public class DmTxControllerFactory : EssentialsDeviceFactory<DmTxControllerBase>
