@@ -105,6 +105,7 @@
     <Compile Include="Chassis\HdMdNxM4kEBridgeableController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
     <Compile Include="Config\InputPropertiesConfig.cs" />
+    <Compile Include="Endpoints\DGEs\DgeJoinMap.cs" />
     <Compile Include="Endpoints\DGEs\DmDge200CController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4kZ100CController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4kZScalerCController.cs" />
