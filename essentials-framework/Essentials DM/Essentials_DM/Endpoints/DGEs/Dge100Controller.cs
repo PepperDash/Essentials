@@ -245,6 +245,11 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 			VideoStatusFeedbacks.HdcpActiveFeedback.LinkInputSig(trilist.BooleanInput[joinMap.HdmiInHdcpOn.JoinNumber]);
 			VideoStatusFeedbacks.HdcpActiveFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.HdmiInHdcpOff.JoinNumber]);
 
+			VideoStatusFeedbacks.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentInputResolution.JoinNumber]);
+			VideoStatusFeedbacks.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SyncDetected.JoinNumber]);
+
+			IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+
 			trilist.OnlineStatusChange += (o, a) =>
 			{
 				if (!a.DeviceOnLine) return;
