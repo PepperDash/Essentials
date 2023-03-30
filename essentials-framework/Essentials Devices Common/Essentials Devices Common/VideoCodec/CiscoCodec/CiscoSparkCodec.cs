@@ -40,6 +40,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private CTimer _brandingTimer;
 
+        private CTimer _registrationCheckTimer;
+
         public CommunicationGather PortGather { get; private set; }
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
@@ -261,6 +263,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public CodecPhonebookSyncState PhonebookSyncState { get; private set; }
 
         private StringBuilder _jsonMessage;
+
+        private StringBuilder _feedbackListMessage;
+
+        private bool _feedbackListMessageIncoming;
 
         private bool _jsonFeedbackMessageIsIncoming;
 
@@ -702,6 +708,8 @@ ConnectorID: {2}"
 
             // Fire the ready event
             SetIsReady();
+
+            _registrationCheckTimer = new CTimer(SendText, "xFeedback list",  360000, 360000);
         }
 
         public void SetCommDebug(string s)
@@ -778,6 +786,30 @@ ConnectorID: {2}"
                 return;
             }
 
+            if (!args.Text.StartsWith("/") && _feedbackListMessage != null)
+            {
+                _feedbackListMessageIncoming = false;
+
+                var feedbackListString = _feedbackListMessage.ToString();
+                _feedbackListMessage = null;
+
+                ProcessFeedbackList(feedbackListString);
+
+            }
+
+            if (args.Text.StartsWith("/"))
+            {
+                Debug.Console(0, this, "Feedback List Data Received : {0}", args.Text);
+                _feedbackListMessageIncoming = true;
+                if(_feedbackListMessage == null) _feedbackListMessage = new StringBuilder();
+            }
+
+            if (_feedbackListMessageIncoming && _feedbackListMessage != null)
+            {
+                _feedbackListMessage.Append(args.Text);
+                return;
+            }
+
             if (args.Text == "{" + Delimiter)        // Check for the beginning of a new JSON message
             {
                 _jsonFeedbackMessageIsIncoming = true;
@@ -846,6 +878,19 @@ ConnectorID: {2}"
             }
         }
 
+        private void ProcessFeedbackList(string data)
+        {
+            Debug.Console(1, this, "Feedback List : ");
+            Debug.Console(1, this, data);
+
+            if (data.Split('\n').Count() == _cliFeedbackRegistrationExpression.Split('\n').Count()) return;
+            Debug.Console(0, this, "Codec Feedback Registrations Lost - Registering Feedbacks");
+            ErrorLog.Error(String.Format("[{0}] :: Codec Feedback Registrations Lost - Registering Feedbacks", Key));
+            //var updateRegistrationString = "xFeedback deregisterall" + Delimiter + _cliFeedbackRegistrationExpression;
+                                           
+            //SendText(updateRegistrationString);
+        }
+
         /// <summary>
         /// Enqueues a command to be sent to the codec.
         /// </summary>
@@ -865,6 +910,16 @@ ConnectorID: {2}"
         {
             if (CommDebuggingIsOn)
                 Debug.Console(1, this, "Sending: '{0}'",  ComTextHelper.GetDebugText(command + Delimiter));
+
+            Communication.SendText(command + Delimiter);
+        }
+
+        public void SendText(object cmd)
+        {
+            var command = cmd as string;
+            if (String.IsNullOrEmpty(command)) return;
+            if (CommDebuggingIsOn)
+                Debug.Console(1, this, "Sending: '{0}'", ComTextHelper.GetDebugText(command + Delimiter));
 
             Communication.SendText(command + Delimiter);
         }
