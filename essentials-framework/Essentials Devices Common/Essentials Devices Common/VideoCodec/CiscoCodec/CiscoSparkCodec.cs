@@ -709,7 +709,7 @@ ConnectorID: {2}"
             // Fire the ready event
             SetIsReady();
 
-            _registrationCheckTimer = new CTimer(SendText, "xFeedback list",  360000, 360000);
+            _registrationCheckTimer = new CTimer(EnqueueCommand, "xFeedback list",  90000, 90000);
         }
 
         public void SetCommDebug(string s)
@@ -799,7 +799,6 @@ ConnectorID: {2}"
 
             if (args.Text.StartsWith("/"))
             {
-                Debug.Console(0, this, "Feedback List Data Received : {0}", args.Text);
                 _feedbackListMessageIncoming = true;
                 if(_feedbackListMessage == null) _feedbackListMessage = new StringBuilder();
             }
@@ -887,8 +886,8 @@ ConnectorID: {2}"
             Debug.Console(0, this, "Codec Feedback Registrations Lost - Registering Feedbacks");
             ErrorLog.Error(String.Format("[{0}] :: Codec Feedback Registrations Lost - Registering Feedbacks", Key));
             //var updateRegistrationString = "xFeedback deregisterall" + Delimiter + _cliFeedbackRegistrationExpression;
-                                           
-            //SendText(updateRegistrationString);
+
+            EnqueueCommand(_cliFeedbackRegistrationExpression);
         }
 
         /// <summary>
@@ -897,6 +896,12 @@ ConnectorID: {2}"
         /// <param name="command"></param>
         public void EnqueueCommand(string command)
         {
+            _syncState.AddCommandToQueue(command);
+        }
+        private void EnqueueCommand(object cmd)
+        {
+            var command = cmd as string;
+            if (String.IsNullOrEmpty(command)) return;
             _syncState.AddCommandToQueue(command);
         }
 
