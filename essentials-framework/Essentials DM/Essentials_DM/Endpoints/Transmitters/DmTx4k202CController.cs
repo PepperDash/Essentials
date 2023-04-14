@@ -127,28 +127,23 @@ namespace PepperDash.Essentials.DM
 
             Tx.OnlineStatusChange += Tx_OnlineStatusChange;
 
-            VideoSourceNumericFeedback = new IntFeedback(() => (int) Tx.VideoSourceFeedback);
+            VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
 
-            AudioSourceNumericFeedback = new IntFeedback(() => (int) Tx.AudioSourceFeedback);
+            AudioSourceNumericFeedback = new IntFeedback(() => (int)Tx.AudioSourceFeedback);
 
             HdmiIn1HdcpCapabilityFeedback = new IntFeedback("HdmiIn1HdcpCapability",
-                () => (int) tx.HdmiInputs[1].HdcpCapabilityFeedback);
+                () => (int)tx.HdmiInputs[1].HdcpCapabilityFeedback);
 
             HdmiIn2HdcpCapabilityFeedback = new IntFeedback("HdmiIn2HdcpCapability",
-                () => (int) tx.HdmiInputs[2].HdcpCapabilityFeedback);
-
-            HdcpStateFeedback =
-                new IntFeedback(
-                    () =>
-                        tx.HdmiInputs[1].HdcpCapabilityFeedback > tx.HdmiInputs[2].HdcpCapabilityFeedback
-                            ? (int) tx.HdmiInputs[1].HdcpCapabilityFeedback
-                            : (int) tx.HdmiInputs[2].HdcpCapabilityFeedback);
+                () => (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
 
-            Hdmi1VideoSyncFeedback = new BoolFeedback(() => (bool) tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue);
+            HdcpStateFeedback = new IntFeedback(() => (int)HdcpSupportCapability);
 
-            Hdmi2VideoSyncFeedback = new BoolFeedback(() => (bool) tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue);
+            Hdmi1VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue);
+
+            Hdmi2VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue);
 
             var combinedFuncs = new VideoStatusFuncsWrapper
             {
@@ -249,50 +244,50 @@ namespace PepperDash.Essentials.DM
                     switch (input)
                     {
                         case 0:
-                        {
-                            ExecuteSwitch(eVst.Auto, null, type);
-                            break;
-                        }
+                            {
+                                ExecuteSwitch(eVst.Auto, null, type);
+                                break;
+                            }
                         case 1:
-                        {
-                            ExecuteSwitch(HdmiIn1.Selector, null, type);
-                            break;
-                        }
+                            {
+                                ExecuteSwitch(HdmiIn1.Selector, null, type);
+                                break;
+                            }
                         case 2:
-                        {
-                            ExecuteSwitch(HdmiIn2.Selector, null, type);
-                            break;
-                        }
+                            {
+                                ExecuteSwitch(HdmiIn2.Selector, null, type);
+                                break;
+                            }
                         case 3:
-                        {
-                            ExecuteSwitch(eVst.AllDisabled, null, type);
-                            break;
-                        }
+                            {
+                                ExecuteSwitch(eVst.AllDisabled, null, type);
+                                break;
+                            }
                     }
                     break;
                 case eRoutingSignalType.Audio:
                     switch (input)
                     {
                         case 0:
-                        {
-                            ExecuteSwitch(eAst.Auto, null, type);
-                            break;
-                        }
+                            {
+                                ExecuteSwitch(eAst.Auto, null, type);
+                                break;
+                            }
                         case 1:
-                        {
-                            ExecuteSwitch(eAst.Hdmi1, null, type);
-                            break;
-                        }
+                            {
+                                ExecuteSwitch(eAst.Hdmi1, null, type);
+                                break;
+                            }
                         case 2:
-                        {
-                            ExecuteSwitch(eAst.Hdmi2, null, type);
-                            break;
-                        }
+                            {
+                                ExecuteSwitch(eAst.Hdmi2, null, type);
+                                break;
+                            }
                         case 3:
-                        {
-                            ExecuteSwitch(eAst.AllDisabled, null, type);
-                            break;
-                        }
+                            {
+                                ExecuteSwitch(eAst.AllDisabled, null, type);
+                                break;
+                            }
                     }
                     break;
             }
