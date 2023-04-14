@@ -692,14 +692,14 @@ namespace PepperDash.Essentials.DM
 
                 var cecPort = hdmiInputCard.HdmiInputPort;
 
-                AddInputPortWithDebug(number, string.Format("HdmiIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, cecPort);              
+                AddInputPortWithDebug(number, string.Format("HdmiIn1{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, cecPort);              
             }
             else if (inputCard is Card.Dmps3HdmiInput)
             {
                 var hdmiInputCard = inputCard as Card.Dmps3HdmiInput;
                 var cecPort = hdmiInputCard.HdmiInputPort;
 
-                AddInputPortWithDebug(number, string.Format("HdmiIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, cecPort);
+                AddInputPortWithDebug(number, string.Format("HdmiIn1{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, cecPort);
                 AddInputPortWithDebug(number, string.Format("HudioIn{1}", number), eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
             }
             else if (inputCard is Card.Dmps3HdmiVgaInput)

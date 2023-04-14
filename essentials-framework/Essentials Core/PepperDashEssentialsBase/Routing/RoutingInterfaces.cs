@@ -20,7 +20,6 @@ namespace PepperDash.Essentials.Core
 
 	//*******************************************************************************************
 	// Interfaces
-
     /// <summary>
     /// For rooms with a single presentation source, change event
     /// </summary>

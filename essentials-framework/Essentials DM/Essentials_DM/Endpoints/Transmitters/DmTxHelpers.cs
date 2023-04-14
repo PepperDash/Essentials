@@ -411,8 +411,21 @@ namespace PepperDash.Essentials.DM
 
                         SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port3HdcpState.JoinNumber, trilist);
                     }
-
                 }
+
+
+                var hdcpInputPortCount =
+                    (ushort)
+                        txR.InputPorts.Where(
+                            x => (x.Type == eRoutingSignalType.Video) || (x.Type == eRoutingSignalType.AudioVideo))
+                            .Where(
+                                x =>
+                                    (x.ConnectionType == eRoutingPortConnectionType.DmCat) ||
+                                    (x.ConnectionType == eRoutingPortConnectionType.Hdmi) ||
+                                    (x.ConnectionType == eRoutingPortConnectionType.DisplayPort))
+                            .ToList().Count();
+
+                trilist.SetUshort(joinMap.HdcpInputPortCount.JoinNumber, hdcpInputPortCount);
 
             }
 

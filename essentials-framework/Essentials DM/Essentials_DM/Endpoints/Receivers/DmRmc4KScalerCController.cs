@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash_Essentials_DM;
 
 namespace PepperDash.Essentials.DM
 {
@@ -15,7 +16,7 @@ namespace PepperDash.Essentials.DM
 	/// </summary>
     [Description("Wrapper Class for DM-RMC-4K-SCALER-C")]
     public class DmRmc4kScalerCController : DmRmcControllerBase, IRoutingInputsOutputs, IBasicVolumeWithFeedback,
-		IIROutputPorts, IComPorts, ICec, IRelayPorts
+		IIROutputPorts, IComPorts, ICec, IRelayPorts, IHasDmInHdcp
 	{
 	    private readonly DmRmc4kScalerC _rmc;
 
@@ -26,6 +27,12 @@ namespace PepperDash.Essentials.DM
 		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
+
+        public EndpointDmInputStreamWithCec DmInput { get; private set; }
+
+        public IntFeedback DmInHdcpStateFeedback { get; private set; }
+
+
 
 		/// <summary>
 		///  Make a Crestron RMC and put it in here
@@ -56,6 +63,11 @@ namespace PepperDash.Essentials.DM
 		    OutputPorts = new RoutingPortCollection<RoutingOutputPort> {HdmiOut, BalancedAudioOut};
 
             VideoOutputResolutionFeedback = new StringFeedback(() => _rmc.HdmiOutput.GetVideoResolutionString());
+            DmInHdcpStateFeedback = new IntFeedback("DmInHdcpCapability",
+                () => (int)_rmc.DmInput.HdcpCapabilityFeedback);
+
+            AddToFeedbackList(DmInHdcpStateFeedback);
+
 
             _rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
             _rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
@@ -192,5 +204,17 @@ namespace PepperDash.Essentials.DM
 		}
 
 		#endregion
+
+        public eHdcpCapabilityType DmInHdcpCapability
+        {
+            get { return eHdcpCapabilityType.Hdcp2_2Support; }
+        }
+
+        public void SetDmInHdcpState(eHdcpCapabilityType hdcpState)
+        {
+            if (_rmc == null) return;
+            _rmc.DmInput.HdcpCapability = hdcpState;
+        }
+
 	}
 }

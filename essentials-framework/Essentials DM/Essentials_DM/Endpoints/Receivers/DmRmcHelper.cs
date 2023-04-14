@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Cards;
@@ -11,6 +12,7 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.DM.Config;
 using PepperDash.Essentials.Core.Config;
+using PepperDash_Essentials_DM;
 
 namespace PepperDash.Essentials.DM
 {
@@ -73,19 +75,80 @@ namespace PepperDash.Essentials.DM
                 rmc.EdidPreferredTimingFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidPrefferedTiming.JoinNumber]);
             if (rmc.EdidSerialNumberFeedback != null)
                 rmc.EdidSerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidSerialNumber.JoinNumber]);
+
             
             //If the device is an DM-RMC-4K-Z-SCALER-C
-            var routing = rmc as IRmcRouting;
+            var routing = rmc as IRoutingInputsOutputs;
+
+            trilist.UShortInput[joinMap.HdcpInputPortCount.JoinNumber].UShortValue = (ushort)(routing == null
+                ? 1
+                : routing.InputPorts.Count);
 
             if (routing == null)
             {
                 return;
             }
+            var hdcpCapability = eHdcpCapabilityType.HdcpSupportOff;
+            if (routing.InputPorts[DmPortName.HdmiIn] != null)
+            {
+                var hdmiInHdcp = routing as IHasHdmiInHdcp;
+                if (hdmiInHdcp != null)
+                {
+                    if (rmc.Feedbacks["HdmiInHdcpCapability"] != null)
+                    {
+                        var intFeedback = rmc.Feedbacks["HdmiInHdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState.JoinNumber]);
+                    }
+                    if (rmc.Feedbacks["HdmiInVideoSync"] != null)
+                    {
+                        var boolFeedback = rmc.Feedbacks["HdmiInVideoSync"] as BoolFeedback;
+                        if (boolFeedback != null)
+                            boolFeedback.LinkInputSig(trilist.BooleanInput[joinMap.HdmiInputSync.JoinNumber]);
+                    }
+                    hdcpCapability = hdmiInHdcp.HdmiInHdcpCapability > hdcpCapability
+                        ? hdmiInHdcp.HdmiInHdcpCapability
+                        : hdcpCapability;
 
-            if (routing.AudioVideoSourceNumericFeedback != null)
-                routing.AudioVideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioVideoSource.JoinNumber]);
+                    trilist.SetUShortSigAction(joinMap.Port1HdcpState.JoinNumber, a => hdmiInHdcp.SetHdmiInHdcpState((eHdcpCapabilityType)a));
+                }
+            }
+            if (routing.InputPorts[DmPortName.DmIn] != null)
+            {
+                var dmInHdcp = rmc as IHasDmInHdcp;
 
-            trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber, a => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
+                if (dmInHdcp != null)
+                {
+                    if (rmc.Feedbacks["DmInHdcpCapability"] != null)
+                    {
+                        var intFeedback = rmc.Feedbacks["DmInHdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port2HdcpState.JoinNumber]);
+                    }
+
+                    hdcpCapability = dmInHdcp.DmInHdcpCapability > hdcpCapability
+                        ? dmInHdcp.DmInHdcpCapability
+                        : hdcpCapability;
+
+
+                    trilist.SetUShortSigAction(joinMap.Port2HdcpState.JoinNumber, a => dmInHdcp.SetDmInHdcpState((eHdcpCapabilityType)a));
+                }
+            }
+
+            trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber].UShortValue = (ushort) hdcpCapability;
+
+            trilist.UShortInput[joinMap.HdcpInputPortCount.JoinNumber].UShortValue = (ushort) routing.InputPorts.Count;
+
+            var routingWithFeedback = routing as IRmcRouting;
+            if (routingWithFeedback == null) return;
+
+            if (routingWithFeedback.AudioVideoSourceNumericFeedback != null)
+                routingWithFeedback.AudioVideoSourceNumericFeedback.LinkInputSig(
+                    trilist.UShortInput[joinMap.AudioVideoSource.JoinNumber]);
+
+
+            trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber,
+                a => routingWithFeedback.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
         }
 
         #region Implementation of IDeviceInfoProvider
