@@ -379,28 +379,28 @@ namespace PepperDash.Essentials.Core
         /// Prints a list of routing inputs and outputs by device key.
         /// </summary>
         /// <param name="s">Device key from which to report data</param>
-	    public static void GetRoutingPorts(string s)
-	    {
-	        var device = GetDeviceForKey(s);
+        public static void GetRoutingPorts(string s)
+        {
+            var device = GetDeviceForKey(s);
 
             if (device == null) return;
             var inputPorts = ((device as IRoutingInputs) != null) ? (device as IRoutingInputs).InputPorts : null;
             var outputPorts = ((device as IRoutingOutputs) != null) ? (device as IRoutingOutputs).OutputPorts : null;
-	        if (inputPorts != null)
-	        {
-                CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Input Ports:", s, inputPorts.Count);
-	            foreach (var routingInputPort in inputPorts)
-	            {
-                    CrestronConsole.ConsoleCommandResponse("{0}", routingInputPort.Key);
-	            }
-	        }
+            if (inputPorts != null)
+            {
+                CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Input Ports:{2}", s, inputPorts.Count, CrestronEnvironment.NewLine);
+                foreach (var routingInputPort in inputPorts)
+                {
+                    CrestronConsole.ConsoleCommandResponse("{0}{1}", routingInputPort.Key, CrestronEnvironment.NewLine);
+                }
+            }
             if (outputPorts == null) return;
-            CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Output Ports:", s, outputPorts.Count);
+            CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Output Ports:{2}", s, outputPorts.Count, CrestronEnvironment.NewLine);
             foreach (var routingOutputPort in outputPorts)
             {
-                CrestronConsole.ConsoleCommandResponse("{0}", routingOutputPort.Key);
+                CrestronConsole.ConsoleCommandResponse("{0}{1}", routingOutputPort.Key, CrestronEnvironment.NewLine);
             }
-	    }
+        }
 
         /// <summary>
         /// Attempts to set the debug level of a device
