@@ -28,7 +28,7 @@ namespace PepperDash.Essentials.DM
 		public const string DmOut2 = "DmOut2";
         public const string FromTx = "FromTx";
         public const string Hdmi = "Hdmi";
-		public const string HdmiIn = "HdmiIn";
+		public const string HdmiIn = "HdmiIn1";
 		public const string HdmiIn1 = "HdmiIn1";
 		public const string HdmiIn2 = "HdmiIn2";
 		public const string HdmiOut1 = "HdmiOut1";

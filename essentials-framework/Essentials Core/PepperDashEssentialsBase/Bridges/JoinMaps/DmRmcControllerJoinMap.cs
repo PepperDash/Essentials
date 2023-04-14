@@ -36,6 +36,28 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete AudioVideoSource = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "DM RMC Audio Video Source Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("HdcpSupportCapability")]
+        public JoinDataComplete HdcpSupportCapability = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM RMC HDCP Support Capability", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("Port1HdcpState")]
+        public JoinDataComplete Port1HdcpState = new JoinDataComplete(new JoinData { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM RMC Port 1 (DM) HDCP State Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("Port2HdcpState")]
+        public JoinDataComplete Port2HdcpState = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM TX Port 2 (HDMI) HDCP State Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("HdmiInputSync")]
+        public JoinDataComplete HdmiInputSync = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM RMC HDMI Input Sync", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("HdcpInputPortCount")]
+        public JoinDataComplete HdcpInputPortCount = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata { Description = "Number of Input Ports that support HDCP", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+        
+
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it
         /// </summary>

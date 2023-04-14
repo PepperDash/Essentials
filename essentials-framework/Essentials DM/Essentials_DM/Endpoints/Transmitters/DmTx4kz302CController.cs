@@ -146,13 +146,18 @@ namespace PepperDash.Essentials.DM
              */
 
             //yeah this is gross - but it's the quickest way to do this...
+            /*
             HdcpStateFeedback = new IntFeedback(() => {
                 var states = new[] {(int) tx.DisplayPortInput.HdcpCapabilityFeedback, (int) tx.HdmiInputs[1].HdcpCapabilityFeedback, (int) tx.HdmiInputs[2].HdcpCapabilityFeedback};
 
                 return states.Max();
             });
+             */
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
+            // I feel like we have had this as a misnomer for so long, that it really needed to be fixed 
+            // All we were doing was reporting the best of the current statuses - not the actual capability of the device.
+            HdcpStateFeedback = new IntFeedback(() => (int)HdcpSupportCapability);
 
             Hdmi1VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue);
 
