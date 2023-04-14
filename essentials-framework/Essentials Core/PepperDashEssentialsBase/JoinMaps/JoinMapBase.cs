@@ -6,7 +6,7 @@ using System.Text;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp;
-
+using Crestron.SimplSharp.Ssh;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -234,7 +234,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void PrintJoinMapInfo()
         {
-            var sb = JoinmapStringBuilder();
+            var sb = JoinmapStringBuilderPrint();
 
             CrestronConsole.ConsoleCommandResponse(sb.ToString());
         }
@@ -273,6 +273,50 @@ namespace PepperDash.Essentials.Core
             return sb;
         }
 
+        private StringBuilder JoinmapStringBuilderPrint()
+        {
+            var sb = new StringBuilder();
+
+            // Get the joins of each type and print them
+            var digitals =
+                Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Digital) == eJoinType.Digital)
+                    .ToDictionary(j => j.Key, j => j.Value);
+            var analogs =
+                Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Analog) == eJoinType.Analog)
+                    .ToDictionary(j => j.Key, j => j.Value);
+            var serials =
+                Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Serial) == eJoinType.Serial)
+                    .ToDictionary(j => j.Key, j => j.Value);
+            
+            const string description = "description";
+            var descriptionLengthAnchor = description.Length;
+
+            var descriptionLength =
+                (from @join in Joins select @join.Value into j select j.Metadata.Description.Length).Concat(new[] { descriptionLengthAnchor })
+                    .Max();
+
+            sb.AppendLine(String.Format("# {0}" + CrestronEnvironment.NewLine, GetType().Name));
+            sb.AppendLine(CrestronEnvironment.NewLine);
+            sb.AppendLine("## Digitals");
+            sb.AppendLine(CrestronEnvironment.NewLine + CrestronEnvironment.NewLine);
+
+            // Get the joins of each type and print them
+            var digitalSb = PrintAppendJoinList(GetSortedJoins(digitals), descriptionLength);
+            digitalSb.AppendLine(CrestronEnvironment.NewLine);
+            digitalSb.AppendLine("## Analogs");
+
+            var analogSb = PrintAppendJoinList(GetSortedJoins(analogs), descriptionLength);
+            analogSb.AppendLine(CrestronEnvironment.NewLine);
+            analogSb.AppendLine("## Serials");
+
+            var serialSb = PrintAppendJoinList(GetSortedJoins(serials), descriptionLength);
+            serialSb.AppendLine(CrestronEnvironment.NewLine);
+
+            sb.EnsureCapacity(sb.Length + digitalSb.Length + analogSb.Length + serialSb.Length);
+            sb.Append(digitalSb + CrestronEnvironment.NewLine + CrestronEnvironment.NewLine).Append(analogSb + CrestronEnvironment.NewLine + CrestronEnvironment.NewLine).Append(serialSb + CrestronEnvironment.NewLine);
+            return sb;
+        }
+
         /// <summary>
         /// Prints the join information to console
         /// </summary>
@@ -280,9 +324,7 @@ namespace PepperDash.Essentials.Core
         {
             var pluginType = GetType().Name;
 
-            CrestronConsole.ConsoleCommandResponse("{0}:\n", pluginType);
-
-
+            CrestronConsole.ConsoleCommandResponse("{0}:" + CrestronEnvironment.NewLine, pluginType);
 
             WriteJoinmapMarkdown(JoinmapStringBuilder(), pluginType, bridgeKey, deviceKey);
 
@@ -295,7 +337,7 @@ namespace PepperDash.Essentials.Core
             using (var sw = new StreamWriter(fileName))
             {
                 sw.WriteLine(stringBuilder.ToString());
-                CrestronConsole.ConsoleCommandResponse("Joinmap Readme generated and written to {0}", fileName);
+                CrestronConsole.ConsoleCommandResponse("Joinmap Readme generated and written to {0}" + CrestronEnvironment.NewLine, fileName);
             }
 
         }
@@ -323,13 +365,13 @@ namespace PepperDash.Essentials.Core
             const int joinSpanLen = 9;
             const int typeLen = 19;
             const int capabilitiesLen = 12;
-            var descriptionLen = (from @join in joins select @join.Value into j select j.Metadata.Description.Length).Concat(new[] {11}).Max();
+            var descriptionLen = (from @join in joins select @join.Value into j select j.Metadata.Description.Length).Concat(new[] { 11 }).Max();
 
             //build header
-            sb.AppendLine(String.Format(stringFormatter, 
-                String.Format("Join Number").PadRight(joinNumberLen, ' '), 
-                String.Format("Join Span").PadRight(joinSpanLen, ' '), 
-                String.Format("Description").PadRight(descriptionLen, ' '), 
+            sb.AppendLine(String.Format(stringFormatter,
+                String.Format("Join Number").PadRight(joinNumberLen, ' '),
+                String.Format("Join Span").PadRight(joinSpanLen, ' '),
+                String.Format("Description").PadRight(descriptionLen, ' '),
                 String.Format("Type").PadRight(typeLen, ' '),
                  String.Format("Capabilities").PadRight(capabilitiesLen, ' ')));
             //build table seperator
@@ -343,6 +385,40 @@ namespace PepperDash.Essentials.Core
             foreach (var join in joins)
             {
                 sb.AppendLine(join.Value.GetMarkdownFormattedData(stringFormatter, descriptionLen));
+            }
+            sb.AppendLine();
+            return sb;
+        }
+
+        private static StringBuilder PrintAppendJoinList(List<KeyValuePair<string, JoinDataComplete>> joins,
+            int descriptionLength)
+        {
+            var sb = new StringBuilder();
+            const string stringFormatter = "| {0} | {1} | {2} | {3} | {4} |";
+            const int joinNumberLen = 11;
+            const int joinSpanLen = 9;
+            const int typeLen = 19;
+            const int capabilitiesLen = 12;
+
+            //build header
+            sb.AppendLine(String.Format(stringFormatter,
+                String.Format("Join Number").PadRight(joinNumberLen, ' '),
+                String.Format("Join Span").PadRight(joinSpanLen, ' '),
+                String.Format("Description").PadRight(descriptionLength, ' '),
+                String.Format("Type").PadRight(typeLen, ' '),
+                String.Format("Capabilities").PadRight(capabilitiesLen, ' ')) + CrestronEnvironment.NewLine);
+            //build table seperator
+            sb.AppendLine(String.Format(stringFormatter,
+                new String('-', joinNumberLen),
+                new String('-', joinSpanLen),
+                new String('-', descriptionLength),
+                new String('-', typeLen),
+                new String('-', capabilitiesLen)) + CrestronEnvironment.NewLine);
+
+            foreach (var join in joins)
+            {
+                sb.AppendLine(join.Value.GetMarkdownFormattedData(stringFormatter, descriptionLength) +
+                              CrestronEnvironment.NewLine);
             }
             sb.AppendLine();
             return sb;

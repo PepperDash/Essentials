@@ -388,17 +388,17 @@ namespace PepperDash.Essentials.Core
             var outputPorts = ((device as IRoutingOutputs) != null) ? (device as IRoutingOutputs).OutputPorts : null;
 	        if (inputPorts != null)
 	        {
-                CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Input Ports:", s, inputPorts.Count);
+                CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Input Ports:{2}", s, inputPorts.Count, CrestronEnvironment.NewLine);
 	            foreach (var routingInputPort in inputPorts)
 	            {
-                    CrestronConsole.ConsoleCommandResponse("{0}", routingInputPort.Key);
+                    CrestronConsole.ConsoleCommandResponse("{0}{1}", routingInputPort.Key, CrestronEnvironment.NewLine);
 	            }
 	        }
             if (outputPorts == null) return;
-            CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Output Ports:", s, outputPorts.Count);
+            CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Output Ports:{2}", s, outputPorts.Count, CrestronEnvironment.NewLine);
             foreach (var routingOutputPort in outputPorts)
             {
-                CrestronConsole.ConsoleCommandResponse("{0}", routingOutputPort.Key);
+                CrestronConsole.ConsoleCommandResponse("{0}{1}", routingOutputPort.Key, CrestronEnvironment.NewLine);
             }
 	    }
 

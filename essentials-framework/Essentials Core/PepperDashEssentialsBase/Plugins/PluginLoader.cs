@@ -195,10 +195,10 @@ namespace PepperDash.Essentials
         public static void ReportAssemblyVersions(string command)
         {
 
-            CrestronConsole.ConsoleCommandResponse("Loaded Assemblies:");
+            CrestronConsole.ConsoleCommandResponse("Loaded Assemblies:" + CrestronEnvironment.NewLine);
             foreach (var assembly in LoadedAssemblies)
             {
-                CrestronConsole.ConsoleCommandResponse("{0} Version: {1}", assembly.Name, assembly.Version);
+                CrestronConsole.ConsoleCommandResponse("{0} Version: {1}" + CrestronEnvironment.NewLine, assembly.Name, assembly.Version);
             }
         }
 
