@@ -165,7 +165,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
                 Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
 
-                if (!typeof (IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
+                if (!typeof(IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
                 {
                     Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
                         "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
@@ -409,7 +409,7 @@ namespace PepperDash.Essentials.Core.Bridges
         public List<ApiDevicePropertiesConfig> Devices { get; set; }
 
         [JsonProperty("rooms")]
-        public List<ApiRoomPropertiesConfig> Rooms { get; set; } 
+        public List<ApiRoomPropertiesConfig> Rooms { get; set; }
 
 
         public class ApiDevicePropertiesConfig
@@ -442,7 +442,7 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         public EiscApiAdvancedFactory()
         {
-            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "eiscapiadvancedserver", "eiscapiadvancedclient",  "vceiscapiadv", "vceiscapiadvanced" };
+            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "eiscapiadvancedserver", "eiscapiadvancedclient", "vceiscapiadv", "vceiscapiadvanced" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
@@ -457,34 +457,34 @@ namespace PepperDash.Essentials.Core.Bridges
             {
                 case "eiscapiadv":
                 case "eiscapiadvanced":
-                {
-                    eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(controlProperties.IpIdInt,
-                        controlProperties.TcpSshProperties.Address, Global.ControlSystem);
-                    break;
-                }
-                case "eiscapiadvancedserver":
-                {
-                    eisc = new EISCServer(controlProperties.IpIdInt, Global.ControlSystem);
-                    break;
-                }
-                case "eiscapiadvancedclient":
-                {
-                    eisc = new EISCClient(controlProperties.IpIdInt, controlProperties.TcpSshProperties.Address, Global.ControlSystem);
-                    break;
-                }
-                case "vceiscapiadv":
-                case "vceiscapiadvanced":
-                {
-                    if (string.IsNullOrEmpty(controlProperties.RoomId))
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to build VC-4 EISC Client for device {0}. Room ID is missing or empty", dc.Key);
-                        eisc = null;
+                        eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(controlProperties.IpIdInt,
+                            controlProperties.TcpSshProperties.Address, Global.ControlSystem);
                         break;
                     }
-                    eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, controlProperties.RoomId,
-                        Global.ControlSystem);
-                    break;
-                }
+                case "eiscapiadvancedserver":
+                    {
+                        eisc = new EISCServer(controlProperties.IpIdInt, Global.ControlSystem);
+                        break;
+                    }
+                case "eiscapiadvancedclient":
+                    {
+                        eisc = new EISCClient(controlProperties.IpIdInt, controlProperties.TcpSshProperties.Address, Global.ControlSystem);
+                        break;
+                    }
+                case "vceiscapiadv":
+                case "vceiscapiadvanced":
+                    {
+                        if (string.IsNullOrEmpty(controlProperties.RoomId))
+                        {
+                            Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to build VC-4 EISC Client for device {0}. Room ID is missing or empty", dc.Key);
+                            eisc = null;
+                            break;
+                        }
+                        eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, controlProperties.RoomId,
+                            Global.ControlSystem);
+                        break;
+                    }
                 default:
                     eisc = null;
                     break;

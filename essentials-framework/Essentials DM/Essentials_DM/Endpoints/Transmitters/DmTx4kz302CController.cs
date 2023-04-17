@@ -133,9 +133,9 @@ namespace PepperDash.Essentials.DM
             HdmiIn2HdcpCapabilityFeedback = new IntFeedback("HdmiIn2HdcpCapability", () => (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
 
             DisplayPortInHdcpCapabilityFeedback = new IntFeedback("DisplayPortHdcpCapability",
-                () => (int) tx.DisplayPortInput.HdcpCapabilityFeedback);
+                () => (int)tx.DisplayPortInput.HdcpCapabilityFeedback);
 
-            
+
             /*
             HdcpStateFeedback =
                 new IntFeedback(
@@ -146,13 +146,18 @@ namespace PepperDash.Essentials.DM
              */
 
             //yeah this is gross - but it's the quickest way to do this...
+            /*
             HdcpStateFeedback = new IntFeedback(() => {
                 var states = new[] {(int) tx.DisplayPortInput.HdcpCapabilityFeedback, (int) tx.HdmiInputs[1].HdcpCapabilityFeedback, (int) tx.HdmiInputs[2].HdcpCapabilityFeedback};
 
                 return states.Max();
             });
+             */
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
+            // I feel like we have had this as a misnomer for so long, that it really needed to be fixed 
+            // All we were doing was reporting the best of the current statuses - not the actual capability of the device.
+            HdcpStateFeedback = new IntFeedback(() => (int)HdcpSupportCapability);
 
             Hdmi1VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue);
 
@@ -269,41 +274,41 @@ namespace PepperDash.Essentials.DM
         {
             Debug.Console(2, this, "Executing Numeric Switch to input {0}.", input);
 
-                switch (input)
-                {
-                    case 0:
-                        {
-                            ExecuteSwitch(eVst.Auto, null, type);
-                            break;
-                        }
-                    case 1:
-                        {
-                            ExecuteSwitch(HdmiIn1.Selector, null, type);
-                            break;
-                        }
-                    case 2:
-                        {
-                            ExecuteSwitch(HdmiIn2.Selector, null, type);
-                            break;
-                        }
-                    case 3:
-                        {
-                            ExecuteSwitch(DisplayPortIn.Selector, null, type);
-                            break;
-                        }
-                    case 4:
-                        {
-                            ExecuteSwitch(eVst.AllDisabled, null, type);
-                            break;
-                        }
-                    default:
+            switch (input)
+            {
+                case 0:
+                    {
+                        ExecuteSwitch(eVst.Auto, null, type);
+                        break;
+                    }
+                case 1:
+                    {
+                        ExecuteSwitch(HdmiIn1.Selector, null, type);
+                        break;
+                    }
+                case 2:
+                    {
+                        ExecuteSwitch(HdmiIn2.Selector, null, type);
+                        break;
+                    }
+                case 3:
+                    {
+                        ExecuteSwitch(DisplayPortIn.Selector, null, type);
+                        break;
+                    }
+                case 4:
+                    {
+                        ExecuteSwitch(eVst.AllDisabled, null, type);
+                        break;
+                    }
+                default:
                     {
                         Debug.Console(2, this, "Unable to execute numeric switch to input {0}", input);
                         break;
                     }
 
-                }
-            
+            }
+
 
         }
 
@@ -424,7 +429,7 @@ namespace PepperDash.Essentials.DM
                     AnyVideoInput.VideoStatus.VideoResolutionFeedback.FireUpdate();
                     break;
             }
-        }       
+        }
 
         #region IIROutputPorts Members
         public CrestronCollection<IROutputPort> IROutputPorts { get { return Tx.IROutputPorts; } }
