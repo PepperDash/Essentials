@@ -175,8 +175,8 @@ namespace PepperDash.Essentials.Core
         /// <param name="filter"></param>
         public static void GetDeviceFactoryTypes(string filter)
         {
-            var types = !string.IsNullOrEmpty(filter) 
-                ? FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value) 
+            var types = !string.IsNullOrEmpty(filter)
+                ? FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value)
                 : FactoryMethods;
 
             CrestronConsole.ConsoleCommandResponse("Device Types:");
@@ -186,12 +186,12 @@ namespace PepperDash.Essentials.Core
                 var description = type.Value.Description;
                 var cType = "Not Specified by Plugin";
 
-                if(type.Value.CType != null)
+                if (type.Value.CType != null)
                 {
                     cType = type.Value.CType.FullName;
                 }
 
-                CrestronConsole.ConsoleCommandResponse( 
+                CrestronConsole.ConsoleCommandResponse(
                     @"Type: '{0}' 
                     CType: '{1}' 
                     Description: {2}", type.Key, cType, description);
