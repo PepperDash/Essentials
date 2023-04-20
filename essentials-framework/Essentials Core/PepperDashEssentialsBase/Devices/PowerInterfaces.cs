@@ -49,7 +49,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Interface for any device that is able to control its power, has a configurable reboot time, and has batteries that can be monitored
     /// </summary>
-    public interface IHasPowerCycleWithBatteries : IHasPowerCycle
+    public interface IHasPowerCycleWithBatteries : IHasPowerCycle, IHasBatteryStats
     {
         
     }
