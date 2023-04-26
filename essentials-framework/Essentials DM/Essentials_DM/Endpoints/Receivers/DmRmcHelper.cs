@@ -436,9 +436,9 @@ namespace PepperDash.Essentials.DM
                 }
                 return rx;
             }
-            else if (parentDev is DmChassisController)
+            else if (parentDev is IDmSwitchWithEndpointOnlineFeedback)
             {
-                var controller = parentDev as DmChassisController;
+                var controller = parentDev as IDmSwitchWithEndpointOnlineFeedback;
                 var chassis = controller.Chassis;
                 var num = props.ParentOutputNumber;
                 Debug.Console(1, "Creating DM Chassis device '{0}'. Output number '{1}'.", key, num);
