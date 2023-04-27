@@ -16,10 +16,17 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM {
-    public interface IDmSwitch {
+    public interface IDmSwitch
+	{
         Switch Chassis { get; }
 
         Dictionary<uint, string> TxDictionary { get; }
         Dictionary<uint, string> RxDictionary { get; }
     }
+
+	public interface IDmSwitchWithEndpointOnlineFeedback : IDmSwitch
+	{
+		Dictionary<uint, BoolFeedback> InputEndpointOnlineFeedbacks { get; }
+		Dictionary<uint, BoolFeedback> OutputEndpointOnlineFeedbacks { get; }
+	}
 }
