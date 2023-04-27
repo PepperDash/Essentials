@@ -127,10 +127,10 @@ namespace PepperDash.Essentials.DM
             BasicDmTxControllerBase tx;
             bool useChassisForOfflineFeedback = false;
 
-            if (parentDev is DmChassisController)
+            if (parentDev is IDmSwitchWithEndpointOnlineFeedback)
             {
                 // Get the Crestron chassis and link stuff up
-                var switchDev = (parentDev as DmChassisController);
+                var switchDev = (parentDev as IDmSwitchWithEndpointOnlineFeedback);
                 var chassis = switchDev.Chassis;
 
                 //Check that the input is within range of this chassis' possible inputs
@@ -179,6 +179,7 @@ namespace PepperDash.Essentials.DM
                     return null;
                 }
             }
+
             if (parentDev is DmpsRoutingController)
             {
                 // Get the DMPS chassis and link stuff up
