@@ -8,7 +8,7 @@
     <RepositoryUrl>https://github.com/PepperDash/Essentials</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Crestron; 4series</PackageTags>
-    <PackageOutputPath>../../../packages</PackageOutputPath>
+    <PackageOutputPath>../../output</PackageOutputPath>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
