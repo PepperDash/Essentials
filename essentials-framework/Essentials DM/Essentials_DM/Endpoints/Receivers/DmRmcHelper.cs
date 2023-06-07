@@ -153,6 +153,7 @@ namespace PepperDash.Essentials.DM
                 trilist.SetSigTrueAction(joinMap.VideoMuteOn.JoinNumber, () => dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteOn());
                 trilist.SetSigTrueAction(joinMap.VideoMuteOff.JoinNumber, () => dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteOff());
                 dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteIsOn.LinkInputSig(trilist.BooleanInput[joinMap.VideoMuteOn.JoinNumber]);
+                dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteIsOn.LinkComplementInputSig(trilist.BooleanInput[joinMap.VideoMuteOff.JoinNumber]);
             }
 
             var routingWithFeedback = routing as IRmcRouting;
