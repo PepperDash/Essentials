@@ -231,5 +231,13 @@ namespace PepperDash.Essentials.Core.Routing
         /// UsbCOut3
         /// </summary>
         public const string UsbCOut3 = "usbCOut3";
+        /// <summary>
+        /// HdBaseTIn
+        /// </summary>
+        public const string HdBaseTIn = "hdBaseTIn";
+        /// <summary>
+        /// HdBaseTOut
+        /// </summary>
+        public const string HdBaseTOut = "hdBaseTOut";
     }
 }
