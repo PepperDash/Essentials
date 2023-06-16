@@ -199,5 +199,37 @@ namespace PepperDash.Essentials.Core.Routing
         /// MediaPlayer
         /// </summary>
         public const string MediaPlayer = "mediaPlayer";
-	}
+        /// <summary>
+        /// UsbCIn
+        /// </summary>
+        public const string UsbCIn = "usbCIn";
+        /// <summary>
+        /// UsbCIn1
+        /// </summary>
+        public const string UsbCIn1 = "usbCIn1";
+        /// <summary>
+        /// UsbCIn2
+        /// </summary>
+        public const string UsbCIn2 = "usbCIn2";
+        /// <summary>
+        /// UsbCIn3
+        /// </summary>
+        public const string UsbCIn3 = "usbCIn3";
+        /// <summary>
+        /// UsbCOut
+        /// </summary>
+        public const string UsbCOut = "usbCOut";
+        /// <summary>
+        /// UsbCOut1
+        /// </summary>
+        public const string UsbCOut1 = "usbCOut1";
+        /// <summary>
+        /// UsbCOut2
+        /// </summary>
+        public const string UsbCOut2 = "usbCOut2";
+        /// <summary>
+        /// UsbCOut3
+        /// </summary>
+        public const string UsbCOut3 = "usbCOut3";
+    }
 }
