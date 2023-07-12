@@ -129,7 +129,7 @@ namespace PepperDash.Essentials.DM.AirMedia
             else
                 AirMedia.DisplayControl.DisableAutomaticRouting();
 
-            return true;
+            return base.CustomActivate();
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
