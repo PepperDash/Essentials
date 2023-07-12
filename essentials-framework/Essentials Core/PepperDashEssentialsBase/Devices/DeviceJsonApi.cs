@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Reflection;
 using Newtonsoft.Json;
@@ -38,6 +39,53 @@ namespace PepperDash.Essentials.Core
 		    }
 		    
 		}
+        private const string ParamsPattern = @"(?<=\[).*?(?=])";
+        private const string DevKeySpacePattern = @"(?<=\().*?(?=\))";
+        private const string MethodStringPattern = @"(?<=\)\s).*?(?=\s)";
+        private static readonly Regex ParamsRegex = new Regex(ParamsPattern);
+        private static readonly Regex DevKeySpaceRegex = new Regex(DevKeySpacePattern);
+        private static readonly Regex MethodStringRegex = new Regex(MethodStringPattern);
+
+
+
+        public static void BuildJsonForDeviceAction(string cmd)
+	    {
+	        if (String.IsNullOrEmpty(cmd))
+	        {
+	            CrestronConsole.ConsoleCommandResponse(
+	                "Please provide some data matching the format '<deviceKey> <methodName> [parameters]'  The parameters support strings, numbers, and booleans, and are optional.  If your device key has spaces in it, wrap it in parenthesis");
+	        }
+	        try
+	        {
+	            var paramsMatch = ParamsRegex.Match(cmd);
+	            var devKeySpaceMatch = DevKeySpaceRegex.Match(cmd);
+	            var methodStringMatch = MethodStringRegex.Match(cmd);
+                var deviceString = devKeySpaceMatch.Value ?? string.Empty;
+                var methodString = methodStringMatch.Value ?? string.Empty;
+
+	            var cmdParts = cmd.Split(' ');
+	            if (cmdParts.Length <= 1)
+	            {
+	                CrestronConsole.ConsoleCommandResponse("Malformed 'deveasy' command - not enough arguments");
+	                return;
+	            }
+	            deviceString = String.IsNullOrEmpty(deviceString) ? cmdParts[0] : deviceString;
+	            methodString = String.IsNullOrEmpty(methodString) ? cmdParts[1] : methodString;
+	            var action = new DeviceActionWrapper()
+	            {
+	                DeviceKey = deviceString,
+	                MethodName = methodString,
+                    Params = (paramsMatch != null) ? new object[] { paramsMatch.Value } : new object[] { }
+	            };
+
+                DoDeviceAction(action);
+	        }
+	        catch (Exception ex)
+	        {
+                CrestronConsole.ConsoleCommandResponse("Malformed 'deveasy' command - consult command help.");
+	        }
+	    }
+
 
 
 		/// <summary>

@@ -39,8 +39,13 @@ namespace PepperDash.Essentials.Core
 				ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(ListDevices, "devlist", "Lists current managed devices", 
 				ConsoleAccessLevelEnum.AccessOperator);
+		    CrestronConsole.AddNewConsoleCommand(DeviceJsonApi.BuildJsonForDeviceAction, "deveasy",
+		        "Easier way to build devjson commands",
+		        ConsoleAccessLevelEnum.AccessOperator);
+
 			CrestronConsole.AddNewConsoleCommand(DeviceJsonApi.DoDeviceActionWithJson, "devjson", "", 
 				ConsoleAccessLevelEnum.AccessOperator);
+
 			CrestronConsole.AddNewConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetProperties(s)), "devprops", "", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetMethods(s)), "devmethods", "", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetApiMethods(s)), "apimethods", "", ConsoleAccessLevelEnum.AccessOperator);
