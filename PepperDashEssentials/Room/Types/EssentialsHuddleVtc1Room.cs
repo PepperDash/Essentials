@@ -293,6 +293,11 @@ namespace PepperDash.Essentials
             // Stop listining to this event when room deactivated
             VideoCodec.IsReadyChange -= VideoCodec_IsReadyChange;
 
+            // Clear occupancy 
+            RoomOccupancy = null;
+
+            Debug.Console(0, this, "Room '{0}' Deactivated", Name);
+
             return base.Deactivate();
         }
 
@@ -406,7 +411,8 @@ namespace PepperDash.Essentials
             {
                 Debug.Console(0, this, "Error Activiating Room: {0}", e);
             }
-			
+
+            Debug.Console(0, this, "Room '{0}' Activated", Name);
             return base.CustomActivate();
         }
 
