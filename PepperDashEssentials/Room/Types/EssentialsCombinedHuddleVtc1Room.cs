@@ -375,7 +375,7 @@ namespace PepperDash.Essentials
                 SetSourceListKey(Key);
             }
 
-            SetCodecExternalSources();
+            SetUpVideoCodec();
         }
 
         protected override void CustomSetConfig(DeviceConfig config)
@@ -923,6 +923,8 @@ namespace PepperDash.Essentials
                         videoCodecWithExternalSwitching.SetExternalSourceState(kvp.Key, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceMode.Ready);
                     }
                 }
+
+                Debug.Console(1, this, "Successfully set up codec external sources for room: {0}", Name);
             }
             catch (Exception e)
             {
