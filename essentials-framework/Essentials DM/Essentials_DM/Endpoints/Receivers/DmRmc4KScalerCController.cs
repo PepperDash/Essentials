@@ -7,6 +7,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash_Essentials_DM;
+using System.Collections.Generic;
 
 namespace PepperDash.Essentials.DM
 {
@@ -16,7 +17,7 @@ namespace PepperDash.Essentials.DM
     /// </summary>
     [Description("Wrapper Class for DM-RMC-4K-SCALER-C")]
     public class DmRmc4kScalerCController : DmRmcControllerBase, IRoutingInputsOutputs, IBasicVolumeWithFeedback,
-        IIROutputPorts, IComPorts, ICec, IRelayPorts, IHasDmInHdcp
+        IIROutputPorts, IComPorts, ICec, IRelayPorts, IHasDmInHdcp, IBasicVideoMuteWithFeedback
     {
         private readonly DmRmc4kScalerC _rmc;
 
@@ -68,6 +69,7 @@ namespace PepperDash.Essentials.DM
 
             AddToFeedbackList(DmInHdcpStateFeedback);
 
+            VideoMuteIsOn = new BoolFeedback("HdmiOutputVideoMuteIsOn", () => _rmc.HdmiOutput.BlankEnabledFeedback.BoolValue);
 
             _rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
             _rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
@@ -82,6 +84,10 @@ namespace PepperDash.Essentials.DM
                 args.EventId == EndpointOutputStreamEventIds.FramesPerSecondFeedbackEventId)
             {
                 VideoOutputResolutionFeedback.FireUpdate();
+            }
+            else if (args.EventId == EndpointOutputStreamEventIds.BlankEnabledFeedbackEventId)
+            {
+                VideoMuteIsOn.FireUpdate();
             }
         }
 
@@ -216,5 +222,40 @@ namespace PepperDash.Essentials.DM
             _rmc.DmInput.HdcpCapability = hdcpState;
         }
 
+
+        #region IBasicVideoMuteWithFeedback Members
+
+        public BoolFeedback VideoMuteIsOn
+        {
+            get;
+            private set;
+        }
+
+        public void VideoMuteOn()
+        {
+            Debug.Console(2, this, "Video Mute On");
+            _rmc.HdmiOutput.BlankEnabled();          
+        }
+
+        public void VideoMuteOff()
+        {
+            Debug.Console(2, this, "Video Mute Off");
+            _rmc.HdmiOutput.BlankDisabled();
+        }
+
+        #endregion
+
+        #region IBasicVideoMute Members
+
+        public void VideoMuteToggle()
+        {
+            Debug.Console(2, this, "Video Mute Toggle");
+            if (_rmc.HdmiOutput.BlankEnabledFeedback.BoolValue == true) 
+                VideoMuteOff();
+            else 
+                VideoMuteOn();
+        }
+
+        #endregion
     }
 }
