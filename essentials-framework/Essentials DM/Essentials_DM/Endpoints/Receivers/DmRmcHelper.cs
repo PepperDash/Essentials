@@ -61,6 +61,11 @@ namespace PepperDash.Essentials.DM
                 Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
+            LinkDmRmcToApi(rmc, trilist, joinMap);
+        }
+
+        protected void LinkDmRmcToApi(DmRmcControllerBase rmc, BasicTriList trilist, DmRmcControllerJoinMap joinMap)
+        {
             Debug.Console(1, rmc, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
@@ -139,6 +144,18 @@ namespace PepperDash.Essentials.DM
 
             trilist.UShortInput[joinMap.HdcpInputPortCount.JoinNumber].UShortValue = (ushort)routing.InputPorts.Count;
 
+            var dmRmcScalerCBasicVideoMuteWithFeedback = rmc as IBasicVideoMuteWithFeedback;
+
+            if (dmRmcScalerCBasicVideoMuteWithFeedback != null)
+            {
+                Debug.Console(1, this, "Device is IBasicVideoMuteWithFeedback, linking video mute");
+                trilist.SetSigTrueAction(joinMap.VideoMuteToggle.JoinNumber, () => dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteToggle());
+                trilist.SetSigTrueAction(joinMap.VideoMuteOn.JoinNumber, () => dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteOn());
+                trilist.SetSigTrueAction(joinMap.VideoMuteOff.JoinNumber, () => dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteOff());
+                dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteIsOn.LinkInputSig(trilist.BooleanInput[joinMap.VideoMuteOn.JoinNumber]);
+                dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteIsOn.LinkComplementInputSig(trilist.BooleanInput[joinMap.VideoMuteOff.JoinNumber]);
+            }
+
             var routingWithFeedback = routing as IRmcRouting;
             if (routingWithFeedback == null) return;
 
@@ -149,6 +166,7 @@ namespace PepperDash.Essentials.DM
 
             trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber,
                 a => routingWithFeedback.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
+
         }
 
         #region Implementation of IDeviceInfoProvider

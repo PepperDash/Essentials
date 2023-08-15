@@ -226,7 +226,182 @@ namespace PepperDash.Essentials
             }
         }
 
-        void Initialize()
+        public override void Initialize()
+        {
+            try
+            {
+                //if (DefaultAudioDevice is IBasicVolumeControls)
+                //    DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
+                //else if (DefaultAudioDevice is IHasVolumeDevice)
+                //    DefaultVolumeControls = (DefaultAudioDevice as IHasVolumeDevice).VolumeDevice;
+                //CurrentVolumeControls = DefaultVolumeControls;
+
+
+                //// Combines call feedback from both codecs if available
+                //InCallFeedback = new BoolFeedback(() =>
+                //{
+                //    bool inAudioCall = false;
+                //    bool inVideoCall = false;
+
+                //    if (AudioCodec != null)
+                //        inAudioCall = AudioCodec.IsInCall;
+
+                //    if (VideoCodec != null)
+                //        inVideoCall = VideoCodec.IsInCall;
+
+                //    if (inAudioCall || inVideoCall)
+                //        return true;
+                //    else
+                //        return false;
+                //});
+
+                //SetupDisplays();
+
+                //// Get Microphone Privacy object, if any  MUST HAPPEN AFTER setting InCallFeedback
+                //this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
+
+                //Debug.Console(2, this, "Microphone Privacy Config evaluated.");
+
+                //// Get emergency object, if any
+                //this.Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
+
+                //Debug.Console(2, this, "Emergency Config evaluated.");
+
+
+                //VideoCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+                //VideoCodec.IsReadyChange += (o, a) => { this.SetCodecExternalSources(); SetCodecBranding(); };
+
+                //if (AudioCodec != null)
+                //    AudioCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+
+                //IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingContentIsOnFeedback.BoolValue);
+                //VideoCodec.SharingContentIsOnFeedback.OutputChange += (o, a) => this.IsSharingFeedback.FireUpdate();
+
+                //// link privacy to VC (for now?)
+                //PrivacyModeIsOnFeedback = new BoolFeedback(() => VideoCodec.PrivacyModeIsOnFeedback.BoolValue);
+                //VideoCodec.PrivacyModeIsOnFeedback.OutputChange += (o, a) => this.PrivacyModeIsOnFeedback.FireUpdate();
+
+                //CallTypeFeedback = new IntFeedback(() => 0);
+
+                SetSourceListKey();
+
+                //EnablePowerOnToLastSource = true;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, this, "Error Initializing Room: {0}", e);
+            }
+        }
+
+        private void SetupDisplays()
+        {
+            //DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+
+            var destinationList = ConfigReader.ConfigObject.DestinationLists[PropertiesConfig.DestinationListKey];
+
+            Displays.Clear();
+
+            foreach (var destination in destinationList)
+            {
+                var dest = destination.Value.SinkDevice as IRoutingSinkWithSwitching;
+
+                if (dest != null)
+                {
+                    Displays.Add(dest);
+                }
+
+                var display = dest as DisplayBase;
+                if (display != null)
+                {
+                    // Link power, warming, cooling to display
+                    var dispTwoWay = display as IHasPowerControlWithFeedback;
+                    if (dispTwoWay != null)
+                    {
+                        dispTwoWay.PowerIsOnFeedback.OutputChange -= PowerIsOnFeedback_OutputChange;
+                        dispTwoWay.PowerIsOnFeedback.OutputChange += PowerIsOnFeedback_OutputChange;
+
+                        if (dispTwoWay.PowerIsOnFeedback.BoolValue)
+                        {
+                            SetDefaultLevels();
+                        }
+                    }
+
+                    display.IsWarmingUpFeedback.OutputChange -= IsWarmingUpFeedback_OutputChange;
+                    display.IsWarmingUpFeedback.OutputChange += IsWarmingUpFeedback_OutputChange;
+
+                    display.IsCoolingDownFeedback.OutputChange -= IsCoolingDownFeedback_OutputChange;
+                    display.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
+
+                }
+            }
+        }
+
+        void IsCoolingDownFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            IsCoolingDownFeedback.FireUpdate();
+        }
+
+        void IsWarmingUpFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            IsWarmingUpFeedback.FireUpdate();
+            if (!IsWarmingUpFeedback.BoolValue)
+                (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
+        }
+
+        void PowerIsOnFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            var dispTwoWay = sender as IHasPowerControlWithFeedback;
+            
+            if (dispTwoWay != null && dispTwoWay.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
+            {
+                //if (!dispTwoWay.PowerIsOnFeedback.BoolValue)
+                //    CurrentSourceInfo = null;
+                OnFeedback.FireUpdate();
+            }
+        }
+
+
+
+
+
+        private void SetSourceListKey()
+        {
+            if (!string.IsNullOrEmpty(PropertiesConfig.SourceListKey))
+            {
+                SetSourceListKey(PropertiesConfig.SourceListKey);
+            }
+            else
+            {
+                SetSourceListKey(Key);
+            }
+
+            SetUpVideoCodec();
+        }
+
+        protected override void CustomSetConfig(DeviceConfig config)
+        {
+            var newPropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>(config.Properties.ToString());
+
+            if (newPropertiesConfig != null)
+                PropertiesConfig = newPropertiesConfig;
+
+            ConfigWriter.UpdateRoomConfig(config);
+        }
+
+        public override bool Deactivate()
+        {
+            // Stop listining to this event when room deactivated
+            VideoCodec.IsReadyChange -= VideoCodec_IsReadyChange;
+
+            // Clear occupancy 
+            RoomOccupancy = null;
+
+            Debug.Console(0, this, "Room '{0}' Deactivated", Name);
+
+            return base.Deactivate();
+        }
+
+        public override bool CustomActivate()
         {
             try
             {
@@ -267,126 +442,94 @@ namespace PepperDash.Essentials
 
                 Debug.Console(2, this, "Emergency Config evaluated.");
 
-
-                VideoCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
-                VideoCodec.IsReadyChange += (o, a) => { this.SetCodecExternalSources(); SetCodecBranding(); };
-
                 if (AudioCodec != null)
-                    AudioCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+                {
+                    AudioCodec.CallStatusChange -= AudioCodec_CallStatusChange;
+                    AudioCodec.CallStatusChange += AudioCodec_CallStatusChange;
+                }
+
+                VideoCodec.CallStatusChange -= VideoCodec_CallStatusChange;
+                VideoCodec.CallStatusChange += VideoCodec_CallStatusChange;
+
+                VideoCodec.IsReadyChange -= VideoCodec_IsReadyChange;
+                VideoCodec.IsReadyChange += VideoCodec_IsReadyChange;
+
+                VideoCodec.SharingContentIsOnFeedback.OutputChange -= SharingContentIsOnFeedback_OutputChange;
+                VideoCodec.SharingContentIsOnFeedback.OutputChange += SharingContentIsOnFeedback_OutputChange;
+
 
                 IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingContentIsOnFeedback.BoolValue);
-                VideoCodec.SharingContentIsOnFeedback.OutputChange += (o, a) => this.IsSharingFeedback.FireUpdate();
 
                 // link privacy to VC (for now?)
                 PrivacyModeIsOnFeedback = new BoolFeedback(() => VideoCodec.PrivacyModeIsOnFeedback.BoolValue);
-                VideoCodec.PrivacyModeIsOnFeedback.OutputChange += (o, a) => this.PrivacyModeIsOnFeedback.FireUpdate();
+
+                VideoCodec.PrivacyModeIsOnFeedback.OutputChange -= PrivacyModeIsOnFeedback_OutputChange;
+                VideoCodec.PrivacyModeIsOnFeedback.OutputChange += PrivacyModeIsOnFeedback_OutputChange;
 
                 CallTypeFeedback = new IntFeedback(() => 0);
 
                 SetSourceListKey();
 
                 EnablePowerOnToLastSource = true;
+
+
+                // Add Occupancy object from config
+                if (PropertiesConfig.Occupancy != null)
+                {
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Setting Occupancy Provider for room");
+                    this.SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
+                        IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
+                }
+
+                this.LogoUrlLightBkgnd = PropertiesConfig.LogoLight.GetLogoUrlLight();
+                this.LogoUrlDarkBkgnd = PropertiesConfig.LogoDark.GetLogoUrlDark();
+
+                this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
+                this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
+
             }
             catch (Exception e)
             {
-                Debug.Console(0, this, "Error Initializing Room: {0}", e);
-            }
-        }
-
-        private void SetupDisplays()
-        {
-            //DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
-
-            var destinationList = ConfigReader.ConfigObject.DestinationLists[PropertiesConfig.DestinationListKey];
-
-            foreach (var destination in destinationList)
-            {
-                var dest = destination.Value.SinkDevice as IRoutingSinkWithSwitching;
-
-                if (dest != null)
-                {
-                    Displays.Add(dest);
-                }
-
-                var display = dest as DisplayBase;
-                if (display != null)
-                {
-                    // Link power, warming, cooling to display
-                    var dispTwoWay = display as IHasPowerControlWithFeedback;
-                    if (dispTwoWay != null)
-                    {
-                        dispTwoWay.PowerIsOnFeedback.OutputChange += (o, a) =>
-                        {
-                            if (dispTwoWay.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
-                            {
-                                //if (!dispTwoWay.PowerIsOnFeedback.BoolValue)
-                                //    CurrentSourceInfo = null;
-                                OnFeedback.FireUpdate();
-                            }
-                            if (dispTwoWay.PowerIsOnFeedback.BoolValue)
-                            {
-                                SetDefaultLevels();
-                            }
-                        };
-                    }
-
-                    display.IsWarmingUpFeedback.OutputChange += (o, a) =>
-                    {
-                        IsWarmingUpFeedback.FireUpdate();
-                        if (!IsWarmingUpFeedback.BoolValue)
-                            (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
-                    };
-                    display.IsCoolingDownFeedback.OutputChange += (o, a) =>
-                    {
-                        IsCoolingDownFeedback.FireUpdate();
-                    };
-
-                }
-            }
-        }
-
-        private void SetSourceListKey()
-        {
-            if (!string.IsNullOrEmpty(PropertiesConfig.SourceListKey))
-            {
-                SetSourceListKey(PropertiesConfig.SourceListKey);
-            }
-            else
-            {
-                SetSourceListKey(Key);
+                Debug.Console(0, this, "Error Activiating Room: {0}", e);
             }
 
-            SetCodecExternalSources();
-        }
 
-        protected override void CustomSetConfig(DeviceConfig config)
-        {
-            var newPropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>(config.Properties.ToString());
-
-            if (newPropertiesConfig != null)
-                PropertiesConfig = newPropertiesConfig;
-
-            ConfigWriter.UpdateRoomConfig(config);
-        }
-
-        public override bool CustomActivate()
-        {
-            // Add Occupancy object from config
-            if (PropertiesConfig.Occupancy != null)
-            {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Setting Occupancy Provider for room");
-                this.SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
-                    IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
-            }
-
-            this.LogoUrlLightBkgnd = PropertiesConfig.LogoLight.GetLogoUrlLight();
-            this.LogoUrlDarkBkgnd = PropertiesConfig.LogoDark.GetLogoUrlDark();
-
-            this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
-            this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
-
+            Debug.Console(0, this, "Room '{0}' Activated", Name);
             return base.CustomActivate();
         }
+
+        void AudioCodec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
+        {
+            InCallFeedback.FireUpdate();
+        }
+
+        void PrivacyModeIsOnFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            PrivacyModeIsOnFeedback.FireUpdate();
+        }
+
+        void VideoCodec_IsReadyChange(object sender, EventArgs e)
+        {
+            SetUpVideoCodec();
+        }
+
+        void SetUpVideoCodec()
+        {
+            SetCodecExternalSources();
+            SetCodecBranding();
+        }
+
+        void VideoCodec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
+        {
+            InCallFeedback.FireUpdate();
+        }
+
+        void SharingContentIsOnFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            IsSharingFeedback.FireUpdate();
+        }
+
+
 
         /// <summary>
         /// 
@@ -780,6 +923,8 @@ namespace PepperDash.Essentials
                         videoCodecWithExternalSwitching.SetExternalSourceState(kvp.Key, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceMode.Ready);
                     }
                 }
+
+                Debug.Console(1, this, "Successfully set up codec external sources for room: {0}", Name);
             }
             catch (Exception e)
             {

@@ -85,18 +85,32 @@ namespace PepperDash.Essentials.Core
 	    {
 	        if (_partitionSensor.IsOnline == false) return;
 
-	        Debug.Console(1, this, "Attempting to apply settings to sensor from config");            
+            // Default to enable
+            _partitionSensor.Enable.BoolValue = true;
 
-	        if (PropertiesConfig.Sensitivity != null)
-	        {
-	            Debug.Console(1, this, "Sensitivity found, attempting to set value '{0}' from config",
-	                PropertiesConfig.Sensitivity);
-                _partitionSensor.Sensitivity.UShortValue = (ushort) PropertiesConfig.Sensitivity;
-	        }	        
-	        else
-	        {
-	            Debug.Console(1, this, "Sensitivity null, no value specified in config");
-	        }
+	        Debug.Console(1, this, "Attempting to apply settings to sensor from config");
+
+            if (PropertiesConfig.Sensitivity != null)
+            {
+                Debug.Console(1, this, "Sensitivity found, attempting to set value '{0}' from config",
+                    PropertiesConfig.Sensitivity);
+                _partitionSensor.Sensitivity.UShortValue = (ushort)PropertiesConfig.Sensitivity;
+            }
+            else
+            {
+                Debug.Console(1, this, "Sensitivity null, no value specified in config");
+            }
+
+            if (PropertiesConfig.Enable != null)
+            {
+                Debug.Console(1, this, "Enable found, attempting to set value '{0}' from config",
+                    PropertiesConfig.Enable);
+                _partitionSensor.Enable.BoolValue = (bool)PropertiesConfig.Enable;
+            }
+            else
+            {
+                Debug.Console(1, this, "Enable null, no value specified in config");
+            }
 
 	    }
 
