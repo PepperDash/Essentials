@@ -356,15 +356,17 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var customJoinData in joinData)
             {
-                var join = Joins[customJoinData.Key];
+                JoinDataComplete join;
+
+                if (!Joins.TryGetValue(customJoinData.Key, out join))
+                {
+                    Debug.Console(2, "No matching key found in join map for: '{0}'", customJoinData.Key);
+                    continue;
+                }
 
                 if (join != null)
                 {
                     join.SetCustomJoinData(customJoinData.Value);
-                }
-                else
-                {
-                    Debug.Console(2, "No matching key found in join map for: '{0}'", customJoinData.Key);
                 }
             }
 
