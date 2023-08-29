@@ -348,6 +348,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     if (b.DialInfo.ConnectMode.Value.ToLower() == "obtp" || b.DialInfo.ConnectMode.Value.ToLower() == "manual")
                         meeting.IsOneButtonToPushMeeting = true;
 
+				meeting.Dialable = b.DialInfo.Calls.Call.Count > 0;
+
                 if (b.DialInfo.Calls.Call != null)
                 {
                     foreach (Call c in b.DialInfo.Calls.Call)
