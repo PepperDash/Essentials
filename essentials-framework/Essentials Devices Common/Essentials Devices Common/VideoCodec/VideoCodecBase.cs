@@ -940,7 +940,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		        //digitals
 		        tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, meeting.Joinable);
-		        tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, meeting.Id != "0");
+		        tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, meeting.Dialable);
 
 		        //serials
 		        tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, meeting.Organizer);
