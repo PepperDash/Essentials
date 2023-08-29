@@ -200,6 +200,7 @@
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
     <Compile Include="Crestron IO\StatusSign\StatusSignController.cs" />
+    <Compile Include="Device Info\NetworkDeviceHelpers.cs" />
     <Compile Include="Devices\PowerInterfaces.cs" />
     <Compile Include="Web\RequestHandlers\AppDebugRequestHandler.cs" />
     <Compile Include="Web\RequestHandlers\GetFeedbacksForDeviceRequestHandler.cs" />
