@@ -52,7 +52,7 @@ namespace PepperDash_Essentials_DM.Chassis
 		/// <param name="chassis">HdPs401 device instance</param>
 		/// <param name="props"></param>
 		public HdPsXxxController(string key, string name, HdPsXxx chassis, HdPsXxxPropertiesConfig props)
-			: base(key, name)
+			: base(key, name, chassis)
 		{
 			_chassis = chassis;
 			Name = name;
@@ -584,7 +584,7 @@ namespace PepperDash_Essentials_DM.Chassis
 		{
 			public HdSp401ControllerFactory()
 			{
-				TypeNames = new List<string>() { "hdsp401", "hdsp402", "hdsp621", "hdsp622" };
+				TypeNames = new List<string>() { "hdps401", "hdps402", "hdps621", "hdps622" };
 			}
 			public override EssentialsDevice BuildDevice(DeviceConfig dc)
 			{
@@ -610,15 +610,15 @@ namespace PepperDash_Essentials_DM.Chassis
 						{
 							return new HdPsXxxController(key, name, new HdPs401(ipid, Global.ControlSystem), props);
 						}
-					case ("hdsp402"):
+					case ("hdps402"):
 						{
 							return new HdPsXxxController(key, name, new HdPs402(ipid, Global.ControlSystem), props);
 						}
-					case ("hdsp621"):
+					case ("hdps621"):
 						{
 							return new HdPsXxxController(key, name, new HdPs621(ipid, Global.ControlSystem), props);
 						}
-					case ("hdsp622"):
+					case ("hdps622"):
 						{
 							return new HdPsXxxController(key, name, new HdPs622(ipid, Global.ControlSystem), props);
 						}
