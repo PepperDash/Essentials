@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using Crestron.SimplSharpPro;
-
+using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Touchpanels
 {
@@ -16,82 +12,147 @@ namespace PepperDash.Essentials.Core.Touchpanels
     /// </summary>
     public class Mpc3TouchpanelController : Device
     {
-        MPC3Basic _Touchpanel;
+	    readonly MPC3Basic _touchpanel;
 
-        Dictionary<string, KeypadButton> _Buttons;
+	    readonly Dictionary<string, KeypadButton> _buttons;
 
         public Mpc3TouchpanelController(string key, string name, CrestronControlSystem processor, Dictionary<string, KeypadButton> buttons)
             : base(key, name)
         {
-            _Touchpanel = processor.ControllerTouchScreenSlotDevice as MPC3Basic;
-            _Buttons = buttons;
+            _touchpanel = processor.ControllerTouchScreenSlotDevice as MPC3Basic;
+	        if (_touchpanel == null)
+	        {
+				Debug.Console(1, this, "Failed to construct {0}, check configuration", key);
+		        return;
+	        }
+			
+			_touchpanel.ButtonStateChange += _touchpanel_ButtonStateChange;
+			_buttons = buttons;
 
-            _Touchpanel.ButtonStateChange += new Crestron.SimplSharpPro.DeviceSupport.ButtonEventHandler(_Touchpanel_ButtonStateChange);
+	        AddPostActivationAction(() =>
+	        {
+		        // Link up the button feedbacks to the specified BoolFeedbacks
+		        foreach (var button in _buttons)
+		        {
+					var buttonKey = button.Key.ToLower();
+					var buttonConfig = button.Value;
+					if (buttonConfig == null)
+			        {
+						Debug.Console(1, this, "Unable to get button config for {0}-{1}", Key, button.Key);
+						continue;
+			        }
 
-            AddPostActivationAction(() =>
-                {
-                    // Link up the button feedbacks to the specified BoolFeedbacks
-                    foreach (var button in _Buttons)
-                    {
-                        var feedbackConfig = button.Value.Feedback;
-                        var device = DeviceManager.GetDeviceForKey(feedbackConfig.DeviceKey) as Device;
-                        if (device != null)
-                        {
-                            var bKey = button.Key.ToLower();
+					int buttonNumber;
+					if (TryParseInt(buttonKey, out buttonNumber))
+					{
+						Debug.Console(0, this, "buttonFeedback: tryIntParse successful, buttonNumber = {0}", buttonNumber);
+						_touchpanel.EnableNumericalButton((uint)buttonNumber);						
+					}
+					else
+					{
+						Debug.Console(0, this, "buttonFeedback: tryIntParse failed, buttonKey = {0}", buttonKey);
+					}
 
-                            var feedback = device.GetFeedbackProperty(feedbackConfig.FeedbackName);
+			        //var buttonEventTypes = buttonConfig.EventTypes;
 
-                            var bFeedback = feedback as BoolFeedback;
-                            var iFeedback = feedback as IntFeedback;
-                            if (bFeedback != null)
-                            {
+			        var buttonFeedback = buttonConfig.Feedback;
+			        if (buttonFeedback == null)
+			        {
+				        Debug.Console(1, this, "Button '{0}' feedback not configured, feedback will not be implemented", buttonKey);
+				        continue;
+			        }
+			        
+					var device = DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) as Device;
+			        if (device == null)
+			        {
+				        Debug.Console(1, this, "Unable to get device with key {0}, feedback will not be implemented",
+					        buttonFeedback.DeviceKey);
+						continue;				       
+			        }
 
-                                if (bKey == "power")
-                                {
-                                    bFeedback.LinkCrestronFeedback(_Touchpanel.FeedbackPower);
-                                    continue;
-                                }
-                                else if (bKey == "mute")
-                                {
-                                    bFeedback.LinkCrestronFeedback(_Touchpanel.FeedbackMute);
-                                    continue;
-                                }
+					var deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
+					Debug.Console(0, this, "deviceFeedback.GetType().Name: {0}", deviceFeedback.GetType().Name);
+					//switch (feedback.GetType().Name.ToLower())
+					//{
+					//    case("boolfeedback"):
+					//    {
 
-                                // Link to the Crestron Feedback corresponding to the button number
-                                bFeedback.LinkCrestronFeedback(_Touchpanel.Feedbacks[UInt16.Parse(button.Key)]);
-                            }
-                            else if (iFeedback != null)
-                            {
-                                if (bKey == "volumefeedback")
-                                {
-                                    var volFeedback = feedback as IntFeedback;
-                                    // TODO: Figure out how to subsribe to a volume IntFeedback and link it to the voluem
-                                    volFeedback.LinkInputSig(_Touchpanel.VolumeBargraph);
-                                }
-                            }
-                            else
-                            {
-                                Debug.Console(1, this, "Unable to get BoolFeedback with name: {0} from device: {1}", feedbackConfig.FeedbackName, device.Key);
-                            }
-                        }
-                        else
-                        {
-                            Debug.Console(1, this, "Unable to get device with key: {0}", feedbackConfig.DeviceKey);
-                        }
-                    }
-                });
+					//        break;
+					//    }
+					//    case("intfeedback"):
+					//    {
+
+					//        break;
+					//    }
+					//}
+
+					var boolFeedback = deviceFeedback as BoolFeedback;
+					var intFeedback = deviceFeedback as IntFeedback;
+
+					switch (buttonKey)
+					{
+						case ("power"):
+							{
+								if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackPower);
+								break;
+							}
+						case ("volumeup"):
+							{
+								break;
+							}
+						case ("volumedown"):
+							{
+								break;
+							}
+						case ("volumefeedback"):
+							{
+								if (intFeedback != null)
+								{
+									var volumeFeedback = intFeedback;
+									volumeFeedback.LinkInputSig(_touchpanel.VolumeBargraph);
+								}
+								break;
+							}
+						case ("mute"):
+							{
+								if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackMute);
+								break;
+							}
+						default:
+							{
+								if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.Feedbacks[(uint)buttonNumber]);
+								break;
+							}
+					}					
+		        }
+	        });
         }
 
-        void _Touchpanel_ButtonStateChange(GenericBase device, Crestron.SimplSharpPro.DeviceSupport.ButtonEventArgs args)
+	    public bool TryParseInt(string str, out int result)
+	    {
+		    result = 0;
+
+		    foreach (var c in str)
+		    {
+			    if(c < '0' || c > '9')
+					return false;
+
+			    result = result*10 + (c - '0');
+		    }
+
+		    return true;
+	    }
+
+        void _touchpanel_ButtonStateChange(GenericBase device, Crestron.SimplSharpPro.DeviceSupport.ButtonEventArgs args)
         {
             Debug.Console(1, this, "Button {0} ({1}), {2}", args.Button.Number, args.Button.Name, args.NewButtonState);
             var type = args.NewButtonState.ToString();
 
-            if (_Buttons.ContainsKey(args.Button.Number.ToString()))
+            if (_buttons.ContainsKey(args.Button.Number.ToString(CultureInfo.InvariantCulture)))
             {
-                Press(args.Button.Number.ToString(), type);
+                Press(args.Button.Number.ToString(CultureInfo.InvariantCulture), type);
             }
-            else if(_Buttons.ContainsKey(args.Button.Name.ToString()))
+            else if(_buttons.ContainsKey(args.Button.Name.ToString()))
             {
                 Press(args.Button.Name.ToString(), type);
             }
@@ -101,29 +162,30 @@ namespace PepperDash.Essentials.Core.Touchpanels
         /// Runs the function associated with this button/type. One of the following strings:
         /// Pressed, Released, Tapped, DoubleTapped, Held, HeldReleased    
         /// </summary>
-        /// <param name="number"></param>
+        /// <param name="buttonKey"></param>
         /// <param name="type"></param>
-        public void Press(string number, string type)
+        public void Press(string buttonKey, string type)
         {
             // TODO: In future, consider modifying this to generate actions at device activation time
             //       to prevent the need to dynamically call the method via reflection on each button press
-            if (!_Buttons.ContainsKey(number)) { return; }
-            var but = _Buttons[number];
-            if (but.EventTypes.ContainsKey(type))
-            {
-                foreach (var a in but.EventTypes[type]) { DeviceJsonApi.DoDeviceAction(a); }
-            }
+	        if (!_buttons.ContainsKey(buttonKey)) return;
+
+	        var button = _buttons[buttonKey];
+	        if (!button.EventTypes.ContainsKey(type)) return;
+
+	        foreach (var eventType in button.EventTypes[type]) DeviceJsonApi.DoDeviceAction(eventType);
         }
-
-
     }
 
     /// <summary>
-    /// Represents the configuration of a keybad buggon
+    /// Represents the configuration of a keypad button
     /// </summary>
     public class KeypadButton
     {
+		[JsonProperty("eventTypes")]
         public Dictionary<string, DeviceActionWrapper[]> EventTypes { get; set; }
+
+		[JsonProperty("feedback")]
         public KeypadButtonFeedback Feedback { get; set; }
 
         public KeypadButton()
@@ -133,12 +195,15 @@ namespace PepperDash.Essentials.Core.Touchpanels
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public class KeypadButtonFeedback
-    {
-        public string DeviceKey { get; set; }
-        public string FeedbackName { get; set; }
-    }
+	/// <summary>
+	/// Represents the configuration of a keypad button feedback
+	/// </summary>
+	public class KeypadButtonFeedback
+	{
+		[JsonProperty("deviceKey")]
+		public string DeviceKey { get; set; }
+
+		[JsonProperty("feedbackName")]
+		public string FeedbackName { get; set; }
+	}
 }
