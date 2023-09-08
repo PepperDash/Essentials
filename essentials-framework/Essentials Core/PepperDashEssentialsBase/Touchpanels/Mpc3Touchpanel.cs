@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Crestron.SimplSharpPro;
 using Newtonsoft.Json;
 using PepperDash.Core;
@@ -29,191 +28,47 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 			_touchpanel.ButtonStateChange += _touchpanel_ButtonStateChange;
 			_buttons = buttons;
-
-			AddPostActivationAction(() =>
-			{
-				SetupButtonsForEvents();
-				SetupButtonFeedbacks();
-
-				// check button config
-				//foreach (var button in _buttons)
-				//{
-				//    var buttonKey = button.Key.ToLower();
-				//    var buttonConfig = button.Value;
-				//    if (buttonConfig == null)
-				//    {
-				//        Debug.Console(1, this, "Unable to get button config for {0}-{1}", Key, button.Key);
-				//        continue;
-				//    }
-
-				//    int buttonNumber;
-				//    if (TryParseInt(buttonKey, out buttonNumber))
-				//        Debug.Console(0, this, "buttonFeedback: tryIntParse successful, buttonNumber = {0}", buttonNumber);
-				//    else
-				//        Debug.Console(0, this, "buttonFeedback: tryIntParse failed, buttonKey = {0}", buttonKey);
-
-
-				//    // button event type configuration enables/disables keypad button
-				//    var buttonEventTypes = buttonConfig.EventTypes;
-				//    switch (buttonKey)
-				//    {
-				//        case ("power"):
-				//            {
-				//                if (buttonEventTypes == null)
-				//                    _touchpanel.DisablePowerButton();
-				//                else
-				//                    _touchpanel.EnablePowerButton();
-
-				//                break;
-				//            }
-				//        case ("volumeup"):
-				//            {
-				//                if (buttonEventTypes == null)
-				//                    _touchpanel.DisableVolumeUpButton();
-								
-				//                break;
-				//            }
-				//        case ("volumedown"):
-				//            {
-				//                if(buttonEventTypes == null)
-				//                    _touchpanel.DisableVolumeDownButton();
-
-				//                break;
-				//            }
-				//        case ("volumefeedback"):
-				//            {
-
-				//                break;
-				//            }
-				//        case ("mute"):
-				//            {
-				//                if(buttonEventTypes == null)
-				//                    _touchpanel.DisableMuteButton();
-				//                else
-				//                    _touchpanel.EnableMuteButton();
-
-				//                break;
-				//            }
-				//        default:
-				//            {
-				//                if(buttonNumber == 0)
-				//                    break;
-
-				//                if (buttonEventTypes == null)
-				//                    _touchpanel.DisableNumericalButton((uint)buttonNumber);
-				//                else
-				//                    _touchpanel.EnableNumericalButton((uint)buttonNumber);
-
-				//                break;
-				//            }
-				//    }
-
-
-				//    // Link up the button feedbacks to the specified device feedback
-				//    var buttonFeedback = buttonConfig.Feedback;
-				//    if (buttonFeedback == null)
-				//    {
-				//        Debug.Console(1, this, "Button '{0}' feedback not configured, feedback will not be implemented", buttonKey);
-				//        continue;
-				//    }
-
-				//    var device = DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) as Device;
-				//    if (device == null)
-				//    {
-				//        Debug.Console(1, this, "Unable to get device with key {0}, feedback will not be implemented",
-				//            buttonFeedback.DeviceKey);
-				//        continue;
-				//    }
-
-				//    var deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
-				//    Debug.Console(0, this, "deviceFeedback.GetType().Name: {0}", deviceFeedback.GetType().Name);
-				//    //switch (feedback.GetType().Name.ToLower())
-				//    //{
-				//    //    case("boolfeedback"):
-				//    //    {
-
-				//    //        break;
-				//    //    }
-				//    //    case("intfeedback"):
-				//    //    {
-
-				//    //        break;
-				//    //    }
-				//    //}
-
-				//    var boolFeedback = deviceFeedback as BoolFeedback;
-				//    var intFeedback = deviceFeedback as IntFeedback;
-
-				//    switch (buttonKey)
-				//    {
-				//        case ("power"):
-				//            {
-				//                if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackPower);
-				//                break;
-				//            }
-				//        case ("volumeup"):
-				//            {
-				//                break;
-				//            }
-				//        case ("volumedown"):
-				//            {
-				//                break;
-				//            }
-				//        case ("volumefeedback"):
-				//            {
-				//                if (intFeedback != null)
-				//                {
-				//                    var volumeFeedback = intFeedback;
-				//                    volumeFeedback.LinkInputSig(_touchpanel.VolumeBargraph);
-				//                }
-				//                break;
-				//            }
-				//        case ("mute"):
-				//            {
-				//                if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackMute);
-				//                break;
-				//            }
-				//        default:
-				//            {
-				//                if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.Feedbacks[(uint)buttonNumber]);
-				//                break;
-				//            }
-				//    }
-				//}
-			});
-		}
-
-		public void SetupButtonsForEvents()
-		{
 			if (_buttons == null)
 			{
-				Debug.Console(1, this, "Button properties are null, failed to setup buttons for events.  Verify button configuraiton.");
+				Debug.Console(1, this,
+					"Button properties are null, failed to setup MPC3 Touch Controller, check configuration");
 				return;
 			}
 
-			// check button config
-			foreach (var button in _buttons)
+			AddPostActivationAction(() =>
 			{
-				var buttonKey = button.Key.ToLower();
-				var buttonConfig = button.Value;
-				if (buttonConfig == null)
+				foreach (var button in _buttons)
 				{
-					Debug.Console(1, this, "Unable to get button config for {0}-{1}", Key, button.Key);
-					continue;
+					var buttonKey = button.Key.ToLower();
+					var buttonConfig = button.Value;
+
+					InitializeButton(buttonKey, buttonConfig);
+					InitializeButtonFeedback(buttonKey, buttonConfig);
 				}
+			});
+		}
 
-				int buttonNumber;
-				if (TryParseInt(buttonKey, out buttonNumber))
-					Debug.Console(0, this, "buttonFeedback: tryIntParse successful, buttonNumber = {0}", buttonNumber);
-				else
-					Debug.Console(0, this, "buttonFeedback: tryIntParse failed, buttonKey = {0}", buttonKey);
+		/// <summary>
+		/// Enables/disables buttons based on event type configuration 
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="config"></param>
+		public void InitializeButton(string key, KeypadButton config)
+		{
+			if (config == null)
+			{
+				Debug.Console(1, this, "Button '{0}' config is null, unable to initialize", key);
+				return;
+			}
 
+			int buttonNumber;
+			TryParseInt(key, out buttonNumber);
 
-				// button event type configuration enables/disables keypad button
-				var buttonEventTypes = buttonConfig.EventTypes;
-				switch (buttonKey)
-				{
-					case ("power"):
+			var buttonEventTypes = config.EventTypes;
+
+			switch (key)
+			{
+				case ("power"):
 					{
 						if (buttonEventTypes == null)
 							_touchpanel.DisablePowerButton();
@@ -222,26 +77,26 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 						break;
 					}
-					case ("volumeup"):
+				case ("volumeup"):
 					{
 						if (buttonEventTypes == null)
 							_touchpanel.DisableVolumeUpButton();
 
 						break;
 					}
-					case ("volumedown"):
+				case ("volumedown"):
 					{
 						if (buttonEventTypes == null)
 							_touchpanel.DisableVolumeDownButton();
 
 						break;
 					}
-					case ("volumefeedback"):
+				case ("volumefeedback"):
 					{
 
 						break;
 					}
-					case ("mute"):
+				case ("mute"):
 					{
 						if (buttonEventTypes == null)
 							_touchpanel.DisableMuteButton();
@@ -250,120 +105,116 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 						break;
 					}
-					default:
+				default:
 					{
 						if (buttonNumber == 0)
 							break;
 
 						if (buttonEventTypes == null)
-							_touchpanel.DisableNumericalButton((uint) buttonNumber);
+							_touchpanel.DisableNumericalButton((uint)buttonNumber);
 						else
-							_touchpanel.EnableNumericalButton((uint) buttonNumber);
+							_touchpanel.EnableNumericalButton((uint)buttonNumber);
 
 						break;
 					}
-				}
 			}
+
+			Debug.Console(1, this, "Button '{0}' {1}", key, buttonEventTypes == null
+				? "is disabled, verify eventTypes are configured."
+				: "is enabled");
 		}
 
-		public void SetupButtonFeedbacks()
+		/// <summary>
+		/// Links button feedback if configured
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="config"></param>
+		public void InitializeButtonFeedback(string key, KeypadButton config)
 		{
-			if (_buttons == null)
+			if (config == null)
 			{
-				Debug.Console(1, this, "Button properties are null, failed to setup buttons for events.  Verify button configuraiton.");
+				Debug.Console(1, this, "Button '{0}' config is null, unable to initialize feedback", key);
 				return;
 			}
 
-			// check button config
-			foreach (var button in _buttons)
+			int buttonNumber;
+			TryParseInt(key, out buttonNumber);
+
+			// Link up the button feedbacks to the specified device feedback
+			var buttonFeedback = config.Feedback;
+			if (buttonFeedback == null)
 			{
-				var buttonKey = button.Key.ToLower();
-				var buttonConfig = button.Value;
-				if (buttonConfig == null)
-				{
-					Debug.Console(1, this, "Unable to get button config for {0}-{1}", Key, button.Key);
-					continue;
-				}
+				Debug.Console(1, this, "Button '{0}' feedback not configured and will not be implemented. Verify feedback is configured if required.", key);
+				return;
+			}
 
-				int buttonNumber;
-				if (TryParseInt(buttonKey, out buttonNumber))
-					Debug.Console(0, this, "buttonFeedback: tryIntParse successful, buttonNumber = {0}", buttonNumber);
-				else
-					Debug.Console(0, this, "buttonFeedback: tryIntParse failed, buttonKey = {0}", buttonKey);
+			var device = DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) as Device;
+			if (device == null)
+			{
+				Debug.Console(1, this, "Button '{0}' feedback device with key '{0}' not found, feedback will not be implemented.  Verify feedback deviceKey is properly configured.",
+					buttonFeedback.DeviceKey);
+				return;
+			}
 
-				// Link up the button feedbacks to the specified device feedback
-				var buttonFeedback = buttonConfig.Feedback;
-				if (buttonFeedback == null)
-				{
-					Debug.Console(1, this, "Button '{0}' feedback not configured, feedback will not be implemented", buttonKey);
-					continue;
-				}
+			// TODO [ ] verify if this can replace the current method
+			var deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
+			Debug.Console(0, this, "deviceFeedback.GetType().Name: '{0}'", deviceFeedback.GetType().Name);
+			//switch (feedback.GetType().Name.ToLower())
+			//{
+			//    case("boolfeedback"):
+			//    {
+			//        break;
+			//    }
+			//    case("intfeedback"):
+			//    {
+			//        break;
+			//    }
+			//    case("stringfeedback"):
+			//    {
+			//        break;
+			//    }
+			//}
 
-				var device = DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) as Device;
-				if (device == null)
-				{
-					Debug.Console(1, this, "Unable to get device with key {0}, feedback will not be implemented",
-						buttonFeedback.DeviceKey);
-					continue;
-				}
+			var boolFeedback = deviceFeedback as BoolFeedback;
+			var intFeedback = deviceFeedback as IntFeedback;
 
-				var deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
-				Debug.Console(0, this, "deviceFeedback.GetType().Name: {0}", deviceFeedback.GetType().Name);
-				//switch (feedback.GetType().Name.ToLower())
-				//{
-				//    case("boolfeedback"):
-				//    {
-
-				//        break;
-				//    }
-				//    case("intfeedback"):
-				//    {
-
-				//        break;
-				//    }
-				//}
-
-				var boolFeedback = deviceFeedback as BoolFeedback;
-				var intFeedback = deviceFeedback as IntFeedback;
-
-				switch (buttonKey)
-				{
-					case ("power"):
+			switch (key)
+			{
+				case ("power"):
+					{
+						if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackPower);
+						break;
+					}
+				case ("volumeup"):
+				case ("volumedown"):
+				case ("volumefeedback"):
+					{
+						if (intFeedback != null)
 						{
-							if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackPower);
-							break;
+							var volumeFeedback = intFeedback;
+							volumeFeedback.LinkInputSig(_touchpanel.VolumeBargraph);
 						}
-					case ("volumeup"):
-						{
-							break;
-						}
-					case ("volumedown"):
-						{
-							break;
-						}
-					case ("volumefeedback"):
-						{
-							if (intFeedback != null)
-							{
-								var volumeFeedback = intFeedback;
-								volumeFeedback.LinkInputSig(_touchpanel.VolumeBargraph);
-							}
-							break;
-						}
-					case ("mute"):
-						{
-							if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackMute);
-							break;
-						}
-					default:
-						{
-							if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.Feedbacks[(uint)buttonNumber]);
-							break;
-						}
-				}
+						break;
+					}
+				case ("mute"):
+					{
+						if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackMute);
+						break;
+					}
+				default:
+					{
+						if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.Feedbacks[(uint)buttonNumber]);
+						break;
+					}
 			}
 		}
 
+		/// <summary>
+		/// Try parse int helper method
+		/// </summary>
+		/// <param name="str"></param>
+		/// <param name="result"></param>
+		/// <returns></returns>
 		public bool TryParseInt(string str, out int result)
 		{
 			try
@@ -378,24 +229,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			}
 		}
 
-		public bool TryExtractInt(string str, out int result)
-		{
-			result = str.Where(c => c >= '0' && c <= '9').Aggregate(0, (current, c) => current * 10 + (c - '0'));
-
-			//foreach (var c in str)
-			//{
-			//    if(c < '0' || c > '9')
-			//        //return false
-			//        continue;
-
-			//    result = result*10 + (c - '0');
-			//}
-
-			Debug.Console(0, this, "TryParseInt: str-'{0}', result-'{1}'", str, result);
-			return result != 0;
-		}
-
-		void _touchpanel_ButtonStateChange(GenericBase device, Crestron.SimplSharpPro.DeviceSupport.ButtonEventArgs args)
+		private void _touchpanel_ButtonStateChange(GenericBase device, Crestron.SimplSharpPro.DeviceSupport.ButtonEventArgs args)
 		{
 			Debug.Console(1, this, "Button {0} ({1}), {2}", args.Button.Number, args.Button.Name, args.NewButtonState);
 			var type = args.NewButtonState.ToString();
