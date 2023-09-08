@@ -63,15 +63,17 @@ namespace PepperDash_Essentials_DM.Chassis
 				return;
 			}
 
-			InputPorts = new RoutingPortCollection<RoutingInputPort>();
-			InputNames = new Dictionary<uint, string>();
+			InputPorts = new RoutingPortCollection<RoutingInputPort>();			
 			InputNameFeedbacks = new FeedbackCollection<StringFeedback>();
 			InputHdcpEnableFeedback = new FeedbackCollection<BoolFeedback>();
+			InputNames = new Dictionary<uint, string>();
+			//InputNames = props.Inputs;
 
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-			OutputNames = new Dictionary<uint, string>();
 			OutputNameFeedbacks = new FeedbackCollection<StringFeedback>();
 			OutputRouteNameFeedback = new FeedbackCollection<StringFeedback>();
+			OutputNames = new Dictionary<uint, string>();
+			//OutputNames = props.Outputs;
 
 			VideoInputSyncFeedbacks = new FeedbackCollection<BoolFeedback>();
 			VideoOutputRouteFeedbacks = new FeedbackCollection<IntFeedback>();
@@ -95,6 +97,15 @@ namespace PepperDash_Essentials_DM.Chassis
 		// input setup
 		private void SetupInputs(Dictionary<uint, string> dict)
 		{
+			if (dict == null)
+			{
+				Debug.Console(1, this, "Failed to setup inputs, properties are null");
+				return;
+			}
+			foreach (var kvp in dict)
+			{
+				Debug.Console(1, this, "props.Input[{0}]: {1}", kvp.Key, kvp.Value);
+			}
 			InputNames = dict;
 
 			for (uint i = 1; i <= _chassis.NumberOfInputs; i++)
@@ -129,6 +140,15 @@ namespace PepperDash_Essentials_DM.Chassis
 		// output setup
 		private void SetupOutputs(Dictionary<uint, string> dict)
 		{
+			if (dict == null)
+			{
+				Debug.Console(1, this, "Failed to setup outputs, properties are null");
+				return;
+			}
+			foreach (var kvp in dict)
+			{
+				Debug.Console(1, this, "props.Output[{0}]: {1}", kvp.Key, kvp.Value);
+			}
 			OutputNames = dict;
 
 			for (uint i = 1; i <= _chassis.NumberOfOutputs; i++)
@@ -602,7 +622,7 @@ namespace PepperDash_Essentials_DM.Chassis
 				var type = dc.Type.ToLower();
 				var control = props.Control;
 				var ipid = control.IpIdInt;
-				var address = control.TcpSshProperties.Address;
+				//var address = control.TcpSshProperties.Address;
 
 				switch (type)
 				{
