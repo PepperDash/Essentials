@@ -17,7 +17,7 @@ using PepperDash_Essentials_DM.Config;
 namespace PepperDash_Essentials_DM.Chassis
 {
 	[Description("Wrapper class for all HdPsXxx switchers")]
-	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IHasFeedback
+	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, ICec, IHasHdmiInHdcp, IHasFeedback
 	{
 
 		private readonly HdPsXxx _chassis;
@@ -75,15 +75,7 @@ namespace PepperDash_Essentials_DM.Chassis
 			VideoOutputRouteFeedbacks = new FeedbackCollection<IntFeedback>();
 
 			if (_chassis.NumberOfOutputs == 1)
-			{
-				//if (_chassis is HdPs401)
-				//    _chassis401 = _chassis as HdPs401;
-				//if (_chassis is HdPs621)
-				//    _chassis621 = _chassis as HdPs621;
-
 				AutoRouteFeedback = new BoolFeedback(() => _chassis.PriorityRouteOnFeedback.BoolValue);
-			}
-
 
 			InputNames = props.Inputs;
 			SetupInputs(InputNames);
@@ -91,7 +83,7 @@ namespace PepperDash_Essentials_DM.Chassis
 			OutputNames = props.Outputs;
 			SetupOutputs(OutputNames);
 
-			AddPostActivationAction(AddFeedbackCollecitons);
+			//AddPostActivationAction();
 		}
 
 		// input setup
@@ -106,6 +98,20 @@ namespace PepperDash_Essentials_DM.Chassis
 			{
 				Debug.Console(1, this, "props.Input[{0}]: {1}", kvp.Key, kvp.Value);
 			}
+
+			// TODO [ ] testing
+			var hdmiKeys = _chassis.HdmiInputs.Keys;
+			foreach (var key in hdmiKeys)
+			{
+				Debug.Console(0, this, "HDMI Input key-'{0}'", key);				
+			}
+
+			var dmKeys = _chassis.DmLiteInputs.Keys;
+			foreach (var key in dmKeys)
+			{
+				Debug.Console(0, this, "DM Input key-'{0}'", key);
+			}
+
 
 			foreach (var item in _chassis.HdmiInputs)
 			{
@@ -123,7 +129,7 @@ namespace PepperDash_Essentials_DM.Chassis
 
 				InputHdcpEnableFeedback.Add(new BoolFeedback(name, () => input.InputPort.HdcpSupportOnFeedback.BoolValue));
 
-				VideoInputSyncFeedbacks.Add(new BoolFeedback(name, () => input.VideoDetectedFeedback.BoolValue));
+				VideoInputSyncFeedbacks.Add(new BoolFeedback(name, () => input.VideoDetectedFeedback.BoolValue));				
 			}
 
 			foreach (var item in _chassis.DmLiteInputs)
@@ -164,9 +170,17 @@ namespace PepperDash_Essentials_DM.Chassis
 				Debug.Console(1, this, "props.Output[{0}]: {1}", kvp.Key, kvp.Value);
 			}
 
+
+			// TODO [ ] testing
+			var keys = _chassis.HdmiDmLiteOutputs.Keys;
+			foreach (var key in keys)
+			{
+				Debug.Console(0, this, "HdmiDmLite Output key-'{0}'", key);
+			}
+
 			foreach (var item in _chassis.HdmiDmLiteOutputs)
 			{
-				var output = item;
+				var output = item;				
 				var index = item.Number;
 
 				var name = string.IsNullOrEmpty(OutputNames[index]) ? string.Format("Output {0}", index) : OutputNames[index];
@@ -182,7 +196,7 @@ namespace PepperDash_Essentials_DM.Chassis
 
 				VideoOutputRouteFeedbacks.Add(new IntFeedback(name, () => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
 			}
-
+			
 			_chassis.DMOutputChange += _chassis_OutputChange;
 		}
 
@@ -268,7 +282,7 @@ namespace PepperDash_Essentials_DM.Chassis
 		}
 
 		#endregion
-
+	
 
 		/// <summary>
 		/// Executes a device switch using objects
@@ -455,115 +469,7 @@ namespace PepperDash_Essentials_DM.Chassis
 		}
 
 
-		#endregion
-
-
-		#region FeedbacksAndFeedbackCollections
-
-
-		/// <summary>
-		/// Add feedback collection arrays to feedback collections 
-		/// </summary>
-		/// <param name="feedbackCollections">BoolFeedback[] arrays</param>
-		public void AddCollectionsToList(params FeedbackCollection<BoolFeedback>[] feedbackCollections)
-		{
-			foreach (var item in feedbackCollections.SelectMany(feedbackCollection => feedbackCollections))
-			{
-				AddCollectionsToList(item);
-			}
-		}
-
-
-		/// <summary>
-		/// Add feedback colleciton arrays to feedback collections 
-		/// </summary>
-		/// <param name="feedbackCollections">IntFeedback[] arrays</param>
-		public void AddCollectionsToList(params FeedbackCollection<IntFeedback>[] feedbackCollections)
-		{
-			foreach (var item in feedbackCollections.SelectMany(feedbackCollection => feedbackCollections))
-			{
-				AddCollectionsToList(item);
-			}
-		}
-
-
-		/// <summary>
-		/// Add feedback colleciton arrays to feedback collections 
-		/// </summary>
-		/// <param name="feedbackCollections">StringFeedback[] arrays</param>
-		public void AddCollectionsToList(params FeedbackCollection<StringFeedback>[] feedbackCollections)
-		{
-			foreach (var item in feedbackCollections.SelectMany(feedbackCollection => feedbackCollections))
-			{
-				AddCollectionsToList(item);
-			}
-		}
-
-
-		/// <summary>
-		/// Adds feedback colleciton to feedback collections
-		/// </summary>
-		/// <param name="feedbackCollection">BoolFeedback</param>
-		public void AddCollectionToList(FeedbackCollection<BoolFeedback> feedbackCollection)
-		{
-			foreach (var item in feedbackCollection.Where(item => item != null))
-			{
-				AddFeedbackToList(item);
-			}
-		}
-
-
-		/// <summary>
-		/// Adds feedback colleciton to feedback collections
-		/// </summary>
-		/// <param name="feedbackCollection">IntFeedback</param>
-		public void AddCollectionToList(FeedbackCollection<IntFeedback> feedbackCollection)
-		{
-			foreach (var item in feedbackCollection.Where(item => item != null))
-			{
-				AddFeedbackToList(item);
-			}
-		}
-
-
-		/// <summary>
-		/// Adds feedback colleciton to feedback collections
-		/// </summary>
-		/// <param name="feedbackCollection">StringFeedback</param>
-		public void AddCollectionToList(FeedbackCollection<StringFeedback> feedbackCollection)
-		{
-			foreach (var item in feedbackCollection.Where(item => item != null))
-			{
-				AddFeedbackToList(item);
-			}
-		}
-
-
-		/// <summary>
-		/// Adds individual feedbacks to feedback collection
-		/// </summary>
-		/// <param name="fb">Feedback</param>
-		public void AddFeedbackToList(PepperDash.Essentials.Core.Feedback fb)
-		{
-			if (fb == null || Feedbacks.Contains(fb)) return;
-
-			Feedbacks.Add(fb);
-		}
-
-
-		/// <summary>
-		/// Adds provided feedbacks to feedback collection list
-		/// </summary>
-		public void AddFeedbackCollecitons()
-		{
-			//AddFeedbackToList(DeviceNameFeedback);
-			//AddCollectionsToList(VideoInputSyncFeedbacks, InputHdcpEnableFeedback);
-			//AddCollectionsToList(VideoOutputRouteFeedbacks);
-			//AddCollectionsToList(InputNameFeedbacks, OutputNameFeedbacks, OutputRouteNameFeedback);
-		}
-
-
-		#endregion
+		#endregion		
 
 
 		#region Factory
@@ -621,5 +527,17 @@ namespace PepperDash_Essentials_DM.Chassis
 
 
 		#endregion
+
+		// TODO [ ] Implement CEC control
+		// return _chassis.HdmiDmLiteOutputs[0].DmLiteOutput.DmLiteOutputPort.StreamCec;
+		public Cec StreamCec { get; private set; }				
+
+		public IntFeedback HdmiInHdcpStateFeedback { get; private set; }
+		public void SetHdmiInHdcpState(eHdcpCapabilityType hdcpState)
+		{
+			throw new NotImplementedException();
+		}
+
+		public eHdcpCapabilityType HdmiInHdcpCapability { get; private set; }
 	}
 }
