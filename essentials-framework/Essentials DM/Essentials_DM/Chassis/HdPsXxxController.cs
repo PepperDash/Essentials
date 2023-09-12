@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash_Essentials_Core.Bridges;
+using PepperDash_Essentials_DM;
 using PepperDash_Essentials_DM.Config;
 
 namespace PepperDash_Essentials_DM.Chassis
@@ -173,12 +174,14 @@ namespace PepperDash_Essentials_DM.Chassis
 
 				OutputRouteNameFeedback.Add(new StringFeedback(name, () => output.VideoOutFeedback.NameFeedback.StringValue));
 
-				VideoOutputRouteFeedbacks.Add(new IntFeedback(name, () => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
+				VideoOutputRouteFeedbacks.Add(new IntFeedback(name,
+					() => output.VideoOutFeedback == null ? 0 : (int) output.VideoOutFeedback.Number));
 
 				// TODO [ ] Investigate setting input priorities per output
 				// {{in1-priority-level}, {in2-priority-level}, .... {in6-priority-level}}
-				// default priority level input 1-4 ascending
-				output.OutputPort.InputPriorities(new byte[] { 1, 2, 3, 4 });
+				// default priority level input 1-4 ascending				
+				//var priorities = new byte[] {1,2,3,4};
+				//output.OutputPort.InputPriorities(priorities);
 
 				if (port.Port == null) continue;
 
