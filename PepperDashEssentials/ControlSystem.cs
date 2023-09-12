@@ -392,45 +392,51 @@ namespace PepperDash.Essentials
                         {
                             Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", this.ControllerPrompt);
 
-                            var propertiesConfig = JsonConvert.DeserializeObject<DM.Config.DmpsRoutingPropertiesConfig>(devConf.Properties.ToString()) ??
-                                                   new DM.Config.DmpsRoutingPropertiesConfig();
+                            var propertiesConfig = JsonConvert.DeserializeObject<DM.Config.DmpsRoutingPropertiesConfig>(devConf.Properties.ToString());
 
-	                        DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
+                            if(propertiesConfig == null)
+                                propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
+
+                            DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
                         }
                         else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
                         {
-                            Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
+							Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
 
-                            var butToken = devConf.Properties["buttons"];
-	                        if (butToken == null)
-	                        {
-		                        Debug.Console(0, Debug.ErrorLogLevel.Error,
-			                        "Error: Unable to deserialize buttons collection for device: {0}", devConf.Key);
+							var butToken = devConf.Properties["buttons"];
+							if (butToken == null)
+							{
+								Debug.Console(0, Debug.ErrorLogLevel.Error,
+									"Error: Unable to deserialize buttons collection for device: {0}", devConf.Key);
 								continue;
-	                        }
-	                        
-	                        var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
-	                        var tpController = new Core.Touchpanels.Mpc3TouchpanelController(
-			                        string.Format("{0}-keypadButtons", devConf.Key), devConf.Name, Global.ControlSystem, buttons);
+							}
 
-	                        DeviceManager.AddDevice(tpController);	                        
+							var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
+							var tpController = new Core.Touchpanels.Mpc3TouchpanelController(
+									string.Format("{0}-keypadButtons", devConf.Key), devConf.Name, Global.ControlSystem, buttons);
+
+							DeviceManager.AddDevice(tpController);	
                         }
                         else
                         {
                             Debug.Console(2, "************Processor is not DMPS type***************");
                         }
 
+                        
+
                         continue;
                     }
 
                     // Try local factories first
-                    var newDev = null ?? PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
+                    IKeyed newDev = null;
 
-	                if (newDev == null)
-		                Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Cannot load unknown device type '{0}', key '{1}'.",
-			                devConf.Type, devConf.Key);
-	                else
-		                DeviceManager.AddDevice(newDev);
+                    if (newDev == null)
+                        newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
+
+					if (newDev != null)
+						DeviceManager.AddDevice(newDev);
+					else
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
                 }
                 catch (Exception e)
                 {
@@ -438,6 +444,7 @@ namespace PepperDash.Essentials
                 }
             }
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
+
         }
 
 
