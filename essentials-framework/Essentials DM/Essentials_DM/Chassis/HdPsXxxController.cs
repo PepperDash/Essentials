@@ -10,7 +10,6 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash_Essentials_Core.Bridges;
-using PepperDash_Essentials_DM;
 using PepperDash_Essentials_DM.Config;
 
 namespace PepperDash_Essentials_DM.Chassis
@@ -19,6 +18,7 @@ namespace PepperDash_Essentials_DM.Chassis
 	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback
 	{
 		private readonly HdPsXxx _chassis;
+		private byte[] _inputPriorityParams;
 
 		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
@@ -76,11 +76,23 @@ namespace PepperDash_Essentials_DM.Chassis
 			if (_chassis.NumberOfOutputs == 1)
 				AutoRouteFeedback = new BoolFeedback(() => _chassis.PriorityRouteOnFeedback.BoolValue);
 
+			if (props.InputPriorities != null)
+			{
+				_inputPriorityParams = new byte[_chassis.NumberOfInputs];
+				_inputPriorityParams = GetInputPriorities(props);
+			}
+
 			InputNames = props.Inputs;
 			SetupInputs(InputNames);
 
 			OutputNames = props.Outputs;
 			SetupOutputs(OutputNames);
+		}
+
+		// get input priorities
+		private byte[] GetInputPriorities(HdPsXxxPropertiesConfig props)
+		{
+			throw new NotImplementedException();
 		}
 
 		// input setup
@@ -175,13 +187,13 @@ namespace PepperDash_Essentials_DM.Chassis
 				OutputRouteNameFeedback.Add(new StringFeedback(name, () => output.VideoOutFeedback.NameFeedback.StringValue));
 
 				VideoOutputRouteFeedbacks.Add(new IntFeedback(name,
-					() => output.VideoOutFeedback == null ? 0 : (int) output.VideoOutFeedback.Number));
+					() => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
 
 				// TODO [ ] Investigate setting input priorities per output
 				// {{in1-priority-level}, {in2-priority-level}, .... {in6-priority-level}}
-				// default priority level input 1-4 ascending				
-				//var priorities = new byte[] {1,2,3,4};
-				//output.OutputPort.InputPriorities(priorities);
+				// default priority level input 1-4 ascending
+				if (_inputPriorityParams != null && _inputPriorityParams.Count() > 0)
+					output.OutputPort.InputPriorities(_inputPriorityParams);
 
 				if (port.Port == null) continue;
 
