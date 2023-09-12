@@ -38,6 +38,7 @@ namespace PepperDash_Essentials_DM.Chassis
 		public BoolFeedback AutoRouteFeedback { get; private set; }
 
 		public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
+		public event EventHandler<DMInputEventArgs> DmInputChange;
 
 		/// <summary>
 		/// Constructor
@@ -425,6 +426,8 @@ namespace PepperDash_Essentials_DM.Chassis
 						break;
 					}
 			}
+
+			OnDmInputChange(args);
 		}
 
 
@@ -457,13 +460,17 @@ namespace PepperDash_Essentials_DM.Chassis
 		}
 
 
-		/// <summary>
-		/// Raise an event when the status of a switch object changes.
-		/// </summary>
-		/// <param name="args">Argumetns defined as IKeyName sender, output, input, & eRoutingSignalType</param>
+		// Raise an event when the status of a switch object changes.
 		private void OnSwitchChange(RoutingNumericEventArgs args)
 		{
 			var newEvent = NumericSwitchChange;
+			if (newEvent != null) newEvent(this, args);
+		}
+
+		// Raise an event when the DM input changes.
+		private void OnDmInputChange(DMInputEventArgs args)
+		{
+			var newEvent = DmInputChange;
 			if (newEvent != null) newEvent(this, args);
 		}
 
