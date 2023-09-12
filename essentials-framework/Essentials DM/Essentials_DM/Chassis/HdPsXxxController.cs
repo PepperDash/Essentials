@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -19,7 +17,6 @@ namespace PepperDash_Essentials_DM.Chassis
 	[Description("Wrapper class for all HdPsXxx switchers")]
 	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, ICec, IHasHdmiInHdcp, IHasFeedback
 	{
-
 		private readonly HdPsXxx _chassis;
 
 		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
@@ -99,32 +96,20 @@ namespace PepperDash_Essentials_DM.Chassis
 				Debug.Console(1, this, "props.Input[{0}]: {1}", kvp.Key, kvp.Value);
 			}
 
-			// TODO [ ] testing
-			var hdmiKeys = _chassis.HdmiInputs.Keys;
-			foreach (var key in hdmiKeys)
-			{
-				Debug.Console(0, this, "HDMI Input key-'{0}'", key);				
-			}
-
-			var dmKeys = _chassis.DmLiteInputs.Keys;
-			foreach (var key in dmKeys)
-			{
-				Debug.Console(0, this, "DM Input key-'{0}'", key);
-			}
-
-
 			foreach (var item in _chassis.HdmiInputs)
 			{
 				var input = item;
 				var index = item.Number;
+				var key = string.Format("hdmiIn{0}", index);
 				var name = string.IsNullOrEmpty(InputNames[index]) ? string.Format("HDMI Input {0}", index) : InputNames[index];
 				
 				InputNameFeedbacks.Add(new StringFeedback(name, () => InputNames[index]));
 
-				var port = new RoutingInputPort(name, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, input, this)
+				var port = new RoutingInputPort(key, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, input, this)
 				{
 					FeedbackMatchObject = input
 				};
+				Debug.Console(1, this, "Adding HDMI Input port: {0}", port.Key);
 				InputPorts.Add(port);
 
 				InputHdcpEnableFeedback.Add(new BoolFeedback(name, () => input.InputPort.HdcpSupportOnFeedback.BoolValue));
@@ -136,7 +121,7 @@ namespace PepperDash_Essentials_DM.Chassis
 			{
 				var input = item;
 				var index = item.Number;
-				
+				var key = string.Format("dmLiteIn{0}", index);
 				var name = string.IsNullOrEmpty(InputNames[index]) ? string.Format("DM Input {0}", index) : InputNames[index];
 				input.Name.StringValue = name;
 
@@ -146,8 +131,8 @@ namespace PepperDash_Essentials_DM.Chassis
 				{
 					FeedbackMatchObject = input
 				};
+				Debug.Console(0, this, "Adding DM Input port: {0}",port.Key);
 				InputPorts.Add(port);
-
 				
 				InputHdcpEnableFeedback.Add(new BoolFeedback(name, () => input.InputPort.HdcpSupportOnFeedback.BoolValue));
 
@@ -170,26 +155,22 @@ namespace PepperDash_Essentials_DM.Chassis
 				Debug.Console(1, this, "props.Output[{0}]: {1}", kvp.Key, kvp.Value);
 			}
 
-
-			// TODO [ ] testing
-			var keys = _chassis.HdmiDmLiteOutputs.Keys;
-			foreach (var key in keys)
-			{
-				Debug.Console(0, this, "HdmiDmLite Output key-'{0}'", key);
-			}
-
 			foreach (var item in _chassis.HdmiDmLiteOutputs)
 			{
-				var output = item;				
+				var output = item;
 				var index = item.Number;
-
+				var key = string.Format("hdmiDmLiteOut{0}", index);
 				var name = string.IsNullOrEmpty(OutputNames[index]) ? string.Format("Output {0}", index) : OutputNames[index];
 				output.Name.StringValue = name;
 
-				var port = new RoutingOutputPort(name, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, output, this)
+				var port = new RoutingOutputPort(key, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, output, this)
 				{
-					FeedbackMatchObject = output
+					FeedbackMatchObject = output,
+					// set port for CEC
+					Port = output
 				};
+				Debug.Console(0, this, "Adding HdmiDmLite Output port: {0} {1}",
+					port.Key, port.ParentDevice);
 				OutputPorts.Add(port);
 
 				OutputRouteNameFeedback.Add(new StringFeedback(name, () => output.VideoOutFeedback.NameFeedback.StringValue));
@@ -530,7 +511,16 @@ namespace PepperDash_Essentials_DM.Chassis
 
 		// TODO [ ] Implement CEC control
 		// return _chassis.HdmiDmLiteOutputs[0].DmLiteOutput.DmLiteOutputPort.StreamCec;
-		public Cec StreamCec { get; private set; }				
+		public Cec StreamCec
+		{
+			get
+			{
+				return _chassis.NumberOfOutputs == 1 
+					//? _chassis.HdmiDmLiteOutputs[0].DmLiteOutput.DmLiteOutputPort.StreamCec 
+					? _chassis.HdmiDmLiteOutputs[0].HdmiOutput.HdmiOutputPort.StreamCec
+					: null;
+			}
+		}
 
 		public IntFeedback HdmiInHdcpStateFeedback { get; private set; }
 		public void SetHdmiInHdcpState(eHdcpCapabilityType hdcpState)
