@@ -15,7 +15,7 @@ using PepperDash_Essentials_DM.Config;
 namespace PepperDash_Essentials_DM.Chassis
 {
 	[Description("Wrapper class for all HdPsXxx switchers")]
-	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, ICec, IHasHdmiInHdcp, IHasFeedback
+	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback
 	{
 		private readonly HdPsXxx _chassis;
 
@@ -61,7 +61,7 @@ namespace PepperDash_Essentials_DM.Chassis
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
 			InputNameFeedbacks = new FeedbackCollection<StringFeedback>();
 			InputHdcpEnableFeedback = new FeedbackCollection<BoolFeedback>();
-			InputNames = new Dictionary<uint, string>();			
+			InputNames = new Dictionary<uint, string>();
 
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 			OutputNameFeedbacks = new FeedbackCollection<StringFeedback>();
@@ -79,8 +79,6 @@ namespace PepperDash_Essentials_DM.Chassis
 
 			OutputNames = props.Outputs;
 			SetupOutputs(OutputNames);
-
-			//AddPostActivationAction();
 		}
 
 		// input setup
@@ -102,19 +100,19 @@ namespace PepperDash_Essentials_DM.Chassis
 				var index = item.Number;
 				var key = string.Format("hdmiIn{0}", index);
 				var name = string.IsNullOrEmpty(InputNames[index]) ? string.Format("HDMI Input {0}", index) : InputNames[index];
-				
+
 				InputNameFeedbacks.Add(new StringFeedback(name, () => InputNames[index]));
 
 				var port = new RoutingInputPort(key, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, input, this)
 				{
 					FeedbackMatchObject = input
 				};
-				Debug.Console(1, this, "Adding HDMI Input port: {0}", port.Key);
+				Debug.Console(1, this, "Adding Input port: {0}", port.Key);
 				InputPorts.Add(port);
 
 				InputHdcpEnableFeedback.Add(new BoolFeedback(name, () => input.InputPort.HdcpSupportOnFeedback.BoolValue));
 
-				VideoInputSyncFeedbacks.Add(new BoolFeedback(name, () => input.VideoDetectedFeedback.BoolValue));				
+				VideoInputSyncFeedbacks.Add(new BoolFeedback(name, () => input.VideoDetectedFeedback.BoolValue));
 			}
 
 			foreach (var item in _chassis.DmLiteInputs)
@@ -127,13 +125,13 @@ namespace PepperDash_Essentials_DM.Chassis
 
 				InputNameFeedbacks.Add(new StringFeedback(name, () => InputNames[index]));
 
-				var port = new RoutingInputPort(name, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, input, this)
+				var port = new RoutingInputPort(key, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, input, this)
 				{
 					FeedbackMatchObject = input
 				};
-				Debug.Console(0, this, "Adding DM Input port: {0}",port.Key);
+				Debug.Console(0, this, "Adding Input port: {0}", port.Key);
 				InputPorts.Add(port);
-				
+
 				InputHdcpEnableFeedback.Add(new BoolFeedback(name, () => input.InputPort.HdcpSupportOnFeedback.BoolValue));
 
 				VideoInputSyncFeedbacks.Add(new BoolFeedback(name, () => input.VideoDetectedFeedback.BoolValue));
@@ -169,15 +167,35 @@ namespace PepperDash_Essentials_DM.Chassis
 					// set port for CEC
 					Port = output
 				};
-				Debug.Console(0, this, "Adding HdmiDmLite Output port: {0} {1}",
-					port.Key, port.ParentDevice);
+				Debug.Console(0, this, "Adding Output port: {0}", port.Key);
 				OutputPorts.Add(port);
 
 				OutputRouteNameFeedback.Add(new StringFeedback(name, () => output.VideoOutFeedback.NameFeedback.StringValue));
 
 				VideoOutputRouteFeedbacks.Add(new IntFeedback(name, () => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
+
+				// TODO [ ] Investigate setting input priorities per output
+				// {{in1-priority-level}, {in2-priority-level}, .... {in6-priority-level}}
+				// default priority level input 1-4 ascending
+				output.OutputPort.InputPriorities(new byte[] { 1, 2, 3, 4 });
+
+				if (port.Port == null) continue;
+
+				var hdmiOutputStreamCec = output.HdmiOutput.HdmiOutputPort.StreamCec;
+				if (hdmiOutputStreamCec != null)
+				{
+					var streamCec = new StreamCecWrapper(string.Format("{0}-hdmiOut{1}-streamCec", Key, index), hdmiOutputStreamCec);
+					DeviceManager.AddDevice(streamCec);
+				}
+
+				var dmLiteOutputStreamCec = output.DmLiteOutput.DmLiteOutputPort.StreamCec;
+				if (dmLiteOutputStreamCec != null)
+				{
+					var streamCec = new StreamCecWrapper(string.Format("{0}-dmLiteOut{1}-streamCec", Key, index), dmLiteOutputStreamCec);
+					DeviceManager.AddDevice(streamCec);
+				}
 			}
-			
+
 			_chassis.DMOutputChange += _chassis_OutputChange;
 		}
 
@@ -263,7 +281,7 @@ namespace PepperDash_Essentials_DM.Chassis
 		}
 
 		#endregion
-	
+
 
 		/// <summary>
 		/// Executes a device switch using objects
@@ -450,7 +468,7 @@ namespace PepperDash_Essentials_DM.Chassis
 		}
 
 
-		#endregion		
+		#endregion
 
 
 		#region Factory
@@ -508,26 +526,18 @@ namespace PepperDash_Essentials_DM.Chassis
 
 
 		#endregion
+	}
 
-		// TODO [ ] Implement CEC control
-		// return _chassis.HdmiDmLiteOutputs[0].DmLiteOutput.DmLiteOutputPort.StreamCec;
-		public Cec StreamCec
+
+	public class StreamCecWrapper : IKeyed, ICec
+	{
+		public string Key { get; private set; }
+		public Cec StreamCec { get; private set; }
+
+		public StreamCecWrapper(string key, Cec streamCec)
 		{
-			get
-			{
-				return _chassis.NumberOfOutputs == 1 
-					//? _chassis.HdmiDmLiteOutputs[0].DmLiteOutput.DmLiteOutputPort.StreamCec 
-					? _chassis.HdmiDmLiteOutputs[0].HdmiOutput.HdmiOutputPort.StreamCec
-					: null;
-			}
+			Key = key;
+			StreamCec = streamCec;
 		}
-
-		public IntFeedback HdmiInHdcpStateFeedback { get; private set; }
-		public void SetHdmiInHdcpState(eHdcpCapabilityType hdcpState)
-		{
-			throw new NotImplementedException();
-		}
-
-		public eHdcpCapabilityType HdmiInHdcpCapability { get; private set; }
 	}
 }
