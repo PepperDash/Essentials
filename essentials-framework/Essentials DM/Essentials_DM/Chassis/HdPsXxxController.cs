@@ -18,7 +18,7 @@ namespace PepperDash_Essentials_DM.Chassis
 	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback
 	{
 		private readonly HdPsXxx _chassis;
-		private byte[] _inputPriorityParams;
+		//private byte[] _inputPriorityParams;
 
 		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
@@ -76,11 +76,11 @@ namespace PepperDash_Essentials_DM.Chassis
 			if (_chassis.NumberOfOutputs == 1)
 				AutoRouteFeedback = new BoolFeedback(() => _chassis.PriorityRouteOnFeedback.BoolValue);
 
-			if (props.InputPriorities != null)
-			{
-				_inputPriorityParams = new byte[_chassis.NumberOfInputs];
-				_inputPriorityParams = GetInputPriorities(props);
-			}
+			//if (props.InputPriorities != null)
+			//{
+			//    _inputPriorityParams = new byte[_chassis.NumberOfInputs];
+			//    _inputPriorityParams = GetInputPriorities(props);
+			//}
 
 			InputNames = props.Inputs;
 			SetupInputs(InputNames);
@@ -192,8 +192,8 @@ namespace PepperDash_Essentials_DM.Chassis
 				// TODO [ ] Investigate setting input priorities per output
 				// {{in1-priority-level}, {in2-priority-level}, .... {in6-priority-level}}
 				// default priority level input 1-4 ascending
-				if (_inputPriorityParams != null && _inputPriorityParams.Count() > 0)
-					output.OutputPort.InputPriorities(_inputPriorityParams);
+				//if (_inputPriorityParams != null && _inputPriorityParams.Count() > 0)
+				//	output.OutputPort.InputPriorities(_inputPriorityParams);
 
 				if (port.Port == null) continue;
 
