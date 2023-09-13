@@ -155,7 +155,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 				return;
 			}
 
-			Feedback deviceFeedback = null;
+			Feedback deviceFeedback;
 
 			try
 			{
@@ -166,9 +166,16 @@ namespace PepperDash.Essentials.Core.Touchpanels
 						key, buttonFeedback.DeviceKey);
 					return;
 				}
+				
+				deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
+				if (deviceFeedback == null)
+				{
+					Debug.Console(1, this, "Button '{0}' feedback failed to get feedback property for '{1}', feedback will not be implemented.  Verify feedback deviceKey is properly configured.",
+						key, buttonFeedback.FeedbackName);
+					return;
+				}
 
 				// TODO [ ] verify if this can replace the current method
-				deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
 				//Debug.Console(0, this, "deviceFeedback.GetType().Name: '{0}'", deviceFeedback.GetType().Name);
 				//switch (feedback.GetType().Name.ToLower())
 				//{
