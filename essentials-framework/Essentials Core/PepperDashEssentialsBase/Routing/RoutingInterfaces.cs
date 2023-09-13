@@ -205,10 +205,8 @@ namespace PepperDash.Essentials.Core
         }
     }
 
-	public interface IRoutingSyncProvider
+	public interface IRoutingHasVideoInputSyncFeedbacks
 	{
-		event RoutingSyncProviderDelegate SyncChanged;
-	}
-
-	public delegate void RoutingSyncProviderDelegate(uint inputNumber, bool hasSync);
+		FeedbackCollection<BoolFeedback> VideoInputSyncFeedbacks { get; }
+	}	
 }

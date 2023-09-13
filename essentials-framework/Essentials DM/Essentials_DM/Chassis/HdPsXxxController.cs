@@ -15,7 +15,7 @@ using PepperDash_Essentials_DM.Config;
 namespace PepperDash_Essentials_DM.Chassis
 {
 	[Description("Wrapper class for all HdPsXxx switchers")]
-	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback
+	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IRoutingHasVideoInputSyncFeedbacks
 	{
 		private readonly HdPsXxx _chassis;
 		//private byte[] _inputPriorityParams;
