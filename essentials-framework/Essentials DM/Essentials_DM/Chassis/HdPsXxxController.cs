@@ -105,9 +105,11 @@ namespace PepperDash_Essentials_DM.Chassis
 				var input = item;
 				var index = item.Number;
 				var key = string.Format("hdmiIn{0}", index);
-				input.Name.StringValue = string.IsNullOrEmpty(InputNames[index]) 
-					? string.Format("HDMI Input {0}", index) 
+				var name = string.IsNullOrEmpty(InputNames[index])
+					? string.Format("HDMI Input {0}", index)
 					: InputNames[index];
+
+				input.Name.StringValue = name;
 
 				InputNameFeedbacks.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture), 
 					() => InputNames[index]));
@@ -116,7 +118,7 @@ namespace PepperDash_Essentials_DM.Chassis
 				{
 					FeedbackMatchObject = input
 				};
-				Debug.Console(1, this, "Adding Input port: {0} - {1}", port.Key, input.Name);
+				Debug.Console(1, this, "Adding Input port: {0} - {1}", port.Key, name);
 				InputPorts.Add(port);
 
 				InputHdcpEnableFeedback.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture), 
@@ -132,9 +134,11 @@ namespace PepperDash_Essentials_DM.Chassis
 				var input = item;
 				var index = item.Number;
 				var key = string.Format("dmLiteIn{0}", index);
-				input.Name.StringValue = string.IsNullOrEmpty(InputNames[index]) 
+				var name = string.IsNullOrEmpty(InputNames[index]) 
 					? string.Format("DM Input {0}", index) 
 					: InputNames[index];
+
+				input.Name.StringValue = name;
 
 				InputNameFeedbacks.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture), 
 					() => InputNames[index]));
@@ -143,7 +147,7 @@ namespace PepperDash_Essentials_DM.Chassis
 				{
 					FeedbackMatchObject = input
 				};
-				Debug.Console(0, this, "Adding Input port: {0} - {1}", port.Key, input.Name);
+				Debug.Console(0, this, "Adding Input port: {0} - {1}", port.Key, name);
 				InputPorts.Add(port);
 
 				InputHdcpEnableFeedback.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture), 
@@ -169,26 +173,28 @@ namespace PepperDash_Essentials_DM.Chassis
 			{
 				var output = item;
 				var index = item.Number;
-				var key = string.Format("hdmiDmLiteOut{0}", index);
-				
-				output.Name.StringValue = string.IsNullOrEmpty(OutputNames[index]) 
+				var name = string.IsNullOrEmpty(OutputNames[index]) 
 					? string.Format("Output {0}", index) 
-					: OutputNames[index];				
+					: OutputNames[index];
+				
+				output.Name.StringValue = name;
 
-				var hdmiPort = new RoutingOutputPort(key, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, output, this)
+				var hdmiKey = string.Format("hdmiOut{0}", index);
+				var hdmiPort = new RoutingOutputPort(hdmiKey, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, output, this)
 				{
 					FeedbackMatchObject = output,
 					Port = output.HdmiOutput.HdmiOutputPort.StreamCec
 				};
-				Debug.Console(1, this, "Adding Output port: {0} - {1}", hdmiPort.Key, output.Name);
+				Debug.Console(1, this, "Adding Output port: {0} - {1}", hdmiPort.Key, name);
 				OutputPorts.Add(hdmiPort);
 
-				var dmLitePort = new RoutingOutputPort(key, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, output, this)
+				var dmLiteKey = string.Format("dmLiteOut{0}", index);
+				var dmLitePort = new RoutingOutputPort(dmLiteKey, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, output, this)
 				{
 					FeedbackMatchObject = output,
 					Port = output.DmLiteOutput.DmLiteOutputPort.StreamCec
 				};
-				Debug.Console(1, this, "Adding Output port: {0} - {1}", dmLitePort.Key, output.Name);
+				Debug.Console(1, this, "Adding Output port: {0} - {1}", dmLitePort.Key, name);
 				OutputPorts.Add(dmLitePort);
 
 				OutputRouteNameFeedback.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture), 
