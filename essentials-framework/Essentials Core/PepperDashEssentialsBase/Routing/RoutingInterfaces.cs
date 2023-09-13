@@ -204,4 +204,11 @@ namespace PepperDash.Essentials.Core
             SigType = sigType;
         }
     }
+
+	public interface IRoutingSyncProvider
+	{
+		event RoutingSyncProviderDelegate SyncChanged;
+	}
+
+	public delegate void RoutingSyncProviderDelegate(uint inputNumber, bool hasSync);
 }
