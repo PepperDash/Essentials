@@ -183,7 +183,7 @@ namespace PepperDash_Essentials_DM.Chassis
 				var hdmiPort = new RoutingOutputPort(hdmiKey, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, output, this)
 				{
 					FeedbackMatchObject = output,
-					Port = output.HdmiOutput.HdmiOutputPort.StreamCec
+					Port = output.HdmiOutput.HdmiOutputPort
 				};
 				Debug.Console(1, this, "Adding Output port: {0} - {1}", hdmiPort.Key, name);
 				OutputPorts.Add(hdmiPort);
@@ -192,13 +192,13 @@ namespace PepperDash_Essentials_DM.Chassis
 				var dmLitePort = new RoutingOutputPort(dmLiteKey, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, output, this)
 				{
 					FeedbackMatchObject = output,
-					Port = output.DmLiteOutput.DmLiteOutputPort.StreamCec
+					Port = output.DmLiteOutput.DmLiteOutputPort
 				};
 				Debug.Console(1, this, "Adding Output port: {0} - {1}", dmLitePort.Key, name);
 				OutputPorts.Add(dmLitePort);
-
+				
 				OutputRouteNameFeedback.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture), 
-					() => output.VideoOutFeedback.NameFeedback.StringValue));
+					() => output.VideoOutFeedback.NameFeedback.StringValue));			
 
 				VideoOutputRouteFeedbacks.Add(new IntFeedback(index.ToString(CultureInfo.InvariantCulture), 
 					() => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
