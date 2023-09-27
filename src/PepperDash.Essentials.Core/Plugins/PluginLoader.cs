@@ -53,60 +53,25 @@ namespace PepperDash.Essentials
         {
             Debug.Console(2, "Getting Assemblies loaded with Essentials");
             // Get the loaded assembly filenames
-            var appDi = new DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
-            var assemblyFiles = appDi.GetFiles("*.dll");
+            var assemblyFiles = AppDomain.CurrentDomain.GetAssemblies();
 
             Debug.Console(2, "Found {0} Assemblies", assemblyFiles.Length);
 
-            foreach (var fi in assemblyFiles)
+            foreach (var assembly in assemblyFiles)
             {
-                string version = string.Empty;
-                Assembly assembly = null;
-
-                switch (fi.Name)
-                {
-                    case ("PepperDashEssentials.dll"):
-                        {
-                            version = Global.AssemblyVersion;
-                            break;
-                        }
-                    case ("PepperDash_Essentials_Core.dll"):
-                        {
-                            version = Global.AssemblyVersion;
-                            break;
-                        }
-                    case ("PepperDash_Essentials_DM.dll"):
-                        {
-                            version = Global.AssemblyVersion;
-                            break;
-                        }
-                    case ("Essentials Devices Common.dll"):
-                        {
-                            version = Global.AssemblyVersion;
-                            break;
-                        }
-                    case ("PepperDash_Core.dll"):
-                        {
-                            version = PepperDash.Core.Debug.PepperDashCoreVersion;
-                            break;
-                        }
-                }
-
-                LoadedAssemblies.Add(new LoadedAssembly(fi.Name, version, assembly));
+                var assemblyName = assembly.GetName();
+                LoadedAssemblies.Add(
+                    new LoadedAssembly(assemblyName.Name, assemblyName.Version.ToString(), assembly));
             }
 
-            if (Debug.Level > 1)
-            {
-                Debug.Console(2, "Loaded Assemblies:");
+            Debug.Console(2, "Loaded Assemblies:");
 
-                foreach (var assembly in LoadedAssemblies)
-                {
-                    Debug.Console(2, "Assembly: {0}", assembly.Name);
-                }
+            foreach (var assembly in LoadedAssemblies)
+            {
+                Debug.Console(2, "Assembly: {0}", assembly.Name);
             }
         }
-
-
+        
         public static void SetEssentialsAssembly(string name, Assembly assembly)
         {
             var loadedAssembly = LoadedAssemblies.FirstOrDefault(la => la.Name.Equals(name));
@@ -124,23 +89,13 @@ namespace PepperDash.Essentials
         static LoadedAssembly LoadAssembly(string filePath)
         {
             //Debug.Console(2, "Attempting to load {0}", filePath);
-            var assembly = Assembly.LoadFrom(filePath);
-            if (assembly != null)
-            {
-                var assyVersion = GetAssemblyVersion(assembly);
+            var assembly     = Assembly.LoadFrom(filePath);
+            var assemblyName = assembly.GetName();
 
-                var loadedAssembly = new LoadedAssembly(assembly.GetName().Name, assyVersion, assembly);
-                LoadedAssemblies.Add(loadedAssembly);
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded assembly '{0}', version {1}", loadedAssembly.Name, loadedAssembly.Version);
-                return loadedAssembly;
-            }
-            else
-            {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to load assembly: '{0}'", filePath);
-            }
-
-            return null;
-
+            var loadedAssembly = new LoadedAssembly(assemblyName.Name, assemblyName.Version.ToString(), assembly);
+            LoadedAssemblies.Add(loadedAssembly);
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded assembly '{0}', version {1}", loadedAssembly.Name, loadedAssembly.Version);
+            return loadedAssembly;
         }
 
         /// <summary>
@@ -174,7 +129,11 @@ namespace PepperDash.Essentials
         public static bool CheckIfAssemblyLoaded(string name)
         {
             Debug.Console(2, "Checking if assembly: {0} is loaded...", name);
-            var loadedAssembly = LoadedAssemblies.FirstOrDefault(s => s.Name.Equals(name));
+            var loadedAssembly = AppDomain
+                .CurrentDomain
+                .GetAssemblies()
+                .Select(asm => asm.GetName().Name)
+                .FirstOrDefault(name.Contains);
 
             if (loadedAssembly != null)
             {
@@ -338,8 +297,13 @@ namespace PepperDash.Essentials
 
             foreach (var pluginFile in pluginFiles)
             {
+                if (CheckIfAssemblyLoaded(pluginFile.Name))
+                {
+                    Debug.Console(1, "Skipping {0} because it's already loaded", pluginFile.Name);
+                    continue;
+                }
+                
                 var loadedAssembly = LoadAssembly(pluginFile.FullName);
-
                 LoadedPluginFolderAssemblies.Add(loadedAssembly);
             }
 
