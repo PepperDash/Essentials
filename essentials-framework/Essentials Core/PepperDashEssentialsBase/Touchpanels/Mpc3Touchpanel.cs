@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Crestron.SimplSharpPro;
 using Newtonsoft.Json;
@@ -27,6 +28,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			}
 
 			_touchpanel.ButtonStateChange += _touchpanel_ButtonStateChange;
+
 			_buttons = buttons;
 			if (_buttons == null)
 			{
@@ -55,6 +57,8 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		/// <param name="config"></param>
 		public void InitializeButton(string key, KeypadButton config)
 		{
+			Debug.Console(1, this, "Initializing button '{0}'...", key);
+
 			if (config == null)
 			{
 				Debug.Console(1, this, "Button '{0}' config is null, unable to initialize", key);
@@ -131,6 +135,8 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		/// <param name="config"></param>
 		public void InitializeButtonFeedback(string key, KeypadButton config)
 		{
+			Debug.Console(1, this, "Initializing button '{0}' feedback...", key);
+
 			if (config == null)
 			{
 				Debug.Console(1, this, "Button '{0}' config is null, unable to initialize feedback", key);
@@ -144,36 +150,60 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			var buttonFeedback = config.Feedback;
 			if (buttonFeedback == null)
 			{
-				Debug.Console(1, this, "Button '{0}' feedback not configured and will not be implemented. Verify feedback is configured if required.", key);
+				Debug.Console(1, this, "Button '{0}' feedback not configured and will not be implemented. If feedback is required, verify configuration.", 
+					key);
 				return;
 			}
 
-			var device = DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) as Device;
-			if (device == null)
+			Feedback deviceFeedback;
+
+			try
 			{
-				Debug.Console(1, this, "Button '{0}' feedback device with key '{0}' not found, feedback will not be implemented.  Verify feedback deviceKey is properly configured.",
-					buttonFeedback.DeviceKey);
+				var device = DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) as Device;
+				if (device == null)
+				{
+					Debug.Console(1, this, "Button '{0}' feedback with deviceKey '{1}' not found, feedback will not be implemented.  Verify feedback deviceKey is properly configured.",
+						key, buttonFeedback.DeviceKey);
+					return;
+				}
+				
+				deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
+				if (deviceFeedback == null)
+				{
+					Debug.Console(1, this, "Button '{0}' feedback failed to get feedback property for '{1}', feedback will not be implemented.  Verify feedback deviceKey is properly configured.",
+						key, buttonFeedback.FeedbackName);
+					return;
+				}
+
+				// TODO [ ] verify if this can replace the current method
+				//Debug.Console(0, this, "deviceFeedback.GetType().Name: '{0}'", deviceFeedback.GetType().Name);
+				//switch (feedback.GetType().Name.ToLower())
+				//{
+				//    case("boolfeedback"):
+				//    {
+				//        break;
+				//    }
+				//    case("intfeedback"):
+				//    {
+				//        break;
+				//    }
+				//    case("stringfeedback"):
+				//    {
+				//        break;
+				//    }
+				//}
+			}
+			catch (Exception ex)
+			{
+				Debug.Console(0, this, "Failed to initialize button '{0}' feedback with deviceKey '{1}'. If feedback is required, verify configuration.",
+						key, buttonFeedback.DeviceKey);
+
+				Debug.Console(1, this, "InitializeButtonFeedback Exception Message: {0}", ex.Message);
+				Debug.Console(2, this, "InitializeButtonFeedback Exception StackTrace: {0}", ex.StackTrace);
+				if (ex.InnerException != null) Debug.Console(2, this, "InitializeButtonFeedback Exception InnerExceptioni: {0}", ex.InnerException);
+
 				return;
 			}
-
-			// TODO [ ] verify if this can replace the current method
-			var deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
-			Debug.Console(0, this, "deviceFeedback.GetType().Name: '{0}'", deviceFeedback.GetType().Name);
-			//switch (feedback.GetType().Name.ToLower())
-			//{
-			//    case("boolfeedback"):
-			//    {
-			//        break;
-			//    }
-			//    case("intfeedback"):
-			//    {
-			//        break;
-			//    }
-			//    case("stringfeedback"):
-			//    {
-			//        break;
-			//    }
-			//}
 
 			var boolFeedback = deviceFeedback as BoolFeedback;
 			var intFeedback = deviceFeedback as IntFeedback;
