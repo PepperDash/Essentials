@@ -41,7 +41,6 @@ namespace PepperDash.Essentials.Core
         void RunRouteAction(string routeKey, string sourceListKey);
 
         void RunRouteAction(string routeKey, string sourceListKey, Action successCallback);
-
     }
 
     /// <summary>
@@ -76,6 +75,32 @@ namespace PepperDash.Essentials.Core
         List<EssentialsDevice> EnvironmentalControlDevices { get; }
 
         bool HasEnvironmentalControlDevices { get; }
+    }
+
+    public interface IRoomOccupancy:IKeyed
+    {
+        IOccupancyStatusProvider RoomOccupancy { get; }
+        bool OccupancyStatusProviderIsRemote { get; }
+
+        void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes);
+
+        void RoomVacatedForTimeoutPeriod(object o);
+
+        void StartRoomVacancyTimer(eVacancyMode mode);
+
+        eVacancyMode VacancyMode { get; }
+
+        event EventHandler<EventArgs> RoomOccupancyIsSet;
+    }
+
+    public interface IEmergency
+    {
+        EssentialsRoomEmergencyBase Emergency { get; }
+    }
+
+    public interface IMicrophonePrivacy
+    {
+        Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; }
     }
 
 }
