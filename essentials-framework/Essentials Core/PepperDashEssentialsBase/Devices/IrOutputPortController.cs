@@ -29,6 +29,8 @@ namespace PepperDash.Essentials.Core
 
         public string[] IrFileCommands { get { return IrPort.AvailableStandardIRCmds(IrPortUid); } }
 
+		public bool UseBridgeJoinMap { get; private set; }
+
 		/// <summary>
 		/// Constructor for IrDevice base class.  If a null port is provided, this class will 
 		/// still function without trying to talk to a port.
@@ -62,6 +64,8 @@ namespace PepperDash.Essentials.Core
                     Debug.Console(0, this, "WARNING No valid IR Port assigned to controller. IR will not function");
                     return;
                 }
+
+				UseBridgeJoinMap = config.Properties["control"]["useBridgeJoinMap"].Value<bool>();
                 
                 var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
                 Debug.Console(1, "*************Attempting to load IR file: {0}***************", filePath);

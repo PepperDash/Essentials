@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash_Essentials_Core.Bridges.JoinMaps;
 
 namespace PepperDash.Essentials.Core.Devices
 {
@@ -21,9 +21,12 @@ namespace PepperDash.Essentials.Core.Devices
 
         public string[] IrCommands {get { return _port.IrFileCommands; }}
 
+	    public Dictionary<string, JoinDataComplete> BridgeJoins; 
+
         public GenericIrController(string key, string name, IrOutputPortController irPort) : base(key, name)
         {
             _port = irPort;
+			if(_port.UseBridgeJoinMap) BridgeJoins = new Dictionary<string, JoinDataComplete>();
 
             if (_port == null)
             {
@@ -71,23 +74,39 @@ namespace PepperDash.Essentials.Core.Devices
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GenericIrControllerJoinMap>(joinMapSerialized);
 
-            for (uint i = 0; i < _port.IrFileCommands.Length; i++)
-            {
-                var cmd = _port.IrFileCommands[i];
-                var joinData = new JoinDataComplete(new JoinData {JoinNumber = i, JoinSpan = 1},
-                    new JoinMetadata
-                    {
-                        Description = cmd,
-                        JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                        JoinType = eJoinType.Digital
-                    });
+	        if (_port.UseBridgeJoinMap)
+	        {
+				Debug.Console(0, this, "Using new IR bridge join map");
 
-                joinData.SetJoinOffset(joinStart);
+		        var joins = BridgeJoins.Where((kv) => _port.IrFileCommands.Any(cmd => cmd == kv.Key)).ToDictionary(kv => kv.Key, kv=> kv.Value);
+				foreach (var join in joins)
+				{
+					Debug.Console(0, this, "_useBridgeJoinMap: {0}: {1}", join.Key, join.Value);
+				}
+				//joinMap.Joins = joins.Select(kv => kv.Value.SetJoinOffset(joinStart)).ToString();
+	        }
+	        else
+	        {
+				Debug.Console(0, this, "Using legacy IR join mapping based on available IR commands");
 
-                joinMap.Joins.Add(cmd,joinData);
+				for (uint i = 0; i < _port.IrFileCommands.Length; i++)
+				{
+					var cmd = _port.IrFileCommands[i];
+					var joinData = new JoinDataComplete(new JoinData { JoinNumber = i, JoinSpan = 1 },
+						new JoinMetadata
+						{
+							Description = cmd,
+							JoinCapabilities = eJoinCapabilities.FromSIMPL,
+							JoinType = eJoinType.Digital
+						});
 
-                trilist.SetBoolSigAction(joinData.JoinNumber, (b) => Press(cmd, b));
-            }
+					joinData.SetJoinOffset(joinStart);
+
+					joinMap.Joins.Add(cmd, joinData);
+
+					trilist.SetBoolSigAction(joinData.JoinNumber, (b) => Press(cmd, b));
+				}   
+	        }            
 
             joinMap.PrintJoinMapInfo();
 
@@ -106,13 +125,6 @@ namespace PepperDash.Essentials.Core.Devices
         public void Press(string command, bool pressRelease)
         {
             _port.PressRelease(command, pressRelease);
-        }
-    }
-
-    public sealed class GenericIrControllerJoinMap : JoinMapBaseAdvanced
-    {
-        public GenericIrControllerJoinMap(uint joinStart) : base(joinStart)
-        {
         }
     }
 
