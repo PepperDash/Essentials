@@ -82,7 +82,7 @@ namespace PepperDash.Essentials.Core.Devices
 		        }
 		        foreach (var bridgeJoin in bridgeJoins)
 		        {
-					Debug.Console(0, this, @"bridgeJoin: Key-'{0}'
+					Debug.Console(2, this, @"bridgeJoin: Key-'{0}'
 Value.Key-'{1}'
 Value.JoinNumber-'{2}'
 Value.Metadata.Description-'{3}'", 
@@ -95,47 +95,7 @@ Value.Metadata.Description-'{3}'",
 			        var joinCmd = bridgeJoin.Key;
 
 			        trilist.SetBoolSigAction(joinNumber, (b) => Press(joinCmd, b));
-		        }		        
-
-		        //foreach (var irFileCommand in _port.IrFileCommands)
-		        //{
-		        //    var cmd = irFileCommand;
-		        //    JoinDataComplete joinDataComplete;
-		        //    if (joinMap.Joins.TryGetValue(cmd, out joinDataComplete))
-		        //    {
-		        //        Debug.Console(0, this, "joinDataComplete: attributeName-'{0}', joinNumber-'{1}', joinSpan-'{2}', metadata.description-'{3}'",
-		        //            joinDataComplete.AttributeName, joinDataComplete.JoinNumber, joinDataComplete.JoinSpan, joinDataComplete.Metadata.Description);				        
-
-		        //        trilist.SetBoolSigAction(joinDataComplete.JoinNumber, (b) => Press(cmd, b));
-		        //    }
-		        //    else
-		        //    {
-		        //        Debug.Console(0, this, "GenericIrController join map does not contain support for IR command '{0}', verify IR file.", cmd);
-		        //    }
-
-
-
-
-		        //    //if (joinMap.Joins.ContainsKey(cmd))
-		        //    //{
-		        //    //    Debug.Console(0, this, "joinData: key-'{0}', joinNumber-'{1}', joinSpan-'{2}', description-'{3}'",
-		        //    //        joinData.Key, joinData.Value.JoinNumber, joinData.Value.JoinSpan, joinData.Value.Metadata.Description);
-		        //    //}
-
-		        //    //Debug.Console(0, this, "_port.IrFileCommand: {0}", irFileCommand);
-		        //    //var joinData = joinMap.Joins.FirstOrDefault(j => j.Key == cmd);			        
-
-		        //    //if (joinData.Value == null) continue;
-
-		        //    //joinData.Value.SetJoinOffset(joinStart);
-
-		        //    //Debug.Console(0, this, "joinData: key-'{0}', joinNumber-'{1}', joinSpan-'{2}', description-'{3}'",
-		        //    //    joinData.Key, joinData.Value.JoinNumber, joinData.Value.JoinSpan, joinData.Value.Metadata.Description);
-
-		        //    //joinMap.Joins.Add(joinData.Key, joinData.Value);
-
-		        //    //trilist.SetBoolSigAction(joinData.Value.JoinNumber, (b) => Press(joinData.Key, b));
-		        //}
+		        }
 	        }
 	        else
 	        {
