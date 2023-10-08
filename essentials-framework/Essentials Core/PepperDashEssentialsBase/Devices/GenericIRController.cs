@@ -19,15 +19,11 @@ namespace PepperDash.Essentials.Core.Devices
 
         private readonly IrOutputPortController _port; 
 
-        public string[] IrCommands {get { return _port.IrFileCommands; }}
-
-	    public Dictionary<string, JoinDataComplete> BridgeJoins; 
+        public string[] IrCommands {get { return _port.IrFileCommands; }}	    
 
         public GenericIrController(string key, string name, IrOutputPortController irPort) : base(key, name)
         {
             _port = irPort;
-			if(_port.UseBridgeJoinMap) BridgeJoins = new Dictionary<string, JoinDataComplete>();
-
             if (_port == null)
             {
                 Debug.Console(0, this, Debug.ErrorLogLevel.Error, "IR Port is null, device will not function");
@@ -78,16 +74,74 @@ namespace PepperDash.Essentials.Core.Devices
 	        {
 				Debug.Console(0, this, "Using new IR bridge join map");
 
-		        var joins = BridgeJoins.Where((kv) => _port.IrFileCommands.Any(cmd => cmd == kv.Key)).ToDictionary(kv => kv.Key, kv=> kv.Value);
-				foreach (var join in joins)
-				{
-					Debug.Console(0, this, "_useBridgeJoinMap: {0}: {1}", join.Key, join.Value);
-				}
-				//joinMap.Joins = joins.Select(kv => kv.Value.SetJoinOffset(joinStart)).ToString();
+		        var bridgeJoins = joinMap.Joins.Where((kv) => _port.IrFileCommands.Any(cmd => cmd == kv.Key)).ToDictionary(kv => kv.Key);
+		        if (bridgeJoins == null)
+		        {
+					Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Failed to link new IR bridge join map");
+			        return;
+		        }
+		        foreach (var bridgeJoin in bridgeJoins)
+		        {
+					Debug.Console(0, this, @"bridgeJoin: Key-'{0}'
+Value.Key-'{1}'
+Value.JoinNumber-'{2}'
+Value.Metadata.Description-'{3}'", 
+						bridgeJoin.Key, 
+						bridgeJoin.Value.Key, 
+						bridgeJoin.Value.Value.JoinNumber, 
+						bridgeJoin.Value.Value.Metadata.Description);
+
+			        var joinNumber = bridgeJoin.Value.Value.JoinNumber;
+			        var joinCmd = bridgeJoin.Key;
+
+			        trilist.SetBoolSigAction(joinNumber, (b) => Press(joinCmd, b));
+		        }		        
+
+		        //foreach (var irFileCommand in _port.IrFileCommands)
+		        //{
+		        //    var cmd = irFileCommand;
+		        //    JoinDataComplete joinDataComplete;
+		        //    if (joinMap.Joins.TryGetValue(cmd, out joinDataComplete))
+		        //    {
+		        //        Debug.Console(0, this, "joinDataComplete: attributeName-'{0}', joinNumber-'{1}', joinSpan-'{2}', metadata.description-'{3}'",
+		        //            joinDataComplete.AttributeName, joinDataComplete.JoinNumber, joinDataComplete.JoinSpan, joinDataComplete.Metadata.Description);				        
+
+		        //        trilist.SetBoolSigAction(joinDataComplete.JoinNumber, (b) => Press(cmd, b));
+		        //    }
+		        //    else
+		        //    {
+		        //        Debug.Console(0, this, "GenericIrController join map does not contain support for IR command '{0}', verify IR file.", cmd);
+		        //    }
+
+
+
+
+		        //    //if (joinMap.Joins.ContainsKey(cmd))
+		        //    //{
+		        //    //    Debug.Console(0, this, "joinData: key-'{0}', joinNumber-'{1}', joinSpan-'{2}', description-'{3}'",
+		        //    //        joinData.Key, joinData.Value.JoinNumber, joinData.Value.JoinSpan, joinData.Value.Metadata.Description);
+		        //    //}
+
+		        //    //Debug.Console(0, this, "_port.IrFileCommand: {0}", irFileCommand);
+		        //    //var joinData = joinMap.Joins.FirstOrDefault(j => j.Key == cmd);			        
+
+		        //    //if (joinData.Value == null) continue;
+
+		        //    //joinData.Value.SetJoinOffset(joinStart);
+
+		        //    //Debug.Console(0, this, "joinData: key-'{0}', joinNumber-'{1}', joinSpan-'{2}', description-'{3}'",
+		        //    //    joinData.Key, joinData.Value.JoinNumber, joinData.Value.JoinSpan, joinData.Value.Metadata.Description);
+
+		        //    //joinMap.Joins.Add(joinData.Key, joinData.Value);
+
+		        //    //trilist.SetBoolSigAction(joinData.Value.JoinNumber, (b) => Press(joinData.Key, b));
+		        //}
 	        }
 	        else
 	        {
 				Debug.Console(0, this, "Using legacy IR join mapping based on available IR commands");
+
+				joinMap.Joins.Clear();
 
 				for (uint i = 0; i < _port.IrFileCommands.Length; i++)
 				{

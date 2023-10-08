@@ -55,24 +55,23 @@ namespace PepperDash.Essentials.Core
 	        : base(key)
 	    {
             DriverLoaded = new BoolFeedback(() => DriverIsLoaded);
+			UseBridgeJoinMap = config.Properties["control"].Value<bool>("useBridgeJoinMap");
             AddPostActivationAction(() =>
             {
-                IrPort = postActivationFunc(config);
+	            IrPort = postActivationFunc(config);
 
                 if (IrPort == null)
                 {
                     Debug.Console(0, this, "WARNING No valid IR Port assigned to controller. IR will not function");
                     return;
                 }
-
-				UseBridgeJoinMap = config.Properties["control"]["useBridgeJoinMap"].Value<bool>();
                 
                 var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
                 Debug.Console(1, "*************Attempting to load IR file: {0}***************", filePath);
 
                 LoadDriver(filePath);
-                    
-                PrintAvailableCommands();
+                
+				if(!UseBridgeJoinMap) PrintAvailableCommands();
             });
 	    }
 
