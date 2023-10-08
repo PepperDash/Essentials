@@ -13,7 +13,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Power Toggle",
+					Description = "POWER",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -27,7 +27,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Discrete Power On",
+					Description = "POWER_ON",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -41,7 +41,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Discrete Power Off",
+					Description = "POWER_OFF",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -55,7 +55,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Play",
+					Description = "PLAY",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -69,7 +69,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Play/Pause",
+					Description = "PLAY_PAUSE",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -83,7 +83,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Stop",
+					Description = "STOP",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -97,7 +97,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Pause",
+					Description = "PAUSE",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -111,7 +111,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Forward Scan",
+					Description = "FSCAN",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -125,7 +125,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Forward Search",
+					Description = "F_SRCH",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -139,7 +139,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Forward Skip/Next",
+					Description = "F_SKIP",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -153,7 +153,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Reverse Scan",
+					Description = "RSCAN",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -167,7 +167,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Reverse Search",
+					Description = "R_SRCH",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -181,7 +181,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Reverse Skip/Previous",
+					Description = "R_SKIP",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -195,7 +195,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Track +",
+					Description = "TRACK+",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -209,7 +209,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Transport Track -",
+					Description = "TRACK-",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -224,7 +224,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 0",
+					Description = "0",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -238,7 +238,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 1",
+					Description = "1",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -252,7 +252,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 2",
+					Description = "2",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -266,7 +266,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 3",
+					Description = "3",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -280,7 +280,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 4",
+					Description = "4",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -294,7 +294,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 5",
+					Description = "5",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -308,7 +308,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 6",
+					Description = "6",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -322,7 +322,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 7",
+					Description = "7",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -336,7 +336,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 8",
+					Description = "8",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -350,7 +350,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad 9",
+					Description = "9",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -364,7 +364,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad #",
+					Description = "#",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -378,7 +378,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad Star",
+					Description = "*",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -392,7 +392,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad A",
+					Description = "A",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -406,7 +406,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad B",
+					Description = "B",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -420,7 +420,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad C",
+					Description = "C",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -434,7 +434,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad D",
+					Description = "D",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -448,7 +448,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad Red",
+					Description = "RED",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -462,7 +462,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad Green",
+					Description = "GREEN",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -476,7 +476,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad Yellow",
+					Description = "YELLOW",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -490,7 +490,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Keypad Blue",
+					Description = "BLUE",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -505,7 +505,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Menu",
+					Description = "MENU",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -519,7 +519,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Guide",
+					Description = "GUIDE",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -533,7 +533,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Dvr",
+					Description = "DVR",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -547,7 +547,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Options",
+					Description = "OPTIONS",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -561,7 +561,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "On Demand",
+					Description = "ON_DEMAND",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -576,7 +576,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Dpad Up",
+					Description = "UP_ARROW",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -590,7 +590,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Dpad Down",
+					Description = "DN_ARROW",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -604,7 +604,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Dpad Left",
+					Description = "LEFT_ARROW",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -618,7 +618,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Dpad Right",
+					Description = "RIGHT_ARROW",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -632,7 +632,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Dpad Select",
+					Description = "SELECT",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -646,7 +646,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Return",
+					Description = "RETURN",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -660,7 +660,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Back",
+					Description = "BACK",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -674,7 +674,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Home",
+					Description = "HOME",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -688,7 +688,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Channel Up",
+					Description = "CH+",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -702,7 +702,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Channel Down",
+					Description = "CH-",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -716,7 +716,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Last",
+					Description = "LAST",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -730,7 +730,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Page Up",
+					Description = "PAGE_UP",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
@@ -744,7 +744,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				},
 				new JoinMetadata
 				{
-					Description = "Page Down",
+					Description = "PAGE_DOWN",
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
