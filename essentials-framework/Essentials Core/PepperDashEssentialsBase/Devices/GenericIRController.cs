@@ -80,21 +80,29 @@ namespace PepperDash.Essentials.Core.Devices
 					Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Failed to link new IR bridge join map");
 			        return;
 		        }
+
+				joinMap.Joins.Clear();
+
 		        foreach (var bridgeJoin in bridgeJoins)
 		        {
+			        var key = bridgeJoin.Key;
+			        var joinDataKey = bridgeJoin.Value.Key;
+			        var joinDataValue = bridgeJoin.Value.Value;
+			        var joinNumber = bridgeJoin.Value.Value.JoinNumber;					
+
 					Debug.Console(2, this, @"bridgeJoin: Key-'{0}'
 Value.Key-'{1}'
 Value.JoinNumber-'{2}'
 Value.Metadata.Description-'{3}'", 
-						bridgeJoin.Key, 
-						bridgeJoin.Value.Key, 
-						bridgeJoin.Value.Value.JoinNumber, 
-						bridgeJoin.Value.Value.Metadata.Description);
+						key,
+						joinDataKey,
+						joinNumber,
+						joinDataValue.Metadata.Description);
 
-			        var joinNumber = bridgeJoin.Value.Value.JoinNumber;
-			        var joinCmd = bridgeJoin.Key;
 
-			        trilist.SetBoolSigAction(joinNumber, (b) => Press(joinCmd, b));
+					joinMap.Joins.Add(key, joinDataValue);
+
+			        trilist.SetBoolSigAction(joinNumber, (b) => Press(key, b));
 		        }
 	        }
 	        else
