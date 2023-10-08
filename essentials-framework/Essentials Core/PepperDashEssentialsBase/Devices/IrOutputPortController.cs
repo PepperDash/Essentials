@@ -71,7 +71,7 @@ namespace PepperDash.Essentials.Core
 
                 LoadDriver(filePath);
                 
-				if(!UseBridgeJoinMap) PrintAvailableCommands();
+				PrintAvailableCommands();
             });
 	    }
 
