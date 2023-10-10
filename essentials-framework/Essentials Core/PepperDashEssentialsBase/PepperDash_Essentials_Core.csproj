@@ -127,6 +127,7 @@
     <Compile Include="Bridges\IBridge.cs" />
     <Compile Include="Bridges\JoinMaps\AirMediaControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\AppleTvJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\HdPsXxxControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IAnalogInputJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IDigitalOutputJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\PduJoinMapBase.cs" />
@@ -200,6 +201,7 @@
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
     <Compile Include="Crestron IO\StatusSign\StatusSignController.cs" />
+    <Compile Include="Device Info\NetworkDeviceHelpers.cs" />
     <Compile Include="Devices\PowerInterfaces.cs" />
     <Compile Include="Web\RequestHandlers\AppDebugRequestHandler.cs" />
     <Compile Include="Web\RequestHandlers\GetFeedbacksForDeviceRequestHandler.cs" />
