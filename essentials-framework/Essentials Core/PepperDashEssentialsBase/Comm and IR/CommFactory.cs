@@ -81,6 +81,15 @@ namespace PepperDash.Essentials.Core
                         }
 					case eControlMethod.Telnet:
 						break;
+					case eControlMethod.SecureTcpIp:
+						{
+							var secureTcp = new GenericSecureTcpIpClient(deviceConfig.Key + "-secureTcp", c.Address, c.Port, c.BufferSize);
+							secureTcp.AutoReconnect = c.AutoReconnect;
+							if (secureTcp.AutoReconnect)
+								secureTcp.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
+							comm = secureTcp;
+							break;
+						}
 					default:
 						break;
 				}				
