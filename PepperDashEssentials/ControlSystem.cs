@@ -337,19 +337,20 @@ namespace PepperDash.Essentials
 		void Load()
 		{
 			LoadDevices();
-			LoadTieLines();
 			LoadRooms();
 			LoadLogoServer();
 
 			DeviceManager.ActivateAll();
+
+            LoadTieLines();
 
 		    var mobileControl = GetMobileControlDevice();
 
 		    if (mobileControl == null) return;
 
             mobileControl.LinkSystemMonitorToAppServer();
-		    
-		}
+
+        }
 
         /// <summary>
         /// Reads all devices from config and adds them to DeviceManager
