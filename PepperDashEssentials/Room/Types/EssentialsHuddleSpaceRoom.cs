@@ -334,7 +334,7 @@ namespace PepperDash.Essentials
 		/// route or commands
 		/// </summary>
 		/// <param name="name"></param>
-		public void RunRouteAction(string routeKey, Action successCallback)
+		public virtual void RunRouteAction(string routeKey, Action successCallback)
 		{
 			// Run this on a separate thread
 			new CTimer(o =>
