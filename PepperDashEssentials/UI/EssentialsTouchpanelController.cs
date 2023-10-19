@@ -49,9 +49,7 @@ namespace PepperDash.Essentials
             var room = DeviceManager.GetDeviceForKey(roomKey);
             if (room is IEssentialsHuddleSpaceRoom)
             {
-                // Screen Saver Driver
-
-                mainDriver.ScreenSaverController = new ScreenSaverController(mainDriver, _config);
+                SetupScreenSaver(room, mainDriver);
 
                 // Header Driver
                 Debug.Console(0, this, "Adding header driver");
@@ -96,8 +94,7 @@ namespace PepperDash.Essentials
             {
                 Debug.Console(0, this, "Adding huddle space VTC AV driver");
 
-                // Screen Saver Driver
-                mainDriver.ScreenSaverController = new ScreenSaverController(mainDriver, _config);
+                SetupScreenSaver(room, mainDriver);
 
                 // Header Driver
                 mainDriver.HeaderDriver = new EssentialsHeaderDriver(mainDriver, _config);
@@ -148,6 +145,16 @@ namespace PepperDash.Essentials
                 Debug.Console(0, this, "ERROR: Cannot load AvFunctionsDriver for room '{0}'", roomKey);
             }
 
+        }
+
+        private void SetupScreenSaver(IKeyed room, EssentialsPanelMainInterfaceDriver mainDriver)
+        {
+            var huddleRoom = room as IEssentialsRoom;
+            // Screen Saver Driver
+            if (huddleRoom.IsMobileControlEnabled)
+            {
+                mainDriver.ScreenSaverController = new ScreenSaverController(mainDriver, _config);
+            }
         }
 
 		public void LoadAndShowDriver(PanelDriverBase driver)
