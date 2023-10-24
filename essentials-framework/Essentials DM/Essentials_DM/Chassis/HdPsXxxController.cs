@@ -208,6 +208,38 @@ namespace PepperDash_Essentials_DM.Chassis
 		}
 
 
+		public void ListRoutingPorts()
+		{
+			try
+			{
+				foreach (var port in InputPorts)
+				{
+					Debug.Console(0, this, @"Input Port Key: {0}
+Port: {1}
+Type: {2}
+ConnectionType: {3}
+Selector: {4}
+", port.Key, port.Port, port.Type, port.ConnectionType, port.Selector);
+				}
+
+				foreach (var port in OutputPorts)
+				{
+					Debug.Console(0, this, @"Output Port Key: {0}
+Port: {1}
+Type: {2}
+ConnectionType: {3}
+Selector: {4}
+", port.Key, port.Port, port.Type, port.ConnectionType, port.Selector);
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.Console(0, this, "ListRoutingPorts Exception Message: {0}", ex.Message);
+				Debug.Console(0, this, "ListRoutingPorts Exception StackTrace: {0}", ex.StackTrace);
+				if (ex.InnerException != null) Debug.Console(0, this, "ListRoutingPorts InnerException: {0}", ex.InnerException);
+			}
+		}
+
 		#region BridgeLinking
 
 		/// <summary>
@@ -299,9 +331,9 @@ namespace PepperDash_Essentials_DM.Chassis
 		/// <param name="signalType"></param>
 		public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
 		{
-			var input = inputSelector as HdPsXxxHdmiInput;
-			var output = outputSelector as HdPsXxxHdmiOutput;
-
+			var input = inputSelector as HdPsXxxInput;
+			var output = outputSelector as HdPsXxxOutput;			
+			
 			Debug.Console(2, this, "ExecuteSwitch: input={0}, output={1}", input, output);
 
 			if (output == null)
