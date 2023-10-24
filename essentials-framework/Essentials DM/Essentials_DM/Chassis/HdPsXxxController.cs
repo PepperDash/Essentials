@@ -331,9 +331,6 @@ Selector: {4}
 		/// <param name="signalType"></param>
 		public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
 		{
-			//var input = inputSelector as HdPsXxxHdmiInput;
-			//var output = outputSelector as HdPsXxxHdmiOutput;
-
 			var input = inputSelector as HdPsXxxInput;
 			var output = outputSelector as HdPsXxxOutput;			
 			
