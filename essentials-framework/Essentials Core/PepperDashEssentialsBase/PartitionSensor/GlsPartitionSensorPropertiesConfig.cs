@@ -17,5 +17,8 @@ namespace PepperDash_Essentials_Core.PartitionSensor
         /// </remarks>
         [JsonProperty("sensitivity")]
         public ushort? Sensitivity { get; set; }
+
+        [JsonProperty("enable")]
+        public bool? Enable { get; set; }
     }
 }

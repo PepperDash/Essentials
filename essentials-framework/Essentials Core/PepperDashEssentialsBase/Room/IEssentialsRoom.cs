@@ -17,15 +17,10 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IEssentialsRoom : IKeyName, IReconfigurableDevice, IRunDefaultPresentRoute, IEnvironmentalControls
     {
-        BoolFeedback OnFeedback { get; }
-
-        event EventHandler<EventArgs> RoomOccupancyIsSet;
+        BoolFeedback OnFeedback { get; }        
 
         BoolFeedback IsWarmingUpFeedback { get; }
-        BoolFeedback IsCoolingDownFeedback { get; }
-
-        IOccupancyStatusProvider RoomOccupancy { get; }
-        bool OccupancyStatusProviderIsRemote { get; }
+        BoolFeedback IsCoolingDownFeedback { get; }        
 
         bool IsMobileControlEnabled { get; }
         IMobileControlRoomBridge MobileControlRoomBridge { get; }
@@ -35,31 +30,16 @@ namespace PepperDash.Essentials.Core
         SecondsCountdownTimer ShutdownPromptTimer { get; }
         int ShutdownPromptSeconds { get; }
         int ShutdownVacancySeconds { get; }
-        eShutdownType ShutdownType { get; }
-
-        EssentialsRoomEmergencyBase Emergency { get; }
-
-        Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; }
+        eShutdownType ShutdownType { get; }      
 
         string LogoUrlLightBkgnd { get; }
         string LogoUrlDarkBkgnd { get; }
 
-        eVacancyMode VacancyMode { get; }
+        void StartShutdown(eShutdownType type);        
 
-        bool ZeroVolumeWhenSwtichingVolumeDevices { get; }
+        void Shutdown();        
 
-        void StartShutdown(eShutdownType type);
-        void StartRoomVacancyTimer(eVacancyMode mode);
-
-        void Shutdown();
-
-        void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes);
-
-        void PowerOnToDefaultOrLastSource();
-
-        void SetDefaultLevels();
-
-        void RoomVacatedForTimeoutPeriod(object o);
+        void PowerOnToDefaultOrLastSource();               
     }
 
 }

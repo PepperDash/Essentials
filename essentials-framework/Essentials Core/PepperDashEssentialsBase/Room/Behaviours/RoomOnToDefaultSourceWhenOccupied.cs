@@ -38,7 +38,7 @@ namespace PepperDash.Essentials.Core
 
         ScheduledEventGroup FeatureEventGroup;
 
-        public IEssentialsRoom Room { get; private set; }
+        public IRoomOccupancy Room { get; private set; }
 
         private Fusion.EssentialsHuddleSpaceFusionSystemControllerBase FusionRoom;
 
@@ -84,7 +84,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         void SetUpDevice()
         {
-            Room = DeviceManager.GetDeviceForKey(PropertiesConfig.RoomKey) as IEssentialsRoom;
+            Room = DeviceManager.GetDeviceForKey(PropertiesConfig.RoomKey) as IRoomOccupancy;
 
             if (Room != null)
             {
@@ -235,12 +235,23 @@ namespace PepperDash.Essentials.Core
 
                 if (FeatureEnabled)
                 {
-                    // Check room power state first
-                    if (!Room.OnFeedback.BoolValue)
-                    {
-                        Debug.Console(1, this, "Powering Room on to default source");
-                        Room.RunDefaultPresentRoute();
+                    var essentialsRoom = Room as IEssentialsRoom;
+
+                    if (essentialsRoom != null) {
+                        if (!essentialsRoom.OnFeedback.BoolValue)
+                        {
+                            Debug.Console(1, this, "Powering Room on to default source");
+
+                            var defaultRouteRoom = Room as IRunDefaultPresentRoute;
+
+                            if (defaultRouteRoom != null)
+                            {
+                                defaultRouteRoom.RunDefaultPresentRoute();
+                            }
+                        }
                     }
+                    // Check room power state first
+                    
                 }
             }
         }
