@@ -103,7 +103,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				});
 
 			[JoinName("RECORD")]
-			public JoinDataComplete ForwardSearch = new JoinDataComplete(
+			public JoinDataComplete Record = new JoinDataComplete(
 				new JoinData
 				{
 					JoinNumber = 8,
@@ -285,7 +285,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 			// 	});
 			
 			[JoinName("ENTER")]
-			public JoinDataComplete ChannelUp = new JoinDataComplete(
+			public JoinDataComplete Enter = new JoinDataComplete(
 				new JoinData
 				{
 					JoinNumber = 21,
@@ -468,7 +468,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				});
 
 			[JoinName("INFO")]
-			public JoinDataComplete Guide = new JoinDataComplete(
+			public JoinDataComplete Info = new JoinDataComplete(
 				new JoinData
 				{
 					JoinNumber = 43,
@@ -706,14 +706,6 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
-
-
-
-
-
-
-				
 			
 			[JoinName("A")]
 			public JoinDataComplete KpA = new JoinDataComplete(
