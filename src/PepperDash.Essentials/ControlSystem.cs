@@ -1,28 +1,23 @@
 ﻿extern alias Full;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Diagnostics;
-using Crestron.SimplSharp.Reflection;
-
+using Full.Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Fusion;
-// using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.Devices.Common;
-using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
 using PepperDash.Essentials.Room.Config;
-
-using Full.Newtonsoft.Json;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PepperDash.Essentials
 {
@@ -231,8 +226,9 @@ namespace PepperDash.Essentials
 
                 new Core.DeviceFactory();
                 new Devices.Common.DeviceFactory();
-                new DM.DeviceFactory();
                 new DeviceFactory();
+
+                new Core.ProcessorExtensionDeviceFactory();
 
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
@@ -334,13 +330,14 @@ namespace PepperDash.Essentials
 		void Load()
 		{
 			LoadDevices();
-			LoadTieLines();
 			LoadRooms();
 			LoadLogoServer();
 
 			DeviceManager.ActivateAll();
 
-		    var mobileControl = GetMobileControlDevice();
+            LoadTieLines();
+
+            var mobileControl = GetMobileControlDevice();
 
 		    if (mobileControl == null) return;
 
@@ -367,6 +364,7 @@ namespace PepperDash.Essentials
 
             foreach (var devConf in ConfigReader.ConfigObject.Devices)
             {
+                IKeyed newDev = null;
 
                 try
                 {
@@ -384,47 +382,55 @@ namespace PepperDash.Essentials
                                 "WARNING: Config file defines processor type as '{0}' but actual processor is '{1}'!  Some ports may not be available",
                                 devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
 
+                        //if (newDev == null)
+                        //    newDev = PepperDash.Essentials.Core.ProcessorExtensionDeviceFactory.GetExtensionDevice(devConf);
+
+                        //if (newDev != null)
+                        //{
+                        //    DeviceManager.AddDevice(newDev);
+
+                        //    continue;
+                        //}
+
                         // Check if the processor is a DMPS model
-                        if (this.ControllerPrompt.IndexOf("dmps", StringComparison.OrdinalIgnoreCase) > -1)
-                        {
-                            Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", this.ControllerPrompt);
+                        //if (this.ControllerPrompt.IndexOf("dmps", StringComparison.OrdinalIgnoreCase) > -1)
+                        //{
+                        //    Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", this.ControllerPrompt);
 
-                            var propertiesConfig = JsonConvert.DeserializeObject<DM.Config.DmpsRoutingPropertiesConfig>(devConf.Properties.ToString());
+                        //    var propertiesConfig = JsonConvert.DeserializeObject<DM.Config.DmpsRoutingPropertiesConfig>(devConf.Properties.ToString());
 
-                            if(propertiesConfig == null)
-                                propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
+                        //    if(propertiesConfig == null)
+                        //        propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
 
-                            DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
-                        }
-                        else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
-                        {
-                            Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
+                        //    DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
+                        //}
+                        //else
 
-                            var butToken = devConf.Properties["buttons"];
-                            if (butToken != null)
-                            {
-                                var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
-                                var tpController = new Essentials.Core.Touchpanels.Mpc3TouchpanelController(devConf.Key, devConf.Name, Global.ControlSystem, buttons);
-                                DeviceManager.AddDevice(tpController);
-                            }
-                            else
-                            {
-                                Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: Unable to deserialize buttons collection for device: {0}", devConf.Key);
-                            }
+                        //if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
+                        //{
+                        //    Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
+
+                        //    var butToken = devConf.Properties["buttons"];
+                        //    if (butToken != null)
+                        //    {
+                        //        var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
+                        //        var tpController = new Essentials.Core.Touchpanels.Mpc3TouchpanelController(devConf.Key, devConf.Name, Global.ControlSystem, buttons);
+                        //        DeviceManager.AddDevice(tpController);
+                        //    }
+                        //    else
+                        //    {
+                        //        Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: Unable to deserialize buttons collection for device: {0}", devConf.Key);
+                        //    }
                             
-                        }
-                        else
-                        {
-                            Debug.Console(2, "************Processor is not DMPS type***************");
-                        }
-
-                        
+                        //}
+                        //else
+                        //{
+                        //    Debug.Console(2, "************Processor is not DMPS type***************");
+                        //}
 
                         continue;
                     }
 
-                    // Try local factories first
-                    IKeyed newDev = null;
 
                     if (newDev == null)
                         newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);

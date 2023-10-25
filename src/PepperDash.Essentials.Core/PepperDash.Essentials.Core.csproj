@@ -27,7 +27,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.19.36" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.20.31" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2">
       <Aliases>Full</Aliases>
     </PackageReference>

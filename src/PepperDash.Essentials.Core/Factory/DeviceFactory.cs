@@ -1,20 +1,11 @@
 ﻿extern alias Full;
-
+using Crestron.SimplSharp.Reflection;
+using Full.Newtonsoft.Json.Linq;
+using PepperDash.Core;
+using PepperDash.Essentials.Core.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.GeneralIO;
-using Crestron.SimplSharp.Reflection;
-using PepperDash.Core;
-using Full.Newtonsoft.Json.Linq;
-using Full.Newtonsoft.Json;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.CrestronIO;
-using PepperDash.Essentials.Core.Touchpanels;
 
 namespace PepperDash.Essentials.Core
 {
