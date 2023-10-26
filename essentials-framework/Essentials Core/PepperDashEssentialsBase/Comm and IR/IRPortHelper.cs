@@ -224,12 +224,18 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public class IrOutPortConfig
 	{
+		[JsonProperty("port")]
 		public IROutputPort Port { get; set; }
+		
+		[JsonProperty("fileName")]
 		public string FileName { get; set; }
+
+		[JsonProperty("useBridgeJoinMap")]
+		public bool UseBridgeJoinMap { get; set; }
 
 		public IrOutPortConfig()
 		{
-			FileName = "";
+			FileName = "";			
 		}
 	}
 }
