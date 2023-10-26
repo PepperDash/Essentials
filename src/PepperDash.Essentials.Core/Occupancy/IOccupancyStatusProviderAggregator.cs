@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core
 {
@@ -86,24 +84,6 @@ namespace PepperDash.Essentials.Core
         public void ClearOccupancyStatusProviders()
         {
             _aggregatedOccupancyStatus.ClearOutputs();
-        }
-    }
-
-    public class OccupancyAggregatorFactory : EssentialsDeviceFactory<IOccupancyStatusProviderAggregator>
-    {
-        public OccupancyAggregatorFactory()
-        {
-            TypeNames = new List<string> { "occupancyAggregator", "occAggregate" };
-        }
-
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
-
-            var config = dc.Properties.ToObject<OccupancyAggregatorConfig>();
-                
-            return new IOccupancyStatusProviderAggregator(dc.Key, dc.Name, config);
         }
     }
 }

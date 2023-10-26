@@ -11,6 +11,4 @@ namespace PepperDash.Essentials.Core.DeviceInfo
 
         void UpdateDeviceInfo();
     }
-
-    public delegate void DeviceInfoChangeHandler(IKeyed device, DeviceInfoEventArgs args);
 }

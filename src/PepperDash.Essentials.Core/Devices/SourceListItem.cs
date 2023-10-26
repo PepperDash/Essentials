@@ -13,15 +13,7 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
-	/// <summary>
-	/// 
-	/// </summary>
-	public enum eSourceListItemType
-	{
-		Route, Off, Other, SomethingAwesomerThanThese
-	}
-
-	/// <summary>
+    /// <summary>
 	/// Represents an item in a source list - can be deserialized into.
 	/// </summary>
 	public class SourceListItem
@@ -151,28 +143,4 @@ namespace PepperDash.Essentials.Core
 
         
 	}
-
-	public class SourceRouteListItem
-	{
-		[JsonProperty("sourceKey")]
-		public string SourceKey { get; set; }
-
-		[JsonProperty("destinationKey")]
-		public string DestinationKey { get; set; }
-
-		[JsonProperty("type")]
-		public eRoutingSignalType Type { get; set; }
-	}
-
-    /// <summary>
-    /// Defines the valid destination types for SourceListItems in a room
-    /// </summary>
-    public enum eSourceListItemDestinationTypes
-    {
-        defaultDisplay,
-        leftDisplay,
-        rightDisplay,
-        programAudio,
-        codecContent
-    }
 }

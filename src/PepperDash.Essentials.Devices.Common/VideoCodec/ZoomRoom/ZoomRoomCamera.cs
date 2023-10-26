@@ -13,27 +13,6 @@ using Full.Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
-    public enum eZoomRoomCameraState
-    {
-        Start,
-        Continue,
-        Stop,
-        RequestRemote,
-        GiveupRemote,
-        RequestedByFarEnd
-    }
-
-    public enum eZoomRoomCameraAction
-    {
-        Left,
-        Right,
-        Up,
-        Down,
-        In,
-        Out
-    }
-
-
     public class ZoomRoomCamera : CameraBase, IHasCameraPtzControl, IBridgeAdvanced
     {
         protected ZoomRoom ParentCodec { get; private set; }
@@ -216,16 +195,5 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
-    }
-
-    public class ZoomRoomFarEndCamera : ZoomRoomCamera, IAmFarEndCamera
-    {
-
-        public ZoomRoomFarEndCamera(string key, string name, ZoomRoom codec, int id)
-            : base(key, name, codec)
-        {
-            Id = id;
-        }
-
     }
 }

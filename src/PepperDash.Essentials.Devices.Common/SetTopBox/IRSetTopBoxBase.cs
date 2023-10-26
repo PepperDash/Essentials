@@ -1,7 +1,6 @@
 ﻿extern alias Full;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
@@ -11,7 +10,6 @@ using Full.Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
@@ -494,27 +492,4 @@ namespace PepperDash.Essentials.Devices.Common
             }
 	    }
 	}
-
-    public class IRSetTopBoxBaseFactory : EssentialsDeviceFactory<IRSetTopBoxBase>
-    {
-        public IRSetTopBoxBaseFactory()
-        {
-            TypeNames = new List<string>() { "settopbox" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new SetTopBox Device");
-            var irCont = IRPortHelper.GetIrOutputPortController(dc);
-            var config = dc.Properties.ToObject<SetTopBoxPropertiesConfig>();
-            var stb = new IRSetTopBoxBase(dc.Key, dc.Name, irCont, config);
-
-            var listName = dc.Properties.Value<string>("presetsList");
-            if (listName != null)
-                stb.LoadPresets(listName);
-            return stb;
-
-        }
-    }
-
 }

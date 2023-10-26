@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec
@@ -95,37 +92,4 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
         }
 
     }
-
-    public class MockAudioCodecInfo : AudioCodecInfo
-    {
-        string _phoneNumber;
-
-        public override string PhoneNumber
-        {
-            get
-            {
-                return _phoneNumber;
-            }
-            set
-            {
-                _phoneNumber = value;
-            }
-        }
-    }
-
-    public class MockACFactory : EssentialsDeviceFactory<MockAC>
-    {
-        public MockACFactory()
-        {
-            TypeNames = new List<string>() { "mockac" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new MockAc Device");
-            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<AudioCodec.MockAcPropertiesConfig>(dc.Properties.ToString());
-            return new AudioCodec.MockAC(dc.Key, dc.Name, props);
-        }
-    }
-
 }

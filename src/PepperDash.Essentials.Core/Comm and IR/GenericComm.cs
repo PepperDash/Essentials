@@ -1,7 +1,6 @@
 ﻿extern alias Full;
 
 using System;
-using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronSockets;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Full.Newtonsoft.Json;
@@ -125,20 +124,6 @@ namespace PepperDash.Essentials.Core
                     sComm.Disconnect();
                 }
             });
-        }
-    }
-
-    public class GenericCommFactory : EssentialsDeviceFactory<GenericComm>
-    {
-        public GenericCommFactory()
-        {
-            TypeNames = new List<string>() { "genericComm" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
-            return new GenericComm(dc);
         }
     }
 }

@@ -18,19 +18,6 @@ using PepperDash.Essentials.Core.Touchpanels;
 
 namespace PepperDash.Essentials.Core
 {
-    public class DeviceFactoryWrapper
-    {
-        public CType CType { get; set; }
-        public string Description { get; set; }
-        public Func<DeviceConfig, IKeyed> FactoryMethod { get; set; }
-
-        public DeviceFactoryWrapper()
-        {
-            CType = null;
-            Description = "Not Available";
-        }
-    }
-
     public class DeviceFactory
     {
         public DeviceFactory()

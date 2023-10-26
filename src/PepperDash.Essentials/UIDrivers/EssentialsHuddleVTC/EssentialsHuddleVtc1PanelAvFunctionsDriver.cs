@@ -1614,39 +1614,4 @@ namespace PepperDash.Essentials
                 RefreshSourceInfo();
         }
     }
-
-    /// <summary>
-    /// For hanging off various common AV things that child drivers might need from a parent AV driver
-    /// </summary>
-    public interface IAVDriver
-    {
-        PanelDriverBase Parent { get; }
-        JoinedSigInterlock PopupInterlock { get; }
-        void ShowNotificationRibbon(string message, int timeout);
-        void HideNotificationRibbon();
-        void ShowTech();
-        uint StartPageVisibleJoin { get; }
-    }
-
-    /// <summary>
-    /// For hanging off various common VC things that child drivers might need from a parent AV driver
-    /// </summary>
-    public interface IAVWithVCDriver : IAVDriver
-    {
-        IEssentialsHuddleVtc1Room CurrentRoom { get; }
-
-        PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; }
-        /// <summary>
-        /// Exposes the ability to switch into call mode
-        /// </summary>
-        void ActivityCallButtonPressed();
-        /// <summary>
-        /// Allows the codec to trigger the main UI to clear up if call is coming in.
-        /// </summary>
-        void PrepareForCodecIncomingCall();
-
-        uint CallListOrMeetingInfoPopoverVisibilityJoin { get; }
-
-        SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
-    }
 }

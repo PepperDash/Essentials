@@ -1,17 +1,14 @@
 ﻿extern alias Full;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Reflection;
-using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Full.Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
 
@@ -188,33 +185,4 @@ namespace PepperDash.Essentials.Devices.Common
             trilist.SetBoolSigAction(joinMap.PlayPause.JoinNumber, Play);
 	    }
 	}
-
-    public class AppleTVFactory : EssentialsDeviceFactory<AppleTV>
-    {
-        public AppleTVFactory()
-        {
-            TypeNames = new List<string>() { "appletv" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new AppleTV Device");
-            var irCont = IRPortHelper.GetIrOutputPortController(dc);
-            return new AppleTV(dc.Key, dc.Name, irCont);
-        }
-    }
-
-    public static class AppleTvIrCommands
-    {
-        
-        public static string Up = "+";
-        public static string Down = "-";
-        public static string Left = IROutputStandardCommands.IROut_TRACK_MINUS;
-        public static string Right = IROutputStandardCommands.IROut_TRACK_PLUS;
-        public static string Enter = IROutputStandardCommands.IROut_ENTER;
-        public static string PlayPause = "PLAY/PAUSE";
-        public static string Rewind = "REWIND";
-        public static string Menu = "Menu";
-        public static string FastForward = "FASTFORWARD";
-    }
 }

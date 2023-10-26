@@ -409,28 +409,4 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         public const uint ClearVisibleJoin = 2911;
 
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class KeyboardControllerPressEventArgs : EventArgs
-    {
-        public string Text { get; private set; }
-        public KeyboardSpecialKey SpecialKey { get; private set; }
-
-        public KeyboardControllerPressEventArgs(string text)
-        {
-            Text = text;
-        }
-
-        public KeyboardControllerPressEventArgs(KeyboardSpecialKey key)
-        {
-            SpecialKey = key;
-        }
-    }
-
-    public enum KeyboardSpecialKey
-    {
-        None = 0, Backspace, Clear, GoButton, SecondaryButton
-    }
 }

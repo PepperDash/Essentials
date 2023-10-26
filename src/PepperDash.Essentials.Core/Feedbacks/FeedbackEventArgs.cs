@@ -38,11 +38,4 @@ namespace PepperDash.Essentials.Core
             Type = eFeedbackEventType.TypeString;
         }
     }
-
-    public enum eFeedbackEventType
-    {
-        TypeBool,
-        TypeInt,
-        TypeString
-    }
 }

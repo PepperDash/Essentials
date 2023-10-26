@@ -1,7 +1,6 @@
 ﻿extern alias Full;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
@@ -10,8 +9,6 @@ using Crestron.SimplSharpPro.CrestronThread;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-
-using Full.Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Core.Utilities
 {
@@ -119,43 +116,4 @@ namespace PepperDash.Essentials.Core.Utilities
             }
         }
     }
-
-    /// <summary>
-    /// Configuration Properties for ActionSequence
-    /// </summary>
-    public class ActionSequencePropertiesConfig
-    {
-        [JsonProperty("actionSequence")]
-        public List<SequencedDeviceActionWrapper> ActionSequence { get; set; }
-
-        public ActionSequencePropertiesConfig()
-        {
-            ActionSequence = new List<SequencedDeviceActionWrapper>();
-        }
-    }
-
-    public class SequencedDeviceActionWrapper : DeviceActionWrapper
-    {
-        [JsonProperty("delayMs")]
-        public int DelayMs { get; set; }
-    }
-
-    /// <summary>
-    /// Factory class
-    /// </summary>
-    public class ActionSequenceFactory : EssentialsDeviceFactory<ActionSequence>
-    {
-        public ActionSequenceFactory()
-        {
-            TypeNames = new List<string>() { "actionsequence" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new ActionSequence Device");
-
-            return new ActionSequence(dc.Key, dc);
-        }
-    }
-
 }

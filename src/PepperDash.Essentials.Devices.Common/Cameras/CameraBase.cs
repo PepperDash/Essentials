@@ -1,7 +1,6 @@
 ﻿extern alias Full;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -13,22 +12,12 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 using Full.Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
-    public enum eCameraCapabilities
-    {
-        None = 0,
-        Pan = 1,
-        Tilt = 2, 
-        Zoom = 4,
-        Focus = 8
-    }
-
     public abstract class CameraBase : ReconfigurableDevice, IRoutingOutputs
 	{
         [JsonProperty("controlMode", NullValueHandling = NullValueHandling.Ignore)]
@@ -266,32 +255,5 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 trilist.SetString((ushort)(joinMap.PresetLabelStart.JoinNumber + tempNum), label);
             }
         }
-	}
-
-
-    public class CameraPreset : PresetBase
-    {
-        public CameraPreset(int id, string description, bool isDefined, bool isDefinable)
-            : base(id, description, isDefined, isDefinable)
-        {
-
-        }
-    }
-
-
-	public class CameraPropertiesConfig
-	{
-		public CommunicationMonitorConfig CommunicationMonitorProperties { get; set; }
-
-		public ControlPropertiesConfig Control { get; set; }
-
-        [JsonProperty("supportsAutoMode")]
-        public bool SupportsAutoMode { get; set; }
-
-        [JsonProperty("supportsOffMode")]
-        public bool SupportsOffMode { get; set; }
-
-        [JsonProperty("presets")]
-        public List<CameraPreset> Presets { get; set; }
 	}
 }

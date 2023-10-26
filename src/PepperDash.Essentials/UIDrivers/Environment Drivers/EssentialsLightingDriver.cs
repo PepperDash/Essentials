@@ -201,10 +201,4 @@ namespace PepperDash.Essentials
             return joinOffset;
         }
     }
-
-    enum eLightsDeviceType : uint
-    {
-        None = 0,
-        Scenes = 1,
-    }
 }

@@ -1,7 +1,6 @@
 ﻿extern alias Full;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
@@ -9,8 +8,6 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-
-using Full.Newtonsoft.Json;
 
 
 namespace PepperDash.Essentials.Core.Timers
@@ -127,53 +124,4 @@ namespace PepperDash.Essentials.Core.Timers
             //}
         }
     }
-
-    /// <summary>
-    /// Configuration Properties for RetriggerableTimer
-    /// </summary>
-    public class RetriggerableTimerPropertiesConfig
-    {
-        [JsonProperty("startTimerOnActivation")]
-        public bool StartTimerOnActivation { get; set; }
-
-        [JsonProperty("timerIntervalMs")]
-        public long TimerIntervalMs { get; set; }
-
-        [JsonProperty("events")]
-        public Dictionary<eRetriggerableTimerEvents, DeviceActionWrapper> Events { get; set; }
-
-        public RetriggerableTimerPropertiesConfig()
-        {
-            Events = new Dictionary<eRetriggerableTimerEvents, DeviceActionWrapper>();
-        }
-    }
-
-    /// <summary>
-    /// The set of values describing events on the timer
-    /// </summary>
-    public enum eRetriggerableTimerEvents
-    {
-        Elapsed,
-        Stopped,
-    }
-
-    /// <summary>
-    /// Factory class
-    /// </summary>
-    public class RetriggerableTimerFactory : EssentialsDeviceFactory<RetriggerableTimer>
-    {
-        public RetriggerableTimerFactory()
-        {
-            TypeNames = new List<string>() { "retriggerabletimer" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new RetriggerableTimer Device");
-
-            return new RetriggerableTimer(dc.Key, dc);
-        }
-    }
-
-
 }

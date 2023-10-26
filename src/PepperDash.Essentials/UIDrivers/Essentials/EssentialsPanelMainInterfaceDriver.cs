@@ -160,9 +160,4 @@ namespace PepperDash.Essentials
 				CurrentChildDriver.BackButtonPressed();
 		}
     }
-
-    public interface IHasScreenSaverController
-    {
-        ScreenSaverController ScreenSaverController { get; }
-    }
 }

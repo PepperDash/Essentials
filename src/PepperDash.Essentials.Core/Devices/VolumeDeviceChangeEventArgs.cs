@@ -25,12 +25,4 @@ namespace PepperDash.Essentials.Core
 			Type = type;
 		}
 	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-	public enum ChangeType
-	{
-		WillChange, DidChange
-	}
 }

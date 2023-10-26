@@ -19,16 +19,4 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         void StandbyDeactivate();
     }
-
-    /// <summary>
-    /// Describes a device that has Half Waek Mode capability
-    /// </summary>
-    public interface IHasHalfWakeMode : IHasStandbyMode
-    {
-        BoolFeedback HalfWakeModeIsOnFeedback { get; }
-
-        BoolFeedback EnteringStandbyModeFeedback { get; }
-
-        void HalfwakeActivate();
-    }
 }

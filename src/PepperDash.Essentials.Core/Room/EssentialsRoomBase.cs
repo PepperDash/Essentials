@@ -374,42 +374,4 @@ namespace PepperDash.Essentials.Core
             return true;
         }
     }
-        
-    /// <summary>
-    /// To describe the various ways a room may be shutting down
-    /// </summary>
-    public enum eShutdownType
-    {
-        None = 0,
-        External,
-        Manual,
-        Vacancy
-    }
-
-    public enum eVacancyMode
-    {
-        None = 0,
-        InInitialVacancy,
-        InShutdownWarning
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum eWarmingCoolingMode
-    {
-        None,
-        Warming,
-        Cooling
-    }
-
-    public abstract class EssentialsRoomEmergencyBase : IKeyed
-    {
-        public string Key { get; private set; }
-
-        public EssentialsRoomEmergencyBase(string key)
-        {
-            Key = key;
-        }
-    }
 }

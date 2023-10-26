@@ -21,12 +21,4 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("volumeSliderNames")]
 		public List<string> VolumeSliderNames { get; set; }
 	}
-
-	public class SimplSpeedDial
-	{
-		[JsonProperty("name")]
-		public string Name { get; set; }
-		[JsonProperty("number")]
-		public string Number { get; set; }
-	}
 }

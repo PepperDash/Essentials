@@ -7,7 +7,6 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
 using Feedback = PepperDash.Essentials.Core.Feedback;
@@ -345,23 +344,4 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		#endregion
 	}
-
-    public class PanasonicThDisplayFactory : EssentialsDeviceFactory<PanasonicThDisplay>
-    {
-        public PanasonicThDisplayFactory()
-        {
-            TypeNames = new List<string>() { "panasonicthef" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
-            var comm = CommFactory.CreateCommForDevice(dc);
-            if (comm != null)
-                return new PanasonicThDisplay(dc.Key, dc.Name, comm);
-            else
-                return null;
-        }
-    }
-
 }

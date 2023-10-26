@@ -43,12 +43,4 @@
         /// </summary>
         public const string Verbose = "verbose";
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class UiSetupPropertiesConfig
-    {
-        public bool IsVisible { get; set; }
-    }
 }

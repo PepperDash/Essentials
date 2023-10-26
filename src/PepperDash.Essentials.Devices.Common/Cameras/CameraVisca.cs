@@ -9,12 +9,9 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp.Reflection;
-
-using Full.Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
@@ -635,63 +632,4 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #endregion
     }
-
-    public class CameraViscaFactory : EssentialsDeviceFactory<CameraVisca>
-    {
-        public CameraViscaFactory()
-        {
-            TypeNames = new List<string>() { "cameravisca" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new CameraVisca Device");
-            var comm = CommFactory.CreateCommForDevice(dc);
-            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Cameras.CameraViscaPropertiesConfig>(
-                dc.Properties.ToString());
-            return new Cameras.CameraVisca(dc.Key, dc.Name, comm, props);
-        }
-    }
-
-
-    public class CameraViscaPropertiesConfig : CameraPropertiesConfig
-    {
-        /// <summary>
-        /// Control ID of the camera (1-7)
-        /// </summary>
-        [JsonProperty("id")]
-        public uint Id { get; set; }
-
-        /// <summary>
-        /// Slow Pan speed (0-18)
-        /// </summary>
-        [JsonProperty("panSpeedSlow")]
-        public uint PanSpeedSlow { get; set; }
-
-        /// <summary>
-        /// Fast Pan speed (0-18)
-        /// </summary>
-        [JsonProperty("panSpeedFast")]
-        public uint PanSpeedFast { get; set; }
-
-        /// <summary>
-        /// Slow tilt speed (0-18)
-        /// </summary>
-        [JsonProperty("tiltSpeedSlow")] 
-        public uint TiltSpeedSlow { get; set; }
-
-        /// <summary>
-        /// Fast tilt speed (0-18)
-        /// </summary>
-        [JsonProperty("tiltSpeedFast")]
-        public uint TiltSpeedFast { get; set; }
-
-        /// <summary>
-        /// Time a button must be held before fast speed is engaged (Milliseconds)
-        /// </summary>
-        [JsonProperty("fastSpeedHoldTimeMs")]
-        public uint FastSpeedHoldTimeMs { get; set; }
-
-    }
-
 }

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro;
 
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Devices
 {
@@ -64,18 +61,4 @@ namespace PepperDash.Essentials.Core.Devices
 
         #endregion
 	}
-
-    public class LaptopFactory : EssentialsDeviceFactory<Laptop>
-    {
-        public LaptopFactory()
-        {
-            TypeNames = new List<string>() { "laptop" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new Laptop Device");
-            return new Core.Devices.Laptop(dc.Key, dc.Name);
-        }
-    }
 }

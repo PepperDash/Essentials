@@ -61,14 +61,4 @@ namespace PepperDash.Essentials.Core.Config
             Rooms = new List<DeviceConfig>();
         }
 	}
-		
-	/// <summary>
-	/// 
-	/// </summary>
-	public class SystemTemplateConfigs
-	{
-		public EssentialsConfig System { get; set; }
-
-		public EssentialsConfig Template { get; set; }
-	}
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
@@ -14,23 +13,5 @@ namespace PepperDash.Essentials.Core
     public interface IPartitionStateProvider : IKeyName
     {
         BoolFeedback PartitionPresentFeedback { get; }
-    }
-
-    /// <summary>
-    /// Describes the functionality of a device that can provide partition state either manually via user input or optionally via a sensor state
-    /// </summary>
-    public interface IPartitionController : IPartitionStateProvider
-    {
-        List<string> AdjacentRoomKeys { get; }
-
-        void SetPartitionStatePresent();
-
-        void SetPartitionStateNotPresent();
-
-        void ToggglePartitionState();
-
-        void SetManualMode();
-
-        void SetAutoMode();
     }
 }

@@ -8,11 +8,4 @@
         void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, uint duration, string password);
         void StartNormalMeetingFromSharingOnlyMeeting();
     }
-
-    public enum eSharingMeetingMode
-    {
-        None,
-        Laptop,
-        Ios,
-    }
 }

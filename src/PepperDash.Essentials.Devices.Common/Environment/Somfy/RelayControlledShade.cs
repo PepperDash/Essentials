@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.Core.Shades;
 
@@ -97,35 +95,4 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
         }
 
     }
-
-    public class RelayControlledShadeConfigProperties
-    {
-        public int RelayPulseTime { get; set; }
-        public ShadeRelaysConfig Relays { get; set; }
-        public string StopOrPresetLabel { get; set; }
-
-        public class ShadeRelaysConfig
-        {
-            public IOPortConfig Open { get; set; }
-            public IOPortConfig StopOrPreset { get; set; }
-            public IOPortConfig Close { get; set; }
-        }
-    }
-
-    public class RelayControlledShadeFactory : EssentialsDeviceFactory<RelayControlledShade>
-    {
-        public RelayControlledShadeFactory()
-        {
-            TypeNames = new List<string>() { "relaycontrolledshade" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
-            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Environment.Somfy.RelayControlledShadeConfigProperties>(dc.Properties.ToString());
-
-            return new Environment.Somfy.RelayControlledShade(dc.Key, dc.Name, props);
-        }
-    }
-
 }

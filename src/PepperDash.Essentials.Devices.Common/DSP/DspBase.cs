@@ -40,19 +40,8 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 		// Typical presets:
 		// call default preset to restore levels and mutes
 
-	public abstract class DspControlPoint 
-	{
-         string Key { get; set; }
-	}
 
-
-	public class DspDialerBase
-	{
-
-	}
-
-
-	// Main program 
+        // Main program 
 	// VTC 
 	// ATC
 	// Mics, unusual

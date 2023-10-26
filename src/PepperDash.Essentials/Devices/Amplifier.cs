@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
-using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials
@@ -54,19 +50,5 @@ namespace PepperDash.Essentials
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
         #endregion
-    }
-
-    public class AmplifierFactory : EssentialsDeviceFactory<Amplifier>
-    {
-        public AmplifierFactory()
-        {
-            TypeNames = new List<string>() { "amplifier" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new Amplifier Device");
-            return new Amplifier(dc.Key, dc.Name);
-        }
     }
 }

@@ -5,9 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
-using PepperDash.Core;
-
 using Full.Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Core
@@ -49,68 +46,5 @@ namespace PepperDash.Essentials.Core
 
         [JsonProperty("scenarioChangeDebounceTimeSeconds")]
         public int ScenarioChangeDebounceTimeSeconds { get; set; }
-    }
-
-    /// <summary>
-    /// Config properties for a partition that separates rooms
-    /// </summary>
-    public class PartitionConfig : IKeyName
-    {
-        [JsonProperty("key")]
-        public string Key { get; set; }
-
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Key of the device that implements IPartitionStateProvider to provide the state of the partition
-        /// </summary>
-        [JsonProperty("deviceKey")]
-        public string DeviceKey { get; set; }
-
-        /// <summary>
-        /// Keys of the rooms that this partion would be located between
-        /// </summary>
-        [JsonProperty("adjacentRoomKeys")]
-        public List<string> AdjacentRoomKeys { get; set; }
-    }
-
-    /// <summary>
-    /// Config propeties for a room combination scenario
-    /// </summary>
-    public class RoomCombinationScenarioConfig : IKeyName
-    {
-        [JsonProperty("key")]
-        public string Key { get; set; }
-
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        [JsonProperty("partitionStates")]
-        public List<PartitionState> PartitionStates { get; set; }
-
-        /// <summary>
-        /// Determines which UI devices get mapped to which room in this scenario.  The Key should be the key of the UI device and the Value should be the key of the room to map to
-        /// </summary>
-        [JsonProperty("uiMap")]
-        public Dictionary<string, string> UiMap { get; set; }
-
-        [JsonProperty("activationActions")]
-        public List<DeviceActionWrapper> ActivationActions { get; set; }
-
-        [JsonProperty("deactivationActions")]
-        public List<DeviceActionWrapper> DeactivationActions { get; set; }    
-    }
-
-    /// <summary>
-    /// Config properties to represent the state of a partition sensor in a RoomCombinationScenario
-    /// </summary>
-    public class PartitionState
-    {
-        [JsonProperty("partitionKey")]
-        public string PartitionKey { get; set; }
-
-        [JsonProperty("partitionSensedState")]
-        public bool PartitionPresent { get; set; }
     }
 }

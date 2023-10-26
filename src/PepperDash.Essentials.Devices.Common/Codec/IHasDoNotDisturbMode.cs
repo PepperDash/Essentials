@@ -1,0 +1,36 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+
+using PepperDash.Essentials.Core;
+
+namespace PepperDash.Essentials.Devices.Common.Codec
+{
+    /// <summary>
+    /// Describes a device that has Do Not Disturb mode capability
+    /// </summary>
+    public interface IHasDoNotDisturbMode
+    {
+        /// <summary>
+        /// Indictes whether Do Not Disturb mode is on (Activated)
+        /// </summary>
+        BoolFeedback DoNotDisturbModeIsOnFeedback { get; }
+
+        /// <summary>
+        /// Activates Do Not Disturb mode
+        /// </summary>
+        void ActivateDoNotDisturbMode();
+
+        /// <summary>
+        /// Deactivates Do Not Disturb mode
+        /// </summary>
+        void DeactivateDoNotDisturbMode();
+
+        /// <summary>
+        /// Toggles Do Not Disturb mode
+        /// </summary>
+        void ToggleDoNotDisturbMode();
+    }
+}

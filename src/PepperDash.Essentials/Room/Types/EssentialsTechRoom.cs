@@ -511,9 +511,4 @@ Params: {2}"
 
         #endregion
     }
-
-    public class ScheduledEventEventArgs : EventArgs
-    {
-        public List<ScheduledEventConfig> ScheduledEvents;
-    }
 }

@@ -1,6 +1,4 @@
 ﻿extern alias Full;
-
-using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
@@ -48,35 +46,5 @@ namespace PepperDash.Essentials.Core.Config
         }
 
         public DeviceConfig() {}
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class DevicePropertiesConverter : JsonConverter
-    {
-
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(JToken);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            return JToken.ReadFrom(reader);
-        }
-
-        public override bool CanWrite
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException("SOD OFF HOSER");
-        }
     }
 }

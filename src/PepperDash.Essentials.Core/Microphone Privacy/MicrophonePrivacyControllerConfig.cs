@@ -14,9 +14,4 @@ namespace PepperDash.Essentials.Core.Privacy
         public KeyedDevice GreenLedRelay { get; set; }
         public KeyedDevice RedLedRelay { get; set; }
     }
-
-    public class KeyedDevice
-    {
-        public string DeviceKey { get; set; }
-    }
 }
