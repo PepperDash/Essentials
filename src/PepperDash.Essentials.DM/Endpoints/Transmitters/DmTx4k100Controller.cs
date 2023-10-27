@@ -80,6 +80,8 @@ namespace PepperDash.Essentials.DM
                 IsOnline.SetValueFunc(() => controller.InputEndpointOnlineFeedbacks[num].BoolValue);
                 controller.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => IsOnline.FireUpdate();
             }
+            PreventRegistration = true;
+            tx.Register();
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)

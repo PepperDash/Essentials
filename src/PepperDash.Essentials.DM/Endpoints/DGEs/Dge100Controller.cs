@@ -19,11 +19,12 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core.DeviceInfo;
+using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.DM.Endpoints.DGEs
 {
     [Description("Wrapper class for DGE-100")]    
-    public class Dge100Controller : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IHasBasicTriListWithSmartObject, ICec, IDeviceInfoProvider
+    public class Dge100Controller : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IHasBasicTriListWithSmartObject, ICec, IDeviceInfoProvider, IBridgeAdvanced
     {
         private const int CtpPort = 41795;
         private readonly Dge100 _dge;
@@ -34,7 +35,10 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         private DeviceConfig _dc;
 
-        CrestronTouchpanelPropertiesConfig PropertiesConfig;
+		public VideoStatusOutputs VideoStatusFeedbacks { get; private set;  }
+
+        CrestronTouchpanelPropertiesConfig PropertiesConfig;        
+
 
         public Dge100Controller(string key, string name, Dge100 device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
             :base(key, name, device)
@@ -51,7 +55,19 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
             _dc = dc;
 
             PropertiesConfig = props;
-        }
+
+            var videoStatusFuncs = new VideoStatusFuncsWrapper
+            {
+                HdcpActiveFeedbackFunc = () => _dge.HdmiIn.HdcpSupportOnFeedback.BoolValue,
+                VideoResolutionFeedbackFunc = () => _dge.HdmiIn.VideoAttributes.GetVideoResolutionString(),
+                VideoSyncFeedbackFunc = () => _dge.HdmiIn.SyncDetectedFeedback.BoolValue, 
+            };
+
+			VideoStatusFeedbacks = new VideoStatusOutputs(videoStatusFuncs);
+
+			_dge.HdmiIn.StreamChange += (s,a) => VideoStatusFeedbacks.FireAll();
+			_dge.HdmiIn.VideoAttributes.AttributeChange += (o, a) => VideoStatusFeedbacks.FireAll();
+        }		
 
         #region IComPorts Members
 
@@ -188,6 +204,63 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
             handler(this, new DeviceInfoEventArgs(DeviceInfo));
         }
+
+        #endregion
+
+        #region IBridgeAdvanced Members
+
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            var joinMap = new DgeJoinMap(joinStart);
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DgeJoinMap>(joinMapSerialized);
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
+
+            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+			//Presses
+			trilist.SetSigTrueAction(joinMap.HdmiInHdcpOn.JoinNumber, () => _dge.HdmiIn.HdcpSupportOn());
+			trilist.SetSigTrueAction(joinMap.HdmiInHdcpOff.JoinNumber,() => _dge.HdmiIn.HdcpSupportOff());
+			trilist.SetSigTrueAction(joinMap.HdmiInHdcpToggle.JoinNumber, () => {
+				if(_dge.HdmiIn.HdcpSupportOnFeedback.BoolValue)
+				{
+					_dge.HdmiIn.HdcpSupportOff();
+					return;
+				}
+			
+				_dge.HdmiIn.HdcpSupportOn();
+			});
+
+
+			// Feedbacks
+			VideoStatusFeedbacks.HdcpActiveFeedback.LinkInputSig(trilist.BooleanInput[joinMap.HdmiInHdcpOn.JoinNumber]);
+			VideoStatusFeedbacks.HdcpActiveFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.HdmiInHdcpOff.JoinNumber]);
+
+			VideoStatusFeedbacks.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentInputResolution.JoinNumber]);
+			VideoStatusFeedbacks.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SyncDetected.JoinNumber]);
+
+			IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+
+			trilist.OnlineStatusChange += (o, a) =>
+			{
+				if (!a.DeviceOnLine) return;
+
+				VideoStatusFeedbacks.FireAll();
+			};
+        }
+
+        
 
         #endregion
     }

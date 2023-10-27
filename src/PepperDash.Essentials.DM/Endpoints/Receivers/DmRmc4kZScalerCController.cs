@@ -9,18 +9,26 @@ using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Core;
+using PepperDash_Essentials_DM;
 
 namespace PepperDash.Essentials.DM
 {
     [Description("Wrapper Class for DM-RMC-4K-Z-SCALER-C")]
     public class DmRmc4kZScalerCController : DmRmcControllerBase, IRmcRoutingWithFeedback,
-        IIROutputPorts, IComPorts, ICec, IRelayPorts
+        IIROutputPorts, IComPorts, ICec, IRelayPorts, IHasDmInHdcp, IHasHdmiInHdcp
     {
         private readonly DmRmc4kzScalerC _rmc;
 
         public RoutingInputPort DmIn { get; private set; }
         public RoutingInputPort HdmiIn { get; private set; }
         public RoutingOutputPort HdmiOut { get; private set; }
+
+        public IntFeedback DmInHdcpStateFeedback { get; private set; }
+        public IntFeedback HdmiInHdcpStateFeedback { get; private set; }
+
+        public BoolFeedback HdmiVideoSyncFeedback { get; private set; }
+
+
 
         /// <summary>
         /// The value of the current video source for the HDMI output on the receiver
@@ -44,11 +52,11 @@ namespace PepperDash.Essentials.DM
             if (newEvent != null) newEvent(this, e);
         }
 
-
         public DmRmc4kZScalerCController(string key, string name, DmRmc4kzScalerC rmc)
             : base(key, name, rmc)
         {
             _rmc = rmc;
+
             DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.DmCat, 0, this)
             {
@@ -62,6 +70,16 @@ namespace PepperDash.Essentials.DM
             HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, null, this);
 
+            HdmiInHdcpStateFeedback = new IntFeedback("HdmiInHdcpCapability",
+                () => (int)_rmc.HdmiIn.HdcpCapabilityFeedback);
+            DmInHdcpStateFeedback = new IntFeedback("DmInHdcpCapability",
+                () => (int)_rmc.DmInput.HdcpCapabilityFeedback);
+            HdmiVideoSyncFeedback = new BoolFeedback("HdmiInVideoSync",
+                () => _rmc.HdmiIn.SyncDetectedFeedback.BoolValue);
+
+            AddToFeedbackList(HdmiInHdcpStateFeedback, DmInHdcpStateFeedback, HdmiVideoSyncFeedback);
+
+
             EdidManufacturerFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Manufacturer.StringValue);
             EdidNameFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Name.StringValue);
             EdidPreferredTimingFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.PreferredTiming.StringValue);
@@ -69,11 +87,13 @@ namespace PepperDash.Essentials.DM
 
             VideoOutputResolutionFeedback = new StringFeedback(() => _rmc.HdmiOutput.GetVideoResolutionString());
 
-            InputPorts = new RoutingPortCollection<RoutingInputPort> {DmIn, HdmiIn};
-            OutputPorts = new RoutingPortCollection<RoutingOutputPort> {HdmiOut};
+            InputPorts = new RoutingPortCollection<RoutingInputPort> { DmIn, HdmiIn };
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort> { HdmiOut };
 
             _rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
             _rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
+            _rmc.HdmiIn.InputStreamChange += InputStreamChangeEvent;
+            _rmc.DmInput.InputStreamChange += InputStreamChangeEvent;
 
             _rmc.OnlineStatusChange += _rmc_OnlineStatusChange;
 
@@ -81,6 +101,20 @@ namespace PepperDash.Essentials.DM
             HdmiOut.Port = _rmc.HdmiOutput;
 
             AudioVideoSourceNumericFeedback = new IntFeedback(() => (ushort)(_rmc.SelectedSourceFeedback));
+        }
+
+        void InputStreamChangeEvent(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
+        {
+            switch (args.EventId)
+            {
+                case EndpointInputStreamEventIds.HdcpCapabilityFeedbackEventId:
+                    if (inputStream == _rmc.HdmiIn) HdmiInHdcpStateFeedback.FireUpdate();
+                    if (inputStream == _rmc.DmInput) DmInHdcpStateFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
+                    if (inputStream == _rmc.HdmiIn) HdmiVideoSyncFeedback.FireUpdate();
+                    break;
+            }
         }
 
         private void _rmc_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
@@ -181,5 +215,31 @@ namespace PepperDash.Essentials.DM
         }
 
         #endregion
+
+
+        public eHdcpCapabilityType DmInHdcpCapability
+        {
+            get { return eHdcpCapabilityType.Hdcp2_2Support; }
+        }
+
+        public void SetDmInHdcpState(eHdcpCapabilityType hdcpState)
+        {
+
+            if (_rmc == null) return;
+            _rmc.DmInput.HdcpCapability = hdcpState;
+        }
+
+
+        public eHdcpCapabilityType HdmiInHdcpCapability
+        {
+            get { return eHdcpCapabilityType.Hdcp2_2Support; }
+        }
+
+        public void SetHdmiInHdcpState(eHdcpCapabilityType hdcpState)
+        {
+            if (_rmc == null) return;
+            _rmc.HdmiIn.HdcpCapability = hdcpState;
+        }
+
     }
 }

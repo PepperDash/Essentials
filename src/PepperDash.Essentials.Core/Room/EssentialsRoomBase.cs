@@ -37,7 +37,7 @@ namespace PepperDash.Essentials.Core
         public BoolFeedback IsWarmingUpFeedback { get; private set; }
         public BoolFeedback IsCoolingDownFeedback { get; private set; }
 
-        public IOccupancyStatusProvider RoomOccupancy { get; private set; }
+        public IOccupancyStatusProvider RoomOccupancy { get; protected set; }
 
         public bool OccupancyStatusProviderIsRemote { get; private set; }
 

@@ -44,28 +44,29 @@ namespace PepperDash.Essentials
         /// </summary>
         public override void InitializeSystem()
         {
-            _startTimer = new CTimer(StartSystem,StartupTime);
-
-
             // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
             // to allow any HD-BaseT DM endpoints to register first.
-            if (Global.ControlSystemIsDmpsType)
+            bool preventInitializationComplete = Global.ControlSystemIsDmpsType;
+            if (preventInitializationComplete)
             {
                 Debug.Console(1, "******************* InitializeSystem() Entering **********************");
-
-                _initializeEvent = new CEvent();
-
+                _startTimer = new CTimer(StartSystem, preventInitializationComplete, StartupTime);
+                _initializeEvent = new CEvent(true, false);
                 DeviceManager.AllDevicesRegistered += (o, a) =>
                 {
                     _initializeEvent.Set();
-                    Debug.Console(1, "******************* InitializeSystem() Exiting **********************");
                 };
-
                 _initializeEvent.Wait(30000);
+                Debug.Console(1, "******************* InitializeSystem() Exiting **********************");
+                SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            }
+            else
+            {
+                _startTimer = new CTimer(StartSystem, preventInitializationComplete, StartupTime);
             }
         }
 
-        private void StartSystem(object obj)
+        private void StartSystem(object preventInitialization)
         {
             DeterminePlatform();
 
@@ -77,7 +78,7 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(PepperDash.Essentials.Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -89,27 +90,28 @@ namespace PepperDash.Essentials
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 foreach (var tl in TieLineCollection.Default)
-                    CrestronConsole.ConsoleCommandResponse("  {0}\r\n", tl);
+                    CrestronConsole.ConsoleCommandResponse("  {0}{1}", tl, CrestronEnvironment.NewLine);
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 CrestronConsole.ConsoleCommandResponse
-                    ("Current running configuration. This is the merged system and template configuration");
+                    ("Current running configuration. This is the merged system and template configuration" + CrestronEnvironment.NewLine);
                 CrestronConsole.ConsoleCommandResponse(Newtonsoft.Json.JsonConvert.SerializeObject
                     (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s => 
+            CrestronConsole.AddNewConsoleCommand(s =>
                 CrestronConsole.ConsoleCommandResponse(
-                "This system can be found at the following URLs:\r\n" +
-                "System URL:   {0}\r\n" +
-                "Template URL: {1}", 
-                ConfigReader.ConfigObject.SystemUrl, 
-                ConfigReader.ConfigObject.TemplateUrl), 
-                "portalinfo", 
-                "Shows portal URLS from configuration", 
+                "This system can be found at the following URLs:{2}" +
+                "System URL:   {0}{2}" +
+                "Template URL: {1}{2}",
+                ConfigReader.ConfigObject.SystemUrl,
+                ConfigReader.ConfigObject.TemplateUrl,
+                CrestronEnvironment.NewLine),
+                "portalinfo",
+                "Shows portal URLS from configuration",
                 ConsoleAccessLevelEnum.AccessOperator);
 
 
@@ -122,7 +124,10 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            if (!(bool)preventInitialization)
+            {
+                SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            }
         }
 
         /// <summary>

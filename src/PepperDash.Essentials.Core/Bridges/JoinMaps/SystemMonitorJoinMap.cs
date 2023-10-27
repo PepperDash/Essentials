@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.Core.Bridges
         [JoinName("ProgramOffsetJoin")]
         public JoinDataComplete ProgramOffsetJoin = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 5 },
             new JoinMetadata { Description = "All Program Data is offset between slots by 5 - First Joins Start at 11", JoinCapabilities = eJoinCapabilities.None, JoinType = eJoinType.None });
-
+		
         [JoinName("ProgramStart")]
         public JoinDataComplete ProgramStart = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
             new JoinMetadata { Description = "Processor Program Start / Fb", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
@@ -131,6 +131,23 @@ namespace PepperDash.Essentials.Core.Bridges
         [JoinName("DhcpStatus")]
         public JoinDataComplete DhcpStatus = new JoinDataComplete(new JoinData { JoinNumber = 86, JoinSpan = 1 },
             new JoinMetadata { Description = "Processor Ethernet Dhcp Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+		[JoinName("ProcessorRebot")]
+		public JoinDataComplete ProcessorReboot = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
+			new JoinMetadata { Description = "Reboot processor", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+		[JoinName("IsAppliance")]
+		public JoinDataComplete IsAppliance = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
+			new JoinMetadata { Description = "Is appliance Fb", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+		[JoinName("IsServer")]
+		public JoinDataComplete IsServer = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
+			new JoinMetadata { Description = "Is server Fb", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+		[JoinName("ProgramReset")]
+		public JoinDataComplete ProgramReset = new JoinDataComplete(new JoinData { JoinNumber = 15, JoinSpan = 1 },
+			new JoinMetadata { Description = "Resets the program", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
 
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it

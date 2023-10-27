@@ -72,6 +72,7 @@ namespace PepperDash.Essentials.DM
             HdmiIn.Port = Tx;
 
             PreventRegistration = true;
+            tx.Register();
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)

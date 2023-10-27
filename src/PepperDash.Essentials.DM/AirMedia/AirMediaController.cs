@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.DM.AirMedia
     [Description("Wrapper class for an AM-200 or AM-300")]
     public class AirMediaController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IIROutputPorts, IComPorts
     {
-        public AmX00 AirMedia { get; private set; }
+        public Am3x00 AirMedia { get; private set; }
 
         public DeviceConfig DeviceConfig { get; private set; }
 
@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.DM.AirMedia
         public StringFeedback SerialNumberFeedback { get; private set; }
         public BoolFeedback AutomaticInputRoutingEnabledFeedback { get; private set; }
 
-        public AirMediaController(string key, string name, AmX00 device, DeviceConfig dc, AirMediaPropertiesConfig props)
+        public AirMediaController(string key, string name, Am3x00 device, DeviceConfig dc, AirMediaPropertiesConfig props)
             : base(key, name, device)
         {
 
@@ -98,24 +98,31 @@ namespace PepperDash.Essentials.DM.AirMedia
 
             AirMedia.AirMedia.AirMediaChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(AirMedia_AirMediaChange);
 
-            IsInSessionFeedback = new BoolFeedback(new Func<bool>(() => AirMedia.AirMedia.StatusFeedback.UShortValue == 0));
-            ErrorFeedback = new IntFeedback(new Func<int>(() => AirMedia.AirMedia.ErrorFeedback.UShortValue));
-            NumberOfUsersConnectedFeedback = new IntFeedback(new Func<int>(() => AirMedia.AirMedia.NumberOfUsersConnectedFeedback.UShortValue));
-            LoginCodeFeedback = new IntFeedback(new Func<int>(() => AirMedia.AirMedia.LoginCodeFeedback.UShortValue));
-            ConnectionAddressFeedback = new StringFeedback(new Func<string>(() => AirMedia.AirMedia.ConnectionAddressFeedback.StringValue));
-            HostnameFeedback = new StringFeedback(new Func<string>(() => AirMedia.AirMedia.HostNameFeedback.StringValue));
+            IsInSessionFeedback = new BoolFeedback(() => AirMedia.AirMedia.StatusFeedback.UShortValue == 0);
+            ErrorFeedback = new IntFeedback(() => AirMedia.AirMedia.ErrorFeedback.UShortValue);
+            NumberOfUsersConnectedFeedback = new IntFeedback(() => AirMedia.AirMedia.NumberOfUsersConnectedFeedback.UShortValue);
+            LoginCodeFeedback = new IntFeedback(() => AirMedia.AirMedia.LoginCodeFeedback.UShortValue);
+            ConnectionAddressFeedback = new StringFeedback(() => AirMedia.AirMedia.ConnectionAddressFeedback.StringValue);
+            HostnameFeedback = new StringFeedback(() => AirMedia.AirMedia.HostNameFeedback.StringValue);
 
             // TODO: Figure out if we can actually get the TSID/Serial
-            SerialNumberFeedback = new StringFeedback(new Func<string>(() => "unknown"));
+            SerialNumberFeedback = new StringFeedback(() => "unknown");
 
-            AirMedia.DisplayControl.DisplayControlChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(DisplayControl_DisplayControlChange);
+            AirMedia.DisplayControl.DisplayControlChange += DisplayControl_DisplayControlChange;
 
-            VideoOutFeedback = new IntFeedback(new Func<int>(() => Convert.ToInt16(AirMedia.DisplayControl.VideoOutFeedback)));
-            AutomaticInputRoutingEnabledFeedback = new BoolFeedback(new Func<bool>(() => AirMedia.DisplayControl.EnableAutomaticRoutingFeedback.BoolValue));
+            VideoOutFeedback = new IntFeedback(() => Convert.ToInt16(AirMedia.DisplayControl.VideoOutFeedback));
+            AutomaticInputRoutingEnabledFeedback = new BoolFeedback(() => AirMedia.DisplayControl.EnableAutomaticRoutingFeedback.BoolValue);
 
-            AirMedia.HdmiIn.StreamChange += new Crestron.SimplSharpPro.DeviceSupport.StreamEventHandler(HdmiIn_StreamChange);
+            // Not all AirMedia versions support HDMI In like the 3200
+            if (AirMedia.HdmiIn != null)
+            {
+                AirMedia.HdmiIn.StreamChange += HdmiIn_StreamChange;
+                HdmiVideoSyncDetectedFeedback = new BoolFeedback(() => AirMedia.HdmiIn.SyncDetectedFeedback.BoolValue);
+                return;
+            }
 
-            HdmiVideoSyncDetectedFeedback = new BoolFeedback(new Func<bool>(() => AirMedia.HdmiIn.SyncDetectedFeedback.BoolValue));
+            // Return false if the AirMedia device doesn't support HDMI Input
+            HdmiVideoSyncDetectedFeedback = new BoolFeedback(() => false);
         }
 
         public override bool CustomActivate()
@@ -182,31 +189,53 @@ namespace PepperDash.Essentials.DM.AirMedia
         /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
         private void OnSwitchChange(RoutingNumericEventArgs e)
         {
-            var newEvent = NumericSwitchChange;
-            if (newEvent != null) newEvent(this, e);
+            var handler = NumericSwitchChange;
+
+            if (handler == null) return;
+                
+            handler(this, e);
         }
 
 
         void AirMedia_AirMediaChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
         {
-            if (args.EventId == AirMediaInputSlot.AirMediaStatusFeedbackEventId)
-                IsInSessionFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaErrorFeedbackEventId)
-                ErrorFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaNumberOfUserConnectedEventId)
-                NumberOfUsersConnectedFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaLoginCodeEventId)
-                LoginCodeFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaConnectionAddressFeedbackEventId)
-                ConnectionAddressFeedback.FireUpdate();
-            else if (args.EventId == AirMediaInputSlot.AirMediaHostNameFeedbackEventId)
-                HostnameFeedback.FireUpdate();
+            switch (args.EventId)
+            {
+                case AirMediaInputSlot.AirMediaStatusFeedbackEventId:
+                    {
+                        IsInSessionFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaErrorFeedbackEventId:
+                    {
+                        ErrorFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaNumberOfUserConnectedEventId:
+                    {
+                        NumberOfUsersConnectedFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaLoginCodeEventId:
+                    {
+                        LoginCodeFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaConnectionAddressFeedbackEventId:
+                    {
+                        ConnectionAddressFeedback.FireUpdate();
+                        break;
+                    }
+                case AirMediaInputSlot.AirMediaHostNameFeedbackEventId:
+                    {
+                        HostnameFeedback.FireUpdate();
+                        break;
+                    }
+            }
         }
 
         void DisplayControl_DisplayControlChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
         {
-            if (args.EventId == AmX00.VideoOutFeedbackEventId)
-            {
                 VideoOutFeedback.FireUpdate();
 
                 var localInputPort =
@@ -214,8 +243,7 @@ namespace PepperDash.Essentials.DM.AirMedia
 
                 OnSwitchChange(new RoutingNumericEventArgs(1, VideoOutFeedback.UShortValue, OutputPorts.First(),
                     localInputPort, eRoutingSignalType.AudioVideo));
-            }
-            else if (args.EventId == AmX00.EnableAutomaticRoutingFeedbackEventId)
+            
                 AutomaticInputRoutingEnabledFeedback.FireUpdate();
         }
 
@@ -345,7 +373,7 @@ namespace PepperDash.Essentials.DM.AirMedia
     {
         public AirMediaControllerFactory()
         {
-            TypeNames = new List<string>() { "am200", "am300" };
+            TypeNames = new List<string>() { "am200", "am300", "am3200" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
@@ -354,12 +382,26 @@ namespace PepperDash.Essentials.DM.AirMedia
 
             Debug.Console(1, "Factory Attempting to create new AirMedia Device");
 
-            var props = JsonConvert.DeserializeObject<AirMediaPropertiesConfig>(dc.Properties.ToString());
-            AmX00 amDevice = null;
-            if (type == "am200")
-                amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am200(props.Control.IpIdInt, Global.ControlSystem);
-            else if (type == "am300")
-                amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am300(props.Control.IpIdInt, Global.ControlSystem);
+            var props = dc.Properties.ToObject<AirMediaPropertiesConfig>();
+            Am3x00 amDevice = null;
+            switch (type)
+            {
+                case "am200" :
+                {
+                    amDevice = new Am200(props.Control.IpIdInt, Global.ControlSystem);
+                    break;
+                }
+                case "am300" :
+                {
+                    amDevice = new Am300(props.Control.IpIdInt, Global.ControlSystem);
+                    break;
+                }
+                case "am3200" :
+                {
+                    amDevice = new Am3200(props.Control.IpIdInt, Global.ControlSystem);
+                    break;
+                }
+            }
 
             return new AirMediaController(dc.Key, dc.Name, amDevice, dc, props);
 

@@ -31,6 +31,8 @@ namespace PepperDash.Essentials.Core
 
         public string[] IrFileCommands { get { return IrPort.AvailableStandardIRCmds(IrPortUid); } }
 
+		public bool UseBridgeJoinMap { get; private set; }
+
 		/// <summary>
 		/// Constructor for IrDevice base class.  If a null port is provided, this class will 
 		/// still function without trying to talk to a port.
@@ -55,9 +57,10 @@ namespace PepperDash.Essentials.Core
 	        : base(key)
 	    {
             DriverLoaded = new BoolFeedback(() => DriverIsLoaded);
+			UseBridgeJoinMap = config.Properties["control"].Value<bool>("useBridgeJoinMap");
             AddPostActivationAction(() =>
             {
-                IrPort = postActivationFunc(config);
+	            IrPort = postActivationFunc(config);
 
                 if (IrPort == null)
                 {
@@ -69,8 +72,8 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(1, "*************Attempting to load IR file: {0}***************", filePath);
 
                 LoadDriver(filePath);
-                    
-                PrintAvailableCommands();
+                
+				PrintAvailableCommands();
             });
 	    }
 

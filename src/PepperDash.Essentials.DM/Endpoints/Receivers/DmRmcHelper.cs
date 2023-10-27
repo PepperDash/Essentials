@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Cards;
@@ -13,11 +14,12 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.DM.Config;
 using PepperDash.Essentials.Core.Config;
+using PepperDash_Essentials_DM;
 
 namespace PepperDash.Essentials.DM
 {
     [Description("Wrapper class for all DM-RMC variants")]
-	public abstract class DmRmcControllerBase : CrestronGenericBridgeableBaseDevice, IDeviceInfoProvider
+    public abstract class DmRmcControllerBase : CrestronGenericBridgeableBaseDevice, IDeviceInfoProvider
     {
         private const int CtpPort = 41795;
         private readonly EndpointReceiverBase _rmc; //kept here just in case. Only property or method on this class that's not device-specific is the DMOutput that it's attached to.
@@ -29,15 +31,15 @@ namespace PepperDash.Essentials.DM
         public StringFeedback EdidSerialNumberFeedback { get; protected set; }
 
         protected DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
-			: base(key, name, device)
+            : base(key, name, device)
         {
             _rmc = device;
 
-			// if wired to a chassis, skip registration step in base class
+            // if wired to a chassis, skip registration step in base class
             PreventRegistration = _rmc.DMOutput != null;
-			
+
             AddToFeedbackList(VideoOutputResolutionFeedback, EdidManufacturerFeedback, EdidSerialNumberFeedback, EdidNameFeedback, EdidPreferredTimingFeedback);
-            
+
             DeviceInfo = new DeviceInfo();
 
             IsOnline.OutputChange += (currentDevice, args) => { if (args.BoolValue) UpdateDeviceInfo(); };
@@ -61,6 +63,11 @@ namespace PepperDash.Essentials.DM
                 Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
+            LinkDmRmcToApi(rmc, trilist, joinMap);
+        }
+
+        protected void LinkDmRmcToApi(DmRmcControllerBase rmc, BasicTriList trilist, DmRmcControllerJoinMap joinMap)
+        {
             Debug.Console(1, rmc, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
@@ -75,19 +82,93 @@ namespace PepperDash.Essentials.DM
                 rmc.EdidPreferredTimingFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidPrefferedTiming.JoinNumber]);
             if (rmc.EdidSerialNumberFeedback != null)
                 rmc.EdidSerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidSerialNumber.JoinNumber]);
-            
+
+
             //If the device is an DM-RMC-4K-Z-SCALER-C
-            var routing = rmc as IRmcRouting;
+            var routing = rmc as IRoutingInputsOutputs;
+
+            trilist.UShortInput[joinMap.HdcpInputPortCount.JoinNumber].UShortValue = (ushort)(routing == null
+                ? 1
+                : routing.InputPorts.Count);
 
             if (routing == null)
             {
                 return;
             }
+            var hdcpCapability = eHdcpCapabilityType.HdcpSupportOff;
+            if (routing.InputPorts[DmPortName.HdmiIn] != null)
+            {
+                var hdmiInHdcp = routing as IHasHdmiInHdcp;
+                if (hdmiInHdcp != null)
+                {
+                    if (rmc.Feedbacks["HdmiInHdcpCapability"] != null)
+                    {
+                        var intFeedback = rmc.Feedbacks["HdmiInHdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState.JoinNumber]);
+                    }
+                    if (rmc.Feedbacks["HdmiInVideoSync"] != null)
+                    {
+                        var boolFeedback = rmc.Feedbacks["HdmiInVideoSync"] as BoolFeedback;
+                        if (boolFeedback != null)
+                            boolFeedback.LinkInputSig(trilist.BooleanInput[joinMap.HdmiInputSync.JoinNumber]);
+                    }
+                    hdcpCapability = hdmiInHdcp.HdmiInHdcpCapability > hdcpCapability
+                        ? hdmiInHdcp.HdmiInHdcpCapability
+                        : hdcpCapability;
 
-            if (routing.AudioVideoSourceNumericFeedback != null)
-                routing.AudioVideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioVideoSource.JoinNumber]);
+                    trilist.SetUShortSigAction(joinMap.Port1HdcpState.JoinNumber, a => hdmiInHdcp.SetHdmiInHdcpState((eHdcpCapabilityType)a));
+                }
+            }
+            if (routing.InputPorts[DmPortName.DmIn] != null)
+            {
+                var dmInHdcp = rmc as IHasDmInHdcp;
 
-            trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber, a => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
+                if (dmInHdcp != null)
+                {
+                    if (rmc.Feedbacks["DmInHdcpCapability"] != null)
+                    {
+                        var intFeedback = rmc.Feedbacks["DmInHdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port2HdcpState.JoinNumber]);
+                    }
+
+                    hdcpCapability = dmInHdcp.DmInHdcpCapability > hdcpCapability
+                        ? dmInHdcp.DmInHdcpCapability
+                        : hdcpCapability;
+
+
+                    trilist.SetUShortSigAction(joinMap.Port2HdcpState.JoinNumber, a => dmInHdcp.SetDmInHdcpState((eHdcpCapabilityType)a));
+                }
+            }
+
+            trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber].UShortValue = (ushort)hdcpCapability;
+
+            trilist.UShortInput[joinMap.HdcpInputPortCount.JoinNumber].UShortValue = (ushort)routing.InputPorts.Count;
+
+            var dmRmcScalerCBasicVideoMuteWithFeedback = rmc as IBasicVideoMuteWithFeedback;
+
+            if (dmRmcScalerCBasicVideoMuteWithFeedback != null)
+            {
+                Debug.Console(1, this, "Device is IBasicVideoMuteWithFeedback, linking video mute");
+                trilist.SetSigTrueAction(joinMap.VideoMuteToggle.JoinNumber, () => dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteToggle());
+                trilist.SetSigTrueAction(joinMap.VideoMuteOn.JoinNumber, () => dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteOn());
+                trilist.SetSigTrueAction(joinMap.VideoMuteOff.JoinNumber, () => dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteOff());
+                dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteIsOn.LinkInputSig(trilist.BooleanInput[joinMap.VideoMuteOn.JoinNumber]);
+                dmRmcScalerCBasicVideoMuteWithFeedback.VideoMuteIsOn.LinkComplementInputSig(trilist.BooleanInput[joinMap.VideoMuteOff.JoinNumber]);
+            }
+
+            var routingWithFeedback = routing as IRmcRouting;
+            if (routingWithFeedback == null) return;
+
+            if (routingWithFeedback.AudioVideoSourceNumericFeedback != null)
+                routingWithFeedback.AudioVideoSourceNumericFeedback.LinkInputSig(
+                    trilist.UShortInput[joinMap.AudioVideoSource.JoinNumber]);
+
+
+            trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber,
+                a => routingWithFeedback.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
+
         }
 
         #region Implementation of IDeviceInfoProvider
@@ -145,13 +226,13 @@ namespace PepperDash.Essentials.DM
                     return;
                 }
 
-                
+
                 if (args.Text.ToLower().Contains("host"))
                 {
                     DeviceInfo.HostName = args.Text.Split(':')[1].Trim();
 
                     tcpClient.SendText("maca\r\n");
-                    
+
                     return;
                 }
 
@@ -204,17 +285,17 @@ namespace PepperDash.Essentials.DM
         }
     }
 
-	public class DmRmcHelper
-	{
-	    private static readonly Dictionary<string, Func<string, string, uint, CrestronGenericBaseDevice>> ProcessorFactoryDict;
-	    private static readonly Dictionary<string, Func<string, string, DMOutput, CrestronGenericBaseDevice>> ChassisCpu3Dict;
+    public class DmRmcHelper
+    {
+        private static readonly Dictionary<string, Func<string, string, uint, CrestronGenericBaseDevice>> ProcessorFactoryDict;
+        private static readonly Dictionary<string, Func<string, string, DMOutput, CrestronGenericBaseDevice>> ChassisCpu3Dict;
 
-	    private static readonly Dictionary<string, Func<string, string, uint, DMOutput, CrestronGenericBaseDevice>>
-	        ChassisDict; 
+        private static readonly Dictionary<string, Func<string, string, uint, DMOutput, CrestronGenericBaseDevice>>
+            ChassisDict;
 
-	    static DmRmcHelper()
-	    {
-	        ProcessorFactoryDict = new Dictionary<string, Func<string, string, uint, CrestronGenericBaseDevice>>
+        static DmRmcHelper()
+        {
+            ProcessorFactoryDict = new Dictionary<string, Func<string, string, uint, CrestronGenericBaseDevice>>
 	        {
 	            {"dmrmc100c", (k, n, i) => new DmRmcX100CController(k, n, new DmRmc100C(i, Global.ControlSystem))},
 	            {"dmrmc100s", (k, n, i) => new DmRmc100SController(k, n, new DmRmc100S(i, Global.ControlSystem))},
@@ -308,31 +389,34 @@ namespace PepperDash.Essentials.DM
                 {"dmrmc4k100c1g", (k,n,i,d) => new DmRmc4k100C1GController(k,n, new DmRmc4K100C1G(i, d))}
 	        };
         }
-	    /// <summary>
-	    /// A factory method for various DmRmcControllers
-	    /// </summary>
-	    /// <param name="key">device key. Used to uniquely identify device</param>
-	    /// <param name="name">device name</param>
-	    /// <param name="typeName">device type name. Used to retrived the correct device</param>
-	    /// <param name="props">Config from config file</param>
-	    /// <returns></returns>
-	    public static CrestronGenericBaseDevice GetDmRmcController(string key, string name, string typeName, DmRmcPropertiesConfig props)
-		{
-			typeName = typeName.ToLower();
-			var ipid = props.Control.IpIdInt;
+        /// <summary>
+        /// A factory method for various DmRmcControllers
+        /// </summary>
+        /// <param name="key">device key. Used to uniquely identify device</param>
+        /// <param name="name">device name</param>
+        /// <param name="typeName">device type name. Used to retrived the correct device</param>
+        /// <param name="props">Config from config file</param>
+        /// <returns></returns>
+        public static CrestronGenericBaseDevice GetDmRmcController(string key, string name, string typeName, DmRmcPropertiesConfig props)
+        {
+            typeName = typeName.ToLower();
+            var ipid = props.Control.IpIdInt;
 
-			var pKey = props.ParentDeviceKey.ToLower();
+            var pKey = props.ParentDeviceKey.ToLower();
 
-			// Non-DM-chassis endpoints
-			return pKey == "processor" ? GetDmRmcControllerForProcessor(key, name, typeName, ipid) : GetDmRmcControllerForChassis(key, name, typeName, props, pKey, ipid);
-		}
+            // Non-DM-chassis endpoints
+            return pKey == "processor" ? GetDmRmcControllerForProcessor(key, name, typeName, ipid) : GetDmRmcControllerForChassis(key, name, typeName, props, pKey, ipid);
+        }
 
-	    private static CrestronGenericBaseDevice GetDmRmcControllerForChassis(string key, string name, string typeName,
-	        DmRmcPropertiesConfig props, string pKey, uint ipid)
-	    {
-	        var parentDev = DeviceManager.GetDeviceForKey(pKey);
-	        if (parentDev is DmpsRoutingController)
-	        {
+        private static CrestronGenericBaseDevice GetDmRmcControllerForChassis(string key, string name, string typeName,
+            DmRmcPropertiesConfig props, string pKey, uint ipid)
+        {
+            var parentDev = DeviceManager.GetDeviceForKey(pKey);
+            CrestronGenericBaseDevice rx;
+            bool useChassisForOfflineFeedback = false;
+
+            if (parentDev is DmpsRoutingController)
+            {
                 var dmps = parentDev as DmpsRoutingController;
                 //Check that the input is within range of this chassis' possible inputs
                 var num = props.ParentOutputNumber;
@@ -344,26 +428,37 @@ namespace PepperDash.Essentials.DM
                     return null;
                 }
                 // Must use different constructor for DMPS4K types. No IPID
-                if (Global.ControlSystemIsDmps4kType || typeName == "hdbasetrx" || typeName == "dmrmc4k100c1g")
+                if (Global.ControlSystemIsDmps4kType)
                 {
-                    var rmc = GetDmRmcControllerForDmps4k(key, name, typeName, dmps, props.ParentOutputNumber);
-                    Debug.Console(0, "DM endpoint output {0} is for Dmps4k, changing online feedback to chassis", num);
-                    rmc.IsOnline.SetValueFunc(() => dmps.OutputEndpointOnlineFeedbacks[num].BoolValue);
+                    rx = GetDmRmcControllerForDmps4k(key, name, typeName, dmps, props.ParentOutputNumber);
+                    useChassisForOfflineFeedback = true;
+                }
+                else
+                {
+                    rx = GetDmRmcControllerForDmps(key, name, typeName, ipid, dmps, props.ParentOutputNumber);
+                    if (typeName == "hdbasetrx" || typeName == "dmrmc4k100c1g")
+                    {
+                        useChassisForOfflineFeedback = true;
+                    }
+                }
+                if (useChassisForOfflineFeedback)
+                {
+                    Debug.Console(0, "DM endpoint output {0} does not have direct online feedback, changing online feedback to chassis", num);
+                    rx.IsOnline.SetValueFunc(() => dmps.OutputEndpointOnlineFeedbacks[num].BoolValue);
                     dmps.OutputEndpointOnlineFeedbacks[num].OutputChange += (o, a) =>
                     {
-                        foreach (var feedback in rmc.Feedbacks)
+                        foreach (var feedback in rx.Feedbacks)
                         {
                             if (feedback != null)
                                 feedback.FireUpdate();
                         }
                     };
-                    return rmc;
                 }
-                return GetDmRmcControllerForDmps(key, name, typeName, ipid, dmps, props.ParentOutputNumber);
-	        }
-            else if (parentDev is DmChassisController)
+                return rx;
+            }
+            else if (parentDev is IDmSwitchWithEndpointOnlineFeedback)
             {
-                var controller = parentDev as DmChassisController;
+                var controller = parentDev as IDmSwitchWithEndpointOnlineFeedback;
                 var chassis = controller.Chassis;
                 var num = props.ParentOutputNumber;
                 Debug.Console(1, "Creating DM Chassis device '{0}'. Output number '{1}'.", key, num);
@@ -373,7 +468,7 @@ namespace PepperDash.Essentials.DM
                     Debug.Console(0, "Cannot create DM device '{0}'. Output number '{1}' is out of range",
                         key, num);
                     return null;
-                }                
+                }
                 controller.RxDictionary.Add(num, key);
                 // Catch constructor failures, mainly dues to IPID
                 try
@@ -382,23 +477,33 @@ namespace PepperDash.Essentials.DM
                     if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
                         chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
                         chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
-                        chassis is DmMd128x128 || chassis is DmMd64x64
-                        || typeName == "hdbasetrx" || typeName == "dmrmc4k100c1g")
+                        chassis is DmMd128x128 || chassis is DmMd64x64)
                     {
-                        var rmc = GetDmRmcControllerForCpu3Chassis(key, name, typeName, chassis, num, parentDev);
-                        Debug.Console(0, "DM endpoint output {0} is for Cpu3, changing online feedback to chassis", num);
-                        rmc.IsOnline.SetValueFunc(() => controller.OutputEndpointOnlineFeedbacks[num].BoolValue);
-                        controller.OutputEndpointOnlineFeedbacks[num].OutputChange += (o, a) =>
-                            {
-                                foreach (var feedback in rmc.Feedbacks)
-                                {
-                                    if (feedback != null)
-                                        feedback.FireUpdate();
-                                }
-                            };
-                        return rmc;
+                        rx = GetDmRmcControllerForCpu3Chassis(key, name, typeName, chassis, num, parentDev);
+                        useChassisForOfflineFeedback = true;
                     }
-                    return GetDmRmcControllerForCpu2Chassis(key, name, typeName, ipid, chassis, num, parentDev);
+                    else
+                    {
+                        rx = GetDmRmcControllerForCpu2Chassis(key, name, typeName, ipid, chassis, num, parentDev);
+                        if (typeName == "hdbasetrx" || typeName == "dmrmc4k100c1g")
+                        {
+                            useChassisForOfflineFeedback = true;
+                        }
+                    }
+                    if (useChassisForOfflineFeedback)
+                    {
+                        Debug.Console(0, "DM endpoint output {0} does not have direct online feedback, changing online feedback to chassis", num);
+                        rx.IsOnline.SetValueFunc(() => controller.OutputEndpointOnlineFeedbacks[num].BoolValue);
+                        controller.OutputEndpointOnlineFeedbacks[num].OutputChange += (o, a) =>
+                        {
+                            foreach (var feedback in rx.Feedbacks)
+                            {
+                                if (feedback != null)
+                                    feedback.FireUpdate();
+                            }
+                        };
+                    }
+                    return rx;
                 }
                 catch (Exception e)
                 {
@@ -412,31 +517,31 @@ namespace PepperDash.Essentials.DM
                     key, pKey);
                 return null;
             }
-	    }
+        }
 
-	    private static CrestronGenericBaseDevice GetDmRmcControllerForCpu2Chassis(string key, string name, string typeName,
-	        uint ipid, Switch chassis, uint num, IKeyed parentDev)
-	    {
-	        Func<string, string, uint, DMOutput, CrestronGenericBaseDevice> handler;
-	        if (ChassisDict.TryGetValue(typeName.ToLower(), out handler))
-	        {
-	            return handler(key, name, ipid, chassis.Outputs[num]);
-	        }
-	        Debug.Console(0, "Cannot create DM-RMC of type '{0}' with parent device {1}", typeName, parentDev.Key);
-	        return null;
-	    }
+        private static CrestronGenericBaseDevice GetDmRmcControllerForCpu2Chassis(string key, string name, string typeName,
+            uint ipid, Switch chassis, uint num, IKeyed parentDev)
+        {
+            Func<string, string, uint, DMOutput, CrestronGenericBaseDevice> handler;
+            if (ChassisDict.TryGetValue(typeName.ToLower(), out handler))
+            {
+                return handler(key, name, ipid, chassis.Outputs[num]);
+            }
+            Debug.Console(0, "Cannot create DM-RMC of type '{0}' with parent device {1}", typeName, parentDev.Key);
+            return null;
+        }
 
-	    private static CrestronGenericBaseDevice GetDmRmcControllerForCpu3Chassis(string key, string name, string typeName,
-	        Switch chassis, uint num, IKeyed parentDev)
-	    {
-	        Func<string, string, DMOutput, CrestronGenericBaseDevice> cpu3Handler;
-	        if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out cpu3Handler))
-	        {
-	            return cpu3Handler(key, name, chassis.Outputs[num]);
-	        }
-	        Debug.Console(0, "Cannot create DM-RMC of type '{0}' with parent device {1}", typeName, parentDev.Key);
-	        return null;
-	    }
+        private static CrestronGenericBaseDevice GetDmRmcControllerForCpu3Chassis(string key, string name, string typeName,
+            Switch chassis, uint num, IKeyed parentDev)
+        {
+            Func<string, string, DMOutput, CrestronGenericBaseDevice> cpu3Handler;
+            if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out cpu3Handler))
+            {
+                return cpu3Handler(key, name, chassis.Outputs[num]);
+            }
+            Debug.Console(0, "Cannot create DM-RMC of type '{0}' with parent device {1}", typeName, parentDev.Key);
+            return null;
+        }
 
         private static CrestronGenericBaseDevice GetDmRmcControllerForDmps(string key, string name, string typeName,
             uint ipid, DmpsRoutingController controller, uint num)
@@ -460,51 +565,49 @@ namespace PepperDash.Essentials.DM
             return null;
         }
 
-	    private static CrestronGenericBaseDevice GetDmRmcControllerForDmps4k(string key, string name, string typeName,
-	        DmpsRoutingController controller, uint num)
-	    {
-	        Func<string, string, DMOutput, CrestronGenericBaseDevice> dmps4kHandler;
-	        if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out dmps4kHandler))
-	        {
-	            var output = controller.Dmps.SwitcherOutputs[num] as DMOutput;
+        private static CrestronGenericBaseDevice GetDmRmcControllerForDmps4k(string key, string name, string typeName,
+            DmpsRoutingController controller, uint num)
+        {
+            Func<string, string, DMOutput, CrestronGenericBaseDevice> dmps4kHandler;
+            if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out dmps4kHandler))
+            {
+                var output = controller.Dmps.SwitcherOutputs[num] as DMOutput;
 
-	            if (output != null)
-	            {
-	                return dmps4kHandler(key, name, output);
-	            }
-	            Debug.Console(0, Debug.ErrorLogLevel.Error,
-	                "Cannot attach DM-RMC of type '{0}' to output {1} on DMPS-4K chassis. Output is not a DM Output.",
-	                typeName, num);
-	            return null;
-	        }
+                if (output != null)
+                {
+                    return dmps4kHandler(key, name, output);
+                }
+                Debug.Console(0, Debug.ErrorLogLevel.Error,
+                    "Cannot attach DM-RMC of type '{0}' to output {1} on DMPS-4K chassis. Output is not a DM Output.",
+                    typeName, num);
+                return null;
+            }
 
             Debug.Console(0, Debug.ErrorLogLevel.Error, "Cannot create DM-RMC of type '{0}' to output {1} on DMPS-4K chassis", typeName, num);
-	        return null;
-	    }
+            return null;
+        }
 
-	    private static CrestronGenericBaseDevice GetDmRmcControllerForProcessor(string key, string name, string typeName, uint ipid)
-	    {
-	        try
-	        {
-	            Func<string, string, uint, CrestronGenericBaseDevice> handler;
+        private static CrestronGenericBaseDevice GetDmRmcControllerForProcessor(string key, string name, string typeName, uint ipid)
+        {
+            try
+            {
+                Func<string, string, uint, CrestronGenericBaseDevice> handler;
 
-	            if (ProcessorFactoryDict.TryGetValue(typeName.ToLower(), out handler))
-	            {
-	                return handler(key, name, ipid);
-	            }
-	            Debug.Console(0, "Cannot create DM-RMC of type: '{0}'", typeName);
+                if (ProcessorFactoryDict.TryGetValue(typeName.ToLower(), out handler))
+                {
+                    return handler(key, name, ipid);
+                }
+                Debug.Console(0, "Cannot create DM-RMC of type: '{0}'", typeName);
 
-	            return null;
-	        }
-	        catch (Exception e)
-	        {
-	            Debug.Console(0, "[{0}] WARNING: Cannot create DM-RMC device: {1}", key, e.Message);
                 return null;
-	        }
-	    }
-
-        
-	}
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, "[{0}] WARNING: Cannot create DM-RMC device: {1}", key, e.Message);
+                return null;
+            }
+        }
+    }
 
     public class DmRmcControllerFactory : EssentialsDeviceFactory<DmRmcControllerBase>
     {
@@ -524,7 +627,7 @@ namespace PepperDash.Essentials.DM
 
             var props = JsonConvert.DeserializeObject
                 <DmRmcPropertiesConfig>(dc.Properties.ToString());
-            return DmRmcHelper.GetDmRmcController(dc.Key, dc.Name, type, props);            
+            return DmRmcHelper.GetDmRmcController(dc.Key, dc.Name, type, props);
         }
     }
 

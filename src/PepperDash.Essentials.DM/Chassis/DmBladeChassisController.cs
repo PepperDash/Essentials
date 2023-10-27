@@ -24,7 +24,7 @@ namespace PepperDash.Essentials.DM
     /// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
     /// 
     /// </summary>
-    public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumericWithFeedback
+	public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitchWithEndpointOnlineFeedback, IRoutingNumericWithFeedback
     {
         private const string NonePortKey = "inputCard0--None";
 

@@ -60,37 +60,37 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
             HdmiOut.Port = _dge.HdmiOut; ;
 
         }
-
-        public class DmDge200CControllerFactory : EssentialsDeviceFactory<DmDge200CController>
-        {
-            public DmDge200CControllerFactory()
-            {
-                TypeNames = new List<string>() { "dmdge200c" };
-            }
-
-            public override EssentialsDevice BuildDevice(DeviceConfig dc)
-            {
-                var typeName = dc.Type.ToLower();
-                var comm = CommFactory.GetControlPropertiesConfig(dc);
-                var props = JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(dc.Properties.ToString());
-
-                Debug.Console(1, "Factory Attempting to create new DgeController  Device");
-
-                DmDge200C dgeDevice = null;
-
-                if (typeName == "dmdge200c")
-                    dgeDevice = new DmDge200C(comm.IpIdInt, Global.ControlSystem);
-
-                if (dgeDevice == null)
-                {
-                    Debug.Console(1, "Unable to create DGE device");
-                    return null;
-                }
-
-                var dgeController = new DmDge200CController(dc.Key , dc.Name, dgeDevice, dc, props);
-
-                return dgeController;
-            }
-        }
     }
+
+	public class DmDge200CControllerFactory : EssentialsDeviceFactory<DmDge200CController>
+	{
+		public DmDge200CControllerFactory()
+		{
+			TypeNames = new List<string>() { "dmdge200c" };
+		}
+
+		public override EssentialsDevice BuildDevice(DeviceConfig dc)
+		{
+			var typeName = dc.Type.ToLower();
+			var comm = CommFactory.GetControlPropertiesConfig(dc);
+			var props = JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(dc.Properties.ToString());
+
+			Debug.Console(1, "Factory Attempting to create new DgeController  Device");
+
+			DmDge200C dgeDevice = null;
+
+			if (typeName == "dmdge200c")
+				dgeDevice = new DmDge200C(comm.IpIdInt, Global.ControlSystem);
+
+			if (dgeDevice == null)
+			{
+				Debug.Console(1, "Unable to create DGE device");
+				return null;
+			}
+
+			var dgeController = new DmDge200CController(dc.Key, dc.Name, dgeDevice, dc, props);
+
+			return dgeController;
+		}
+	}
 }

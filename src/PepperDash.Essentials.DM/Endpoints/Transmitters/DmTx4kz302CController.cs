@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.DM
 
 
     [Description("Wrapper class for DM-TX-4K-Z-302-C")]
-    public class DmTx4kz302CController : DmTxControllerBase, ITxRoutingWithFeedback, IHasFeedback,
+    public class DmTx4kz302CController : DmTxControllerBase, ITxRoutingWithFeedback,
         IIROutputPorts, IComPorts
     {
         public DmTx4kz302C Tx { get; private set; }
@@ -34,6 +34,7 @@ namespace PepperDash.Essentials.DM
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiIn1HdcpCapabilityFeedback { get; protected set; }
         public IntFeedback HdmiIn2HdcpCapabilityFeedback { get; protected set; }
+        public IntFeedback DisplayPortInHdcpCapabilityFeedback { get; protected set; }
         public BoolFeedback Hdmi1VideoSyncFeedback { get; protected set; }
         public BoolFeedback Hdmi2VideoSyncFeedback { get; protected set; }
         public BoolFeedback DisplayPortVideoSyncFeedback { get; protected set; }
@@ -120,7 +121,7 @@ namespace PepperDash.Essentials.DM
 
             Tx.HdmiInputs[1].InputStreamChange += InputStreamChangeEvent;
             Tx.HdmiInputs[2].InputStreamChange += InputStreamChangeEvent;
-            Tx.DisplayPortInput.InputStreamChange += DisplayPortInputStreamChange;
+            Tx.DisplayPortInput.InputStreamChange += InputStreamChangeEvent;
             Tx.BaseEvent += Tx_BaseEvent;
             Tx.OnlineStatusChange += Tx_OnlineStatusChange;
 
@@ -130,15 +131,32 @@ namespace PepperDash.Essentials.DM
             HdmiIn1HdcpCapabilityFeedback = new IntFeedback("HdmiIn1HdcpCapability", () => (int)tx.HdmiInputs[1].HdcpCapabilityFeedback);
 
             HdmiIn2HdcpCapabilityFeedback = new IntFeedback("HdmiIn2HdcpCapability", () => (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
+            DisplayPortInHdcpCapabilityFeedback = new IntFeedback("DisplayPortInHdcpCapability",
+                () => (int)tx.DisplayPortInput.HdcpCapabilityFeedback);
 
+
+            /*
             HdcpStateFeedback =
                 new IntFeedback(
                     () =>
                         tx.HdmiInputs[1].HdcpCapabilityFeedback > tx.HdmiInputs[2].HdcpCapabilityFeedback
                             ? (int)tx.HdmiInputs[1].HdcpCapabilityFeedback
                             : (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
+             */
+
+            //yeah this is gross - but it's the quickest way to do this...
+            /*
+            HdcpStateFeedback = new IntFeedback(() => {
+                var states = new[] {(int) tx.DisplayPortInput.HdcpCapabilityFeedback, (int) tx.HdmiInputs[1].HdcpCapabilityFeedback, (int) tx.HdmiInputs[2].HdcpCapabilityFeedback};
+
+                return states.Max();
+            });
+             */
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
+            // I feel like we have had this as a misnomer for so long, that it really needed to be fixed 
+            // All we were doing was reporting the best of the current statuses - not the actual capability of the device.
+            HdcpStateFeedback = new IntFeedback(() => (int)HdcpSupportCapability);
 
             Hdmi1VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue);
 
@@ -146,20 +164,25 @@ namespace PepperDash.Essentials.DM
 
             DisplayPortVideoSyncFeedback = new BoolFeedback(() => (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue);
 
-
             var combinedFuncs = new VideoStatusFuncsWrapper
             {
                 HdcpActiveFeedbackFunc = () =>
                     (ActualActiveVideoInput == eVst.Hdmi1
                     && tx.HdmiInputs[1].VideoAttributes.HdcpActiveFeedback.BoolValue)
                     || (ActualActiveVideoInput == eVst.Hdmi2
-                    && tx.HdmiInputs[2].VideoAttributes.HdcpActiveFeedback.BoolValue),
+                    && tx.HdmiInputs[2].VideoAttributes.HdcpActiveFeedback.BoolValue)
+                    || (ActualActiveVideoInput == eVst.DisplayPort
+                    && tx.DisplayPortInput.VideoAttributes.HdcpActiveFeedback.BoolValue),
 
                 HdcpStateFeedbackFunc = () =>
                 {
                     if (ActualActiveVideoInput == eVst.Hdmi1)
-                        return tx.HdmiInputs[1].VideoAttributes.HdcpStateFeedback.ToString();
-                    return ActualActiveVideoInput == eVst.Hdmi2 ? tx.HdmiInputs[2].VideoAttributes.HdcpStateFeedback.ToString() : "";
+                        return tx.HdmiInputs[1].VideoAttributes.HdcpStateFeedback.ToString(); 
+                    if (ActualActiveVideoInput == eVst.Hdmi2)
+                        return tx.HdmiInputs[2].VideoAttributes.HdcpStateFeedback.ToString();
+                    return ActualActiveVideoInput == eVst.DisplayPort
+                        ? tx.DisplayPortInput.VideoAttributes.HdcpStateFeedback.ToString()
+                        : "";
                 },
 
                 VideoResolutionFeedbackFunc = () =>
@@ -168,6 +191,8 @@ namespace PepperDash.Essentials.DM
                         return tx.HdmiInputs[1].VideoAttributes.GetVideoResolutionString();
                     if (ActualActiveVideoInput == eVst.Hdmi2)
                         return tx.HdmiInputs[2].VideoAttributes.GetVideoResolutionString();
+                    if (ActualActiveVideoInput == eVst.DisplayPort)
+                        return tx.DisplayPortInput.VideoAttributes.GetVideoResolutionString();
                     return ActualActiveVideoInput == eVst.Vga ? tx.DisplayPortInput.VideoAttributes.GetVideoResolutionString() : "";
                 },
                 VideoSyncFeedbackFunc = () =>
@@ -175,6 +200,8 @@ namespace PepperDash.Essentials.DM
                     && tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue)
                     || (ActualActiveVideoInput == eVst.Hdmi2
                     && tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue)
+                    || (ActualActiveVideoInput == eVst.DisplayPort
+                    && tx.DisplayPortInput.SyncDetectedFeedback.BoolValue)
                     || (ActualActiveVideoInput == eVst.Vga
                     && tx.DisplayPortInput.SyncDetectedFeedback.BoolValue)
 
@@ -193,27 +220,14 @@ namespace PepperDash.Essentials.DM
                 AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
                 AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
                 AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiIn1HdcpCapabilityFeedback, HdmiIn2HdcpCapabilityFeedback,
-                Hdmi1VideoSyncFeedback, Hdmi2VideoSyncFeedback, DisplayPortVideoSyncFeedback);
+                Hdmi1VideoSyncFeedback, Hdmi2VideoSyncFeedback, DisplayPortVideoSyncFeedback, DisplayPortInHdcpCapabilityFeedback);
 
-            // Set Ports for CEC
             HdmiIn1.Port = Tx.HdmiInputs[1];
             HdmiIn2.Port = Tx.HdmiInputs[2];
+            DisplayPortIn.Port = Tx.DisplayPortInput;
             HdmiLoopOut.Port = Tx.HdmiOutput;
             DmOut.Port = Tx.DmOutput;
         }
-
-        void DisplayPortInputStreamChange(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
-        {
-            Debug.Console(2, "{0} event {1} stream {2}", Tx.ToString(), inputStream.ToString(), args.EventId.ToString());
-
-            switch (args.EventId)
-            {
-                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
-                    DisplayPortVideoSyncFeedback.FireUpdate();
-                    break;
-            }
-        }
-
 
 
         public override bool CustomActivate()
@@ -256,41 +270,41 @@ namespace PepperDash.Essentials.DM
         {
             Debug.Console(2, this, "Executing Numeric Switch to input {0}.", input);
 
-                switch (input)
-                {
-                    case 0:
-                        {
-                            ExecuteSwitch(eVst.Auto, null, type);
-                            break;
-                        }
-                    case 1:
-                        {
-                            ExecuteSwitch(HdmiIn1.Selector, null, type);
-                            break;
-                        }
-                    case 2:
-                        {
-                            ExecuteSwitch(HdmiIn2.Selector, null, type);
-                            break;
-                        }
-                    case 3:
-                        {
-                            ExecuteSwitch(DisplayPortIn.Selector, null, type);
-                            break;
-                        }
-                    case 4:
-                        {
-                            ExecuteSwitch(eVst.AllDisabled, null, type);
-                            break;
-                        }
-                    default:
+            switch (input)
+            {
+                case 0:
+                    {
+                        ExecuteSwitch(eVst.Auto, null, type);
+                        break;
+                    }
+                case 1:
+                    {
+                        ExecuteSwitch(HdmiIn1.Selector, null, type);
+                        break;
+                    }
+                case 2:
+                    {
+                        ExecuteSwitch(HdmiIn2.Selector, null, type);
+                        break;
+                    }
+                case 3:
+                    {
+                        ExecuteSwitch(DisplayPortIn.Selector, null, type);
+                        break;
+                    }
+                case 4:
+                    {
+                        ExecuteSwitch(eVst.AllDisabled, null, type);
+                        break;
+                    }
+                default:
                     {
                         Debug.Console(2, this, "Unable to execute numeric switch to input {0}", input);
                         break;
                     }
 
-                }
-            
+            }
+
 
         }
 
@@ -326,11 +340,17 @@ namespace PepperDash.Essentials.DM
                 case EndpointInputStreamEventIds.HdcpCapabilityFeedbackEventId:
                     if (inputStream == Tx.HdmiInputs[1]) HdmiIn1HdcpCapabilityFeedback.FireUpdate();
                     if (inputStream == Tx.HdmiInputs[2]) HdmiIn2HdcpCapabilityFeedback.FireUpdate();
+                    if (inputStream == Tx.DisplayPortInput) DisplayPortInHdcpCapabilityFeedback.FireUpdate();
+
+                    Debug.Console(2, this, "DisplayPortHDCP Mode Trigger = {0}",
+                        DisplayPortInHdcpCapabilityFeedback.IntValue);
+
                     HdcpStateFeedback.FireUpdate();
                     break;
                 case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
                     if (inputStream == Tx.HdmiInputs[1]) Hdmi1VideoSyncFeedback.FireUpdate();
                     if (inputStream == Tx.HdmiInputs[2]) Hdmi2VideoSyncFeedback.FireUpdate();
+                    if (inputStream == Tx.DisplayPortInput) DisplayPortVideoSyncFeedback.FireUpdate();
                     break;
             }
         }
@@ -412,7 +432,6 @@ namespace PepperDash.Essentials.DM
                     break;
             }
         }
-
 
         #region IIROutputPorts Members
         public CrestronCollection<IROutputPort> IROutputPorts { get { return Tx.IROutputPorts; } }
