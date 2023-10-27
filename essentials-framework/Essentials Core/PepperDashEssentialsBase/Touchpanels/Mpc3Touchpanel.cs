@@ -55,6 +55,8 @@ namespace PepperDash.Essentials.Core.Touchpanels
 					InitializeButton(buttonKey, buttonConfig);
 					InitializeButtonFeedback(buttonKey, buttonConfig);
 				}
+
+				ListButtons();
 			});
 		}
 
@@ -317,6 +319,23 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			if (!button.EventTypes.ContainsKey(type)) return;
 
 			foreach (var eventType in button.EventTypes[type]) DeviceJsonApi.DoDeviceAction(eventType);
+		}
+
+
+		public void ListButtons()
+		{
+			var line = new string('-', 35);
+
+			Debug.Console(0, this, line);
+
+			Debug.Console(0, this, "MPC3 Controller {0} - Available Butons", Key);
+
+			foreach (var button in _buttons)
+			{
+				Debug.Console(0, this, "Key: {0}", button.Key);
+			}
+
+			Debug.Console(0, this, line);
 		}
 	}
 
