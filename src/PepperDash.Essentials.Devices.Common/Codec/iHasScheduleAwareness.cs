@@ -218,6 +218,10 @@ namespace PepperDash.Essentials.Devices.Common.Codec
                 return joinable;
             }
         }
+
+		[JsonProperty("dialable")]
+		public bool Dialable { get; set; }
+
         //public string ConferenceNumberToDial { get; set; }
         [JsonProperty("conferencePassword")]
         public string ConferencePassword { get; set; }

@@ -72,6 +72,10 @@ namespace PepperDash.Essentials.Core
     {
         IBasicVolumeControls CurrentVolumeControls { get; }
 		event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
+
+        void SetDefaultLevels();
+
+        bool ZeroVolumeWhenSwtichingVolumeDevices { get; }
 	}
 
 

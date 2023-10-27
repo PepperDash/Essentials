@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Text;
 using Crestron.SimplSharp.WebScripting;
+using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
@@ -8,69 +8,14 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	public class DevJsonRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
-		/// Handles CONNECT method requests
+		/// Constructor
 		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleConnect(HttpCwsContext context)
+		/// <remarks>
+		/// base(true) enables CORS support by default
+		/// </remarks>
+		public DevJsonRequestHandler()
+			: base(true)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles DELETE method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleDelete(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles GET method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleGet(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles HEAD method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleHead(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles OPTIONS method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleOptions(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles PATCH method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandlePatch(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
 		}
 
 		/// <summary>
@@ -108,32 +53,14 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 			catch (Exception ex)
 			{
+				Debug.Console(1, "Exception Message: {0}", ex.Message);
+				Debug.Console(2, "Exception Stack Trace: {0}", ex.StackTrace);
+				if(ex.InnerException != null) Debug.Console(2, "Exception Inner: {0}", ex.InnerException);
+
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
 				context.Response.End();
 			}
-		}
-
-		/// <summary>
-		/// Handles PUT method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandlePut(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
-		}
-
-		/// <summary>
-		/// Handles TRACE method requests
-		/// </summary>
-		/// <param name="context"></param>
-		protected override void HandleTrace(HttpCwsContext context)
-		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
-			context.Response.End();
 		}
 	}
 }

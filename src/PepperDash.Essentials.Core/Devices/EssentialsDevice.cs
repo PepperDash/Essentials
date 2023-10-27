@@ -121,6 +121,41 @@ namespace PepperDash.Essentials.Core
         #endregion
     }
 
+    public abstract class ProcessorExtensionDeviceFactory<T> : IProcessorExtensionDeviceFactory where T: EssentialsDevice
+    {
+        #region IProcessorExtensionDeviceFactory Members
+
+        /// <summary>
+        /// A list of strings that can be used in the type property of a DeviceConfig object to build an instance of this device
+        /// </summary>
+        public List<string> TypeNames { get; protected set; }
+
+        /// <summary>
+        /// Loads an item to the ProcessorExtensionDeviceFactory.ProcessorExtensionFactoryMethods dictionary for each entry in the TypeNames list
+        /// </summary>
+        public void LoadFactories()
+        {
+            foreach (var typeName in TypeNames)
+            {
+                //Debug.Console(2, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
+                var descriptionAttribute = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
+                string description = descriptionAttribute[0].Description;
+                var snippetAttribute = typeof(T).GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
+                ProcessorExtensionDeviceFactory.AddFactoryForType(typeName.ToLower(), description, typeof(T), BuildDevice);
+            }
+        }
+
+        /// <summary>
+        /// The method that will build the device
+        /// </summary>
+        /// <param name="dc">The device config</param>
+        /// <returns>An instance of the device</returns>
+        public abstract EssentialsDevice BuildDevice(DeviceConfig dc);
+
+        #endregion
+
+    }
+
     /// <summary>
     /// Devices the basic needs for a Device Factory
     /// </summary>

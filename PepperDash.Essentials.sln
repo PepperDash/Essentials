@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDash.Essentials.Devices.Common", "src\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj", "{53E204B7-97DD-441D-A96C-721DF014DF82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PepperDash.Essentials.Devices.Common", "src\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj", "{53E204B7-97DD-441D-A96C-721DF014DF82}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDash.Essentials.DM", "src\PepperDash.Essentials.DM\PepperDash.Essentials.DM.csproj", "{08EB4B98-9B4D-455A-81E0-4F913E08ADB5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PepperDash.Essentials", "src\PepperDash.Essentials\PepperDash.Essentials.csproj", "{CB3B11BA-625C-4D35-B663-FDC5BE9A230E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDash.Essentials", "src\PepperDash.Essentials\PepperDash.Essentials.csproj", "{CB3B11BA-625C-4D35-B663-FDC5BE9A230E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDash.Essentials.Core", "src\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj", "{3D192FED-8FFC-4CB5-B5F7-BA307ABA254B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PepperDash.Essentials.Core", "src\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj", "{3D192FED-8FFC-4CB5-B5F7-BA307ABA254B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +19,6 @@ Global
 		{53E204B7-97DD-441D-A96C-721DF014DF82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53E204B7-97DD-441D-A96C-721DF014DF82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53E204B7-97DD-441D-A96C-721DF014DF82}.Release|Any CPU.Build.0 = Release|Any CPU
-		{08EB4B98-9B4D-455A-81E0-4F913E08ADB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{08EB4B98-9B4D-455A-81E0-4F913E08ADB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{08EB4B98-9B4D-455A-81E0-4F913E08ADB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{08EB4B98-9B4D-455A-81E0-4F913E08ADB5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CB3B11BA-625C-4D35-B663-FDC5BE9A230E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CB3B11BA-625C-4D35-B663-FDC5BE9A230E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB3B11BA-625C-4D35-B663-FDC5BE9A230E}.Release|Any CPU.ActiveCfg = Release|Any CPU

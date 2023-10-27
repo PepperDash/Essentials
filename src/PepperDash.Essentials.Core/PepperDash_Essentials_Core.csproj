@@ -83,7 +83,7 @@
       <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="PepperDash_Core, Version=1.0.42.30563, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDash_Core, Version=1.2.1.30543, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\PepperDashCore\lib\net35\PepperDash_Core.dll</HintPath>
     </Reference>
@@ -94,7 +94,7 @@
     </Reference>
     <Reference Include="SimplSharpCWSHelperInterface, Version=2.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCWSHelperInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCWSHelperInterface.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -127,6 +127,8 @@
     <Compile Include="Bridges\IBridge.cs" />
     <Compile Include="Bridges\JoinMaps\AirMediaControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\AppleTvJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GenericIrControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\HdPsXxxControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IAnalogInputJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IDigitalOutputJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\PduJoinMapBase.cs" />
@@ -200,6 +202,8 @@
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
     <Compile Include="Crestron IO\StatusSign\StatusSignController.cs" />
+    <Compile Include="Device Info\NetworkDeviceHelpers.cs" />
+    <Compile Include="Devices\PowerInterfaces.cs" />
     <Compile Include="Web\RequestHandlers\AppDebugRequestHandler.cs" />
     <Compile Include="Web\RequestHandlers\GetFeedbacksForDeviceRequestHandler.cs" />
     <Compile Include="Web\EssentialsWebApiHelpers.cs" />
@@ -416,12 +420,6 @@
     <Compile Include="SmartObjects\SubpageReferencList\SubpageReferenceListItem.cs" />
     <None Include="app.config" />
     <None Include="Properties\ControlSystem.cfg" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Essentials Interfaces\PepperDash_Essentials_Interfaces\PepperDash_Essentials_Interfaces.csproj">
-      <Project>{E51D7C84-4906-486C-B2BA-EEB3B4E9731B}</Project>
-      <Name>PepperDash_Essentials_Interfaces</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

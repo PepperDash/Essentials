@@ -46,7 +46,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.19.36" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.20.31" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2">
       <Aliases>Full</Aliases>
     </PackageReference>
@@ -55,6 +55,5 @@
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />
     <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj" />
-    <ProjectReference Include="..\PepperDash.Essentials.DM\PepperDash.Essentials.DM.csproj" />
   </ItemGroup>
 </Project>

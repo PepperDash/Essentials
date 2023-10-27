@@ -150,15 +150,20 @@ namespace PepperDash.Essentials.Core.Fusion
                     ReadGuidFile(guidFilePath);
                 }
 
-                if (Room.RoomOccupancy != null)
+                var occupancyRoom = Room as IRoomOccupancy;
+
+                if (occupancyRoom != null)
                 {
-                    if (Room.OccupancyStatusProviderIsRemote)
+                    if (occupancyRoom.RoomOccupancy != null)
                     {
-                        SetUpRemoteOccupancy();
-                    }
-                    else
-                    {
-                        SetUpLocalOccupancy();
+                        if (occupancyRoom.OccupancyStatusProviderIsRemote)
+                        {
+                            SetUpRemoteOccupancy();
+                        }
+                        else
+                        {
+                            SetUpLocalOccupancy();
+                        }
                     }
                 }
 
@@ -1525,10 +1530,15 @@ namespace PepperDash.Essentials.Core.Fusion
             // Tie to method on occupancy object
             //occSensorShutdownMinutes.OutputSig.UserObject(new Action(ushort)(b => Room.OccupancyObj.SetShutdownMinutes(b));
 
+            var occRoom = Room as IRoomOccupancy;
 
+            if (occRoom != null)
+            {
+                occRoom.RoomOccupancy.RoomIsOccupiedFeedback.LinkInputSig(occSensorAsset.RoomOccupied.InputSig);
+                occRoom.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
+            }
             RoomOccupancyRemoteStringFeedback = new StringFeedback(() => _roomOccupancyRemoteString);
-            Room.RoomOccupancy.RoomIsOccupiedFeedback.LinkInputSig(occSensorAsset.RoomOccupied.InputSig);
-            Room.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
+            
             RoomOccupancyRemoteStringFeedback.LinkInputSig(occSensorAsset.RoomOccupancyInfo.InputSig);
 
             //}
