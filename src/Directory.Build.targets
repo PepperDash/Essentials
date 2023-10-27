@@ -20,7 +20,7 @@
   <Target Name="Copy CPZ" AfterTargets="SimplSharpPostProcess" Condition="$(ProjectType) == 'Program'">
     <Message Text="Copying CPZ"></Message>
     <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).cpz" />
-    <Copy SourceFiles="$(TargetDir)$(TargetName).$(Version).cpz" DestinationFiles="$(PackageOutputPath)$(TargetName).$(Version).cpz"/>
+    <Copy SourceFiles="$(TargetDir)$(TargetName).$(Version).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).cpz"/>
   </Target>  
   <Target Name="Clean CPZ" AfterTargets="AfterClean" Condition="$(ProjectType) == 'Program'">
     <Delete Files="$(PackageOutputPath)\$(TargetName).$(Version).cpz"/>
