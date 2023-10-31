@@ -35,6 +35,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Crestron\CrestronGenericBaseDevice.cs.orig" />
-    <None Include="Occupancy\EssentialsGlsOccupancySensorBaseController.cs.orig" />
   </ItemGroup>
 </Project>
