@@ -16,10 +16,8 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core
 {
-	/// <summary>
-	/// 
-	/// </summary>
-	public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
+    public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced
 
 	{
 		public RoutingInputPort HdmiIn1 { get; private set; }

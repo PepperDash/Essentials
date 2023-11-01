@@ -3,13 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-using Crestron.SimplSharpPro.DM;
-using Crestron.SimplSharpPro.DM.Endpoints;
-using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 using Full.Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -17,9 +12,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core
 {
-	/// <summary>
-	/// 
-	/// </summary>
+	[Obsolete("Please use PepperDash.Essentials.Devices.Common")]
     public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IHasPowerControl, IWarmingCooling, IUsageTracking, IPower
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
@@ -260,9 +253,7 @@ namespace PepperDash.Essentials.Core
 
     }
 
-	/// <summary>
-	/// 
-	/// </summary>
+	[Obsolete("Please use PepperDash.Essentials.Devices.Common")]
     public abstract class TwoWayDisplayBase : DisplayBase, IRoutingFeedback, IHasPowerControlWithFeedback
 	{
         public StringFeedback CurrentInputFeedback { get; private set; }

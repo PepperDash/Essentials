@@ -9,9 +9,8 @@ using PepperDash.Essentials.Core.CrestronIO;
 
 namespace PepperDash.Essentials.Core.Shades
 {
-    /// <summary>
-    /// Base class for a shade device
-    /// </summary>
+
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
     public abstract class ShadeBase : EssentialsDevice, IShadesOpenCloseStop
     {
         public ShadeBase(string key, string name)
