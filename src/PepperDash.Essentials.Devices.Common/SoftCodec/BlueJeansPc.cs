@@ -13,7 +13,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
 {
-    public class BlueJeansPc : InRoomPc, IRoutingInputs, IRunRouteAction, IRoutingSinkNoSwitching
+    public class BlueJeansPc : InRoomPc, IRoutingInputs, IRunRouteAction, IRoutingSink
     {
 
         public RoutingInputPort AnyVideoIn { get; private set; }
@@ -93,9 +93,9 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         /// <returns></returns>
         bool DoRoute(SourceRouteListItem route)
         {
-            IRoutingSinkNoSwitching dest = null;
+            IRoutingSink dest = null;
 
-            dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkNoSwitching;
+            dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
 
             if (dest == null)
             {
