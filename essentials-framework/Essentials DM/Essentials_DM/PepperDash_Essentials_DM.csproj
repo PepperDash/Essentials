@@ -104,6 +104,7 @@
     <Compile Include="Chassis\HdMd8xNController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEBridgeableController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
+    <Compile Include="Chassis\HdPsXxxAnalogAuxMixerController.cs" />
     <Compile Include="Chassis\HdPsXxxController.cs" />
     <Compile Include="Config\HdPsXxxPropertiesConfig.cs" />
     <Compile Include="Config\InputPropertiesConfig.cs" />

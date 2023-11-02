@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -17,11 +16,9 @@ using PepperDash_Essentials_DM.Config;
 namespace PepperDash_Essentials_DM.Chassis
 {
 	[Description("Wrapper class for all HdPsXxx switchers")]
-	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IRoutingHasVideoInputSyncFeedbacks, IHasVolumeControlWithFeedback
+	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IRoutingHasVideoInputSyncFeedbacks
 	{
 		private readonly HdPsXxx _chassis;
-		private readonly string _defaultAudioKey = "";
-
 
 		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
@@ -86,8 +83,11 @@ namespace PepperDash_Essentials_DM.Chassis
 			OutputNames = props.Outputs;
 			SetupOutputs(OutputNames);
 
-			if (!string.IsNullOrEmpty(props.DefaultAudioKey))
-				_defaultAudioKey = props.DefaultAudioKey;
+			foreach (var mixer in _chassis.AnalogAuxiliaryMixer)
+			{
+				var mixerDevice = new HdPsXxxAnalogAuxMixerController(Key, mixer.MixerNumber, _chassis);				
+				DeviceManager.AddDevice(mixerDevice);
+			}
 		}
 
 		// get input priorities
@@ -208,14 +208,13 @@ namespace PepperDash_Essentials_DM.Chassis
 
 				VideoOutputRouteFeedbacks.Add(new IntFeedback(index.ToString(CultureInfo.InvariantCulture), 
 					() => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
+			}
 
-				var audioKey = string.Format("audioOut{0}", index);
-				var audioPort = new RoutingOutputPort(audioKey, eRoutingSignalType.Audio, eRoutingPortConnectionType.DigitalAudio,
-					output, this)
-				{
-					FeedbackMatchObject = output,
-					Port = output.OutputPort.AudioOutput;
-				};
+			Debug.Console(0, this, "----> AnalogAuxillaryMixer.Count-{0}", _chassis.AnalogAuxiliaryMixer.Count);
+			foreach (var item in _chassis.AnalogAuxiliaryMixer)
+			{
+				Debug.Console(0, this, "----> AnalogAuxillaryMixer[{0}].LineMuteVolumeControl.Count-{1}", item.MixerNumber, item.LineMuteVolumeControl.Count);
+				Debug.Console(0, this, "----> AnalogAuxillaryMixer[{0}].SourceMuteVolumeControl.Count-{1}", item.MixerNumber, item.SourceMuteVolumeControl.Count);
 			}
 
 			_chassis.DMOutputChange += _chassis_OutputChange;
@@ -427,29 +426,6 @@ Selector: {4}
 			_chassis.AutoRouteOff();
 		}
 
-		#region IHasVolumeWithFeedback Members
-
-		public void VolumeUp(bool pressRelease)
-		{
-			
-		}
-
-		public void VolumeDown(bool pressRelease)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void SetVolume(ushort level)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IntFeedback VolumeLevelFeedback { get; private set; }
-
-
-
-		#endregion
-
 
 
 		#region Events
@@ -564,7 +540,7 @@ Selector: {4}
 		{
 			public HdSp401ControllerFactory()
 			{
-				TypeNames = new List<string>() { "hdps401", "hdps402", "hdps621", "hdps622" };
+				TypeNames = new List<string> { "hdps401", "hdps402", "hdps621", "hdps622" };
 			}
 			public override EssentialsDevice BuildDevice(DeviceConfig dc)
 			{
