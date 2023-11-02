@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Devices.Common
 	/// <summary>
 	/// Represents and audio endpoint
 	/// </summary>
-	public class GenericAudioOut : EssentialsDevice, IRoutingSinkNoSwitching
+	public class GenericAudioOut : EssentialsDevice, IRoutingSink
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
 
