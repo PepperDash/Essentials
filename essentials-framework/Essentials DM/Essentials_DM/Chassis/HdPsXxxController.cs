@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -207,6 +208,14 @@ namespace PepperDash_Essentials_DM.Chassis
 
 				VideoOutputRouteFeedbacks.Add(new IntFeedback(index.ToString(CultureInfo.InvariantCulture), 
 					() => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
+
+				var audioKey = string.Format("audioOut{0}", index);
+				var audioPort = new RoutingOutputPort(audioKey, eRoutingSignalType.Audio, eRoutingPortConnectionType.DigitalAudio,
+					output, this)
+				{
+					FeedbackMatchObject = output,
+					Port = output.OutputPort.AudioOutput;
+				};
 			}
 
 			_chassis.DMOutputChange += _chassis_OutputChange;
