@@ -38,12 +38,6 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         void GetDirectoryParentFolderContents();
 
         BoolFeedback CurrentDirectoryResultIsNotDirectoryRoot { get; }
-
-        /// <summary>
-        /// Tracks the directory browse history when browsing beyond the root directory
-        /// </summary>
-        [Obsolete("Please use the Stack-based history instead")]
-        List<CodecDirectory> DirectoryBrowseHistory { get; }
     }
 
     public interface IHasDirectoryHistoryStack : IHasDirectory

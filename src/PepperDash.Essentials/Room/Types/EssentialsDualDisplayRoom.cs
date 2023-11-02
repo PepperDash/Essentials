@@ -577,13 +577,13 @@ namespace PepperDash.Essentials
             IRoutingSink dest = null;
 
             if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
-                dest = DefaultAudioDevice as IRoutingSinkNoSwitching;
+                dest = DefaultAudioDevice as IRoutingSink;
             else if (route.DestinationKey.Equals(LeftDisplay.Key, StringComparison.OrdinalIgnoreCase))
                 dest = LeftDisplay;
             else if (route.DestinationKey.Equals(RightDisplay.Key, StringComparison.OrdinalIgnoreCase))
                 dest = RightDisplay;
             else
-                dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkNoSwitching;
+                dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
 
             if (dest == null)
             {

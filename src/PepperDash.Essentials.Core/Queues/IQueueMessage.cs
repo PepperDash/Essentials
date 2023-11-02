@@ -7,12 +7,3 @@ namespace PepperDash.Essentials.Core.Queues
         void Dispatch();
     }
 }
-
-namespace PepperDash_Essentials_Core.Queues
-{
-    [Obsolete("Use PepperDash.Essentials.Core.Queues")]
-    public interface IQueueMessage
-    {
-        void Dispatch();
-    }
-}

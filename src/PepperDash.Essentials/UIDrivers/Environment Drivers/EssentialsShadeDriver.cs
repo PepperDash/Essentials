@@ -76,7 +76,7 @@ namespace PepperDash.Essentials
         {
             if (ShadeDevice is IShadesOpenCloseStop)
                 DeviceType = eShadeDeviceType.OpenCloseStop;
-            else if (ShadeDevice is IShadesOpenClose)
+            else if (ShadeDevice is IShadesOpenCloseStop)
                 DeviceType = eShadeDeviceType.OpenClose;
         }
 
