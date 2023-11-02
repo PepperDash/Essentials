@@ -16,9 +16,11 @@ using PepperDash_Essentials_DM.Config;
 namespace PepperDash_Essentials_DM.Chassis
 {
 	[Description("Wrapper class for all HdPsXxx switchers")]
-	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IRoutingHasVideoInputSyncFeedbacks
+	public class HdPsXxxController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IRoutingHasVideoInputSyncFeedbacks, IHasVolumeControlWithFeedback
 	{
 		private readonly HdPsXxx _chassis;
+		private readonly string _defaultAudioKey = "";
+
 
 		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
@@ -82,6 +84,9 @@ namespace PepperDash_Essentials_DM.Chassis
 
 			OutputNames = props.Outputs;
 			SetupOutputs(OutputNames);
+
+			if (!string.IsNullOrEmpty(props.DefaultAudioKey))
+				_defaultAudioKey = props.DefaultAudioKey;
 		}
 
 		// get input priorities
@@ -413,6 +418,31 @@ Selector: {4}
 			_chassis.AutoRouteOff();
 		}
 
+		#region IHasVolumeWithFeedback Members
+
+		public void VolumeUp(bool pressRelease)
+		{
+			
+		}
+
+		public void VolumeDown(bool pressRelease)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void SetVolume(ushort level)
+		{
+			throw new NotImplementedException();
+		}
+
+		public IntFeedback VolumeLevelFeedback { get; private set; }
+
+
+
+		#endregion
+
+
+
 		#region Events
 
 
@@ -517,6 +547,7 @@ Selector: {4}
 		#endregion
 
 
+
 		#region Factory
 
 
@@ -571,7 +602,7 @@ Selector: {4}
 		}
 
 
-		#endregion		
+		#endregion
 	}
 
 

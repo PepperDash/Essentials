@@ -15,6 +15,9 @@ namespace PepperDash_Essentials_DM.Config
 		[JsonProperty("outputs")]
 		public Dictionary<uint, string> Outputs { get; set; }
 
+		[JsonProperty("defaultAudioKey")]
+		public string DefaultAudioKey { get; set; }
+
 		// "inputPriorities": "1,4,3,2"
 		[JsonProperty("inputPriorities")]
 		public string InputPriorities { get; set; }
