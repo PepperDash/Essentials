@@ -83,10 +83,15 @@ namespace PepperDash_Essentials_DM.Chassis
 			OutputNames = props.Outputs;
 			SetupOutputs(OutputNames);
 
-			foreach (var mixer in _chassis.AnalogAuxiliaryMixer)
+			foreach (var item in _chassis.HdmiDmLiteOutputs)
 			{
-				var mixerDevice = new HdPsXxxAnalogAuxMixerController(Key, mixer.MixerNumber, _chassis);				
-				DeviceManager.AddDevice(mixerDevice);
+				var audioDevice = new HdPsXxxOutputAudioController(Key, item.Number, _chassis);
+				DeviceManager.AddDevice(audioDevice);
+			}
+			foreach (var item in _chassis.AnalogAuxiliaryMixer)
+			{
+				var audioDevice = new HdPsXxxAnalogAuxMixerController(Key, item.MixerNumber, _chassis);				
+				DeviceManager.AddDevice(audioDevice);
 			}
 		}
 
@@ -180,7 +185,7 @@ namespace PepperDash_Essentials_DM.Chassis
 				var output = item;
 				var index = item.Number;
 				var name = string.IsNullOrEmpty(OutputNames[index]) 
-					? string.Format("Output {0}", index) 
+					? string.Format("Port {0}", index) 
 					: OutputNames[index];
 				
 				output.Name.StringValue = name;
@@ -191,7 +196,7 @@ namespace PepperDash_Essentials_DM.Chassis
 					FeedbackMatchObject = output,
 					Port = output.HdmiOutput.HdmiOutputPort
 				};
-				Debug.Console(1, this, "Adding Output port: {0} - {1}", hdmiPort.Key, name);
+				Debug.Console(1, this, "Adding Port port: {0} - {1}", hdmiPort.Key, name);
 				OutputPorts.Add(hdmiPort);
 
 				var dmLiteKey = string.Format("dmLiteOut{0}", index);
@@ -200,7 +205,7 @@ namespace PepperDash_Essentials_DM.Chassis
 					FeedbackMatchObject = output,
 					Port = output.DmLiteOutput.DmLiteOutputPort
 				};
-				Debug.Console(1, this, "Adding Output port: {0} - {1}", dmLitePort.Key, name);
+				Debug.Console(1, this, "Adding Port port: {0} - {1}", dmLitePort.Key, name);
 				OutputPorts.Add(dmLitePort);
 				
 				OutputRouteNameFeedback.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture), 
@@ -237,7 +242,7 @@ Selector: {4}
 
 				foreach (var port in OutputPorts)
 				{
-					Debug.Console(0, this, @"Output Port Key: {0}
+					Debug.Console(0, this, @"Port Port Key: {0}
 Port: {1}
 Type: {2}
 ConnectionType: {3}

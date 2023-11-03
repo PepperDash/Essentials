@@ -1,15 +1,17 @@
 ﻿using System;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash_Essentials_DM.Chassis
 {
-	public class HdPsXxxAnalogAuxMixerController : IKeyed, IBasicVolumeWithFeedback
+	public class HdPsXxxAnalogAuxMixerController : IKeyed,
+		IHasVolumeControlWithFeedback, IHasMuteControlWithFeedback // || IBasicVolumeWithFeedback
 	{
 		public string Key { get; private set; }
 
-		public HdPsXxxAnalogAuxMixer Mixer { get; set; }
+		public HdPsXxxAnalogAuxMixer Mixer { get; private set; }
 
 		public HdPsXxxAnalogAuxMixerController(string parent, uint mixer, HdPsXxx chassis)
 		{
@@ -17,8 +19,15 @@ namespace PepperDash_Essentials_DM.Chassis
 
 			Mixer = chassis.AnalogAuxiliaryMixer[mixer];
 
+			Mixer.AuxMixerPropertyChange += OnAuxMixerPropertyChange;
+
 			VolumeLevelFeedback = new IntFeedback(VolumeFeedbackFunc);
 			MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
+		}
+
+		private void OnAuxMixerPropertyChange(object sender, GenericEventArgs args)
+		{
+			Debug.Console(2, this, "AuxMixerPropertyChange: {0} > Index-{1}, EventId-{2}", sender.ToString(), args.Index, args.EventId);
 		}
 
 		#region Volume

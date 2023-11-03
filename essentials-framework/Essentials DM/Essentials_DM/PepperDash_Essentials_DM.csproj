@@ -106,6 +106,7 @@
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
     <Compile Include="Chassis\HdPsXxxAnalogAuxMixerController.cs" />
     <Compile Include="Chassis\HdPsXxxController.cs" />
+    <Compile Include="Chassis\HdPsXxxOutputAudioController.cs" />
     <Compile Include="Config\HdPsXxxPropertiesConfig.cs" />
     <Compile Include="Config\InputPropertiesConfig.cs" />
     <Compile Include="Endpoints\EndpointInterfaces.cs" />
