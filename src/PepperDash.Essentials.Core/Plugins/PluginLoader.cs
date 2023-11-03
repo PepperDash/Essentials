@@ -75,11 +75,6 @@ namespace PepperDash.Essentials
                             version = Global.AssemblyVersion;
                             break;
                         }
-                    case ("PepperDash_Essentials_DM.dll"):
-                        {
-                            version = Global.AssemblyVersion;
-                            break;
-                        }
                     case ("Essentials Devices Common.dll"):
                         {
                             version = Global.AssemblyVersion;

@@ -1,4 +1,4 @@
-﻿extern alias Full
+﻿extern alias Full;
 
 using Crestron.SimplSharp.WebScripting;
 using Full.Newtonsoft.Json;

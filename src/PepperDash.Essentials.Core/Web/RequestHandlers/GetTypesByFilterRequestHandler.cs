@@ -1,4 +1,4 @@
-﻿extern alias Full
+﻿extern alias Full;
 
 using System.Linq;
 using Crestron.SimplSharp.WebScripting;
