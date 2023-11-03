@@ -145,6 +145,11 @@ namespace PepperDash.Essentials.Core.Web
                     Name = "GetJoinMapsForDeviceKey",
                     RouteHandler = new GetJoinMapForDeviceKeyRequestHandler()
                 },
+				new HttpCwsRoute("debugSession")
+				{
+					Name = "DebugSession",
+					RouteHandler = new DebugSessionRequestHandler()
+				}
 
             };
 
