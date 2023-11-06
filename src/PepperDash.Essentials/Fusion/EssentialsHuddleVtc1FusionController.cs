@@ -9,6 +9,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Fusion;
+using PepperDash.Essentials.Devices.Common.Sources;
 
 namespace PepperDash.Essentials.Fusion
 {
@@ -212,7 +213,7 @@ namespace PepperDash.Essentials.Fusion
                         break;
                 }
 
-                var laptops = dict.Where(d => d.Value.SourceDevice is Core.Devices.Laptop);
+                var laptops = dict.Where(d => d.Value.SourceDevice is Laptop);
                 i = 1;
                 foreach (var kvp in laptops)
                 {

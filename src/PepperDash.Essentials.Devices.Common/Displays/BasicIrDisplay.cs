@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Devices.Common.Displays
 {
-	[Obsolete("Please use PepperDash.Essentials.Device.Common")]
     public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
 	{
 		public IrOutputPortController IrPort { get; private set; }
@@ -203,7 +199,6 @@ namespace PepperDash.Essentials.Core
 	    }
 	}
 
-    [Obsolete("Please use PepperDash.Essentials.Device.Common")]
     public class BasicIrDisplayFactory : EssentialsDeviceFactory<BasicIrDisplay>
     {
         public BasicIrDisplayFactory()

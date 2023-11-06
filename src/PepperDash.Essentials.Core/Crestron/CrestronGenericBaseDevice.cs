@@ -8,7 +8,6 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core
 {
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
 	public abstract class CrestronGenericBaseDevice : EssentialsDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
 	{
 	    protected GenericBase Hardware;

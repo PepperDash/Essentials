@@ -16,14 +16,14 @@ namespace PepperDash.Essentials.Core.Shades
     {
         ShadeControllerConfigProperties Config;
 
-        public List<ShadeBase> Shades { get; private set; }
+        public List<IShadesOpenCloseStop> Shades { get; private set; }
 
         public ShadeController(string key, string name, ShadeControllerConfigProperties config)
             : base(key, name)
         {
             Config = config;
 
-            Shades = new List<ShadeBase>();
+            Shades = new List<IShadesOpenCloseStop>();
         }
 
         public override bool CustomActivate()

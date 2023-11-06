@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Crestron.SimplSharpPro;
-
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core.Devices
+namespace PepperDash.Essentials.Devices.Common.Sources
 {
-
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
     public class Laptop : EssentialsDevice, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
@@ -64,7 +59,6 @@ namespace PepperDash.Essentials.Core.Devices
         #endregion
 	}
 
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
     public class LaptopFactory : EssentialsDeviceFactory<Laptop>
     {
         public LaptopFactory()
@@ -75,7 +69,7 @@ namespace PepperDash.Essentials.Core.Devices
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.Console(1, "Factory Attempting to create new Laptop Device");
-            return new Core.Devices.Laptop(dc.Key, dc.Name);
+            return new Laptop(dc.Key, dc.Name);
         }
     }
 }

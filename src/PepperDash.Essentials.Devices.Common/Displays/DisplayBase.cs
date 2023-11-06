@@ -1,18 +1,18 @@
 ﻿extern alias Full;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
-using Full.Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using Feedback = PepperDash.Essentials.Core.Feedback;
+using JsonConvert = Full::Newtonsoft.Json.JsonConvert;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Devices.Common.Displays
 {
-	[Obsolete("Please use PepperDash.Essentials.Devices.Common")]
     public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IHasPowerControl, IWarmingCooling, IUsageTracking
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
@@ -250,7 +250,6 @@ namespace PepperDash.Essentials.Core
 
     }
 
-	[Obsolete("Please use PepperDash.Essentials.Devices.Common")]
     public abstract class TwoWayDisplayBase : DisplayBase, IRoutingFeedback, IHasPowerControlWithFeedback
 	{
         public StringFeedback CurrentInputFeedback { get; private set; }
