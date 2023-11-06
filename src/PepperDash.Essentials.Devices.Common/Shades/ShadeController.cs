@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
+﻿using System.Collections.Generic;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Shades;
 
-namespace PepperDash.Essentials.Core.Shades
+namespace PepperDash.Essentials.Devices.Common.Shades
 {
     /// <summary>
     /// Class that contains the shades to be controlled in a room
@@ -40,7 +37,7 @@ namespace PepperDash.Essentials.Core.Shades
             return base.CustomActivate();
         }
 
-        void AddShade(ShadeBase shade)
+        void AddShade(IShadesOpenCloseStop shade)
         {
             Shades.Add(shade);
         }
@@ -67,9 +64,9 @@ namespace PepperDash.Essentials.Core.Shades
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.Console(1, "Factory Attempting to create new ShadeController Device");
-            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Shades.ShadeControllerConfigProperties>(dc.Properties.ToString());
+            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<ShadeControllerConfigProperties>(dc.Properties.ToString());
 
-            return new Core.Shades.ShadeController(dc.Key, dc.Name, props);
+            return new ShadeController(dc.Key, dc.Name, props);
         }
     }
 

@@ -2,24 +2,9 @@
 
 using System;
 using System.Linq;
-using System.Collections.Generic;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.GeneralIO;
 using Crestron.SimplSharp.Reflection;
-
-using Full.Newtonsoft.Json;
-using Full.Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.CrestronIO;
-
-using PepperDash.Essentials.Devices.Common;
-using PepperDash.Essentials.Devices.Common.DSP;
-using PepperDash.Essentials.Devices.Common.VideoCodec;
-using PepperDash.Essentials.Devices.Common.Environment;
 
 namespace PepperDash.Essentials.Devices.Common
 {

@@ -8,7 +8,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Shades;
-using PepperDash.Essentials.Devices.Common.Environment.Somfy;
 
 namespace PepperDash.Essentials
 {
