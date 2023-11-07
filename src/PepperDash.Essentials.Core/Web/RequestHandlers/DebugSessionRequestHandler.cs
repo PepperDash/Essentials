@@ -1,4 +1,6 @@
 ﻿using Crestron.SimplSharp;
+using Crestron.SimplSharp.WebScripting;
+using Crestron.SimplSharpPro.EthernetCommunication;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
@@ -17,6 +19,10 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         {
         }
 
+        /// <summary>
+        /// Gets details for a debug session
+        /// </summary>
+        /// <param name="context"></param>
         protected override void HandleGet(Crestron.SimplSharp.WebScripting.HttpCwsContext context)
         {
             var routeData = context.Request.RouteData;
@@ -29,29 +35,61 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 return;
             }
 
-            // Generate a random port within a specified range
+            try
+            {
+                var ip = CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
 
-            // Start the WS Server
+                var port = 0;
 
-            // Return the port number with the full url of the WS Server
+                if(Debug.WebsocketSink == null)
+                {
+                    Debug.Console(0, "WebsocketSink is null");
+                }
 
-            var ip = CrestronEthernetHelper.GetEthernetParameter(
-                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
+                if (!Debug.WebsocketSink.IsListening)
+                {
+                    Debug.Console(0, "Starting WS Server");
+                    // Generate a random port within a specified range
+                    port = new Random().Next(65435, 65535);
+                    // Start the WS Server
+                    Debug.WebsocketSink.StartServerAndSetPort(port);
+                }
 
-            var port = new Random().Next(65435, 65535);
+                object data = new
+                {
+                    url = string.Format(@"wss://{0}:{1}", ip, Debug.WebsocketSink.Port)
+                };
 
-            object data = new {
-                url = string.Format(@"ws://{ip}:{port}", ip, port)
-            };
+                // Return the port number with the full url of the WS Server
+                var res = JsonConvert.SerializeObject(data);
 
-            var res = JsonConvert.SerializeObject(data);
+                context.Response.ContentType = "application/json";
+                context.Response.ContentEncoding = Encoding.UTF8;
+                context.Response.StatusCode = 200;
+                context.Response.StatusDescription = "OK";
+                context.Response.Write(res, false);
+                context.Response.End();
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, "Error: {0}", e);
+            }
+        }
 
-            context.Response.Write(res, false);
-            context.Response.ContentType = "application/json";
+        /// <summary>
+        /// Stops a debug session
+        /// </summary>
+        /// <param name="context"></param>
+        protected override void HandlePost(HttpCwsContext context)
+        {
+            Debug.WebsocketSink.StopServer();
+
+            context.Response.StatusDescription = "Ending Debug Session";
             context.Response.StatusCode = 200;
             context.Response.StatusDescription = "OK";
             context.Response.End();
-        }   
+        }
 
     }
 }
