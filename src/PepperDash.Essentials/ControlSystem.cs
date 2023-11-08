@@ -31,6 +31,29 @@ namespace PepperDash.Essentials
             DeviceManager.Initialize(this);
             SecretsManager.Initialize();
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
+
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
+        }
+
+        private System.Reflection.Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var assemblyName = new System.Reflection.AssemblyName(args.Name).Name;
+            if (assemblyName == "PepperDash_Core")
+            {
+                return System.Reflection.Assembly.LoadFrom("PepperDashCore.dll");
+            }
+
+            if (assemblyName == "PepperDash_Essentials_Core")
+            {
+                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Core.dll");
+            }
+
+            if (assemblyName == "Essentials Devices Common")
+            {
+                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Devices.Common.dll");
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -141,13 +164,11 @@ namespace PepperDash.Essentials
 
                 string directoryPrefix;
 
-                directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+                directoryPrefix = Directory.GetApplicationRootDirectory();
 
-                var fullVersion = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
+                var fullVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-                AssemblyInformationalVersionAttribute fullVersionAtt = fullVersion[0] as AssemblyInformationalVersionAttribute;
-
-                Global.SetAssemblyVersion(fullVersionAtt.InformationalVersion);
+                Global.SetAssemblyVersion(fullVersion);
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {
