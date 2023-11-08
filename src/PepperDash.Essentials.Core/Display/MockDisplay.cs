@@ -218,6 +218,8 @@ namespace PepperDash.Essentials.Core
 	    }
 	}
 
+
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
     public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
     {
         public MockDisplayFactory()
