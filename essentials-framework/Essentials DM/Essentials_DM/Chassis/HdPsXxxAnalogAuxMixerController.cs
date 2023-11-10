@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using PepperDash.Core;
@@ -20,36 +20,72 @@ namespace PepperDash_Essentials_DM.Chassis
 			Mixer = chassis.AnalogAuxiliaryMixer[mixer];
 
 			Mixer.AuxMixerPropertyChange += OnAuxMixerPropertyChange;
+			Mixer.AuxiliaryMuteControl.MuteAndVolumeControlPropertyChange += OnMuteAndVolumeControlPropertyChange;
 
-			VolumeLevelFeedback = new IntFeedback(VolumeFeedbackFunc);
-			MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
-		}
+			VolumeLevelFeedback = new IntFeedback(() => VolumeLevel);
+			MuteFeedback = new BoolFeedback(() => IsMuted);
 
-		private void OnAuxMixerPropertyChange(object sender, GenericEventArgs args)
-		{
-			Debug.Console(2, this, "AuxMixerPropertyChange: {0} > Index-{1}, EventId-{2}", sender.ToString(), args.Index, args.EventId);
+			VolumeLevel = Mixer.VolumeFeedback.ShortValue;
+			IsMuted = Mixer.AuxiliaryMuteControl.MuteOnFeedback.BoolValue;
 		}
 
 		#region Volume
 
-		public IntFeedback VolumeLevelFeedback { get; private set; }
-
-		protected Func<int> VolumeFeedbackFunc
+		private void OnAuxMixerPropertyChange(object sender, GenericEventArgs args)
 		{
-			get { return () => Mixer.VolumeFeedback.UShortValue; }
+			Debug.Console(2, this, "AuxMixerPropertyChange: {0} > Index-{1}, EventId-{2}", sender.GetType().ToString(), args.Index, args.EventId);
+
+			switch (args.EventId)
+			{
+				case (3):
+					{
+						VolumeLevel = Mixer.VolumeFeedback.ShortValue;
+						break;
+					}
+			}
 		}
 
+		private const ushort CrestronLevelMin = 0;
+		private const ushort CrestronLevelMax = 65535;
+
+		private const int DeviceLevelMin = -800;
+		private const int DeviceLevelMax = 200;
+
+		private const int RampTime = 5000;
+
+		private int _volumeLevel;
+
+		public int VolumeLevel
+		{
+			get { return _volumeLevel; }
+			set
+			{
+				var level = value;
+				_volumeLevel = CrestronEnvironment.ScaleWithLimits(level, DeviceLevelMax, DeviceLevelMin, CrestronLevelMax, CrestronLevelMin);
+
+				Debug.Console(1, this, "VolumeFeedback: level-'{0}', scaled-'{1}'", level, _volumeLevel);
+
+				VolumeLevelFeedback.FireUpdate();
+			}
+		}
+
+		public IntFeedback VolumeLevelFeedback { get; private set; }
+		
 		public void SetVolume(ushort level)
 		{
-			Mixer.Volume.UShortValue = level;
+			var scaled = CrestronEnvironment.ScaleWithLimits(level, CrestronLevelMax, CrestronLevelMin, DeviceLevelMax,
+				DeviceLevelMin);
+
+			Debug.Console(1, this, "SetVolume: level-'{0}', scaled-'{1}'", level, scaled);
+
+			Mixer.Volume.ShortValue = (short)scaled;
 		}
 
 		public void VolumeUp(bool pressRelease)
 		{
 			if (pressRelease)
 			{
-				var remainingRatio = (65535 - Mixer.Volume.UShortValue)/65535;
-				Mixer.Volume.CreateRamp(65535, 400);
+				Mixer.Volume.CreateSignedRamp(DeviceLevelMax, RampTime);
 			}
 			else
 			{
@@ -61,8 +97,10 @@ namespace PepperDash_Essentials_DM.Chassis
 		{
 			if (pressRelease)
 			{
-				var remainingRatio = Mixer.Volume.UShortValue/65535;
-				Mixer.Volume.CreateRamp(0, (uint)(400 * remainingRatio));
+				//var remainingRatio = Mixer.Volume.UShortValue/CrestronLevelMax;
+				//Mixer.Volume.CreateRamp(CrestronLevelMin, (uint)(RampTime * remainingRatio));
+
+				Mixer.Volume.CreateSignedRamp(DeviceLevelMin, RampTime);
 			}
 			else
 			{
@@ -73,16 +111,41 @@ namespace PepperDash_Essentials_DM.Chassis
 		#endregion
 
 
+
+
 		#region Mute
+
+		private void OnMuteAndVolumeControlPropertyChange(MuteControl device, GenericEventArgs args)
+		{
+			Debug.Console(2, this, "OnMuteAndVolumeControlPropertyChange: {0} > Index-{1}, EventId-{2}", device.ToString(), args.Index, args.EventId);
+
+			switch (args.EventId)
+			{
+				case (1):
+				case (2):
+					{
+						IsMuted = Mixer.AuxiliaryMuteControl.MuteOnFeedback.BoolValue;
+						break;
+					}
+			}
+		}
 
 		private bool _isMuted;
 
-		public BoolFeedback MuteFeedback { get; private set; }
-
-		protected Func<bool> MuteFeedbackFunc
+		public bool IsMuted
 		{
-			get { return () => _isMuted = Mixer.AuxiliaryMuteControl.MuteOnFeedback.BoolValue; }
+			get { return _isMuted; }
+			set
+			{
+				_isMuted = value;
+
+				Debug.Console(1, this, "IsMuted: _isMuted-'{0}'", _isMuted);
+
+				MuteFeedback.FireUpdate();
+			}
 		}
+
+		public BoolFeedback MuteFeedback { get; private set; }
 
 		public void MuteOn()
 		{
@@ -96,7 +159,7 @@ namespace PepperDash_Essentials_DM.Chassis
 
 		public void MuteToggle()
 		{
-			if (_isMuted)
+			if (IsMuted)
 				MuteOff();
 			else
 				MuteOn();

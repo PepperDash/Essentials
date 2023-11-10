@@ -1,47 +1,76 @@
-﻿using System;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash_Essentials_DM.Chassis
 {
-	public class HdPsXxxOutputAudioController : IKeyed, 
+	public class HdPsXxxOutputAudioController : IKeyed,
 		IHasVolumeControlWithFeedback, IHasMuteControlWithFeedback // || IBasicVolumeWithFeedback
 	{
 		public string Key { get; private set; }
-		
+
 		public HdPsXxxOutputPort Port { get; private set; }
-		
+
 		public HdPsXxxOutputAudioController(string parent, uint output, HdPsXxx chassis)
 		{
 			Key = string.Format("{0}-audioOut{1}", parent, output);
-			
+
 			Port = chassis.HdmiDmLiteOutputs[output].OutputPort;
 
-			VolumeLevelFeedback = new IntFeedback(VolumeFeedbackFunc);
-			MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
+			VolumeLevelFeedback = new IntFeedback(() => VolumeLevel);
+			MuteFeedback = new BoolFeedback(() => IsMuted);
+
+			//if(Port.AudioOutput.Volume != null)
+			//    VolumeLevel = Port.AudioOutput.VolumeFeedback.UShortValue;
+
+			IsMuted = Port.MuteOnFeedback.BoolValue;
 		}
 
 		#region Volume
 
-		public IntFeedback VolumeLevelFeedback { get; private set; }
+		private const ushort CrestronLevelMin = 0;
+		private const ushort CrestronLevelMax = 65535;
 
-		protected Func<int> VolumeFeedbackFunc
+		private const int DeviceLevelMin = -800;
+		private const int DeviceLevelMax = 200;
+
+		private const int RampTime = 5000;
+
+		private int _volumeLevel;
+
+		public int VolumeLevel
 		{
-			get { return () => Port.AudioOutput.VolumeFeedback.UShortValue; }
+			get { return _volumeLevel; }
+			set
+			{
+				var level = value;
+				//_volumeLevel = CrestronEnvironment.ScaleWithLimits(level, DeviceLevelMax, DeviceLevelMin, CrestronLevelMax, CrestronLevelMin);
+				_volumeLevel = CrestronEnvironment.ScaleWithLimits(level, CrestronLevelMax, CrestronLevelMin, DeviceLevelMax, DeviceLevelMin);
+
+				Debug.Console(2, this, "VolumeFeedback: level-'{0}', scaled-'{1}'", level, _volumeLevel);
+
+				VolumeLevelFeedback.FireUpdate();
+			}
 		}
+
+		public IntFeedback VolumeLevelFeedback { get; private set; }
 
 		public void SetVolume(ushort level)
 		{
-			Port.AudioOutput.Volume.UShortValue = level;
+			var scaled = CrestronEnvironment.ScaleWithLimits(level, CrestronLevelMax, CrestronLevelMin, DeviceLevelMax,
+				DeviceLevelMin);
+
+			Debug.Console(1, this, "SetVolume: level-'{0}', scaled-'{1}'", level, scaled);
+
+			Port.AudioOutput.Volume.ShortValue = (short)scaled;
 		}
 
 		public void VolumeUp(bool pressRelease)
 		{
 			if (pressRelease)
 			{
-				var remainingRatio = (65535 - Port.AudioOutput.Volume.UShortValue)/65535;
-				Port.AudioOutput.Volume.CreateRamp(65535, 400);
+				Port.AudioOutput.Volume.CreateSignedRamp(DeviceLevelMax, RampTime);
 			}
 			else
 			{
@@ -52,9 +81,8 @@ namespace PepperDash_Essentials_DM.Chassis
 		public void VolumeDown(bool pressRelease)
 		{
 			if (pressRelease)
-			{				
-				var remainingRatio = Port.AudioOutput.Volume.UShortValue/65535;
-				Port.AudioOutput.Volume.CreateRamp(0, (uint)(400 * remainingRatio));
+			{
+				Port.AudioOutput.Volume.CreateSignedRamp(DeviceLevelMin, RampTime);
 			}
 			else
 			{
@@ -65,16 +93,26 @@ namespace PepperDash_Essentials_DM.Chassis
 		#endregion
 
 
+
+
 		#region Mute
 
 		private bool _isMuted;
 
-		public BoolFeedback MuteFeedback { get; private set; }
+		public bool IsMuted
+		{
+			get { return _isMuted; }
+			set
+			{
+				_isMuted = value;
 
-		protected Func<bool> MuteFeedbackFunc
-		{			
-			get { return () => _isMuted = Port.MuteOnFeedback.BoolValue; }
+				Debug.Console(1, this, "IsMuted: _isMuted-'{0}'", _isMuted);
+
+				MuteFeedback.FireUpdate();
+			}
 		}
+
+		public BoolFeedback MuteFeedback { get; private set; }
 
 		public void MuteOn()
 		{
@@ -88,7 +126,7 @@ namespace PepperDash_Essentials_DM.Chassis
 
 		public void MuteToggle()
 		{
-			if (_isMuted)
+			if (IsMuted)
 				MuteOff();
 			else
 				MuteOn();
