@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <Version>2.0.0-local</Version>
+    <InformationalVersion>$(Version)</InformationalVersion>
     <Authors>PepperDash Technologies</Authors>
     <Company>PepperDash Technologies</Company>
     <Product>PepperDash Essentials</Product>

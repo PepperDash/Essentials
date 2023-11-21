@@ -42,12 +42,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
                 var port = 0;
 
-                if(Debug.WebsocketSink == null)
-                {
-                    Debug.Console(0, "WebsocketSink is null");
-                }
-
-                if (!Debug.WebsocketSink.IsListening)
+                if (!Debug.WebsocketSink.IsRunning)
                 {
                     Debug.Console(0, "Starting WS Server");
                     // Generate a random port within a specified range
@@ -56,10 +51,14 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     Debug.WebsocketSink.StartServerAndSetPort(port);
                 }
 
+                var url = Debug.WebsocketSink.Url;
+
                 object data = new
                 {
-                    url = string.Format(@"wss://{0}:{1}", ip, Debug.WebsocketSink.Port)
+                    url = Debug.WebsocketSink.Url
                 };
+
+                Debug.Console(0, "Debug Session URL: {0}", url);
 
                 // Return the port number with the full url of the WS Server
                 var res = JsonConvert.SerializeObject(data);
