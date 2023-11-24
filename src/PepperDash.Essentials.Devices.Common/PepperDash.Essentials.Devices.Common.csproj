@@ -31,6 +31,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2">
       <Aliases>Full</Aliases>
     </PackageReference>
-    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-366" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-373" />
   </ItemGroup>
 </Project>

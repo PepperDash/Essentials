@@ -189,7 +189,7 @@ namespace PepperDash.Essentials.Core
                 CrestronConsole.ConsoleCommandResponse(
                     @"Type: '{0}' 
                     CType: '{1}' 
-                    Description: {2}", type.Key, cType, description);
+                    Description: {2}{3}", type.Key, cType, description, CrestronEnvironment.NewLine);
             }
         }
 

@@ -49,6 +49,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     port = new Random().Next(65435, 65535);
                     // Start the WS Server
                     Debug.WebsocketSink.StartServerAndSetPort(port);
+                    Debug.SetWebSocketMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
                 }
 
                 var url = Debug.WebsocketSink.Url;
@@ -84,10 +85,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         {
             Debug.WebsocketSink.StopServer();
 
-            context.Response.StatusDescription = "Ending Debug Session";
             context.Response.StatusCode = 200;
             context.Response.StatusDescription = "OK";
             context.Response.End();
+
+            Debug.Console(0, "Websocket Debug Session Stopped");
         }
 
     }

@@ -67,7 +67,7 @@ namespace PepperDash.Essentials
         {
             DeterminePlatform();
 
-            if (Debug.DoNotLoadOnNextBoot)
+            if (Debug.DoNotLoadConfigOnNextBoot)
             {
                 CrestronConsole.AddNewConsoleCommand(s => CrestronInvoke.BeginInvoke((o) => GoWithLoad()), "go", "Loads configuration file",
                     ConsoleAccessLevelEnum.AccessOperator);
@@ -117,7 +117,7 @@ namespace PepperDash.Essentials
 
             DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
 
-            if (!Debug.DoNotLoadOnNextBoot)
+            if (!Debug.DoNotLoadConfigOnNextBoot)
             {
                 GoWithLoad();
                 return;
@@ -235,7 +235,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                Debug.SetDoNotLoadOnNextBoot(false);
+                Debug.SetDoNotLoadConfigOnNextBoot(false);
 
                 PluginLoader.AddProgramAssemblies();
 

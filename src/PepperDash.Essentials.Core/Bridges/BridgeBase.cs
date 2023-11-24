@@ -375,8 +375,7 @@ namespace PepperDash.Essentials.Core.Bridges
         {
             try
             {
-                if (Debug.Level >= 1)
-                    Debug.Console(1, this, "EiscApiAdvanced change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+                Debug.Console(2, this, "EiscApiAdvanced change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
                 var uo = args.Sig.UserObject;
 
                 if (uo == null) return;

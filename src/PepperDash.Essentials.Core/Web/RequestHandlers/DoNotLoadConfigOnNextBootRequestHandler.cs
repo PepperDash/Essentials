@@ -5,7 +5,7 @@ using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
-	public class AppDebugRequestHandler : WebApiBaseRequestHandler
+	public class DoNotLoadConfigOnNextBootRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
 		/// Constructor
@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <remarks>
 		/// base(true) enables CORS support by default
 		/// </remarks>		
-		public AppDebugRequestHandler()
+		public DoNotLoadConfigOnNextBootRequestHandler()
 			: base(true)
 		{
 		}
@@ -24,9 +24,12 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-			var appDebug = new AppDebug { MinimumLevel = Debug.WebsocketMinimumLogLevel };
+			var data = new Data
+			{
+				DoNotLoadConfigOnNextBoot = Debug.DoNotLoadConfigOnNextBoot
+            };
 
-			var body = JsonConvert.SerializeObject(appDebug, Formatting.Indented);
+			var body = JsonConvert.SerializeObject(data, Formatting.Indented);
 
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
@@ -59,13 +62,12 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var appDebug = new AppDebug();
-			var requestBody = JsonConvert.DeserializeAnonymousType(data, appDebug);
+			var d = new Data();
+			var requestBody = JsonConvert.DeserializeAnonymousType(data, d);
 
-			Debug.SetWebSocketMinimumDebugLevel(requestBody.MinimumLevel);
+			Debug.SetDoNotLoadConfigOnNextBoot(requestBody.DoNotLoadConfigOnNextBoot);
 
-			appDebug.MinimumLevel = Debug.WebsocketMinimumLogLevel;
-			var responseBody = JsonConvert.SerializeObject(appDebug, Formatting.Indented);
+			var responseBody = JsonConvert.SerializeObject(d, Formatting.Indented);
 
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
@@ -74,9 +76,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		}
 	}
 
-	public class AppDebug
+	public class Data
 	{
-		[JsonProperty("minimumLevel", NullValueHandling = NullValueHandling.Ignore)]
-		public Serilog.Events.LogEventLevel MinimumLevel { get; set; }
+		[JsonProperty("doNotLoadConfigOnNextBoot", NullValueHandling = NullValueHandling.Ignore)]
+		public bool DoNotLoadConfigOnNextBoot { get; set; }
 	}
 }
