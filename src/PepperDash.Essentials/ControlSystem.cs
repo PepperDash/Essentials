@@ -18,7 +18,7 @@ using System.Linq;
 
 namespace PepperDash.Essentials
 {
-    public class ControlSystem : CrestronControlSystem
+    public class ControlSystem : CrestronControlSystem, ILoadConfig
     {
         HttpLogoServer LogoServer;
 

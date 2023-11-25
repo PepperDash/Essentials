@@ -26,8 +26,10 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		protected override void HandlePost(HttpCwsContext context)
 		{
 			var message = "";
-			//Global.ControlSystem.GoWithLoad();
-			
+			var cs = Global.ControlSystem as ILoadConfig;
+			if(cs != null)
+                cs.GoWithLoad();
+            
             context.Response.StatusCode = 200;
             context.Response.StatusDescription = "OK";
 			context.Response.Write(message, false);

@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using System;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
@@ -26,7 +28,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		{
 			var appDebug = new AppDebug { MinimumLevel = Debug.WebsocketMinimumLogLevel };
 
-			var body = JsonConvert.SerializeObject(appDebug, Formatting.Indented);
+			var body = JsonConvert.SerializeObject((appDebug, Formatting.Indented, new JsonSerializerSettings( ));
 
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
@@ -60,7 +62,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 
 			var appDebug = new AppDebug();
-			var requestBody = JsonConvert.DeserializeAnonymousType(data, appDebug);
+			var requestBody = JsonConvert.DeserializeObject<AppDebug>(data);
 
 			Debug.SetWebSocketMinimumDebugLevel(requestBody.MinimumLevel);
 
@@ -77,6 +79,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	public class AppDebug
 	{
 		[JsonProperty("minimumLevel", NullValueHandling = NullValueHandling.Ignore)]
-		public Serilog.Events.LogEventLevel MinimumLevel { get; set; }
+		public LogEventLevel MinimumLevel { get; set; }
 	}
 }

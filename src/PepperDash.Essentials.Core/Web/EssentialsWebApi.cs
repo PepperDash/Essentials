@@ -163,7 +163,7 @@ namespace PepperDash.Essentials.Core.Web
                 new HttpCwsRoute("loadConfig")
                 {
                     Name = "Load Config",
-                    RouteHandler = new RestartProgramRequestHandler()
+                    RouteHandler = new LoadConfigRequestHandler()
                 }
 
             };
