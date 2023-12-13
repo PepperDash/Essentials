@@ -86,13 +86,13 @@ namespace PepperDash_Essentials_DM.Chassis
 			foreach (var item in _chassis.HdmiDmLiteOutputs)
 			{
 				var audioDevice = new HdPsXxxOutputAudioController(Key, item.Number, _chassis);
-				Debug.Console(0, this, "HdPsXxxController: created HdPsXxxOutputAudioController Key-{0}', Output-'{1}'", audioDevice.Key, item.Number);
+				Debug.Console(2, this, "Adding HdPsXxxOutputAudioController '{0}' for output '{1}'", audioDevice.Key, item.Number);
 				DeviceManager.AddDevice(audioDevice);
 			}
 			foreach (var item in _chassis.AnalogAuxiliaryMixer)
 			{
 				var audioDevice = new HdPsXxxAnalogAuxMixerController(Key, item.MixerNumber, _chassis);
-				Debug.Console(0, this, "HdPsXxxController: created HdPsXxAnalogAuxMixerCOntorller Key-{0}', Output-'{1}'", audioDevice.Key, item.MixerNumber);
+				Debug.Console(2, this, "Adding HdPsXxAnalogAuxMixerCOntorller '{0}' for output '{1}'", audioDevice.Key, item.MixerNumber);
 				DeviceManager.AddDevice(audioDevice);
 			}
 		}
@@ -216,14 +216,14 @@ namespace PepperDash_Essentials_DM.Chassis
 				VideoOutputRouteFeedbacks.Add(new IntFeedback(index.ToString(CultureInfo.InvariantCulture), 
 					() => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
 			}
-
-			Debug.Console(0, this, "----> AnalogAuxillaryMixer.Count-{0}", _chassis.AnalogAuxiliaryMixer.Count);
+			/*
+			Debug.Console(2, this, "----> AnalogAuxillaryMixer.Count-{0}", _chassis.AnalogAuxiliaryMixer.Count);
 			foreach (var item in _chassis.AnalogAuxiliaryMixer)
 			{
-				Debug.Console(0, this, "----> AnalogAuxillaryMixer[{0}].LineMuteVolumeControl.Count-{1}", item.MixerNumber, item.LineMuteVolumeControl.Count);
-				Debug.Console(0, this, "----> AnalogAuxillaryMixer[{0}].SourceMuteVolumeControl.Count-{1}", item.MixerNumber, item.SourceMuteVolumeControl.Count);
+				Debug.Console(2, this, "----> AnalogAuxillaryMixer[{0}].LineMuteVolumeControl.Count-{1}", item.MixerNumber, item.LineMuteVolumeControl.Count);
+				Debug.Console(2, this, "----> AnalogAuxillaryMixer[{0}].SourceMuteVolumeControl.Count-{1}", item.MixerNumber, item.SourceMuteVolumeControl.Count);
 			}
-
+			*/
 			_chassis.DMOutputChange += _chassis_OutputChange;
 		}
 

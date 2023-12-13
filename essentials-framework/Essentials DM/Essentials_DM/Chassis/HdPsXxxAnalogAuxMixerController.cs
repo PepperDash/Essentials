@@ -61,7 +61,6 @@ namespace PepperDash_Essentials_DM.Chassis
 			set
 			{
 				var level = value;
-				Debug.Console(1, this, "VolumeLevel: value-'{0}', level-'{1}'", value, level);
 				
 				// ScaleWithLimits(inputValue, InputUpperBound, InputLowerBound, OutputUpperBound, OutputLowerBound)
 				_volumeLevel = CrestronEnvironment.ScaleWithLimits(level, DeviceLevelMax, DeviceLevelMin, CrestronLevelMax, CrestronLevelMin);
