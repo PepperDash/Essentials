@@ -7,39 +7,47 @@ using PepperDash.Essentials.Core;
 namespace PepperDash_Essentials_DM.Chassis
 {
 	public class HdPsXxxAnalogAuxMixerController : IKeyed,
-		IHasVolumeControlWithFeedback, IHasMuteControlWithFeedback // || IBasicVolumeWithFeedback
+		IHasVolumeControlWithFeedback, IHasMuteControlWithFeedback
 	{
 		public string Key { get; private set; }
 
-		public HdPsXxxAnalogAuxMixer Mixer { get; private set; }
+		private readonly HdPsXxxAnalogAuxMixer _mixer;
 
 		public HdPsXxxAnalogAuxMixerController(string parent, uint mixer, HdPsXxx chassis)
 		{
 			Key = string.Format("{0}-analogMixer{1}", parent, mixer);
 
-			Mixer = chassis.AnalogAuxiliaryMixer[mixer];
+			_mixer = chassis.AnalogAuxiliaryMixer[mixer];
 
-			Mixer.AuxMixerPropertyChange += OnAuxMixerPropertyChange;
-			Mixer.AuxiliaryMuteControl.MuteAndVolumeControlPropertyChange += OnMuteAndVolumeControlPropertyChange;
+			_mixer.AuxMixerPropertyChange += OnAuxMixerPropertyChange;
+			_mixer.AuxiliaryMuteControl.MuteAndVolumeControlPropertyChange += OnMuteAndVolumeControlPropertyChange;
 
 			VolumeLevelFeedback = new IntFeedback(() => VolumeLevel);
 			MuteFeedback = new BoolFeedback(() => IsMuted);
-
-			VolumeLevel = Mixer.VolumeFeedback.ShortValue;
-			IsMuted = Mixer.AuxiliaryMuteControl.MuteOnFeedback.BoolValue;
 		}
 
 		#region Volume
 
 		private void OnAuxMixerPropertyChange(object sender, GenericEventArgs args)
 		{
-			Debug.Console(2, this, "AuxMixerPropertyChange: {0} > Index-{1}, EventId-{2}", sender.GetType().ToString(), args.Index, args.EventId);
+			Debug.Console(2, this, "OnAuxMixerPropertyChange: {0} > Index-{1}, EventId-{2}", sender.ToString(), args.Index, args.EventId);
 
 			switch (args.EventId)
 			{
-				case (3):
+				case MuteAndVolumeContorlEventIds.VolumeFeedbackEventId:
 					{
-						VolumeLevel = Mixer.VolumeFeedback.ShortValue;
+						VolumeLevel = _mixer.VolumeFeedback.ShortValue;
+						break;
+					}
+				case MuteAndVolumeContorlEventIds.MuteOnEventId:
+				case MuteAndVolumeContorlEventIds.MuteOffEventId:
+					{
+						IsMuted = _mixer.AuxiliaryMuteControl.MuteOnFeedback.BoolValue;
+						break;
+					}
+				default:
+					{
+						Debug.Console(1, this, "OnAuxMixerPropertyChange: {0} > Index-{1}, EventId-{2} - unhandled eventId", sender.ToString(), args.Index, args.EventId);
 						break;
 					}
 			}
@@ -58,13 +66,12 @@ namespace PepperDash_Essentials_DM.Chassis
 		public int VolumeLevel
 		{
 			get { return _volumeLevel; }
-			set
+			private set
 			{
 				var level = value;
 				
-				// ScaleWithLimits(inputValue, InputUpperBound, InputLowerBound, OutputUpperBound, OutputLowerBound)
 				_volumeLevel = CrestronEnvironment.ScaleWithLimits(level, DeviceLevelMax, DeviceLevelMin, CrestronLevelMax, CrestronLevelMin);
-
+				
 				Debug.Console(1, this, "VolumeFeedback: level-'{0}', scaled-'{1}'", level, _volumeLevel);
 
 				VolumeLevelFeedback.FireUpdate();
@@ -72,26 +79,25 @@ namespace PepperDash_Essentials_DM.Chassis
 		}
 
 		public IntFeedback VolumeLevelFeedback { get; private set; }
-		
+
 		public void SetVolume(ushort level)
 		{
-			// ScaleWithLimits(inputValue, InputUpperBound, InputLowerBound, OutputUpperBound, OutputLowerBound)
-			var scaled = CrestronEnvironment.ScaleWithLimits(level, CrestronLevelMax, CrestronLevelMin, DeviceLevelMax, DeviceLevelMin);
+			var levelScaled = CrestronEnvironment.ScaleWithLimits(level, CrestronLevelMax, CrestronLevelMin, DeviceLevelMax, DeviceLevelMin);
 
-			Debug.Console(1, this, "SetVolume: level-'{0}', scaled-'{1}'", level, scaled);
-
-			Mixer.Volume.ShortValue = (short)scaled;
+			Debug.Console(1, this, "SetVolume: level-'{0}', levelScaled-'{1}'", level, levelScaled);
+			
+			_mixer.Volume.ShortValue = (short)levelScaled;
 		}
 
 		public void VolumeUp(bool pressRelease)
 		{
 			if (pressRelease)
 			{
-				Mixer.Volume.CreateSignedRamp(DeviceLevelMax, RampTime);
+				_mixer.Volume.CreateSignedRamp(DeviceLevelMax, RampTime);
 			}
 			else
 			{
-				Mixer.Volume.StopRamp();
+				_mixer.Volume.StopRamp();
 			}
 		}
 
@@ -99,14 +105,11 @@ namespace PepperDash_Essentials_DM.Chassis
 		{
 			if (pressRelease)
 			{
-				//var remainingRatio = Mixer.Volume.UShortValue/CrestronLevelMax;
-				//Mixer.Volume.CreateRamp(CrestronLevelMin, (uint)(RampTime * remainingRatio));
-
-				Mixer.Volume.CreateSignedRamp(DeviceLevelMin, RampTime);
+				_mixer.Volume.CreateSignedRamp(DeviceLevelMin, RampTime);
 			}
 			else
 			{
-				Mixer.Volume.StopRamp();
+				_mixer.Volume.StopRamp();
 			}
 		}
 
@@ -123,12 +126,22 @@ namespace PepperDash_Essentials_DM.Chassis
 
 			switch (args.EventId)
 			{
-				case (1):
-				case (2):
+				case MuteAndVolumeContorlEventIds.VolumeFeedbackEventId:
 					{
-						IsMuted = Mixer.AuxiliaryMuteControl.MuteOnFeedback.BoolValue;
+						VolumeLevel = _mixer.VolumeFeedback.ShortValue;
 						break;
 					}
+				case MuteAndVolumeContorlEventIds.MuteOnEventId:
+				case MuteAndVolumeContorlEventIds.MuteOffEventId:
+					{
+						IsMuted = _mixer.AuxiliaryMuteControl.MuteOnFeedback.BoolValue;
+						break;
+					}
+				default:
+				{
+					Debug.Console(1, this, "OnMuteAndVolumeControlPropertyChange: {0} > Index-{1}, EventId-{2} - unhandled eventId", device.ToString(), args.Index, args.EventId);
+					break;
+				}
 			}
 		}
 
@@ -151,12 +164,12 @@ namespace PepperDash_Essentials_DM.Chassis
 
 		public void MuteOn()
 		{
-			Mixer.AuxiliaryMuteControl.MuteOn();
+			_mixer.AuxiliaryMuteControl.MuteOn();
 		}
 
 		public void MuteOff()
 		{
-			Mixer.AuxiliaryMuteControl.MuteOff();
+			_mixer.AuxiliaryMuteControl.MuteOff();
 		}
 
 		public void MuteToggle()

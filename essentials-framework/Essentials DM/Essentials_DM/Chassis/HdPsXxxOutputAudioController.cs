@@ -6,25 +6,56 @@ using PepperDash.Essentials.Core;
 namespace PepperDash_Essentials_DM.Chassis
 {
 	public class HdPsXxxOutputAudioController : IKeyed,
-		IHasVolumeControlWithFeedback, IHasMuteControlWithFeedback // || IBasicVolumeWithFeedback
+		IHasVolumeControlWithFeedback, IHasMuteControlWithFeedback
 	{
 		public string Key { get; private set; }
 
-		public HdPsXxxOutputPort Port { get; private set; }
+		private readonly HdPsXxxHdmiDmLiteOutputMixer _mixer;	// volume/volumeFeedback
+		private readonly HdPsXxxOutputPort _port;				// mute/muteFeedback
 
 		public HdPsXxxOutputAudioController(string parent, uint output, HdPsXxx chassis)
 		{
 			Key = string.Format("{0}-audioOut{1}", parent, output);
 
-			Port = chassis.HdmiDmLiteOutputs[output].OutputPort;
+			_port = chassis.HdmiDmLiteOutputs[output].OutputPort;
+			_mixer = chassis.HdmiDmLiteOutputs[output].Mixer;
+
+			chassis.DMOutputChange += ChassisOnDmOutputChange;
 
 			VolumeLevelFeedback = new IntFeedback(() => VolumeLevel);
 			MuteFeedback = new BoolFeedback(() => IsMuted);
+		}
 
-			//if(Port.AudioOutput.Volume != null)
-			//    VolumeLevel = Port.AudioOutput.VolumeFeedback.UShortValue;
+		private void ChassisOnDmOutputChange(Switch device, DMOutputEventArgs args)
+		{
+			switch (args.EventId)
+			{
+				case (DMOutputEventIds.VolumeEventId):
+					{
+						Debug.Console(2, this, "HdPsXxxOutputAudioController: {0} > Index-{1}, Number-{3}, EventId-{2} - AudioMute/UnmuteEventId",
+							device.ToString(), args.Index, args.EventId, args.Number);
 
-			IsMuted = Port.MuteOnFeedback.BoolValue;
+						VolumeLevel = _mixer.VolumeFeedback.ShortValue;
+
+						break;
+					}
+				case DMOutputEventIds.MuteOnEventId:
+				case DMOutputEventIds.MuteOffEventId:
+					{
+						Debug.Console(2, this, "HdPsXxxOutputAudioController: {0} > Index-{1}, Number-{3}, EventId-{2} - MuteOnEventId/MuteOffEventId",
+							device.ToString(), args.Index, args.EventId, args.Number);
+						
+						IsMuted = _port.MuteOnFeedback.BoolValue;
+						
+						break;
+					}
+				default:
+					{
+						Debug.Console(1, this, "HdPsXxxOutputAudioController: {0} > Index-{1}, Number-{3}, EventId-{2} - unhandled eventId", 
+							device.ToString(), args.Index, args.EventId, args.Number);
+						break;
+					}
+			}
 		}
 
 		#region Volume
@@ -42,11 +73,10 @@ namespace PepperDash_Essentials_DM.Chassis
 		public int VolumeLevel
 		{
 			get { return _volumeLevel; }
-			set
+			private set
 			{
 				var level = value;
-				
-				// ScaleWithLimits(inputValue, InputUpperBound, InputLowerBound, OutputUpperBound, OutputLowerBound)
+
 				_volumeLevel = CrestronEnvironment.ScaleWithLimits(level, DeviceLevelMax, DeviceLevelMin, CrestronLevelMax, CrestronLevelMin);
 
 				Debug.Console(2, this, "VolumeFeedback: level-'{0}', scaled-'{1}'", level, _volumeLevel);
@@ -59,23 +89,22 @@ namespace PepperDash_Essentials_DM.Chassis
 
 		public void SetVolume(ushort level)
 		{
-			// ScaleWithLimits(inputValue, InputUpperBound, InputLowerBound, OutputUpperBound, OutputLowerBound)
-			var scaled = CrestronEnvironment.ScaleWithLimits(level, CrestronLevelMax, CrestronLevelMin, DeviceLevelMax, DeviceLevelMin);
+			var levelScaled = CrestronEnvironment.ScaleWithLimits(level, CrestronLevelMax, CrestronLevelMin, DeviceLevelMax, DeviceLevelMin);
 
-			Debug.Console(1, this, "SetVolume: level-'{0}', scaled-'{1}'", level, scaled);
+			Debug.Console(1, this, "SetVolume: level-'{0}', levelScaled-'{1}'", level, levelScaled);
 
-			Port.AudioOutput.Volume.ShortValue = (short)scaled;
+			_mixer.Volume.ShortValue = (short)levelScaled;
 		}
 
 		public void VolumeUp(bool pressRelease)
 		{
 			if (pressRelease)
 			{
-				Port.AudioOutput.Volume.CreateSignedRamp(DeviceLevelMax, RampTime);
+				_mixer.Volume.CreateSignedRamp(DeviceLevelMax, RampTime);
 			}
 			else
 			{
-				Port.AudioOutput.Volume.StopRamp();
+				_mixer.Volume.StopRamp();
 			}
 		}
 
@@ -83,11 +112,11 @@ namespace PepperDash_Essentials_DM.Chassis
 		{
 			if (pressRelease)
 			{
-				Port.AudioOutput.Volume.CreateSignedRamp(DeviceLevelMin, RampTime);
+				_mixer.Volume.CreateSignedRamp(DeviceLevelMin, RampTime);
 			}
 			else
 			{
-				Port.AudioOutput.Volume.StopRamp();
+				_mixer.Volume.StopRamp();
 			}
 		}
 
@@ -117,12 +146,12 @@ namespace PepperDash_Essentials_DM.Chassis
 
 		public void MuteOn()
 		{
-			Port.MuteOn();
+			_port.MuteOn();
 		}
 
 		public void MuteOff()
 		{
-			Port.MuteOff();
+			_port.MuteOff();
 		}
 
 		public void MuteToggle()

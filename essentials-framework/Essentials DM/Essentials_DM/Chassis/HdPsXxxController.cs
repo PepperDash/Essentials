@@ -88,7 +88,7 @@ namespace PepperDash_Essentials_DM.Chassis
 				var audioDevice = new HdPsXxxOutputAudioController(Key, item.Number, _chassis);
 				Debug.Console(2, this, "Adding HdPsXxxOutputAudioController '{0}' for output '{1}'", audioDevice.Key, item.Number);
 				DeviceManager.AddDevice(audioDevice);
-			}
+			}			
 			foreach (var item in _chassis.AnalogAuxiliaryMixer)
 			{
 				var audioDevice = new HdPsXxxAnalogAuxMixerController(Key, item.MixerNumber, _chassis);
