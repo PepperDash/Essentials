@@ -82,6 +82,19 @@ namespace PepperDash_Essentials_DM.Chassis
 
 			OutputNames = props.Outputs;
 			SetupOutputs(OutputNames);
+
+			foreach (var item in _chassis.HdmiDmLiteOutputs)
+			{
+				var audioDevice = new HdPsXxxOutputAudioController(Key, item.Number, _chassis);
+				Debug.Console(2, this, "Adding HdPsXxxOutputAudioController '{0}' for output '{1}'", audioDevice.Key, item.Number);
+				DeviceManager.AddDevice(audioDevice);
+			}			
+			foreach (var item in _chassis.AnalogAuxiliaryMixer)
+			{
+				var audioDevice = new HdPsXxxAnalogAuxMixerController(Key, item.MixerNumber, _chassis);
+				Debug.Console(2, this, "Adding HdPsXxAnalogAuxMixerCOntorller '{0}' for output '{1}'", audioDevice.Key, item.MixerNumber);
+				DeviceManager.AddDevice(audioDevice);
+			}
 		}
 
 		// get input priorities
@@ -174,7 +187,7 @@ namespace PepperDash_Essentials_DM.Chassis
 				var output = item;
 				var index = item.Number;
 				var name = string.IsNullOrEmpty(OutputNames[index]) 
-					? string.Format("Output {0}", index) 
+					? string.Format("Port {0}", index) 
 					: OutputNames[index];
 				
 				output.Name.StringValue = name;
@@ -185,7 +198,7 @@ namespace PepperDash_Essentials_DM.Chassis
 					FeedbackMatchObject = output,
 					Port = output.HdmiOutput.HdmiOutputPort
 				};
-				Debug.Console(1, this, "Adding Output port: {0} - {1}", hdmiPort.Key, name);
+				Debug.Console(1, this, "Adding Port port: {0} - {1}", hdmiPort.Key, name);
 				OutputPorts.Add(hdmiPort);
 
 				var dmLiteKey = string.Format("dmLiteOut{0}", index);
@@ -194,7 +207,7 @@ namespace PepperDash_Essentials_DM.Chassis
 					FeedbackMatchObject = output,
 					Port = output.DmLiteOutput.DmLiteOutputPort
 				};
-				Debug.Console(1, this, "Adding Output port: {0} - {1}", dmLitePort.Key, name);
+				Debug.Console(1, this, "Adding Port port: {0} - {1}", dmLitePort.Key, name);
 				OutputPorts.Add(dmLitePort);
 				
 				OutputRouteNameFeedback.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture), 
@@ -203,7 +216,14 @@ namespace PepperDash_Essentials_DM.Chassis
 				VideoOutputRouteFeedbacks.Add(new IntFeedback(index.ToString(CultureInfo.InvariantCulture), 
 					() => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
 			}
-
+			/*
+			Debug.Console(2, this, "----> AnalogAuxillaryMixer.Count-{0}", _chassis.AnalogAuxiliaryMixer.Count);
+			foreach (var item in _chassis.AnalogAuxiliaryMixer)
+			{
+				Debug.Console(2, this, "----> AnalogAuxillaryMixer[{0}].LineMuteVolumeControl.Count-{1}", item.MixerNumber, item.LineMuteVolumeControl.Count);
+				Debug.Console(2, this, "----> AnalogAuxillaryMixer[{0}].SourceMuteVolumeControl.Count-{1}", item.MixerNumber, item.SourceMuteVolumeControl.Count);
+			}
+			*/
 			_chassis.DMOutputChange += _chassis_OutputChange;
 		}
 
@@ -224,7 +244,7 @@ Selector: {4}
 
 				foreach (var port in OutputPorts)
 				{
-					Debug.Console(0, this, @"Output Port Key: {0}
+					Debug.Console(0, this, @"Port Port Key: {0}
 Port: {1}
 Type: {2}
 ConnectionType: {3}
@@ -413,6 +433,8 @@ Selector: {4}
 			_chassis.AutoRouteOff();
 		}
 
+
+
 		#region Events
 
 
@@ -517,6 +539,7 @@ Selector: {4}
 		#endregion
 
 
+
 		#region Factory
 
 
@@ -524,7 +547,7 @@ Selector: {4}
 		{
 			public HdSp401ControllerFactory()
 			{
-				TypeNames = new List<string>() { "hdps401", "hdps402", "hdps621", "hdps622" };
+				TypeNames = new List<string> { "hdps401", "hdps402", "hdps621", "hdps622" };
 			}
 			public override EssentialsDevice BuildDevice(DeviceConfig dc)
 			{
@@ -571,7 +594,7 @@ Selector: {4}
 		}
 
 
-		#endregion		
+		#endregion
 	}
 
 
