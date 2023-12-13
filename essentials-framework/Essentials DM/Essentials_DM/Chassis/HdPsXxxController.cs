@@ -86,11 +86,13 @@ namespace PepperDash_Essentials_DM.Chassis
 			foreach (var item in _chassis.HdmiDmLiteOutputs)
 			{
 				var audioDevice = new HdPsXxxOutputAudioController(Key, item.Number, _chassis);
+				Debug.Console(0, this, "HdPsXxxController: created HdPsXxxOutputAudioController Key-{0}', Output-'{1}'", audioDevice.Key, item.Number);
 				DeviceManager.AddDevice(audioDevice);
 			}
 			foreach (var item in _chassis.AnalogAuxiliaryMixer)
 			{
-				var audioDevice = new HdPsXxxAnalogAuxMixerController(Key, item.MixerNumber, _chassis);				
+				var audioDevice = new HdPsXxxAnalogAuxMixerController(Key, item.MixerNumber, _chassis);
+				Debug.Console(0, this, "HdPsXxxController: created HdPsXxAnalogAuxMixerCOntorller Key-{0}', Output-'{1}'", audioDevice.Key, item.MixerNumber);
 				DeviceManager.AddDevice(audioDevice);
 			}
 		}
