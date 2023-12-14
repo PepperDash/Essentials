@@ -469,7 +469,7 @@ Selector: {4}
 				case DMInputEventIds.VideoDetectedEventId:	// id-9
 					{
 						// signal found on HD-PSXxx > Inputs > HDMI/DM Lite X
-						Debug.Console(1, this, "{0} DM Input Event ID {1}-SourceSync | Number {2}: Updating VideoInputSyncFeedbacks",
+						Debug.Console(1, this, "{0} DM Input Event ID {1} | Number {2}: Updating VideoInputSyncFeedbacks",
 							device.Name, args.EventId, args.Number);
 
 						var input = args.Number;
