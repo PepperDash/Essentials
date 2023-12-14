@@ -138,7 +138,7 @@ namespace PepperDash_Essentials_DM.Chassis
 					() => input.InputPort.HdcpSupportOnFeedback.BoolValue));
 
 				VideoInputSyncFeedbacks.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture),
-					() => input.VideoDetectedFeedback.BoolValue));
+					() => input.InputPort.SyncDetectedFeedback.BoolValue));
 			}
 
 			// iterate through DM Lite inputs
@@ -167,7 +167,7 @@ namespace PepperDash_Essentials_DM.Chassis
 					() => input.InputPort.HdcpSupportOnFeedback.BoolValue));
 
 				VideoInputSyncFeedbacks.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture),
-					() => input.VideoDetectedFeedback.BoolValue));
+					() => input.InputPort.SyncDetectedFeedback.BoolValue));
 			}
 
 			_chassis.DMInputChange += _chassis_InputChange;
@@ -459,17 +459,18 @@ Selector: {4}
 			switch (args.EventId)
 			{
 				case DMInputEventIds.RemoteTransmitterDetectedEventId:
-					{
+					{						
 						// signal found on HD-PSXxx > Inputs > Inputs DM Lite X
 						Debug.Console(2, this, "{0} DM Input Event ID {1}-RemoteTransmitterDetected | Number {2}",
 							device.ToString(), args.EventId, args.Number);
 						break;
 					}
-				case DMInputEventIds.SourceSyncEventId:
+				case DMInputEventIds.SourceSyncEventId:		// id-14
+				case DMInputEventIds.VideoDetectedEventId:	// id-9
 					{
 						// signal found on HD-PSXxx > Inputs > HDMI/DM Lite X
 						Debug.Console(1, this, "{0} DM Input Event ID {1}-SourceSync | Number {2}: Updating VideoInputSyncFeedbacks",
-							device.ToString(), args.EventId, args.Number);
+							device.Name, args.EventId, args.Number);
 
 						var input = args.Number;
 
@@ -478,28 +479,6 @@ Selector: {4}
 
 						feedback.FireUpdate();
 
-						//foreach (var item in VideoInputSyncFeedbacks)
-						//{
-						//    item.FireUpdate();
-						//}
-						break;
-					}
-				case DMInputEventIds.VideoDetectedEventId:
-					{
-						Debug.Console(1, this, "{0} DM Input Event ID {1}-VideoDetected | Number {2}: Updating VideoInputSyncFeedbacks",
-							device.ToString(), args.EventId, args.Number);
-
-						var input = args.Number;
-
-						var feedback = VideoInputSyncFeedbacks[(int) input];
-						if (feedback == null) return;
-
-						feedback.FireUpdate();
-
-						//foreach (var item in VideoInputSyncFeedbacks)
-						//{
-						//    item.FireUpdate();
-						//}
 						break;
 					}
 				case DMInputEventIds.InputNameFeedbackEventId:
@@ -507,7 +486,7 @@ Selector: {4}
 				case DMInputEventIds.NameFeedbackEventId:
 					{
 						Debug.Console(1, this, "{0} DM Input Event ID {1}-Name | Number {2}: Updating name feedbacks",
-							device.ToString(), args.EventId, args.Number);
+							device.Name, args.EventId, args.Number);
 
 						var input = args.Number;
 						var name = _chassis.HdmiInputs[input].NameFeedback.StringValue;
@@ -518,7 +497,7 @@ Selector: {4}
 				default:
 					{
 						Debug.Console(1, this, "{0} DM Input Event ID {1} | Number {2}: Uhandled", 
-							device.ToString(), args.EventId, args.Number);
+							device.Name, args.EventId, args.Number);
 						break;
 					}
 			}
@@ -533,6 +512,9 @@ Selector: {4}
 			{
 				case DMOutputEventIds.VideoOutEventId:
 				{
+					Debug.Console(2, this, "{0} DM Output Event Id {1} | Number {2} | Index {3}: VideoOutEventId",
+							device.Name, args.EventId, args.Number, args.Index);
+
 					var output = args.Number;
 
 					var input = _chassis.HdmiDmLiteOutputs[output].VideoOutFeedback == null
@@ -559,14 +541,14 @@ Selector: {4}
 				case DMOutputEventIds.RemoteReceiverDetectedEventId:
 					{
 						// signal found on HD-PSXxx > Output[s] > Output [X] > DM Lite [X]
-						Debug.Console(2, this, "{0} DM Output Event Id {1} | Number:{2} | Index {3}: RemoteRecevierDetectedEventId",
-							device.ToString(), args.EventId, args.Number, args.Index);
+						Debug.Console(2, this, "{0} DM Output Event Id {1} | Number {2} | Index {3}: RemoteRecevierDetectedEventId",
+							device.Name, args.EventId, args.Number, args.Index);
 						break;
 					}
 				default:
 					{
-						Debug.Console(2, this, "{0} DM Output Event Id {1} | Number:{2} | Index:{3}: Unhandled",
-							device.ToString(), args.EventId, args.Number, args.Index);
+						Debug.Console(2, this, "{0} DM Output Event Id {1} | Number {2} | Index:{3}: Unhandled",
+							device.Name, args.EventId, args.Number, args.Index);
 						break;
 					}
 			}
