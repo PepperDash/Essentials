@@ -1,5 +1,6 @@
 ﻿using System;
 using PepperDash.Core;
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
@@ -19,6 +20,25 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     public interface IMobileControl3 : IMobileControl
     {
         void CreateMobileControlRoomBridge(IEssentialsRoom room, IMobileControl parent);
+
+        void SendMessageObject(object o);
+
+        void AddAction(string key, object action);
+
+        void RemoveAction(string key);
+    }
+
+    public interface IMobileControlResponseMessage
+    {
+        [JsonProperty("type")]
+        public string Type { get; }
+
+        [JsonProperty("clientId")]
+        public object ClientId { get; }
+
+        [JsonProperty("content")]
+        public object Content { get; }
+
     }
 
     /// <summary>
