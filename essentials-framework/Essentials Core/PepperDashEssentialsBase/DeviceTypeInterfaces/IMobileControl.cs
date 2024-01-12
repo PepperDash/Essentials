@@ -31,13 +31,13 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     public interface IMobileControlResponseMessage
     {
         [JsonProperty("type")]
-        public string Type { get; }
+        string Type { get; }
 
         [JsonProperty("clientId")]
-        public object ClientId { get; }
+        object ClientId { get; }
 
         [JsonProperty("content")]
-        public object Content { get; }
+        object Content { get; }
 
     }
 

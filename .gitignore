@@ -390,3 +390,4 @@ MigrationBackup/
 FodyWeavers.xsd
 essentials-framework/Essentials Interfaces/PepperDash_Essentials_Interfaces/PepperDash_Essentials_Interfaces.csproj
 .DS_Store
+._.DS_Store
