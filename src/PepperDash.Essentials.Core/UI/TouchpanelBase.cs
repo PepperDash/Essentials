@@ -154,7 +154,7 @@ namespace PepperDash.Essentials.Core.UI
 
         private void Panel_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
 		{
-			Debug.Console(2, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+			Debug.Console(5, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
 			var uo = args.Sig.UserObject;
 			if (uo is Action<bool>)
 				(uo as Action<bool>)(args.Sig.BoolValue);
