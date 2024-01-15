@@ -26,6 +26,20 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         void AddAction(string key, object action);
 
         void RemoveAction(string key);
+
+        void AddDeviceMessenger(IMobileControlMessenger messenger);
+
+        bool CheckForDeviceMessenger(string key);
+    }
+
+    /// <summary>
+    /// Describes a mobile control messenger
+    /// </summary>
+    public interface IMobileControlMessenger : IKeyed
+    {
+        IMobileControl3 AppServerController { get; }
+        string MessagePath { get; }
+        void RegisterWithAppServer(IMobileControl3 appServerController);
     }
 
     public interface IMobileControlResponseMessage
