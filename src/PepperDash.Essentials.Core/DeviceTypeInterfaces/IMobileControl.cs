@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
@@ -18,12 +19,10 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// Describes a MobileSystemController that accepts IEssentialsRoom
     /// </summary>
     public interface IMobileControl3 : IMobileControl
-    {
-        void CreateMobileControlRoomBridge(IEssentialsRoom room, IMobileControl parent);
-
+    {       
         void SendMessageObject(object o);
 
-        void AddAction(string key, object action);
+        void AddAction(string key, Action<JToken> action);
 
         void RemoveAction(string key);
 
