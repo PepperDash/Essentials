@@ -50,7 +50,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         object ClientId { get; }
 
         [JsonProperty("content")]
-        object Content { get; }
+        JToken Content { get; }
 
     }
 
