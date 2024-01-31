@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// </summary>
     public interface IMobileControl3 : IMobileControl
     {       
-        void SendMessageObject(object o);
+        void SendMessageObject(IMobileControlMessage o);
 
         void AddAction(string key, Action<JToken> action);
 
@@ -41,15 +41,15 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         void RegisterWithAppServer(IMobileControl3 appServerController);
     }
 
-    public interface IMobileControlResponseMessage
+    public interface IMobileControlMessage
     {
         [JsonProperty("type")]
         string Type { get; }
 
-        [JsonProperty("clientId")]
-        object ClientId { get; }
+        [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
+        string ClientId { get; }
 
-        [JsonProperty("content")]
+        [JsonProperty("content", NullValueHandling = NullValueHandling.Ignore)]
         JToken Content { get; }
 
     }
