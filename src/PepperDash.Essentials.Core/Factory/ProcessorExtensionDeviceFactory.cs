@@ -1,6 +1,6 @@
-﻿extern alias Full;
+﻿
 using Crestron.SimplSharp.Reflection;
-using Full.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
@@ -70,9 +70,9 @@ namespace PepperDash.Essentials.Core
             ProcessorExtensionDeviceFactory.ProcessorExtensionFactoryMethods.Add(extensionName, wrapper);
         }
 
-        private static void CheckForSecrets(IEnumerable<Full.Newtonsoft.Json.Linq.JProperty> obj)
+        private static void CheckForSecrets(IEnumerable<Newtonsoft.Json.Linq.JProperty> obj)
         {
-            foreach (var prop in obj.Where(prop => prop.Value as Full.Newtonsoft.Json.Linq.JObject != null))
+            foreach (var prop in obj.Where(prop => prop.Value as Newtonsoft.Json.Linq.JObject != null))
             {
                 if (prop.Name.ToLower() == "secret")
                 {
@@ -80,7 +80,7 @@ namespace PepperDash.Essentials.Core
                     //var secret = GetSecret(JsonConvert.DeserializeObject<SecretsPropertiesConfig>(prop.Children().First().ToString()));
                     prop.Parent.Replace(secret);
                 }
-                var recurseProp = prop.Value as Full.Newtonsoft.Json.Linq.JObject;
+                var recurseProp = prop.Value as Newtonsoft.Json.Linq.JObject;
                 if (recurseProp == null) return;
                 CheckForSecrets(recurseProp.Properties());
             }
@@ -120,7 +120,7 @@ namespace PepperDash.Essentials.Core
 
                 var typeName = localDc.Type.ToLower();
 
-                var jObject = properties as Full.Newtonsoft.Json.Linq.JObject;
+                var jObject = properties as Newtonsoft.Json.Linq.JObject;
                 if (jObject != null)
                 {
                     var jProp = jObject.Properties();

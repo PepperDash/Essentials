@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
-using Full.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Essentials.Core.Config
 {

@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-using Full.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 
 namespace PepperDash.Essentials.Core.Timers

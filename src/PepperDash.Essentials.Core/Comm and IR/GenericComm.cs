@@ -1,10 +1,10 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronSockets;
 using Crestron.SimplSharpPro.DeviceSupport;
-using Full.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;

@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Reflection;
