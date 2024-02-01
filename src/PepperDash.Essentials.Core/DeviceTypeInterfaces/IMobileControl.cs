@@ -32,6 +32,8 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         event EventHandler<EventArgs> ClientJoined;
 
+        event EventHandler<EventArgs> AppUrlChanged;
+
         string UserCode { get; }
 
         string QrCodeUrl { get; }
@@ -41,5 +43,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         string McServerUrl { get; }
 
         string RoomName { get; }
+
+        string AppUrl { get; }
     }
 }
