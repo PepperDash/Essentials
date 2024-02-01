@@ -8,7 +8,7 @@ namespace PepperDash.Essentials.Core.Shades
 	/// </summary>
     public interface IShades
     {
-        List<ShadeBase> Shades { get; }
+        List<IShadesOpenCloseStop> Shades { get; }
     }
 
     /// <summary>

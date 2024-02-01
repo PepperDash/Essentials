@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-using Crestron.SimplSharpPro.DM;
-using Crestron.SimplSharpPro.DM.Endpoints;
-using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
-
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash.Essentials.Core.Config;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Devices.Common.Displays
 {
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced
 
 	{
@@ -217,21 +208,4 @@ namespace PepperDash.Essentials.Core
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }
 	}
-
-
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
-    public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
-    {
-        public MockDisplayFactory()
-        {
-            TypeNames = new List<string>() { "mockdisplay" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new Mock Display Device");
-            return new MockDisplay(dc.Key, dc.Name);
-        }
-    }
-
 }

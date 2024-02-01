@@ -13,6 +13,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core.Lighting
 {
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public abstract class LightingBase : EssentialsBridgeableDevice, ILightingScenes
     {
         #region ILightingScenes Members

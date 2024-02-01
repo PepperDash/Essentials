@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectType>Program</ProjectType>
+    <Configurations>Debug;Release;Debug 4.7.2</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>PepperDash.Essentials</RootNamespace>
     <AssemblyName>PepperDash.Essentials</AssemblyName>
-    <TargetFramework>net472</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFrameworks>net472;net6</TargetFrameworks>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <Title>PepperDash Essentials</Title>
     <PackageId>PepperDashEssentials</PackageId>
@@ -14,14 +15,12 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 4.7.2|AnyCPU'">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="Example Configuration\EssentialsHuddleSpaceRoom\configurationFile-HuddleSpace-2-Source.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -46,11 +45,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.20.31" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.20.42" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2">
       <Aliases>Full</Aliases>
     </PackageReference>
-    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-318" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-377" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />

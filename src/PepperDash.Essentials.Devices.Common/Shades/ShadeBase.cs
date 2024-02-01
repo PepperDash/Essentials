@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using PepperDash.Essentials.Core.Shades;
+using PepperDash.Essentials.Core;
 
-using PepperDash.Core;
-using PepperDash.Essentials.Core.CrestronIO;
-
-namespace PepperDash.Essentials.Core.Shades
+namespace PepperDash.Essentials.Devices.Common.Shades
 {
-
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public abstract class ShadeBase : EssentialsDevice, IShadesOpenCloseStop
     {
         public ShadeBase(string key, string name)

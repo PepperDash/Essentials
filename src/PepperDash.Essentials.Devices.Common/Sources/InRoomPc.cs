@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Crestron.SimplSharpPro;
-
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core.Devices
+namespace PepperDash.Essentials.Devices.Common.Sources
 {
-	[Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
 	public class InRoomPc : EssentialsDevice, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
@@ -63,7 +59,6 @@ namespace PepperDash.Essentials.Core.Devices
         #endregion
 	}
 
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public class InRoomPcFactory : EssentialsDeviceFactory<InRoomPc>
     {
         public InRoomPcFactory()
