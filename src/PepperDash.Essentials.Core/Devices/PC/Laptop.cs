@@ -11,7 +11,7 @@ using PepperDash.Core;
 namespace PepperDash.Essentials.Core.Devices
 {
 
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public class Laptop : EssentialsDevice, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
@@ -64,7 +64,7 @@ namespace PepperDash.Essentials.Core.Devices
         #endregion
 	}
 
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public class LaptopFactory : EssentialsDeviceFactory<Laptop>
     {
         public LaptopFactory()

@@ -16,7 +16,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core
 {
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced
 
 	{
@@ -219,7 +219,7 @@ namespace PepperDash.Essentials.Core
 	}
 
 
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common")]
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
     {
         public MockDisplayFactory()

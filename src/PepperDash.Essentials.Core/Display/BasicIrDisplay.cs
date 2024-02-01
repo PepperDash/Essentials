@@ -14,7 +14,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core
 {
-	[Obsolete("Please use PepperDash.Essentials.Device.Common")]
+	[Obsolete("Please use PepperDash.Essentials.Device.Common, this will be removed in 2.1")]
     public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
 	{
 		public IrOutputPortController IrPort { get; private set; }
@@ -203,7 +203,7 @@ namespace PepperDash.Essentials.Core
 	    }
 	}
 
-    [Obsolete("Please use PepperDash.Essentials.Device.Common")]
+    [Obsolete("Please use PepperDash.Essentials.Device.Common, this will be removed in 2.1")]
     public class BasicIrDisplayFactory : EssentialsDeviceFactory<BasicIrDisplay>
     {
         public BasicIrDisplayFactory()

@@ -12,7 +12,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core
 {
-	[Obsolete("Please use PepperDash.Essentials.Devices.Common")]
+	[Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IHasPowerControl, IWarmingCooling, IUsageTracking
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
@@ -250,7 +250,7 @@ namespace PepperDash.Essentials.Core
 
     }
 
-	[Obsolete("Please use PepperDash.Essentials.Devices.Common")]
+	[Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public abstract class TwoWayDisplayBase : DisplayBase, IRoutingFeedback, IHasPowerControlWithFeedback
 	{
         public StringFeedback CurrentInputFeedback { get; private set; }
