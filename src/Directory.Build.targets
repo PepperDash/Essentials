@@ -1,29 +1,26 @@
 <Project>
   <ItemGroup>
-    <None Include="$(PackageOutputPath)\$(TargetName).$(Version).cpz" Condition="$(ProjectType) == 'Program'">
+    <None Include="$(PackageOutputPath)\$(AssemblyName)\*.cpz" Condition="$(ProjectType) == 'Program'">
       <Pack>true</Pack>
-      <PackagePath>content;</PackagePath>
+      <PackagePath>build;</PackagePath>
     </None>
-    <None Include="$(PackageOutputPath)\$(TargetName).$(Version).*.cplz" Condition="$(ProjectType) == 'ProgramLibrary'">
+    <None Include="$(PackageOutputPath)\$(AssemblyName)\*.cplz" Condition="$(ProjectType) == 'ProgramLibrary'">
       <Pack>true</Pack>
-      <PackagePath>content;</PackagePath>
+      <PackagePath>build;</PackagePath>
     </None>
   </ItemGroup>
-  <Target Name="Create CPLZ" AfterTargets="Build; AfterRebuild" Condition="$(ProjectType) == 'ProgramLibrary'">
-    <Message Text="Creating CPLZ"></Message>
-    <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists($(PackageOutputPath))"></MakeDir>
-    <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cplz" Overwrite="true"/>    
+  <Target Name="Create CPLZ" AfterTargets="Build; AfterRebuild" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != ''">
+    <Message Text="Creating CPLZ $(TargetDir)"></Message>
+    <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists($(PackageOutputPath))" />
+    <MakeDir Directories="$(PackageOutputPath)\$(AssemblyName)" Condition="!Exists('$(PackageOutputPath)\$(AssemblyName)')" />
+    <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cplz" Overwrite="true"/>    
   </Target>
-  <Target Name="Clean CPLZ" AfterTargets="BeforeRebuild" Condition="$(ProjectType) == 'ProgramLibrary'">
-    <Delete Files="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cplz"/>
-  </Target>
-  <Target Name="Copy CPZ NET6" AfterTargets="SimplSharpPostProcess; SimplSharpPostProcess47" Condition="$(ProjectType) == 'Program'">
+  <Target Name="Copy CPZ NET6" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' == 'net6.0' ) Or ( '$(TargetFramework)' == 'net8.0' ))">
     <Message Text="Copying CPZ"></Message>
-    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" />
-    <Copy SourceFiles="$(TargetDir)$(TargetName).$(Version).${TargetFramework}.cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cpz"/>
+    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz" />
   </Target>
-  
-  <Target Name="Clean CPZ" AfterTargets="BeforeRebuild" Condition="$(ProjectType) == 'Program'">
-    <Delete Files="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cpz"/>
+  <Target Name="Copy CPZ NET47" AfterTargets="SimplSharpPostProcess47" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' ))">
+    <Message Text="Copying CPZ"></Message>
+    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz" />
   </Target>
 </Project>
