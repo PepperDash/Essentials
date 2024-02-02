@@ -184,6 +184,7 @@
     </Compile>
     <Compile Include="Crestron IO\Cards\CenCi33Controller.cs" />
     <Compile Include="Crestron IO\Cards\InternalCardCageController.cs" />
+    <Compile Include="Crestron IO\CenIoCom\CenIoComController.cs" />
     <Compile Include="Crestron IO\DinCenCn\DinCenCnController.cs" />
     <Compile Include="Crestron IO\DinCenCn\IHasCresnetBranches.cs" />
     <Compile Include="Crestron IO\DinIo8\DinIo8Controller.cs" />
