@@ -207,7 +207,8 @@ namespace PepperDash.Essentials
             assemblyName.Contains("PepperDash_Essentials_Core") ||
             assemblyName.Contains("PepperDash_Essentials_DM") ||
             assemblyName.Contains("Essentials Devices Common") ||
-            assemblyName.Contains("PepperDash_Core");
+            assemblyName.Contains("PepperDash_Core") ||
+            assemblyName.Contains("Newtonsoft.Json.Compact");
 
         /// <summary>
         /// Moves any .dll assemblies not already loaded from the plugins folder to loadedPlugins folder
