@@ -201,6 +201,14 @@ namespace PepperDash.Essentials
                 CrestronConsole.ConsoleCommandResponse("{0} Version: {1}" + CrestronEnvironment.NewLine, assembly.Name, assembly.Version);
             }
         }
+
+        static bool IsLegacyAssembly(string assemblyName) =>
+            assemblyName.Contains("PepperDashEssentials") ||
+            assemblyName.Contains("PepperDash_Essentials_Core") ||
+            assemblyName.Contains("PepperDash_Essentials_DM") ||
+            assemblyName.Contains("Essentials Devices Common") ||
+            assemblyName.Contains("PepperDash_Core");
+
         /// <summary>
         /// Moves any .dll assemblies not already loaded from the plugins folder to loadedPlugins folder
         /// </summary>
@@ -209,7 +217,7 @@ namespace PepperDash.Essentials
             Debug.Console(0, "Looking for .dll assemblies from plugins folder...");
 
             var pluginDi = new DirectoryInfo(_pluginDirectory);
-            var pluginFiles = pluginDi.GetFiles("*.dll");
+            var pluginFiles = pluginDi.GetFiles("*.dll").Where(file => !IsLegacyAssembly(file.Name)).ToArray();
 
             if (pluginFiles.Length > 0)
             {
@@ -283,7 +291,7 @@ namespace PepperDash.Essentials
                 var result = CrestronZIP.Unzip(zfi.FullName, tempDi.FullName);
                 Debug.Console(0, "UnZip Result: {0}", result.ToString());
 
-                var tempFiles = tempDi.GetFiles("*.dll");
+                var tempFiles = tempDi.GetFiles("*.dll").Where(file => !IsLegacyAssembly(file.Name)).ToArray();
                 foreach (var tempFile in tempFiles)
                 {
                     try
