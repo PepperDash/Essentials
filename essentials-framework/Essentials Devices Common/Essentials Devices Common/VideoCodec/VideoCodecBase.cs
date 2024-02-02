@@ -994,7 +994,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             //Special Change for protected directory clear
 
-            trilist.SetBoolSigAction(joinMap.DirectoryClearSelected.JoinNumber, (b) => SelectDirectoryEntry(_directoryCodec, 0, _directoryTrilist, _directoryJoinmap));
+            trilist.SetBoolSigAction(joinMap.DirectoryClearSelected.JoinNumber, (b) => SelectDirectoryEntry(codec, 0, trilist, joinMap));
 
 		    // Report feedback for number of contact methods for selected contact
 
