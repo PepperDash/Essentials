@@ -1,5 +1,4 @@
-﻿extern alias Full;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
@@ -8,8 +7,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using Feedback = PepperDash.Essentials.Core.Feedback;
-using JsonConvert = Full::Newtonsoft.Json.JsonConvert;
-
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
