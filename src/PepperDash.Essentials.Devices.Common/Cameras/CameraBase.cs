@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common.Codec;
 
-using Full.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {

@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Collections.Generic;
@@ -7,8 +7,8 @@ using System.Text;
 
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Scheduler;
-using Full.Newtonsoft.Json;
-using Full.Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;

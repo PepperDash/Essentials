@@ -1,6 +1,6 @@
-﻿extern alias Full;
+﻿
 
-using Full.Newtonsoft.Json;
+using Newtonsoft.Json;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core

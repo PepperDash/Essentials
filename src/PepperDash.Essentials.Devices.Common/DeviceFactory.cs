@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Linq;

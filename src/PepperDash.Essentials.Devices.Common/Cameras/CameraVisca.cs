@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp.Reflection;
 
-using Full.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {

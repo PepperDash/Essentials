@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Collections.Generic;
@@ -14,8 +14,8 @@ using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
-using Full.Newtonsoft.Json;
-using Full.Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {

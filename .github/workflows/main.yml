@@ -42,7 +42,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           updateRelease: true
-          artifacts: 'output\*.*(cpz|cplz)'          
+          artifacts: 'output\**\*.*(cpz|cplz)'          
           tag: ${{ steps.setVersion.outputs.version }}
       - name: Setup Nuget
         run: | 

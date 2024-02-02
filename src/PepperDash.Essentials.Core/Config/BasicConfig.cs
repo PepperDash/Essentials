@@ -1,10 +1,10 @@
-﻿extern alias Full;
+﻿
 
 using System.Collections.Generic;
 using System.Linq;
-using Full.Newtonsoft.Json;
+using Newtonsoft.Json;
 
-using Full.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Essentials.Core.Config
 {
