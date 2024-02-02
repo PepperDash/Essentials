@@ -88,7 +88,7 @@ namespace PepperDash_Essentials_DM.Chassis
 				var audioDevice = new HdPsXxxOutputAudioController(Key, item.Number, _chassis);
 				Debug.Console(2, this, "Adding HdPsXxxOutputAudioController '{0}' for output '{1}'", audioDevice.Key, item.Number);
 				DeviceManager.AddDevice(audioDevice);
-			}			
+			}
 			foreach (var item in _chassis.AnalogAuxiliaryMixer)
 			{
 				var audioDevice = new HdPsXxxAnalogAuxMixerController(Key, item.MixerNumber, _chassis);
@@ -111,7 +111,7 @@ namespace PepperDash_Essentials_DM.Chassis
 				Debug.Console(1, this, "Failed to setup inputs, properties are null");
 				return;
 			}
-			
+
 			// iterate through HDMI inputs
 			foreach (var item in _chassis.HdmiInputs)
 			{
@@ -124,7 +124,7 @@ namespace PepperDash_Essentials_DM.Chassis
 
 				input.Name.StringValue = name;
 
-				InputNameFeedbacks.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture), 
+				InputNameFeedbacks.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture),
 					() => InputNames[index]));
 
 				var port = new RoutingInputPort(key, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, input, this)
@@ -134,11 +134,11 @@ namespace PepperDash_Essentials_DM.Chassis
 				Debug.Console(1, this, "Adding Input port: {0} - {1}", port.Key, name);
 				InputPorts.Add(port);
 
-				InputHdcpEnableFeedback.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture), 
+				InputHdcpEnableFeedback.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture),
 					() => input.InputPort.HdcpSupportOnFeedback.BoolValue));
 
-				VideoInputSyncFeedbacks.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture), 
-					() => input.VideoDetectedFeedback.BoolValue));
+				VideoInputSyncFeedbacks.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture),
+					() => input.InputPort.SyncDetectedFeedback.BoolValue));
 			}
 
 			// iterate through DM Lite inputs
@@ -147,13 +147,13 @@ namespace PepperDash_Essentials_DM.Chassis
 				var input = item;
 				var index = item.Number;
 				var key = string.Format("dmLiteIn{0}", index);
-				var name = string.IsNullOrEmpty(InputNames[index]) 
-					? string.Format("DM Input {0}", index) 
+				var name = string.IsNullOrEmpty(InputNames[index])
+					? string.Format("DM Input {0}", index)
 					: InputNames[index];
 
 				input.Name.StringValue = name;
 
-				InputNameFeedbacks.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture), 
+				InputNameFeedbacks.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture),
 					() => InputNames[index]));
 
 				var port = new RoutingInputPort(key, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, input, this)
@@ -163,11 +163,11 @@ namespace PepperDash_Essentials_DM.Chassis
 				Debug.Console(0, this, "Adding Input port: {0} - {1}", port.Key, name);
 				InputPorts.Add(port);
 
-				InputHdcpEnableFeedback.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture), 
+				InputHdcpEnableFeedback.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture),
 					() => input.InputPort.HdcpSupportOnFeedback.BoolValue));
 
-				VideoInputSyncFeedbacks.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture), 
-					() => input.VideoDetectedFeedback.BoolValue));
+				VideoInputSyncFeedbacks.Add(new BoolFeedback(index.ToString(CultureInfo.InvariantCulture),
+					() => input.InputPort.SyncDetectedFeedback.BoolValue));
 			}
 
 			_chassis.DMInputChange += _chassis_InputChange;
@@ -186,10 +186,10 @@ namespace PepperDash_Essentials_DM.Chassis
 			{
 				var output = item;
 				var index = item.Number;
-				var name = string.IsNullOrEmpty(OutputNames[index]) 
-					? string.Format("Port {0}", index) 
+				var name = string.IsNullOrEmpty(OutputNames[index])
+					? string.Format("Port {0}", index)
 					: OutputNames[index];
-				
+
 				output.Name.StringValue = name;
 
 				var hdmiKey = string.Format("hdmiOut{0}", index);
@@ -209,11 +209,11 @@ namespace PepperDash_Essentials_DM.Chassis
 				};
 				Debug.Console(1, this, "Adding Port port: {0} - {1}", dmLitePort.Key, name);
 				OutputPorts.Add(dmLitePort);
-				
-				OutputRouteNameFeedback.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture), 
-					() => output.VideoOutFeedback.NameFeedback.StringValue));			
 
-				VideoOutputRouteFeedbacks.Add(new IntFeedback(index.ToString(CultureInfo.InvariantCulture), 
+				OutputRouteNameFeedback.Add(new StringFeedback(index.ToString(CultureInfo.InvariantCulture),
+					() => output.VideoOutFeedback.NameFeedback.StringValue));
+
+				VideoOutputRouteFeedbacks.Add(new IntFeedback(index.ToString(CultureInfo.InvariantCulture),
 					() => output.VideoOutFeedback == null ? 0 : (int)output.VideoOutFeedback.Number));
 			}
 			/*
@@ -352,8 +352,8 @@ Selector: {4}
 		public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
 		{
 			var input = inputSelector as HdPsXxxInput;
-			var output = outputSelector as HdPsXxxOutput;			
-			
+			var output = outputSelector as HdPsXxxOutput;
+
 			Debug.Console(2, this, "ExecuteSwitch: input={0}, output={1}", input, output);
 
 			if (output == null)
@@ -456,24 +456,37 @@ Selector: {4}
 		// _chassis input change event
 		private void _chassis_InputChange(Switch device, DMInputEventArgs args)
 		{
-			var eventId = args.EventId;
-
-			switch (eventId)
+			switch (args.EventId)
 			{
-				case DMInputEventIds.VideoDetectedEventId:
+				case DMInputEventIds.RemoteTransmitterDetectedEventId:
+					{						
+						// signal found on HD-PSXxx > Inputs > Inputs DM Lite X
+						Debug.Console(2, this, "{0} DM Input Event ID {1}-RemoteTransmitterDetected | Number {2}",
+							device.ToString(), args.EventId, args.Number);
+						break;
+					}
+				case DMInputEventIds.SourceSyncEventId:		// id-14
+				case DMInputEventIds.VideoDetectedEventId:	// id-9
 					{
-						Debug.Console(1, this, "Event ID {0}: Updating VideoInputSyncFeedbacks", eventId);
-						foreach (var item in VideoInputSyncFeedbacks)
-						{
-							item.FireUpdate();
-						}
+						// signal found on HD-PSXxx > Inputs > HDMI/DM Lite X
+						Debug.Console(1, this, "{0} DM Input Event ID {1} | Number {2}: Updating VideoInputSyncFeedbacks",
+							device.Name, args.EventId, args.Number);
+
+						var input = args.Number;
+
+						var feedback = VideoInputSyncFeedbacks[(int)input];
+						if (feedback == null) return;
+
+						feedback.FireUpdate();
+
 						break;
 					}
 				case DMInputEventIds.InputNameFeedbackEventId:
 				case DMInputEventIds.InputNameEventId:
 				case DMInputEventIds.NameFeedbackEventId:
 					{
-						Debug.Console(1, this, "Event ID {0}: Updating name feedbacks", eventId);
+						Debug.Console(1, this, "{0} DM Input Event ID {1}-Name | Number {2}: Updating name feedbacks",
+							device.Name, args.EventId, args.Number);
 
 						var input = args.Number;
 						var name = _chassis.HdmiInputs[input].NameFeedback.StringValue;
@@ -483,7 +496,8 @@ Selector: {4}
 					}
 				default:
 					{
-						Debug.Console(1, this, "Uhandled DM Input Event ID {0}", eventId);
+						Debug.Console(1, this, "{0} DM Input Event ID {1} | Number {2}: Uhandled", 
+							device.Name, args.EventId, args.Number);
 						break;
 					}
 			}
@@ -491,33 +505,53 @@ Selector: {4}
 			OnDmInputChange(args);
 		}
 
-
 		// _chassis output change event
 		private void _chassis_OutputChange(Switch device, DMOutputEventArgs args)
 		{
-			if (args.EventId != DMOutputEventIds.VideoOutEventId) return;
+			switch (args.EventId)
+			{
+				case DMOutputEventIds.VideoOutEventId:
+				{
+					Debug.Console(2, this, "{0} DM Output Event Id {1} | Number {2} | Index {3}: VideoOutEventId",
+							device.Name, args.EventId, args.Number, args.Index);
 
-			var output = args.Number;
+					var output = args.Number;
 
-			var input = _chassis.HdmiDmLiteOutputs[output].VideoOutFeedback == null
-				? 0
-				: _chassis.HdmiDmLiteOutputs[output].VideoOutFeedback.Number;
+					var input = _chassis.HdmiDmLiteOutputs[output].VideoOutFeedback == null
+						? 0
+						: _chassis.HdmiDmLiteOutputs[output].VideoOutFeedback.Number;
 
-			var outputName = OutputNames[output];
+					var outputName = OutputNames[output];
 
-			var feedback = VideoOutputRouteFeedbacks[outputName];
-			if (feedback == null) return;
+					var feedback = VideoOutputRouteFeedbacks[outputName];
+					if (feedback == null) return;
 
-			var inputPort = InputPorts.FirstOrDefault(
-				p => p.FeedbackMatchObject == _chassis.HdmiDmLiteOutputs[output].VideoOutFeedback);
+					var inputPort = InputPorts.FirstOrDefault(
+						p => p.FeedbackMatchObject == _chassis.HdmiDmLiteOutputs[output].VideoOutFeedback);
 
-			var outputPort = OutputPorts.FirstOrDefault(
-				p => p.FeedbackMatchObject == _chassis.HdmiDmLiteOutputs[output]);
+					var outputPort = OutputPorts.FirstOrDefault(
+						p => p.FeedbackMatchObject == _chassis.HdmiDmLiteOutputs[output]);
 
-			feedback.FireUpdate();
+					feedback.FireUpdate();
 
-			OnSwitchChange(new RoutingNumericEventArgs(
-				output, input, outputPort, inputPort, eRoutingSignalType.AudioVideo));
+					OnSwitchChange(new RoutingNumericEventArgs(output, input, outputPort, inputPort, eRoutingSignalType.AudioVideo));
+
+					break;
+				}
+				case DMOutputEventIds.RemoteReceiverDetectedEventId:
+					{
+						// signal found on HD-PSXxx > Output[s] > Output [X] > DM Lite [X]
+						Debug.Console(2, this, "{0} DM Output Event Id {1} | Number {2} | Index {3}: RemoteRecevierDetectedEventId",
+							device.Name, args.EventId, args.Number, args.Index);
+						break;
+					}
+				default:
+					{
+						Debug.Console(2, this, "{0} DM Output Event Id {1} | Number {2} | Index:{3}: Unhandled",
+							device.Name, args.EventId, args.Number, args.Index);
+						break;
+					}
+			}
 		}
 
 
@@ -543,9 +577,9 @@ Selector: {4}
 		#region Factory
 
 
-		public class HdSp401ControllerFactory : EssentialsDeviceFactory<HdPsXxxController>
+		public class HdPsXxxControllerFactory : EssentialsDeviceFactory<HdPsXxxController>
 		{
-			public HdSp401ControllerFactory()
+			public HdPsXxxControllerFactory()
 			{
 				TypeNames = new List<string> { "hdps401", "hdps402", "hdps621", "hdps622" };
 			}
