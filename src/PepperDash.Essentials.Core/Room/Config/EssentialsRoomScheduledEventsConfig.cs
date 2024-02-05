@@ -1,9 +1,9 @@
-﻿extern alias Full;
+﻿
 
 using System.Collections.Generic;
 using Crestron.SimplSharp.Scheduler;
-using Full.Newtonsoft.Json;
-using Full.Newtonsoft.Json.Converters;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.Config

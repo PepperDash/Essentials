@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Linq;
@@ -14,9 +14,9 @@ using Crestron.SimplSharpPro.DM;
 using PepperDash.Core;
 using PepperDash.Essentials.License;
 
-using Full.Newtonsoft.Json;
-using Full.Newtonsoft.Json.Linq;
-using Full.Newtonsoft.Json.Schema;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 
 
 namespace PepperDash.Essentials.Core

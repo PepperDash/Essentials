@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Shades
 {
@@ -13,17 +8,7 @@ namespace PepperDash.Essentials.Core.Shades
 	/// </summary>
     public interface IShades
     {
-        List<ShadeBase> Shades { get; }
-    }
-
-    /// <summary>
-    /// Requirements for a device that implements basic Open/Close shade control
-    /// </summary>
-    [Obsolete("Please use IShadesOpenCloseStop instead")]
-    public interface IShadesOpenClose
-    {
-        void Open();
-        void Close();
+        List<IShadesOpenCloseStop> Shades { get; }
     }
 
     /// <summary>
@@ -45,15 +30,6 @@ namespace PepperDash.Essentials.Core.Shades
         event EventHandler PresetSaved;
     }
 
-	/// <summary>
-	/// Requirements for a shade that implements press/hold raise/lower functions
-	/// </summary>
-    [Obsolete("Please use IShadesOpenCloseStop instead")]
-	public interface IShadesRaiseLower
-	{
-		void Raise(bool state);
-		void Lower(bool state);
-	}
 
     /// <summary>
     /// Requirements for a shade device that provides raising/lowering feedback
@@ -71,15 +47,6 @@ namespace PepperDash.Essentials.Core.Shades
 	{
 		BoolFeedback ShadeIsOpenFeedback { get; }
 		BoolFeedback ShadeIsClosedFeedback { get; }
-	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-    [Obsolete("Please use IShadesOpenCloseStop instead")]
-    public interface IShadesStop
-	{
-		void Stop();
 	}
 
 	/// <summary>
@@ -125,7 +92,7 @@ namespace PepperDash.Essentials.Core.Shades
 		BoolFeedback AllAreAtSceneFeedback { get; }
 	}
 
-	public interface ICrestronBasicShade : IShadesOpenClosedFeedback, IShadesStop, 
+	public interface ICrestronBasicShade : IShadesOpenClosedFeedback, 
 		IShadesStopOrMove, IShadesFeedback, IShadesRaiseLowerFeedback
 	{
 

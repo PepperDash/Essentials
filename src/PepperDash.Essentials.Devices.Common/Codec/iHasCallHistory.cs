@@ -1,17 +1,11 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using PepperDash.Core;
-using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
-using Full.Newtonsoft.Json;
-using Full.Newtonsoft.Json.Converters;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {

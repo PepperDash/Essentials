@@ -10,10 +10,9 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Devices
 {
-	/// <summary>
-	/// This DVD class should cover most IR, one-way DVD and Bluray fuctions
-	/// </summary>
-	public class Laptop : EssentialsDevice, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
+
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
+    public class Laptop : EssentialsDevice, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
 		public string IconName { get; set; }
@@ -65,6 +64,7 @@ namespace PepperDash.Essentials.Core.Devices
         #endregion
 	}
 
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public class LaptopFactory : EssentialsDeviceFactory<Laptop>
     {
         public LaptopFactory()

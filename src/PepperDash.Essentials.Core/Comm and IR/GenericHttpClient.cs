@@ -9,6 +9,7 @@ using PepperDash.Core.DebugThings;
 
 namespace PepperDash.Essentials.Core
 {
+	[Obsolete("Please use the builtin HttpClient class instead: https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines")]
 	public class GenericHttpClient : Device, IBasicCommunication
 	{
 		public HttpClient Client;

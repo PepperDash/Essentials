@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectType>ProgramLibrary</ProjectType>
+    <Configurations>Debug;Release;Debug 4.7.2</Configurations>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFrameworks>net472;net6</TargetFrameworks>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <AssemblyName>PepperDash.Essentials.Devices.Common</AssemblyName>
     <RootNamespace>PepperDash.Essentials.Devices.Common</RootNamespace>
@@ -15,22 +16,17 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 4.7.2|AnyCPU'">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.20.31" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2">
-      <Aliases>Full</Aliases>
-    </PackageReference>
-    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-375" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.20.42" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-383" />
   </ItemGroup>
 </Project>

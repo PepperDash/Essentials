@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Routing;
-using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Devices.Common.Sources;
 
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
 {
-    public class BlueJeansPc : InRoomPc, IRoutingInputs, IRunRouteAction, IRoutingSinkNoSwitching
+    public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
     {
 
         public RoutingInputPort AnyVideoIn { get; private set; }
@@ -93,9 +91,9 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         /// <returns></returns>
         bool DoRoute(SourceRouteListItem route)
         {
-            IRoutingSinkNoSwitching dest = null;
+            IRoutingSink dest = null;
 
-            dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkNoSwitching;
+            dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
 
             if (dest == null)
             {

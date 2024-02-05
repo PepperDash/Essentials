@@ -1,11 +1,11 @@
-﻿extern alias Full; 
+﻿ 
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
-using Full.Newtonsoft.Json;
+using Newtonsoft.Json;
 using PepperDash.Core;
 
 //using SSMono.IO;

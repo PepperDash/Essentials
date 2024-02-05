@@ -14,14 +14,11 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core
 {
-    [Description("Wrapper class for a Basic IR Display")]
+	[Obsolete("Please use PepperDash.Essentials.Device.Common, this will be removed in 2.1")]
     public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
 	{
 		public IrOutputPortController IrPort { get; private set; }
 		public ushort IrPulseTime { get; set; }
-
-        [Obsolete("This property will be removed in version 2.0.0")]
-        public override BoolFeedback PowerIsOnFeedback { get; protected set; }
 
         protected Func<bool> PowerIsOnFeedbackFunc
         {
@@ -46,14 +43,6 @@ namespace PepperDash.Essentials.Core
 			IrPort = new IrOutputPortController(key + "-ir", port, irDriverFilepath);
 			DeviceManager.AddDevice(IrPort);
 
-            PowerIsOnFeedback = new BoolFeedback(PowerIsOnFeedbackFunc);
-
-            PowerIsOnFeedback.OutputChange += (o, a) =>
-            {
-                Debug.Console(2, this, "Power on={0}", _PowerIsOn);
-                if (_PowerIsOn) StartWarmingTimer();
-                else StartCoolingTimer();
-            };
 			IsWarmingUpFeedback.OutputChange += (o, a) => Debug.Console(2, this, "Warming up={0}", _IsWarmingUp);
 			IsCoolingDownFeedback.OutputChange += (o, a) => Debug.Console(2, this, "Cooling down={0}", _IsCoolingDown);
 
@@ -117,20 +106,17 @@ namespace PepperDash.Essentials.Core
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_POWER_ON, IrPulseTime);
             _PowerIsOn = true;
-            PowerIsOnFeedback.FireUpdate();
 		}
 
 		public override void PowerOff()
 		{
             _PowerIsOn = false;
-            PowerIsOnFeedback.FireUpdate();
 			IrPort.Pulse(IROutputStandardCommands.IROut_POWER_OFF, IrPulseTime);
 		}
 
 		public override void PowerToggle()
 		{
             _PowerIsOn = false;
-            PowerIsOnFeedback.FireUpdate();
 			IrPort.Pulse(IROutputStandardCommands.IROut_POWER, IrPulseTime);
 		}
 
@@ -193,7 +179,7 @@ namespace PepperDash.Essentials.Core
 						action();
 				};
 
-			if (!PowerIsOnFeedback.BoolValue)
+			if (!_PowerIsOn)
 			{
 				PowerOn();
 				EventHandler<FeedbackEventArgs> oneTimer = null;
@@ -217,6 +203,7 @@ namespace PepperDash.Essentials.Core
 	    }
 	}
 
+    [Obsolete("Please use PepperDash.Essentials.Device.Common, this will be removed in 2.1")]
     public class BasicIrDisplayFactory : EssentialsDeviceFactory<BasicIrDisplay>
     {
         public BasicIrDisplayFactory()

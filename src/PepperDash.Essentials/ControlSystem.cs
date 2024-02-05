@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Reflection;
@@ -34,6 +34,29 @@ namespace PepperDash.Essentials
             DeviceManager.Initialize(this);
             SecretsManager.Initialize();
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
+
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
+        }
+
+        private System.Reflection.Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var assemblyName = new System.Reflection.AssemblyName(args.Name).Name;
+            if (assemblyName == "PepperDash_Core")
+            {
+                return System.Reflection.Assembly.LoadFrom("PepperDashCore.dll");
+            }
+
+            if (assemblyName == "PepperDash_Essentials_Core")
+            {
+                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Core.dll");
+            }
+
+            if (assemblyName == "Essentials Devices Common")
+            {
+                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Devices.Common.dll");
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -146,22 +169,11 @@ namespace PepperDash.Essentials
 
                 string directoryPrefix;
 
-                directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+                directoryPrefix = Directory.GetApplicationRootDirectory();
 
-                //var assembly = Assembly.GetExecutingAssembly();
+                var fullVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-                //Debug.Console(0, "Assembly Name: ", assembly.FullName);
-
-                //var fullVersion = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
-
-                //if (fullVersion.Length == 0)
-                //{
-                //    Debug.Console(0, "***********************Unable to determine version.***********************");
-                //}
-
-                //AssemblyInformationalVersionAttribute fullVersionAtt = fullVersion[0] as AssemblyInformationalVersionAttribute;
-
-                //Debug.Console(0, "Full Version: {0}", fullVersionAtt.InformationalVersion);
+                Global.SetAssemblyVersion(fullVersion);
 
                 //Global.SetAssemblyVersion(fullVersionAtt.InformationalVersion);
 
@@ -458,63 +470,65 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            uint fusionIpId = 0xf1;
+            // uint fusionIpId = 0xf1;
 
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
-                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
-                if (room != null)
-                {
-                    // default to no join map key
-                    string fusionJoinMapKey = string.Empty;
-
-                    if (room.Config.Properties["fusion"] != null)
+                /*
+                    var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
+                    if (room != null)
                     {
-                        Debug.Console(2, "Custom Fusion config found. Using custom values");
+                        // default to no join map key
+                        string fusionJoinMapKey = string.Empty;
 
-                        var fusionConfig = room.Config.Properties["fusion"].ToObject<EssentialsRoomFusionConfig>();
-
-                        if (fusionConfig != null)
+                        if (room.Config.Properties["fusion"] != null)
                         {
-                            fusionIpId = fusionConfig.IpIdInt;
-                            fusionJoinMapKey = fusionConfig.JoinMapKey;
-                        }
-                    }
+                            Debug.Console(2, "Custom Fusion config found. Using custom values");
 
-                    AddRoomAndBuildMC(room);
+                            var fusionConfig = room.Config.Properties["fusion"].ToObject<EssentialsRoomFusionConfig>();
 
-                    if (room is IEssentialsHuddleSpaceRoom)
-                    {
-
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
-
-                    }
-                    else if (room is IEssentialsHuddleVtc1Room)
-                    {
-
-                        if (!(room is EssentialsCombinedHuddleVtc1Room))
-                        {
-                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                            DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
+                            if (fusionConfig != null)
+                            {
+                                fusionIpId = fusionConfig.IpIdInt;
+                                fusionJoinMapKey = fusionConfig.JoinMapKey;
+                            }
                         }
 
+                        AddRoomAndBuildMC(room);
+
+                        if (room is IEssentialsHuddleSpaceRoom)
+                        {
+
+                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
+                            DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
+
+                        }
+                        else if (room is IEssentialsHuddleVtc1Room)
+                        {
+
+                            if (!(room is EssentialsCombinedHuddleVtc1Room))
+                            {
+                                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
+                                DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
+                            }
+
+                        }
+                        else if (room is EssentialsTechRoom)
+                        {
+
+                            Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                                "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
+                            DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
+
+                        }
+                        fusionIpId += 1;
                     }
-                    else if (room is EssentialsTechRoom)
+                    else
                     {
-
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice,
-                            "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                        DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);
 
                     }
-                    fusionIpId += 1;
-                }
-                else
-                {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);
-                    
-                }
+                */
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");

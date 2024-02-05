@@ -1,4 +1,4 @@
-﻿extern alias Full;
+﻿
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXml.Serialization;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Fusion;
-using Full.Newtonsoft.Json;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -252,7 +252,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     ? new FusionRoomGuids(Room.Name, _ipId, RoomGuid, FusionStaticAssets)
                     : new FusionRoomGuids(Room.Name, _ipId, RoomGuid, FusionStaticAssets, FusionOccSensor);
 
-                var json = JsonConvert.SerializeObject(_guiDs, Full.Newtonsoft.Json.Formatting.Indented);
+                var json = JsonConvert.SerializeObject(_guiDs, Newtonsoft.Json.Formatting.Indented);
 
                 using (var sw = new StreamWriter(filePath))
                 {
