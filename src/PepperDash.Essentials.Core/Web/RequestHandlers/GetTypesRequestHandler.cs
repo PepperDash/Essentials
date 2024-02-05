@@ -1,8 +1,6 @@
-﻿extern alias Full;
-
-using System.Linq;
+﻿using System.Linq;
 using Crestron.SimplSharp.WebScripting;
-using Full.Newtonsoft.Json;
+using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
