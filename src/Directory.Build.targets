@@ -15,12 +15,12 @@
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
   </Target>
-  <Target Name="Move CPZ NET6" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' == 'net6.0' ) Or ( '$(TargetFramework)' == 'net8.0' ))">
+  <Target Name="Move CPZ NET6" AfterTargets="SimplSharpPostProcess" Condition="(($(ProjectType) == 'Program') And ( '$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net8.0' ))">
     <Message Text="Copying CPZ"></Message>
     <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cpz" />
   </Target>
-  <Target Name="Move CPZ NET47" AfterTargets="SimplSharpPostProcess47" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' ))">
+  <Target Name="Move CPZ NET47" AfterTargets="SimplSharpPostProcess47" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net8.0' ))">
     <Message Text="Copying CPZ"></Message>
     <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cpz" />
