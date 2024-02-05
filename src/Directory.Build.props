@@ -12,19 +12,11 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.cpz;.cplz</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath=""/>
-    <None Include="..\..\README.md" Pack="true" PackagePath=""/>
+    <None Include="..\..\README.md" Pack="true" PackagePath=""/>    
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(OutputPath)\**\*.cpz" Condition="$(ProjectType) == 'Program'">
-      <Pack>true</Pack>
-      <PackagePath>build;</PackagePath>
-    </None>
-    <None Include="$(OutputPath)\**\*.cplz" Condition="$(ProjectType) == 'ProgramLibrary'">
-      <Pack>true</Pack>
-      <PackagePath>build;</PackagePath>
-    </None>
-  </ItemGroup>
+  
 </Project>
