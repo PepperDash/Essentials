@@ -79,7 +79,7 @@ jobs:
 #            contains(steps.setVersion.outputs.version, '-beta-')
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'output\**\*.*(cpz|cplz)'
+          artifacts: 'output\**\*.*(cpz|cplz|nupkg)'
           generateReleaseNotes: true
           prerelease: ${{contains('debug', env.BUILD_TYPE)}}
           tag: ${{ steps.setVersion.outputs.version }}

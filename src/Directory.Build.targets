@@ -1,26 +1,40 @@
 <Project>
-  <ItemGroup>
-    <None Include="$(PackageOutputPath)\$(AssemblyName)\*.cpz" Condition="$(ProjectType) == 'Program'">
-      <Pack>true</Pack>
-      <PackagePath>build;</PackagePath>
-    </None>
-    <None Include="$(PackageOutputPath)\$(AssemblyName)\*.cplz" Condition="$(ProjectType) == 'ProgramLibrary'">
-      <Pack>true</Pack>
-      <PackagePath>build;</PackagePath>
-    </None>
-  </ItemGroup>
   <Target Name="Create CPLZ" AfterTargets="Build; AfterRebuild" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != ''">
     <Message Text="Creating CPLZ $(TargetDir)"></Message>
-    <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists($(PackageOutputPath))" />
-    <MakeDir Directories="$(PackageOutputPath)\$(AssemblyName)" Condition="!Exists('$(PackageOutputPath)\$(AssemblyName)')" />
-    <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cplz" Overwrite="true"/>    
+    <ItemGroup>
+      <FilesToDelete Include="$(TargetDir)*.cplz" />
+    </ItemGroup>
+    <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists($(PackageOutputPath))"/>
+    <Delete Files="@(FilesToDelete)" />
+    <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PackageOutputPath)\$(AssemblyName).$(Version).$(TargetFramework).cplz" Overwrite="true"/>
+    <Copy SourceFiles="$(PackageOutputPath)\$(AssemblyName).$(Version).$(TargetFramework).cplz" DestinationFiles="$(OutputPath)\$(AssemblyName).$(Version).$(TargetFramework).cplz" />
   </Target>
-  <Target Name="Copy CPZ NET6" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' == 'net6.0' ) Or ( '$(TargetFramework)' == 'net8.0' ))">
-    <Message Text="Copying CPZ"></Message>
-    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz" />
+  <Target Name="Delete Old CPZ" BeforeTargets="BeforeBuild" Condition="$(ProjectType) == 'Program'">
+    <ItemGroup>
+      <FilesToDelete Include="$(TargetDir)*.cpz" />
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
   </Target>
-  <Target Name="Copy CPZ NET47" AfterTargets="SimplSharpPostProcess47" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' ))">
+  <Target Name="Move CPZ NET6" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' == 'net6.0' ) Or ( '$(TargetFramework)' == 'net8.0' ))">
     <Message Text="Copying CPZ"></Message>
-    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz" />
+    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cpz" />
+  </Target>
+  <Target Name="Move CPZ NET47" AfterTargets="SimplSharpPostProcess47" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' ))">
+    <Message Text="Copying CPZ"></Message>
+    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cpz" />
+  </Target>
+  <Target Name="Include Crestron Zips" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <None Include="$(OutputPath)\**\*.cpz" Condition="$(ProjectType) == 'Program'">
+        <Pack>true</Pack>
+        <PackagePath>build;</PackagePath>
+      </None>
+      <None Include="$(OutputPath)\**\*.cplz" Condition="$(ProjectType) == 'ProgramLibrary'">
+        <Pack>true</Pack>
+        <PackagePath>build;</PackagePath>
+      </None>
+    </ItemGroup>
   </Target>
 </Project>
