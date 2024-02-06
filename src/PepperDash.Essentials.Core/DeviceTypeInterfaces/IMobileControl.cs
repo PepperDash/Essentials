@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     {       
         void SendMessageObject(IMobileControlMessage o);
 
-        void AddAction(string key, Action<JToken> action);
+        void AddAction(string key, Action<string, JToken> action);
 
         void RemoveAction(string key);
 
