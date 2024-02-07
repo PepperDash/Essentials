@@ -4,7 +4,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Room.Config;
 
-namespace PepperDash.Essentials.Devices.Common.Rooms
+namespace PepperDash.Essentials.Devices.Common.Room
 {
     public interface IEssentialsHuddleVtc1Room : IEssentialsRoom, IHasCurrentSourceInfoChange, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback,
         IRoomOccupancy, IEmergency, IMicrophonePrivacy

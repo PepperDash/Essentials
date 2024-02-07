@@ -1,7 +1,7 @@
 ﻿using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Config;
 
-namespace PepperDash.Essentials.Devices.Common.Rooms
+namespace PepperDash.Essentials.Devices.Common.Room
 {
     public interface IEssentialsHuddleSpaceRoom : IEssentialsRoom, IHasCurrentSourceInfoChange, IRunRouteAction, IHasDefaultDisplay, IHasCurrentVolumeControls, IRoomOccupancy,
         IEmergency, IMicrophonePrivacy
