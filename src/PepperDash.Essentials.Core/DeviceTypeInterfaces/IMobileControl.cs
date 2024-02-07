@@ -6,6 +6,13 @@ using PepperDash.Core;
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     /// <summary>
+    /// Use this interface on a device or room if it should use default Mobile Control messengers
+    /// </summary>
+    public interface IStandardMobileControl : IKeyed
+    {
+    }
+
+    /// <summary>
     /// Describes a MobileControlSystemController
     /// </summary>
     public interface IMobileControl : IKeyed

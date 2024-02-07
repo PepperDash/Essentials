@@ -11,6 +11,9 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Web;
+using PepperDash.Essentials.Devices.Common.Room;
+using PepperDash.Essentials.Devices.Common.Rooms;
+using PepperDash.Essentials.Room.Config;
 using System;
 using System.Linq;
 
@@ -468,103 +471,48 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            // uint fusionIpId = 0xf1;
-
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
-                /*
-                    var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
-                    if (room != null)
-                    {
-                        // default to no join map key
-                        string fusionJoinMapKey = string.Empty;
+                var room = Core.DeviceFactory.GetDevice(roomConfig);
 
-                        if (room.Config.Properties["fusion"] != null)
-                        {
-                            Debug.Console(2, "Custom Fusion config found. Using custom values");
+                DeviceManager.AddDevice(room);
+                if (!(room is IStandardMobileControl))
+                {
+                    continue;                    
+                }
 
-                            var fusionConfig = room.Config.Properties["fusion"].ToObject<EssentialsRoomFusionConfig>();
-
-                            if (fusionConfig != null)
-                            {
-                                fusionIpId = fusionConfig.IpIdInt;
-                                fusionJoinMapKey = fusionConfig.JoinMapKey;
-                            }
-                        }
-
-                        AddRoomAndBuildMC(room);
-
-                        if (room is IEssentialsHuddleSpaceRoom)
-                        {
-
-                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                            DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
-
-                        }
-                        else if (room is IEssentialsHuddleVtc1Room)
-                        {
-
-                            if (!(room is EssentialsCombinedHuddleVtc1Room))
-                            {
-                                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                                DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
-                            }
-
-                        }
-                        else if (room is EssentialsTechRoom)
-                        {
-
-                            Debug.Console(0, Debug.ErrorLogLevel.Notice,
-                                "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                            DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
-
-                        }
-                        fusionIpId += 1;
-                    }
-                    else
-                    {
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);
-
-                    }
-                */
+                BuildMC(room as IStandardMobileControl);
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
 
         }
 
-        private static void AddRoomAndBuildMC(IEssentialsRoom room)
-        {
-            DeviceManager.AddDevice(room);
+        private static void BuildMC(IStandardMobileControl room)
+        {            
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge for ");
 
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
-
-            CreateMobileControlBridge(room);
+            CreateMobileControlBridge(room as IEssentialsRoom);
         }
 
-        private static void CreateMobileControlBridge(object room)
+        private static void CreateMobileControlBridge(IEssentialsRoom room)
         {
+            if(room == null)
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Warning, $"Room does not implement IEssentialsRoom");
+                return;
+            }
+
             var mobileControl = GetMobileControlDevice();
 
-            if (mobileControl == null) return;
-
-            var mobileControl3 = mobileControl as IMobileControl3;
-
-            if (mobileControl3 != null)
-            {
-                mobileControl3.CreateMobileControlRoomBridge(room as IEssentialsRoom, mobileControl);
-            }
-            else
-            {
-                mobileControl.CreateMobileControlRoomBridge(room as EssentialsRoomBase, mobileControl);
-            }
+            mobileControl?.CreateMobileControlRoomBridge(room, mobileControl);
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
         }
 
-        private static IMobileControl GetMobileControlDevice()
+        private static IMobileControl3 GetMobileControlDevice()
         {
-            var mobileControlList = DeviceManager.AllDevices.OfType<IMobileControl>().ToList();
+            var mobileControlList = DeviceManager.AllDevices.OfType<IMobileControl3>().ToList();
 
             if (mobileControlList.Count > 1)
             {
