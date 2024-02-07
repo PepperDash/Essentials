@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using PepperDash.Essentials.Room.Config;
 
-namespace PDT.Plugins.Essentials.Rooms.Config
+namespace PepperDash.Essentials.Room.Config
 {
     public class EssentialsTechRoomConfig
     {

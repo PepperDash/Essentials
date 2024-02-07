@@ -1,7 +1,7 @@
-﻿using System;
-using PepperDash.Essentials.Core;
+﻿using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Room.Config;
 
-namespace PDT.Plugins.Essentials.Rooms
+namespace PepperDash.Essentials.Devices.Common.Rooms
 {
     public interface IEssentialsHuddleSpaceRoom : IEssentialsRoom, IHasCurrentSourceInfoChange, IRunRouteAction, IHasDefaultDisplay, IHasCurrentVolumeControls, IRoomOccupancy,
         IEmergency, IMicrophonePrivacy
@@ -10,10 +10,6 @@ namespace PDT.Plugins.Essentials.Rooms
 
         void RunRouteAction(string routeKey);
 
-        // EssentialsHuddleRoomPropertiesConfig PropertiesConfig { get; }
-
-        IBasicVolumeControls CurrentVolumeControls { get; }
-
-        event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
+        EssentialsHuddleRoomPropertiesConfig PropertiesConfig { get; }
     }
 }

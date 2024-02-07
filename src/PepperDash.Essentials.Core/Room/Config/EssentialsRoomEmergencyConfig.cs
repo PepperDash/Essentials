@@ -1,4 +1,4 @@
-﻿namespace PDT.Plugins.Essentials.Rooms.Config
+﻿namespace PepperDash.Essentials.Room.Config
 {
     /// <summary>
     /// 

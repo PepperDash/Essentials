@@ -2,13 +2,14 @@
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Room.Config;
 
-namespace PDT.Plugins.Essentials.Rooms
+namespace PepperDash.Essentials.Devices.Common.Rooms
 {
     public interface IEssentialsHuddleVtc1Room : IEssentialsRoom, IHasCurrentSourceInfoChange, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback,
         IRoomOccupancy, IEmergency, IMicrophonePrivacy
     {
-        // EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; }
+        EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; }
 
         bool ExcludeFromGlobalFunctions { get; }
 

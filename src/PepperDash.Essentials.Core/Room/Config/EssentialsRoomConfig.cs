@@ -4,54 +4,12 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Privacy;
 
-namespace PDT.Plugins.Essentials.Rooms.Config
+namespace PepperDash.Essentials.Room.Config
 {
 	public class EssentialsRoomConfigHelper
 	{
-		/// <summary>
-		/// Returns a room object from this config data
-		/// </summary>
-		/// <returns></returns>
-		public static IKeyed GetRoomObject(DeviceConfig roomConfig)
-		{
-			var typeName = roomConfig.Type.ToLower();
-
-		    switch (typeName)
-		    {
-		        case "huddle" : 
-		        {
-                    return new EssentialsHuddleSpaceRoom(roomConfig);
-		        }
-                case "huddlevtc1" :
-		        {
-                    return new EssentialsHuddleVtc1Room(roomConfig);
-		        }
-                case "ddvc01bridge" :
-		        {
-                    return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
-                }
-                case "dualdisplay" :
-		        {
-                    return new EssentialsDualDisplayRoom(roomConfig);
-		        }
-                case "combinedhuddlevtc1" :
-		        {
-                    return new EssentialsCombinedHuddleVtc1Room(roomConfig);
-		        }
-                case "techroom" :
-		        {
-                    return new EssentialsTechRoom(roomConfig);
-		        }
-                default :
-		        {
-		  		    return DeviceFactory.GetDevice(roomConfig);
-		        }
-		    }
-		}
-
         /// <summary>
         /// Gets and operating, standalone emergegncy object that can be plugged into a room.
         /// Returns null if there is no emergency defined

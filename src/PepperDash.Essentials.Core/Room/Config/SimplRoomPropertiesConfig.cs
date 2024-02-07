@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace PDT.Plugins.Essentials.Rooms.Config
+namespace PepperDash.Essentials.Room.Config
 {
 	public class SimplRoomPropertiesConfig : EssentialsHuddleVtc1PropertiesConfig
 	{
