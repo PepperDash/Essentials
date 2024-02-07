@@ -476,23 +476,23 @@ namespace PepperDash.Essentials
                 var room = Core.DeviceFactory.GetDevice(roomConfig);
 
                 DeviceManager.AddDevice(room);
-                if (!(room is IStandardMobileControl))
+                if (room is ICustomMobileControl)
                 {
                     continue;                    
                 }
 
-                BuildMC(room as IStandardMobileControl);
+                BuildMC(room as IEssentialsRoom);
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
 
         }
 
-        private static void BuildMC(IStandardMobileControl room)
+        private static void BuildMC(IEssentialsRoom room)
         {            
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge for ");
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, $"Attempting to build Mobile Control Bridge for {room?.Key}");
 
-            CreateMobileControlBridge(room as IEssentialsRoom);
+            CreateMobileControlBridge(room);
         }
 
         private static void CreateMobileControlBridge(IEssentialsRoom room)
