@@ -12,7 +12,6 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.Devices.Common.Room;
-using PepperDash.Essentials.Devices.Common.Rooms;
 using PepperDash.Essentials.Room.Config;
 using System;
 using System.Linq;
