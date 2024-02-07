@@ -4,12 +4,11 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash_Essentials_Core.Devices
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Interface for any device that is able to control it'spower and has a configurable reboot time
-    /// </summary>
-    [Obsolete("PepperDash_Essentials_Core.Devices is Deprecated - use PepperDash.Essentials.Core")]
+    /// </summary>    
     public interface IHasPowerCycle : IKeyName, IHasPowerControlWithFeedback
     {
         /// <summary>
@@ -25,8 +24,7 @@ namespace PepperDash_Essentials_Core.Devices
 
     /// <summary>
     /// Interface for any device that contains a collection of IHasPowerReboot Devices
-    /// </summary>
-    [Obsolete("PepperDash_Essentials_Core.Devices is Deprecated - use PepperDash.Essentials.Core")]
+    /// </summary>    
     public interface IHasControlledPowerOutlets : IKeyName
     {
         /// <summary>

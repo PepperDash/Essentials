@@ -1,7 +1,7 @@
 ﻿using System;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash_Essentials_Core.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
 	public class HdPsXxxControllerJoinMap : JoinMapBaseAdvanced
 	{
