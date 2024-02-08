@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Core
         BoolFeedback IsCoolingDownFeedback { get; }        
 
         bool IsMobileControlEnabled { get; }
-        IMobileControlRoomBridge MobileControlRoomBridge { get; }
+        IMobileControlRoomMessenger MobileControlRoomBridge { get; }
 
         string SourceListKey { get; }
 

@@ -64,7 +64,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// <summary>
     /// Describes a MobileControl Room Bridge
     /// </summary>
-    public interface IMobileControlRoomBridge : IKeyed
+    public interface IMobileControlRoomMessenger : IKeyed
     {
         event EventHandler<EventArgs> UserCodeChanged;
 
@@ -85,5 +85,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         string RoomName { get; }
 
         string AppUrl { get; }
+
+        void UpdateAppUrl(string url);
     }
 }
