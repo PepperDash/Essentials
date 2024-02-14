@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.Core.Web
 {
 	public class EssentialsWebApi : EssentialsDevice
 	{
-		private readonly WebApiServer _server;
+		private readonly WebApiServer _server;        
 
 		///<example>
 		/// http(s)://{ipaddress}/cws/{basePath}
@@ -67,8 +67,6 @@ namespace PepperDash.Essentials.Core.Web
 			_server = new WebApiServer(Key, Name, BasePath);
 
 			SetupRoutes();
-
-			Initialize();
 		}
 
 		private void SetupRoutes()
@@ -172,6 +170,27 @@ namespace PepperDash.Essentials.Core.Web
             {
                 var r = route;
                 _server.AddRoute(r);
+            }
+        }
+
+        /// <summary>
+        /// Add a single route to the API. MUST be done during the activation phase
+        /// </summary>
+        /// <param name="route"></param>
+        public void AddRoute(HttpCwsRoute route)
+        {
+            _server.AddRoute(route);
+        }
+
+        /// <summary>
+        /// Add a collection of routes to the API. MUST be done during the activation phase
+        /// </summary>
+        /// <param name="routes"></param>
+        public void AddRoute(List<HttpCwsRoute> routes)
+        {
+            foreach (var route in routes)
+            {
+                AddRoute(route);
             }
         }
 
