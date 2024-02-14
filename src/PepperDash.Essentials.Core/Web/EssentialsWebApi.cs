@@ -166,11 +166,7 @@ namespace PepperDash.Essentials.Core.Web
 
             };
 
-            foreach (var route in routes.Where(route => route != null))
-            {
-                var r = route;
-                _server.AddRoute(r);
-            }
+            AddRoute(routes);
         }
 
         /// <summary>
