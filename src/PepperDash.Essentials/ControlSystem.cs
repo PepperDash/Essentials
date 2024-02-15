@@ -10,12 +10,15 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Web;
+using PepperDash.Essentials.Devices.Common.Room;
+using PepperDash.Essentials.Room.Config;
 using System;
 using System.Linq;
 
 namespace PepperDash.Essentials
 {
-    public class ControlSystem : CrestronControlSystem
+    public class ControlSystem : CrestronControlSystem, ILoadConfig
     {
         HttpLogoServer LogoServer;
 
@@ -87,7 +90,7 @@ namespace PepperDash.Essentials
         {
             DeterminePlatform();
 
-            if (Debug.DoNotLoadOnNextBoot)
+            if (Debug.DoNotLoadConfigOnNextBoot)
             {
                 CrestronConsole.AddNewConsoleCommand(s => CrestronInvoke.BeginInvoke((o) => GoWithLoad()), "go", "Loads configuration file",
                     ConsoleAccessLevelEnum.AccessOperator);
@@ -135,7 +138,9 @@ namespace PepperDash.Essentials
             CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
                 "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
 
-            if (!Debug.DoNotLoadOnNextBoot)
+            DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
+
+            if (!Debug.DoNotLoadConfigOnNextBoot)
             {
                 GoWithLoad();
                 return;
@@ -169,6 +174,8 @@ namespace PepperDash.Essentials
                 var fullVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
                 Global.SetAssemblyVersion(fullVersion);
+
+                //Global.SetAssemblyVersion(fullVersionAtt.InformationalVersion);
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {
@@ -217,7 +224,7 @@ namespace PepperDash.Essentials
                 }
                 else   // Handles Linux OS (Virtual Control)
                 {
-                    Debug.SetDebugLevel(2);
+                    //Debug.SetDebugLevel(2);
 
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", Global.AssemblyVersion);
 
@@ -240,7 +247,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                Debug.SetDoNotLoadOnNextBoot(false);
+                Debug.SetDoNotLoadConfigOnNextBoot(false);
 
                 PluginLoader.AddProgramAssemblies();
 
@@ -305,6 +312,8 @@ namespace PepperDash.Essentials
         {
             Debug.Console(0, "Verifying and/or creating folder structure");
             var configDir = Global.FilePathPrefix;
+
+            Debug.Console(0, "FilePathPrefix: {0}", configDir);
             var configExists = Directory.Exists(configDir);
             if (!configExists)
                 Directory.Create(configDir);
@@ -373,7 +382,6 @@ namespace PepperDash.Essentials
 
             // Build the processor wrapper class
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
-			// DeviceManager.AddDevice(new EssemtialsWebApi("essentialsWebApi","Essentials Web API"));
 
             // Add global System Monitor device
             if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
@@ -402,51 +410,6 @@ namespace PepperDash.Essentials
                                 "WARNING: Config file defines processor type as '{0}' but actual processor is '{1}'!  Some ports may not be available",
                                 devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
 
-                        //if (newDev == null)
-                        //    newDev = PepperDash.Essentials.Core.ProcessorExtensionDeviceFactory.GetExtensionDevice(devConf);
-
-                        //if (newDev != null)
-                        //{
-                        //    DeviceManager.AddDevice(newDev);
-
-                        //    continue;
-                        //}
-
-                        // Check if the processor is a DMPS model
-                        //if (this.ControllerPrompt.IndexOf("dmps", StringComparison.OrdinalIgnoreCase) > -1)
-                        //{
-                        //    Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", this.ControllerPrompt);
-
-                        //    var propertiesConfig = JsonConvert.DeserializeObject<DM.Config.DmpsRoutingPropertiesConfig>(devConf.Properties.ToString());
-
-                        //    if(propertiesConfig == null)
-                        //        propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
-
-                        //    DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
-                        //}
-                        //else
-
-                        //if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
-                        //{
-                        //    Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
-
-                        //    var butToken = devConf.Properties["buttons"];
-                        //    if (butToken != null)
-                        //    {
-                        //        var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
-                        //        var tpController = new Essentials.Core.Touchpanels.Mpc3TouchpanelController(devConf.Key, devConf.Name, Global.ControlSystem, buttons);
-                        //        DeviceManager.AddDevice(tpController);
-                        //    }
-                        //    else
-                        //    {
-                        //        Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: Unable to deserialize buttons collection for device: {0}", devConf.Key);
-                        //    }
-                            
-                        //}
-                        //else
-                        //{
-                        //    Debug.Console(2, "************Processor is not DMPS type***************");
-                        //}
 
                         continue;
                     }
@@ -507,103 +470,48 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            // uint fusionIpId = 0xf1;
-
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
-                /*
-                    var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
-                    if (room != null)
-                    {
-                        // default to no join map key
-                        string fusionJoinMapKey = string.Empty;
+                var room = Core.DeviceFactory.GetDevice(roomConfig);
 
-                        if (room.Config.Properties["fusion"] != null)
-                        {
-                            Debug.Console(2, "Custom Fusion config found. Using custom values");
+                DeviceManager.AddDevice(room);
+                if (room is ICustomMobileControl)
+                {
+                    continue;                    
+                }
 
-                            var fusionConfig = room.Config.Properties["fusion"].ToObject<EssentialsRoomFusionConfig>();
-
-                            if (fusionConfig != null)
-                            {
-                                fusionIpId = fusionConfig.IpIdInt;
-                                fusionJoinMapKey = fusionConfig.JoinMapKey;
-                            }
-                        }
-
-                        AddRoomAndBuildMC(room);
-
-                        if (room is IEssentialsHuddleSpaceRoom)
-                        {
-
-                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                            DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
-
-                        }
-                        else if (room is IEssentialsHuddleVtc1Room)
-                        {
-
-                            if (!(room is EssentialsCombinedHuddleVtc1Room))
-                            {
-                                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                                DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
-                            }
-
-                        }
-                        else if (room is EssentialsTechRoom)
-                        {
-
-                            Debug.Console(0, Debug.ErrorLogLevel.Notice,
-                                "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                            DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
-
-                        }
-                        fusionIpId += 1;
-                    }
-                    else
-                    {
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);
-
-                    }
-                */
+                BuildMC(room as IEssentialsRoom);
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
 
         }
 
-        private static void AddRoomAndBuildMC(IEssentialsRoom room)
-        {
-            DeviceManager.AddDevice(room);
-
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
+        private static void BuildMC(IEssentialsRoom room)
+        {            
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, $"Attempting to build Mobile Control Bridge for {room?.Key}");
 
             CreateMobileControlBridge(room);
         }
 
-        private static void CreateMobileControlBridge(object room)
+        private static void CreateMobileControlBridge(IEssentialsRoom room)
         {
+            if(room == null)
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Warning, $"Room does not implement IEssentialsRoom");
+                return;
+            }
+
             var mobileControl = GetMobileControlDevice();
 
-            if (mobileControl == null) return;
-
-            var mobileControl3 = mobileControl as IMobileControl3;
-
-            if (mobileControl3 != null)
-            {
-                mobileControl3.CreateMobileControlRoomBridge(room as IEssentialsRoom, mobileControl);
-            }
-            else
-            {
-                mobileControl.CreateMobileControlRoomBridge(room as EssentialsRoomBase, mobileControl);
-            }
+            mobileControl?.CreateMobileControlRoomBridge(room, mobileControl);
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
         }
 
-        private static IMobileControl GetMobileControlDevice()
+        private static IMobileControl3 GetMobileControlDevice()
         {
-            var mobileControlList = DeviceManager.AllDevices.OfType<IMobileControl>().ToList();
+            var mobileControlList = DeviceManager.AllDevices.OfType<IMobileControl3>().ToList();
 
             if (mobileControlList.Count > 1)
             {

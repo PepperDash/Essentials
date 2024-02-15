@@ -58,7 +58,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The bridge for this room if Mobile Control is enabled
         /// </summary>
-        public IMobileControlRoomBridge MobileControlRoomBridge { get; private set; }
+        public IMobileControlRoomMessenger MobileControlRoomBridge { get; private set; }
 
         /// <summary>
         /// The config name of the source list
@@ -209,7 +209,7 @@ namespace PepperDash.Essentials.Core
             }
             else
             {
-                MobileControlRoomBridge = mcBridge as IMobileControlRoomBridge;
+                MobileControlRoomBridge = mcBridge as IMobileControlRoomMessenger;
                 Debug.Console(1, this, "*********************Mobile Control Bridge found and enabled for this room");
                 IsMobileControlEnabled = true;
             }

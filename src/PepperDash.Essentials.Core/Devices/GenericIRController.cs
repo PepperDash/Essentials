@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using PepperDash_Essentials_Core.Bridges.JoinMaps;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
 
 namespace PepperDash.Essentials.Core.Devices
 {

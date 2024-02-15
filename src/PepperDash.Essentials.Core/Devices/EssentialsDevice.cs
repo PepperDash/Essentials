@@ -48,6 +48,20 @@ namespace PepperDash.Essentials.Core
                 }
             });
         }
+
+        public override bool CustomActivate()
+        {
+            CreateMobileControlMessengers();
+
+            return base.CustomActivate();
+        }
+
+        /// <summary>
+        /// Override this method to build and create custom Mobile Control Messengers during the Activation phase
+        /// </summary>
+        protected virtual void CreateMobileControlMessengers() {
+           
+        }
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = true)]

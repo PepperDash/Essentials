@@ -1,8 +1,17 @@
 ﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
+    /// <summary>
+    /// Use this interface on a device or room if it uses custom Mobile Control messengers
+    /// </summary>
+    public interface ICustomMobileControl : IKeyed
+    {
+    }
+
     /// <summary>
     /// Describes a MobileControlSystemController
     /// </summary>
@@ -17,14 +26,45 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// Describes a MobileSystemController that accepts IEssentialsRoom
     /// </summary>
     public interface IMobileControl3 : IMobileControl
+    {       
+        void SendMessageObject(IMobileControlMessage o);
+
+        void AddAction(string key, Action<string, JToken> action);
+
+        void RemoveAction(string key);
+
+        void AddDeviceMessenger(IMobileControlMessenger messenger);
+
+        bool CheckForDeviceMessenger(string key);
+    }
+
+    /// <summary>
+    /// Describes a mobile control messenger
+    /// </summary>
+    public interface IMobileControlMessenger: IKeyed
     {
-        void CreateMobileControlRoomBridge(IEssentialsRoom room, IMobileControl parent);
+        IMobileControl3 AppServerController { get; }
+        string MessagePath { get; }
+        void RegisterWithAppServer(IMobileControl3 appServerController);
+    }
+
+    public interface IMobileControlMessage
+    {
+        [JsonProperty("type")]
+        string Type { get; }
+
+        [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
+        string ClientId { get; }
+
+        [JsonProperty("content", NullValueHandling = NullValueHandling.Ignore)]
+        JToken Content { get; }
+
     }
 
     /// <summary>
     /// Describes a MobileControl Room Bridge
     /// </summary>
-    public interface IMobileControlRoomBridge : IKeyed
+    public interface IMobileControlRoomMessenger : IKeyed
     {
         event EventHandler<EventArgs> UserCodeChanged;
 
@@ -45,5 +85,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         string RoomName { get; }
 
         string AppUrl { get; }
+
+        void UpdateAppUrl(string url);
     }
 }
