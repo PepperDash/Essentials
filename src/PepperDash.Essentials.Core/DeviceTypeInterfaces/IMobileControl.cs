@@ -26,7 +26,13 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// Describes a MobileSystemController that accepts IEssentialsRoom
     /// </summary>
     public interface IMobileControl3 : IMobileControl
-    {       
+    {
+        string Host { get; }
+
+        string ClientAppUrl { get; }
+
+        string SystemUuid { get; }
+
         void SendMessageObject(IMobileControlMessage o);
 
         void AddAction(string key, Action<string, JToken> action);
