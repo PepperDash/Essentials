@@ -366,11 +366,11 @@ namespace PepperDash.Essentials
 
             LoadTieLines();
 
-            var mobileControl = GetMobileControlDevice();
+            /*var mobileControl = GetMobileControlDevice();
 
 		    if (mobileControl == null) return;
 
-            mobileControl.LinkSystemMonitorToAppServer();
+            mobileControl.LinkSystemMonitorToAppServer();*/
 		    
 		}
 
@@ -480,14 +480,14 @@ namespace PepperDash.Essentials
                     continue;                    
                 }
 
-                BuildMC(room as IEssentialsRoom);
+               // BuildMC(room as IEssentialsRoom);
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
 
         }
 
-        private static void BuildMC(IEssentialsRoom room)
+        /*private static void BuildMC(IEssentialsRoom room)
         {            
             Debug.Console(0, Debug.ErrorLogLevel.Notice, $"Attempting to build Mobile Control Bridge for {room?.Key}");
 
@@ -528,7 +528,7 @@ namespace PepperDash.Essentials
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control not enabled for this system");
             return null;
-        }
+        }*/
 
         /// <summary>
         /// Fires up a logo server if not already running
