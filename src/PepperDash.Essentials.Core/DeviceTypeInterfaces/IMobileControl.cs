@@ -33,6 +33,8 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         string SystemUuid { get; }
 
+        bool ApiOnlineAndAuthorized { get; }
+
         void SendMessageObject(IMobileControlMessage o);
 
         void AddAction(string key, Action<string, JToken> action);
