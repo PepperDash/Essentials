@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         string SystemUuid { get; }
 
-        bool ApiOnlineAndAuthorized { get; }
+        BoolFeedback ApiOnlineAndAuthorized { get;}
 
         void SendMessageObject(IMobileControlMessage o);
 
