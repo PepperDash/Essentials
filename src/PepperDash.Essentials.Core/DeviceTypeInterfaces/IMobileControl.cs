@@ -37,7 +37,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         void SendMessageObject(IMobileControlMessage o);
 
-        void AddAction(string key, Action<string, string, JToken> action);
+        void AddAction(IMobileControlMessenger messenger, Action<string, string, JToken> action);
 
         void RemoveAction(string key);
 
