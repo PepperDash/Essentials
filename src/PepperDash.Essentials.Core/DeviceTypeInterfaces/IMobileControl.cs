@@ -98,4 +98,12 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         void UpdateAppUrl(string url);
     }
+
+    public interface IMobileControlAction
+    {
+       IMobileControlMessenger Messenger { get; }
+
+       Action<string,string, JToken> Action { get; }
+    }
+
 }
