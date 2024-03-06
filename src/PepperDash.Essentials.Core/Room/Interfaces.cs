@@ -48,7 +48,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRunDirectRouteAction
     {
-        void RunDirectRoute(string sourceKey, string destinationKey);
+        void RunDirectRoute(string sourceKey, string destinationKey, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
     }
 
     /// <summary>
