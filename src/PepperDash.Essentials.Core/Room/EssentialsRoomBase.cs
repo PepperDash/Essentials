@@ -18,8 +18,6 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class EssentialsRoomBase : ReconfigurableDevice, IEssentialsRoom
     {
-
-
         /// <summary>
         ///
         /// </summary>
@@ -78,6 +76,8 @@ namespace PepperDash.Essentials.Core
                 }
 			}
 		}
+
+        public string DestinationListKey { get; private set; }
 
         protected const string _defaultSourceListKey = "default";
 
@@ -191,6 +191,14 @@ namespace PepperDash.Essentials.Core
             else
             {
                 sourceListKey = _defaultSourceListKey;
+            }
+        }
+
+        protected void SetDestinationListKey(string destinationListKey)
+        {
+            if (!string.IsNullOrEmpty(destinationListKey))
+            {
+                DestinationListKey = destinationListKey;
             }
         }
 
