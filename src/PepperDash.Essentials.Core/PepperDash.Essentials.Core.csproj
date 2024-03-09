@@ -7,7 +7,7 @@
     <TargetFrameworks>net472;net6</TargetFrameworks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <AssemblyName>PepperDash.Essentials.Core</AssemblyName>
+    <AssemblyName>PepperDash_Essentials_Core</AssemblyName>
     <RootNamespace>PepperDash.Essentials.Core</RootNamespace>
     <Title>PepperDash Essentials Core</Title>
     <PackageId>$(AssemblyName)</PackageId>

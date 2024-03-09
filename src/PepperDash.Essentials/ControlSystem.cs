@@ -35,7 +35,7 @@ namespace PepperDash.Essentials
             SecretsManager.Initialize();
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
 
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
+            // AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
         }
 
         private System.Reflection.Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)

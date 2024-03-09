@@ -7,7 +7,7 @@
     <TargetFrameworks>net472;net6</TargetFrameworks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <AssemblyName>PepperDash.Essentials.Devices.Common</AssemblyName>
+    <AssemblyName>Essentials Devices Common</AssemblyName>
     <RootNamespace>PepperDash.Essentials.Devices.Common</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>PepperDash Essentials Devices Common</Title>
