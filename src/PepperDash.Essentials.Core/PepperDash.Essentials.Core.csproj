@@ -10,7 +10,7 @@
     <AssemblyName>PepperDash_Essentials_Core</AssemblyName>
     <RootNamespace>PepperDash.Essentials.Core</RootNamespace>
     <Title>PepperDash Essentials Core</Title>
-    <PackageId>$(AssemblyName)</PackageId>
+    <PackageId>PepperDash.Essentials.Core</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
