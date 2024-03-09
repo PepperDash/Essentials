@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
-    public interface IAdvancedVolume
+    public interface ILevelControls
     {
-        Dictionary<string, IBasicVolumeWithFeedback> Volumes { get; }
+        Dictionary<string, IBasicVolumeWithFeedback> LevelControlPoints { get; }
     }
 }
