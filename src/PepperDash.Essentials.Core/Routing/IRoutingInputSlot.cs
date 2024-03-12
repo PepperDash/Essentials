@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.Routing
 {
-    public interface IRoutingInputSlot: IRoutingSlot, IOnline
+    public interface IRoutingInputSlot: IRoutingSlot, IOnline, IVideoSync
     {
         string TxDeviceKey { get; }
-
-        bool SyncDetected { get; }
     }
 }

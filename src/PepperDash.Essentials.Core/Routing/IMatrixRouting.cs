@@ -6,5 +6,7 @@ namespace PepperDash.Essentials.Core.Routing
     {
         Dictionary<string, IRoutingInputSlot> InputSlots { get; }
         Dictionary<string, IRoutingOutputSlot> OutputSlots { get; }
+
+        void Route(string inputSlotKey, string outputSlotKey, eRoutingSignalType type);
     }
 }
