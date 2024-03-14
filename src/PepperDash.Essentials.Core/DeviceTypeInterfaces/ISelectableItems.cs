@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         event EventHandler ItemsUpdated;
         event EventHandler CurrentItemChanged;
 
-
+        [JsonProperty("items")]
         Dictionary<TKey, ISelectableItem> Items { get; set; }
 
         [JsonProperty("currentItem")]
