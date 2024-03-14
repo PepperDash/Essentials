@@ -10,20 +10,20 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 {
     public class MockDisplayInputs : ISelectableItems<string>
     {
-        private Dictionary<string, ISelectableItem> _inputs;
+        private Dictionary<string, ISelectableItem> _items;
 
         public Dictionary<string, ISelectableItem> Items
         {
             get
             {
-                return _inputs;
+                return _items;
             }
             set
             {
-                if (_inputs == value)
+                if (_items == value)
                     return;
 
-                _inputs = value;
+                _items = value;
 
                 ItemsUpdated?.Invoke(this, null);
             }
