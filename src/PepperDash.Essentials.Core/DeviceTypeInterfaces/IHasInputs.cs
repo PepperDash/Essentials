@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PepperDash.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,8 +11,14 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// <summary>
     /// Describes a device that has selectable inputs
     /// </summary>
-    public interface IHasInputs
+    /// <typeparam name="TKey">the type to use as the key for each input item. Most likely an enum or string</typeparam>\
+    /// <example>
+    /// See MockDisplay for example implemntation
+    /// </example>
+    public interface IHasInputs<TKey, TSelector>: IKeyName
     {
-        ISelectableItems<string> Inputs { get; }
+        ISelectableItems<TKey> Inputs { get; }
+
+        void SetInput(TSelector selector);
     }
 }

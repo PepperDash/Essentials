@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PepperDash.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// Describes a device that has selectable surround sound modes
     /// </summary>
     /// <typeparam name="TKey">the type to use as the key for each input item. Most likely an enum or string</typeparam>
-    public interface IHasSurroundSoundModes<TKey>
+    public interface IHasSurroundSoundModes<TKey>: IKeyName
     {
         ISelectableItems<TKey> SurroundSoundModes { get; }
     }

@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         event EventHandler ItemUpdated;
 
         [JsonProperty("isSelected")]
-        bool IsSelected { get; }
+        bool IsSelected { get; set;  }
         void Select();
     }
 }
