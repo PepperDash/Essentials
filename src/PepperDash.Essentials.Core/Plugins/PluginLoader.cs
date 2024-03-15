@@ -371,9 +371,9 @@ namespace PepperDash.Essentials
                     {
                         try
                         {
-                            Debug.Console(0, $"Checking if type {type.Name} is IPluginDeviceFactory");
+                            //Debug.Console(0, $"Checking if type {type.Name} is IPluginDeviceFactory");
 
-                            Debug.Console(0, $"{type.Name} is plugin factory: {typeof(IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract}");                           
+                            //Debug.Console(0, $"{type.Name} is plugin factory: {typeof(IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract}");                           
                            
                             if (typeof (IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract)
                             {
