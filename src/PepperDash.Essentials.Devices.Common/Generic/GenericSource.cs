@@ -54,5 +54,4 @@ namespace PepperDash.Essentials.Devices.Common
             return new GenericSource(dc.Key, dc.Name);
         }
     }
-
 }
