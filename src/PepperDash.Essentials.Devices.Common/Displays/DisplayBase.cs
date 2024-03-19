@@ -8,10 +8,16 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
-    public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IHasPowerControl, IWarmingCooling, IUsageTracking
+    public abstract class DisplayBase : EssentialsDevice
+        , IHasFeedback
+        , IRoutingSinkWithSwitching
+        , IHasPowerControl
+        , IWarmingCooling
+        , IUsageTracking
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
 
