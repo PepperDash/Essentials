@@ -5,7 +5,7 @@ namespace PepperDash.Essentials.Core.Routing
 {
     public interface IRoutingOutputSlot:IRoutingSlot
     {
-        event EventHandler<EventArgs> OutputSlotChanged;
+        event EventHandler OutputSlotChanged;
 
         string RxDeviceKey { get; }
 
