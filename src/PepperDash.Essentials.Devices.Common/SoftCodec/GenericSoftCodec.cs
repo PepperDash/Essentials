@@ -14,6 +14,9 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
     {
         public GenericSoftCodec(string key, string name, GenericSoftCodecProperties props) : base(key, name)
         {
+            InputPorts = new RoutingPortCollection<RoutingInputPort>();
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
+
             for(var i = 1; i <= props.OutputCount; i++)
             {
                 var outputPort = new RoutingOutputPort($"{Key}-output{i}", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
@@ -41,9 +44,9 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
             }
         }
 
-        public RoutingPortCollection<RoutingInputPort> InputPorts => throw new NotImplementedException();
+        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts => throw new NotImplementedException();
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
     }
 
     public class GenericSoftCodecProperties
