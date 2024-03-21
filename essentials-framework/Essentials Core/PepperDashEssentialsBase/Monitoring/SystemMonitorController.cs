@@ -563,11 +563,11 @@ namespace PepperDash.Essentials.Core.Monitoring
                 ProgramUnregisteredFeedback =
                     new BoolFeedback(() => Program.RegistrationState == eProgramRegistrationState.Unregister);
                 ProgramUnregisteredFeedback.FireUpdate();
-
-                ProgramNameFeedback = new StringFeedback(() => ProgramInfo.ProgramFile);
+	            
+				ProgramNameFeedback = new StringFeedback(() => ProgramInfo.ProgramFile);
+				CrestronDataBaseVersionFeedback = new StringFeedback(() => ProgramInfo.CrestronDb);
+				EnvironmentVersionFeedback = new StringFeedback(() => ProgramInfo.Environment);
                 ProgramCompileTimeFeedback = new StringFeedback(() => ProgramInfo.CompileTime);
-                CrestronDataBaseVersionFeedback = new StringFeedback(() => ProgramInfo.CrestronDb);
-                EnvironmentVersionFeedback = new StringFeedback(() => ProgramInfo.Environment);
                 AggregatedProgramInfoFeedback = new StringFeedback(() => JsonConvert.SerializeObject(ProgramInfo));
 
                 GetProgramInfo();
@@ -620,9 +620,9 @@ namespace PepperDash.Essentials.Core.Monitoring
                     // Assume no valid program info.  Constructing a new object will wipe all properties
                     ProgramInfo = new ProgramInfo(Program.Number)
                     {
-                        OperatingState = Program.OperatingState,
+						OperatingState = Program.OperatingState,
                         RegistrationState = Program.RegistrationState
-                    };
+                    };					
 
                     UpdateFeedbacks();
 
@@ -639,13 +639,20 @@ namespace PepperDash.Essentials.Core.Monitoring
 
                 if (ProgramInfo.ProgramFile.Contains(".dll"))
                 {
-                    // SSP Program
+                    // SSP Program	                
                     ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ": ", "\n");
                     ProgramInfo.ApplicationName = ParseConsoleData(response, "Application Name", ": ", "\n");
                     ProgramInfo.ProgramTool = ParseConsoleData(response, "Program Tool", ": ", "\n");
                     ProgramInfo.MinFirmwareVersion = ParseConsoleData(response, "Min Firmware Version", ": ",
                         "\n");
                     ProgramInfo.PlugInVersion = ParseConsoleData(response, "PlugInVersion", ": ", "\n");
+
+					ProgramInfo.ProgramFile += string.Format(" {0}.{1}.{2}",
+		                ProgramInfo.CompilerRevisionInfo.Major,
+		                ProgramInfo.CompilerRevisionInfo.Minor,
+		                ProgramInfo.CompilerRevisionInfo.Build);
+
+	                ProgramInfo.Environment = ProgramInfo.ProgramTool;
                 }
                 else if (ProgramInfo.ProgramFile.Contains(".smw"))
                 {
@@ -736,6 +743,15 @@ namespace PepperDash.Essentials.Core.Monitoring
         [JsonProperty("compilerRevision")]
         public string CompilerRevision { get; set; }
 
+	    [JsonIgnore]
+	    public Version CompilerRevisionInfo
+	    {
+		    get
+		    {
+			    return new Version(CompilerRevision);
+		    }
+	    }
+
         [JsonProperty("compileTime")]
         public string CompileTime { get; set; }
 
@@ -776,7 +792,7 @@ namespace PepperDash.Essentials.Core.Monitoring
             ProgramFile = "";
             FriendlyName = "";
             CompilerRevision = "";
-            CompileTime = "";
+	        CompileTime = "";
             Include4Dat = "";
 
             SystemName = "";

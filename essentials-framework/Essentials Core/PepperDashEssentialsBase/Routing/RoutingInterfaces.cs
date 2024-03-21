@@ -204,4 +204,9 @@ namespace PepperDash.Essentials.Core
             SigType = sigType;
         }
     }
+
+	public interface IRoutingHasVideoInputSyncFeedbacks
+	{
+		FeedbackCollection<BoolFeedback> VideoInputSyncFeedbacks { get; }
+	}	
 }

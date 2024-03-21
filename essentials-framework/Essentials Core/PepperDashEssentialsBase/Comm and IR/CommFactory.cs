@@ -124,41 +124,54 @@ namespace PepperDash.Essentials.Core
         /// <returns></returns>
         public static ICec GetCecPort(ControlPropertiesConfig config)
         {
-            var dev = DeviceManager.GetDeviceForKey(config.ControlPortDevKey);
+	        try
+	        {
+		        var dev = DeviceManager.GetDeviceForKey(config.ControlPortDevKey);
 
-            if (dev != null)
-            {
-                if (!String.IsNullOrEmpty(config.ControlPortName))
-                {
+		        Debug.Console(0, "GetCecPort: device '{0}' {1}", config.ControlPortDevKey, dev == null
+			        ? "is not valid, failed to get cec port"
+			        : "found in device manager, attempting to get cec port");
 
-                    var inputPort = (dev as IRoutingInputsOutputs).InputPorts[config.ControlPortName];
+		        if (dev == null)
+			        return null;
 
-                    if (inputPort != null)
-                    {
-                        if (inputPort.Port is ICec)
-                            return inputPort.Port as ICec;
-                    }
+		        if (String.IsNullOrEmpty(config.ControlPortName))
+		        {
+			        Debug.Console(0, "GetCecPort: '{0}' - Configuration missing 'ControlPortName'", config.ControlPortDevKey);
+			        return null;
+		        }
 
-                    var outputPort = (dev as IRoutingInputsOutputs).OutputPorts[config.ControlPortName];
 
-                    if (outputPort != null)
-                    {
-                        if (outputPort.Port is ICec)
-                            return outputPort.Port as ICec;
-                    }
+		        var inputsOutputs = dev as IRoutingInputsOutputs;
+		        if (inputsOutputs == null)
+		        {
+					Debug.Console(0, "GetCecPort: Device '{0}' does not support IRoutingInputsOutputs, failed to get CEC port called '{1}'",
+						config.ControlPortDevKey, config.ControlPortName);
 
-                    else
-                        Debug.Console(0, "GetCecPort: Device '{0}' does not have a CEC port called: '{1}'",
-                            config.ControlPortDevKey, config.ControlPortName);
-                }
-                else
-                {
-                    Debug.Console(0, "GetCecPort: '{0}' - Configuration missing 'ControlPortName'", config.ControlPortDevKey);
-                }
-            }
-            Debug.Console(0, "GetCecPort: Device '{0}' is not a valid device.", config.ControlPortDevKey);
+			        return null;
+		        }
 
-            return null;
+				var inputPort = inputsOutputs.InputPorts[config.ControlPortName];
+		        if (inputPort != null && inputPort.Port is ICec)
+					return inputPort.Port as ICec;
+		        
+
+		        var outputPort = inputsOutputs.OutputPorts[config.ControlPortName];
+		        if (outputPort != null && outputPort.Port is ICec)
+					return outputPort.Port as ICec;		        
+	        }
+	        catch (Exception ex)
+	        {
+		        Debug.Console(1, "GetCecPort Exception Message: {0}", ex.Message);
+		        Debug.Console(2, "GetCecPort Exception StackTrace: {0}", ex.StackTrace);
+		        if (ex.InnerException != null)
+			        Debug.Console(0, "GetCecPort Exception InnerException: {0}", ex.InnerException);				
+	        }
+
+			Debug.Console(0, "GetCecPort: Device '{0}' does not have a CEC port called '{1}'",
+					config.ControlPortDevKey, config.ControlPortName);
+
+			return null;
         }
 
 		/// <summary>
