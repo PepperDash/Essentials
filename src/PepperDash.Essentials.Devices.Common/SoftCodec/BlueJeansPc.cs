@@ -7,6 +7,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Sources;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
@@ -40,19 +41,19 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         {
             CrestronInvoke.BeginInvoke(o =>
                 {
-                    Debug.Console(1, this, "Run route action '{0}' on SourceList: {1}", routeKey, sourceListKey);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Run route action '{0}' on SourceList: {1}", routeKey, sourceListKey);
 
                     var dict = ConfigReader.ConfigObject.GetSourceListForKey(sourceListKey);
                     if (dict == null)
                     {
-                        Debug.Console(1, this, "WARNING: Config source list '{0}' not found", sourceListKey);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "WARNING: Config source list '{0}' not found", sourceListKey);
                         return;
                     }
 
                     // Try to get the list item by it's string key
                     if (!dict.ContainsKey(routeKey))
                     {
-                        Debug.Console(1, this, "WARNING: No item '{0}' found on config list '{1}'",
+                        Debug.LogMessage(LogEventLevel.Debug, this, "WARNING: No item '{0}' found on config list '{1}'",
                             routeKey, sourceListKey);
                         return;
                     }
@@ -97,7 +98,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
             if (dest == null)
             {
-                Debug.Console(1, this, "Cannot route, unknown destination '{0}'", route.DestinationKey);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Cannot route, unknown destination '{0}'", route.DestinationKey);
                 return false;
             }
 
@@ -112,7 +113,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
                 var source = DeviceManager.GetDeviceForKey(route.SourceKey) as IRoutingOutputs;
                 if (source == null)
                 {
-                    Debug.Console(1, this, "Cannot route unknown source '{0}' to {1}", route.SourceKey, route.DestinationKey);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Cannot route unknown source '{0}' to {1}", route.SourceKey, route.DestinationKey);
                     return false;
                 }
                 dest.ReleaseAndMakeRoute(source, route.Type);
@@ -169,7 +170,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new BlueJeansPc Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new BlueJeansPc Device");
             return new SoftCodec.BlueJeansPc(dc.Key, dc.Name);
         }
     }

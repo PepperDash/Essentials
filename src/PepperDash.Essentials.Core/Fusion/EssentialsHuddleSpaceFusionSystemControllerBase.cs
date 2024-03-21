@@ -13,6 +13,7 @@ using Crestron.SimplSharpPro.Fusion;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
@@ -128,7 +129,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 if (File.Exists(oldGuidFilePath))
                 {
-                    Debug.Console(0, this, "Migrating from old Fusion GUID file to new Fusion GUID File");
+                    Debug.LogMessage(LogEventLevel.Information, this, "Migrating from old Fusion GUID file to new Fusion GUID File");
 
                     File.Copy(oldGuidFilePath, guidFilePath);
 
@@ -172,7 +173,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (Exception e)
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Error Building Fusion System Controller: {0}", e);
+                Debug.LogMessage(LogEventLevel.Information, this, "Error Building Fusion System Controller: {0}", e);
             }
         }
 
@@ -231,7 +232,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                Debug.Console(0, this, "Error writing guid file.  No path specified.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Error writing guid file.  No path specified.");
                 return;
             }
 
@@ -246,7 +247,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 fileLock.Enter();
 
-                Debug.Console(1, this, "Writing GUIDs to file");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Writing GUIDs to file");
 
                 _guiDs = FusionOccSensor == null
                     ? new FusionRoomGuids(Room.Name, _ipId, RoomGuid, FusionStaticAssets)
@@ -260,11 +261,11 @@ namespace PepperDash.Essentials.Core.Fusion
                     sw.Flush();
                 }
 
-                Debug.Console(1, this, "Guids successfully written to file '{0}'", filePath);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Guids successfully written to file '{0}'", filePath);
             }
             catch (Exception e)
             {
-                Debug.Console(0, this, "Error writing guid file: {0}", e);
+                Debug.LogMessage(LogEventLevel.Information, this, "Error writing guid file: {0}", e);
             }
             finally
             {
@@ -283,7 +284,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Error reading guid file.  No path specified.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Error reading guid file.  No path specified.");
                 return;
             }
 
@@ -309,20 +310,20 @@ namespace PepperDash.Essentials.Core.Fusion
                     FusionStaticAssets = _guiDs.StaticAssets;
                 }
 
-                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Fusion Guids successfully read from file: {0}",
+                Debug.LogMessage(LogEventLevel.Information, this, "Fusion Guids successfully read from file: {0}",
                     filePath);
 
-                Debug.Console(1, this, "\r\n********************\r\n\tRoom Name: {0}\r\n\tIPID: {1:X}\r\n\tRoomGuid: {2}\r\n*******************", Room.Name, _ipId, RoomGuid);
+                Debug.LogMessage(LogEventLevel.Debug, this, "\r\n********************\r\n\tRoom Name: {0}\r\n\tIPID: {1:X}\r\n\tRoomGuid: {2}\r\n*******************", Room.Name, _ipId, RoomGuid);
 
                 foreach (var item in FusionStaticAssets)
                 {
-                    Debug.Console(1, this, "\nAsset Name: {0}\nAsset No: {1}\n Guid: {2}", item.Value.Name,
+                    Debug.LogMessage(LogEventLevel.Debug, this, "\nAsset Name: {0}\nAsset No: {1}\n Guid: {2}", item.Value.Name,
                         item.Value.SlotNumber, item.Value.InstanceId);
                 }
             }
             catch (Exception e)
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Error reading guid file: {0}", e);
+                Debug.LogMessage(LogEventLevel.Information, this, "Error reading guid file: {0}", e);
             }
             finally
             {
@@ -335,7 +336,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         protected virtual void CreateSymbolAndBasicSigs(uint ipId)
         {
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Creating Fusion Room symbol with GUID: {0} and IP-ID {1:X2}", RoomGuid, ipId);
+            Debug.LogMessage(LogEventLevel.Information, this, "Creating Fusion Room symbol with GUID: {0} and IP-ID {1:X2}", RoomGuid, ipId);
 
             FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, RoomGuid);
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
@@ -554,7 +555,7 @@ namespace PepperDash.Essentials.Core.Fusion
                         "</Parameters>\n" +
                         "</RequestAction>\n";
 
-                    Debug.Console(2, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
 
                     FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
 
@@ -605,7 +606,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     "<RequestSchedule><RequestID>FullSchedleRequest</RequestID><RoomID>{0}</RoomID><Start>{1}</Start><HourSpan>24</HourSpan></RequestSchedule>",
                     RoomGuid, currentTime);
 
-            Debug.Console(2, this, "Sending Fusion ScheduleQuery: \n{0}", requestTest);
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Sending Fusion ScheduleQuery: \n{0}", requestTest);
 
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleQuery.StringValue = requestTest;
 
@@ -633,7 +634,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (Exception e)
             {
-                Debug.Console(1, this, "Error parsing console command: {0}", e);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Error parsing console command: {0}", e);
             }
 
             ModifyMeetingEndTime(requestId, extendMinutes);
@@ -648,7 +649,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             if (_currentMeeting == null)
             {
-                Debug.Console(1, this, "No meeting in progress.  Unable to modify end time.");
+                Debug.LogMessage(LogEventLevel.Debug, this, "No meeting in progress.  Unable to modify end time.");
                 return;
             }
 
@@ -667,13 +668,13 @@ namespace PepperDash.Essentials.Core.Fusion
                     "<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID><ActionID>MeetingChange</ActionID><Parameters><Parameter ID = 'MeetingID' Value = '{2}' /><Parameter ID = 'EndTime' Value = '{3}' /></Parameters></RequestAction>"
                     , requestId, RoomGuid, _currentMeeting.MeetingID, extendMinutes);
 
-                Debug.Console(1, this, "Sending MeetingChange Request: \n{0}", requestTest);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Sending MeetingChange Request: \n{0}", requestTest);
 
                 FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = requestTest;
             }
             else
             {
-                Debug.Console(1, this, "Invalid time specified");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Invalid time specified");
             }
         }
 
@@ -716,11 +717,11 @@ namespace PepperDash.Essentials.Core.Fusion
                 "</Event>" +
                 "</CreateSchedule>";
 
-            Debug.Console(2, this, "Sending CreateMeeting Request: \n{0}", createMeetingRequest);
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Sending CreateMeeting Request: \n{0}", createMeetingRequest);
 
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateMeeting.StringValue = createMeetingRequest;
 
-            //Debug.Console(1, this, "Sending CreateMeeting Request: \n{0}", command);
+            //Debug.LogMessage(LogEventLevel.Debug, this, "Sending CreateMeeting Request: \n{0}", command);
 
             //FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateMeeting.StringValue = command;
         }
@@ -733,7 +734,7 @@ namespace PepperDash.Essentials.Core.Fusion
         protected void ExtenderFusionRoomDataReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender,
             SigEventArgs args)
         {
-            Debug.Console(2, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name,
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name,
                 args.Sig.StringValue);
 
 
@@ -802,7 +803,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(1, this, "Error parsing ActionQueryResponse: {0}", e);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Error parsing ActionQueryResponse: {0}", e);
                 }
             }
             else if (args.Sig == FusionRoom.ExtenderFusionRoomDataReservedSigs.LocalDateTimeQueryResponse)
@@ -825,20 +826,20 @@ namespace PepperDash.Essentials.Core.Fusion
 
                             var currentTime = DateTime.Parse(tempLocalDateTime);
 
-                            Debug.Console(1, this, "DateTime from Fusion Server: {0}", currentTime);
+                            Debug.LogMessage(LogEventLevel.Debug, this, "DateTime from Fusion Server: {0}", currentTime);
 
                             // Parse time and date from response and insert values
                             CrestronEnvironment.SetTimeAndDate((ushort) currentTime.Hour, (ushort) currentTime.Minute,
                                 (ushort) currentTime.Second, (ushort) currentTime.Month, (ushort) currentTime.Day,
                                 (ushort) currentTime.Year);
 
-                            Debug.Console(1, this, "Processor time set to {0}", CrestronEnvironment.GetLocalTime());
+                            Debug.LogMessage(LogEventLevel.Debug, this, "Processor time set to {0}", CrestronEnvironment.GetLocalTime());
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(1, this, "Error parsing LocalDateTimeQueryResponse: {0}", e);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Error parsing LocalDateTimeQueryResponse: {0}", e);
                 }
             }
             else if (args.Sig == FusionRoom.ExtenderFusionRoomDataReservedSigs.RoomConfigResponse)
@@ -847,7 +848,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 var roomConfigResponseArgs = args.Sig.StringValue.Replace("&", "and");
 
-                Debug.Console(2, this, "Fusion Response: \n {0}", roomConfigResponseArgs);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Fusion Response: \n {0}", roomConfigResponseArgs);
 
                 try
                 {
@@ -912,7 +913,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(1, this, "Error parsing Custom Properties response: {0}", e);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Error parsing Custom Properties response: {0}", e);
                 }
                 //PrintRoomInfo();
                 //getRoomInfoBusy = false;
@@ -928,7 +929,7 @@ namespace PepperDash.Essentials.Core.Fusion
         protected void FusionRoomSchedule_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender,
             SigEventArgs args)
         {
-            Debug.Console(2, this, "Scehdule Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event,
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Scehdule Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event,
                 args.Sig.Name, args.Sig.StringValue);
 
 
@@ -980,7 +981,7 @@ namespace PepperDash.Essentials.Core.Fusion
                                 }
                                 else if (element.Name == "Event")
                                 {
-                                    Debug.Console(2, this, "Event Found:\n{0}", element.OuterXml);
+                                    Debug.LogMessage(LogEventLevel.Verbose, this, "Event Found:\n{0}", element.OuterXml);
 
                                     var reader = new XmlReader(element.OuterXml);
 
@@ -1024,12 +1025,12 @@ namespace PepperDash.Essentials.Core.Fusion
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(1, this, "Error parsing ScheduleResponse: {0}", e);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Error parsing ScheduleResponse: {0}", e);
                 }
             }
             else if (args.Sig == FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateResponse)
             {
-                Debug.Console(2, this, "Create Meeting Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event,
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Create Meeting Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event,
                     args.Sig.Name, args.Sig.StringValue);
             }
         }
@@ -1043,16 +1044,16 @@ namespace PepperDash.Essentials.Core.Fusion
             {
                 if (_currentSchedule.Meetings.Count > 0)
                 {
-                    Debug.Console(1, this, "Today's Schedule for '{0}'\n", Room.Name);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Today's Schedule for '{0}'\n", Room.Name);
 
                     foreach (var e in _currentSchedule.Meetings)
                     {
-                        Debug.Console(1, this, "Subject: {0}", e.Subject);
-                        Debug.Console(1, this, "Organizer: {0}", e.Organizer);
-                        Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
-                        Debug.Console(1, this, "Start Time: {0}", e.dtStart);
-                        Debug.Console(1, this, "End Time: {0}", e.dtEnd);
-                        Debug.Console(1, this, "Duration: {0}\n", e.DurationInMinutes);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Subject: {0}", e.Subject);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Organizer: {0}", e.Organizer);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "MeetingID: {0}", e.MeetingID);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Start Time: {0}", e.dtStart);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "End Time: {0}", e.dtEnd);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Duration: {0}\n", e.DurationInMinutes);
                     }
                 }
             }
@@ -1110,7 +1111,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             else
             {
-                Debug.Console(1, this, "WARNING: Config source list '{0}' not found for room '{1}'",
+                Debug.LogMessage(LogEventLevel.Debug, this, "WARNING: Config source list '{0}' not found for room '{1}'",
                     Room.SourceListKey, Room.Key);
             }
         }
@@ -1144,18 +1145,18 @@ namespace PepperDash.Essentials.Core.Fusion
                 e.UsageEndTime.ToString("yyyy-MM-dd"), e.UsageEndTime.ToString("HH:mm:ss"),
                 @group, deviceTracker.Parent.Name, e.MinutesUsed, "-", currentMeetingId);
 
-            Debug.Console(1, this, "Device usage for: {0} ended at {1}. In use for {2} minutes",
+            Debug.LogMessage(LogEventLevel.Debug, this, "Device usage for: {0} ended at {1}. In use for {2} minutes",
                 deviceTracker.Parent.Name, e.UsageEndTime, e.MinutesUsed);
 
             FusionRoom.DeviceUsage.InputSig.StringValue = deviceUsage;
 
-            Debug.Console(1, this, "Device usage string: {0}", deviceUsage);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Device usage string: {0}", deviceUsage);
         }
 
 
         protected void TryAddRouteActionSigs(string attrName, uint attrNum, string routeKey, Device pSrc)
         {
-            Debug.Console(2, this, "Creating attribute '{0}' with join {1} for source {2}",
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Creating attribute '{0}' with join {1} for source {2}",
                 attrName, attrNum, pSrc.Key);
             try
             {
@@ -1176,7 +1177,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (Exception)
             {
-                Debug.Console(2, this, "Error creating Fusion signal {0} {1} for device '{2}'. THIS NEEDS REWORKING",
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Error creating Fusion signal {0} {1} for device '{2}'. THIS NEEDS REWORKING",
                     attrNum, attrName, pSrc.Key);
             }
         }
@@ -1205,7 +1206,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 //var keyNum = ExtractNumberFromKey(dev.Key);
                 //if (keyNum == -1)
                 //{
-                //    Debug.Console(1, this, "WARNING: Cannot link device '{0}' to numbered Fusion monitoring attributes",
+                //    Debug.LogMessage(LogEventLevel.Debug, this, "WARNING: Cannot link device '{0}' to numbered Fusion monitoring attributes",
                 //        dev.Key);
                 //    continue;
                 //}
@@ -1277,7 +1278,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     sigD.InputSig.BoolValue = smd.CommunicationMonitor.Status == MonitorStatus.IsOk;
                     smd.CommunicationMonitor.StatusChange +=
                         (o, a) => { sigD.InputSig.BoolValue = a.Status == MonitorStatus.IsOk; };
-                    Debug.Console(0, this, "Linking '{0}' communication monitor to Fusion '{1}'", dev.Key, attrName);
+                    Debug.LogMessage(LogEventLevel.Information, this, "Linking '{0}' communication monitor to Fusion '{1}'", dev.Key, attrName);
                 }
             }
         }
@@ -1306,7 +1307,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 var defaultDisplay = hasDefaultDisplay.DefaultDisplay as DisplayBase;
                 if (defaultDisplay == null)
                 {
-                    Debug.Console(1, this, "Cannot link null display to Fusion because default display is null");
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Cannot link null display to Fusion because default display is null");
                     return;
                 }
 
@@ -1374,7 +1375,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (Exception e)
             {
-                Debug.Console(1, this, "Error setting up display in Fusion: {0}", e);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Error setting up display in Fusion: {0}", e);
             }
         }
 
@@ -1467,7 +1468,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 if (md != null)
                 {
                     _errorMessageRollUp.AddMonitor(md.CommunicationMonitor);
-                    Debug.Console(2, this, "Adding '{0}' to room's overall error monitor",
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "Adding '{0}' to room's overall error monitor",
                         md.CommunicationMonitor.Parent.Key);
                 }
             }
@@ -1704,19 +1705,19 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             try
             {
-                Debug.Console(0, "Adding Fusion Static Asset '{0}' to slot {1} with GUID: '{2}'", name, number, instanceId);
+                Debug.LogMessage(LogEventLevel.Information, "Adding Fusion Static Asset '{0}' to slot {1} with GUID: '{2}'", name, number, instanceId);
 
                 fr.AddAsset(eAssetType.StaticAsset, number, name, type, instanceId);
                 return fr.UserConfigurableAssetDetails[number].Asset as FusionStaticAsset;
             }
             catch (InvalidOperationException ex)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Error creating Static Asset for device: '{0}'.  Check that multiple devices don't have missing or duplicate uid properties in configuration. /r/nError: {1}", name, ex);
+                Debug.LogMessage(LogEventLevel.Information, "Error creating Static Asset for device: '{0}'.  Check that multiple devices don't have missing or duplicate uid properties in configuration. /r/nError: {1}", name, ex);
                 return null;
             }
             catch (Exception e)
             {
-                Debug.Console(2, Debug.ErrorLogLevel.Error, "Error creating Static Asset: {0}", e);
+                Debug.LogMessage(LogEventLevel.Verbose, "Error creating Static Asset: {0}", e);
                 return null;
             }
         }
@@ -1726,7 +1727,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             try
             {
-                Debug.Console(0, "Adding Fusion Occupancy Sensor Asset '{0}' to slot {1} with GUID: '{2}'", name, number,
+                Debug.LogMessage(LogEventLevel.Information, "Adding Fusion Occupancy Sensor Asset '{0}' to slot {1} with GUID: '{2}'", name, number,
                     instanceId);
 
                 fr.AddAsset(eAssetType.OccupancySensor, number, name, type, instanceId);
@@ -1734,12 +1735,12 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (InvalidOperationException ex)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Error creating Static Asset for device: '{0}'.  Check that multiple devices don't have missing or duplicate uid properties in configuration.  Error: {1}", name, ex);
+                Debug.LogMessage(LogEventLevel.Information, "Error creating Static Asset for device: '{0}'.  Check that multiple devices don't have missing or duplicate uid properties in configuration.  Error: {1}", name, ex);
                 return null;
             }
             catch (Exception e)
             {
-                Debug.Console(2, Debug.ErrorLogLevel.Error, "Error creating Static Asset: {0}", e);
+                Debug.LogMessage(LogEventLevel.Error, "Error creating Static Asset: {0}", e);
                 return null;
             }
         }

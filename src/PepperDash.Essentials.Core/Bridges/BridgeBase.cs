@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 //using PepperDash.Essentials.Devices.Common.Cameras;
 
@@ -32,7 +33,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
             if (bridge == null)
             {
-                Debug.Console(0, "Unable to find advanced bridge with key: '{0}'", bridgeKey);
+                Debug.LogMessage(LogEventLevel.Information, "Unable to find advanced bridge with key: '{0}'", bridgeKey);
                 return;
             }
 
@@ -58,7 +59,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
             if (bridge == null)
             {
-                Debug.Console(0, "Unable to find advanced bridge with key: '{0}'", bridgeKey);
+                Debug.LogMessage(LogEventLevel.Information, "Unable to find advanced bridge with key: '{0}'", bridgeKey);
                 return;
             }
 
@@ -148,11 +149,11 @@ namespace PepperDash.Essentials.Core.Bridges
 
         private void LinkDevices()
         {
-            Debug.Console(1, this, "Linking Devices...");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Linking Devices...");
 
             if (PropertiesConfig.Devices == null)
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "No devices linked to this bridge");
+                Debug.LogMessage(LogEventLevel.Debug, this, "No devices linked to this bridge");
                 return;
             }
 
@@ -165,11 +166,11 @@ namespace PepperDash.Essentials.Core.Bridges
                     continue;
                 }
 
-                Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Linking Device: '{0}'", device.Key);
 
                 if (!typeof(IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
                 {
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
+                    Debug.LogMessage(LogEventLevel.Information, this,
                         "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
                         device.Key);
                     continue;
@@ -194,20 +195,20 @@ namespace PepperDash.Essentials.Core.Bridges
 
             if (registerResult != eDeviceRegistrationUnRegistrationResponse.Success)
             {
-                Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Registration result: {0}", registerResult);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Registration result: {0}", registerResult);
                 return;
             }
 
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
+            Debug.LogMessage(LogEventLevel.Debug, this, "EISC registration successful");
         }
 
         public void LinkRooms()
         {
-            Debug.Console(1, this, "Linking Rooms...");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Linking Rooms...");
 
             if (PropertiesConfig.Rooms == null)
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "No rooms linked to this bridge.");
+                Debug.LogMessage(LogEventLevel.Debug, this, "No rooms linked to this bridge.");
                 return;
             }
 
@@ -217,7 +218,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
                 if (rm == null)
                 {
-                    Debug.Console(1, this, Debug.ErrorLogLevel.Notice,
+                    Debug.LogMessage(LogEventLevel.Debug, this,
                         "Room {0} does not implement IBridgeAdvanced. Skipping...", room.RoomKey);
                     continue;
                 }
@@ -239,7 +240,7 @@ namespace PepperDash.Essentials.Core.Bridges
             }
             else
             {
-                Debug.Console(2, this, "Unable to add join map with key '{0}'.  Key already exists in JoinMaps dictionary", deviceKey);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Unable to add join map with key '{0}'.  Key already exists in JoinMaps dictionary", deviceKey);
             }
         }
 
@@ -248,11 +249,11 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         public virtual void PrintJoinMaps()
         {
-            Debug.Console(0, this, "Join Maps for EISC IPID: {0}", Eisc.ID.ToString("X"));
+            Debug.LogMessage(LogEventLevel.Information, this, "Join Maps for EISC IPID: {0}", Eisc.ID.ToString("X"));
 
             foreach (var joinMap in JoinMaps)
             {
-                Debug.Console(0, "Join map for device '{0}':", joinMap.Key);
+                Debug.LogMessage(LogEventLevel.Information, "Join map for device '{0}':", joinMap.Key);
                 joinMap.Value.PrintJoinMapInfo();
             }
         }
@@ -261,11 +262,11 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         public virtual void MarkdownForBridge(string bridgeKey)
         {
-            Debug.Console(0, this, "Writing Joinmaps to files for EISC IPID: {0}", Eisc.ID.ToString("X"));
+            Debug.LogMessage(LogEventLevel.Information, this, "Writing Joinmaps to files for EISC IPID: {0}", Eisc.ID.ToString("X"));
 
             foreach (var joinMap in JoinMaps)
             {
-                Debug.Console(0, "Generating markdown for device '{0}':", joinMap.Key);
+                Debug.LogMessage(LogEventLevel.Information, "Generating markdown for device '{0}':", joinMap.Key);
                 joinMap.Value.MarkdownJoinMapInfo(joinMap.Key, bridgeKey);
             }
         }
@@ -280,11 +281,11 @@ namespace PepperDash.Essentials.Core.Bridges
 
             if (joinMap == null)
             {
-                Debug.Console(0, this, "Unable to find joinMap for device with key: '{0}'", deviceKey);
+                Debug.LogMessage(LogEventLevel.Information, this, "Unable to find joinMap for device with key: '{0}'", deviceKey);
                 return;
             }
 
-            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key);
+            Debug.LogMessage(LogEventLevel.Information, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key);
             joinMap.PrintJoinMapInfo();
         }
         /// <summary>
@@ -297,11 +298,11 @@ namespace PepperDash.Essentials.Core.Bridges
 
             if (joinMap == null)
             {
-                Debug.Console(0, this, "Unable to find joinMap for device with key: '{0}'", deviceKey);
+                Debug.LogMessage(LogEventLevel.Information, this, "Unable to find joinMap for device with key: '{0}'", deviceKey);
                 return;
             }
 
-            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key);
+            Debug.LogMessage(LogEventLevel.Information, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key);
             joinMap.MarkdownJoinMapInfo(deviceKey, bridgeKey);
         }
 
@@ -322,11 +323,11 @@ namespace PepperDash.Essentials.Core.Bridges
                             var uo = Eisc.BooleanOutput[join].UserObject as Action<bool>;
                             if (uo != null)
                             {
-                                Debug.Console(2, this, "Executing Action: {0}", uo.ToString());
+                                Debug.LogMessage(LogEventLevel.Verbose, this, "Executing Action: {0}", uo.ToString());
                                 uo(Convert.ToBoolean(state));
                             }
                             else
-                                Debug.Console(2, this, "User Action is null.  Nothing to Execute");
+                                Debug.LogMessage(LogEventLevel.Verbose, this, "User Action is null.  Nothing to Execute");
                             break;
                         }
                     case "analog":
@@ -334,34 +335,34 @@ namespace PepperDash.Essentials.Core.Bridges
                             var uo = Eisc.BooleanOutput[join].UserObject as Action<ushort>;
                             if (uo != null)
                             {
-                                Debug.Console(2, this, "Executing Action: {0}", uo.ToString());
+                                Debug.LogMessage(LogEventLevel.Verbose, this, "Executing Action: {0}", uo.ToString());
                                 uo(Convert.ToUInt16(state));
                             }
                             else
-                                Debug.Console(2, this, "User Action is null.  Nothing to Execute"); break;
+                                Debug.LogMessage(LogEventLevel.Verbose, this, "User Action is null.  Nothing to Execute"); break;
                         }
                     case "serial":
                         {
                             var uo = Eisc.BooleanOutput[join].UserObject as Action<string>;
                             if (uo != null)
                             {
-                                Debug.Console(2, this, "Executing Action: {0}", uo.ToString());
+                                Debug.LogMessage(LogEventLevel.Verbose, this, "Executing Action: {0}", uo.ToString());
                                 uo(Convert.ToString(state));
                             }
                             else
-                                Debug.Console(2, this, "User Action is null.  Nothing to Execute");
+                                Debug.LogMessage(LogEventLevel.Verbose, this, "User Action is null.  Nothing to Execute");
                             break;
                         }
                     default:
                         {
-                            Debug.Console(2, "Unknown join type.  Use digital/serial/analog");
+                            Debug.LogMessage(LogEventLevel.Verbose, "Unknown join type.  Use digital/serial/analog");
                             break;
                         }
                 }
             }
             catch (Exception e)
             {
-                Debug.Console(1, this, "Error: {0}", e);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Error: {0}", e);
             }
 
         }
@@ -375,12 +376,12 @@ namespace PepperDash.Essentials.Core.Bridges
         {
             try
             {
-                Debug.Console(2, this, "EiscApiAdvanced change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "EiscApiAdvanced change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
                 var uo = args.Sig.UserObject;
 
                 if (uo == null) return;
 
-                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                Debug.LogMessage(LogEventLevel.Debug, this, "Executing Action: {0}", uo.ToString());
                 if (uo is Action<bool>)
                     (uo as Action<bool>)(args.Sig.BoolValue);
                 else if (uo is Action<ushort>)
@@ -390,7 +391,7 @@ namespace PepperDash.Essentials.Core.Bridges
             }
             catch (Exception e)
             {
-                Debug.Console(2, this, "Error in Eisc_SigChange handler: {0}", e);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Error in Eisc_SigChange handler: {0}", e);
             }
         }
 
@@ -448,7 +449,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new EiscApiAdvanced Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new EiscApiAdvanced Device");
 
             var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
 
@@ -478,7 +479,7 @@ namespace PepperDash.Essentials.Core.Bridges
                     {
                         if (string.IsNullOrEmpty(controlProperties.RoomId))
                         {
-                            Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to build VC-4 EISC Client for device {0}. Room ID is missing or empty", dc.Key);
+                            Debug.LogMessage(LogEventLevel.Information, "Unable to build VC-4 EISC Client for device {0}. Room ID is missing or empty", dc.Key);
                             eisc = null;
                             break;
                         }

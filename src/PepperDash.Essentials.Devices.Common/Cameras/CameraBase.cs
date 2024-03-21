@@ -17,6 +17,7 @@ using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 using Newtonsoft.Json;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
@@ -101,7 +102,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
             var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
@@ -111,8 +112,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 joinMap.SetCustomJoinData(customJoins);
             }
 
-            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(0, "Linking to Bridge Type {0}", cameraDevice.GetType().Name.ToString());
+            Debug.LogMessage(LogEventLevel.Debug, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogMessage(LogEventLevel.Information, "Linking to Bridge Type {0}", cameraDevice.GetType().Name.ToString());
 
             var commMonitor = cameraDevice as ICommunicationMonitor;
             commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(

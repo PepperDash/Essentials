@@ -4,6 +4,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Sources
 {
@@ -68,7 +69,7 @@ namespace PepperDash.Essentials.Devices.Common.Sources
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Laptop Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Laptop Device");
             return new Laptop(dc.Key, dc.Name);
         }
     }

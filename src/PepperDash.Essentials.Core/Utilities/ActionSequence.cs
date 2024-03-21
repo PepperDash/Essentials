@@ -12,6 +12,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 using Newtonsoft.Json;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Utilities
 {
@@ -51,11 +52,11 @@ namespace PepperDash.Essentials.Core.Utilities
         {
             if (_worker !=null && _worker.ThreadState == Thread.eThreadStates.ThreadRunning)
             {
-                Debug.Console(1, this, "Thread already running.  Cannot Start Sequence");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Thread already running.  Cannot Start Sequence");
                 return;
             }
 
-            Debug.Console(1, this, "Starting Action Sequence");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Starting Action Sequence");
             _allowActionsToExecute = true;
             AddActionsToQueue();
             _worker = new Thread(ProcessActions, null, Thread.eThreadStartOptions.Running);
@@ -66,7 +67,7 @@ namespace PepperDash.Essentials.Core.Utilities
         /// </summary>
         public void StopSequence()
         {
-            Debug.Console(1, this, "Stopping Action Sequence");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Action Sequence");
             _allowActionsToExecute = false;
             _worker.Abort();
         }
@@ -76,7 +77,7 @@ namespace PepperDash.Essentials.Core.Utilities
         /// </summary>
         private void AddActionsToQueue()
         {
-            Debug.Console(1, this, "Adding {0} actions to queue", _propertiesConfig.ActionSequence.Count);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Adding {0} actions to queue", _propertiesConfig.ActionSequence.Count);
 
             for (int i = 0; i < _propertiesConfig.ActionSequence.Count; i++)
             {
@@ -115,7 +116,7 @@ namespace PepperDash.Essentials.Core.Utilities
             }
             catch (Exception e)
             {
-                Debug.Console(2, this, "Error Executing Action: {0}", e);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Error Executing Action: {0}", e);
             }
         }
     }
@@ -152,7 +153,7 @@ namespace PepperDash.Essentials.Core.Utilities
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new ActionSequence Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new ActionSequence Device");
 
             return new ActionSequence(dc.Key, dc);
         }

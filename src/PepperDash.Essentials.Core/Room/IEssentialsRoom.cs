@@ -27,6 +27,8 @@ namespace PepperDash.Essentials.Core
 
         string SourceListKey { get; }
 
+        string DestinationListKey { get; }
+
         SecondsCountdownTimer ShutdownPromptTimer { get; }
         int ShutdownPromptSeconds { get; }
         int ShutdownVacancySeconds { get; }

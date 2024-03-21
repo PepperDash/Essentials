@@ -4,6 +4,7 @@ using System.Linq;
 using PepperDash.Core;
 using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.DeviceInfo
 {
@@ -48,7 +49,7 @@ namespace PepperDash.Essentials.Core.DeviceInfo
                 }
                 ArpTable.Clear();
 
-                Debug.Console(2, "ConsoleResponse of 'showarptable' : {0}{1}", NewLine, consoleResponse);
+                Debug.LogMessage(LogEventLevel.Verbose, "ConsoleResponse of 'showarptable' : {0}{1}", NewLine, consoleResponse);
 
                 var myLines =
                     consoleResponse.Split(NewLineSplitter)
@@ -68,7 +69,7 @@ namespace PepperDash.Essentials.Core.DeviceInfo
             }
             catch (Exception ex)
             {
-                Debug.Console(0, "Exception in \"RefreshArp\" : {0}", ex.Message);
+                Debug.LogMessage(LogEventLevel.Information, "Exception in \"RefreshArp\" : {0}", ex.Message);
                 error = true;
             }
             finally
@@ -106,7 +107,7 @@ namespace PepperDash.Essentials.Core.DeviceInfo
             }
             catch (Exception ex)
             {
-                Debug.Console(0, "Unable to Santize Ip : {0}", ex.Message);
+                Debug.LogMessage(LogEventLevel.Information, "Unable to Santize Ip : {0}", ex.Message);
                 return ipAddressIn;
             }
         }
@@ -126,7 +127,7 @@ namespace PepperDash.Essentials.Core.DeviceInfo
             }
             catch (Exception ex)
             {
-                Debug.Console(0, "Exception Resolving Hostname from IP Address : {0}", ex.Message);
+                Debug.LogMessage(LogEventLevel.Information, "Exception Resolving Hostname from IP Address : {0}", ex.Message);
                 return ipAddress;
             }
         }
@@ -145,7 +146,7 @@ namespace PepperDash.Essentials.Core.DeviceInfo
             }
             catch (Exception ex)
             {
-                Debug.Console(0, "Exception Resolving IP Address from Hostname : {0}", ex.Message);
+                Debug.LogMessage(LogEventLevel.Information, "Exception Resolving IP Address from Hostname : {0}", ex.Message);
                 return hostName;
             }
         }

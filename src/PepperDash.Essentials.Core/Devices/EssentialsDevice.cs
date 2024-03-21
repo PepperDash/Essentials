@@ -7,6 +7,7 @@ using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -43,8 +44,8 @@ namespace PepperDash.Essentials.Core
                 }
                 catch (Exception ex)
                 {
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Exception initializing device: {0}", ex.Message);
-                    Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
+                    Debug.LogMessage(LogEventLevel.Error, this, "Exception initializing device: {0}", ex.Message);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Stack Trace: {0}", ex.StackTrace);
                 }
             });
         }
@@ -71,7 +72,7 @@ namespace PepperDash.Essentials.Core
 
         public DescriptionAttribute(string description)
         {
-            //Debug.Console(2, "Setting Description: {0}", description);
+            //Debug.LogMessage(LogEventLevel.Verbose, "Setting Description: {0}", description);
             _Description = description;
         }
 
@@ -88,7 +89,7 @@ namespace PepperDash.Essentials.Core
 
         public ConfigSnippetAttribute(string configSnippet)
         {
-            //Debug.Console(2, "Setting Config Snippet {0}", configSnippet);
+            //Debug.LogMessage(LogEventLevel.Verbose, "Setting Config Snippet {0}", configSnippet);
             _ConfigSnippet = configSnippet;
         }
 
@@ -117,7 +118,7 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var typeName in TypeNames)
             {
-                //Debug.Console(2, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
+                //Debug.LogMessage(LogEventLevel.Verbose, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
                 var descriptionAttribute = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
                 string description = descriptionAttribute[0].Description;
                 var snippetAttribute = typeof(T).GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
@@ -151,7 +152,7 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var typeName in TypeNames)
             {
-                //Debug.Console(2, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
+                //Debug.LogMessage(LogEventLevel.Verbose, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
                 var descriptionAttribute = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
                 string description = descriptionAttribute[0].Description;
                 var snippetAttribute = typeof(T).GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];

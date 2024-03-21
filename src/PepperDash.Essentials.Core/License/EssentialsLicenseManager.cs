@@ -8,6 +8,7 @@ using Crestron.SimplSharp.CrestronDataStore;
 using PepperDash.Essentials.Core;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.License
@@ -69,7 +70,7 @@ namespace PepperDash.Essentials.License
 		{
 			IsValid = isValid;
 			CrestronDataStoreStatic.SetGlobalBoolValue("MockLicense", isValid);
-			Debug.Console(0, "Mock License is{0} valid", IsValid ? "" : " not");
+			Debug.LogMessage(LogEventLevel.Information, "Mock License is{0} valid", IsValid ? "" : " not");
 			LicenseIsValid.FireUpdate();
 		}
 

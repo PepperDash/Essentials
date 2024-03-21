@@ -9,6 +9,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges.JoinMaps;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Devices
 {
@@ -29,7 +30,7 @@ namespace PepperDash.Essentials.Core.Devices
             _port = irPort;
             if (_port == null)
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Error, "IR Port is null, device will not function");
+                Debug.LogMessage(LogEventLevel.Information, this, "IR Port is null, device will not function");
                 return;
             }
             DeviceManager.AddDevice(_port);
@@ -75,12 +76,12 @@ namespace PepperDash.Essentials.Core.Devices
 
 	        if (_port.UseBridgeJoinMap)
 	        {
-				Debug.Console(0, this, "Using new IR bridge join map");
+				Debug.LogMessage(LogEventLevel.Information, this, "Using new IR bridge join map");
 
 		        var bridgeJoins = joinMap.Joins.Where((kv) => _port.IrFileCommands.Any(cmd => cmd == kv.Key)).ToDictionary(kv => kv.Key);
 		        if (bridgeJoins == null)
 		        {
-					Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Failed to link new IR bridge join map");
+					Debug.LogMessage(LogEventLevel.Information, this, "Failed to link new IR bridge join map");
 			        return;
 		        }
 
@@ -93,7 +94,7 @@ namespace PepperDash.Essentials.Core.Devices
 			        var joinDataValue = bridgeJoin.Value.Value;
 			        var joinNumber = bridgeJoin.Value.Value.JoinNumber;					
 
-					Debug.Console(2, this, @"bridgeJoin: Key-'{0}'
+					Debug.LogMessage(LogEventLevel.Verbose, this, @"bridgeJoin: Key-'{0}'
 Value.Key-'{1}'
 Value.JoinNumber-'{2}'
 Value.Metadata.Description-'{3}'", 
@@ -110,7 +111,7 @@ Value.Metadata.Description-'{3}'",
 	        }
 	        else
 	        {
-				Debug.Console(0, this, "Using legacy IR join mapping based on available IR commands");
+				Debug.LogMessage(LogEventLevel.Information, this, "Using legacy IR join mapping based on available IR commands");
 
 				joinMap.Joins.Clear();
 
@@ -141,7 +142,7 @@ Value.Metadata.Description-'{3}'",
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
         }
 
@@ -163,7 +164,7 @@ Value.Metadata.Description-'{3}'",
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Generic IR Controller Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic IR Controller Device");
 
             var irPort = IRPortHelper.GetIrOutputPortController(dc);
 

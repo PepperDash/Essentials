@@ -7,10 +7,10 @@
     <TargetFrameworks>net472;net6</TargetFrameworks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <AssemblyName>PepperDash.Essentials.Core</AssemblyName>
+    <AssemblyName>PepperDash_Essentials_Core</AssemblyName>
     <RootNamespace>PepperDash.Essentials.Core</RootNamespace>
     <Title>PepperDash Essentials Core</Title>
-    <PackageId>$(AssemblyName)</PackageId>
+    <PackageId>PepperDash.Essentials.Core</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -23,7 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.20.42" />
-    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-389" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-400" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Crestron\CrestronGenericBaseDevice.cs.orig" />

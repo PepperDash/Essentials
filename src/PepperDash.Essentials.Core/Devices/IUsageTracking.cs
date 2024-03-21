@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -84,14 +85,14 @@ namespace PepperDash.Essentials.Core
 
                     if (handler != null)
                     {
-                        Debug.Console(1, "Device Usage Ended for: {0} at {1}.  In use for {2} minutes.", Parent.Name, UsageEndTime, timeUsed.Minutes);
+                        Debug.LogMessage(LogEventLevel.Debug, "Device Usage Ended for: {0} at {1}.  In use for {2} minutes.", Parent.Name, UsageEndTime, timeUsed.Minutes);
                         handler(this, new DeviceUsageEventArgs() { UsageEndTime = UsageEndTime, MinutesUsed = timeUsed.Minutes });
                     }
                 }
             }
             catch (Exception e)
             {
-                Debug.Console(1, "Error ending device usage: {0}", e);
+                Debug.LogMessage(LogEventLevel.Debug, "Error ending device usage: {0}", e);
             }
         }
     }

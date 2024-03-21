@@ -10,6 +10,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
@@ -50,9 +51,8 @@ namespace PepperDash.Essentials.Devices.Common
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Generic Source Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Source Device");
             return new GenericSource(dc.Key, dc.Name);
         }
     }
-
 }

@@ -5,6 +5,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.Core.Shades;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Shades
 {
@@ -47,21 +48,21 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
         public override void Open()
         {
-            Debug.Console(1, this, "Opening Shade: '{0}'", this.Name);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Opening Shade: '{0}'", this.Name);
 
             PulseOutput(OpenRelay, RelayPulseTime);
         }
 
         public override void Stop()
         {
-            Debug.Console(1, this, "Stopping Shade: '{0}'", this.Name);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Shade: '{0}'", this.Name);
 
             PulseOutput(StopOrPresetRelay, RelayPulseTime);
         }
 
         public override void Close()
         {
-            Debug.Console(1, this, "Closing Shade: '{0}'", this.Name);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Closing Shade: '{0}'", this.Name);
 
             PulseOutput(CloseRelay, RelayPulseTime);
         }
@@ -87,7 +88,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             }
             else
             {
-                Debug.Console(1, this, "Error: Unable to get relay on port '{0}' from device with key '{1}'", relayConfig.PortNumber, relayConfig.PortDeviceKey);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Error: Unable to get relay on port '{0}' from device with key '{1}'", relayConfig.PortNumber, relayConfig.PortDeviceKey);
                 return null;
             }
         }
@@ -117,7 +118,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Comm Device");
             var props = Newtonsoft.Json.JsonConvert.DeserializeObject<RelayControlledShadeConfigProperties>(dc.Properties.ToString());
 
             return new RelayControlledShade(dc.Key, dc.Name, props);

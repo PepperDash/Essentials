@@ -2,6 +2,7 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -177,7 +178,7 @@ namespace PepperDash.Essentials.Core
             }
             catch
             {
-                Debug.Console(1, "Error Waking Panel.  Maybe testing with Xpanel?");
+                Debug.LogMessage(LogEventLevel.Debug, "Error Waking Panel.  Maybe testing with Xpanel?");
             }
         }
 

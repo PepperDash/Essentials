@@ -9,6 +9,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 
 using Newtonsoft.Json;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
@@ -93,7 +94,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// <param name="meeting"></param>
         private void OnMeetingChange(eMeetingEventChangeType changeType, Meeting meeting)
         {
-            Debug.Console(2, "*****************OnMeetingChange.  id: {0} changeType: {1}**********************", meeting.Id, changeType);
+            Debug.LogMessage(LogEventLevel.Verbose, "*****************OnMeetingChange.  id: {0} changeType: {1}**********************", meeting.Id, changeType);
             if (changeType != (changeType & meeting.NotifiedChangeTypes))
             {
                 // Add this change type to the NotifiedChangeTypes
@@ -107,7 +108,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             }
             else
             {
-                Debug.Console(2, "Meeting: {0} already notified of changeType: {1}", meeting.Id, changeType);
+                Debug.LogMessage(LogEventLevel.Verbose, "Meeting: {0} already notified of changeType: {1}", meeting.Id, changeType);
             }
         }
 
@@ -127,22 +128,22 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
                 if (eMeetingEventChangeType.MeetingStartWarning != (m.NotifiedChangeTypes & eMeetingEventChangeType.MeetingStartWarning) && m.TimeToMeetingStart.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes && m.TimeToMeetingStart.Seconds > 0)       // Meeting is about to start
                 {
-                    Debug.Console(2, "********************* MeetingStartWarning. TotalMinutes: {0}  Seconds: {1}", m.TimeToMeetingStart.TotalMinutes, m.TimeToMeetingStart.Seconds);
+                    Debug.LogMessage(LogEventLevel.Verbose, "********************* MeetingStartWarning. TotalMinutes: {0}  Seconds: {1}", m.TimeToMeetingStart.TotalMinutes, m.TimeToMeetingStart.Seconds);
                     changeType = eMeetingEventChangeType.MeetingStartWarning;
                 }
                 else if (eMeetingEventChangeType.MeetingStart != (m.NotifiedChangeTypes & eMeetingEventChangeType.MeetingStart) && Math.Abs(m.TimeToMeetingStart.TotalMinutes) < meetingTimeEpsilon)           // Meeting Start
                 {
-                    Debug.Console(2, "********************* MeetingStart");
+                    Debug.LogMessage(LogEventLevel.Verbose, "********************* MeetingStart");
                     changeType = eMeetingEventChangeType.MeetingStart;
                 }
                 else if (eMeetingEventChangeType.MeetingEndWarning != (m.NotifiedChangeTypes & eMeetingEventChangeType.MeetingEndWarning) && m.TimeToMeetingEnd.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes && m.TimeToMeetingEnd.Seconds > 0)    // Meeting is about to end
                 {
-                    Debug.Console(2, "********************* MeetingEndWarning. TotalMinutes: {0}  Seconds: {1}", m.TimeToMeetingEnd.TotalMinutes, m.TimeToMeetingEnd.Seconds);
+                    Debug.LogMessage(LogEventLevel.Verbose, "********************* MeetingEndWarning. TotalMinutes: {0}  Seconds: {1}", m.TimeToMeetingEnd.TotalMinutes, m.TimeToMeetingEnd.Seconds);
                     changeType = eMeetingEventChangeType.MeetingEndWarning;
                 }
                 else if (eMeetingEventChangeType.MeetingEnd != (m.NotifiedChangeTypes & eMeetingEventChangeType.MeetingEnd) && Math.Abs(m.TimeToMeetingEnd.TotalMinutes) < meetingTimeEpsilon)             // Meeting has ended
                 {
-                    Debug.Console(2, "********************* MeetingEnd");
+                    Debug.LogMessage(LogEventLevel.Verbose, "********************* MeetingEnd");
                     changeType = eMeetingEventChangeType.MeetingEnd;
                 }
 
@@ -214,7 +215,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             {
                 var joinable = StartTime.AddMinutes(-MinutesBeforeMeeting) <= DateTime.Now
                     && DateTime.Now <= EndTime.AddSeconds(-_joinableCooldownSeconds);
-                //Debug.Console(2, "Meeting Id: {0} joinable: {1}", Id, joinable);
+                //Debug.LogMessage(LogEventLevel.Verbose, "Meeting Id: {0} joinable: {1}", Id, joinable);
                 return joinable;
             }
         }

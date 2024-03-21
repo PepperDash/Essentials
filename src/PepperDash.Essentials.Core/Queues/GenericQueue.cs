@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using Crestron.SimplSharp;
 using PepperDash.Core;
+using Serilog.Events;
 using Thread = Crestron.SimplSharpPro.CrestronThread.Thread;
 
 namespace PepperDash.Essentials.Core.Queues
@@ -179,7 +180,7 @@ namespace PepperDash.Essentials.Core.Queues
                 {
                     try
                     {
-                        //Debug.Console(2, this, "Processing queue item: '{0}'", item.ToString());
+                        //Debug.LogMessage(LogEventLevel.Verbose, this, "Processing queue item: '{0}'", item.ToString());
                         item.Dispatch();
 
                         if (_delayEnabled)
@@ -191,13 +192,13 @@ namespace PepperDash.Essentials.Core.Queues
                     }
                     catch (Exception ex)
                     {
-                        Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Caught an exception in the Queue: {1}:{0}", ex.Message, ex);
-                        Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
+                        Debug.LogMessage(LogEventLevel.Information, this, "Caught an exception in the Queue: {1}:{0}", ex.Message, ex);
+                        Debug.LogMessage(LogEventLevel.Verbose, this, "Stack Trace: {0}", ex.StackTrace);
 
                         if (ex.InnerException != null)
                         {
-                            Debug.Console(0, this, Debug.ErrorLogLevel.Error, "---\r\n{0}", ex.InnerException.Message);
-                            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.InnerException.StackTrace);
+                            Debug.LogMessage(LogEventLevel.Information, this, "---\r\n{0}", ex.InnerException.Message);
+                            Debug.LogMessage(LogEventLevel.Verbose, this, "Stack Trace: {0}", ex.InnerException.StackTrace);
                         }
                     }
                 }
@@ -211,7 +212,7 @@ namespace PepperDash.Essentials.Core.Queues
         {
             if (Disposed)
             {
-                Debug.Console(1, this, "Queue has been disposed. Enqueuing messages not allowed while program is stopping.");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Queue has been disposed. Enqueuing messages not allowed while program is stopping.");
                 return;
             }
 
@@ -243,7 +244,7 @@ namespace PepperDash.Essentials.Core.Queues
             {
                 using (_waitHandle)
                 {
-                    Debug.Console(2, this, "Disposing...");
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "Disposing...");
                     _queue.Enqueue(null);
                     _waitHandle.Set();
                     _worker.Join();

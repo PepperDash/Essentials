@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     {
     }
 
-    /// <summary>
+    /*/// <summary>
     /// Describes a MobileControlSystemController
     /// </summary>
     public interface IMobileControl : IKeyed
@@ -20,16 +20,24 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         void CreateMobileControlRoomBridge(IEssentialsRoom room, IMobileControl parent);
 
         void LinkSystemMonitorToAppServer();
-    }
+    }*/
 
     /// <summary>
     /// Describes a MobileSystemController that accepts IEssentialsRoom
     /// </summary>
-    public interface IMobileControl3 : IMobileControl
-    {       
+    public interface IMobileControl : IKeyed
+    {
+        string Host { get; }
+
+        string ClientAppUrl { get; }
+
+        string SystemUuid { get; }
+
+        BoolFeedback ApiOnlineAndAuthorized { get;}
+
         void SendMessageObject(IMobileControlMessage o);
 
-        void AddAction(string key, Action<string, JToken> action);
+        void AddAction<T>(T messenger, Action<string, string, JToken> action) where T:IMobileControlMessenger;
 
         void RemoveAction(string key);
 
@@ -43,9 +51,11 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// </summary>
     public interface IMobileControlMessenger: IKeyed
     {
-        IMobileControl3 AppServerController { get; }
+        IMobileControl AppServerController { get; }
         string MessagePath { get; }
-        void RegisterWithAppServer(IMobileControl3 appServerController);
+
+        string DeviceKey { get; }
+        void RegisterWithAppServer(IMobileControl appServerController);
     }
 
     public interface IMobileControlMessage
@@ -88,4 +98,12 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         void UpdateAppUrl(string url);
     }
+
+    public interface IMobileControlAction
+    {
+       IMobileControlMessenger Messenger { get; }
+
+       Action<string,string, JToken> Action { get; }
+    }
+
 }

@@ -9,6 +9,7 @@ using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Config
 {
@@ -42,7 +43,7 @@ namespace PepperDash.Essentials.Core.Config
                 // Replace the current properties JToken with the new one passed into this method
                 deviceConfig.Properties = properties;
 
-                Debug.Console(1, "Updated properties of device: '{0}'", deviceKey);
+                Debug.LogMessage(LogEventLevel.Debug, "Updated properties of device: '{0}'", deviceKey);
 
                 success = true;
             }
@@ -62,7 +63,7 @@ namespace PepperDash.Essentials.Core.Config
             {
                 ConfigReader.ConfigObject.Devices[deviceConfigIndex] = config;
 
-                Debug.Console(1, "Updated config of device: '{0}'", config.Key);
+                Debug.LogMessage(LogEventLevel.Debug, "Updated config of device: '{0}'", config.Key);
 
                 success = true;
             }
@@ -82,7 +83,7 @@ namespace PepperDash.Essentials.Core.Config
             {
                 ConfigReader.ConfigObject.Rooms[roomConfigIndex] = config;
 
-                Debug.Console(1, "Updated room of device: '{0}'", config.Key);
+                Debug.LogMessage(LogEventLevel.Debug, "Updated room of device: '{0}'", config.Key);
 
                 success = true;
             }
@@ -102,7 +103,7 @@ namespace PepperDash.Essentials.Core.Config
 
             WriteTimer.Reset(WriteTimeout);
 
-            Debug.Console(1, "Config File write timer has been reset.");
+            Debug.LogMessage(LogEventLevel.Debug, "Config File write timer has been reset.");
         }
 
         /// <summary>
@@ -128,9 +129,9 @@ namespace PepperDash.Essentials.Core.Config
             if (WriteTimer != null)
                 WriteTimer.Stop();
 
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Writing Configuration to file");
+            Debug.LogMessage(LogEventLevel.Information, "Writing Configuration to file");
 
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to write config file: '{0}'", filePath);
+            Debug.LogMessage(LogEventLevel.Information, "Attempting to write config file: '{0}'", filePath);
 
             try
             {
@@ -144,12 +145,12 @@ namespace PepperDash.Essentials.Core.Config
                 }
                 else
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to enter FileLock");
+                    Debug.LogMessage(LogEventLevel.Information, "Unable to enter FileLock");
                 }
             }
             catch (Exception e)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: Config write failed: \r{0}", e);
+                Debug.LogMessage(LogEventLevel.Information, "Error: Config write failed: \r{0}", e);
             }
             finally
             {

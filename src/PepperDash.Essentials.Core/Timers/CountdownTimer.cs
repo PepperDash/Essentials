@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -49,7 +50,7 @@ namespace PepperDash.Essentials.Core
 
                     var timeSpan = FinishTime - DateTime.Now;
 
-                    Debug.Console(2, this,
+                    Debug.LogMessage(LogEventLevel.Verbose, this,
                         "timeSpan.Minutes == {0}, timeSpan.Seconds == {1}, timeSpan.TotalSeconds == {2}",
                         timeSpan.Minutes, timeSpan.Seconds, timeSpan.TotalSeconds);
 

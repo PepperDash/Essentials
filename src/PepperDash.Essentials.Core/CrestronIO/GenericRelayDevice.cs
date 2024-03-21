@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
@@ -48,7 +49,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
                 if (RelayOutput == null)
                 {
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Unable to get parent relay device for device key {0} and port {1}", config.PortDeviceKey, config.PortNumber);
+                    Debug.LogMessage(LogEventLevel.Information, this, "Unable to get parent relay device for device key {0} and port {1}", config.PortDeviceKey, config.PortNumber);
                     return;
                 }
 
@@ -69,7 +70,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             {
                 if (!Global.ControlSystem.SupportsRelay)
                 {
-                    Debug.Console(0, "Processor does not support relays");
+                    Debug.LogMessage(LogEventLevel.Information, "Processor does not support relays");
                     return null;
                 }
                 relayDevice = Global.ControlSystem;
@@ -80,7 +81,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             var essentialsDevice = DeviceManager.GetDeviceForKey(dc.PortDeviceKey);
             if (essentialsDevice == null)
             {
-                Debug.Console(0, "Device {0} was not found in Device Manager. Check configuration or for errors with device.", dc.PortDeviceKey);
+                Debug.LogMessage(LogEventLevel.Information, "Device {0} was not found in Device Manager. Check configuration or for errors with device.", dc.PortDeviceKey);
                 return null;
             }
 
@@ -88,7 +89,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             
             if (relayDevice == null)
             {
-                Debug.Console(0, "Device {0} is not a valid relay parent. Please check configuration.", dc.PortDeviceKey);
+                Debug.LogMessage(LogEventLevel.Information, "Device {0} is not a valid relay parent. Please check configuration.", dc.PortDeviceKey);
                 return null;
             }
 
@@ -97,7 +98,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 return relayDevice.RelayPorts[dc.PortNumber];
             }
 
-            Debug.Console(0, "Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
+            Debug.LogMessage(LogEventLevel.Information, "Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
             return null;
         }
 
@@ -165,16 +166,16 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
             if (RelayOutput == null)
             {
-                Debug.Console(1, this, "Unable to link device '{0}'.  Relay is null", Key);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Unable to link device '{0}'.  Relay is null", Key);
                 return;
             }
 
-            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogMessage(LogEventLevel.Debug, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             trilist.SetBoolSigAction(joinMap.Relay.JoinNumber, b =>
             {
@@ -202,7 +203,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
-                Debug.Console(1, "Factory Attempting to create new Generic Relay Device");
+                Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Relay Device");
 
                 var props = JsonConvert.DeserializeObject<IOPortConfig>(dc.Properties.ToString());
 

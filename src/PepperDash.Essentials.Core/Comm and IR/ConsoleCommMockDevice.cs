@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -39,7 +40,7 @@ namespace PepperDash.Essentials.Core
 		public override bool CustomActivate()
 		{
 			Communication.Connect();
-			CommunicationMonitor.StatusChange += (o, a) => { Debug.Console(2, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
+			CommunicationMonitor.StatusChange += (o, a) => { Debug.LogMessage(LogEventLevel.Verbose, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
 			CommunicationMonitor.Start();
 
 			CrestronConsole.AddNewConsoleCommand(SendLine, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
@@ -50,7 +51,7 @@ namespace PepperDash.Essentials.Core
 		void SendLine(string s)
 		{
 			//if (Debug.Level == 2)
-			//    Debug.Console(2, this, "    Send '{0}'", ComTextHelper.GetEscapedText(s));
+			//    Debug.LogMessage(LogEventLevel.Verbose, this, "    Send '{0}'", ComTextHelper.GetEscapedText(s));
 			Communication.SendText(s + LineEnding);
 		}
 	}
@@ -75,7 +76,7 @@ namespace PepperDash.Essentials.Core
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Comm Mock Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Comm Mock Device");
             var comm = CommFactory.CreateCommForDevice(dc);
             var props = Newtonsoft.Json.JsonConvert.DeserializeObject<ConsoleCommMockDevicePropertiesConfig>(
                 dc.Properties.ToString());

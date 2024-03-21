@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -22,12 +23,12 @@ namespace PepperDash.Essentials.Core
 			{
 				return JsonConvert.DeserializeObject<EssentialsControlPropertiesConfig>
 					(deviceConfig.Properties["control"].ToString());
-				//Debug.Console(2, "Control TEST: {0}", JsonConvert.SerializeObject(controlConfig));
+				//Debug.LogMessage(LogEventLevel.Verbose, "Control TEST: {0}", JsonConvert.SerializeObject(controlConfig));
 			}
 			catch (Exception e)
 			{
 
-				Debug.Console(0, "ERROR: [{0}] Control properties deserialize failed:\r{1}", deviceConfig.Key, e);
+				Debug.LogMessage(LogEventLevel.Information, "ERROR: [{0}] Control properties deserialize failed:\r{1}", deviceConfig.Key, e);
 				return null;
 			}
 		}
@@ -98,7 +99,7 @@ namespace PepperDash.Essentials.Core
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, "Cannot create communication from JSON:\r{0}\r\rException:\r{1}",
+				Debug.LogMessage(LogEventLevel.Information, "Cannot create communication from JSON:\r{0}\r\rException:\r{1}",
 					deviceConfig.Properties.ToString(), e);
 			}
 
@@ -115,7 +116,7 @@ namespace PepperDash.Essentials.Core
 			var dev = GetIComPortsDeviceFromManagedDevice(config.ControlPortDevKey);
 			if (dev != null && config.ControlPortNumber <= dev.NumberOfComPorts)
 				return dev.ComPorts[config.ControlPortNumber];
-			Debug.Console(0,Debug.ErrorLogLevel.Notice, "GetComPort: Device '{0}' does not have com port {1}", config.ControlPortDevKey, config.ControlPortNumber);
+			Debug.LogMessage(LogEventLevel.Information, "GetComPort: Device '{0}' does not have com port {1}", config.ControlPortDevKey, config.ControlPortNumber);
 			return null;
 		}
 
@@ -130,7 +131,7 @@ namespace PepperDash.Essentials.Core
 	        {
 		        var dev = DeviceManager.GetDeviceForKey(config.ControlPortDevKey);
 
-		        Debug.Console(0, "GetCecPort: device '{0}' {1}", config.ControlPortDevKey, dev == null
+		        Debug.LogMessage(LogEventLevel.Information, "GetCecPort: device '{0}' {1}", config.ControlPortDevKey, dev == null
 			        ? "is not valid, failed to get cec port"
 			        : "found in device manager, attempting to get cec port");
 
@@ -139,7 +140,7 @@ namespace PepperDash.Essentials.Core
 
 		        if (String.IsNullOrEmpty(config.ControlPortName))
 		        {
-			        Debug.Console(0, "GetCecPort: '{0}' - Configuration missing 'ControlPortName'", config.ControlPortDevKey);
+			        Debug.LogMessage(LogEventLevel.Information, "GetCecPort: '{0}' - Configuration missing 'ControlPortName'", config.ControlPortDevKey);
 			        return null;
 		        }
 
@@ -147,7 +148,7 @@ namespace PepperDash.Essentials.Core
 		        var inputsOutputs = dev as IRoutingInputsOutputs;
 		        if (inputsOutputs == null)
 		        {
-					Debug.Console(0, "GetCecPort: Device '{0}' does not support IRoutingInputsOutputs, failed to get CEC port called '{1}'",
+					Debug.LogMessage(LogEventLevel.Information, "GetCecPort: Device '{0}' does not support IRoutingInputsOutputs, failed to get CEC port called '{1}'",
 						config.ControlPortDevKey, config.ControlPortName);
 
 			        return null;
@@ -164,13 +165,13 @@ namespace PepperDash.Essentials.Core
 	        }
 	        catch (Exception ex)
 	        {
-		        Debug.Console(1, "GetCecPort Exception Message: {0}", ex.Message);
-		        Debug.Console(2, "GetCecPort Exception StackTrace: {0}", ex.StackTrace);
+		        Debug.LogMessage(LogEventLevel.Debug, "GetCecPort Exception Message: {0}", ex.Message);
+		        Debug.LogMessage(LogEventLevel.Verbose, "GetCecPort Exception StackTrace: {0}", ex.StackTrace);
 		        if (ex.InnerException != null)
-			        Debug.Console(0, "GetCecPort Exception InnerException: {0}", ex.InnerException);				
+			        Debug.LogMessage(LogEventLevel.Information, "GetCecPort Exception InnerException: {0}", ex.InnerException);				
 	        }
 
-			Debug.Console(0, "GetCecPort: Device '{0}' does not have a CEC port called '{1}'",
+			Debug.LogMessage(LogEventLevel.Information, "GetCecPort: Device '{0}' does not have a CEC port called '{1}'",
 					config.ControlPortDevKey, config.ControlPortName);
 
 			return null;
@@ -191,7 +192,7 @@ namespace PepperDash.Essentials.Core
 			{
 				var dev = DeviceManager.GetDeviceForKey(ComPortDevKey) as IComPorts;
 				if (dev == null)
-					Debug.Console(0, "ComPortConfig: Cannot find com port device '{0}'", ComPortDevKey);
+					Debug.LogMessage(LogEventLevel.Information, "ComPortConfig: Cannot find com port device '{0}'", ComPortDevKey);
 				return dev;
 			}
 		}
@@ -205,9 +206,7 @@ namespace PepperDash.Essentials.Core
     {
 
         [JsonConverter(typeof(ComSpecJsonConverter))]
-        public ComPort.ComPortSpec ComParams { get; set; }
-
-		public string RoomId { get; set; }
+        public ComPort.ComPortSpec ComParams { get; set; }		
 
 		public string CresnetId { get; set; }
 

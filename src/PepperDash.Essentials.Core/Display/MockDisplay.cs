@@ -13,6 +13,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -36,7 +37,7 @@ namespace PepperDash.Essentials.Core
             {
                 return () =>
                     {
-                        Debug.Console(2, this, "*************************************************** Display Power is {0}", _PowerIsOn ? "on" : "off");
+                        Debug.LogMessage(LogEventLevel.Verbose, this, "*************************************************** Display Power is {0}", _PowerIsOn ? "on" : "off");
                         return _PowerIsOn;
                     };
         } }
@@ -46,7 +47,7 @@ namespace PepperDash.Essentials.Core
             {
                 return () =>
                 {
-                    Debug.Console(2, this, "*************************************************** {0}", _IsCoolingDown ? "Display is cooling down" : "Display has finished cooling down");
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "*************************************************** {0}", _IsCoolingDown ? "Display is cooling down" : "Display has finished cooling down");
                     return _IsCoolingDown;
                 };
             }
@@ -57,7 +58,7 @@ namespace PepperDash.Essentials.Core
             {
                 return () =>
                 {
-                    Debug.Console(2, this, "*************************************************** {0}", _IsWarmingUp ? "Display is warming up" : "Display has finished warming up");
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "*************************************************** {0}", _IsWarmingUp ? "Display is warming up" : "Display has finished warming up");
                     return _IsWarmingUp;
                 };
             }
@@ -119,7 +120,7 @@ namespace PepperDash.Essentials.Core
 				// Fake cool-down cycle
 				CooldownTimer = new CTimer(o =>
 					{
-						Debug.Console(2, this, "Cooldown timer ending");
+						Debug.LogMessage(LogEventLevel.Verbose, this, "Cooldown timer ending");
 						_IsCoolingDown = false;
 						IsCoolingDownFeedback.InvokeFireUpdate();
                         _PowerIsOn = false;
@@ -138,7 +139,7 @@ namespace PepperDash.Essentials.Core
 
 		public override void ExecuteSwitch(object selector)
 		{
-			Debug.Console(2, this, "ExecuteSwitch: {0}", selector);
+			Debug.LogMessage(LogEventLevel.Verbose, this, "ExecuteSwitch: {0}", selector);
 
 		    if (!_PowerIsOn)
 		    {
@@ -180,7 +181,7 @@ namespace PepperDash.Essentials.Core
 		{
             //while (pressRelease)
             //{
-                Debug.Console(2, this, "Volume Down {0}", pressRelease);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Volume Down {0}", pressRelease);
                 if (pressRelease)
                 {
                     var newLevel = _FakeVolumeLevel + VolumeInterval;
@@ -194,7 +195,7 @@ namespace PepperDash.Essentials.Core
 		{
             //while (pressRelease)
             //{
-                Debug.Console(2, this, "Volume Up {0}", pressRelease);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Volume Up {0}", pressRelease);
                 if (pressRelease)
                 {
                     var newLevel = _FakeVolumeLevel - VolumeInterval;
@@ -229,7 +230,7 @@ namespace PepperDash.Essentials.Core
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Mock Display Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Mock Display Device");
             return new MockDisplay(dc.Key, dc.Name);
         }
     }

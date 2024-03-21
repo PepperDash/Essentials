@@ -12,6 +12,7 @@ using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharpPro.Diagnostics;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Config
 {
@@ -21,7 +22,7 @@ namespace PepperDash.Essentials.Core.Config
 
         public static void GetConfigFromServer(string url)
         {
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to get new config from '{0}'", url);
+            Debug.LogMessage(LogEventLevel.Information, "Attempting to get new config from '{0}'", url);
 
             // HTTP GET 
             var req = new HttpClientRequest();
@@ -51,17 +52,17 @@ namespace PepperDash.Essentials.Core.Config
                             }
                             else
                             {
-                                Debug.Console(0, Debug.ErrorLogLevel.Error, "Config Update Process Stopped. Failed to get config file from server: {0}", r.Code);
+                                Debug.LogMessage(LogEventLevel.Information, "Config Update Process Stopped. Failed to get config file from server: {0}", r.Code);
                                 OnStatusUpdate(eUpdateStatus.UpdateFailed);
                             }
                         }
                         else
-                            Debug.Console(0, Debug.ErrorLogLevel.Error, "Request for config from Server Failed: {0}", e);
+                            Debug.LogMessage(LogEventLevel.Information, "Request for config from Server Failed: {0}", e);
                     });
             }
             catch (Exception e)
             {
-                Debug.Console(1, "Error Getting Config from Server: {0}", e);
+                Debug.LogMessage(LogEventLevel.Debug, "Error Getting Config from Server: {0}", e);
             }
 
         }
@@ -90,7 +91,7 @@ namespace PepperDash.Essentials.Core.Config
             }
             catch (Exception e)
             {
-                Debug.Console(1, "Error parsing new config: {0}", e);
+                Debug.LogMessage(LogEventLevel.Debug, "Error parsing new config: {0}", e);
 
                 OnStatusUpdate(eUpdateStatus.UpdateFailed);
             }           
@@ -107,7 +108,7 @@ namespace PepperDash.Essentials.Core.Config
 
             if (configFiles != null)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Existing config files found.  Moving to Archive folder.");
+                Debug.LogMessage(LogEventLevel.Information, "Existing config files found.  Moving to Archive folder.");
 
                 OnStatusUpdate(eUpdateStatus.ArchivingConfigs);
 
@@ -115,7 +116,7 @@ namespace PepperDash.Essentials.Core.Config
             }
             else
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "No Existing config files found in '{0}'. Nothing to archive", filePath);
+                Debug.LogMessage(LogEventLevel.Information, "No Existing config files found in '{0}'. Nothing to archive", filePath);
             }
         }
 
@@ -140,12 +141,12 @@ namespace PepperDash.Essentials.Core.Config
 
                 if(archivedConfigFiles != null || archivedConfigFiles.Length > 0)
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "{0} Existing files found in archive folder.  Deleting.", archivedConfigFiles.Length);
+                    Debug.LogMessage(LogEventLevel.Information, "{0} Existing files found in archive folder.  Deleting.", archivedConfigFiles.Length);
 
                     for (int i = 0; i < archivedConfigFiles.Length; i++ )
                     {
                         var file = archivedConfigFiles[i];
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Deleting archived file: '{0}'", file.FullName);
+                        Debug.LogMessage(LogEventLevel.Information, "Deleting archived file: '{0}'", file.FullName);
                         file.Delete();
                     }
                 }
@@ -155,7 +156,7 @@ namespace PepperDash.Essentials.Core.Config
             // Move any files from the program folder to the archive folder
             foreach (var file in files)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Moving config file '{0}' to archive folder", file.FullName);
+                Debug.LogMessage(LogEventLevel.Information, "Moving config file '{0}' to archive folder", file.FullName);
 
                 // Moves the file and appends the .bak extension
                 var fileDest = archiveDirectoryPath + "/" + file.Name + ".bak";
@@ -164,7 +165,7 @@ namespace PepperDash.Essentials.Core.Config
                   file.MoveTo(fileDest);
                 }
                 else
-                    Debug.Console(0, Debug.ErrorLogLevel.Warning, "Cannot move file to archive folder.  Existing file already exists with same name: '{0}'", fileDest);
+                    Debug.LogMessage(LogEventLevel.Information, "Cannot move file to archive folder.  Existing file already exists with same name: '{0}'", fileDest);
             }
         }
 
@@ -179,7 +180,7 @@ namespace PepperDash.Essentials.Core.Config
             {
                 OnStatusUpdate(eUpdateStatus.DeletingLocalConfig);
                 Directory.Delete(folderPath);
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Local Config Found in '{0}'. Deleting.", folderPath);
+                Debug.LogMessage(LogEventLevel.Information, "Local Config Found in '{0}'. Deleting.", folderPath);
             }
         }
 
@@ -188,7 +189,7 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         static void RestartProgram()
         {
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to Reset Program");
+            Debug.LogMessage(LogEventLevel.Information, "Attempting to Reset Program");
 
             OnStatusUpdate(eUpdateStatus.RestartingProgram);
 
@@ -196,7 +197,7 @@ namespace PepperDash.Essentials.Core.Config
 
             CrestronConsole.SendControlSystemCommand(string.Format("progreset -p:{0}", InitialParametersClass.ApplicationNumber), ref response);
 
-            Debug.Console(1, "Console Response: {0}", response);          
+            Debug.LogMessage(LogEventLevel.Debug, "Console Response: {0}", response);          
         }
 
     }

@@ -9,6 +9,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using System.ComponentModel;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -232,7 +233,7 @@ namespace PepperDash.Essentials.Core
 			StartErrorTimers();
 			if (Client.IsConnected)
 			{
-				//Debug.Console(2, this, "Polling");
+				//Debug.LogMessage(LogEventLevel.Verbose, this, "Polling");
                 if(PollAction != null)
                     PollAction.Invoke();
                 else
@@ -240,7 +241,7 @@ namespace PepperDash.Essentials.Core
 			}
 			else
 			{
-				Debug.Console(2, this, "Comm not connected");
+				Debug.LogMessage(LogEventLevel.Verbose, this, "Comm not connected");
 			}
 		}
 	}

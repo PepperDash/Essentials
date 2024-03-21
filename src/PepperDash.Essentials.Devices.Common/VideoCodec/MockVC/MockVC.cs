@@ -16,6 +16,7 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
@@ -50,10 +51,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             DirectoryBrowseHistory = new List<CodecDirectory>();
 
             // Debug helpers
-            MuteFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Mute={0}", _IsMuted);
-            PrivacyModeIsOnFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Privacy={0}", _PrivacyModeIsOn);
-            SharingSourceFeedback.OutputChange += (o, a) => Debug.Console(1, this, "SharingSource={0}", _SharingSource);   
-            VolumeLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Volume={0}", _VolumeLevel);
+            MuteFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "Mute={0}", _IsMuted);
+            PrivacyModeIsOnFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "Privacy={0}", _PrivacyModeIsOn);
+            SharingSourceFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "SharingSource={0}", _SharingSource);   
+            VolumeLevelFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "Volume={0}", _VolumeLevel);
 
             CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => DirectoryBrowseHistory.Count > 0);
 
@@ -140,7 +141,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void Dial(string number)
         {
-            Debug.Console(1, this, "Dial: {0}", number);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Dial: {0}", number);
             var call = new CodecActiveCallItem() { Name = number, Number = number, Id = number, Status = eCodecCallStatus.Dialing, Direction = eCodecCallDirection.Outgoing, Type = eCodecCallType.Video };
             ActiveCalls.Add(call);
             OnCallStatusChange(call);
@@ -156,7 +157,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public override void Dial(Meeting meeting)
         {
-            Debug.Console(1, this, "Dial Meeting: {0}", meeting.Id);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Dial Meeting: {0}", meeting.Id);
             var call = new CodecActiveCallItem() { Name = meeting.Title, Number = meeting.Id, Id = meeting.Id, Status = eCodecCallStatus.Dialing, Direction = eCodecCallDirection.Outgoing, Type = eCodecCallType.Video };
             ActiveCalls.Add(call);
             OnCallStatusChange(call);
@@ -177,7 +178,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void EndCall(CodecActiveCallItem call)
         {
-            Debug.Console(1, this, "EndCall");
+            Debug.LogMessage(LogEventLevel.Debug, this, "EndCall");
             ActiveCalls.Remove(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
             //ActiveCallCountFeedback.FireUpdate();
@@ -188,7 +189,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void EndAllCalls()
         {
-            Debug.Console(1, this, "EndAllCalls");
+            Debug.LogMessage(LogEventLevel.Debug, this, "EndAllCalls");
             for(int i = ActiveCalls.Count - 1; i >= 0; i--)
             {
                 var call = ActiveCalls[i];
@@ -203,7 +204,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void AcceptCall(CodecActiveCallItem call)
         {
-            Debug.Console(1, this, "AcceptCall");
+            Debug.LogMessage(LogEventLevel.Debug, this, "AcceptCall");
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
             new CTimer(o => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call), 1000);
             // should already be in active list
@@ -214,7 +215,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void RejectCall(CodecActiveCallItem call)
         {
-            Debug.Console(1, this, "RejectCall");
+            Debug.LogMessage(LogEventLevel.Debug, this, "RejectCall");
             ActiveCalls.Remove(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
             //ActiveCallCountFeedback.FireUpdate();
@@ -226,7 +227,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <param name="s"></param>
         public override void SendDtmf(string s)
         {
-            Debug.Console(1, this, "SendDTMF: {0}", s);
+            Debug.LogMessage(LogEventLevel.Debug, this, "SendDTMF: {0}", s);
         }
 
         /// <summary>
@@ -268,7 +269,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <param name="selector"></param>
         public override void ExecuteSwitch(object selector)
         {
-            Debug.Console(1, this, "ExecuteSwitch: {0}", selector);
+            Debug.LogMessage(LogEventLevel.Debug, this, "ExecuteSwitch: {0}", selector);
             _SharingSource = selector.ToString();
         }
 
@@ -330,7 +331,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void PrivacyModeOn()
         {
-            Debug.Console(1, this, "PrivacyMuteOn");
+            Debug.LogMessage(LogEventLevel.Debug, this, "PrivacyMuteOn");
             if (_PrivacyModeIsOn)
                 return;
             _PrivacyModeIsOn = true;
@@ -342,7 +343,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void PrivacyModeOff()
         {
-            Debug.Console(1, this, "PrivacyMuteOff");
+            Debug.LogMessage(LogEventLevel.Debug, this, "PrivacyMuteOff");
             if (!_PrivacyModeIsOn)
                 return;
             _PrivacyModeIsOn = false;
@@ -355,7 +356,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void PrivacyModeToggle()
         {
             _PrivacyModeIsOn = !_PrivacyModeIsOn;
-             Debug.Console(1, this, "PrivacyMuteToggle: {0}", _PrivacyModeIsOn);
+             Debug.LogMessage(LogEventLevel.Debug, this, "PrivacyMuteToggle: {0}", _PrivacyModeIsOn);
            PrivacyModeIsOnFeedback.FireUpdate();
         }
 
@@ -368,7 +369,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <param name="url"></param>
         public void TestIncomingVideoCall(string url)
         {
-            Debug.Console(1, this, "TestIncomingVideoCall from {0}", url);
+            Debug.LogMessage(LogEventLevel.Debug, this, "TestIncomingVideoCall from {0}", url);
             var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type= eCodecCallType.Video, Direction = eCodecCallDirection.Incoming };
             ActiveCalls.Add(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Ringing, call);
@@ -383,7 +384,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <param name="url"></param>
         public void TestIncomingAudioCall(string url)
         {
-            Debug.Console(1, this, "TestIncomingAudioCall from {0}", url);
+            Debug.LogMessage(LogEventLevel.Debug, this, "TestIncomingAudioCall from {0}", url);
             var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type = eCodecCallType.Audio, Direction = eCodecCallDirection.Incoming };
             ActiveCalls.Add(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Ringing, call);
@@ -396,7 +397,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public void TestFarEndHangup()
         {
-            Debug.Console(1, this, "TestFarEndHangup");
+            Debug.LogMessage(LogEventLevel.Debug, this, "TestFarEndHangup");
 
         }
 
@@ -676,11 +677,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             var camera = Cameras.FirstOrDefault(c => c.Key.ToLower().IndexOf(key.ToLower()) > -1);
             if (camera != null)
             {
-                Debug.Console(2, this, "Selected Camera with key: '{0}'", camera.Key);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Selected Camera with key: '{0}'", camera.Key);
                 SelectedCamera = camera;
             }
             else
-                Debug.Console(2, this, "Unable to select camera with key: '{0}'", key);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Unable to select camera with key: '{0}'", key);
         }
 
         #endregion
@@ -736,11 +737,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             if (SelectedCamera is IAmFarEndCamera)
             {
-                Debug.Console(1, this, "Selecting Far End Preset: {0}", preset);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Selecting Far End Preset: {0}", preset);
             }
             else
             {
-                Debug.Console(1, this, "Selecting Near End Preset: {0}", preset);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Selecting Near End Preset: {0}", preset);
             }
         }
 
@@ -768,7 +769,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public void SelectFarEndPreset(int i)
         {
-            Debug.Console(1, this, "Selecting Far End Preset: {0}", i);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Selecting Far End Preset: {0}", i);
         }
 
         #endregion
@@ -841,7 +842,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new MockVC Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new MockVC Device");
             return new VideoCodec.MockVC(dc);
         }
     }

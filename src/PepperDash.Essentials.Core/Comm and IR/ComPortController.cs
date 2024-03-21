@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -43,7 +44,7 @@ namespace PepperDash.Essentials.Core
 		{
 			if (port == null)
 			{
-				Debug.Console(0, this,  "ERROR: Invalid com port, continuing but comms will not function");
+				Debug.LogMessage(LogEventLevel.Information, this,  "ERROR: Invalid com port, continuing but comms will not function");
 				return;
 			}
 
@@ -58,7 +59,7 @@ namespace PepperDash.Essentials.Core
 	    {
 	        if (Port == null)
 	        {
-	            Debug.Console(0,this,Debug.ErrorLogLevel.Error, "Configured com Port for this device does not exist.");
+	            Debug.LogMessage(LogEventLevel.Information, this, "Configured com Port for this device does not exist.");
 	            return;
 	        }
             if (Port.Parent is CrestronControlSystem)
@@ -66,7 +67,7 @@ namespace PepperDash.Essentials.Core
                 var result = Port.Register();
                 if (result != eDeviceRegistrationUnRegistrationResponse.Success)
                 {
-                    Debug.Console(0, this, "ERROR: Cannot register Com port: {0}", result);
+                    Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Com port: {0}", result);
                     return; // false
                 }
             }
@@ -74,7 +75,7 @@ namespace PepperDash.Essentials.Core
 	        var specResult = Port.SetComPortSpec(Spec);
 	        if (specResult != 0)
 	        {
-	            Debug.Console(0, this, "WARNING: Cannot set comspec");
+	            Debug.LogMessage(LogEventLevel.Information, this, "WARNING: Cannot set comspec");
 	            return;
 	        }
 	        Port.SerialDataReceived += Port_SerialDataReceived;
@@ -98,14 +99,14 @@ namespace PepperDash.Essentials.Core
             {
                 var bytes = Encoding.GetEncoding(28591).GetBytes(s);
 				if (StreamDebugging.RxStreamDebuggingIsEnabled)
-					Debug.Console(0, this, "Received: '{0}'", ComTextHelper.GetEscapedText(bytes));
+					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", ComTextHelper.GetEscapedText(bytes));
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
             }
             var textHandler = TextReceived;
             if (textHandler != null)
             {
 				if (StreamDebugging.RxStreamDebuggingIsEnabled)
-					Debug.Console(0, this, "Received: '{0}'", s);
+					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", s);
                 textHandler(this, new GenericCommMethodReceiveTextArgs(s));
             }
         }
@@ -123,7 +124,7 @@ namespace PepperDash.Essentials.Core
 				return;
 
             if (StreamDebugging.TxStreamDebuggingIsEnabled)
-                Debug.Console(0, this, "Sending {0} characters of text: '{1}'", text.Length, text);
+                Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} characters of text: '{1}'", text.Length, text);
             Port.Send(text);
 		}
 
@@ -133,7 +134,7 @@ namespace PepperDash.Essentials.Core
 				return;
 			var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
             if (StreamDebugging.TxStreamDebuggingIsEnabled)
-                Debug.Console(0, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+                Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
 
 			Port.Send(text);
 		}

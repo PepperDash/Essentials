@@ -11,6 +11,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 using Newtonsoft.Json;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core.Timers
@@ -62,14 +63,14 @@ namespace PepperDash.Essentials.Core.Timers
         public void StartTimer()
         {
              CleanUpTimer();
-             Debug.Console(0, this, "Starting Timer");
+             Debug.LogMessage(LogEventLevel.Information, this, "Starting Timer");
 
              _timer = new CTimer(TimerElapsedCallback, GetActionFromConfig(eRetriggerableTimerEvents.Elapsed), _timerIntervalMs, _timerIntervalMs);
         }
 
         public void StopTimer()
         {
-            Debug.Console(0, this, "Stopping Timer");
+            Debug.LogMessage(LogEventLevel.Information, this, "Stopping Timer");
             _timer.Stop();
 
             ExecuteAction(GetActionFromConfig(eRetriggerableTimerEvents.Stopped));
@@ -90,11 +91,11 @@ namespace PepperDash.Essentials.Core.Timers
         /// <param name="o"></param>
         private void TimerElapsedCallback(object action)
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Timer Elapsed. Executing Action");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Timer Elapsed. Executing Action");
 
             if (action == null)
             {
-                Debug.Console(1, this, "Timer elapsed but unable to execute action. Action is null.");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Timer elapsed but unable to execute action. Action is null.");
                 return;
             }
 
@@ -103,7 +104,7 @@ namespace PepperDash.Essentials.Core.Timers
                 ExecuteAction(devAction);
             else
             {
-                Debug.Console(2, this, "Unable to cast action as DeviceActionWrapper. Cannot Execute");
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Unable to cast action as DeviceActionWrapper. Cannot Execute");
             }
 
         }
@@ -119,7 +120,7 @@ namespace PepperDash.Essentials.Core.Timers
             }
             catch (Exception e)
             {
-                Debug.Console(2, this, "Error Executing Action: {0}", e);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Error Executing Action: {0}", e);
             }
             //finally  // Not sure this is needed
             //{
@@ -169,7 +170,7 @@ namespace PepperDash.Essentials.Core.Timers
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new RetriggerableTimer Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new RetriggerableTimer Device");
 
             return new RetriggerableTimer(dc.Key, dc);
         }

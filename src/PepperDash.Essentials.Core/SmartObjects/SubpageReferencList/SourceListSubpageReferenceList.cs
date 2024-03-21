@@ -83,7 +83,7 @@
 //        // Handler to route source changes into list feedback
 //        void CurrentRoom_PresentationSourceChange(object sender, EssentialsRoomSourceChangeEventArgs args)
 //        {
-//            Debug.Console(2, "SRL received source change");
+//            Debug.LogMessage(LogEventLevel.Verbose, "SRL received source change");
 //            ClearPresentationSourceFb(args.OldSource);
 //            SetPresentationSourceFb(args.NewSource);
 //        }
@@ -131,7 +131,7 @@
 //            // Should be able to see if there is not enough buttons right here
 //            if (nameSig == null)
 //            {
-//                Debug.Console(0, "ERROR: Item {0} does not exist on source list SRL", index);
+//                Debug.LogMessage(LogEventLevel.Information, "ERROR: Item {0} does not exist on source list SRL", index);
 //                return;
 //            }
 //            nameSig.StringValue = srcDevice.Name;
@@ -148,7 +148,7 @@
 //                var status = videoDev.GetVideoStatuses();
 //                if (status != null)
 //                {
-//                    Debug.Console(1, "Linking {0} video status to SRL", videoDev.Key);
+//                    Debug.LogMessage(LogEventLevel.Debug, "Linking {0} video status to SRL", videoDev.Key);
 //                    videoDev.GetVideoStatuses().VideoSyncFeedback.LinkInputSig(owner.BoolInputSig(index, 3));
 //                }
 //            }

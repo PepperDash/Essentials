@@ -10,6 +10,7 @@ using PepperDash.Core;
 
 //using SSMono.IO;
 using PepperDash.Core.WebApi.Presets;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Presets
 {
@@ -62,7 +63,7 @@ namespace PepperDash.Essentials.Core.Presets
             }
             catch
             {
-                Debug.Console(0, "DevicePresets '{0}', not attached to INumericKeypad device. Ignoring", key);
+                Debug.LogMessage(LogEventLevel.Information, "DevicePresets '{0}', not attached to INumericKeypad device. Ignoring", key);
                 _dialFunctions = null;
                 return;
             }
@@ -112,7 +113,7 @@ namespace PepperDash.Essentials.Core.Presets
         {
             _filePath = ListPathPrefix + path;
 
-            Debug.Console(2, this, "Setting presets file path to {0}", _filePath);
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Setting presets file path to {0}", _filePath);
             LoadChannels();
         }
 
@@ -122,7 +123,7 @@ namespace PepperDash.Essentials.Core.Presets
             {
                 _fileOps.Enter();
 
-                Debug.Console(2, this, "Loading presets from {0}", _filePath);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Loading presets from {0}", _filePath);
                 PresetsAreLoaded = false;
                 try
                 {
@@ -132,7 +133,7 @@ namespace PepperDash.Essentials.Core.Presets
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(2, this,
+                    Debug.LogMessage(LogEventLevel.Verbose, this,
                         "LoadChannels: Error reading presets file. These presets will be empty:\r  '{0}'\r  Error:{1}",
                         _filePath, e.Message);
                     // Just save a default empty list
@@ -168,7 +169,7 @@ namespace PepperDash.Essentials.Core.Presets
             }
             if (_dialFunctions == null)
             {
-                Debug.Console(1, "DevicePresets '{0}', not attached to keypad device. Ignoring channel", Key);
+                Debug.LogMessage(LogEventLevel.Debug, "DevicePresets '{0}', not attached to keypad device. Ignoring channel", Key);
                 return;
             }
 

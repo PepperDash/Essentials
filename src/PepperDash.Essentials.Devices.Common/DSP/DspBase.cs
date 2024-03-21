@@ -6,12 +6,13 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Devices.Common.DSP
 {
-	public abstract class DspBase : EssentialsDevice
+	public abstract class DspBase : EssentialsDevice, ILevelControls
 	{
-		public Dictionary<string, DspControlPoint> LevelControlPoints { get; private set; }
+		public Dictionary<string,IBasicVolumeWithFeedback> LevelControlPoints { get; private set; }
 
         public Dictionary<string, DspControlPoint> DialerControlPoints { get; private set; }
 
@@ -40,15 +41,36 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 		// Typical presets:
 		// call default preset to restore levels and mutes
 
-	public abstract class DspControlPoint 
+	public abstract class DspControlPoint :IKeyed
 	{
-         string Key { get; set; }
+        public string Key { get; }
+
+        protected DspControlPoint(string key) => Key = key;
 	}
 
+    public abstract class DspLevelControlPoint :DspControlPoint, IBasicVolumeWithFeedback
+    {
+        public BoolFeedback MuteFeedback { get; }
+        public IntFeedback VolumeLevelFeedback { get; }
 
-	public class DspDialerBase
+        protected DspLevelControlPoint(string key, Func<bool> muteFeedbackFunc, Func<int> volumeLevelFeedbackFunc) : base(key)
+        {
+            MuteFeedback = new BoolFeedback(muteFeedbackFunc);
+            VolumeLevelFeedback = new IntFeedback(volumeLevelFeedbackFunc);
+        }
+
+        public abstract void MuteOff();
+        public abstract void MuteOn();
+        public abstract void MuteToggle();
+        public abstract void SetVolume(ushort level);
+        public abstract void VolumeDown(bool pressRelease);
+        public abstract void VolumeUp(bool pressRelease);
+    }
+
+
+    public abstract class DspDialerBase:DspControlPoint
 	{
-
+        protected DspDialerBase(string key) : base(key) { }
 	}
 
 

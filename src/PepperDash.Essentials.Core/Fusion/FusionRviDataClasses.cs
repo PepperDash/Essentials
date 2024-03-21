@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.Fusion;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
@@ -74,7 +75,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             var slotNum = GetNextAvailableAssetNumber(room);
 
-            Debug.Console(2, "Adding Fusion Asset: {0} of Type: {1} at Slot Number: {2} with GUID: {3}", assetName, type, slotNum, instanceId);
+            Debug.LogMessage(LogEventLevel.Verbose, "Adding Fusion Asset: {0} of Type: {1} at Slot Number: {2} with GUID: {3}", assetName, type, slotNum, instanceId);
 
             var tempAsset = new FusionAsset(slotNum, assetName, type, instanceId);
 
@@ -105,7 +106,7 @@ namespace PepperDash.Essentials.Core.Fusion
             else
                 slotNum = slotNum + 1;
 
-            Debug.Console(2, "#Next available fusion asset number is: {0}", slotNum);
+            Debug.LogMessage(LogEventLevel.Verbose, "#Next available fusion asset number is: {0}", slotNum);
 
             return slotNum;
         }

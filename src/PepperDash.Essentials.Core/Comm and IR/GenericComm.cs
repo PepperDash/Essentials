@@ -10,6 +10,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -45,7 +46,7 @@ namespace PepperDash.Essentials.Core
 
         public static IKeyed BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Comm Device");
             return new GenericComm(dc);
         }
 
@@ -59,7 +60,7 @@ namespace PepperDash.Essentials.Core
             }
             catch (Exception e)
             {
-                Debug.Console(2, this, "Error deserializing port config: {0}", e);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Error deserializing port config: {0}", e);
             }
         }
 
@@ -85,16 +86,16 @@ namespace PepperDash.Essentials.Core
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
             if (CommPort == null)
             {
-                Debug.Console(1, this, "Unable to link device '{0}'.  CommPort is null", Key);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Unable to link device '{0}'.  CommPort is null", Key);
                 return;
             }
 
-            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogMessage(LogEventLevel.Debug, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             // this is a permanent event handler. This cannot be -= from event
             CommPort.TextReceived += (s, a) =>
@@ -137,7 +138,7 @@ namespace PepperDash.Essentials.Core
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Comm Device");
             return new GenericComm(dc);
         }
     }

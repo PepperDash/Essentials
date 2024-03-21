@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core.Presets
@@ -41,7 +42,7 @@ namespace PepperDash.Essentials.Core.Presets
 			var chan = View.ShowNumbers ? Channel.Channel : "";
 			Owner.StringInputSig(Index, 2).StringValue = chan;
 			var url = View.Model.ImagesLocalHostPrefix + View.Model.ImagesPathPrefix + Channel.IconUrl;
-			Debug.Console(2, "icon url={0}", url);
+			Debug.LogMessage(LogEventLevel.Verbose, "icon url={0}", url);
 			var icon = View.ShowIcon ? url : "";
 			Owner.StringInputSig(Index, 3).StringValue = icon;
 		}

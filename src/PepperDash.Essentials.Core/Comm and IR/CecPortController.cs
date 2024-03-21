@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -49,7 +50,7 @@ namespace PepperDash.Essentials.Core
                 OnDataReceived(cecDevice.Received.StringValue);
             else if (args.EventId == CecEventIds.ErrorFeedbackEventId)
                 if(cecDevice.ErrorFeedback.BoolValue)
-                    Debug.Console(2, this, "CEC NAK Error");
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "CEC NAK Error");
         }
 
         void OnDataReceived(string s)
@@ -59,14 +60,14 @@ namespace PepperDash.Essentials.Core
             {
                 var bytes = Encoding.GetEncoding(28591).GetBytes(s);
 				if (StreamDebugging.RxStreamDebuggingIsEnabled)
-					Debug.Console(0, this, "Received: '{0}'", ComTextHelper.GetEscapedText(bytes));
+					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", ComTextHelper.GetEscapedText(bytes));
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
             }
             var textHandler = TextReceived;
 			if (textHandler != null)
 			{
 				if (StreamDebugging.RxStreamDebuggingIsEnabled)
-					Debug.Console(0, this, "Received: '{0}'", s);
+					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", s);
 				textHandler(this, new GenericCommMethodReceiveTextArgs(s));
 			}
         }
@@ -78,7 +79,7 @@ namespace PepperDash.Essentials.Core
             if (Port == null)
                 return;
 			if (StreamDebugging.TxStreamDebuggingIsEnabled)
-				Debug.Console(0, this, "Sending {0} characters of text: '{1}'", text.Length, text);
+				Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} characters of text: '{1}'", text.Length, text);
             Port.StreamCec.Send.StringValue = text;
         }
 
@@ -88,7 +89,7 @@ namespace PepperDash.Essentials.Core
                 return;
             var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
 			if (StreamDebugging.TxStreamDebuggingIsEnabled)
-				Debug.Console(0, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+				Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
             Port.StreamCec.Send.StringValue = text;
         }
 

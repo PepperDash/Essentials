@@ -10,6 +10,7 @@ using Crestron.SimplSharp.Reflection;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -147,7 +148,7 @@ namespace PepperDash.Essentials.Core
             }
             else
             {
-                Debug.Console(1, "Unable to find Property: {0} on Device with path: {1}", propertyName, deviceObjectPath);
+                Debug.LogMessage(LogEventLevel.Debug, "Unable to find Property: {0} on Device with path: {1}", propertyName, deviceObjectPath);
                 return null;
             }
         }
@@ -198,7 +199,7 @@ namespace PepperDash.Essentials.Core
 			var dev = DeviceManager.GetDeviceForKey(path[0]);
 			if (dev == null)
 			{
-				Debug.Console(0, "Device {0} not found", path[0]);
+				Debug.LogMessage(LogEventLevel.Information, "Device {0} not found", path[0]);
 				return null;
 			}
 
@@ -216,20 +217,20 @@ namespace PepperDash.Essentials.Core
 						var indexClose = objName.IndexOf(']');
 						if (indexClose == -1)
 						{
-							Debug.Console(0, dev, "ERROR Unmatched index brackets");
+							Debug.LogMessage(LogEventLevel.Information, dev, "ERROR Unmatched index brackets");
 							return null;
 						}
 						// Get the index and strip quotes if any
 						indexStr = objName.Substring(indexOpen + 1, indexClose - indexOpen - 1).Replace("\"", "");
 						objName = objName.Substring(0, indexOpen);
-						Debug.Console(0, dev, "  Checking for collection '{0}', index '{1}'", objName, indexStr);
+						Debug.LogMessage(LogEventLevel.Information, dev, "  Checking for collection '{0}', index '{1}'", objName, indexStr);
 					}
 
 					CType oType = obj.GetType();
 					var prop = oType.GetProperty(objName);
 					if (prop == null)
 					{
-						Debug.Console(0, dev, "Property {0} not found on {1}", objName, path[i - 1]);
+						Debug.LogMessage(LogEventLevel.Information, dev, "Property {0} not found on {1}", objName, path[i - 1]);
 						return null;
 					}
 					// if there's an index, try to get the property
@@ -237,7 +238,7 @@ namespace PepperDash.Essentials.Core
 					{
 						if (!typeof(ICollection).IsAssignableFrom(prop.PropertyType))
 						{
-							Debug.Console(0, dev, "Property {0} is not collection", objName);
+							Debug.LogMessage(LogEventLevel.Information, dev, "Property {0} is not collection", objName);
 							return null;
 						}
 						var collection = prop.GetValue(obj, null) as ICollection;
@@ -247,7 +248,7 @@ namespace PepperDash.Essentials.Core
 						var indexParams = indexedPropInfo.GetIndexParameters();
 						if (indexParams.Length > 0)
 						{
-							Debug.Console(0, "  Indexed, param type: {0}", indexParams[0].ParameterType.Name);
+							Debug.LogMessage(LogEventLevel.Information, "  Indexed, param type: {0}", indexParams[0].ParameterType.Name);
 							var properParam = Convert.ChangeType(indexStr, indexParams[0].ParameterType,
 								System.Globalization.CultureInfo.InvariantCulture);
 							try
@@ -258,9 +259,9 @@ namespace PepperDash.Essentials.Core
 							catch (Crestron.SimplSharp.Reflection.TargetInvocationException e)
 							{
 								if (e.InnerException is ArgumentOutOfRangeException)
-									Debug.Console(0, "  Index Out of range");
+									Debug.LogMessage(LogEventLevel.Information, "  Index Out of range");
 								else if (e.InnerException is KeyNotFoundException)
-									Debug.Console(0, "  Key not found");
+									Debug.LogMessage(LogEventLevel.Information, "  Key not found");
 								return null;
 							}
 						}

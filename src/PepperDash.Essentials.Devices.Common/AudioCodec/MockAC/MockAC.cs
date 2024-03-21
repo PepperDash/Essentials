@@ -8,6 +8,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec
 {
@@ -25,7 +26,7 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
         {
             if (!IsInCall)
             {
-                Debug.Console(1, this, "Dial: {0}", number);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Dial: {0}", number);
                 var call = new CodecActiveCallItem()
                 {
                     Name = "Mock Outgoing Call",
@@ -42,20 +43,20 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
             }
             else
             {
-                Debug.Console(1, this, "Already in call.  Cannot dial new call.");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Already in call.  Cannot dial new call.");
             }
         }
 
         public override void EndCall(CodecActiveCallItem call)
         {
-            Debug.Console(1, this, "EndCall");
+            Debug.LogMessage(LogEventLevel.Debug, this, "EndCall");
             ActiveCalls.Remove(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
         }
 
         public override void EndAllCalls()
         {
-            Debug.Console(1, this, "EndAllCalls");
+            Debug.LogMessage(LogEventLevel.Debug, this, "EndAllCalls");
             for (int i = ActiveCalls.Count - 1; i >= 0; i--)
             {
                 var call = ActiveCalls[i];
@@ -66,20 +67,20 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
 
         public override void AcceptCall(CodecActiveCallItem call)
         {
-            Debug.Console(1, this, "AcceptCall");
+            Debug.LogMessage(LogEventLevel.Debug, this, "AcceptCall");
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
         }
 
         public override void RejectCall(CodecActiveCallItem call)
         {
-            Debug.Console(1, this, "RejectCall");
+            Debug.LogMessage(LogEventLevel.Debug, this, "RejectCall");
             ActiveCalls.Remove(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
         }
 
         public override void SendDtmf(string s)
         {
-            Debug.Console(1, this, "BEEP BOOP SendDTMF: {0}", s);
+            Debug.LogMessage(LogEventLevel.Debug, this, "BEEP BOOP SendDTMF: {0}", s);
         }
 
         /// <summary>
@@ -88,7 +89,7 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
         /// <param name="url"></param>
         public void TestIncomingAudioCall(string number)
         {
-            Debug.Console(1, this, "TestIncomingAudioCall from {0}", number);
+            Debug.LogMessage(LogEventLevel.Debug, this, "TestIncomingAudioCall from {0}", number);
             var call = new CodecActiveCallItem() { Name = number, Id = number, Number = number, Type = eCodecCallType.Audio, Direction = eCodecCallDirection.Incoming };
             ActiveCalls.Add(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Ringing, call);
@@ -122,7 +123,7 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new MockAc Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new MockAc Device");
             var props = Newtonsoft.Json.JsonConvert.DeserializeObject<AudioCodec.MockAcPropertiesConfig>(dc.Properties.ToString());
             return new AudioCodec.MockAC(dc.Key, dc.Name, props);
         }

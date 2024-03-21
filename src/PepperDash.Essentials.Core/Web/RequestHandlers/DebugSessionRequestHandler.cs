@@ -4,6 +4,7 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +45,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
                 if (!Debug.WebsocketSink.IsRunning)
                 {
-                    Debug.Console(0, "Starting WS Server");
+                    Debug.LogMessage(LogEventLevel.Information, "Starting WS Server");
                     // Generate a random port within a specified range
                     port = new Random().Next(65435, 65535);
                     // Start the WS Server
@@ -59,7 +60,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     url = Debug.WebsocketSink.Url
                 };
 
-                Debug.Console(0, "Debug Session URL: {0}", url);
+                Debug.LogMessage(LogEventLevel.Information, "Debug Session URL: {0}", url);
 
                 // Return the port number with the full url of the WS Server
                 var res = JsonConvert.SerializeObject(data);
@@ -73,7 +74,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
             }
             catch (Exception e)
             {
-                Debug.Console(0, "Error: {0}", e);
+                Debug.LogMessage(LogEventLevel.Information, "Error: {0}", e);
             }
         }
 
@@ -89,7 +90,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
             context.Response.StatusDescription = "OK";
             context.Response.End();
 
-            Debug.Console(0, "Websocket Debug Session Stopped");
+            Debug.LogMessage(LogEventLevel.Information, "Websocket Debug Session Stopped");
         }
 
     }

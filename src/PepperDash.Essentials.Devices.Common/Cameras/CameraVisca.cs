@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using Crestron.SimplSharp.Reflection;
 
 using Newtonsoft.Json;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
@@ -161,7 +162,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			Communication.Connect();
 
 			
-			CommunicationMonitor.StatusChange += (o, a) => { Debug.Console(2, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
+			CommunicationMonitor.StatusChange += (o, a) => { Debug.LogMessage(LogEventLevel.Verbose, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
 			CommunicationMonitor.Start();
 
 
@@ -176,7 +177,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
 	    void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
 		{
-			Debug.Console(2, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
+			Debug.LogMessage(LogEventLevel.Verbose, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
 
 			if (e.Client.IsConnected)
 			{
@@ -193,7 +194,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		{
 			
 			if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
-				Debug.Console(2, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
+				Debug.LogMessage(LogEventLevel.Verbose, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
 
 			Communication.SendBytes(b);
 		}
@@ -209,7 +210,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 IncomingBuffer.CopyTo(newBytes, 0);
                 e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
                 if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
-                    Debug.Console(2, this, "Received:{0}", ComTextHelper.GetEscapedText(newBytes));
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "Received:{0}", ComTextHelper.GetEscapedText(newBytes));
 
                 byte[] message = new byte[] { };
 
@@ -238,7 +239,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                         case 0x40:
                             {
                                 // ACK received
-                                Debug.Console(2, this, "ACK Received");
+                                Debug.LogMessage(LogEventLevel.Verbose, this, "ACK Received");
                                 break;
                             }
                         case 0x50:
@@ -247,7 +248,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                                 if (message[2] == 0xFF)
                                 {
                                     // Completion received
-                                    Debug.Console(2, this, "Completion Received");
+                                    Debug.LogMessage(LogEventLevel.Verbose, this, "Completion Received");
                                 }
                                 else
                                 {
@@ -260,7 +261,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                                     }
                                     else
                                     {
-                                        Debug.Console(2, this, "Response Queue is empty. Nothing to dequeue.");
+                                        Debug.LogMessage(LogEventLevel.Verbose, this, "Response Queue is empty. Nothing to dequeue.");
                                     }
                                 }
 
@@ -275,37 +276,37 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                                     case 0x01:
                                         {
                                             // Message Length Error
-                                            Debug.Console(2, this, "Error from device: Message Length Error");
+                                            Debug.LogMessage(LogEventLevel.Verbose, this, "Error from device: Message Length Error");
                                             break;
                                         }
                                     case 0x02:
                                         {
                                             // Syntax Error
-                                            Debug.Console(2, this, "Error from device: Syntax Error");
+                                            Debug.LogMessage(LogEventLevel.Verbose, this, "Error from device: Syntax Error");
                                             break;
                                         }
                                     case 0x03:
                                         {
                                             // Command Buffer Full
-                                            Debug.Console(2, this, "Error from device: Command Buffer Full");
+                                            Debug.LogMessage(LogEventLevel.Verbose, this, "Error from device: Command Buffer Full");
                                             break;
                                         }
                                     case 0x04:
                                         {
                                             // Command Cancelled
-                                            Debug.Console(2, this, "Error from device: Command Cancelled");
+                                            Debug.LogMessage(LogEventLevel.Verbose, this, "Error from device: Command Cancelled");
                                             break;
                                         }
                                     case 0x05:
                                         {
                                             // No Socket
-                                            Debug.Console(2, this, "Error from device: No Socket");
+                                            Debug.LogMessage(LogEventLevel.Verbose, this, "Error from device: No Socket");
                                             break;
                                         }
                                     case 0x41:
                                         {
                                             // Command not executable
-                                            Debug.Console(2, this, "Error from device: Command not executable");
+                                            Debug.LogMessage(LogEventLevel.Verbose, this, "Error from device: Command not executable");
                                             break;
                                         }
                                 }
@@ -327,7 +328,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             }
             catch (Exception err)
             {
-                Debug.Console(2, this, "Error parsing feedback: {0}", err);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Error parsing feedback: {0}", err);
             }
             finally
             {
@@ -645,7 +646,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new CameraVisca Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new CameraVisca Device");
             var comm = CommFactory.CreateCommForDevice(dc);
             var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Cameras.CameraViscaPropertiesConfig>(
                 dc.Properties.ToString());

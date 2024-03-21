@@ -5,6 +5,7 @@ using Crestron.SimplSharp.Reflection;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +45,7 @@ namespace PepperDash.Essentials.Core
                     }
                     catch (Exception e)
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to load type: '{1}' DeviceFactory: {0}", e, type.Name);
+                        Debug.LogMessage(LogEventLevel.Information, "Unable to load type: '{1}' DeviceFactory: {0}", e, type.Name);
                     }
                 }
             }
@@ -64,17 +65,17 @@ namespace PepperDash.Essentials.Core
 		/// <returns></returns>
 		public static void AddFactoryForType(string typeName, Func<DeviceConfig, IKeyed> method) 
 		{
-            //Debug.Console(1, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
+            //Debug.LogMessage(LogEventLevel.Debug, "Adding factory method for type '{0}'", typeName);
             DeviceFactory.FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method});
 		}
 
         public static void AddFactoryForType(string typeName, string description, CType cType, Func<DeviceConfig, IKeyed> method)
         {
-            //Debug.Console(1, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
+            //Debug.LogMessage(LogEventLevel.Debug, "Adding factory method for type '{0}'", typeName);
 
             if(FactoryMethods.ContainsKey(typeName))
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to add type: '{0}'.  Already exists in DeviceFactory", typeName);
+                Debug.LogMessage(LogEventLevel.Information, "Unable to add type: '{0}'.  Already exists in DeviceFactory", typeName);
                 return;
             }
 
@@ -104,7 +105,7 @@ namespace PepperDash.Essentials.Core
             if (secretProvider == null) return null;
             var secret = secretProvider.GetSecret(data.Key);
             if (secret != null) return (string) secret.Value;
-            Debug.Console(1,
+            Debug.LogMessage(LogEventLevel.Debug,
                 "Unable to retrieve secret {0}{1} - Make sure you've added it to the secrets provider",
                 data.Provider, data.Key);
             return String.Empty;
@@ -121,7 +122,7 @@ namespace PepperDash.Essentials.Core
         {
             try
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading '{0}' from Essentials Core", dc.Type);
+                Debug.LogMessage(LogEventLevel.Information, "Loading '{0}' from Essentials Core", dc.Type);
 
                 var localDc = new DeviceConfig(dc);
 
@@ -142,24 +143,24 @@ namespace PepperDash.Essentials.Core
                     CheckForSecrets(jProp);
                 }
 
-                Debug.Console(2, "typeName = {0}", typeName);
+                Debug.LogMessage(LogEventLevel.Verbose, "typeName = {0}", typeName);
                 // Check for types that have been added by plugin dlls. 
                 return !FactoryMethods.ContainsKey(typeName) ? null : FactoryMethods[typeName].FactoryMethod(localDc);
             }
             catch (Exception ex)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Exception occurred while creating device {0}: {1}", dc.Key, ex.Message);
+                Debug.LogMessage(LogEventLevel.Error, "Exception occurred while creating device {0}: {1}", dc.Key, ex.Message);
 
-                Debug.Console(2, "{0}", ex.StackTrace);
+                Debug.LogMessage(LogEventLevel.Verbose, "{0}", ex.StackTrace);
 
                 if (ex.InnerException == null)
                 {
                     return null;
                 }
 
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Inner exception while creating device {0}: {1}", dc.Key,
+                Debug.LogMessage(LogEventLevel.Error, "Inner exception while creating device {0}: {1}", dc.Key,
                     ex.InnerException.Message);
-                Debug.Console(2, "{0}", ex.InnerException.StackTrace);
+                Debug.LogMessage(LogEventLevel.Verbose, "{0}", ex.InnerException.StackTrace);
                 return null;
             }
         }

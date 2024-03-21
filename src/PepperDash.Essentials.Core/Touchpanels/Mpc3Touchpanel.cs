@@ -4,6 +4,7 @@ using System.Globalization;
 using Crestron.SimplSharpPro;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Touchpanels
 {
@@ -23,14 +24,14 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			_touchpanel = processor.ControllerTouchScreenSlotDevice as MPC3Basic;
 			if (_touchpanel == null)
 			{
-				Debug.Console(1, this, "Failed to construct MPC3 Touchpanel Controller with key {0}, check configuration", key);
+				Debug.LogMessage(LogEventLevel.Debug, this, "Failed to construct MPC3 Touchpanel Controller with key {0}, check configuration", key);
 				return;
 			}
 
 			if (_touchpanel.Registerable)
 			{
 				var registrationResponse = _touchpanel.Register();
-				Debug.Console(0, this, "touchpanel registration response: {0}", registrationResponse);
+				Debug.LogMessage(LogEventLevel.Information, this, "touchpanel registration response: {0}", registrationResponse);
 			}
 
 			_touchpanel.BaseEvent += _touchpanel_BaseEvent;
@@ -40,7 +41,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			_buttons = buttons;
 			if (_buttons == null)
 			{
-				Debug.Console(1, this,
+				Debug.LogMessage(LogEventLevel.Debug, this,
 					"Button properties are null, failed to setup MPC3 Touch Controller, check configuration");
 				return;
 			}
@@ -67,7 +68,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		{
 			if (config == null)
 			{
-				Debug.Console(1, this, "Button '{0}' config is null, unable to initialize", key);
+				Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' config is null, unable to initialize", key);
 				return;
 			}
 
@@ -139,7 +140,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 					}
 			}
 
-			Debug.Console(0, this, "InitializeButton: key-'{0}' enabledFb-'{1}', disabledFb-'{2}'",
+			Debug.LogMessage(LogEventLevel.Information, this, "InitializeButton: key-'{0}' enabledFb-'{1}', disabledFb-'{2}'",
 				key, enabledFb ?? (object)"null", disabledFb ?? (object)"null");
 		}
 
@@ -150,11 +151,11 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		/// <param name="config"></param>
 		public void InitializeButtonFeedback(string key, KeypadButton config)
 		{
-			//Debug.Console(1, this, "Initializing button '{0}' feedback...", key);
+			//Debug.LogMessage(LogEventLevel.Debug, this, "Initializing button '{0}' feedback...", key);
 
 			if (config == null)
 			{
-				Debug.Console(1, this, "Button '{0}' config is null, skipping.", key);
+				Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' config is null, skipping.", key);
 				return;
 			}
 
@@ -165,7 +166,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			var buttonFeedback = config.Feedback;
 			if (buttonFeedback == null || string.IsNullOrEmpty(buttonFeedback.DeviceKey))
 			{
-				Debug.Console(1, this, "Button '{0}' feedback not configured, skipping.",
+				Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedback not configured, skipping.",
 					key);
 				return;
 			}
@@ -177,7 +178,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 				var device = DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) as Device;
 				if (device == null)
 				{
-					Debug.Console(1, this, "Button '{0}' feedback deviceKey '{1}' not found.",
+					Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedback deviceKey '{1}' not found.",
 						key, buttonFeedback.DeviceKey);
 					return;
 				}
@@ -185,13 +186,13 @@ namespace PepperDash.Essentials.Core.Touchpanels
 				deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
 				if (deviceFeedback == null)
 				{
-					Debug.Console(1, this, "Button '{0}' feedbackName property '{1}' not found.",
+					Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedbackName property '{1}' not found.",
 						key, buttonFeedback.FeedbackName);
 					return;
 				}
 
 				// TODO [ ] verify if this can replace the current method
-				//Debug.Console(0, this, "deviceFeedback.GetType().Name: '{0}'", deviceFeedback.GetType().Name);
+				//Debug.LogMessage(LogEventLevel.Information, this, "deviceFeedback.GetType().Name: '{0}'", deviceFeedback.GetType().Name);
 				//switch (feedback.GetType().Name.ToLower())
 				//{
 				//    case("boolfeedback"):
@@ -210,11 +211,11 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			}
 			catch (Exception ex)
 			{
-				Debug.Console(1, this, "InitializeButtonFeedback (button '{1}', deviceKey '{2}') Exception Message: {0}",
+				Debug.LogMessage(LogEventLevel.Debug, this, "InitializeButtonFeedback (button '{1}', deviceKey '{2}') Exception Message: {0}",
 					ex.Message, key, buttonFeedback.DeviceKey);
-				Debug.Console(2, this, "InitializeButtonFeedback (button '{1}', deviceKey '{2}') Exception StackTrace: {0}",
+				Debug.LogMessage(LogEventLevel.Verbose, this, "InitializeButtonFeedback (button '{1}', deviceKey '{2}') Exception StackTrace: {0}",
 					ex.StackTrace, key, buttonFeedback.DeviceKey);
-				if (ex.InnerException != null) Debug.Console(2, this, "InitializeButtonFeedback (button '{1}', deviceKey '{2}') InnerException: {0}",
+				if (ex.InnerException != null) Debug.LogMessage(LogEventLevel.Verbose, this, "InitializeButtonFeedback (button '{1}', deviceKey '{2}') InnerException: {0}",
 					ex.InnerException, key, buttonFeedback.DeviceKey);
 
 				return;
@@ -276,12 +277,12 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 		private void _touchpanel_BaseEvent(GenericBase device, BaseEventArgs args)
 		{
-			Debug.Console(1, this, "BaseEvent: eventId-'{0}', index-'{1}'", args.EventId, args.Index);
+			Debug.LogMessage(LogEventLevel.Debug, this, "BaseEvent: eventId-'{0}', index-'{1}'", args.EventId, args.Index);
 		}
 
 		private void _touchpanel_ButtonStateChange(GenericBase device, Crestron.SimplSharpPro.DeviceSupport.ButtonEventArgs args)
 		{
-			Debug.Console(1, this, "ButtonStateChange: buttonNumber-'{0}' buttonName-'{1}', buttonState-'{2}'", args.Button.Number, args.Button.Name, args.NewButtonState);
+			Debug.LogMessage(LogEventLevel.Debug, this, "ButtonStateChange: buttonNumber-'{0}' buttonName-'{1}', buttonState-'{2}'", args.Button.Number, args.Button.Name, args.NewButtonState);
 			var type = args.NewButtonState.ToString();
 
 			if (_buttons.ContainsKey(args.Button.Number.ToString(CultureInfo.InvariantCulture)))
@@ -296,7 +297,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 		private void _touchpanel_PanelStateChange(GenericBase device, BaseEventArgs args)
 		{
-			Debug.Console(1, this, "PanelStateChange: eventId-'{0}', index-'{1}'", args.EventId, args.Index);
+			Debug.LogMessage(LogEventLevel.Debug, this, "PanelStateChange: eventId-'{0}', index-'{1}'", args.EventId, args.Index);
 		}
 
 		/// <summary>
@@ -307,7 +308,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		/// <param name="type"></param>
 		public void Press(string buttonKey, string type)
 		{
-			Debug.Console(2, this, "Press: buttonKey-'{0}', type-'{1}'", buttonKey, type);
+			Debug.LogMessage(LogEventLevel.Verbose, this, "Press: buttonKey-'{0}', type-'{1}'", buttonKey, type);
 
 			// TODO: In future, consider modifying this to generate actions at device activation time
 			//       to prevent the need to dynamically call the method via reflection on each button press

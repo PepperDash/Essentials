@@ -14,6 +14,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -63,14 +64,14 @@ namespace PepperDash.Essentials.Core
                     Room.RoomOccupancyIsSet += new EventHandler<EventArgs>(RoomOccupancyIsSet);
 
                 else
-                    Debug.Console(1, this, "Room has no RoomOccupancy object set");
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Room has no RoomOccupancy object set");
 
                 var fusionRoomKey = PropertiesConfig.RoomKey + "-fusion";
 
                 FusionRoom = DeviceManager.GetDeviceForKey(fusionRoomKey) as Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase;
 
                 if (FusionRoom == null)
-                    Debug.Console(1, this, "Unable to get Fusion Room from Device Manager with key: {0}", fusionRoomKey);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Unable to get Fusion Room from Device Manager with key: {0}", fusionRoomKey);
             });
         }
 
@@ -96,14 +97,14 @@ namespace PepperDash.Essentials.Core
 
                     if (FeatureEnabledTime != null)
                     {
-                        Debug.Console(1, this, "Enabled Time: {0}", FeatureEnabledTime.ToString());
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Enabled Time: {0}", FeatureEnabledTime.ToString());
                     }
                     else
-                        Debug.Console(1, this, "Unable to parse {0} to DateTime", PropertiesConfig.OccupancyStartTime);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Unable to parse {0} to DateTime", PropertiesConfig.OccupancyStartTime);
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(1, this, "Unable to parse OccupancyStartTime property: {0} \n Error: {1}", PropertiesConfig.OccupancyStartTime, e);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Unable to parse OccupancyStartTime property: {0} \n Error: {1}", PropertiesConfig.OccupancyStartTime, e);
                 }
 
                 try
@@ -112,14 +113,14 @@ namespace PepperDash.Essentials.Core
 
                     if (FeatureDisabledTime != null)
                     {
-                        Debug.Console(1, this, "Disabled Time: {0}", FeatureDisabledTime.ToString());
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Disabled Time: {0}", FeatureDisabledTime.ToString());
                     }
                     else
-                        Debug.Console(1, this, "Unable to parse {0} to DateTime", PropertiesConfig.OccupancyEndTime);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Unable to parse {0} to DateTime", PropertiesConfig.OccupancyEndTime);
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(1, this, "Unable to parse a DateTime config value \n Error: {1}", e);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Unable to parse a DateTime config value \n Error: {1}", e);
                 }
 
                 if (!PropertiesConfig.EnableRoomOnWhenOccupied)
@@ -138,7 +139,7 @@ namespace PepperDash.Essentials.Core
                 FeatureEnabled = CheckIfFeatureShouldBeEnabled();
             }
             else
-                Debug.Console(1, this, "Unable to get room from Device Manager with key: {0}", PropertiesConfig.RoomKey);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Unable to get room from Device Manager with key: {0}", PropertiesConfig.RoomKey);
         }
 
 
@@ -165,13 +166,13 @@ namespace PepperDash.Essentials.Core
             {
                 Room.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange -= RoomIsOccupiedFeedback_OutputChange;
                 Room.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(RoomIsOccupiedFeedback_OutputChange);
-                Debug.Console(1, this, "Subscribed to RoomOccupancy status from: '{0}'", Room.Key);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Subscribed to RoomOccupancy status from: '{0}'", Room.Key);
             }
         }
 
         void FeatureEventGroup_UserGroupCallBack(ScheduledEvent SchEvent, ScheduledEventCommon.eCallbackReason type)
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "{0}:{1} @ {2}", SchEvent.Name, type, DateTime.Now);
+            Debug.LogMessage(LogEventLevel.Debug, this, "{0}:{1} @ {2}", SchEvent.Name, type, DateTime.Now);
 
             if (type == ScheduledEventCommon.eCallbackReason.NormalExpiration)
             {
@@ -183,13 +184,13 @@ namespace PepperDash.Essentials.Core
                     if (PropertiesConfig.EnableRoomOnWhenOccupied)
                         FeatureEnabled = true;
 
-                    Debug.Console(1, this, "*****Feature Enabled by event.*****");
+                    Debug.LogMessage(LogEventLevel.Debug, this, "*****Feature Enabled by event.*****");
                 }
                 else if (SchEvent.Name == FeatureDisableEventName)
                 {
                     FeatureEnabled = false;
 
-                    Debug.Console(1, this, "*****Feature Disabled by event.*****");
+                    Debug.LogMessage(LogEventLevel.Debug, this, "*****Feature Disabled by event.*****");
                 }
             }
         }
@@ -204,7 +205,7 @@ namespace PepperDash.Essentials.Core
 
             if(PropertiesConfig.EnableRoomOnWhenOccupied)
             {
-                Debug.Console(1, this, "Current Time: {0} \n FeatureEnabledTime: {1} \n FeatureDisabledTime: {2}", DateTime.Now, FeatureEnabledTime, FeatureDisabledTime);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Current Time: {0} \n FeatureEnabledTime: {1} \n FeatureDisabledTime: {2}", DateTime.Now, FeatureEnabledTime, FeatureDisabledTime);
 
                 if (DateTime.Now.TimeOfDay.CompareTo(FeatureEnabledTime.TimeOfDay) >= 0 && FeatureDisabledTime.TimeOfDay.CompareTo(DateTime.Now.TimeOfDay) > 0)
                 {
@@ -216,9 +217,9 @@ namespace PepperDash.Essentials.Core
             }
 
             if(enabled)
-                Debug.Console(1, this, "*****Feature Enabled*****");
+                Debug.LogMessage(LogEventLevel.Debug, this, "*****Feature Enabled*****");
             else
-                Debug.Console(1, this, "*****Feature Disabled*****");
+                Debug.LogMessage(LogEventLevel.Debug, this, "*****Feature Disabled*****");
 
             return enabled;
         }
@@ -230,7 +231,7 @@ namespace PepperDash.Essentials.Core
         /// <param name="e"></param>
         void RoomIsOccupiedFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
-            Debug.Console(1, this, "RoomIsOccupiedFeeback.OutputChange event fired. e.BoolValue: {0}", e.BoolValue);
+            Debug.LogMessage(LogEventLevel.Debug, this, "RoomIsOccupiedFeeback.OutputChange event fired. e.BoolValue: {0}", e.BoolValue);
             if(e.BoolValue)
             {
                 // Occupancy detected
@@ -242,7 +243,7 @@ namespace PepperDash.Essentials.Core
                     if (essentialsRoom != null) {
                         if (!essentialsRoom.OnFeedback.BoolValue)
                         {
-                            Debug.Console(1, this, "Powering Room on to default source");
+                            Debug.LogMessage(LogEventLevel.Debug, this, "Powering Room on to default source");
 
                             var defaultRouteRoom = Room as IRunDefaultPresentRoute;
 
@@ -260,7 +261,7 @@ namespace PepperDash.Essentials.Core
 
         void CreateEvent(ScheduledEvent schEvent, string name)
         {
-            Debug.Console(1, this, "Adding Event: '{0}'", name);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Adding Event: '{0}'", name);
             // Create the event
             if (schEvent == null)
                 schEvent = new ScheduledEvent(name, FeatureEventGroup);
@@ -290,19 +291,19 @@ namespace PepperDash.Essentials.Core
                 else
                     eventTime = FeatureEnabledTime;
 
-                Debug.Console(1, this, "eventTime (before recurrence check): {0}", eventTime);
+                Debug.LogMessage(LogEventLevel.Debug, this, "eventTime (before recurrence check): {0}", eventTime);
 
                 // Check day of week against recurrence days and move date ahead as necessary to avoid throwing an exception by trying to set the event
                 // start date on a day of the week that doesn't match teh recurrence values
                 while(!SchedulerUtilities.CheckIfDayOfWeekMatchesRecurrenceDays(eventTime, eventRecurrennce))
                 {
                     eventTime = eventTime.AddDays(1);
-                    Debug.Console(1, this, "eventTime does not fall on a recurrence weekday.  eventTime: {0}", eventTime);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "eventTime does not fall on a recurrence weekday.  eventTime: {0}", eventTime);
                 }
 
                 schEvent.DateAndTime.SetAbsoluteEventTime(eventTime);
 
-                Debug.Console(1, this, "Event '{0}' Absolute time set to {1}", schEvent.Name, schEvent.DateAndTime.ToString());
+                Debug.LogMessage(LogEventLevel.Debug, this, "Event '{0}' Absolute time set to {1}", schEvent.Name, schEvent.DateAndTime.ToString());
 
                 //CalculateAndSetAcknowledgeExpirationTimeout(schEvent, FeatureEnabledTime, FeatureDisabledTime);
 
@@ -319,7 +320,7 @@ namespace PepperDash.Essentials.Core
                 else
                     schEvent.DateAndTime.SetAbsoluteEventTime(FeatureDisabledTime);
 
-                Debug.Console(1, this, "Event '{0}' Absolute time set to {1}", schEvent.Name, schEvent.DateAndTime.ToString());
+                Debug.LogMessage(LogEventLevel.Debug, this, "Event '{0}' Absolute time set to {1}", schEvent.Name, schEvent.DateAndTime.ToString());
 
                 CalculateAndSetAcknowledgeExpirationTimeout(schEvent, FeatureDisabledTime, FeatureEnabledTime);
 
@@ -329,10 +330,10 @@ namespace PepperDash.Essentials.Core
 
         void CalculateAndSetAcknowledgeExpirationTimeout(ScheduledEvent schEvent, DateTime time1, DateTime time2)
         {
-            Debug.Console(1, this, "time1.Hour = {0}", time1.Hour);
-            Debug.Console(1, this, "time2.Hour = {0}", time2.Hour);
-            Debug.Console(1, this, "time1.Minute = {0}", time1.Minute);
-            Debug.Console(1, this, "time2.Minute = {0}", time2.Minute);
+            Debug.LogMessage(LogEventLevel.Debug, this, "time1.Hour = {0}", time1.Hour);
+            Debug.LogMessage(LogEventLevel.Debug, this, "time2.Hour = {0}", time2.Hour);
+            Debug.LogMessage(LogEventLevel.Debug, this, "time1.Minute = {0}", time1.Minute);
+            Debug.LogMessage(LogEventLevel.Debug, this, "time2.Minute = {0}", time2.Minute);
 
             // Calculate the Acknowledge Expiration timer to be the time between the enable and dispable events, less one minute
             var ackHours = time2.Hour - time1.Hour;
@@ -340,14 +341,14 @@ namespace PepperDash.Essentials.Core
                 ackHours = ackHours + 24;
             var ackMinutes = time2.Minute - time1.Minute;
 
-            Debug.Console(1, this, "ackHours = {0}, ackMinutes = {1}", ackHours, ackMinutes);
+            Debug.LogMessage(LogEventLevel.Debug, this, "ackHours = {0}, ackMinutes = {1}", ackHours, ackMinutes);
 
             var ackTotalMinutes = ((ackHours * 60) + ackMinutes) - 1;
 
             var ackExpHour = ackTotalMinutes / 60;
             var ackExpMinutes = ackTotalMinutes % 60;
 
-            Debug.Console(1, this, "Acknowledge Expiration Timeout: {0} hours, {1} minutes", ackExpHour, ackExpMinutes);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Acknowledge Expiration Timeout: {0} hours, {1} minutes", ackExpHour, ackExpMinutes);
 
             schEvent.AcknowledgeExpirationTimeout.Hour = (ushort)(ackHours);
             schEvent.AcknowledgeExpirationTimeout.Minute = (ushort)(ackExpMinutes);
@@ -401,12 +402,12 @@ namespace PepperDash.Essentials.Core
                 // Check if existing event has same time and recurrence as config values
 
                 FeatureEnableEvent = FeatureEventGroup.ScheduledEvents[FeatureEnableEventName];
-                Debug.Console(1, this, "Enable event already found in group");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Enable event already found in group");
 
                 // Check config times and days against DateAndTime of existing event.  If different, delete existing event and create new event
                 if(!CheckExistingEventTimeForMatch(FeatureEnableEvent, FeatureEnabledTime) || !CheckExistingEventRecurrenceForMatch(FeatureEnableEvent, CalculateDaysOfWeekRecurrence()))
                 {
-                    Debug.Console(1, this, "Existing event does not match new config properties. Deleting exisiting event: '{0}'", FeatureEnableEvent.Name);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Existing event does not match new config properties. Deleting exisiting event: '{0}'", FeatureEnableEvent.Name);
                     FeatureEventGroup.DeleteEvent(FeatureEnableEvent);
 
                     FeatureEnableEvent = null;
@@ -429,12 +430,12 @@ namespace PepperDash.Essentials.Core
             else
             {
                 FeatureDisableEvent = FeatureEventGroup.ScheduledEvents[FeatureDisableEventName];
-                Debug.Console(1, this, "Disable event already found in group");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Disable event already found in group");
 
                 // Check config times against DateAndTime of existing event.  If different, delete existing event and create new event
                 if(!CheckExistingEventTimeForMatch(FeatureDisableEvent, FeatureDisabledTime))
                 {
-                    Debug.Console(1, this, "Existing event does not match new config properties. Deleting exisiting event: '{0}'", FeatureDisableEvent.Name);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Existing event does not match new config properties. Deleting exisiting event: '{0}'", FeatureDisableEvent.Name);
 
                     FeatureEventGroup.DeleteEvent(FeatureDisableEvent);
 
@@ -484,7 +485,7 @@ namespace PepperDash.Essentials.Core
                 if(PropertiesConfig.EnableRoomOnWhenOccupied)
                     FeatureEnabled = true;
 
-                Debug.Console(1, this, "RoomOnToDefaultSourceWhenOccupied Feature Enabled.");
+                Debug.LogMessage(LogEventLevel.Debug, this, "RoomOnToDefaultSourceWhenOccupied Feature Enabled.");
             }
         }
 
@@ -499,7 +500,7 @@ namespace PepperDash.Essentials.Core
             {
                 FeatureEnabled = false;
 
-                Debug.Console(1, this, "RoomOnToDefaultSourceWhenOccupied Feature Disabled.");
+                Debug.LogMessage(LogEventLevel.Debug, this, "RoomOnToDefaultSourceWhenOccupied Feature Disabled.");
             }
         }
     }
@@ -549,7 +550,7 @@ namespace PepperDash.Essentials.Core
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new RoomOnToDefaultSourceWhenOccupied Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new RoomOnToDefaultSourceWhenOccupied Device");
             return new RoomOnToDefaultSourceWhenOccupied(dc);
         }
     }

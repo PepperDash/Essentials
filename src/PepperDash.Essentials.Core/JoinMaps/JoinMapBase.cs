@@ -13,6 +13,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
 using Newtonsoft.Json;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -57,11 +58,11 @@ namespace PepperDash.Essentials.Core
 
                 if (!ConfigReader.ConfigObject.JoinMaps.ContainsKey(joinMapKey))
                 {
-                    Debug.Console(2, "No Join Map found in config with key: '{0}'", joinMapKey);
+                    Debug.LogMessage(LogEventLevel.Verbose, "No Join Map found in config with key: '{0}'", joinMapKey);
                     return null;
                 }
 
-                Debug.Console(2, "Attempting to load custom join map with key: {0}", joinMapKey);
+                Debug.LogMessage(LogEventLevel.Verbose, "Attempting to load custom join map with key: {0}", joinMapKey);
 
                 var joinMapJToken = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
 
@@ -74,7 +75,7 @@ namespace PepperDash.Essentials.Core
             }
             catch (Exception e)
             {
-                Debug.Console(2, "Error getting join map for key: '{0}'.  Error: {1}", joinMapKey, e);
+                Debug.LogMessage(LogEventLevel.Verbose, "Error getting join map for key: '{0}'.  Error: {1}", joinMapKey, e);
                 return null;
             }
         }
@@ -120,7 +121,7 @@ namespace PepperDash.Essentials.Core
 
                 if (value == null)
                 {
-                    Debug.Console(0, "Unable to cast base class to {0}", type.Name);
+                    Debug.LogMessage(LogEventLevel.Information, "Unable to cast base class to {0}", type.Name);
                     continue;
                 }
 
@@ -271,7 +272,7 @@ namespace PepperDash.Essentials.Core
 
                 if (!Joins.TryGetValue(customJoinData.Key, out join))
                 {
-                    Debug.Console(2, "No matching key found in join map for: '{0}'", customJoinData.Key);
+                    Debug.LogMessage(LogEventLevel.Verbose, "No matching key found in join map for: '{0}'", customJoinData.Key);
                     continue;
                 }
 
@@ -453,7 +454,7 @@ namespace PepperDash.Essentials.Core
                     errorKey = item.Key;
                     break;
                 }
-                Debug.Console(0, "Unable to decode join metadata {1}- {0}", e.Message, !String.IsNullOrEmpty(errorKey) ? (' ' + errorKey) : String.Empty);
+                Debug.LogMessage(LogEventLevel.Information, "Unable to decode join metadata {1}- {0}", e.Message, !String.IsNullOrEmpty(errorKey) ? (' ' + errorKey) : String.Empty);
                 return String.Format(stringFormatter,
                     dataArray["joinNumber"],
                     dataArray["joinSpan"],
@@ -505,7 +506,7 @@ namespace PepperDash.Essentials.Core
             if (attribute == null) return name;
 
             name = attribute.Name;
-            Debug.Console(2, "JoinName Attribute value: {0}", name);
+            Debug.LogMessage(LogEventLevel.Verbose, "JoinName Attribute value: {0}", name);
             return name;
         }
     }
@@ -519,7 +520,7 @@ namespace PepperDash.Essentials.Core
 
         public JoinNameAttribute(string name)
         {
-            Debug.Console(2, "Setting Attribute Name: {0}", name);
+            Debug.LogMessage(LogEventLevel.Verbose, "Setting Attribute Name: {0}", name);
             _Name = name;
         }
 

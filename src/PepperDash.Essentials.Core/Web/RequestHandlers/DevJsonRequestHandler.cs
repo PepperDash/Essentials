@@ -2,6 +2,7 @@
 using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
@@ -53,9 +54,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 			catch (Exception ex)
 			{
-				Debug.Console(1, "Exception Message: {0}", ex.Message);
-				Debug.Console(2, "Exception Stack Trace: {0}", ex.StackTrace);
-				if(ex.InnerException != null) Debug.Console(2, "Exception Inner: {0}", ex.InnerException);
+				Debug.LogMessage(LogEventLevel.Error, "Exception Message: {0}", ex.Message);
+				Debug.LogMessage(LogEventLevel.Verbose, "Exception Stack Trace: {0}", ex.StackTrace);
+				if(ex.InnerException != null) Debug.LogMessage(LogEventLevel.Error, "Exception Inner: {0}", ex.InnerException);
 
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";

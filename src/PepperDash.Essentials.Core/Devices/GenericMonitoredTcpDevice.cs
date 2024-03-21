@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core.Devices
@@ -25,7 +26,7 @@ namespace PepperDash.Essentials.Core.Devices
 			// ------------------------------------------------------DELETE THIS
 			CommunicationMonitor.StatusChange += (o, a) =>
 			{
-				Debug.Console(2, this, "Communication monitor status change: {0}", a.Status);
+				Debug.LogMessage(LogEventLevel.Verbose, this, "Communication monitor status change: {0}", a.Status);
 			};
 
 		}

@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Config
 {
@@ -29,7 +30,7 @@ namespace PepperDash.Essentials.Core.Config
 		/// <returns>null if config data does not match ports, cards or devices</returns>
 		public TieLine GetTieLine()
 		{
-			Debug.Console(0, "Build TieLine: {0}", this);
+			Debug.LogMessage(LogEventLevel.Information, "Build TieLine: {0}", this);
 			// Get the source device
 			var sourceDev = DeviceManager.GetDeviceForKey(SourceKey) as IRoutingOutputs;
 			if (sourceDev == null)
@@ -108,7 +109,7 @@ namespace PepperDash.Essentials.Core.Config
 
 		void LogError(string msg)
 		{
-			Debug.Console(1, "WARNING: Cannot create tie line: {0}:\r   {1}", msg, this);
+			Debug.LogMessage(LogEventLevel.Debug, "WARNING: Cannot create tie line: {0}:\r   {1}", msg, this);
 		}
 
 		public override string ToString()

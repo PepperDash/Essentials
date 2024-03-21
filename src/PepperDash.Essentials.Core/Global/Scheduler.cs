@@ -8,6 +8,7 @@ using Crestron.SimplSharp.Scheduler;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Fusion;
 using PepperDash.Essentials.Room.Config;
+using Serilog.Events;
 using Activator = System.Activator;
 
 namespace PepperDash.Essentials.Core
@@ -38,7 +39,7 @@ namespace PepperDash.Essentials.Core
         {
             if (!EventGroups.ContainsKey(groupName))
             {
-                Debug.Console(0,
+                Debug.LogMessage(LogEventLevel.Information,
                     "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.",
                     groupName);
                 return;
@@ -50,38 +51,38 @@ namespace PepperDash.Essentials.Core
             {
                 group.ClearAllEvents();
 
-                Debug.Console(0, "[Scheduler]: All events deleted from group '{0}'", groupName);
+                Debug.LogMessage(LogEventLevel.Information, "[Scheduler]: All events deleted from group '{0}'", groupName);
             }
             else
-                Debug.Console(0,
+                Debug.LogMessage(LogEventLevel.Information,
                     "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.",
                     groupName);
         }
 
         static void ListAllEventGroups(string command)
         {
-            Debug.Console(0, "Event Groups:");
+            Debug.LogMessage(LogEventLevel.Information, "Event Groups:");
             foreach (var group in EventGroups)
             {
-                Debug.Console(0, "{0}", group.Key);
+                Debug.LogMessage(LogEventLevel.Information, "{0}", group.Key);
             }
         }
 
         static void ListAllEventsForGroup(string args)
         {
-            Debug.Console(0, "Getting events for group {0}...", args);
+            Debug.LogMessage(LogEventLevel.Information, "Getting events for group {0}...", args);
 
             ScheduledEventGroup group;
 
             if (!EventGroups.TryGetValue(args, out group))
             {
-                Debug.Console(0, "Unabled to get event group for key {0}", args);
+                Debug.LogMessage(LogEventLevel.Information, "Unabled to get event group for key {0}", args);
                 return;
             }
 
             foreach (var evt in group.ScheduledEvents)
             {
-                Debug.Console(0,
+                Debug.LogMessage(LogEventLevel.Information,
                     @"
 ****Event key {0}****
 Event date/time: {1}
@@ -137,7 +138,7 @@ Recurrence Days: {5}
 
             var dayOfWeek = eventTime.DayOfWeek;
 
-            Debug.Console(1, "[Scheduler]: eventTime day of week is: {0}", dayOfWeek);
+            Debug.LogMessage(LogEventLevel.Debug, "[Scheduler]: eventTime day of week is: {0}", dayOfWeek);
 
             switch (dayOfWeek)
             {
@@ -185,7 +186,7 @@ Recurrence Days: {5}
                     }
             }
 
-            Debug.Console(1, "[Scheduler]: eventTime day of week matches recurrence days: {0}", isMatch);
+            Debug.LogMessage(LogEventLevel.Debug, "[Scheduler]: eventTime day of week matches recurrence days: {0}", isMatch);
 
             return isMatch;
         }
@@ -204,7 +205,7 @@ Recurrence Days: {5}
         {
             if (group == null)
             {
-                Debug.Console(0, "Unable to create event. Group is null");
+                Debug.LogMessage(LogEventLevel.Information, "Unable to create event. Group is null");
                 return;
             }
             var scheduledEvent = new ScheduledEvent(config.Key, group)
@@ -224,12 +225,12 @@ Recurrence Days: {5}
                 eventTime = eventTime.AddDays(1);
             }
 
-            Debug.Console(2, "[Scheduler] Current Date day of week: {0} recurrence days: {1}", eventTime.DayOfWeek,
+            Debug.LogMessage(LogEventLevel.Verbose, "[Scheduler] Current Date day of week: {0} recurrence days: {1}", eventTime.DayOfWeek,
                 config.Days);
 
             var dayOfWeekConverted = ConvertDayOfWeek(eventTime);
 
-            Debug.Console(1, "[Scheduler] eventTime Day: {0}", dayOfWeekConverted);
+            Debug.LogMessage(LogEventLevel.Debug, "[Scheduler] eventTime Day: {0}", dayOfWeekConverted);
 
             while (!dayOfWeekConverted.IsFlagSet(config.Days))
             {

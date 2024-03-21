@@ -6,6 +6,7 @@ using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core;
 using PepperDash.Core.Web;
 using PepperDash.Essentials.Core.Web.RequestHandlers;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Web
 {
@@ -206,7 +207,7 @@ namespace PepperDash.Essentials.Core.Web
 				if (response.Contains("OFF")) return;
 
 				var is4Series = eCrestronSeries.Series4 == (Global.ProcessorSeries & eCrestronSeries.Series4);
-				Debug.Console(DebugTrace, Debug.ErrorLogLevel.Notice, "Starting Essentials Web API on {0} Appliance", is4Series ? "4-series" : "3-series");
+				Debug.LogMessage(LogEventLevel.Verbose, "Starting Essentials Web API on {0} Appliance", is4Series ? "4-series" : "3-series");
 
 				_server.Start();
 
@@ -216,7 +217,7 @@ namespace PepperDash.Essentials.Core.Web
 			}
 
 			// Automatically start CWS when running on a server (Linux OS, Virtual Control)
-			Debug.Console(DebugTrace, Debug.ErrorLogLevel.Notice, "Starting Essentials Web API on Virtual Control Server");
+			Debug.LogMessage(LogEventLevel.Verbose, "Starting Essentials Web API on Virtual Control Server");
 
 			_server.Start();
 
@@ -232,7 +233,7 @@ namespace PepperDash.Essentials.Core.Web
 		/// </example>
 		public void GetPaths()
 		{
-			Debug.Console(DebugTrace, this, "{0}", new String('-', 50));
+			Debug.LogMessage(LogEventLevel.Verbose, this, "{0}", new String('-', 50));
 
 			var currentIp = CrestronEthernetHelper.GetEthernetParameter(
 				CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
@@ -244,20 +245,20 @@ namespace PepperDash.Essentials.Core.Web
 				? string.Format("http(s)://{0}/VirtualControl/Rooms/{1}/cws{2}", hostname, InitialParametersClass.RoomId, BasePath)
 				: string.Format("http(s)://{0}/cws{1}", currentIp, BasePath);
 			
-			Debug.Console(DebugTrace, this, "Server:{0}", path);
+			Debug.LogMessage(LogEventLevel.Verbose, this, "Server:{0}", path);
 
 			var routeCollection = _server.GetRouteCollection();
 			if (routeCollection == null)
 			{
-				Debug.Console(DebugTrace, this, "Server route collection is null");
+				Debug.LogMessage(LogEventLevel.Verbose, this, "Server route collection is null");
 				return;
 			}
-			Debug.Console(DebugTrace, this, "Configured Routes:");
+			Debug.LogMessage(LogEventLevel.Verbose, this, "Configured Routes:");
 			foreach (var route in routeCollection)
 			{
-				Debug.Console(DebugTrace, this, "{0}: {1}/{2}", route.Name, path, route.Url);
+				Debug.LogMessage(LogEventLevel.Verbose, this, "{0}: {1}/{2}", route.Name, path, route.Url);
 			}
-			Debug.Console(DebugTrace, this, "{0}", new String('-', 50));
+			Debug.LogMessage(LogEventLevel.Verbose, this, "{0}", new String('-', 50));
 		}
 	}
 }

@@ -5,6 +5,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Presets;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.PageManagers
 {
@@ -164,7 +165,7 @@ namespace PepperDash.Essentials.Core.PageManagers
             // Bad config case
             else
             {
-                Debug.Console(1, stb, "WARNING: Not configured to show any UI elements");
+                Debug.LogMessage(LogEventLevel.Debug, stb, "WARNING: Not configured to show any UI elements");
                 FixedVisibilityJoins = new uint[] { 10091 };
             }
 

@@ -3,6 +3,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
 using PepperDash.Core;
 using Crestron.SimplSharpPro;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -47,7 +48,7 @@ namespace PepperDash.Essentials.Core
                 returnCode = CrestronDataStoreStatic.clearLocal(key);
                 if (returnCode == CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 {
-                    Debug.Console(0, this, "Successfully removed secret \"{0}\"", secret);
+                    Debug.LogMessage(LogEventLevel.Information, this, "Successfully removed secret \"{0}\"", secret);
                     return true;
                 }
             }
@@ -57,12 +58,12 @@ namespace PepperDash.Essentials.Core
                 returnCode = CrestronDataStoreStatic.SetLocalStringValue(key, secret);
                 if (returnCode == CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 {
-                    Debug.Console(0, this, "Successfully set secret \"{0}\"", secret);
+                    Debug.LogMessage(LogEventLevel.Information, this, "Successfully set secret \"{0}\"", secret);
                     return true;
                 }
             }
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Unable to set secret for {0}:{1} - {2}", Key, key, returnCode.ToString());
+            Debug.LogMessage(LogEventLevel.Information, this, "Unable to set secret for {0}:{1} - {2}", Key, key, returnCode.ToString());
             return false; 
         }
 
@@ -79,10 +80,10 @@ namespace PepperDash.Essentials.Core
             switch (getErrorCode)
             {
                 case CrestronDataStore.CDS_ERROR.CDS_SUCCESS:
-                    Debug.Console(2, this, "Secret Successfully retrieved for {0}:{1}", Key, key);
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "Secret Successfully retrieved for {0}:{1}", Key, key);
                     return new CrestronSecret(key, mySecret, this);
                 default:
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Unable to retrieve secret for {0}:{1} - {2}",
+                    Debug.LogMessage(LogEventLevel.Information, this, "Unable to retrieve secret for {0}:{1} - {2}",
                         Key, key, getErrorCode.ToString());
                     return null;
             }

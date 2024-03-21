@@ -11,6 +11,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -43,8 +44,8 @@ namespace PepperDash.Essentials.Core
 			IrPort = new IrOutputPortController(key + "-ir", port, irDriverFilepath);
 			DeviceManager.AddDevice(IrPort);
 
-			IsWarmingUpFeedback.OutputChange += (o, a) => Debug.Console(2, this, "Warming up={0}", _IsWarmingUp);
-			IsCoolingDownFeedback.OutputChange += (o, a) => Debug.Console(2, this, "Cooling down={0}", _IsCoolingDown);
+			IsWarmingUpFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Verbose, this, "Warming up={0}", _IsWarmingUp);
+			IsCoolingDownFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Verbose, this, "Cooling down={0}", _IsCoolingDown);
 
 			InputPorts.AddRange(new RoutingPortCollection<RoutingInputPort>
 			{
@@ -170,7 +171,7 @@ namespace PepperDash.Essentials.Core
 		/// <param name="inputSelector">A delegate containing the input selector method to call</param>
 		public override void ExecuteSwitch(object inputSelector)
 		{
-            Debug.Console(2, this, "Switching to input '{0}'", (inputSelector as Action).ToString());
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Switching to input '{0}'", (inputSelector as Action).ToString());
 
 			Action finishSwitch = () =>
 				{
@@ -213,7 +214,7 @@ namespace PepperDash.Essentials.Core
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new BasicIrDisplay Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new BasicIrDisplay Device");
             var ir = IRPortHelper.GetIrPort(dc.Properties);
             if (ir != null)
             {

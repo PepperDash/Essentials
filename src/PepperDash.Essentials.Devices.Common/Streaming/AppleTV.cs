@@ -14,6 +14,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
@@ -45,7 +46,7 @@ namespace PepperDash.Essentials.Devices.Common
 
             foreach (var value in cmds.Select(cmd => cmd.GetValue(null)).OfType<string>())
             {
-                Debug.Console(2, this, "Expected IR Function Name: {0}", value);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Expected IR Function Name: {0}", value);
             }
         }
 
@@ -173,11 +174,11 @@ namespace PepperDash.Essentials.Devices.Common
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
-            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
+            Debug.LogMessage(LogEventLevel.Debug, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogMessage(LogEventLevel.Information, "Linking to Bridge Type {0}", GetType().Name);
 
             trilist.SetBoolSigAction(joinMap.UpArrow.JoinNumber, Up);
             trilist.SetBoolSigAction(joinMap.DnArrow.JoinNumber, Down);
@@ -198,7 +199,7 @@ namespace PepperDash.Essentials.Devices.Common
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new AppleTV Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new AppleTV Device");
             var irCont = IRPortHelper.GetIrOutputPortController(dc);
             return new AppleTV(dc.Key, dc.Name, irCont);
         }

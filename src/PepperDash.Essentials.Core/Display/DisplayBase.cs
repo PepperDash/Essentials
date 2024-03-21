@@ -11,6 +11,7 @@ using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -113,7 +114,7 @@ namespace PepperDash.Essentials.Core
 	        }
 	        else
 	        {
-	            Debug.Console(0,this,"Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+	            Debug.LogMessage(LogEventLevel.Information,this,"Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
 	        }
 
 			LinkDisplayToApi(displayDevice, trilist, joinMap);
@@ -121,8 +122,8 @@ namespace PepperDash.Essentials.Core
 
 		protected void LinkDisplayToApi(DisplayBase displayDevice, BasicTriList trilist, DisplayControllerJoinMap joinMap)
 		{
-			Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-			Debug.Console(0, "Linking to Display: {0}", displayDevice.Name);
+			Debug.LogMessage(LogEventLevel.Debug, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+			Debug.LogMessage(LogEventLevel.Information, "Linking to Display: {0}", displayDevice.Name);
 
 			trilist.StringInput[joinMap.Name.JoinNumber].StringValue = displayDevice.Name;
 
@@ -144,7 +145,7 @@ namespace PepperDash.Essentials.Core
 			{
 				trilist.SetBool(joinMap.IsTwoWayDisplay.JoinNumber, true);
 
-				twoWayDisplay.CurrentInputFeedback.OutputChange += (o, a) => Debug.Console(0, "CurrentInputFeedback_OutputChange {0}", a.StringValue);
+				twoWayDisplay.CurrentInputFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Information, "CurrentInputFeedback_OutputChange {0}", a.StringValue);
 
 
 				inputNumberFeedback.LinkInputSig(trilist.UShortInput[joinMap.InputSelect.JoinNumber]);
@@ -198,16 +199,16 @@ namespace PepperDash.Essentials.Core
 					var tempKey = inputKeys.ElementAt(i);
 					trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset.JoinNumber + i),
 						() => displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector));
-					Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}",
+					Debug.LogMessage(LogEventLevel.Verbose, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}",
 						joinMap.InputSelectOffset.JoinNumber + i, displayDevice.InputPorts[tempKey].Key.ToString());
 					trilist.StringInput[(ushort)(joinMap.InputNamesOffset.JoinNumber + i)].StringValue = displayDevice.InputPorts[i].Key.ToString();
 				}
 				else
-					Debug.Console(0, displayDevice, Debug.ErrorLogLevel.Warning, "Device has {0} inputs.  The Join Map allows up to {1} inputs.  Discarding inputs {2} - {3} from bridge.",
+					Debug.LogMessage(LogEventLevel.Information, displayDevice, "Device has {0} inputs.  The Join Map allows up to {1} inputs.  Discarding inputs {2} - {3} from bridge.",
 						displayDevice.InputPorts.Count, joinMap.InputNamesOffset.JoinSpan, i + 1, displayDevice.InputPorts.Count);
 			}
 
-			Debug.Console(2, displayDevice, "Setting Input Select Action on Analog Join {0}", joinMap.InputSelect);
+			Debug.LogMessage(LogEventLevel.Verbose, displayDevice, "Setting Input Select Action on Analog Join {0}", joinMap.InputSelect);
 			trilist.SetUShortSigAction(joinMap.InputSelect.JoinNumber, (a) =>
 			{
 				if (a == 0)

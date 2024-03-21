@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
@@ -45,7 +46,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     }
                 }
                 programs[i] = item;
-                Debug.Console(1, "Program {0}: {1}", i, item.Name);
+                Debug.LogMessage(LogEventLevel.Debug, "Program {0}: {1}", i, item.Name);
             }
             return programs;
         }

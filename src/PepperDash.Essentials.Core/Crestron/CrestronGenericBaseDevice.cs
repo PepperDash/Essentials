@@ -5,6 +5,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Core.JsonStandardObjects;
 using PepperDash.Essentials.Core.Bridges;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -65,17 +66,17 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public override bool CustomActivate()
 		{
-            Debug.Console(0, this, "Activating");
+            Debug.LogMessage(LogEventLevel.Information, this, "Activating");
             if (!PreventRegistration)
             {
-                //Debug.Console(1, this, "  Does not require registration. Skipping");
+                //Debug.LogMessage(LogEventLevel.Debug, this, "  Does not require registration. Skipping");
 
                 if (Hardware.Registerable && !Hardware.Registered)
                 {
                     var response = Hardware.RegisterWithLogging(Key);
                     if (response != eDeviceRegistrationUnRegistrationResponse.Success)
                     {
-                        //Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
+                        //Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Crestron device: {0}", response);
                         return false;
                     }
                 }
@@ -141,7 +142,7 @@ namespace PepperDash.Essentials.Core
 
 		void Hardware_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
 		{
-            Debug.Console(2, this, "OnlineStatusChange Event.  Online = {0}", args.DeviceOnLine);
+            Debug.LogMessage(LogEventLevel.Verbose, this, "OnlineStatusChange Event.  Online = {0}", args.DeviceOnLine);
 
             if (!Hardware.Registered)
             {
@@ -198,12 +199,11 @@ namespace PepperDash.Essentials.Core
 		public static eDeviceRegistrationUnRegistrationResponse RegisterWithLogging(this GenericBase device, string key)
 		{
 		    var result = device.Register();
-			var level = result == eDeviceRegistrationUnRegistrationResponse.Success ?
-				Debug.ErrorLogLevel.Notice : Debug.ErrorLogLevel.Error;
-			Debug.Console(0, level, "Register device result: '{0}', type '{1}', result {2}", key, device, result);
+			
+			Debug.LogMessage(LogEventLevel.Information, "Register device result: '{0}', type '{1}', result {2}", key, device, result);
 			//if (result != eDeviceRegistrationUnRegistrationResponse.Success)
 			//{
-			//    Debug.Console(0, Debug.ErrorLogLevel.Error, "Cannot register device '{0}': {1}", key, result);
+			//    Debug.LogMessage(LogEventLevel.Information, "Cannot register device '{0}': {1}", key, result);
 			//}
 			return result;
 		}

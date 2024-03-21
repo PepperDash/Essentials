@@ -9,6 +9,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.UI;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -53,7 +54,7 @@ namespace PepperDash.Essentials.Core
 			// Fail cleanly if not defined
 			if (triList.SmartObjects == null || triList.SmartObjects.Count == 0)
 			{
-				Debug.Console(0, "TriList {0:X2} Smart objects have not been loaded", triList.ID, smartObjectId);
+				Debug.LogMessage(LogEventLevel.Information, "TriList {0:X2} Smart objects have not been loaded", triList.ID, smartObjectId);
 				return;
 			}
 			if (triList.SmartObjects.TryGetValue(smartObjectId, out obj))
@@ -68,13 +69,13 @@ namespace PepperDash.Essentials.Core
 				// Count the enable lines to see what max items is
 				MaxDefinedItems = (ushort)SRL.BooleanInput
 					.Where(s => s.Name.Contains("Enable")).Count();
-				Debug.Console(2, "SRL {0} contains max {1} items", SRL.ID, MaxDefinedItems);
+				Debug.LogMessage(LogEventLevel.Verbose, "SRL {0} contains max {1} items", SRL.ID, MaxDefinedItems);
 
 				SRL.SigChange -= new SmartObjectSigChangeEventHandler(SRL_SigChange);
 				SRL.SigChange += new SmartObjectSigChangeEventHandler(SRL_SigChange);
 			}
 			else
-				Debug.Console(0, "ERROR: TriList 0x{0:X2} Cannot load smart object {1}. Verify correct SGD file is loaded", 
+				Debug.LogMessage(LogEventLevel.Information, "ERROR: TriList 0x{0:X2} Cannot load smart object {1}. Verify correct SGD file is loaded", 
                     triList.ID, smartObjectId);
 		}
 
