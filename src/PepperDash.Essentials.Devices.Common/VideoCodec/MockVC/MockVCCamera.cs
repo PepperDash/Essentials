@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
@@ -27,7 +28,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public void PositionHome()
         {
-            Debug.Console(1, this, "Resetting to home position");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Resetting to home position");
         }
 
         #endregion
@@ -36,17 +37,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public void PanLeft()
         {
-            Debug.Console(1, this, "Panning Left");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Panning Left");
         }
 
         public void PanRight()
         {
-            Debug.Console(1, this, "Panning Right");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Panning Right");
         }
 
         public void PanStop()
         {
-            Debug.Console(1, this, "Stopping Pan");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Pan");
         }
 
         #endregion
@@ -55,17 +56,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public void TiltDown()
         {
-            Debug.Console(1, this, "Tilting Down");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Tilting Down");
         }
 
         public void TiltUp()
         {
-            Debug.Console(1, this, "Tilting Up");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Tilting Up");
         }
 
         public void TiltStop()
         {
-            Debug.Console(1, this, "Stopping Tilt");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Tilt");
         }
 
         #endregion
@@ -74,17 +75,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public void ZoomIn()
         {
-            Debug.Console(1, this, "Zooming In");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Zooming In");
         }
 
         public void ZoomOut()
         {
-            Debug.Console(1, this, "Zooming Out");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Zooming Out");
         }
 
         public void ZoomStop()
         {
-            Debug.Console(1, this, "Stopping Zoom");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Zoom");
         }
 
         #endregion
@@ -93,22 +94,22 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public void FocusNear()
         {
-            Debug.Console(1, this, "Focusing Near");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Focusing Near");
         }
 
         public void FocusFar()
         {
-            Debug.Console(1, this, "Focusing Far");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Focusing Far");
         }
 
         public void FocusStop()
         {
-            Debug.Console(1, this, "Stopping Focus");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Focus");
         }
 
         public void TriggerAutoFocus()
         {
-            Debug.Console(1, this, "AutoFocus Triggered");
+            Debug.LogMessage(LogEventLevel.Debug, this, "AutoFocus Triggered");
         }
 
         #endregion
@@ -136,7 +137,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public void PositionHome()
         {
-            Debug.Console(1, this, "Resetting to home position");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Resetting to home position");
         }
 
         #endregion
@@ -145,17 +146,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public void PanLeft()
         {
-            Debug.Console(1, this, "Panning Left");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Panning Left");
         }
 
         public void PanRight()
         {
-            Debug.Console(1, this, "Panning Right");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Panning Right");
         }
 
         public void PanStop()
         {
-            Debug.Console(1, this, "Stopping Pan");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Pan");
         }
 
         #endregion
@@ -164,17 +165,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public void TiltDown()
         {
-            Debug.Console(1, this, "Tilting Down");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Tilting Down");
         }
 
         public void TiltUp()
         {
-            Debug.Console(1, this, "Tilting Up");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Tilting Up");
         }
 
         public void TiltStop()
         {
-            Debug.Console(1, this, "Stopping Tilt");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Tilt");
         }
 
         #endregion
@@ -183,17 +184,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public void ZoomIn()
         {
-            Debug.Console(1, this, "Zooming In");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Zooming In");
         }
 
         public void ZoomOut()
         {
-            Debug.Console(1, this, "Zooming Out");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Zooming Out");
         }
 
         public void ZoomStop()
         {
-            Debug.Console(1, this, "Stopping Zoom");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Zoom");
         }
 
         #endregion

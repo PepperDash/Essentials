@@ -76,7 +76,7 @@ namespace PepperDash.Essentials.Core
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            //Debug.Console(2, "ReadJson type: " + objectType.Name);
+            //Debug.LogMessage(LogEventLevel.Verbose, "ReadJson type: " + objectType.Name);
             if (objectType == typeof(ComPort.eComBaudRates))
                 return Enum.Parse(typeof(ComPort.eComBaudRates), "ComspecBaudRate" + reader.Value, false);
             else if (objectType == typeof(ComPort.eComDataBits))

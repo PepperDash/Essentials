@@ -9,6 +9,7 @@ using PepperDash.Core;
 using Crestron.SimplSharpPro.UI;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.UI
 {
@@ -33,7 +34,7 @@ namespace PepperDash.Essentials.Core.UI
 
             if (panel == null)
             {
-                Debug.Console(0, this, "Panel is not valid. Touchpanel class WILL NOT work correctly");
+                Debug.LogMessage(LogEventLevel.Information, this, "Panel is not valid. Touchpanel class WILL NOT work correctly");
                 return;
             }
 
@@ -55,19 +56,19 @@ namespace PepperDash.Essentials.Core.UI
 
             AddPreActivationAction(() => {
                 if (Panel.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Registration failed. Continuing, but panel may not function: {0}", Panel.RegistrationFailureReason);
+                    Debug.LogMessage(LogEventLevel.Information, this, "WARNING: Registration failed. Continuing, but panel may not function: {0}", Panel.RegistrationFailureReason);
 
                 // Give up cleanly if SGD is not present.
                 var sgdName = Global.FilePathPrefix + "sgd" + Global.DirectorySeparator + _config.SgdFile;
                 if (!File.Exists(sgdName))
                 {
-                    Debug.Console(0, this, "Smart object file '{0}' not present in User folder. Looking for embedded file", sgdName);
+                    Debug.LogMessage(LogEventLevel.Information, this, "Smart object file '{0}' not present in User folder. Looking for embedded file", sgdName);
 
                     sgdName = Global.ApplicationDirectoryPathPrefix + Global.DirectorySeparator + "SGD" + Global.DirectorySeparator + _config.SgdFile;
 
                     if (!File.Exists(sgdName))
                     {
-                        Debug.Console(0, this, "Unable to find SGD file '{0}' in User sgd or application SGD folder. Exiting touchpanel load.", sgdName);
+                        Debug.LogMessage(LogEventLevel.Information, this, "Unable to find SGD file '{0}' in User sgd or application SGD folder. Exiting touchpanel load.", sgdName);
                         return;
                     }
                 }
@@ -154,7 +155,7 @@ namespace PepperDash.Essentials.Core.UI
 
         private void Panel_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
 		{
-			Debug.Console(5, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+			Debug.LogMessage(LogEventLevel.Verbose, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
 			var uo = args.Sig.UserObject;
 			if (uo is Action<bool>)
 				(uo as Action<bool>)(args.Sig.BoolValue);

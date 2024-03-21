@@ -4,6 +4,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -29,7 +30,7 @@ namespace PepperDash.Essentials.Core
 			var feedbacks = source.Feedbacks;
 			if (feedbacks != null)
 			{
-				Debug.Console(0, source, "\n\nAvailable feedbacks:");
+				Debug.LogMessage(LogEventLevel.Information, source, "\n\nAvailable feedbacks:");
 				foreach (var f in feedbacks)
 				{
 					string val = "";
@@ -52,12 +53,12 @@ namespace PepperDash.Essentials.Core
                             type = "string";
                         }
 					}
-					Debug.Console(0, "{0,-12} {1, -25} {2}", type,
+					Debug.LogMessage(LogEventLevel.Information, "{0,-12} {1, -25} {2}", type,
 						(string.IsNullOrEmpty(f.Key) ? "-no key-" : f.Key), val);
 				}
 			}
 			else
-				Debug.Console(0, source, "No available outputs:");
+				Debug.LogMessage(LogEventLevel.Information, source, "No available outputs:");
 		}
 	}
 }

@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -184,7 +185,7 @@ namespace PepperDash.Essentials.Core
                     {
                         _currentScenario.Activate();
 
-                        Debug.Console(1, this, "Current Scenario: {0}", _currentScenario.Name);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Current Scenario: {0}", _currentScenario.Name);
                     }
 
                     var handler = RoomCombinationScenarioChanged;
@@ -234,7 +235,7 @@ namespace PepperDash.Essentials.Core
         {
             if (isInAutoMode)
             {
-                Debug.Console(0, this, "Cannot set room combination scenario when in auto mode.  Set to auto mode first.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Cannot set room combination scenario when in auto mode.  Set to auto mode first.");
                 return;
             }
 
@@ -245,7 +246,7 @@ namespace PepperDash.Essentials.Core
             // Set the parition states from the scenario manually
             if (scenario != null)
             {
-                Debug.Console(0, this, "Manually setting scenario to '{0}'", scenario.Key);
+                Debug.LogMessage(LogEventLevel.Information, this, "Manually setting scenario to '{0}'", scenario.Key);
                 foreach (var partitionState in scenario.PartitionStates)
                 {
                     var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionState.PartitionKey));
@@ -254,24 +255,24 @@ namespace PepperDash.Essentials.Core
                     {
                         if (partitionState.PartitionPresent)
                         {
-                            Debug.Console(0, this, "Manually setting state to Present for: '{0}'", partition.Key);
+                            Debug.LogMessage(LogEventLevel.Information, this, "Manually setting state to Present for: '{0}'", partition.Key);
                             partition.SetPartitionStatePresent();
                         }
                         else
                         {
-                            Debug.Console(0, this, "Manually setting state to Not Present for: '{0}'", partition.Key);
+                            Debug.LogMessage(LogEventLevel.Information, this, "Manually setting state to Not Present for: '{0}'", partition.Key);
                             partition.SetPartitionStateNotPresent();
                         }
                     }
                     else
                     {
-                        Debug.Console(1, this, "Unable to find partition with key: '{0}'", partitionState.PartitionKey);
+                        Debug.LogMessage(LogEventLevel.Debug, this, "Unable to find partition with key: '{0}'", partitionState.PartitionKey);
                     }
                 }
             }
             else
             {
-                Debug.Console(1, this, "Unable to find scenario with key: '{0}'", scenarioKey);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Unable to find scenario with key: '{0}'", scenarioKey);
             }
         }
 
@@ -287,7 +288,7 @@ namespace PepperDash.Essentials.Core
 
         public override EssentialsDevice BuildDevice(PepperDash.Essentials.Core.Config.DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new EssentialsRoomCombiner Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new EssentialsRoomCombiner Device");
 
             var props = dc.Properties.ToObject<EssentialsRoomCombinerPropertiesConfig>();
 

@@ -38,16 +38,16 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public override bool CustomActivate()
 		{
-            Debug.Console(0, this, "Activating");
+            Debug.LogMessage(LogEventLevel.Information, this, "Activating");
             var response = Hardware.RegisterWithLogging(Key);
             if (response != eDeviceRegistrationUnRegistrationResponse.Success)
             {
 <<<<<<< HEAD
-				Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
+				Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Crestron device: {0}", response);
 				return false;
 			}
 =======
-                Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
+                Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Crestron device: {0}", response);
                 return false;
             }
 >>>>>>> origin/feature/ecs-342-neil
@@ -119,7 +119,7 @@ namespace PepperDash.Essentials.Core
 			var result = device.Register();
 			if (result != eDeviceRegistrationUnRegistrationResponse.Success)
 			{
-				Debug.Console(0, Debug.ErrorLogLevel.Error, "Cannot register device '{0}': {1}", key, result);
+				Debug.LogMessage(LogEventLevel.Information, "Cannot register device '{0}': {1}", key, result);
 			}
 			return result;
 		}

@@ -8,6 +8,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core.Privacy
@@ -79,14 +80,14 @@ namespace PepperDash.Essentials.Core.Privacy
             if (greenLed != null)
                 GreenLedRelay = greenLed;
             else
-                Debug.Console(0, this, "Unable to add Green LED device");
+                Debug.LogMessage(LogEventLevel.Information, this, "Unable to add Green LED device");
 
             var redLed = DeviceManager.GetDeviceForKey(Config.RedLedRelay.DeviceKey) as GenericRelayDevice;
 
             if (redLed != null)
                 RedLedRelay = redLed;
             else
-                Debug.Console(0, this, "Unable to add Red LED device");
+                Debug.LogMessage(LogEventLevel.Information, this, "Unable to add Red LED device");
 
             AddPostActivationAction(() => {
                 PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange -= PrivacyModeIsOnFeedback_OutputChange;
@@ -114,7 +115,7 @@ namespace PepperDash.Essentials.Core.Privacy
 
         void PrivacyModeIsOnFeedback_OutputChange(object sender, EventArgs e)
         {
-			Debug.Console(1, this, "Privacy mode change: {0}", sender as BoolFeedback);
+			Debug.LogMessage(LogEventLevel.Debug, this, "Privacy mode change: {0}", sender as BoolFeedback);
             CheckPrivacyMode();
         }
 
@@ -244,7 +245,7 @@ namespace PepperDash.Essentials.Core.Privacy
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new MIcrophonePrivacyController Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new MIcrophonePrivacyController Device");
             var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Privacy.MicrophonePrivacyControllerConfig>(dc.Properties.ToString());
 
             return new Core.Privacy.MicrophonePrivacyController(dc.Key, props);

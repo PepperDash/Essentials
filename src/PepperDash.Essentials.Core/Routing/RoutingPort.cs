@@ -187,7 +187,7 @@ namespace PepperDash.Essentials.Core
 		//        return null;
 		//    var port = sourceDev.OutputPorts[portKey];
 		//    if (port == null)
-		//        Debug.Console(0, "WARNING: Device '{0}' does does not contain output port '{1}'", deviceKey, portKey);
+		//        Debug.LogMessage(LogEventLevel.Information, "WARNING: Device '{0}' does does not contain output port '{1}'", deviceKey, portKey);
 		//    return port;
 		//}
 

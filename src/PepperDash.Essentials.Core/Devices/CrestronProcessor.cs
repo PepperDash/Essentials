@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.CrestronIO;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Devices
 {
@@ -45,7 +46,7 @@ namespace PepperDash.Essentials.Core.Devices
             }
             catch (Exception e)
             {
-                Debug.Console(1, this, "Error Getting Relays from processor:\n '{0}'", e);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Error Getting Relays from processor:\n '{0}'", e);
             }
         }
     }

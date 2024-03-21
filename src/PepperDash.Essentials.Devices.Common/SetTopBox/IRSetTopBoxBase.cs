@@ -15,6 +15,7 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
@@ -386,11 +387,11 @@ namespace PepperDash.Essentials.Devices.Common
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
-            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(0, "Linking to SetTopBox: {0}", Name);
+            Debug.LogMessage(LogEventLevel.Debug, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogMessage(LogEventLevel.Information, "Linking to SetTopBox: {0}", Name);
 
             trilist.OnlineStatusChange += new OnlineStatusChangeEventHandler((o, a) =>
             {
@@ -504,7 +505,7 @@ namespace PepperDash.Essentials.Devices.Common
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new SetTopBox Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new SetTopBox Device");
             var irCont = IRPortHelper.GetIrOutputPortController(dc);
             var config = dc.Properties.ToObject<SetTopBoxPropertiesConfig>();
             var stb = new IRSetTopBoxBase(dc.Key, dc.Name, irCont, config);

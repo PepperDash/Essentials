@@ -5,6 +5,7 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials
 {
@@ -61,7 +62,7 @@ namespace PepperDash.Essentials
         void Server_OnHttpRequest(object sender, OnHttpRequestArgs args)
         {
             var path = args.Request.Path;
-            Debug.Console(2, "HTTP Request with path: '{0}'", args.Request.Path);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "HTTP Request with path: '{requestPath:l}'", args.Request.Path);            
 
             try
             {
@@ -70,7 +71,7 @@ namespace PepperDash.Essentials
                     var filePath = path.Replace('/', '\\');
                     var localPath = string.Format(@"{0}{1}", _fileDirectory, filePath);
 
-                    Debug.Console(2, "HTTP Logo Server attempting to find file: '{0}'", localPath);
+                    Debug.LogMessage(LogEventLevel.Verbose, "HTTP Logo Server attempting to find file: '{localPath:l}'", localPath);
                     if (File.Exists(localPath))
                     {
                         args.Response.Header.ContentType = GetContentType(new FileInfo(localPath).Extension);
@@ -78,22 +79,22 @@ namespace PepperDash.Essentials
                     }
                     else
                     {
-                        Debug.Console(2, "HTTP Logo Server Cannot find file '{0}'", localPath);
+                        Debug.LogMessage(LogEventLevel.Verbose, "HTTP Logo Server Cannot find file '{localPath:l}'", localPath);
                         args.Response.ContentString = string.Format("Not found: '{0}'", filePath);
                         args.Response.Code = 404;
                     }
                 }
                 else
                 {
-                    Debug.Console(2, "HTTP Logo Server: '{0}' does not exist", _fileDirectory + path);
+                    Debug.LogMessage(LogEventLevel.Verbose, "HTTP Logo Server: '{file:l}' does not exist", _fileDirectory + path);
                     args.Response.ContentString = string.Format("Not found: '{0}'", _fileDirectory + path);
                     args.Response.Code = 404;
                 }
             }
             catch (Exception ex)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Exception getting file: {0}", ex.Message);
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
+                Debug.LogMessage(LogEventLevel.Error, "Exception getting file: {exception}", ex.Message, ex.StackTrace);
+                Debug.LogMessage(LogEventLevel.Verbose, "Stack Trace: {stackTrace}", ex.StackTrace);
 
                 args.Response.Code = 400;
                 args.Response.ContentString = string.Format("invalid request");

@@ -14,6 +14,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 
 using Newtonsoft.Json;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
@@ -59,7 +60,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
                 InputPort.VersiportChange += InputPort_VersiportChange;
 
-                Debug.Console(1, this, "Created GenericVersiportAnalogInputDevice on port '{0}'.  DisablePullUpResistor: '{1}'", config.PortNumber, InputPort.DisablePullUpResistor);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Created GenericVersiportAnalogInputDevice on port '{0}'.  DisablePullUpResistor: '{1}'", config.PortNumber, InputPort.DisablePullUpResistor);
 
             });
 
@@ -76,7 +77,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         void InputPort_VersiportChange(Versiport port, VersiportEventArgs args)
         {
-			Debug.Console(1, this, "Versiport change: {0}", args.Event);
+			Debug.LogMessage(LogEventLevel.Debug, this, "Versiport change: {0}", args.Event);
 
             if(args.Event == eVersiportEvent.AnalogInChange)
                 InputValueFeedback.FireUpdate();
@@ -102,12 +103,12 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
             try
             {
-                Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+                Debug.LogMessage(LogEventLevel.Debug, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
                 // Link feedback for input state
                 InputValueFeedback.LinkInputSig(trilist.UShortInput[joinMap.InputValue.JoinNumber]);
@@ -117,8 +118,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
             catch (Exception e)
             {
-                Debug.Console(1, this, "Unable to link device '{0}'.  Input is null", Key);
-                Debug.Console(1, this, "Error: {0}", e);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Unable to link device '{0}'.  Input is null", Key);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Error: {0}", e);
             }
 
             trilist.OnlineStatusChange += (d, args) =>
@@ -147,7 +148,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             {
                 if (!Global.ControlSystem.SupportsVersiport)
                 {
-                    Debug.Console(0, "GetVersiportAnalogInput: Processor does not support Versiports");
+                    Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Processor does not support Versiports");
                     return null;
                 }
                 ioPortDevice = Global.ControlSystem;
@@ -157,25 +158,25 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 var ioPortDev = DeviceManager.GetDeviceForKey(dc.PortDeviceKey) as IIOPorts;
                 if (ioPortDev == null)
                 {
-                    Debug.Console(0, "GetVersiportAnalogInput: Device {0} is not a valid device", dc.PortDeviceKey);
+                    Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Device {0} is not a valid device", dc.PortDeviceKey);
                     return null;
                 }
                 ioPortDevice = ioPortDev;
             }
             if (ioPortDevice == null)
             {
-                Debug.Console(0, "GetVersiportAnalogInput: Device '0' is not a valid IIOPorts Device", dc.PortDeviceKey);
+                Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Device '0' is not a valid IIOPorts Device", dc.PortDeviceKey);
                 return null;
             }
 
             if (dc.PortNumber > ioPortDevice.NumberOfVersiPorts)
             {
-                Debug.Console(0, "GetVersiportAnalogInput: Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
+                Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
                 return null;
             }
             if(!ioPortDevice.VersiPorts[dc.PortNumber].SupportsAnalogInput)
             {
-                Debug.Console(0, "GetVersiportAnalogInput: Device {0} does not support AnalogInput on port {1}", dc.PortDeviceKey, dc.PortNumber);
+                Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Device {0} does not support AnalogInput on port {1}", dc.PortDeviceKey, dc.PortNumber);
                 return null;
             }
 
@@ -196,7 +197,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Generic Versiport Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Versiport Device");
 
             var props = JsonConvert.DeserializeObject<IOPortConfig>(dc.Properties.ToString());
 

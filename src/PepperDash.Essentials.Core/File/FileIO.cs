@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using PepperDash.Core;
 using Crestron.SimplSharpPro.CrestronThread;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -26,7 +27,7 @@ namespace PepperDash.Essentials.Core
             string fullFilePath = Global.FilePathPrefix + fileName;
             DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
             var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
-            Debug.Console(0, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
+            Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
             if (files.Count() > 0)
             {
                 return files;
@@ -42,7 +43,7 @@ namespace PepperDash.Essentials.Core
             string fullFilePath = Global.FilePathPrefix + fileName;
             DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
             var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
-            Debug.Console(0, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
+            Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
             if (files.Count() > 0)
             {
                 return files.FirstOrDefault();
@@ -67,7 +68,7 @@ namespace PepperDash.Essentials.Core
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
+				Debug.LogMessage(LogEventLevel.Information, "Error: FileIO read failed: \r{0}", e);
 				return "";
 			}
 		}
@@ -84,7 +85,7 @@ namespace PepperDash.Essentials.Core
 				if (fileLock.TryEnter())
 				{
 					DirectoryInfo dirInfo = new DirectoryInfo(file.DirectoryName);
-					Debug.Console(2, "FileIO Getting Data {0}", file.FullName);
+					Debug.LogMessage(LogEventLevel.Verbose, "FileIO Getting Data {0}", file.FullName);
 
 					if (File.Exists(file.FullName))
 					{
@@ -95,20 +96,20 @@ namespace PepperDash.Essentials.Core
 					}
 					else
 					{
-						Debug.Console(2, "File {0} does not exsist", file.FullName);
+						Debug.LogMessage(LogEventLevel.Verbose, "File {0} does not exsist", file.FullName);
 						return "";
 					}
 				}
 				else
 				{
-					Debug.Console(0, Debug.ErrorLogLevel.Error, "FileIO Unable to enter FileLock");
+					Debug.LogMessage(LogEventLevel.Information, "FileIO Unable to enter FileLock");
 					return "";
 				}
 				
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
+				Debug.LogMessage(LogEventLevel.Information, "Error: FileIO read failed: \r{0}", e);
 				return "";
 			}
 			finally
@@ -128,7 +129,7 @@ namespace PepperDash.Essentials.Core
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
+				Debug.LogMessage(LogEventLevel.Information, "Error: FileIO read failed: \r{0}", e);
 			}
 		}
 
@@ -140,7 +141,7 @@ namespace PepperDash.Essentials.Core
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
+				Debug.LogMessage(LogEventLevel.Information, "Error: FileIO read failed: \r{0}", e);
 			}
 		}
 
@@ -152,7 +153,7 @@ namespace PepperDash.Essentials.Core
 				if (fileLock.TryEnter())
 				{
 					DirectoryInfo dirInfo = new DirectoryInfo(file.Name);
-					Debug.Console(2, "FileIO Getting Data {0}", file.FullName);
+					Debug.LogMessage(LogEventLevel.Verbose, "FileIO Getting Data {0}", file.FullName);
 
 
 					if (File.Exists(file.FullName))
@@ -164,20 +165,20 @@ namespace PepperDash.Essentials.Core
 					}
 					else
 					{
-						Debug.Console(2, "File {0} Does not exsist", file.FullName);
+						Debug.LogMessage(LogEventLevel.Verbose, "File {0} Does not exsist", file.FullName);
 						data = "";
 					}
 					GotFileEvent.Invoke(null, new FileEventArgs(data));
 				}
 				else
 				{
-					Debug.Console(0, Debug.ErrorLogLevel.Error, "FileIO Unable to enter FileLock");
+					Debug.LogMessage(LogEventLevel.Information, "FileIO Unable to enter FileLock");
 				}
 
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
+				Debug.LogMessage(LogEventLevel.Information, "Error: FileIO read failed: \r{0}", e);
 				data = "";
 			}
 			finally
@@ -207,13 +208,13 @@ namespace PepperDash.Essentials.Core
             _WriteFileThread = new Thread((O) => _WriteFileMethod(data, Global.FilePathPrefix + "/" + filePath), null, Thread.eThreadStartOptions.CreateSuspended);
 			_WriteFileThread.Priority = Thread.eThreadPriority.LowestPriority;
 			_WriteFileThread.Start();
-			Debug.Console(0, Debug.ErrorLogLevel.Notice, "New WriteFile Thread");
+			Debug.LogMessage(LogEventLevel.Information, "New WriteFile Thread");
 
 		}
 
 		static object _WriteFileMethod(string data, string filePath)
 		{
-			Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to write file: '{0}'", filePath);
+			Debug.LogMessage(LogEventLevel.Information, "Attempting to write file: '{0}'", filePath);
 
 			try
 			{
@@ -229,13 +230,13 @@ namespace PepperDash.Essentials.Core
 				}
 				else
 				{
-					Debug.Console(0, Debug.ErrorLogLevel.Error, "FileIO Unable to enter FileLock");
+					Debug.LogMessage(LogEventLevel.Information, "FileIO Unable to enter FileLock");
 				}
 
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO write failed: \r{0}", e);
+				Debug.LogMessage(LogEventLevel.Error, "Error: FileIO write failed: \r{0}", e);
 			}
 			finally
 			{
@@ -259,7 +260,7 @@ namespace PepperDash.Essentials.Core
 			var file = FileIO.GetFile("\\user\\*FileIOTest*");
 			
 			var readData = FileIO.ReadDataFromFile(file);
-			Debug.Console(0, "Returned {0}", readData);
+			Debug.LogMessage(LogEventLevel.Information, "Returned {0}", readData);
 			File.Delete(file.FullName);
 			if (testData == readData)
 			{

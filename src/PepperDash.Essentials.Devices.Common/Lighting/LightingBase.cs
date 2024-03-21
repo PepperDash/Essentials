@@ -12,6 +12,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Lighting;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Lighting
 {
@@ -43,7 +44,7 @@ namespace PepperDash.Essentials.Devices.Common.Lighting
 
         public void SimulateSceneSelect(string sceneName)
         {
-            Debug.Console(1, this, "Simulating selection of scene '{0}'", sceneName);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Simulating selection of scene '{0}'", sceneName);
 
             var scene = LightingScenes.FirstOrDefault(s => s.Name.Equals(sceneName));
 
@@ -91,7 +92,7 @@ namespace PepperDash.Essentials.Devices.Common.Lighting
 			}
 			else
 			{
-				Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+				Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
 			}
 
 		    return LinkLightingToApi(lightingDevice, trilist, joinMap);
@@ -99,9 +100,9 @@ namespace PepperDash.Essentials.Devices.Common.Lighting
 
       protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, GenericLightingJoinMap joinMap)
       {
-        Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+        Debug.LogMessage(LogEventLevel.Debug, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
-        Debug.Console(0, "Linking to Lighting Type {0}", lightingDevice.GetType().Name.ToString());
+        Debug.LogMessage(LogEventLevel.Information, "Linking to Lighting Type {0}", lightingDevice.GetType().Name.ToString());
 
         // GenericLighitng Actions & FeedBack
         trilist.SetUShortSigAction(joinMap.SelectScene.JoinNumber, u => lightingDevice.SelectScene(lightingDevice.LightingScenes[u]));

@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -211,14 +212,14 @@ namespace PepperDash.Essentials.Core
             var mcBridge = DeviceManager.GetDeviceForKey(mcBridgeKey);
             if (mcBridge == null)
             {
-                Debug.Console(1, this, "*********************Mobile Control Bridge Not found for this room.");
+                Debug.LogMessage(LogEventLevel.Debug, this, "*********************Mobile Control Bridge Not found for this room.");
                 IsMobileControlEnabled = false;
                 return;
             }
             else
             {
                 MobileControlRoomBridge = mcBridge as IMobileControlRoomMessenger;
-                Debug.Console(1, this, "*********************Mobile Control Bridge found and enabled for this room");
+                Debug.LogMessage(LogEventLevel.Debug, this, "*********************Mobile Control Bridge found and enabled for this room");
                 IsMobileControlEnabled = true;
             }
         }
@@ -236,7 +237,7 @@ namespace PepperDash.Essentials.Core
                 case eVacancyMode.InShutdownWarning:
                     {
                         StartShutdown(eShutdownType.Vacancy);
-                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting Down due to vacancy.");
+                        Debug.LogMessage(LogEventLevel.Information, this, "Shutting Down due to vacancy.");
                         break;
                     }
                 default:
@@ -259,7 +260,7 @@ namespace PepperDash.Essentials.Core
             ShutdownType = type;
             ShutdownPromptTimer.Start();
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "ShutdownPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
+            Debug.LogMessage(LogEventLevel.Information, this, "ShutdownPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
         }
 
         public void StartRoomVacancyTimer(eVacancyMode mode)
@@ -273,7 +274,7 @@ namespace PepperDash.Essentials.Core
             VacancyMode = mode;
             RoomVacancyShutdownTimer.Start();
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Vacancy Timer Started. Mode: {0}.  Seconds: {1}", VacancyMode, RoomVacancyShutdownTimer.SecondsToCount);
+            Debug.LogMessage(LogEventLevel.Information, this, "Vacancy Timer Started. Mode: {0}.  Seconds: {1}", VacancyMode, RoomVacancyShutdownTimer.SecondsToCount);
         }
 
         /// <summary>
@@ -305,12 +306,12 @@ namespace PepperDash.Essentials.Core
         { 
 			if (statusProvider == null)
 			{
-				Debug.Console(0, this, "ERROR: Occupancy sensor device is null");
+				Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Occupancy sensor device is null");
 				return;
 			}
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Room Occupancy set to device: '{0}'", (statusProvider as Device).Key);
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Timeout Minutes from Config is: {0}", timeoutMinutes);
+            Debug.LogMessage(LogEventLevel.Information, this, "Room Occupancy set to device: '{0}'", (statusProvider as Device).Key);
+            Debug.LogMessage(LogEventLevel.Information, this, "Timeout Minutes from Config is: {0}", timeoutMinutes);
 
             // If status provider is fusion, set flag to remote
             if (statusProvider is Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
@@ -319,7 +320,7 @@ namespace PepperDash.Essentials.Core
             if(timeoutMinutes > 0)
                 RoomVacancyShutdownSeconds = timeoutMinutes * 60;
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "RoomVacancyShutdownSeconds set to {0}", RoomVacancyShutdownSeconds);
+            Debug.LogMessage(LogEventLevel.Information, this, "RoomVacancyShutdownSeconds set to {0}", RoomVacancyShutdownSeconds);
 
             RoomOccupancy = statusProvider;
 
@@ -351,13 +352,13 @@ namespace PepperDash.Essentials.Core
         {
             if (RoomOccupancy.RoomIsOccupiedFeedback.BoolValue == false  && AllowVacancyTimerToStart())
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Notice: Vacancy Detected");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Notice: Vacancy Detected");
                 // Trigger the timer when the room is vacant
                 StartRoomVacancyTimer(eVacancyMode.InInitialVacancy);
             }
             else
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Notice: Occupancy Detected");
+                Debug.LogMessage(LogEventLevel.Debug, this, "Notice: Occupancy Detected");
                 // Reset the timer when the room is occupied
                 RoomVacancyShutdownTimer.Cancel();
             }

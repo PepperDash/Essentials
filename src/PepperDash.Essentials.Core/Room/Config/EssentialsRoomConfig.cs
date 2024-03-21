@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Privacy;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Room.Config
 {
@@ -39,7 +40,7 @@ namespace PepperDash.Essentials.Room.Config
 			var microphonePrivacy = props.MicrophonePrivacy;
 			if (microphonePrivacy == null)
 			{
-				Debug.Console(0, "Cannot create microphone privacy with null properties");
+				Debug.LogMessage(LogEventLevel.Information, "Cannot create microphone privacy with null properties");
 				return null;
 			}
 			// Get the MicrophonePrivacy device from the device manager
@@ -47,7 +48,7 @@ namespace PepperDash.Essentials.Room.Config
 			// Set this room as the IPrivacy device
 			if (mP == null)
 			{
-				Debug.Console(0, "ERROR: Selected device {0} is not MicrophonePrivacyController", props.MicrophonePrivacy.DeviceKey);
+				Debug.LogMessage(LogEventLevel.Information, "ERROR: Selected device {0} is not MicrophonePrivacyController", props.MicrophonePrivacy.DeviceKey);
 				return null;
 			}
 			mP.SetPrivacyDevice(room);
@@ -56,7 +57,7 @@ namespace PepperDash.Essentials.Room.Config
 
 			if (behaviour == null)
 			{
-				Debug.Console(0, "WARNING: No behaviour defined for MicrophonePrivacyController");
+				Debug.LogMessage(LogEventLevel.Information, "WARNING: No behaviour defined for MicrophonePrivacyController");
 				return null;
 			}
 			if (behaviour == "trackroomstate")

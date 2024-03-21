@@ -5,6 +5,7 @@ using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
@@ -29,7 +30,7 @@ namespace PepperDash.Essentials.Devices.Common
                     }
                     catch (Exception e)
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to load type: '{1}' DeviceFactory: {0}", e, type.Name);
+                        Debug.LogMessage(LogEventLevel.Information, "Unable to load type: '{1}' DeviceFactory: {0}", e, type.Name);
                     }
                 }
             }

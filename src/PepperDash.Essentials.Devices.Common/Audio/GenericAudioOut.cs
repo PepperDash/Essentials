@@ -9,6 +9,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 using PepperDash.Essentials.Core.Routing;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
@@ -109,7 +110,7 @@ namespace PepperDash.Essentials.Devices.Common
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new GenericAudioOutWithVolumeFactory Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new GenericAudioOutWithVolumeFactory Device");
             var zone = dc.Properties.Value<uint>("zone");
             return new GenericAudioOutWithVolume(dc.Key, dc.Name,
                 dc.Properties.Value<string>("volumeDeviceKey"), zone);

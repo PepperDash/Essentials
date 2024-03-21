@@ -17,6 +17,7 @@ using PepperDash.Essentials.License;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -169,28 +170,28 @@ namespace PepperDash.Essentials.Core
 	    {
 	        if (Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*").Groups[1].Value == "0")
 	        {
-                Debug.Console(2, "Running Local Build.  Bypassing Dependency Check.");
+                Debug.LogMessage(LogEventLevel.Verbose, "Running Local Build.  Bypassing Dependency Check.");
                 return true;
 	        }
 
 	        if (developmentVersions == null)
 	        {
-	            Debug.Console(0, 
+	            Debug.LogMessage(LogEventLevel.Information, 
                     "Development Plugin does not specify a list of versions.  Loading plugin may not work as expected.  Checking Minumum version");
                 return IsRunningMinimumVersionOrHigher(minimumVersion);
 	        }
 
-            Debug.Console(2, "Comparing running version '{0}' to minimum versions '{1}'", AssemblyVersion, developmentVersions);
+            Debug.LogMessage(LogEventLevel.Verbose, "Comparing running version '{0}' to minimum versions '{1}'", AssemblyVersion, developmentVersions);
 
 	        var versionMatch = developmentVersions.FirstOrDefault(x => x == AssemblyVersion);
 
 	        if (String.IsNullOrEmpty(versionMatch))
 	        {
-	            Debug.Console(0, "Essentials Build does not match any builds required for plugin load.  Bypassing Plugin Load.");
+	            Debug.LogMessage(LogEventLevel.Information, "Essentials Build does not match any builds required for plugin load.  Bypassing Plugin Load.");
 	            return false;
 	        }
 
-            Debug.Console(2, "Essentials Build {0} matches list of development builds", AssemblyVersion);
+            Debug.LogMessage(LogEventLevel.Verbose, "Essentials Build {0} matches list of development builds", AssemblyVersion);
 	        return IsRunningMinimumVersionOrHigher(minimumVersion);
 
 
@@ -204,11 +205,11 @@ namespace PepperDash.Essentials.Core
         /// <returns>Returns true if the running version meets or exceeds the minimum specified version</returns>
         public static bool IsRunningMinimumVersionOrHigher(string minimumVersion)
         {
-            Debug.Console(2, "Comparing running version '{0}' to minimum version '{1}'", AssemblyVersion, minimumVersion);
+            Debug.LogMessage(LogEventLevel.Verbose, "Comparing running version '{0}' to minimum version '{1}'", AssemblyVersion, minimumVersion);
 
             if (String.IsNullOrEmpty(minimumVersion))
             {
-                Debug.Console(0,"Plugin does not specify a minimum version. Loading plugin may not work as expected. Proceeding with loading plugin");
+                Debug.LogMessage(LogEventLevel.Information,"Plugin does not specify a minimum version. Loading plugin may not work as expected. Proceeding with loading plugin");
                 return true;
             }
             
@@ -227,7 +228,7 @@ namespace PepperDash.Essentials.Core
             }
             catch
             {
-                Debug.Console(2, "unable to parse minimum version {0}. Bypassing plugin load.", minimumVersion);
+                Debug.LogMessage(LogEventLevel.Verbose, "unable to parse minimum version {0}. Bypassing plugin load.", minimumVersion);
                 return false;
             }
 
@@ -238,7 +239,7 @@ namespace PepperDash.Essentials.Core
                 return runtimeVer.CompareTo(minimumVer) >= 0;
             }
 
-            Debug.Console(2, "Running Local Build.  Bypassing Dependency Check.");
+            Debug.LogMessage(LogEventLevel.Verbose, "Running Local Build.  Bypassing Dependency Check.");
             return true;
 
             /*

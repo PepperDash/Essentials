@@ -11,10 +11,9 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Web;
-using PepperDash.Essentials.Devices.Common.Room;
-using PepperDash.Essentials.Room.Config;
 using System;
 using System.Linq;
+using Serilog.Events;
 
 namespace PepperDash.Essentials
 {
@@ -69,7 +68,8 @@ namespace PepperDash.Essentials
             bool preventInitializationComplete = Global.ControlSystemIsDmpsType;
             if (preventInitializationComplete)
             {
-                Debug.Console(1, "******************* InitializeSystem() Entering **********************");
+                Debug.LogMessage(LogEventLevel.Debug, "******************* InitializeSystem() Entering **********************");
+                
                 _startTimer = new CTimer(StartSystem, preventInitializationComplete, StartupTime);
                 _initializeEvent = new CEvent(true, false);
                 DeviceManager.AllDevicesRegistered += (o, a) =>
@@ -77,7 +77,8 @@ namespace PepperDash.Essentials
                     _initializeEvent.Set();
                 };
                 _initializeEvent.Wait(30000);
-                Debug.Console(1, "******************* InitializeSystem() Exiting **********************");
+                Debug.LogMessage(LogEventLevel.Debug, "******************* InitializeSystem() Exiting **********************");
+                
                 SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
             }
             else
@@ -105,7 +106,7 @@ namespace PepperDash.Essentials
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.JoinmapMarkdown, "getjoinmapmarkdown"
                 , "generate markdown of map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s => Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s), "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => Debug.LogMessage(LogEventLevel.Information, "CONSOLE MESSAGE: {0}", s), "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
@@ -161,7 +162,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Determining Platform....");
+                Debug.LogMessage(LogEventLevel.Information, "Determining Platform...");                
 
                 string filePathPrefix;
 
@@ -194,15 +195,17 @@ namespace PepperDash.Essentials
                     {
                         userFolder = "User";
                         nvramFolder = "Nvram";
-                    }
-
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
+                    }                    
+                    
+                    Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on {processorSeries:l} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
+                    //Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
 
                     // Check if User/ProgramX exists
                     if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
-                        Debug.Console(0, @"{0}/program{1} directory found", userFolder, InitialParametersClass.ApplicationNumber);
+                       
+                        Debug.LogMessage(LogEventLevel.Information, "{userFolder:l}/program{applicationNumber} directory found", userFolder, InitialParametersClass.ApplicationNumber);                        
                         filePathPrefix = directoryPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
@@ -210,14 +213,16 @@ namespace PepperDash.Essentials
                     else if (Directory.Exists(directoryPrefix + dirSeparator + nvramFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
-                        Debug.Console(0, @"{0}/program{1} directory found", nvramFolder, InitialParametersClass.ApplicationNumber);
+                        Debug.LogMessage(LogEventLevel.Information, "{nvramFolder:l}/program{applicationNumber} directory found", nvramFolder, InitialParametersClass.ApplicationNumber);
+                        
                         filePathPrefix = directoryPrefix + dirSeparator + nvramFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
                     // If neither exists, set path to User/ProgramX
                     else
                     {
-                        Debug.Console(0, @"No previous directory found.  Using {0}/program{1}", userFolder, InitialParametersClass.ApplicationNumber);
+                        Debug.LogMessage(LogEventLevel.Information, "{userFolder:l}/program{applicationNumber} directory found", userFolder, InitialParametersClass.ApplicationNumber);
+                        
                         filePathPrefix = directoryPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
@@ -225,8 +230,7 @@ namespace PepperDash.Essentials
                 else   // Handles Linux OS (Virtual Control)
                 {
                     //Debug.SetDebugLevel(2);
-
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", Global.AssemblyVersion);
+                    Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on Virtual Control Server", Global.AssemblyVersion);                    
 
                     // Set path to User/
                     filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
@@ -236,7 +240,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.Console(0, "Unable to Determine Platform due to Exception: {0}", e.Message);
+                Debug.LogMessage(LogEventLevel.Error, "Unable to determin platform due to exception: {exception}", e.Message);                
             }
         }
 
@@ -251,34 +255,33 @@ namespace PepperDash.Essentials
 
                 PluginLoader.AddProgramAssemblies();
 
-                new Core.DeviceFactory();
-                new Devices.Common.DeviceFactory();
-                new DeviceFactory();
+                _ = new Core.DeviceFactory();
+                _ = new Devices.Common.DeviceFactory();
+                _ = new DeviceFactory();
 
-                new Core.ProcessorExtensionDeviceFactory();
+                _ = new ProcessorExtensionDeviceFactory();
 
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
+                Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 
                 var filesReady = SetupFilesystem();
                 if (filesReady)
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Checking for plugins");
+                    Debug.LogMessage(LogEventLevel.Information, "Checking for plugins");
                     PluginLoader.LoadPlugins();
 
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Folder structure verified. Loading config...");
+                    Debug.LogMessage(LogEventLevel.Information, "Folder structure verified. Loading config...");
                     if (!ConfigReader.LoadConfig2())
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Essentials Load complete with errors");
+                        Debug.LogMessage(LogEventLevel.Information, "Essentials Load complete with errors");
                         return;
                     }
 
                     Load();
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Essentials load complete\r\n" +
-                                                                 "-------------------------------------------------------------");
+                    Debug.LogMessage(LogEventLevel.Information, "Essentials load complete");
                 }
                 else
                 {
-                    Debug.Console(0,
+                    Debug.LogMessage(LogEventLevel.Information,
                         @"----------------------------------------------
                         ------------------------------------------------
                         ------------------------------------------------
@@ -293,7 +296,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r\n{0}", e);
+                Debug.LogMessage(LogEventLevel.Information, "FATAL INITIALIZE ERROR. System is in an inconsistent state: {exception}", e);
             }
             finally
             {
@@ -310,10 +313,10 @@ namespace PepperDash.Essentials
         /// </summary>
         bool SetupFilesystem()
         {
-            Debug.Console(0, "Verifying and/or creating folder structure");
+            Debug.LogMessage(LogEventLevel.Information, "Verifying and/or creating folder structure");
             var configDir = Global.FilePathPrefix;
 
-            Debug.Console(0, "FilePathPrefix: {0}", configDir);
+            Debug.LogMessage(LogEventLevel.Information, "FilePathPrefix: {filePathPrefix:l}", configDir);
             var configExists = Directory.Exists(configDir);
             if (!configExists)
                 Directory.Create(configDir);
@@ -342,7 +345,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void TearDown()
 		{
-			Debug.Console(0, "Tearing down existing system");
+			Debug.LogMessage(LogEventLevel.Information, "Tearing down existing system");
 			DeviceManager.DeactivateAll();
 
 			TieLineCollection.Default.Clear();
@@ -350,7 +353,7 @@ namespace PepperDash.Essentials
 			foreach (var key in DeviceManager.GetDevices())
 				DeviceManager.RemoveDevice(key);
 
-			Debug.Console(0, "Tear down COMPLETE");
+			Debug.LogMessage(LogEventLevel.Information, "Tear down COMPLETE");
 		}
 
 		/// <summary>
@@ -381,13 +384,13 @@ namespace PepperDash.Essentials
         {
 
             // Build the processor wrapper class
-            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+            DeviceManager.AddDevice(new Core.Devices.CrestronProcessor("processor"));
 
             // Add global System Monitor device
             if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
             {
                 DeviceManager.AddDevice(
-                    new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
+                    new Core.Monitoring.SystemMonitorController("systemMonitor"));
             }
 
             foreach (var devConf in ConfigReader.ConfigObject.Devices)
@@ -396,7 +399,7 @@ namespace PepperDash.Essentials
 
                 try
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Creating device '{0}', type '{1}'", devConf.Key, devConf.Type);
+                    Debug.LogMessage(LogEventLevel.Information, "Creating device '{deviceKey:l}', type '{deviceType:l}'", devConf.Key, devConf.Type);
                     // Skip this to prevent unnecessary warnings
                     if (devConf.Key == "processor")
                     {
@@ -406,8 +409,8 @@ namespace PepperDash.Essentials
                                         String.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
 
                         if (!typeMatch)
-                            Debug.Console(0,
-                                "WARNING: Config file defines processor type as '{0}' but actual processor is '{1}'!  Some ports may not be available",
+                            Debug.LogMessage(LogEventLevel.Information,
+                                "WARNING: Config file defines processor type as '{deviceType:l}' but actual processor is '{processorType:l}'!  Some ports may not be available",
                                 devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
 
 
@@ -416,19 +419,19 @@ namespace PepperDash.Essentials
 
 
                     if (newDev == null)
-                        newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
+                        newDev = Core.DeviceFactory.GetDevice(devConf);
 
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
-                        Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
+                        Debug.LogMessage(LogEventLevel.Information, "ERROR: Cannot load unknown device type '{deviceType:l}', key '{deviceKey:l}'.", devConf.Type, devConf.Key);
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
+                    Debug.LogMessage(LogEventLevel.Information, "ERROR: Creating device {deviceKey:l}. Skipping device. \r\n{exception}", devConf.Key, e);
                 }
             }
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
+            Debug.LogMessage(LogEventLevel.Information, "All Devices Loaded.");
 
         }
 
@@ -442,7 +445,7 @@ namespace PepperDash.Essentials
             // might be making their own internal sources/tie lines
 
             var tlc = TieLineCollection.Default;
-            //tlc.Clear();
+
             if (ConfigReader.ConfigObject.TieLines == null)
             {
                 return;
@@ -455,7 +458,7 @@ namespace PepperDash.Essentials
                     tlc.Add(newTL);
             }
 
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Tie Lines Loaded.");
+            Debug.LogMessage(LogEventLevel.Information, "All Tie Lines Loaded.");
 
         }
 
@@ -466,7 +469,7 @@ namespace PepperDash.Essentials
         {
             if (ConfigReader.ConfigObject.Rooms == null)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
+                Debug.LogMessage(LogEventLevel.Information, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
                 return;
             }
 
@@ -479,56 +482,11 @@ namespace PepperDash.Essentials
                 {
                     continue;                    
                 }
-
-               // BuildMC(room as IEssentialsRoom);
             }
 
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
+            Debug.LogMessage(LogEventLevel.Information, "All Rooms Loaded.");
 
         }
-
-        /*private static void BuildMC(IEssentialsRoom room)
-        {            
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, $"Attempting to build Mobile Control Bridge for {room?.Key}");
-
-            CreateMobileControlBridge(room);
-        }
-
-        private static void CreateMobileControlBridge(IEssentialsRoom room)
-        {
-            if(room == null)
-            {
-                Debug.Console(0, Debug.ErrorLogLevel.Warning, $"Room does not implement IEssentialsRoom");
-                return;
-            }
-
-            var mobileControl = GetMobileControlDevice();
-
-            mobileControl?.CreateMobileControlRoomBridge(room, mobileControl);
-
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
-        }
-
-        private static IMobileControl3 GetMobileControlDevice()
-        {
-            var mobileControlList = DeviceManager.AllDevices.OfType<IMobileControl3>().ToList();
-
-            if (mobileControlList.Count > 1)
-            {
-                Debug.Console(0, Debug.ErrorLogLevel.Warning,
-                    "Multiple instances of Mobile Control Server found.");
-
-                return null;
-            }
-
-            if (mobileControlList.Count > 0)
-            {
-                return mobileControlList[0];
-            }
-
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control not enabled for this system");
-            return null;
-        }*/
 
         /// <summary>
         /// Fires up a logo server if not already running
@@ -537,7 +495,7 @@ namespace PepperDash.Essentials
         {
             if (ConfigReader.ConfigObject.Rooms == null)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "No rooms configured. Bypassing Logo server startup.");
+                Debug.LogMessage(LogEventLevel.Information, "No rooms configured. Bypassing Logo server startup.");
                 return;
             }
 
@@ -545,7 +503,7 @@ namespace PepperDash.Essentials
                 !ConfigReader.ConfigObject.Rooms.Any(
                     CheckRoomConfig))
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "No rooms configured to use system Logo server. Bypassing Logo server startup");
+                Debug.LogMessage(LogEventLevel.Information, "No rooms configured to use system Logo server. Bypassing Logo server startup");
                 return;
             }
 
@@ -555,7 +513,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "NOTICE: Logo server cannot be started. Likely already running in another program");
+                Debug.LogMessage(LogEventLevel.Information, "NOTICE: Logo server cannot be started. Likely already running in another program");
             }
         }
 
@@ -587,7 +545,7 @@ namespace PepperDash.Essentials
             }
             catch
             {
-                Debug.Console(1, Debug.ErrorLogLevel.Notice, "Unable to find logo information in any room config");
+                Debug.LogMessage(LogEventLevel.Information, "Unable to find logo information in any room config");                
                 return false;
             }
         }

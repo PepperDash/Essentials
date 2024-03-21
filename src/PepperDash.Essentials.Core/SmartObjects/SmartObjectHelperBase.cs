@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.SmartObjects
 {
@@ -45,7 +46,7 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			if (SmartObject.BooleanOutput.Contains(name))
 				return SmartObject.BooleanOutput[name];
             else
-                Debug.Console(0, "WARNING: Cannot get signal. Smart object {0} on trilist {1:x2} does not contain signal '{2}'",
+                Debug.LogMessage(LogEventLevel.Information, "WARNING: Cannot get signal. Smart object {0} on trilist {1:x2} does not contain signal '{2}'",
                     SmartObject.ID, SmartObject.Device.ID, name);
 			return null;
 		}
@@ -61,7 +62,7 @@ namespace PepperDash.Essentials.Core.SmartObjects
                 SmartObject.BooleanOutput[name].UserObject = a;
             else
             {
-                Debug.Console(0, "WARNING: Cannot set action. Smart object {0} on trilist {1:x2} does not contain signal '{2}'",
+                Debug.LogMessage(LogEventLevel.Information, "WARNING: Cannot set action. Smart object {0} on trilist {1:x2} does not contain signal '{2}'",
                     SmartObject.ID, SmartObject.Device.ID, name);
             }
         }

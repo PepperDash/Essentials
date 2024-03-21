@@ -12,6 +12,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
@@ -38,7 +39,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                     if (device is RoomOnToDefaultSourceWhenOccupied)
                     {
-                        Debug.Console(1, "Mapping Room on via Occupancy values from Fusion");
+                        Debug.LogMessage(LogEventLevel.Debug, "Mapping Room on via Occupancy values from Fusion");
 
                         var devProps = JsonConvert.DeserializeObject<RoomOnToDefaultSourceWhenOccupiedConfig>(deviceConfig.Properties.ToString());
 
@@ -89,18 +90,18 @@ namespace PepperDash.Essentials.Core.Fusion
                         // Set the room name
                         if (!string.IsNullOrEmpty(roomInfo.Name))
                         {
-                            Debug.Console(1, "Current Room Name: {0}. New Room Name: {1}", deviceConfig.Name, roomInfo.Name);
+                            Debug.LogMessage(LogEventLevel.Debug, "Current Room Name: {0}. New Room Name: {1}", deviceConfig.Name, roomInfo.Name);
                             // Set the name in config
                             deviceConfig.Name = roomInfo.Name;
 
-                            Debug.Console(1, "Room Name Successfully Changed.");
+                            Debug.LogMessage(LogEventLevel.Debug, "Room Name Successfully Changed.");
                         }
 
                         // Set the help message
                         var helpMessage = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomHelpMessage"));
                         if (helpMessage != null)
                         {
-                            //Debug.Console(1, "Current Help Message: {0}. New Help Message: {1}", deviceConfig.Properties["help"]["message"].Value<string>(ToString()), helpMessage.CustomFieldValue);
+                            //Debug.LogMessage(LogEventLevel.Debug, "Current Help Message: {0}. New Help Message: {1}", deviceConfig.Properties["help"]["message"].Value<string>(ToString()), helpMessage.CustomFieldValue);
                             deviceConfig.Properties["helpMessage"] = (string)helpMessage.CustomFieldValue;
                         }
                     }
@@ -113,7 +114,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (Exception e)
             {
-                Debug.Console(1, "FusionCustomPropetiesBridge: Error mapping properties: {0}", e);
+                Debug.LogMessage(LogEventLevel.Debug, "FusionCustomPropetiesBridge: Error mapping properties: {0}", e);
             }
         }
     }

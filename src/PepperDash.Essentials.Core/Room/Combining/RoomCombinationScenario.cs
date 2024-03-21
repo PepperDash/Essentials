@@ -9,6 +9,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 
 using Newtonsoft.Json;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -56,7 +57,7 @@ namespace PepperDash.Essentials.Core
 
         public void Activate()
         {
-            Debug.Console(1, "Activating Scenario: '{0}' with {1} action(s) defined", Name, activationActions.Count);   
+            Debug.LogMessage(LogEventLevel.Debug, "Activating Scenario: '{0}' with {1} action(s) defined", Name, activationActions.Count);   
 
             if (activationActions != null)
             {
@@ -72,7 +73,7 @@ namespace PepperDash.Essentials.Core
 
         public void Deactivate()
         {
-            Debug.Console(1, "Deactivating Scenario: '{0}' with {1} action(s) defined", Name, deactivationActions.Count);
+            Debug.LogMessage(LogEventLevel.Debug, "Deactivating Scenario: '{0}' with {1} action(s) defined", Name, deactivationActions.Count);
 
             if (deactivationActions != null)
             {

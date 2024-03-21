@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Config;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Config
 {
@@ -27,7 +28,7 @@ namespace PepperDash.Essentials.Core.Config
 
 		public static bool LoadConfig2()
 		{
-			Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading unmerged system/template portal configuration file.");
+			Debug.LogMessage(LogEventLevel.Information, "Loading unmerged system/template portal configuration file.");
 			try
 			{
                 // Check for local config file first
@@ -35,7 +36,7 @@ namespace PepperDash.Essentials.Core.Config
 
                 bool localConfigFound = false;
 
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to load Local config file: '{0}'", filePath);
+                Debug.LogMessage(LogEventLevel.Information, "Attempting to load Local config file: '{0}'", filePath);
 
                 // Check for local config directory first
 
@@ -45,7 +46,7 @@ namespace PepperDash.Essentials.Core.Config
                 {
                     if (configFiles.Length > 1)
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Error,
+                        Debug.LogMessage(LogEventLevel.Information,
                             "****Error: Multiple Local Configuration files present. Please ensure only a single file exists and reset program.****");
                         return false;
                     }
@@ -57,7 +58,7 @@ namespace PepperDash.Essentials.Core.Config
                 }
                 else
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                    Debug.LogMessage(LogEventLevel.Information,
                         "Local Configuration file not present.", filePath);
 
                 }
@@ -67,33 +68,33 @@ namespace PepperDash.Essentials.Core.Config
                 {
                     filePath = Global.FilePathPrefix + Global.ConfigFileName;
 
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to load Portal config file: '{0}'", filePath);
+                    Debug.LogMessage(LogEventLevel.Information, "Attempting to load Portal config file: '{0}'", filePath);
 
                     configFiles = GetConfigFiles(filePath);
 
                     if (configFiles != null)
                     {
-                        Debug.Console(2, "{0} config files found matching pattern", configFiles.Length);
+                        Debug.LogMessage(LogEventLevel.Verbose, "{0} config files found matching pattern", configFiles.Length);
 
                         if (configFiles.Length > 1)
                         {
-                            Debug.Console(0, Debug.ErrorLogLevel.Error,
+                            Debug.LogMessage(LogEventLevel.Information,
                                 "****Error: Multiple Portal Configuration files present. Please ensure only a single file exists and reset program.****");
                             return false;
                         }
                         else if (configFiles.Length == 1)
                         {
-                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Found Portal config file: '{0}'", filePath);
+                            Debug.LogMessage(LogEventLevel.Information, "Found Portal config file: '{0}'", filePath);
                         }
                         else
                         {
-                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "No config file found.");
+                            Debug.LogMessage(LogEventLevel.Information, "No config file found.");
                             return false;
                         }
                     }
                     else
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Error,
+                        Debug.LogMessage(LogEventLevel.Information,
                             "ERROR: Portal Configuration file not present. Please load file and reset program.");
                         return false;
                     }
@@ -111,13 +112,13 @@ namespace PepperDash.Essentials.Core.Config
                 // Read the file
                 using (StreamReader fs = new StreamReader(filePath))
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading config file: '{0}'", filePath);
+                    Debug.LogMessage(LogEventLevel.Information, "Loading config file: '{0}'", filePath);
 
                     if (localConfigFound)
                     {
                         ConfigObject = JObject.Parse(fs.ReadToEnd()).ToObject<EssentialsConfig>();
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully Loaded Local Config");
+                        Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded Local Config");
 
                         return true;
                     }
@@ -139,14 +140,14 @@ namespace PepperDash.Essentials.Core.Config
                         }
                     }
 
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully Loaded Merged Config");
+                    Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded Merged Config");
 
                     return true;
                 }
 			}
 			catch (Exception e)
 			{
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Config load failed: \r{0}", e);
+                Debug.LogMessage(LogEventLevel.Information, "ERROR: Config load failed: \r{0}", e);
 				return false;
 			}
 		}
@@ -163,20 +164,20 @@ namespace PepperDash.Essentials.Core.Config
 
             if (Directory.Exists(dir))
             {
-                Debug.Console(1, "Searching in Directory '{0}'", dir);
+                Debug.LogMessage(LogEventLevel.Debug, "Searching in Directory '{0}'", dir);
                 // Get the directory info
                 var dirInfo = new DirectoryInfo(dir);
 
                 // Get the file name
                 var fileName = Path.GetFileName(filePath);
-                Debug.Console(1, "For Config Files matching: '{0}'", fileName);
+                Debug.LogMessage(LogEventLevel.Debug, "For Config Files matching: '{0}'", fileName);
 
                 // Get the files that match from the directory
                 return dirInfo.GetFiles(fileName);
             }
             else
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                Debug.LogMessage(LogEventLevel.Information,
                     "Directory not found: ", dir);
 
                 return null;
@@ -248,8 +249,8 @@ namespace PepperDash.Essentials.Core.Config
                 // Line 8
 	            .Append(new string('*', debugStringWidth));
 
-            Debug.Console(2, Debug.ErrorLogLevel.Notice, "Found Local config file: '{0}'", filePath);
-            Debug.Console(0, newDebugString.ToString());
+            Debug.LogMessage(LogEventLevel.Verbose, "Found Local config file: '{0}'", filePath);
+            Debug.LogMessage(LogEventLevel.Information, newDebugString.ToString());
 	    }
 
 	}

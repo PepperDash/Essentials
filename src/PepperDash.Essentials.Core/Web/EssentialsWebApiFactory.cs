@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Web
 {
@@ -13,12 +14,12 @@ namespace PepperDash.Essentials.Core.Web
 
 		public override EssentialsDevice BuildDevice(DeviceConfig dc)
 		{
-			Debug.Console(1, "Factory Attempting to create new Essentials Web API Server");
+			Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Essentials Web API Server");
 
 			var props = dc.Properties.ToObject<EssentialsWebApiPropertiesConfig>();
 			if (props != null) return new EssentialsWebApi(dc.Key, dc.Name, props);
 
-			Debug.Console(1, "Factory failed to create new Essentials Web API Server");
+			Debug.LogMessage(LogEventLevel.Debug, "Factory failed to create new Essentials Web API Server");
 			return null;
 		}
 	}

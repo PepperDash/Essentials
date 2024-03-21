@@ -10,6 +10,7 @@ using PepperDash.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core.Bridges;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Monitoring
 {
@@ -61,7 +62,7 @@ namespace PepperDash.Essentials.Core.Monitoring
 	    public SystemMonitorController(string key)
             : base(key)
         {
-            Debug.Console(2, this, "Adding SystemMonitorController.");
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Adding SystemMonitorController.");
 
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
 
@@ -175,11 +176,11 @@ namespace PepperDash.Essentials.Core.Monitoring
         {
             EthernetStatusFeedbackCollection = new Dictionary<short, EthernetStatusFeedbacks>();
 
-            Debug.Console(2, "Creating {0} EthernetStatusFeedbacks", InitialParametersClass.NumberOfEthernetInterfaces);
+            Debug.LogMessage(LogEventLevel.Verbose, "Creating {0} EthernetStatusFeedbacks", InitialParametersClass.NumberOfEthernetInterfaces);
 
             for (short i = 0; i < InitialParametersClass.NumberOfEthernetInterfaces; i++)
             {
-                Debug.Console(2, "Creating EthernetStatusFeedback for Interface {0}", i);
+                Debug.LogMessage(LogEventLevel.Verbose, "Creating EthernetStatusFeedback for Interface {0}", i);
                 var ethernetInterface = new EthernetStatusFeedbacks(i);
                 EthernetStatusFeedbackCollection.Add(i, ethernetInterface);
             }
@@ -260,11 +261,11 @@ namespace PepperDash.Essentials.Core.Monitoring
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
-            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(2, this, "Linking API starting at join: {0}", joinStart);
+            Debug.LogMessage(LogEventLevel.Debug, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Linking API starting at join: {0}", joinStart);
 
             TimeZoneFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeZone.JoinNumber]);
             TimeZoneTextFeedback.LinkInputSig(trilist.StringInput[joinMap.TimeZoneName.JoinNumber]);
@@ -366,8 +367,8 @@ namespace PepperDash.Essentials.Core.Monitoring
         /// <param name="args"></param>
         private void SystemMonitor_ProgramChange(Program sender, ProgramEventArgs args)
         {
-            Debug.Console(2, this, "Program Change Detected for slot: {0}", sender.Number);
-            Debug.Console(2, this, "Event Type: {0}", args.EventType);
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Program Change Detected for slot: {0}", sender.Number);
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Event Type: {0}", args.EventType);
 
             var program = ProgramStatusFeedbackCollection[sender.Number];
 
@@ -400,7 +401,7 @@ namespace PepperDash.Essentials.Core.Monitoring
         /// <param name="args"></param>
         private void TimeZoneInformation_TimeZoneChange(TimeZoneEventArgs args)
         {
-            Debug.Console(2, this, "Time Zone Change Detected.");
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Time Zone Change Detected.");
             TimeZoneFeedback.FireUpdate();
             TimeZoneTextFeedback.FireUpdate();
 
@@ -425,28 +426,28 @@ namespace PepperDash.Essentials.Core.Monitoring
 
             public EthernetStatusFeedbacks(short adapterIndex)
             {
-                Debug.Console(2, "Ethernet Information for interface {0}", adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} Hostname: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Ethernet Information for interface {0}", adapterIndex);
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} Hostname: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} Current IP Address: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} Current IP Address: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} Current Subnet Mask: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} Current Subnet Mask: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} Current Router: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} Current Router: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} Static IP Address: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} Static IP Address: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_STATIC_IPADDRESS, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} Static Subnet Mask: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} Static Subnet Mask: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_STATIC_IPMASK, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} Static Router: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} Static Router: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_STATIC_ROUTER, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} DNS Servers: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} DNS Servers: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DNS_SERVER, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} DHCP State: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} DHCP State: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_DHCP_STATE, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} Domain Name: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} Domain Name: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, adapterIndex), adapterIndex);
-                Debug.Console(2, "Adapter Index: {1} MAC Address: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                Debug.LogMessage(LogEventLevel.Verbose, "Adapter Index: {1} MAC Address: {0}", CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, adapterIndex), adapterIndex);
                 HostNameFeedback =
                     new StringFeedback(
@@ -585,13 +586,13 @@ namespace PepperDash.Essentials.Core.Monitoring
 
             private void GetProgramInfo(object o)
             {
-                Debug.Console(2, "Attempting to get program info for slot: {0}", Program.Number);
+                Debug.LogMessage(LogEventLevel.Verbose, "Attempting to get program info for slot: {0}", Program.Number);
 
                 string response = null;
 
                 if (Program.RegistrationState == eProgramRegistrationState.Unregister || Program.OperatingState == eProgramOperatingState.Stop)
                 {
-                    Debug.Console(2, "Program {0} not registered. Setting default values for program information.",
+                    Debug.LogMessage(LogEventLevel.Verbose, "Program {0} not registered. Setting default values for program information.",
                         Program.Number);
 
                     ProgramInfo = new ProgramInfo(Program.Number)
@@ -608,14 +609,14 @@ namespace PepperDash.Essentials.Core.Monitoring
 
                 if (!success)
                 {
-                    Debug.Console(2, "Progcomments Attempt Unsuccessful for slot: {0}", Program.Number);
+                    Debug.LogMessage(LogEventLevel.Verbose, "Progcomments Attempt Unsuccessful for slot: {0}", Program.Number);
                     UpdateFeedbacks();
                     return;
                 }
 
                 if (response.ToLower().Contains("bad or incomplete"))
                 {
-                    Debug.Console(2,
+                    Debug.LogMessage(LogEventLevel.Verbose,
                         "Program in slot {0} not running.  Setting default ProgramInfo for slot: {0}",
                         Program.Number);
 
@@ -665,7 +666,7 @@ namespace PepperDash.Essentials.Core.Monitoring
                     ProgramInfo.Environment = ParseConsoleData(response, "Source Env", ": ", "\n");
                     ProgramInfo.Programmer = ParseConsoleData(response, "Programmer", ": ", "\n");
                 }
-                Debug.Console(2, "Program info for slot {0} successfully updated", Program.Number);
+                Debug.LogMessage(LogEventLevel.Verbose, "Program info for slot {0} successfully updated", Program.Number);
 
                 UpdateFeedbacks();
             }
@@ -684,7 +685,7 @@ namespace PepperDash.Essentials.Core.Monitoring
 
             public void OnProgramInfoChanged()
             {
-                //Debug.Console(1, "Firing ProgramInfoChanged for slot: {0}", Program.Number);
+                //Debug.LogMessage(LogEventLevel.Debug, "Firing ProgramInfoChanged for slot: {0}", Program.Number);
                 var handler = ProgramInfoChanged;
                 if (handler != null)
                 {
@@ -693,24 +694,30 @@ namespace PepperDash.Essentials.Core.Monitoring
             }
 
             private string ParseConsoleData(string data, string line, string startString, string endString)
-            {
+            {                
                 var outputData = "";
 
                 if (data.Length <= 0) return outputData;
 
+                if (!data.Contains(line))
+                {
+                    return outputData;
+                }
+
                 try
                 {
-                    //Debug.Console(2, "ParseConsoleData Data: {0}, Line {1}, startStirng {2}, endString {3}", data, line, startString, endString);
+                    //Debug.LogMessage(LogEventLevel.Verbose, "ParseConsoleData Data: {0}, Line {1}, startStirng {2}, endString {3}", data, line, startString, endString);
                     var linePosition = data.IndexOf(line, StringComparison.Ordinal);
                     var startPosition = data.IndexOf(startString, linePosition, StringComparison.Ordinal) +
                                         startString.Length;
                     var endPosition = data.IndexOf(endString, startPosition, StringComparison.Ordinal);
                     outputData = data.Substring(startPosition, endPosition - startPosition).Trim();
-                    //Debug.Console(2, "ParseConsoleData Return: {0}", outputData);
+                    //Debug.LogMessage(LogEventLevel.Verbose, "ParseConsoleData Return: {0}", outputData);
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(1, "Error Parsing Console Data:\r{0}", e);
+                    Debug.LogMessage(LogEventLevel.Error, "Error Parsing Console Data: {0}", e);
+                    Debug.LogMessage(LogEventLevel.Verbose, "Stack Trace: {stackTrace}", e.StackTrace);
                 }
 
                 return outputData;

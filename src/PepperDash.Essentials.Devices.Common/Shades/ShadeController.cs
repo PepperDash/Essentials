@@ -3,6 +3,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Shades;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Shades
 {
@@ -63,7 +64,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new ShadeController Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new ShadeController Device");
             var props = Newtonsoft.Json.JsonConvert.DeserializeObject<ShadeControllerConfigProperties>(dc.Properties.ToString());
 
             return new ShadeController(dc.Key, dc.Name, props);

@@ -40,7 +40,7 @@ namespace PepperDash.Essentials
                     }
                     catch (Exception e)
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to load type: '{1}' DeviceFactory: {0}", e, type.Name);
+                        Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Unable to load type: '{exception}' DeviceFactory: {factoryName}", e, type.Name);                        
                     }
                 }
             }

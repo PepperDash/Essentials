@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -40,7 +41,7 @@ namespace PepperDash.Essentials.Core
 				return null;
 			if (control["method"].Value<string>() != "ir")
 			{
-				Debug.Console(0, "IRPortHelper called with non-IR properties");
+				Debug.LogMessage(LogEventLevel.Information, "IRPortHelper called with non-IR properties");
 				return null;
 			}
 
@@ -50,7 +51,7 @@ namespace PepperDash.Essentials.Core
 			var portNum = control.Value<uint>("controlPortNumber");
 			if (portDevKey == null || portNum == 0)
 			{
-				Debug.Console(1, "WARNING: Properties is missing port device or port number");
+				Debug.LogMessage(LogEventLevel.Debug, "WARNING: Properties is missing port device or port number");
 				return port;
 			}
 
@@ -63,7 +64,7 @@ namespace PepperDash.Essentials.Core
 
 			if (irDev == null)
 			{
-				Debug.Console(1, "[Config] Error, device with IR ports '{0}' not found", portDevKey);
+				Debug.LogMessage(LogEventLevel.Debug, "[Config] Error, device with IR ports '{0}' not found", portDevKey);
 				return port;
 			}
 
@@ -76,7 +77,7 @@ namespace PepperDash.Essentials.Core
 			}
 			else
 			{
-				Debug.Console(1, "[Config] Error, device '{0}' IR port {1} out of range",
+				Debug.LogMessage(LogEventLevel.Debug, "[Config] Error, device '{0}' IR port {1} out of range",
 					portDevKey, portNum);
 				return port;
 			}
@@ -87,14 +88,14 @@ namespace PepperDash.Essentials.Core
 	        var irControllerKey = dc.Key + "-ir";
 	        if (dc.Properties == null)
 	        {
-	            Debug.Console(0, "[{0}] WARNING: Device config does not include properties.  IR will not function.", dc.Key);
+	            Debug.LogMessage(LogEventLevel.Information, "[{0}] WARNING: Device config does not include properties.  IR will not function.", dc.Key);
 	            return null;
 	        }
 
 	        var control = dc.Properties["control"];
 	        if (control == null)
 	        {
-	            Debug.Console(0,
+	            Debug.LogMessage(LogEventLevel.Information,
 	                "WARNING: Device config does not include control properties.  IR will not function for {0}", dc.Key);
 	            return null;
 	        }
@@ -105,13 +106,13 @@ namespace PepperDash.Essentials.Core
 
 	        if (portDevKey == null)
 	        {
-	            Debug.Console(0, "WARNING: control properties is missing ir device for {0}", dc.Key);
+	            Debug.LogMessage(LogEventLevel.Information, "WARNING: control properties is missing ir device for {0}", dc.Key);
 	            return null;
 	        }
 
 	        if (portNum == 0)
 	        {
-	            Debug.Console(0, "WARNING: control properties is missing ir port number for {0}", dc.Key);
+	            Debug.LogMessage(LogEventLevel.Information, "WARNING: control properties is missing ir port number for {0}", dc.Key);
 	            return null;
 	        }
 
@@ -123,12 +124,12 @@ namespace PepperDash.Essentials.Core
 
 	        if (irDev == null)
 	        {
-	            Debug.Console(0, "WARNING: device with IR ports '{0}' not found", portDevKey);
+	            Debug.LogMessage(LogEventLevel.Information, "WARNING: device with IR ports '{0}' not found", portDevKey);
 	            return null;
 	        }
 	        if (portNum > irDev.NumberOfIROutputPorts)
 	        {
-	            Debug.Console(0, "WARNING: device '{0}' IR port {1} out of range",
+	            Debug.LogMessage(LogEventLevel.Information, "WARNING: device '{0}' IR port {1} out of range",
 	                portDevKey, portNum);
 	            return null;
 	        }
@@ -143,7 +144,7 @@ namespace PepperDash.Essentials.Core
 
 	    public static IrOutputPortController GetIrOutputPortController(DeviceConfig config)
 	    {
-            Debug.Console(1, "Attempting to create new Ir Port Controller");
+            Debug.LogMessage(LogEventLevel.Debug, "Attempting to create new Ir Port Controller");
 
 	        if (config == null)
 	        {
@@ -165,7 +166,7 @@ namespace PepperDash.Essentials.Core
             var irControllerKey = devConf.Key + "-ir";
             if (devConf.Properties == null)
             {
-                Debug.Console(0, "[{0}] WARNING: Device config does not include properties.  IR will not function.", devConf.Key);
+                Debug.LogMessage(LogEventLevel.Information, "[{0}] WARNING: Device config does not include properties.  IR will not function.", devConf.Key);
                 return new IrOutputPortController(irControllerKey, null, "");
             }
 
@@ -173,7 +174,7 @@ namespace PepperDash.Essentials.Core
             if (control == null)
             {
                 var c = new IrOutputPortController(irControllerKey, null, "");
-                Debug.Console(0, c, "WARNING: Device config does not include control properties.  IR will not function");
+                Debug.LogMessage(LogEventLevel.Information, c, "WARNING: Device config does not include control properties.  IR will not function");
                 return c;
             }
 
@@ -184,14 +185,14 @@ namespace PepperDash.Essentials.Core
             if (portDevKey == null)
             {
                 var c = new IrOutputPortController(irControllerKey, null, "");
-                Debug.Console(0, c, "WARNING: control properties is missing ir device");
+                Debug.LogMessage(LogEventLevel.Information, c, "WARNING: control properties is missing ir device");
                 return c;
             }
 
             if (portNum == 0)
             {
                 var c = new IrOutputPortController(irControllerKey, null, "");
-                Debug.Console(0, c, "WARNING: control properties is missing ir port number");
+                Debug.LogMessage(LogEventLevel.Information, c, "WARNING: control properties is missing ir port number");
                 return c;
             } 
 
@@ -204,7 +205,7 @@ namespace PepperDash.Essentials.Core
             if (irDev == null)
             {
                 var c = new IrOutputPortController(irControllerKey, null, "");
-                Debug.Console(0, c, "WARNING: device with IR ports '{0}' not found", portDevKey);
+                Debug.LogMessage(LogEventLevel.Information, c, "WARNING: device with IR ports '{0}' not found", portDevKey);
                 return c;
             }
 
@@ -214,7 +215,7 @@ namespace PepperDash.Essentials.Core
             else
             {
                 var c = new IrOutputPortController(irControllerKey, null, "");
-                Debug.Console(0, c, "WARNING: device '{0}' IR port {1} out of range",
+                Debug.LogMessage(LogEventLevel.Information, c, "WARNING: device '{0}' IR port {1} out of range",
                     portDevKey, portNum);
                 return c;
             }

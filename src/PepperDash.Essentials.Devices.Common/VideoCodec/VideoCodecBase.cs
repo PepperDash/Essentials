@@ -20,6 +20,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Core.Bridges.JoinMaps;
 using Feedback = PepperDash.Essentials.Core.Feedback;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
@@ -259,7 +260,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 					}
 					catch (Exception e)
 					{
-						Debug.Console(2, this, "Error in SetIsReady() : {0}", e);
+						Debug.LogMessage(LogEventLevel.Verbose, this, "Error in SetIsReady() : {0}", e);
 					}
 				});
 		}
@@ -270,14 +271,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		/// </summary>
 		public virtual void ListCalls()
 		{
-            Debug.Console(1, this, "Active Calls:");
+            Debug.LogMessage(LogEventLevel.Debug, this, "Active Calls:");
 
 			var sb = new StringBuilder();
 			foreach (var c in ActiveCalls)
 			{
 				sb.AppendFormat("id: {0} number: {1} -- name: {2} status: {3} onHold: {4}\r\n", c.Id, c.Number, c.Name, c.Status, c.IsOnHold);
 			}
-			Debug.Console(1, this, "\n{0}\n", sb.ToString());
+			Debug.LogMessage(LogEventLevel.Debug, this, "\n{0}\n", sb.ToString());
 		}
 
 		public abstract void StandbyActivate();
@@ -329,7 +330,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		/// <param name="joinMap"></param>
 		protected void LinkVideoCodecToApi(VideoCodecBase codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
-			Debug.Console(1, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
+			Debug.LogMessage(LogEventLevel.Debug, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
 
 			LinkVideoCodecDtmfToApi(trilist, joinMap);
 
@@ -697,7 +698,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			{
 				if (meetingIndex >= maxParticipants * offset) break;
 
-                //                Debug.Console(2, this,
+                //                Debug.LogMessage(LogEventLevel.Verbose, this,
                 //@"Updating Participant on xsig:
                 //Name: {0} (s{9})
                 //AudioMute: {1} (d{10})
@@ -739,7 +740,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 tokenArray[digitalIndex + 5] = new XSigDigitalToken(digitalIndex + 6, participant.HandIsRaisedFb);
                 tokenArray[digitalIndex + 6] = new XSigDigitalToken(digitalIndex + 7, participant.IsPinnedFb);
 
-                Debug.Console(2, this, "Index: {0} byte value: {1}", digitalIndex + 7, ComTextHelper.GetEscapedText(tokenArray[digitalIndex + 6].GetBytes()));
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Index: {0} byte value: {1}", digitalIndex + 7, ComTextHelper.GetEscapedText(tokenArray[digitalIndex + 6].GetBytes()));
 
 				//serials
 				tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, participant.Name);
@@ -778,7 +779,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             var returnString = GetXSigString(tokenArray);
 
-            //Debug.Console(2, this, "{0}", ComTextHelper.GetEscapedText(Encoding.GetEncoding(28591).GetBytes(returnString)));
+            //Debug.LogMessage(LogEventLevel.Verbose, this, "{0}", ComTextHelper.GetEscapedText(Encoding.GetEncoding(28591).GetBytes(returnString)));
 
 
             return returnString;
@@ -811,14 +812,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             for (uint i = 0; i < joinMap.DialMeetingStart.JoinSpan; i++)
             {
-                Debug.Console(1, this, "Setting action to Dial Meeting {0} to digital join {1}", i + 1, joinMap.DialMeetingStart.JoinNumber + i);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Setting action to Dial Meeting {0} to digital join {1}", i + 1, joinMap.DialMeetingStart.JoinNumber + i);
                 var joinNumber = joinMap.DialMeetingStart.JoinNumber + i;
                 var mtg = i + 1;
                 var index = (int)i;
 
                 trilist.SetSigFalseAction(joinNumber, () =>
                 {
-                    Debug.Console(1, this, "Meeting {0} Selected (EISC dig-o{1}) > _currentMeetings[{2}].Id: {3}, Title: {4}",
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Meeting {0} Selected (EISC dig-o{1}) > _currentMeetings[{2}].Id: {3}, Title: {4}",
                         mtg, joinMap.DialMeetingStart.JoinNumber + i, index, _currentMeetings[index].Id, _currentMeetings[index].Title);
                     if (_currentMeetings[index] != null)
                         Dial(_currentMeetings[index]);
@@ -931,7 +932,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		        if (meetingIndex >= _meetingsToDisplay * offset)
 		        {
-			        Debug.Console(2, this, "Max Meetings reached");
+			        Debug.LogMessage(LogEventLevel.Verbose, this, "Max Meetings reached");
 			        break;
 		        }
 
@@ -955,7 +956,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 	        while (meetingIndex < _meetingsToDisplay * offset)
 	        {
-		        Debug.Console(2, this, "Clearing unused data. Meeting Index: {0} MaxMeetings * Offset: {1}",
+		        Debug.LogMessage(LogEventLevel.Verbose, this, "Clearing unused data. Meeting Index: {0} MaxMeetings * Offset: {1}",
 			        meetingIndex, _meetingsToDisplay * offset);
 
 		        //digitals
@@ -1003,7 +1004,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		    {
 				var contactsCount = codec.DirectoryRoot.CurrentDirectoryResults.Where(c => c.ParentFolderId.Equals("root")).ToList().Count;				
                 trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)contactsCount);
-				Debug.Console(2, this, ">>> contactsCount: {0}", contactsCount);
+				Debug.LogMessage(LogEventLevel.Verbose, this, ">>> contactsCount: {0}", contactsCount);
 
                 var clearBytes = XSigHelpers.ClearOutputs();
 
@@ -1012,7 +1013,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, 
                     codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
 
-                Debug.Console(2, this, "Directory XSig Length: {0}", directoryXSig.Length);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Directory XSig Length: {0}", directoryXSig.Length);
 
                 trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
 		    }
@@ -1025,7 +1026,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 					: args.Directory.CurrentDirectoryResults.Count;
 
 				trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)argsCount);
-				Debug.Console(2, this, ">>> argsCount: {0}", argsCount);
+				Debug.LogMessage(LogEventLevel.Verbose, this, ">>> argsCount: {0}", argsCount);
 
 				var clearBytes = XSigHelpers.ClearOutputs();
 
@@ -1033,7 +1034,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 					Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
                 var directoryXSig = UpdateDirectoryXSig(args.Directory, 
                     codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
-                Debug.Console(2, this, "Directory XSig Length: {0}", directoryXSig.Length);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Directory XSig Length: {0}", directoryXSig.Length);
 
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
 			};
@@ -1159,7 +1160,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             // Create a new token array and set the size to the number of methods times the total number of signals
             var tokenArray = new XSigToken[maxMethods * offset];
 
-            Debug.Console(2, this, "Creating XSIG token array with size {0}", maxMethods * offset);
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Creating XSIG token array with size {0}", maxMethods * offset);
 
             // TODO: Add code to generate XSig data
             foreach (var method in contact.ContactMethods)
@@ -1196,7 +1197,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				? xSigMaxIndex
 				: directory.CurrentDirectoryResults.Count];
 
-			Debug.Console(2, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot, directory.CurrentDirectoryResults.Count, tokenArray.Length);
+			Debug.LogMessage(LogEventLevel.Verbose, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot, directory.CurrentDirectoryResults.Count, tokenArray.Length);
 
 			var contacts = directory.CurrentDirectoryResults.Count > xSigMaxIndex
 				? directory.CurrentDirectoryResults.Take(xSigMaxIndex)
@@ -1212,7 +1213,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				var arrayIndex = counterIndex - 1;
 				var entryIndex = counterIndex;
 
-				Debug.Console(2, this, "Entry{2:0000} Name: {0}, Folder ID: {1}, Type: {3}, ParentFolderId: {4}",
+				Debug.LogMessage(LogEventLevel.Verbose, this, "Entry{2:0000} Name: {0}, Folder ID: {1}, Type: {3}, ParentFolderId: {4}",
 					entry.Name, entry.FolderId, entryIndex, entry.GetType().GetCType().FullName, entry.ParentFolderId);
 
 				if (entry is DirectoryFolder)
@@ -1250,7 +1251,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                         if (callIndex < 0 || callIndex >= ActiveCalls.Count)
                         {
-                            Debug.Console(2, this, "Cannot end call. No call found at index: {0}", callIndex);
+                            Debug.LogMessage(LogEventLevel.Verbose, this, "Cannot end call. No call found at index: {0}", callIndex);
                             return;
                         }
 
@@ -1261,7 +1262,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         }
                         else
                         {
-                            Debug.Console(0, this, "[End Call] Unable to find call at index '{0}'", i);
+                            Debug.LogMessage(LogEventLevel.Information, this, "[End Call] Unable to find call at index '{0}'", i);
                         }
                     });
             }
@@ -1272,8 +1273,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			{
 				trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
-				Debug.Console(1, this, "Call Direction: {0}", args.CallItem.Direction);
-				Debug.Console(1, this, "Call is incoming: {0}", args.CallItem.Direction == eCodecCallDirection.Incoming);
+				Debug.LogMessage(LogEventLevel.Debug, this, "Call Direction: {0}", args.CallItem.Direction);
+				Debug.LogMessage(LogEventLevel.Debug, this, "Call is incoming: {0}", args.CallItem.Direction == eCodecCallDirection.Incoming);
 				trilist.SetBool(joinMap.IncomingCall.JoinNumber, args.CallItem.Direction == eCodecCallDirection.Incoming && args.CallItem.Status == eCodecCallStatus.Ringing);
 
                 if (args.CallItem.Direction == eCodecCallDirection.Incoming)
@@ -1311,7 +1312,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 											} 
 											else
 											{
-													Debug.Console(0, this, "[Join Call] Unable to find call at index '{0}'", i);
+													Debug.LogMessage(LogEventLevel.Information, this, "[Join Call] Unable to find call at index '{0}'", i);
 											}
 									});
 					}
@@ -1343,7 +1344,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 											} 
 											else
 											{
-													Debug.Console(0, this, "[Hold Call] Unable to find call at index '{0}'", i);
+													Debug.LogMessage(LogEventLevel.Information, this, "[Hold Call] Unable to find call at index '{0}'", i);
 											}
 									});
 
@@ -1358,7 +1359,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 											} 
 											else
 											{
-													Debug.Console(0, this, "[Resume Call] Unable to find call at index '{0}'", i);
+													Debug.LogMessage(LogEventLevel.Information, this, "[Resume Call] Unable to find call at index '{0}'", i);
 											}
 									});
 					}
@@ -1371,7 +1372,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 					if (!args.DeviceOnLine) return;
 
 					// TODO [ ] #983
-					Debug.Console(0, this, "LinkVideoCodecCallControlsToApi: device is {0}, IsInCall {1}", args.DeviceOnLine ? "online" : "offline", IsInCall);
+					Debug.LogMessage(LogEventLevel.Information, this, "LinkVideoCodecCallControlsToApi: device is {0}, IsInCall {1}", args.DeviceOnLine ? "online" : "offline", IsInCall);
 					trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 					trilist.SetString(joinMap.CurrentCallData.JoinNumber, "\xFC");
 					trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
@@ -1480,12 +1481,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     }
                     else
                     {
-                        Debug.Console(0, this, "Warning: No call found at index {0} or call is not active.", callIndex);
+                        Debug.LogMessage(LogEventLevel.Information, this, "Warning: No call found at index {0} or call is not active.", callIndex);
                     }
                 }
                 else
                 {
-                    Debug.Console(0, this, "Warning: Invalid call index specified.  Please use a value of 1-8.");
+                    Debug.LogMessage(LogEventLevel.Information, this, "Warning: Invalid call index specified.  Please use a value of 1-8.");
                 }
             }
         }
@@ -1684,7 +1685,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 }
                 else
                 {
-                    Debug.Console(0, this, "Unable to select.  No camera found at index {0}", i);
+                    Debug.LogMessage(LogEventLevel.Information, this, "Unable to select.  No camera found at index {0}", i);
                 }
 			});
 
@@ -1787,7 +1788,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 {
                     if (u == 0 || u > codec.CallHistory.RecentCalls.Count) 
                     {
-                        Debug.Console(2, this, "Recent Call History index out of range");
+                        Debug.LogMessage(LogEventLevel.Verbose, this, "Recent Call History index out of range");
                         return;
                     }
 
@@ -1974,7 +1975,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		{
 			PhonebookHasFolders = value;
 
-			Debug.Console(1, this, "Phonebook has folders: {0}", PhonebookHasFolders);
+			Debug.LogMessage(LogEventLevel.Debug, this, "Phonebook has folders: {0}", PhonebookHasFolders);
 		}
 
 		public void SetNumberOfContacts(int contacts)
@@ -1982,7 +1983,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			NumberOfContacts = contacts;
 			NumberOfContactsWasReceived = true;
 
-			Debug.Console(1, this, "Phonebook contains {0} contacts.", NumberOfContacts);
+			Debug.LogMessage(LogEventLevel.Debug, this, "Phonebook contains {0} contacts.", NumberOfContacts);
 
 			CheckSyncStatus();
 		}
@@ -2000,7 +2001,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			if (InitialPhonebookFoldersWasReceived && NumberOfContactsWasReceived && PhonebookRootEntriesWasRecieved)
 			{
 				InitialSyncComplete = true;
-				Debug.Console(1, this, "Initial Phonebook Sync Complete!");
+				Debug.LogMessage(LogEventLevel.Debug, this, "Initial Phonebook Sync Complete!");
 			}
 			else
 			{

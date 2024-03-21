@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -33,7 +34,7 @@ namespace PepperDash.Essentials.Core
             RepeatDelay = repeatDelay;
             RepeatTime = repeatTime;
             if (SignedMode && (MinValue < -32768 || MaxValue > 32767))
-                Debug.Console(1, "UshortSigIncrementer has signed values that exceed range of -32768, 32767");
+                Debug.LogMessage(LogEventLevel.Debug, "UshortSigIncrementer has signed values that exceed range of -32768, 32767");
         }
 
         public void StartUp()

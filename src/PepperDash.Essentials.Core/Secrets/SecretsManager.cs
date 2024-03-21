@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using PepperDash.Core;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -59,7 +60,7 @@ namespace PepperDash.Essentials.Core
 
             if (secret == null)
             {
-                Debug.Console(1, "SecretsManager unable to retrieve SecretProvider with the key '{0}'", key);
+                Debug.LogMessage(LogEventLevel.Debug, "SecretsManager unable to retrieve SecretProvider with the key '{0}'", key);
             }
             return secret;
         }
@@ -147,10 +148,10 @@ namespace PepperDash.Essentials.Core
             if (!Secrets.ContainsKey(key))
             {
                 Secrets.Add(key, provider);
-                Debug.Console(1, "Secrets provider '{0}' added to SecretsManager", key);
+                Debug.LogMessage(LogEventLevel.Debug, "Secrets provider '{0}' added to SecretsManager", key);
                 return;
             }
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key );
+            Debug.LogMessage(LogEventLevel.Information, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key );
         }
 
         /// <summary>
@@ -164,16 +165,16 @@ namespace PepperDash.Essentials.Core
             if (!Secrets.ContainsKey(key))
             {
                 Secrets.Add(key, provider);
-                Debug.Console(1, "Secrets provider '{0}' added to SecretsManager", key);
+                Debug.LogMessage(LogEventLevel.Debug, "Secrets provider '{0}' added to SecretsManager", key);
                 return;
             }
             if (overwrite)
             {
                 Secrets.Add(key, provider);
-                Debug.Console(1, Debug.ErrorLogLevel.Notice, "Provider with the key '{0}' already exists in secrets.  Overwriting with new secrets provider.", key);
+                Debug.LogMessage(LogEventLevel.Debug, "Provider with the key '{0}' already exists in secrets.  Overwriting with new secrets provider.", key);
                 return;
             }
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key);
+            Debug.LogMessage(LogEventLevel.Information, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key);
         }
 
         private static void SetSecretProcess(string cmd)
@@ -274,7 +275,7 @@ namespace PepperDash.Essentials.Core
         {
             var secretPresent = provider.TestSecret(key);
 
-            Debug.Console(2, provider, "SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
+            Debug.LogMessage(LogEventLevel.Verbose, provider, "SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
 
             if (!secretPresent)
                 return
@@ -294,7 +295,7 @@ namespace PepperDash.Essentials.Core
         {
             var secretPresent = provider.TestSecret(key);
 
-            Debug.Console(2, provider, "SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
+            Debug.LogMessage(LogEventLevel.Verbose, provider, "SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
 
             if (secretPresent)
                 return

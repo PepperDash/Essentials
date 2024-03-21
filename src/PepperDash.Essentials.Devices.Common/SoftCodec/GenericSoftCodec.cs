@@ -2,6 +2,7 @@
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,7 +74,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Attempting to create new Generic SoftCodec Device");
+            Debug.LogMessage(LogEventLevel.Debug, "Attempting to create new Generic SoftCodec Device");
 
             var props = dc.Properties.ToObject<GenericSoftCodecProperties>();
 

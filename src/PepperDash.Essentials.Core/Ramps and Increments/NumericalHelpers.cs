@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Core
         /// <returns></returns>
         public static double Scale(double input, double inMin, double inMax, double outMin, double outMax)
         {
-            //Debug.Console(2, this, "Scaling (double) input '{0}' with min '{1}'/max '{2}' to output range min '{3}'/max '{4}'", input, inMin, inMax, outMin, outMax);
+            //Debug.LogMessage(LogEventLevel.Verbose, this, "Scaling (double) input '{0}' with min '{1}'/max '{2}' to output range min '{3}'/max '{4}'", input, inMin, inMax, outMin, outMax);
 
             double inputRange = inMax - inMin;
 
@@ -32,7 +32,7 @@ namespace PepperDash.Essentials.Core
 
             var output = (((input - inMin) * outputRange) / inputRange) + outMin;
 
-           // Debug.Console(2, this, "Scaled output '{0}'", output);
+           // Debug.LogMessage(LogEventLevel.Verbose, this, "Scaled output '{0}'", output);
 
             return output;
         }

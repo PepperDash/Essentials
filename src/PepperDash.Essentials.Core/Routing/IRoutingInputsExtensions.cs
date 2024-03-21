@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
 
 using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -65,7 +66,7 @@ namespace PepperDash.Essentials.Core
 
                 RouteRequests[destination.Key] = routeRequest;
 
-                Debug.Console(2, "******************************************************** Device: {0} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {1}", destination.Key, routeRequest.Source.Key);
+                Debug.LogMessage(LogEventLevel.Verbose, "******************************************************** Device: {0} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {1}", destination.Key, routeRequest.Source.Key);
 
                 return;
             }            
@@ -79,14 +80,14 @@ namespace PepperDash.Essentials.Core
 
                 RouteRequests.Add(destination.Key, routeRequest);
 
-                Debug.Console(2, "******************************************************** Device: {0} is cooling down.  Storing route request to route to source key: {1}", destination.Key, routeRequest.Source.Key);
+                Debug.LogMessage(LogEventLevel.Verbose, "******************************************************** Device: {0} is cooling down.  Storing route request to route to source key: {1}", destination.Key, routeRequest.Source.Key);
                 return;
             }
 
             if (RouteRequests.ContainsKey(destination.Key) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == false)
             {
                 RouteRequests.Remove(destination.Key);
-                Debug.Console(2, "******************************************************** Device: {0} is NOT cooling down.  Removing stored route request and routing to source key: {1}", destination.Key, routeRequest.Source.Key);
+                Debug.LogMessage(LogEventLevel.Verbose, "******************************************************** Device: {0} is NOT cooling down.  Removing stored route request and routing to source key: {1}", destination.Key, routeRequest.Source.Key);
             }
 
             destination.ReleaseRoute();
@@ -100,7 +101,7 @@ namespace PepperDash.Essentials.Core
             var newRoute = request.Destination.GetRouteToSource(request.Source, request.SignalType);
             if (newRoute == null) return;
             RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(newRoute);
-            Debug.Console(2, request.Destination, "Executing full route");
+            Debug.LogMessage(LogEventLevel.Verbose, request.Destination, "Executing full route");
             newRoute.ExecuteRoutes();
         }
 
@@ -125,7 +126,7 @@ namespace PepperDash.Essentials.Core
 			var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination);
 			if (current != null)
 			{
-				Debug.Console(1, destination, "Releasing current route: {0}", current.Source.Key);
+				Debug.LogMessage(LogEventLevel.Debug, destination, "Releasing current route: {0}", current.Source.Key);
 				current.ReleaseRoutes();
 			}
 		}
@@ -143,25 +144,25 @@ namespace PepperDash.Essentials.Core
 			// if it's a single signal type, find the route
 			if ((signalType & (eRoutingSignalType.Audio & eRoutingSignalType.Video)) == (eRoutingSignalType.Audio & eRoutingSignalType.Video))
 			{
-				Debug.Console(1, destination, "Attempting to build source route from {0}", source.Key);
+				Debug.LogMessage(LogEventLevel.Debug, destination, "Attempting to build source route from {0}", source.Key);
 				if (!destination.GetRouteToSource(source, null, null, signalType, 0, routeDescr))
 					routeDescr = null;
 			}
 			// otherwise, audioVideo needs to be handled as two steps.
 			else
 			{
-				Debug.Console(1, destination, "Attempting to build audio and video routes from {0}", source.Key);
+				Debug.LogMessage(LogEventLevel.Debug, destination, "Attempting to build audio and video routes from {0}", source.Key);
 				var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, routeDescr);
 				if (!audioSuccess)
-					Debug.Console(1, destination, "Cannot find audio route to {0}", source.Key);
+					Debug.LogMessage(LogEventLevel.Debug, destination, "Cannot find audio route to {0}", source.Key);
 				var videoSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Video, 0, routeDescr);
 				if (!videoSuccess)
-					Debug.Console(1, destination, "Cannot find video route to {0}", source.Key);
+					Debug.LogMessage(LogEventLevel.Debug, destination, "Cannot find video route to {0}", source.Key);
 				if (!audioSuccess && !videoSuccess)
 					routeDescr = null;
 			}
 
-            //Debug.Console(1, destination, "Route{0} discovered", routeDescr == null ? " NOT" : "");
+            //Debug.LogMessage(LogEventLevel.Debug, destination, "Route{0} discovered", routeDescr == null ? " NOT" : "");
 			return routeDescr;
 		}
 
@@ -183,7 +184,7 @@ namespace PepperDash.Essentials.Core
 				eRoutingSignalType signalType, int cycle, RouteDescriptor routeTable)
 		{
 			cycle++;
-			Debug.Console(2, "GetRouteToSource: {0} {1}--> {2}", cycle, source.Key, destination.Key);
+			Debug.LogMessage(LogEventLevel.Verbose, "GetRouteToSource: {0} {1}--> {2}", cycle, source.Key, destination.Key);
 
 			RoutingInputPort goodInputPort = null;
 			var destDevInputTies = TieLineCollection.Default.Where(t =>
@@ -199,7 +200,7 @@ namespace PepperDash.Essentials.Core
 			}
 			else // no direct-connect.  Walk back devices.
 			{
-				Debug.Console(2, destination, "is not directly connected to {0}. Walking down tie lines", source.Key);
+				Debug.LogMessage(LogEventLevel.Verbose, destination, "is not directly connected to {0}. Walking down tie lines", source.Key);
 
 				// No direct tie? Run back out on the inputs' attached devices... 
 				// Only the ones that are routing devices
@@ -214,12 +215,12 @@ namespace PepperDash.Essentials.Core
 				{
 					var upstreamDeviceOutputPort = inputTieToTry.SourcePort;
 					var upstreamRoutingDevice = upstreamDeviceOutputPort.ParentDevice as IRoutingInputsOutputs;
-                    Debug.Console(2, destination, "Trying to find route on {0}", upstreamRoutingDevice.Key);
+                    Debug.LogMessage(LogEventLevel.Verbose, destination, "Trying to find route on {0}", upstreamRoutingDevice.Key);
 
 					// Check if this previous device has already been walked
                     if (alreadyCheckedDevices.Contains(upstreamRoutingDevice))
                     {
-                        Debug.Console(2, destination, "Skipping input {0} on {1}, this was already checked", upstreamRoutingDevice.Key, destination.Key);
+                        Debug.LogMessage(LogEventLevel.Verbose, destination, "Skipping input {0} on {1}, this was already checked", upstreamRoutingDevice.Key, destination.Key);
                         continue;
                     }
                     // haven't seen this device yet.  Do it.  Pass the output port to the next
@@ -228,7 +229,7 @@ namespace PepperDash.Essentials.Core
                         alreadyCheckedDevices, signalType, cycle, routeTable);
                     if (upstreamRoutingSuccess)
                     {
-                        Debug.Console(2, destination, "Upstream device route found");
+                        Debug.LogMessage(LogEventLevel.Verbose, destination, "Upstream device route found");
                         goodInputPort = inputTieToTry.DestinationPort;
                         break; // Stop looping the inputs in this cycle
                     }
@@ -238,7 +239,7 @@ namespace PepperDash.Essentials.Core
 			// we have a route on corresponding inputPort. *** Do the route ***
 			if (goodInputPort != null) 
 			{
-                //Debug.Console(2, destination, "adding RouteDescriptor");
+                //Debug.LogMessage(LogEventLevel.Verbose, destination, "adding RouteDescriptor");
 				if (outputPortToUse == null)
 				{
 					// it's a sink device
@@ -249,12 +250,12 @@ namespace PepperDash.Essentials.Core
 					routeTable.Routes.Add(new RouteSwitchDescriptor (outputPortToUse, goodInputPort));
 				}
 				else // device is merely IRoutingInputOutputs
-					Debug.Console(2, destination, "    No routing. Passthrough device");
-                //Debug.Console(2, destination, "Exiting cycle {0}", cycle);
+					Debug.LogMessage(LogEventLevel.Verbose, destination, "    No routing. Passthrough device");
+                //Debug.LogMessage(LogEventLevel.Verbose, destination, "Exiting cycle {0}", cycle);
 				return true;
 			}
 
-			Debug.Console(2, destination, "No route found to {0}", source.Key);
+			Debug.LogMessage(LogEventLevel.Verbose, destination, "No route found to {0}", source.Key);
 			return false;
 		}
 	}
@@ -294,7 +295,7 @@ namespace PepperDash.Essentials.Core
 		{
 			if (RouteDescriptors.Any(t => t.Destination == descriptor.Destination))
 			{
-				Debug.Console(1, descriptor.Destination, 
+				Debug.LogMessage(LogEventLevel.Debug, descriptor.Destination, 
 					"Route to [{0}] already exists in global routes table", descriptor.Source.Key);
 				return;
 			}
@@ -350,7 +351,7 @@ namespace PepperDash.Essentials.Core
 		{
 			foreach (var route in Routes)
 			{
-				Debug.Console(2, "ExecuteRoutes: {0}", route.ToString());
+				Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", route.ToString());
                 if (route.SwitchingDevice is IRoutingSink)
                 {
                     var device = route.SwitchingDevice as IRoutingSinkWithSwitching;
@@ -363,7 +364,7 @@ namespace PepperDash.Essentials.Core
                 {
                     (route.SwitchingDevice as IRouting).ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
                     route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
-                    Debug.Console(2, "Output port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+                    Debug.LogMessage(LogEventLevel.Verbose, "Output port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
                 }
 			}
 		}
@@ -381,7 +382,7 @@ namespace PepperDash.Essentials.Core
 					// Pull the route from the port.  Whatever is watching the output's in use tracker is
 					// responsible for responding appropriately.
 					route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
-					Debug.Console(2, "Port {0} releasing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+					Debug.LogMessage(LogEventLevel.Verbose, "Port {0} releasing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
 				}
 			}
 		}
