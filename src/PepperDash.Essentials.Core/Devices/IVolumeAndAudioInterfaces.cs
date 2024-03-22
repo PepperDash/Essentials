@@ -64,6 +64,21 @@ namespace PepperDash.Essentials.Core
 		IntFeedback VolumeLevelFeedback { get; }
 	}
 
+	public interface IBasicVolumeWithFeedbackAdvanced : IBasicVolumeWithFeedback
+	{
+		int RawVolumeLevel { get; }
+
+		eVolumeLevelUnits Units { get; }
+	}
+
+    public enum eVolumeLevelUnits
+    {
+        Decibels,
+        Percent,
+        Relative,
+        Absolute
+    }
+
     /// <summary>
     /// A class that implements this contains a reference to a current IBasicVolumeControls device.
     /// The class may have multiple IBasicVolumeControls.
