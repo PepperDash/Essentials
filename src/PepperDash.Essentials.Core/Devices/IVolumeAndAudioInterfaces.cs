@@ -64,6 +64,9 @@ namespace PepperDash.Essentials.Core
 		IntFeedback VolumeLevelFeedback { get; }
 	}
 
+	/// <summary>
+	/// Adds the ability to display a raw volume level and the units of that level
+	/// </summary>
 	public interface IBasicVolumeWithFeedbackAdvanced : IBasicVolumeWithFeedback
 	{
 		int RawVolumeLevel { get; }
