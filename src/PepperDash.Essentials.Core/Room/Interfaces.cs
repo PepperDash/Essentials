@@ -50,6 +50,11 @@ namespace PepperDash.Essentials.Core
     {
         void RunDirectRoute(string sourceKey, string destinationKey, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
     }
+    
+    public interface IHasMatrixRouting
+    {
+        string MatrixRoutingDeviceKey { get; }
+    }
 
     /// <summary>
     /// For rooms that default presentation only routing
