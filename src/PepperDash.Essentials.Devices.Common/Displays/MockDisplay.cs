@@ -26,7 +26,6 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             {
                 return () =>
                     {
-                        Debug.LogMessage(LogEventLevel.Verbose, this, "*************************************************** Display Power is {0}", _PowerIsOn ? "on" : "off");
                         return _PowerIsOn;
                     };
         } }
@@ -36,7 +35,6 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             {
                 return () =>
                 {
-                    Debug.LogMessage(LogEventLevel.Verbose, this, "*************************************************** {0}", _IsCoolingDown ? "Display is cooling down" : "Display has finished cooling down");
                     return _IsCoolingDown;
                 };
             }
@@ -47,7 +45,6 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             {
                 return () =>
                 {
-                    Debug.LogMessage(LogEventLevel.Verbose, this, "*************************************************** {0}", _IsWarmingUp ? "Display is warming up" : "Display has finished warming up");
                     return _IsWarmingUp;
                 };
             }
