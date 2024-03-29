@@ -51,9 +51,30 @@ namespace PepperDash.Essentials.Core
         void RunDirectRoute(string sourceKey, string destinationKey, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
     }
     
+    /// <summary>
+    /// Describes a room with matrix routing
+    /// </summary>
     public interface IHasMatrixRouting
     {
         string MatrixRoutingDeviceKey { get; }
+    }
+
+    /// <summary>
+    /// Describes a room with routing endpoints
+    /// </summary>
+    public interface IHasRoutingEndpoints
+    {
+        List<string> EndpointKeys { get; }
+    }
+
+    /// <summary>
+    /// Describes a room with a shutdown prompt timer
+    /// </summary>
+    public interface IShutdownPromptTimer
+    {
+        SecondsCountdownTimer ShutdownPromptTimer { get; }
+
+        void SetShutdownPromptSeconds(int seconds);
     }
 
     /// <summary>
