@@ -2,7 +2,7 @@
 
 namespace PepperDash.Essentials.Core.Routing
 {
-    public interface IMatrixRouting<TInput, TOutput> where TInput : IRoutingInputSlot where TOutput : IRoutingOutputSlot
+    public interface IMatrixRouting<TInput, TOutput> where TInput : IRoutingInputSlot where TOutput : IRoutingOutputSlot<TInput>
     {
         Dictionary<string, TInput> InputSlots { get; }
         Dictionary<string, TOutput> OutputSlots { get; }
