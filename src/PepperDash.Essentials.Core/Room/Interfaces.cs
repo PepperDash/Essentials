@@ -57,6 +57,8 @@ namespace PepperDash.Essentials.Core
     public interface IHasMatrixRouting
     {
         string MatrixRoutingDeviceKey { get; }
+
+        List<string> EndpointKeys { get; }
     }
 
     /// <summary>
