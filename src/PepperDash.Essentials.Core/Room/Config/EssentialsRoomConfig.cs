@@ -210,6 +210,10 @@ namespace PepperDash.Essentials.Room.Config
         /// </summary>
         [JsonProperty("userCanChangeShareMode")]
         public bool UserCanChangeShareMode { get; set; }
+
+
+        [JsonProperty("matrixRoutingKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string MatrixRoutingKey { get; set; }
     }
 
     public class EssentialsConferenceRoomPropertiesConfig : EssentialsAvRoomPropertiesConfig
@@ -218,6 +222,7 @@ namespace PepperDash.Essentials.Room.Config
         public string VideoCodecKey { get; set; }
         [JsonProperty("audioCodecKey")]
         public string AudioCodecKey { get; set; }
+
     }
 
 	public class EssentialsEnvironmentPropertiesConfig
