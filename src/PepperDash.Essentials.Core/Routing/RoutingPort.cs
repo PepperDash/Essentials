@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-using PepperDash.Core;
+﻿using PepperDash.Core;
 
 
 namespace PepperDash.Essentials.Core
@@ -46,6 +43,6 @@ namespace PepperDash.Essentials.Core
             ConnectionType = connType;
             Selector = selector;
             IsInternal = isInternal;
-        }*/
-    }
+        }
+    }*/
 }
