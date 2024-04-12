@@ -17,6 +17,8 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
         public RoutingInputPort AnyVideoIn { get; private set; }
 
+        public RoutingInputPort CurrentInputPort => AnyVideoIn;
+
         #region IRoutingInputs Members
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
@@ -26,8 +28,10 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         public BlueJeansPc(string key, string name)
             : base(key, name)
         {
-            InputPorts = new RoutingPortCollection<RoutingInputPort>();
-            InputPorts.Add(AnyVideoIn = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, 0, this));
+            InputPorts = new RoutingPortCollection<RoutingInputPort>
+            {
+                (AnyVideoIn = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, 0, this))
+            };
         }
 
         #region IRunRouteAction Members

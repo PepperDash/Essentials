@@ -44,6 +44,8 @@ namespace PepperDash.Essentials.Devices.Common.Generic
             }
         }
 
+        public RoutingInputPort CurrentInputPort => InputPorts[0];
+
         public event SourceInfoChangeHandler CurrentSourceChange;
     }
 
