@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasDefaultDisplay
     {
-        IRoutingSinkWithSwitching DefaultDisplay { get; }
+        IRoutingSink DefaultDisplay { get; }
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasMultipleDisplays
     {
-        Dictionary<eSourceListItemDestinationTypes, IRoutingSinkWithSwitching> Displays { get; }
+        Dictionary<eSourceListItemDestinationTypes, IRoutingSink> Displays { get; }
     }
 
     /// <summary>

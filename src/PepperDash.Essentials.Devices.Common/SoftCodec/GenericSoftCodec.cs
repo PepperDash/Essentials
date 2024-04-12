@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
 {
-    public class GenericSoftCodec : EssentialsDevice, IRoutingInputsOutputs
+    public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingSink
     {
         public GenericSoftCodec(string key, string name, GenericSoftCodecProperties props) : base(key, name)
         {
@@ -48,6 +48,32 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
+        public string CurrentSourceInfoKey { get ; set; }
+        public SourceListItem CurrentSourceInfo
+        {
+            get
+            {
+                return _CurrentSourceInfo;
+            }
+            set
+            {
+                if (value == _CurrentSourceInfo) return;
+
+                var handler = CurrentSourceChange;
+
+                if (handler != null)
+                    handler(_CurrentSourceInfo, ChangeType.WillChange);
+
+                _CurrentSourceInfo = value;
+
+                if (handler != null)
+                    handler(_CurrentSourceInfo, ChangeType.DidChange);
+            }
+        }
+
+        SourceListItem _CurrentSourceInfo;
+
+        public event SourceInfoChangeHandler CurrentSourceChange;
     }
 
     public class GenericSoftCodecProperties
