@@ -20,6 +20,24 @@ namespace PepperDash.Essentials.Devices.Common.Displays
         , IWarmingCooling
         , IUsageTracking
 	{
+        private RoutingInputPort _currentInputPort;
+        public RoutingInputPort CurrentInputPort
+        {
+            get
+            {
+                return _currentInputPort;
+            }
+
+            private set
+            {
+                _currentInputPort = value;
+
+                InputChanged?.Invoke(this, _currentInputPort);
+            }
+        }
+
+        public event InputChangedEventHandler InputChanged;
+
         public event SourceInfoChangeHandler CurrentSourceChange;
 
         public string CurrentSourceInfoKey { get; set; }
