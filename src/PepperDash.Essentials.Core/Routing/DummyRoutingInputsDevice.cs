@@ -8,7 +8,7 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Routing
 {
-	public class DummyRoutingInputsDevice : Device, IRoutingSource
+	public class DummyRoutingInputsDevice : Device, IRoutingSource, IRoutingOutputs
 	{
 		/// <summary>
 		/// A single output port, backplane, audioVideo

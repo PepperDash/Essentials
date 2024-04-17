@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.Core.Devices
     {
         public LaptopFactory()
         {
-            TypeNames = new List<string>() { "laptop" };
+            TypeNames = new List<string>() { "deprecated" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)

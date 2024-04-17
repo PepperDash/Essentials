@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace PepperDash.Essentials.Core.Routing
 {
@@ -48,7 +49,14 @@ namespace PepperDash.Essentials.Core.Routing
 
         private void HandleSinkUpdate(IRoutingSinkWithSwitching sender, RoutingInputPort currentInputPort)
         {
-            UpdateDestination(sender, currentInputPort);
+            try
+            {
+                UpdateDestination(sender, currentInputPort);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogMessage(ex, "Error handling Sink update from {senderKey}:{Exception}", this, sender.Key, ex);
+            }
         }
 
         private void UpdateDestination(IRoutingSinkWithSwitching destination, RoutingInputPort inputPort)
@@ -66,7 +74,9 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            var sourceTieLine = GetRootTieLine(firstTieLine);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Getting source for first TieLine {tieLine}", this, firstTieLine);
+
+            var sourceTieLine = GetRootTieLine(firstTieLine);            
 
             if (sourceTieLine == null)
             {
@@ -76,6 +86,7 @@ namespace PepperDash.Essentials.Core.Routing
                 destination.CurrentSourceInfoKey = string.Empty;
             }
 
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root TieLine {tieLine}", this, sourceTieLine);           
 
             // Does not handle combinable scenarios or other scenarios where a display might be part of multiple rooms yet.
             var room = DeviceManager.AllDevices.OfType<IEssentialsRoom>().FirstOrDefault((r) => {
@@ -90,13 +101,15 @@ namespace PepperDash.Essentials.Core.Routing
                 }
 
                 return false;
-            }) ;
+            });
             
             if(room == null)
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "No room found for display {destination}", this, destination.Key);
                 return;
             }
+
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found room {room} for destination {destination}", this, room.Key, destination.Key);
 
             var sourceList = ConfigReader.ConfigObject.GetSourceListForKey(room.SourceListKey);
 
@@ -106,7 +119,18 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            var sourceListItem = sourceList.FirstOrDefault(sli => sli.Value.SourceKey == sourceTieLine.SourcePort.ParentDevice.Key);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found sourceList for room {room}", this, room.Key);
+
+            var sourceListItem = sourceList.FirstOrDefault(sli => {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose,
+                    "SourceListItem {sourceListItem}:{sourceKey} tieLine sourceport device key {sourcePortDeviceKey}",
+                    this,
+                    sli.Key,
+                    sli.Value.SourceKey,
+                    sourceTieLine.SourcePort.ParentDevice.Key);
+
+                return sli.Value.SourceKey.Equals(sourceTieLine.SourcePort.ParentDevice.Key,StringComparison.InvariantCultureIgnoreCase);
+            });            
 
             var source = sourceListItem.Value;
 
@@ -119,6 +143,8 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {source}", this, source);
+
             destination.CurrentSourceInfo = source;
             destination.CurrentSourceInfoKey = source.SourceKey;
         }
@@ -129,6 +155,8 @@ namespace PepperDash.Essentials.Core.Routing
 
             if(tieLine.SourcePort.ParentDevice is IRoutingWithFeedback midpoint)
             {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLine Source device is midpoint", this);
+
                 var currentRoute = midpoint.CurrentRoutes.FirstOrDefault(route => route.OutputPort.Key == tieLine.SourcePort.Key);
 
                 if(currentRoute == null)
@@ -147,8 +175,12 @@ namespace PepperDash.Essentials.Core.Routing
                 return tieLine;
             }
 
-            if(tieLine.SourcePort.ParentDevice is IRoutingSource) //end of the chain
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLIne Source Device {sourceDeviceKey} is IRoutingSource: {isIRoutingSource}", this,tieLine.SourcePort.ParentDevice.Key, tieLine.SourcePort.ParentDevice is IRoutingSource);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLine Source Device interfaces: {typeFullName}:{interfaces}",this, tieLine.SourcePort.ParentDevice.GetType().FullName, tieLine.SourcePort.ParentDevice.GetType().GetInterfaces().Select(i => i.Name));
+
+            if(tieLine.SourcePort.ParentDevice is IRoutingSource || tieLine.SourcePort.ParentDevice is IRoutingOutputs) //end of the chain
             {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root: {tieLine}", this, tieLine);
                 return tieLine;
             }
 
@@ -159,7 +191,7 @@ namespace PepperDash.Essentials.Core.Routing
                 return GetRootTieLine(nextTieLine);
             }
 
-            return nextTieLine;
+            return null;
         }
     }
 }

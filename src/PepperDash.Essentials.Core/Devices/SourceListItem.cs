@@ -161,8 +161,11 @@ namespace PepperDash.Essentials.Core
 			Icon = "Blank";
 		}
 
-        
-	}
+        public override string ToString()
+        {
+            return $"{SourceKey}:{Name}";
+        }
+    }
 
 	public class SourceRouteListItem
 	{
