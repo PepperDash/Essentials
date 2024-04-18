@@ -22,14 +22,30 @@ namespace PepperDash.Essentials.Core
 
         static Scheduler()
         {
+            CrestronConsole.AddNewConsoleCommand(DeleteEventGroup, "DeleteEventGroup", "Deletes the event group by key", ConsoleAccessLevelEnum.AccessOperator);
+
             CrestronConsole.AddNewConsoleCommand(ClearEventsFromGroup, "ClearAllEvents", "Clears all scheduled events for this group", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(ListAllEventGroups, "ListAllEventGroups", "Lists all the event groups by key", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(ListAllEventsForGroup, "ListEventsForGroup",
                 "Lists all events for the given group", ConsoleAccessLevelEnum.AccessOperator);
-
         }
+
+
+        static void DeleteEventGroup(string groupName)
+        {
+            if (EventGroups.ContainsKey(groupName))
+            {
+                var group = EventGroups[groupName];
+                 
+                EventGroups.Remove(groupName);
+
+                group.Dispose();
+
+                group = null;
+            }
+        }   
 
         /// <summary>
         /// Clears (deletes) all events from a group
@@ -40,7 +56,7 @@ namespace PepperDash.Essentials.Core
             if (!EventGroups.ContainsKey(groupName))
             {
                 Debug.LogMessage(LogEventLevel.Information,
-                    "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.",
+                    "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.", null,
                     groupName);
                 return;
             }
@@ -51,47 +67,47 @@ namespace PepperDash.Essentials.Core
             {
                 group.ClearAllEvents();
 
-                Debug.LogMessage(LogEventLevel.Information, "[Scheduler]: All events deleted from group '{0}'", groupName);
+                Debug.LogMessage(LogEventLevel.Information, "[Scheduler]: All events deleted from group '{0}'", null, groupName);
             }
             else
                 Debug.LogMessage(LogEventLevel.Information,
-                    "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.",
+                    "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.", null,
                     groupName);
         }
 
         static void ListAllEventGroups(string command)
         {
-            Debug.LogMessage(LogEventLevel.Information, "Event Groups:");
+            CrestronConsole.ConsoleCommandResponse("Event Groups:");
             foreach (var group in EventGroups)
             {
-                Debug.LogMessage(LogEventLevel.Information, "{0}", group.Key);
+                CrestronConsole.ConsoleCommandResponse($"{group.Key}");
             }
         }
 
         static void ListAllEventsForGroup(string args)
         {
-            Debug.LogMessage(LogEventLevel.Information, "Getting events for group {0}...", args);
+            Debug.LogMessage(LogEventLevel.Information, "Getting events for group {0}...", null, args);
 
             ScheduledEventGroup group;
 
             if (!EventGroups.TryGetValue(args, out group))
             {
-                Debug.LogMessage(LogEventLevel.Information, "Unabled to get event group for key {0}", args);
+                Debug.LogMessage(LogEventLevel.Information, "Unabled to get event group for key {0}", null, args);
                 return;
             }
 
             foreach (var evt in group.ScheduledEvents)
             {
-                Debug.LogMessage(LogEventLevel.Information,
-                    @"
-****Event key {0}****
-Event date/time: {1}
-Persistent: {2}
-Acknowlegable: {3}
-Recurrence: {4}
-Recurrence Days: {5}
-********************", evt.Key, evt.Value.DateAndTime, evt.Value.Persistent, evt.Value.Acknowledgeable,
-                    evt.Value.Recurrence.Recurrence, evt.Value.Recurrence.RecurrenceDays);
+                CrestronConsole.ConsoleCommandResponse(
+$@"
+****Event key {evt.Key}****
+Event state: {evt.Value.EventState}
+Event date/time: {evt.Value.DateAndTime}
+Persistent: {evt.Value.Persistent}
+Acknowlegable: {evt.Value.Acknowledgeable}
+Recurrence: {evt.Value.Recurrence.Recurrence}
+Recurrence Days: {evt.Value.Recurrence.RecurrenceDays}
+********************");
             }
         }
 
@@ -138,10 +154,9 @@ Recurrence Days: {5}
 
             var dayOfWeek = eventTime.DayOfWeek;
 
-            Debug.LogMessage(LogEventLevel.Debug, "[Scheduler]: eventTime day of week is: {0}", dayOfWeek);
-
+            Debug.LogMessage(LogEventLevel.Debug, "[Scheduler]: eventTime day of week is: {0}",null, dayOfWeek);
             switch (dayOfWeek)
-            {
+            {   
                 case DayOfWeek.Sunday:
                     {
                         if ((recurrence & ScheduledEventCommon.eWeekDays.Sunday) == ScheduledEventCommon.eWeekDays.Sunday)
@@ -203,53 +218,64 @@ Recurrence Days: {5}
 
         public static void CreateEventFromConfig(ScheduledEventConfig config, ScheduledEventGroup group, ScheduledEvent.UserEventCallBack handler)
         {
-            if (group == null)
+            try
             {
-                Debug.LogMessage(LogEventLevel.Information, "Unable to create event. Group is null");
-                return;
+                if (group == null)
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Unable to create event. Group is null", null, null);
+                    return;
+                }
+                var scheduledEvent = new ScheduledEvent(config.Key, group)
+                {
+                    Acknowledgeable = config.Acknowledgeable,
+                    Persistent = config.Persistent
+                };
+
+                scheduledEvent.UserCallBack += handler;
+
+                scheduledEvent.DateAndTime.SetFirstDayOfWeek(ScheduledEventCommon.eFirstDayOfWeek.Sunday);
+
+                var eventTime = DateTime.Parse(config.Time);
+
+                if (DateTime.Now > eventTime)
+                {
+                    eventTime = eventTime.AddDays(1);
+                }
+
+                Debug.LogMessage(LogEventLevel.Verbose, "[Scheduler] Current Date day of week: {0} recurrence days: {1}", null, eventTime.DayOfWeek,
+                    config.Days);
+
+                var dayOfWeekConverted = ConvertDayOfWeek(eventTime);
+
+                Debug.LogMessage(LogEventLevel.Debug, "[Scheduler] eventTime Day: {0}", null, dayOfWeekConverted);
+
+                while (!dayOfWeekConverted.IsFlagSet(config.Days))
+                {
+                    eventTime = eventTime.AddDays(1);
+
+                    dayOfWeekConverted = ConvertDayOfWeek(eventTime);
+                }
+
+                scheduledEvent.DateAndTime.SetAbsoluteEventTime(eventTime);
+
+                scheduledEvent.Recurrence.Weekly(config.Days);
+
+                Debug.LogMessage(LogEventLevel.Verbose, $"[Scheduler] Event State: {scheduledEvent.EventState}", null, null);
+
+                if (config.Enable && scheduledEvent.EventState != ScheduledEventCommon.eEventState.Enabled)
+                {
+                    scheduledEvent.Enable();
+                }
+                else if (!config.Enable && scheduledEvent.EventState != ScheduledEventCommon.eEventState.Disabled)
+                {
+                    scheduledEvent.Disable();
+                }
+ 
             }
-            var scheduledEvent = new ScheduledEvent(config.Key, group)
+            catch (Exception e)
             {
-                Acknowledgeable = config.Acknowledgeable,
-                Persistent = config.Persistent
-            };
 
-            scheduledEvent.UserCallBack += handler;
-
-            scheduledEvent.DateAndTime.SetFirstDayOfWeek(ScheduledEventCommon.eFirstDayOfWeek.Sunday);
-
-            var eventTime = DateTime.Parse(config.Time);
-
-            if (DateTime.Now > eventTime)
-            {
-                eventTime = eventTime.AddDays(1);
-            }
-
-            Debug.LogMessage(LogEventLevel.Verbose, "[Scheduler] Current Date day of week: {0} recurrence days: {1}", eventTime.DayOfWeek,
-                config.Days);
-
-            var dayOfWeekConverted = ConvertDayOfWeek(eventTime);
-
-            Debug.LogMessage(LogEventLevel.Debug, "[Scheduler] eventTime Day: {0}", dayOfWeekConverted);
-
-            while (!dayOfWeekConverted.IsFlagSet(config.Days))
-            {
-                eventTime = eventTime.AddDays(1);
-
-                dayOfWeekConverted = ConvertDayOfWeek(eventTime);
-            }
-
-            scheduledEvent.DateAndTime.SetAbsoluteEventTime(eventTime);
-
-            scheduledEvent.Recurrence.Weekly(config.Days);
-
-            if (config.Enable)
-            {
-                scheduledEvent.Enable();
-            }
-            else
-            {
-                scheduledEvent.Disable();
+                Debug.LogMessage(LogEventLevel.Error, "Error creating scheduled event: {0}", null, e);
             }
         }
 
