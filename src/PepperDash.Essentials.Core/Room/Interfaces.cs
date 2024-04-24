@@ -80,6 +80,32 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
+    /// Describes a room with a tech password
+    /// </summary>
+    public interface ITechPassword
+    {
+        event EventHandler<TechPasswordEventArgs> TechPasswordValidateResult;
+
+        event EventHandler<EventArgs> TechPasswordChanged;
+
+        int TechPasswordLength { get; }
+
+        void ValidateTechPassword(string password);
+
+        void SetTechPassword(string oldPassword, string newPassword);
+    }
+
+    public class TechPasswordEventArgs : EventArgs
+    {
+        public bool IsValid { get; private set; }
+
+        public TechPasswordEventArgs(bool isValid)
+        {
+            IsValid = isValid;
+        }
+    }
+
+    /// <summary>
     /// For rooms that default presentation only routing
     /// </summary>
     public interface IRunDefaultPresentRoute
