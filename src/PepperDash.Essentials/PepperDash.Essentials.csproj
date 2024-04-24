@@ -23,26 +23,9 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="Example Configuration\EssentialsHuddleSpaceRoom\configurationFile-HuddleSpace-2-Source.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Example Configuration\EssentialsHuddleVtc1Room\configurationFile-mockVideoCodec_din-ap3_-_dm4x1.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Example Configuration\SIMPLBridging\configurationFile-dmps3300c-avRouting.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Example Configuration\SIMPLBridging\SIMPLBridgeExample_configurationFile.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="SGD\PepperDash Essentials iPad.sgd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="SGD\PepperDash Essentials TSW-560.sgd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="SGD\PepperDash Essentials TSW-760.sgd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Include=".\PepperDashEssentials\bin\*.cpz">
+      <Pack>true</Pack>
+      <PackagePath>lib/{tfm}</PackagePath>
     </None>
   </ItemGroup>
   <ItemGroup>
