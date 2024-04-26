@@ -78,6 +78,10 @@ jobs:
         run: |
           7z a .\output\PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg output\**\*.cpz
           7z a .\output\PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg output\**\*.cplz
+          - name: Repack NuGet Package
+          run: nuget pack .\output\PepperDash.Essentials.nuspec -Version ${{ steps.setVersion.outputs.version }} -OutputDirectory .\output
+      - name: Repack NuGet Package
+        run: nuget pack .\output\PepperDash.Essentials.nuspec -Version ${{ steps.setVersion.outputs.version }} -OutputDirectory .\output
       - name: Create Release
         id: create_release
 #        if: contains(steps.setVersion.outputs.version,'-rc-') ||
