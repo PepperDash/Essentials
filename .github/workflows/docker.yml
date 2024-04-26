@@ -76,11 +76,8 @@ jobs:
         run: choco install 7zip.install -y
       - name: Add CPZ and CPLZ to NuGet Package
         run: |
-          7z a .\output\PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg output\**\*.cpz
-          7z a .\output\PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg output\**\*.cplz
-      - name: Repack NuGet Package
-        run: |
-          nuget pack .\output\PepperDash.Essentials.nuspec -Version ${{ steps.setVersion.outputs.version }} -OutputDirectory .\output
+          7z a .\output\PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg .\output\**\*.cpz
+          7z a .\output\PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg .\output\**\*.cplz
       - name: Create Release
         id: create_release
 #        if: contains(steps.setVersion.outputs.version,'-rc-') ||
