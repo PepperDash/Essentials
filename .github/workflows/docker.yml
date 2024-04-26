@@ -65,13 +65,17 @@ jobs:
         run: nuget restore .\$($Env:SOLUTION_FILE).sln
       # Build the solutions in the docker image
       - name: Build Solution        
-        run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" /p:PackageOutputPath=".\output" -m
+        run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" -m
       - name: Create tag for non-rc builds
         if: contains(steps.setVersion.outputs.version, 'alpha')
         run: |
           git tag ${{ steps.setVersion.outputs.version }}
           git push --tags origin
       # Create the release on the source repo
+      - name: Inject CPZ into NuGet Package
+        run: |
+          nuget add bin\Debug\*.cpz PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg -Expand
+          nuget add bin\Debug\*.cplz PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg -Expand
       - name: Create Release
         id: create_release
 #        if: contains(steps.setVersion.outputs.version,'-rc-') ||
