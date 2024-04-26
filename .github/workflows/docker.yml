@@ -72,10 +72,10 @@ jobs:
           git tag ${{ steps.setVersion.outputs.version }}
           git push --tags origin
       # Create the release on the source repo
-      - name: Inject CPZ into NuGet Package
+      - name: Add CPZ and CPLZ to NuGet Package
         run: |
-          nuget add bin\Debug\*.cpz -Source PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg -NonInteractive 
-          nuget add bin\Debug\*.cplz -Source PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg -NonInteractive 
+          zip -j PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg bin\Debug\*.cpz
+          zip -j PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg bin\Debug\*.cplz
       - name: Create Release
         id: create_release
 #        if: contains(steps.setVersion.outputs.version,'-rc-') ||
