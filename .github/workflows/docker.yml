@@ -74,8 +74,8 @@ jobs:
       # Create the release on the source repo
       - name: Inject CPZ into NuGet Package
         run: |
-          nuget add bin\Debug\*.cpz -Expand PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg
-          nuget add bin\Debug\*.cplz -Expand PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg
+          nuget add bin\Debug\*.cpz -Source PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg -NonInteractive 
+          nuget add bin\Debug\*.cplz -Source PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg -NonInteractive 
       - name: Create Release
         id: create_release
 #        if: contains(steps.setVersion.outputs.version,'-rc-') ||
