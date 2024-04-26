@@ -106,10 +106,11 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
        Action<string,string, JToken> Action { get; }
     }
 
-    public interface IMobileControlTouchpanelController
+    public interface IMobileControlTouchpanelController : IKeyed
     {
-        StringFeedback AppUrlFeedback { get; }
         string DefaultRoomKey { get; }
-        string DeviceKey { get; }
+        void SetAppUrl(string url);
+        bool UseDirectServer { get; }
+        bool ZoomRoomController { get; }
     }
 }
