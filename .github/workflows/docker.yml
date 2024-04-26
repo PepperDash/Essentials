@@ -72,10 +72,12 @@ jobs:
           git tag ${{ steps.setVersion.outputs.version }}
           git push --tags origin
       # Create the release on the source repo
+      - name: Install 7-Zip
+        run: choco install 7zip.install -y
       - name: Add CPZ and CPLZ to NuGet Package
         run: |
-          zip -j PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg bin\Debug\*.cpz
-          zip -j PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg bin\Debug\*.cplz
+          7z a PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg bin\Debug\*.cpz
+          7z a PepperDash.Essentials.${{ steps.setVersion.outputs.version }}.nupkg bin\Debug\*.cplz
       - name: Create Release
         id: create_release
 #        if: contains(steps.setVersion.outputs.version,'-rc-') ||
