@@ -77,9 +77,11 @@ namespace PepperDash.Essentials.Core
         SecondsCountdownTimer ShutdownPromptTimer { get; }
 
         void SetShutdownPromptSeconds(int seconds);
+
+        void StartShutdown(eShutdownType type);
     }
 
-    /// <summary>
+    /// <summary""'""">
     /// Describes a room with a tech password
     /// </summary>
     public interface ITechPassword
