@@ -30,6 +30,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 		/// <0 - 8192> An HTTP header field.You can add up 15 Header parameters in one command, each holding one HTTP header field.
 		/// </summary>
 		public string Header { get; set; }
+
+		/// <summary>
+		/// OSD, Controller, PersistentWebApp Controller: Only for Cisco internal use.
+		/// OSD: Close the web view that is displayed on the screen of the device.PersistentWebApp: Only for Cisco internal use.
+		/// </summary>
+		public string Target { get; set; }
 	}
 
 }
