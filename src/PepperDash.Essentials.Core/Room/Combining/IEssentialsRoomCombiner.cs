@@ -30,6 +30,7 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("isInAutoMode")]
         bool IsInAutoMode { get; }
 
+        [JsonProperty("rooms")]
         List<IKeyName> Rooms { get; }
 
         /// <summary>
@@ -77,6 +78,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// When true, indicates that this room combination scenario is active
         /// </summary>
+        [JsonIgnore]
         BoolFeedback IsActiveFeedback { get; }
 
         [JsonProperty("isActive")]
@@ -101,6 +103,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The mapping of UIs by key to rooms by key
         /// </summary>
+        [JsonProperty("uiMap")]
         Dictionary<string, string> UiMap { get; set; }
     }
 

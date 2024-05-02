@@ -19,7 +19,29 @@ namespace PepperDash.Essentials.Core
 
         private bool isInAutoMode;
 
-        private bool partitionPresent;
+        private bool _partitionPresent;
+
+        public bool PartitionPresent
+        {
+            get
+            {
+                return _partitionPresent;
+            }
+            set
+            {
+                if (_partitionPresent == value)
+                {
+                    return;
+                }
+
+                _partitionPresent = value;
+
+                if (PartitionPresentFeedback != null)
+                {
+                    PartitionPresentFeedback.FireUpdate();
+                }
+            }
+        }
 
         public EssentialsPartitionController(string key, string name, IPartitionStateProvider sensor, bool defaultToManualMode, List<string> adjacentRoomKeys)
         {
@@ -85,11 +107,11 @@ namespace PepperDash.Essentials.Core
             isInAutoMode = false;
             if (PartitionPresentFeedback != null)
             {
-                PartitionPresentFeedback.SetValueFunc(() => partitionPresent);
+                PartitionPresentFeedback.SetValueFunc(() => _partitionPresent);
             }
             else
             {
-                PartitionPresentFeedback = new BoolFeedback(() => partitionPresent);
+                PartitionPresentFeedback = new BoolFeedback(() => _partitionPresent);
             }
 
             if (_partitionSensor != null)
@@ -103,7 +125,7 @@ namespace PepperDash.Essentials.Core
         {
             if (!isInAutoMode)
             {
-                partitionPresent = true;
+                PartitionPresent = true;
                 PartitionPresentFeedback.FireUpdate();
             }
         }
@@ -112,7 +134,7 @@ namespace PepperDash.Essentials.Core
         {
             if (!isInAutoMode)
             {
-                partitionPresent = false;
+                PartitionPresent = false;
                 PartitionPresentFeedback.FireUpdate();
             }
         }
@@ -121,7 +143,7 @@ namespace PepperDash.Essentials.Core
         {
             if (!isInAutoMode)
             {
-                partitionPresent = !partitionPresent;
+                PartitionPresent = !PartitionPresent;
                 PartitionPresentFeedback.FireUpdate();
             }
         }
