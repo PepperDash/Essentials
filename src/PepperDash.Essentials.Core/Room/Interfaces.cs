@@ -77,6 +77,34 @@ namespace PepperDash.Essentials.Core
         SecondsCountdownTimer ShutdownPromptTimer { get; }
 
         void SetShutdownPromptSeconds(int seconds);
+
+        void StartShutdown(eShutdownType type);
+    }
+
+    /// <summary""'""">
+    /// Describes a room with a tech password
+    /// </summary>
+    public interface ITechPassword
+    {
+        event EventHandler<TechPasswordEventArgs> TechPasswordValidateResult;
+
+        event EventHandler<EventArgs> TechPasswordChanged;
+
+        int TechPasswordLength { get; }
+
+        void ValidateTechPassword(string password);
+
+        void SetTechPassword(string oldPassword, string newPassword);
+    }
+
+    public class TechPasswordEventArgs : EventArgs
+    {
+        public bool IsValid { get; private set; }
+
+        public TechPasswordEventArgs(bool isValid)
+        {
+            IsValid = isValid;
+        }
     }
 
     /// <summary>

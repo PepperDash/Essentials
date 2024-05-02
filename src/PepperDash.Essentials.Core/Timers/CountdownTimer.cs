@@ -23,6 +23,8 @@ namespace PepperDash.Essentials.Core
         public IntFeedback PercentFeedback { get; private set; }
         public StringFeedback TimeRemainingFeedback { get; private set; }
 
+        public IntFeedback SecondsRemainingFeedback { get; private set; }
+
         public bool CountsDown { get; set; }
 
         /// <summary>
@@ -63,6 +65,8 @@ namespace PepperDash.Essentials.Core
                         ? "00"
                         : String.Format("{0:00}:{1:00}", timeSpan.Minutes, timeSpan.Seconds);
                 });
+
+            SecondsRemainingFeedback = new IntFeedback(() => (int)(FinishTime - DateTime.Now).TotalSeconds);
 
             PercentFeedback =
                 new IntFeedback(
@@ -144,6 +148,7 @@ namespace PepperDash.Essentials.Core
 
             PercentFeedback.FireUpdate();
             TimeRemainingFeedback.FireUpdate();
+            SecondsRemainingFeedback.FireUpdate();
         }
     }
 }

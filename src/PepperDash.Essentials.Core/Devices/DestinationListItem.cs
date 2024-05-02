@@ -52,5 +52,11 @@ namespace PepperDash.Essentials.Core
 
         [JsonProperty("sinkType")]
         public eRoutingSignalType SinkType { get; set; }
+
+        [JsonProperty("isCodecContentDestination")]
+        public bool isCodecContentDestination { get; set; }
+
+        [JsonProperty("isProgramAudioDestination")]
+        public bool isProgramAudioDestination { get; set; }
     }
 }
