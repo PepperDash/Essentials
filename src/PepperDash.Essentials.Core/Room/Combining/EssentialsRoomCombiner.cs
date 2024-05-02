@@ -17,7 +17,33 @@ namespace PepperDash.Essentials.Core
 
         private List<IEssentialsRoom> _rooms;
 
-        private bool isInAutoMode;
+        public List<IKeyName> Rooms
+        {
+            get
+            {
+                return _rooms.Cast<IKeyName>().ToList();
+            }
+        }
+
+        private bool _isInAutoMode;
+
+        public bool IsInAutoMode
+        {
+            get
+            {
+                return _isInAutoMode;
+            }
+            set
+            {
+                if(value == _isInAutoMode)
+                {
+                    return;
+                }
+
+                _isInAutoMode = value;
+                IsInAutoModeFeedback.FireUpdate();
+            }
+        }
 
         private CTimer _scenarioChangeDebounceTimer;
 
@@ -36,14 +62,14 @@ namespace PepperDash.Essentials.Core
                 _scenarioChangeDebounceTimeSeconds = _propertiesConfig.ScenarioChangeDebounceTimeSeconds;
             }
 
-            IsInAutoModeFeedback = new BoolFeedback(() => isInAutoMode);
+            IsInAutoModeFeedback = new BoolFeedback(() => _isInAutoMode);
 
             // default to auto mode
-            isInAutoMode = true;
+            IsInAutoMode = true;
 
             if (_propertiesConfig.defaultToManualMode)
             {
-                isInAutoMode = false;
+                IsInAutoMode = false;
             }
 
             IsInAutoModeFeedback.FireUpdate();
@@ -56,7 +82,7 @@ namespace PepperDash.Essentials.Core
 
                 SetRooms();
 
-                if (isInAutoMode)
+                if (IsInAutoMode)
                 {
                     DetermineRoomCombinationScenario();
                 }
@@ -201,20 +227,17 @@ namespace PepperDash.Essentials.Core
 
         public void SetAutoMode()
         {
-            isInAutoMode = true;
-            IsInAutoModeFeedback.FireUpdate();
+            IsInAutoMode = true;
         }
 
         public void SetManualMode()
         {
-            isInAutoMode = false;
-            IsInAutoModeFeedback.FireUpdate();
+            IsInAutoMode = false;
         }
 
         public void ToggleMode()
         {
-            isInAutoMode = !isInAutoMode;
-            IsInAutoModeFeedback.FireUpdate();
+            IsInAutoMode = !IsInAutoMode;
         }
 
         public List<IRoomCombinationScenario> RoomCombinationScenarios { get; private set; }
@@ -233,7 +256,7 @@ namespace PepperDash.Essentials.Core
 
         public void SetRoomCombinationScenario(string scenarioKey)
         {
-            if (isInAutoMode)
+            if (IsInAutoMode)
             {
                 Debug.LogMessage(LogEventLevel.Information, this, "Cannot set room combination scenario when in auto mode.  Set to auto mode first.");
                 return;

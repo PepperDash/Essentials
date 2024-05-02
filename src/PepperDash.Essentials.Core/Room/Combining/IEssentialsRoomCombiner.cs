@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
+using Newtonsoft.Json;
 using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
@@ -21,12 +18,19 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The current room combination scenario
         /// </summary>
+        [JsonProperty("currentScenario")]
         IRoomCombinationScenario CurrentScenario { get; }
 
         /// <summary>
         /// When true, indicates the current mode is auto mode
         /// </summary>
+        [JsonIgnore]
         BoolFeedback IsInAutoModeFeedback {get;}
+
+        [JsonProperty("isInAutoMode")]
+        bool IsInAutoMode { get; }
+
+        List<IKeyName> Rooms { get; }
 
         /// <summary>
         /// Sets auto mode
@@ -46,11 +50,13 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The available room combinatino scenarios
         /// </summary>
+        [JsonProperty("roomCombinationScenarios")]
         List<IRoomCombinationScenario> RoomCombinationScenarios { get; }
 
         /// <summary>
         /// The partition
         /// </summary>
+        [JsonProperty("partitions")]
         List<IPartitionController> Partitions { get; }
 
         /// <summary>
@@ -73,6 +79,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         BoolFeedback IsActiveFeedback { get; }
 
+        [JsonProperty("isActive")]
+        bool IsActive { get; }
+
         /// <summary>
         /// Activates this room combination scenario
         /// </summary>
@@ -86,6 +95,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The state of the partitions that would activate this scenario
         /// </summary>
+        [JsonProperty("partitionStates")]
         List<PartitionState> PartitionStates { get; }
 
         /// <summary>
