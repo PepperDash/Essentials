@@ -15,10 +15,8 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// <example>
     /// See MockDisplay for example implemntation
     /// </example>
-    public interface IHasInputs<TKey, TSelector>: IKeyName
+    public interface IHasInputs<T, TSelector>: IKeyName
     {
-        ISelectableItems<TKey> Inputs { get; }
-
-        void SetInput(TSelector selector);
+        ISelectableItems<T> Inputs { get; }
     }
 }

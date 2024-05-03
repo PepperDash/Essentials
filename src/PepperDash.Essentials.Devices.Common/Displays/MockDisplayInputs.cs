@@ -54,8 +54,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
     public class MockDisplayInput : ISelectableItem
     {
-        private IHasInputs<string, string> _parent;
-
+        private MockDisplay _parent;
 
         private bool _isSelected;
         

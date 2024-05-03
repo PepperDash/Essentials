@@ -64,7 +64,7 @@ namespace PepperDash.Essentials.Core
                     SetManualMode();
                 }
             }
-            else
+            else 
             {
                 SetManualMode();
             }
