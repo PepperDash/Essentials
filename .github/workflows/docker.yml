@@ -65,7 +65,7 @@ jobs:
         run: nuget restore .\$($Env:SOLUTION_FILE).sln
       # Build the solutions in the docker image
       - name: Build Solution        
-        run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" /p:PackageOutputPath=".\output" -m        
+        run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" /p:PackageOutputPath=".\output\nuget" -m
       - name: Create tag for non-rc builds
         if: contains(steps.setVersion.outputs.version, 'alpha')
         run: |
@@ -89,6 +89,7 @@ jobs:
           nuget setApiKey ${{ secrets.GITHUB_TOKEN }} -Source github          
           nuget setApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json          
       - name: Publish to Nuget
-        run: nuget push .\output\*.nupkg -Source https://api.nuget.org/v3/index.json
+        run: nuget push .\output\nuget\*.nupkg -Source https://api.nuget.org/v3/index.json
+        
       - name: Publish to Github Nuget
-        run: nuget push .\output\*.nupkg -Source github
+        run: nuget push .\output\nuget\*.nupkg -Source github
