@@ -23,10 +23,10 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <None Include=".\PepperDashEssentials\bin\*.cpz">
+    <Content Include="output\**\*.cpz">
       <Pack>true</Pack>
-      <PackagePath>lib/{tfm}</PackagePath>
-    </None>
+      <PackagePath>content\</PackagePath>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.20.42" />
