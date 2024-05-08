@@ -15,7 +15,7 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Devices.Common
 {
     [Description("Wrapper class for an IR-Controlled Roku")]
-	public class Roku2 : EssentialsDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingSource
+	public class Roku2 : EssentialsDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingSource, IRoutingOutputs
 	{
 		[Api]
 		public IrOutputPortController IrPort { get; private set; }

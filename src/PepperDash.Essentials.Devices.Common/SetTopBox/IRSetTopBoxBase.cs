@@ -20,7 +20,7 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Devices.Common
 {
     [Description("Wrapper class for an IR Set Top Box")]
-    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingSource, IUsageTracking, IHasPowerControl, ITvPresetsProvider
+    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingSource, IRoutingOutputs, IUsageTracking, IHasPowerControl, ITvPresetsProvider
 	{
 		public IrOutputPortController IrPort { get; private set; }
 

@@ -28,7 +28,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
                 return _currentInputPort;
             }
 
-            private set
+            protected set
             {
                 _currentInputPort = value;
 
