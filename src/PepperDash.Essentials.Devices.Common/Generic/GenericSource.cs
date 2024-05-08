@@ -14,7 +14,7 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class GenericSource : EssentialsDevice, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
+	public class GenericSource : EssentialsDevice, IUiDisplayInfo, IRoutingSource, IUsageTracking
 	{
 
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeNoControls; } }

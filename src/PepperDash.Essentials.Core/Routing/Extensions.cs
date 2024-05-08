@@ -169,18 +169,17 @@ namespace PepperDash.Essentials.Core
 			RoutingOutputPort outputPortToUse, List<IRoutingInputsOutputs> alreadyCheckedDevices, 
 				eRoutingSignalType signalType, int cycle, RouteDescriptor routeTable)
 		{
-
 			cycle++;
 
 			Debug.LogMessage(LogEventLevel.Verbose, "GetRouteToSource: {0} {1}--> {2}", null, cycle, source.Key, destination.Key);
 
 			RoutingInputPort goodInputPort = null;
 
-			var destDevInputTies = TieLineCollection.Default.Where(t =>
+			var destinationTieLines = TieLineCollection.Default.Where(t =>
                 t.DestinationPort.ParentDevice == destination && (t.Type == signalType || t.Type.HasFlag(eRoutingSignalType.AudioVideo)));
 
 			// find a direct tie
-			var directTie = destDevInputTies.FirstOrDefault(
+			var directTie = destinationTieLines.FirstOrDefault(
 				t => t.DestinationPort.ParentDevice == destination 
 					&& t.SourcePort.ParentDevice == source);
 			if (directTie != null) // Found a tie directly to the source
@@ -193,7 +192,7 @@ namespace PepperDash.Essentials.Core
 
 				// No direct tie? Run back out on the inputs' attached devices... 
 				// Only the ones that are routing devices
-				var attachedMidpoints = destDevInputTies.Where(t => t.SourcePort.ParentDevice is IRoutingInputsOutputs);
+				var attachedMidpoints = destinationTieLines.Where(t => t.SourcePort.ParentDevice is IRoutingInputsOutputs);
 
                 //Create a list for tracking already checked devices to avoid loops, if it doesn't already exist from previous iteration
                 if (alreadyCheckedDevices == null)

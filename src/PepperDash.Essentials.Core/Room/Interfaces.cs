@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Routing;
 
 
 namespace PepperDash.Essentials.Core
@@ -41,6 +42,8 @@ namespace PepperDash.Essentials.Core
         void RunRouteAction(string routeKey, string sourceListKey);
 
         void RunRouteAction(string routeKey, string sourceListKey, Action successCallback);
+
+        RoutingFeedbackManager RoutingFeedbackManager { get; }
     }
 
     /// <summary>
@@ -49,6 +52,8 @@ namespace PepperDash.Essentials.Core
     public interface IRunDirectRouteAction
     {
         void RunDirectRoute(string sourceKey, string destinationKey, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
+
+        RoutingFeedbackManager RoutingFeedbackManager { get; }
     }
     
     /// <summary>
