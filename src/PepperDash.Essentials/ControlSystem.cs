@@ -14,6 +14,7 @@ using PepperDash.Essentials.Core.Web;
 using System;
 using System.Linq;
 using Serilog.Events;
+using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials
 {
@@ -385,6 +386,8 @@ namespace PepperDash.Essentials
 
             // Build the processor wrapper class
             DeviceManager.AddDevice(new Core.Devices.CrestronProcessor("processor"));
+
+            DeviceManager.AddDevice(new RoutingFeedbackManager($"routingFeedbackManager", "Routing Feedback Manager"));
 
             // Add global System Monitor device
             if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)

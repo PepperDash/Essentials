@@ -7,7 +7,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRoutingSink : IRoutingInputs, IHasCurrentSourceInfoChange
     {
-
+        RoutingInputPort CurrentInputPort { get; }
     }
 
     /*/// <summary>

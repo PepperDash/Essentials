@@ -169,8 +169,14 @@ namespace PepperDash.Essentials.Core
 		[JsonProperty("sourceKey")]
 		public string SourceKey { get; set; }
 
+        [JsonProperty("sourcePortKey")]
+        public string SourcePortKey { get; set; }
+
 		[JsonProperty("destinationKey")]
 		public string DestinationKey { get; set; }
+
+        [JsonProperty("destinationPortKey")]
+        public string DestinationPortKey { get; set; }
 
 		[JsonProperty("type")]
 		public eRoutingSignalType Type { get; set; }

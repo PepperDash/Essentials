@@ -8,7 +8,7 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Sources
 {
-    public class Laptop : EssentialsDevice, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
+    public class Laptop : EssentialsDevice, IHasFeedback, IRoutingSource, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
 		public string IconName { get; set; }

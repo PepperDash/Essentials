@@ -3,6 +3,7 @@ using System;
 
 namespace PepperDash.Essentials.Core
 {
+    public delegate void RouteChangedEventHandler(IRoutingWithFeedback midpoint, RouteSwitchDescriptor newRoute);
     /// <summary>
     /// Defines an IRouting with a feedback event
     /// </summary>
@@ -10,6 +11,6 @@ namespace PepperDash.Essentials.Core
     {
         List<RouteSwitchDescriptor> CurrentRoutes { get; }
 
-        event EventHandler RoutingChanged;
+        event RouteChangedEventHandler RouteChanged;
     }
 }

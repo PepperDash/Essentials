@@ -19,7 +19,7 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Devices.Common
 {
     [Description("Wrapper class for an IR-Controlled AppleTV")]
-	public class AppleTV : EssentialsBridgeableDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
+	public class AppleTV : EssentialsBridgeableDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingSource
 	{
 		public IrOutputPortController IrPort { get; private set; }
         public const string StandardDriverName = "Apple_AppleTV_4th_Gen_Essentials.ir";
