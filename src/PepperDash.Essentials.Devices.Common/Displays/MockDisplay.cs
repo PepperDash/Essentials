@@ -140,18 +140,40 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 		public override void ExecuteSwitch(object selector)
 		{
-			Debug.LogMessage(LogEventLevel.Verbose, this, "ExecuteSwitch: {0}", selector);
+            try
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "ExecuteSwitch: {0}", this, selector);
 
-		    if (!_PowerIsOn)
-		    {
-		        PowerOn();
-		    }
+                if (!_PowerIsOn)
+                {
+                    PowerOn();
+                }
 
-			if (!Inputs.Items.TryGetValue(selector.ToString(), out var input))
-				return;
+                if (!Inputs.Items.TryGetValue(selector.ToString(), out var input))
+                    return;
 
-			input.Select();
-		}
+                Debug.LogMessage(LogEventLevel.Verbose, "Selected input: {input}", this, input.Key);
+                input.Select();
+
+                var inputPort = InputPorts.FirstOrDefault(port =>
+                {
+                    Debug.LogMessage(LogEventLevel.Verbose, "Checking input port {inputPort} with selector {portSelector} against {selector}", this, port, port.Selector, selector);
+                    return port.Selector.ToString() == selector.ToString();
+                });
+
+                if (inputPort == null)
+                {
+                    Debug.LogMessage(LogEventLevel.Verbose, "Unable to find input port for selector {selector}", this, selector);                    
+                    return;
+                }
+
+                Debug.LogMessage(LogEventLevel.Verbose, "Setting current input port to {inputPort}", this, inputPort);
+                CurrentInputPort = inputPort;
+            } catch (Exception ex)
+            {
+                Debug.LogMessage(ex, "Error making switch: {Exception}", this);
+            }
+        }
 
         public void SetInput(string selector)
         {

@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
 {
-    public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingSinkWithSwitching
+    public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingOutputs, IRoutingSinkWithSwitching
     {
         private RoutingInputPort _currentInputPort;
         public RoutingInputPort CurrentInputPort {

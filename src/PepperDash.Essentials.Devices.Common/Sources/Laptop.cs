@@ -8,7 +8,7 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Sources
 {
-    public class Laptop : EssentialsDevice, IHasFeedback, IRoutingSource, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
+    public class Laptop : EssentialsDevice, IHasFeedback, IRoutingSource, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
 		public string IconName { get; set; }
@@ -29,11 +29,15 @@ namespace PepperDash.Essentials.Devices.Common.Sources
 			: base(key, name)
 		{
 			IconName = "Laptop";
+
 			HasPowerOnFeedback = new BoolFeedback("HasPowerFeedback", 
 				() => this.GetVideoStatuses() != VideoStatusOutputs.NoStatus);
-			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-			OutputPorts.Add(AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
-				eRoutingPortConnectionType.None, 0, this));
+
+			OutputPorts = new RoutingPortCollection<RoutingOutputPort>
+            {
+                (AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                eRoutingPortConnectionType.None, 0, this))
+            };
 		}
 
 		#region IHasFeedback Members
