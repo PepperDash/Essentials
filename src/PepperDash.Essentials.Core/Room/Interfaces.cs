@@ -41,9 +41,7 @@ namespace PepperDash.Essentials.Core
     {
         void RunRouteAction(string routeKey, string sourceListKey);
 
-        void RunRouteAction(string routeKey, string sourceListKey, Action successCallback);
-
-        RoutingFeedbackManager RoutingFeedbackManager { get; }
+        void RunRouteAction(string routeKey, string sourceListKey, Action successCallback);        
     }
 
     /// <summary>
@@ -52,8 +50,6 @@ namespace PepperDash.Essentials.Core
     public interface IRunDirectRouteAction
     {
         void RunDirectRoute(string sourceKey, string destinationKey, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
-
-        RoutingFeedbackManager RoutingFeedbackManager { get; }
     }
     
     /// <summary>
