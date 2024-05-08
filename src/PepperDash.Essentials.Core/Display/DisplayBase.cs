@@ -18,6 +18,7 @@ namespace PepperDash.Essentials.Core
     public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IHasPowerControl, IWarmingCooling, IUsageTracking
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
+        public event InputChangedEventHandler InputChanged;
 
         public string CurrentSourceInfoKey { get; set; }
         public SourceListItem CurrentSourceInfo
@@ -94,7 +95,9 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-	    public abstract void ExecuteSwitch(object selector);
+        public RoutingInputPort CurrentInputPort => throw new NotImplementedException();
+
+        public abstract void ExecuteSwitch(object selector);
 
 	    protected void LinkDisplayToApi(DisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
 	        EiscApiAdvanced bridge)
