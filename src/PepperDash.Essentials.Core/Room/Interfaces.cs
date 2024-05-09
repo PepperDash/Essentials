@@ -161,7 +161,7 @@ namespace PepperDash.Essentials.Core
 
     public interface IHasAccessoryDevices : IKeyName
     {
-        List<string> AccessoryDevices { get; }
+        List<string> AccessoryDeviceKeys { get; }
     }
 
 }
