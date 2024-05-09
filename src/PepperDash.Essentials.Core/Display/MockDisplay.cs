@@ -220,19 +220,5 @@ namespace PepperDash.Essentials.Core
 	}
 
 
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
-    public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
-    {
-        public MockDisplayFactory()
-        {
-            TypeNames = new List<string>() { "mockdisplay" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Mock Display Device");
-            return new MockDisplay(dc.Key, dc.Name);
-        }
-    }
 
 }
