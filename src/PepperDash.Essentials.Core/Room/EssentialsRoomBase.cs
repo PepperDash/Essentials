@@ -141,6 +141,7 @@ namespace PepperDash.Essentials.Core
                 if (!ShutdownPromptTimer.IsRunningFeedback.BoolValue)
                     ShutdownType = eShutdownType.None;
             };
+
             ShutdownPromptTimer.HasFinished += (o, a) => Shutdown(); // Shutdown is triggered 
 
             ShutdownPromptSeconds = 60;
