@@ -164,4 +164,8 @@ namespace PepperDash.Essentials.Core
         List<string> AccessoryDeviceKeys { get; }
     }
 
+    public interface IHasCiscoNavigatorTouchpanel
+    {
+        string CiscoNavigatorTouchpanelKey { get; }
+    }
 }
