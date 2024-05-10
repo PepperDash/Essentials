@@ -121,7 +121,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 				// Fake cool-down cycle
 				CooldownTimer = new CTimer(o =>
 					{
-						Debug.LogMessage(LogEventLevel.Verbose, this, "Cooldown timer ending");
+						Debug.LogMessage(LogEventLevel.Verbose, "Cooldown timer ending", this);
 						_IsCoolingDown = false;
 						IsCoolingDownFeedback.InvokeFireUpdate();
                         _PowerIsOn = false;
@@ -142,42 +142,16 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		{
 			Debug.LogMessage(LogEventLevel.Verbose, this, "ExecuteSwitch: {0}", selector);
 
-		    if (!_PowerIsOn)
-		    {
-		        PowerOn();
-		    }
+			if (!_PowerIsOn)
+			{
+				PowerOn();
+			}
 
 			if (!Inputs.Items.TryGetValue(selector.ToString(), out var input))
 				return;
 
 			input.Select();
 		}
-
-        public void SetInput(string selector)
-        {
-			ISelectableItem currentInput = null;
-
-			try
-			{
-				currentInput = Inputs.Items.SingleOrDefault(Inputs => Inputs.Value.IsSelected).Value;
-			}
-			catch { }
-			
-
-            if (currentInput != null)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, this, "SetInput: {0}", selector);
-                currentInput.IsSelected = false;
-            }
-
-			if (!Inputs.Items.TryGetValue(selector, out var input))
-                return;
-
-			input.IsSelected = true;
-
-			Inputs.CurrentItem = selector;
-        }
-
 
 
         #region IBasicVolumeWithFeedback Members
