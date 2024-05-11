@@ -24,6 +24,9 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("adjacentRoomKeys")]
         List<string> AdjacentRoomKeys { get; }
 
+        [JsonProperty("isInAutoMode")]
+        bool IsInAutoMode { get; }
+
         void SetPartitionStatePresent();
 
         void SetPartitionStateNotPresent();

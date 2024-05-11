@@ -137,7 +137,11 @@ namespace PepperDash.Essentials.Core
 
         void StartDebounceTimer()
         {
-            var time = _scenarioChangeDebounceTimeSeconds * 1000;
+            // default to 500ms for manual mode
+            var time = 500;
+
+            // if in auto mode, debounce the scenario change
+            if(IsInAutoMode) time = _scenarioChangeDebounceTimeSeconds * 1000;
 
             if (_scenarioChangeDebounceTimer == null)
             {
@@ -211,7 +215,7 @@ namespace PepperDash.Essentials.Core
                     {
                         _currentScenario.Activate();
 
-                        Debug.LogMessage(LogEventLevel.Debug, this, "Current Scenario: {0}", _currentScenario.Name);
+                        Debug.LogMessage(LogEventLevel.Debug, $"Current Scenario: {_currentScenario.Name}", this);
                     }
 
                     var handler = RoomCombinationScenarioChanged;
@@ -246,7 +250,7 @@ namespace PepperDash.Essentials.Core
 
         public void TogglePartitionState(string partitionKey)
         {
-            var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionKey)) as IPartitionController;
+            var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionKey));
 
             if (partition != null)
             {

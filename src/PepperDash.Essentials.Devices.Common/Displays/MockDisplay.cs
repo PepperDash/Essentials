@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
@@ -120,7 +121,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 				// Fake cool-down cycle
 				CooldownTimer = new CTimer(o =>
 					{
-						Debug.LogMessage(LogEventLevel.Verbose, this, "Cooldown timer ending");
+						Debug.LogMessage(LogEventLevel.Verbose, "Cooldown timer ending", this);
 						_IsCoolingDown = false;
 						IsCoolingDownFeedback.InvokeFireUpdate();
                         _PowerIsOn = false;
@@ -141,42 +142,16 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		{
 			Debug.LogMessage(LogEventLevel.Verbose, this, "ExecuteSwitch: {0}", selector);
 
-		    if (!_PowerIsOn)
-		    {
-		        PowerOn();
-		    }
+			if (!_PowerIsOn)
+			{
+				PowerOn();
+			}
 
 			if (!Inputs.Items.TryGetValue(selector.ToString(), out var input))
 				return;
 
 			input.Select();
 		}
-
-        public void SetInput(string selector)
-        {
-			ISelectableItem currentInput = null;
-
-			try
-			{
-				currentInput = Inputs.Items.SingleOrDefault(Inputs => Inputs.Value.IsSelected).Value;
-			}
-			catch { }
-			
-
-            if (currentInput != null)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, this, "SetInput: {0}", selector);
-                currentInput.IsSelected = false;
-            }
-
-			if (!Inputs.Items.TryGetValue(selector, out var input))
-                return;
-
-			input.IsSelected = true;
-
-			Inputs.CurrentItem = selector;
-        }
-
 
 
         #region IBasicVolumeWithFeedback Members
@@ -251,4 +226,17 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 
     }
+	public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
+	{
+		public MockDisplayFactory()
+		{
+			TypeNames = new List<string>() { "mockdisplay" };
+		}
+
+		public override EssentialsDevice BuildDevice(DeviceConfig dc)
+		{
+			Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Mock Display Device");
+			return new MockDisplay(dc.Key, dc.Name);
+		}
+	}
 }
