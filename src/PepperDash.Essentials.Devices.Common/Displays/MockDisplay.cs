@@ -171,7 +171,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
                 CurrentInputPort = inputPort;
             } catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error making switch: {Exception}", this);
+                Debug.LogMessage(ex, "Error making switch: {Exception}", this, ex);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using Crestron.SimplSharp.WebScripting;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 using Serilog.Events;
@@ -28,7 +29,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			if (context.Request.ContentLength < 0)
 			{
 				context.Response.StatusCode = 400;
-				context.Response.StatusDescription = "Bad Request";
+				context.Response.StatusDescription = "Bad Request: no body";
 				context.Response.End();
 
 				return;
@@ -38,7 +39,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			if (string.IsNullOrEmpty(data))
 			{
 				context.Response.StatusCode = 400;
-				context.Response.StatusDescription = "Bad Request";
+				context.Response.StatusDescription = "Bad Request: no body";
 				context.Response.End();
 
 				return;
@@ -46,6 +47,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			
 			try
 			{
+                var daw = JsonConvert.DeserializeObject<DeviceActionWrapper>(data);
 				DeviceJsonApi.DoDeviceActionWithJson(data);
 
 				context.Response.StatusCode = 200;
@@ -54,12 +56,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 			catch (Exception ex)
 			{
-				Debug.LogMessage(LogEventLevel.Error, "Exception Message: {0}", ex.Message);
-				Debug.LogMessage(LogEventLevel.Verbose, "Exception Stack Trace: {0}", ex.StackTrace);
-				if(ex.InnerException != null) Debug.LogMessage(LogEventLevel.Error, "Exception Inner: {0}", ex.InnerException);
+				Debug.LogMessage(ex, "Error handling device command: {Exception}");				
 
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
+                context.Response.Write(JsonConvert.SerializeObject(new { error = ex.Message }), false);
 				context.Response.End();
 			}
 		}

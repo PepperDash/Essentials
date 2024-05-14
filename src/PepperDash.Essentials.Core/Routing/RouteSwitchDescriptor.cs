@@ -22,10 +22,10 @@
 
 		public override string ToString()
 		{
-			if(SwitchingDevice is IRouting)
-				return string.Format("{0} switches output '{1}' to input '{2}'", SwitchingDevice.Key, OutputPort.Selector, InputPort.Selector);
-			else
-				return string.Format("{0} switches to input '{1}'", SwitchingDevice.Key, InputPort.Selector);
+            if (SwitchingDevice is IRouting)
+                return $"{SwitchingDevice?.Key} switches output {OutputPort.Key} to input {InputPort.Key}";
+            else
+                return $"{SwitchingDevice.Key} switches to input {InputPort.Key}";
 		}
 	}
 

@@ -38,7 +38,12 @@ namespace PepperDash.Essentials.Core
 				throw new ArgumentNullException(nameof(parent));
 			ParentDevice = parent;
 		}
-	}
+
+        public override string ToString()
+        {
+            return $"{ParentDevice.Key}|{Key}|{Type}|{ConnectionType}";
+        }
+    }
 
     /*/// <summary>
     /// Basic RoutingInput with no statuses.

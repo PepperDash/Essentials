@@ -34,7 +34,7 @@ namespace PepperDash.Essentials.Core
 
         public override string ToString()
         {
-            return ParentDevice.Key + ":" + Key;
+            return $"{ParentDevice.Key}|{Key}|{Type}|{ConnectionType}";
         }
 	}
 

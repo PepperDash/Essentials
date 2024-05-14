@@ -23,8 +23,8 @@ namespace PepperDash.Essentials.Core
 			ConnectionType = connType;
 			Selector = selector;
 			IsInternal = isInternal;
-		}
-	}
+		}        
+    }
 
     /*public abstract class RoutingPort<TSelector>:IKeyed
     {

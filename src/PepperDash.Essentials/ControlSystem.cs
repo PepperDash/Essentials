@@ -92,6 +92,8 @@ namespace PepperDash.Essentials
 
         private void StartSystem(object preventInitialization)
         {
+            Debug.SetErrorLogMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
+
             DeterminePlatform();
 
             if (Debug.DoNotLoadConfigOnNextBoot)
