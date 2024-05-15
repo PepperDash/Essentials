@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
@@ -250,5 +251,19 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 	    }
 
 
+    }
+
+    public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
+    {
+        public MockDisplayFactory()
+        {
+            TypeNames = new List<string>() { "mockdisplay2" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Mock Display Device");
+            return new MockDisplay(dc.Key, dc.Name);
+        }
     }
 }
