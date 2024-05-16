@@ -73,6 +73,7 @@ namespace PepperDash.Essentials.Core
         public eLevelControlType Type { get; set; }
     }
 
+    [Flags]
     public enum eLevelControlType
     {
         Level = 0,
