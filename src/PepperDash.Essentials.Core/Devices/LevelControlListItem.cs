@@ -69,6 +69,7 @@ namespace PepperDash.Essentials.Core
         /// Indicates if the item is a level, mute , or both
         /// </summary>
         [JsonProperty("type")]
+        [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public eLevelControlType Type { get; set; }
     }
 
