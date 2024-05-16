@@ -34,6 +34,8 @@ namespace PepperDash.Essentials
             SecretsManager.Initialize();
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
 
+            Debug.SetErrorLogMinimumDebugLevel(CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? LogEventLevel.Warning : LogEventLevel.Verbose);
+
             // AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
         }
 
@@ -162,7 +164,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                Debug.LogMessage(LogEventLevel.Information, "Determining Platform...");                
+                Debug.LogMessage(LogEventLevel.Information, "Determining Platform...");
 
                 string filePathPrefix;
 
@@ -240,7 +242,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.LogMessage(LogEventLevel.Error, "Unable to determin platform due to exception: {exception}", e.Message);                
+                Debug.LogMessage(e, "Unable to determine platform due to exception");                
             }
         }
 
@@ -296,7 +298,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.LogMessage(LogEventLevel.Information, "FATAL INITIALIZE ERROR. System is in an inconsistent state: {exception}", e);
+                Debug.LogMessage(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
             }
             finally
             {
@@ -428,7 +430,7 @@ namespace PepperDash.Essentials
                 }
                 catch (Exception e)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "ERROR: Creating device {deviceKey:l}. Skipping device. \r\n{exception}", devConf.Key, e);
+                    Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.",args: new[] { devConf.Key });
                 }
             }
             Debug.LogMessage(LogEventLevel.Information, "All Devices Loaded.");
