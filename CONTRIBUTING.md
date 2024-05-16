@@ -91,8 +91,8 @@ we receive and the availability of resources to evaluate contributions, we antic
   project remains dynamic and relevant.  This may  affect our responsiveness and ability to accept pull requests 
   quickly.  This does not mean we are ignoring them.
 - Not all innovative ideas need to be accepted as pull requests into this GitHub project to be valuable to the community.        
-  There may be times when we recommend that you just share your code for some enhancement to Ghidra from your own 
-  repository. As we identify and recognize extensions that are of general interest to the reverse engineering community, we 
+  There may be times when we recommend that you just share your code for some enhancement to Essentials from your own 
+  repository. As we identify and recognize extensions that are of general interest to Essentials, we 
   may seek to incorporate them with our baseline.
 
 ## Legal

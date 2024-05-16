@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.Bridges
                     catch (NullReferenceException)
                     {
                         Debug.ConsoleWithLog(0, this,
-                            "Please update the bridge config to use EiscBridgeAdvanced with this device: {0}", device.Key);
+                            "Please update the bridge config to use eiscApiAdvanced with this device: {0}", device.Key);
                     }
                 }
                 Debug.Console(1, this, "Devices Linked.");
