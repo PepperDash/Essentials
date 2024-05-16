@@ -43,11 +43,12 @@ namespace PepperDash.Essentials.DM.AirMedia
         public BoolFeedback HdmiVideoSyncDetectedFeedback { get; private set; }
         public StringFeedback SerialNumberFeedback { get; private set; }
         public BoolFeedback AutomaticInputRoutingEnabledFeedback { get; private set; }
+        public BoolFeedback HdmiInHdcpSupportOnFeedback { get; private set; }
+        public BoolFeedback HdmiInDisabledByHdcpFeedback { get; private set; }
 
         public AirMediaController(string key, string name, Am3x00 device, DeviceConfig dc, AirMediaPropertiesConfig props)
             : base(key, name, device)
         {
-
             AirMedia = device;
 
             DeviceConfig = dc;
@@ -101,6 +102,8 @@ namespace PepperDash.Essentials.DM.AirMedia
             LoginCodeFeedback = new IntFeedback(() => AirMedia.AirMedia.LoginCodeFeedback.UShortValue);
             ConnectionAddressFeedback = new StringFeedback(() => AirMedia.AirMedia.ConnectionAddressFeedback.StringValue);
             HostnameFeedback = new StringFeedback(() => AirMedia.AirMedia.HostNameFeedback.StringValue);
+            HdmiInHdcpSupportOnFeedback = new BoolFeedback(() => AirMedia.HdmiIn.HdcpSupportOnFeedback.BoolValue);
+            HdmiInDisabledByHdcpFeedback = new BoolFeedback(() => AirMedia.HdmiIn.DisabledByHdcpFeedback.BoolValue);
 
             // TODO: Figure out if we can actually get the TSID/Serial
             SerialNumberFeedback = new StringFeedback(() => "unknown");
@@ -178,6 +181,13 @@ namespace PepperDash.Essentials.DM.AirMedia
             ConnectionAddressFeedback.LinkInputSig(trilist.StringInput[joinMap.ConnectionAddressFB.JoinNumber]);
             HostnameFeedback.LinkInputSig(trilist.StringInput[joinMap.HostnameFB.JoinNumber]);
             SerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.SerialNumberFeedback.JoinNumber]);
+
+            trilist.SetSigFalseAction(joinMap.HdmiInHdcpSupportOn.JoinNumber, () => SetHcdpSupport(true));
+            HdmiInHdcpSupportOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.HdmiInHdcpSupportOn.JoinNumber]);
+            trilist.SetSigFalseAction(joinMap.HdmiInHdcpSupportOff.JoinNumber, () => SetHcdpSupport(false));
+            HdmiInHdcpSupportOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.HdmiInHdcpSupportOff.JoinNumber]);
+
+            HdmiInDisabledByHdcpFeedback.LinkInputSig(trilist.BooleanInput[joinMap.HdmiInDisabledByHdcp.JoinNumber]);
         }
 
         /// <summary>
@@ -248,6 +258,14 @@ namespace PepperDash.Essentials.DM.AirMedia
         {
             if (args.EventId == DMInputEventIds.SourceSyncEventId)
                 HdmiVideoSyncDetectedFeedback.FireUpdate();
+            else if (args.EventId == DMInputEventIds.HdcpSupportOnEventId)
+            {
+                HdmiInHdcpSupportOnFeedback.FireUpdate();
+            }
+            else if (args.EventId == DMInputEventIds.DisabledByHdcpEventId)
+            {
+                HdmiInDisabledByHdcpFeedback.FireUpdate();
+            }
         }
 
         /// <summary>
@@ -294,6 +312,14 @@ namespace PepperDash.Essentials.DM.AirMedia
         public void SelectAirboardIn()
         {
             AirMedia.DisplayControl.VideoOut = AmX00DisplayControl.eAirMediaX00VideoSource.AirBoard;
+        }
+
+        public void SetHcdpSupport(bool on)
+        {
+            if (on)
+                AirMedia.HdmiIn.HdcpSupportOn();
+            else
+                AirMedia.HdmiIn.HdcpSupportOff();
         }
 
         /// <summary>
