@@ -23,7 +23,10 @@ namespace PepperDash.Essentials.Core.Config
 		public Dictionary<string, Dictionary<string, SourceListItem>> SourceLists { get; set; }
 
         [JsonProperty("destinationLists")]
-        public Dictionary<string, Dictionary<string,DestinationListItem>> DestinationLists { get; set; }
+        public Dictionary<string, Dictionary<string, DestinationListItem>> DestinationLists { get; set; }
+
+        [JsonProperty("levelControlLists")]
+        public Dictionary<string, Dictionary<string, LevelControlListItem>> LevelControlLists { get; set; }
 
         [JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
