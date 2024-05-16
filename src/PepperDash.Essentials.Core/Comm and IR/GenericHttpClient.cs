@@ -5,7 +5,6 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Http;
 using PepperDash.Core;
-using PepperDash.Core.DebugThings;
 
 namespace PepperDash.Essentials.Core
 {
