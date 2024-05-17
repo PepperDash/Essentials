@@ -40,6 +40,7 @@ namespace PepperDash.Essentials.Core.Config
             Devices = new List<DeviceConfig>();
             SourceLists = new Dictionary<string, Dictionary<string, SourceListItem>>();
             DestinationLists = new Dictionary<string, Dictionary<string, DestinationListItem>>();
+            LevelControlLists = new Dictionary<string, Dictionary<string, LevelControlListItem>>();
             TieLines = new List<TieLineConfig>();
             JoinMaps = new Dictionary<string, JObject>();
         }
