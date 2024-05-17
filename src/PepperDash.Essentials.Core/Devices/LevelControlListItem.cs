@@ -78,6 +78,6 @@ namespace PepperDash.Essentials.Core
     {
         Level = 0,
         Mute = 1,
-        LevelAndMute = 2,
+        LevelAndMute = Level | Mute,
     }
 }
