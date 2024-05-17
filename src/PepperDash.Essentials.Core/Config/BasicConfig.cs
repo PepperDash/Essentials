@@ -58,8 +58,8 @@ namespace PepperDash.Essentials.Core.Config
         /// <summary>
         /// Retrieves a DestinationListItem based on the key
         /// </summary>
-        /// <param name="key">key of the item to retrieve</param>
-        /// <returns>DestinationListItem if the key exists, null otherwise</returns>
+        /// <param name="key">key of the list to retrieve</param>
+        /// <returns>DestinationList if the key exists, null otherwise</returns>
 	    public Dictionary<string, DestinationListItem> GetDestinationListForKey(string key)
 	    {
 	        if (string.IsNullOrEmpty(key) || !DestinationLists.ContainsKey(key))
@@ -69,6 +69,19 @@ namespace PepperDash.Essentials.Core.Config
 
 	        return DestinationLists[key];
 	    } 
+
+        /// <summary>
+        /// Retrieves a LevelControlList based on the key
+        /// </summary>
+        /// <param name="key">key of the list to retrieve</param>
+        /// <returns>LevelControlList if the key exists, null otherwise</returns>
+        public Dictionary<string, LevelControlListItem> GetLevelControlListForKey(string key)
+        {
+            if (string.IsNullOrEmpty(key) || !LevelControlLists.ContainsKey(key))
+                return null;
+
+            return LevelControlLists[key];
+        }
 
         /// <summary>
         /// Checks Devices for an item with a Key that matches and returns it if found. Otherwise, retunes null
