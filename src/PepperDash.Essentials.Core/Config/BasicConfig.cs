@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.Core.Config
         public Dictionary<string, Dictionary<string, DestinationListItem>> DestinationLists { get; set; }
 
         [JsonProperty("audioControlPointLists")]
-        public Dictionary<string, Dictionary<string, AudioControlPointListItem>> AudioControlPointLists { get; set; }
+        public Dictionary<string, AudioControlPointListItem> AudioControlPointLists { get; set; }
 
         [JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
@@ -40,7 +40,7 @@ namespace PepperDash.Essentials.Core.Config
             Devices = new List<DeviceConfig>();
             SourceLists = new Dictionary<string, Dictionary<string, SourceListItem>>();
             DestinationLists = new Dictionary<string, Dictionary<string, DestinationListItem>>();
-            AudioControlPointLists = new Dictionary<string, Dictionary<string, AudioControlPointListItem>>();
+            AudioControlPointLists = new Dictionary<string, AudioControlPointListItem>();
             TieLines = new List<TieLineConfig>();
             JoinMaps = new Dictionary<string, JObject>();
         }
@@ -76,7 +76,7 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         /// <param name="key">key of the list to retrieve</param>
         /// <returns>AudioControlPointList if the key exists, null otherwise</returns>
-        public Dictionary<string, AudioControlPointListItem> GetAudioControlPointListForKey(string key)
+        public AudioControlPointListItem GetAudioControlPointListForKey(string key)
         {
             if (string.IsNullOrEmpty(key) || !AudioControlPointLists.ContainsKey(key))
                 return null;
