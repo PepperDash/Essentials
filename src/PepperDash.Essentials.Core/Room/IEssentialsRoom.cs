@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.Core
 
         string DestinationListKey { get; }
 
-        string LevelControlListKey { get; }
+        string AudioControlPointListKey { get; }
 
         SecondsCountdownTimer ShutdownPromptTimer { get; }
         int ShutdownPromptSeconds { get; }

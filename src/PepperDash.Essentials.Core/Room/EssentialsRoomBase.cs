@@ -110,12 +110,12 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-        private string _levelControlListKey;
-        public string LevelControlListKey
+        private string _audioControlPointListKey;
+        public string AudioControlPointListKey
         {
             get
             {
-                if (string.IsNullOrEmpty(_levelControlListKey))
+                if (string.IsNullOrEmpty(_audioControlPointListKey))
                 {
                     return _defaultListKey;
                 }
@@ -126,9 +126,9 @@ namespace PepperDash.Essentials.Core
             }
             protected set
             {
-                if (value != _levelControlListKey)
+                if (value != _audioControlPointListKey)
                 {
-                    _levelControlListKey = value;
+                    _audioControlPointListKey = value;
                 }
             }
         }
