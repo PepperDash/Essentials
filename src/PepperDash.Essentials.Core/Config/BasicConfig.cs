@@ -25,8 +25,8 @@ namespace PepperDash.Essentials.Core.Config
         [JsonProperty("destinationLists")]
         public Dictionary<string, Dictionary<string, DestinationListItem>> DestinationLists { get; set; }
 
-        [JsonProperty("levelControlLists")]
-        public Dictionary<string, Dictionary<string, LevelControlListItem>> LevelControlLists { get; set; }
+        [JsonProperty("audioControlPointLists")]
+        public Dictionary<string, Dictionary<string, AudioControlPointListItem>> AudioControlPointLists { get; set; }
 
         [JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
@@ -40,7 +40,7 @@ namespace PepperDash.Essentials.Core.Config
             Devices = new List<DeviceConfig>();
             SourceLists = new Dictionary<string, Dictionary<string, SourceListItem>>();
             DestinationLists = new Dictionary<string, Dictionary<string, DestinationListItem>>();
-            LevelControlLists = new Dictionary<string, Dictionary<string, LevelControlListItem>>();
+            AudioControlPointLists = new Dictionary<string, Dictionary<string, AudioControlPointListItem>>();
             TieLines = new List<TieLineConfig>();
             JoinMaps = new Dictionary<string, JObject>();
         }
@@ -69,19 +69,19 @@ namespace PepperDash.Essentials.Core.Config
 	        }
 
 	        return DestinationLists[key];
-	    } 
+	    }
 
         /// <summary>
-        /// Retrieves a LevelControlList based on the key
+        /// Retrieves a AudioControlPointList based on the key
         /// </summary>
         /// <param name="key">key of the list to retrieve</param>
-        /// <returns>LevelControlList if the key exists, null otherwise</returns>
-        public Dictionary<string, LevelControlListItem> GetLevelControlListForKey(string key)
+        /// <returns>AudioControlPointList if the key exists, null otherwise</returns>
+        public Dictionary<string, AudioControlPointListItem> GetAudioControlPointListForKey(string key)
         {
-            if (string.IsNullOrEmpty(key) || !LevelControlLists.ContainsKey(key))
+            if (string.IsNullOrEmpty(key) || !AudioControlPointLists.ContainsKey(key))
                 return null;
 
-            return LevelControlLists[key];
+            return AudioControlPointLists[key];
         }
 
         /// <summary>

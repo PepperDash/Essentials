@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.Core
 {
-    public class LevelControlListItem
+    public class LevelControlListItem : AudioControlListItemBase
     {
-        [JsonProperty("deviceKey")]
-        public string DeviceKey { get; set; }
+
 
         [JsonIgnore]
         public IBasicVolumeWithFeedback LevelControl
@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Core
             get
             {
                 if (_levelControl == null)
-                    _levelControl = DeviceManager.GetDeviceForKey(DeviceKey) as IBasicVolumeWithFeedback;
+                    _levelControl = DeviceManager.GetDeviceForKey(ParentDeviceKey) as IBasicVolumeWithFeedback;
                 return _levelControl;
             }
         }
@@ -34,8 +34,8 @@ namespace PepperDash.Essentials.Core
             get
             {
                 if (!string.IsNullOrEmpty(Name)) return Name;
-                else 
-                { 
+                else
+                {
                     if (LevelControl is IKeyName namedLevelControl)
                     {
                         if (namedLevelControl == null)
@@ -46,24 +46,6 @@ namespace PepperDash.Essentials.Core
                 }
             }
         }
-
-        /// <summary>
-        /// A name that will override the items's name on the UI
-        /// </summary>
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Indicates if the item should be included in the user accessible list
-        /// </summary>
-        [JsonProperty("includeInUserList")]
-        public bool IncludeInUserList { get; set; }
-
-        /// <summary>
-        /// Used to specify the order of the items in the source list when displayed
-        /// </summary>
-        [JsonProperty("order")]
-        public int Order { get; set; }
 
         /// <summary>
         /// Indicates if the item is a level, mute , or both
