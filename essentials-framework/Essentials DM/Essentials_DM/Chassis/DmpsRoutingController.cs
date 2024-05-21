@@ -991,28 +991,41 @@ namespace PepperDash.Essentials.DM
                     case (DMInputEventIds.OnlineFeedbackEventId):
                         {
                             Debug.Console(2, this, "DM Input OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
-                            InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
+
+							if(!InputEndpointOnlineFeedbacks.ContainsKey(args.Number)){
+								break;
+							}
+							InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
                             break;
                         }
                     case (DMInputEventIds.EndpointOnlineEventId):
                         {
                             Debug.Console(2, this, "DM Input EndpointOnlineEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
+
+							if(!InputEndpointOnlineFeedbacks.ContainsKey(args.Number)){
+								break;
+							}
                             InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
                             break;
                         }
                     case (DMInputEventIds.VideoDetectedEventId):
                         {
                             Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
+
+							if(!VideoInputSyncFeedbacks.ContainsKey(args.Number)){
+								break;
+							}
                             VideoInputSyncFeedbacks[args.Number].FireUpdate();
                             break;
                         }
                     case (DMInputEventIds.InputNameEventId):
                         {
                             Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
-                            if(InputNameFeedbacks.ContainsKey(args.Number))
+                            if(!InputNameFeedbacks.ContainsKey(args.Number))
                             {
-                                InputNameFeedbacks[args.Number].FireUpdate();
+								break;
                             }
+							InputNameFeedbacks[args.Number].FireUpdate();
                             break;
                         }
                 }
