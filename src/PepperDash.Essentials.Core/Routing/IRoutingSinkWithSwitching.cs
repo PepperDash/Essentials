@@ -9,8 +9,11 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRoutingSinkWithSwitching : IRoutingSink
 	{		
-		void ExecuteSwitch(object inputSelector);
+		void ExecuteSwitch(object inputSelector);        
+    }
 
+    public interface IRoutingSinkWithSwitchingWithInputPort:IRoutingSinkWithSwitching, IRoutingSinkWithInputPort
+    {
         event InputChangedEventHandler InputChanged;
     }
 

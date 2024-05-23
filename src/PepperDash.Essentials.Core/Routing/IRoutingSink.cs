@@ -1,15 +1,16 @@
-﻿using PepperDash.Essentials.Core.Routing;
-
-namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// For fixed-source endpoint devices
     /// </summary>
     public interface IRoutingSink : IRoutingInputs, IHasCurrentSourceInfoChange
+    {        
+    }
+
+    public interface IRoutingSinkWithInputPort :IRoutingSink
     {
         RoutingInputPort CurrentInputPort { get; }
     }
-
     /*/// <summary>
     /// For fixed-source endpoint devices
     /// </summary>

@@ -59,7 +59,7 @@ namespace PepperDash.Essentials
 
             Debug.LogMessage(LogEventLevel.Verbose, "Found {0} Assemblies", assemblyFiles.Length);
 
-            foreach (var fi in assemblyFiles)
+            foreach (var fi in assemblyFiles.Where(fi => fi.Name.Contains("Essentials") || fi.Name.Contains("PepperDash")))
             {
                 string version = string.Empty;
                 Assembly assembly = null;

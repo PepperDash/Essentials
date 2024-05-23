@@ -11,7 +11,7 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <Title>PepperDash Essentials</Title>
     <PackageId>PepperDashEssentials</PackageId>
-    <AssemblyInformationalVersion>$(Version)</AssemblyInformationalVersion>
+    <InformationalVersion>$(Version)</InformationalVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

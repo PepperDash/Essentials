@@ -8,7 +8,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common

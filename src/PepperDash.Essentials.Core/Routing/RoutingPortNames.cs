@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core.Routing
+namespace PepperDash.Essentials.Core
 {
 	/// <summary>
 	/// These should correspond directly with the portNames var in the config tool.

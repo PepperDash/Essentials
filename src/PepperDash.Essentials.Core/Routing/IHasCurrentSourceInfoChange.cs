@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Routing.Interfaces
 */
-namespace PepperDash.Essentials.Core.Routing
+namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// The handler type for a Room's SourceInfoChange

@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.Core.Routing
 
         private void SubscribeForSinkFeedback()
         {
-                var sinkDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitching>();
+                var sinkDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitchingWithInputPort>();
 
                 foreach (var device in sinkDevices)
                 {
@@ -38,7 +38,7 @@ namespace PepperDash.Essentials.Core.Routing
         {
             try
             {
-                var devices = DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitching>();
+                var devices = DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitchingWithInputPort>();
 
                 foreach (var device in devices)
                 {

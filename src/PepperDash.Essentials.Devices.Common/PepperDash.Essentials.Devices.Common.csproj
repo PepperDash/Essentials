@@ -12,6 +12,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>PepperDash Essentials Devices Common</Title>
     <PackageId>PepperDash.Essentials.Devices.Common</PackageId>
+    <InformationalVersion>$(Version)</InformationalVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

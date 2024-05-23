@@ -1,6 +1,4 @@
-﻿using PepperDash.Essentials.Core.Routing;
-
-namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// Defines an IRmcRouting with a feedback event 
