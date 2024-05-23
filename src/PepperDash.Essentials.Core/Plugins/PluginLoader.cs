@@ -29,6 +29,8 @@ namespace PepperDash.Essentials
 
         public static LoadedAssembly EssentialsAssembly { get; private set; }
 
+        public static LoadedAssembly PepperDashCoreAssembly { get; private set; }
+
         public static List<LoadedAssembly> EssentialsPluginAssemblies { get; private set; }
 
         /// <summary>
@@ -89,7 +91,8 @@ namespace PepperDash.Essentials
                         }
                     case ("PepperDash_Core.dll"):
                         {
-                            version = PepperDash.Core.Debug.PepperDashCoreVersion;
+                            version = GetAssemblyVersion(assembly);
+                            PepperDashCoreAssembly = new LoadedAssembly(fi.Name, version, assembly);
                             break;
                         }
                 }
@@ -197,6 +200,7 @@ namespace PepperDash.Essentials
         public static void ReportAssemblyVersions(string command)
         {
             CrestronConsole.ConsoleCommandResponse("Essentials Version: {0}" + CrestronEnvironment.NewLine, Global.AssemblyVersion);
+            CrestronConsole.ConsoleCommandResponse("PepperDash_Core Version: {0}" + CrestronEnvironment.NewLine, PepperDashCoreAssembly.Version);
             CrestronConsole.ConsoleCommandResponse("Essentials Plugin Versions:" + CrestronEnvironment.NewLine);
             foreach (var assembly in EssentialsPluginAssemblies)
             {
