@@ -26,8 +26,8 @@
     <Compile Remove="Routing\IRoutingSinkWithFeedback.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.20.42" />
-    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-404" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.20.66" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-418" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Crestron\CrestronGenericBaseDevice.cs.orig" />
