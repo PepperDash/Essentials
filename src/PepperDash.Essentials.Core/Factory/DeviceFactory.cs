@@ -1,7 +1,7 @@
 ﻿
 
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
@@ -14,13 +14,13 @@ namespace PepperDash.Essentials.Core
 {
     public class DeviceFactoryWrapper
     {
-        public CType CType { get; set; }
+        public Type Type { get; set; }
         public string Description { get; set; }
         public Func<DeviceConfig, IKeyed> FactoryMethod { get; set; }
 
         public DeviceFactoryWrapper()
         {
-            CType = null;
+            Type = null;
             Description = "Not Available";
         }
     }
@@ -40,7 +40,7 @@ namespace PepperDash.Essentials.Core
                 {
                     try
                     {
-                        var factory = (IDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                        var factory = (IDeviceFactory)Activator.CreateInstance(type);
                         factory.LoadTypeFactories();
                     }
                     catch (Exception e)
@@ -69,7 +69,7 @@ namespace PepperDash.Essentials.Core
             DeviceFactory.FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method});
 		}
 
-        public static void AddFactoryForType(string typeName, string description, CType cType, Func<DeviceConfig, IKeyed> method)
+        public static void AddFactoryForType(string typeName, string description, Type Type, Func<DeviceConfig, IKeyed> method)
         {
             //Debug.LogMessage(LogEventLevel.Debug, "Adding factory method for type '{0}'", typeName);
 
@@ -79,7 +79,7 @@ namespace PepperDash.Essentials.Core
                 return;
             }
 
-            var wrapper = new DeviceFactoryWrapper() { CType = cType, Description = description, FactoryMethod = method };
+            var wrapper = new DeviceFactoryWrapper() { Type = Type, Description = description, FactoryMethod = method };
             DeviceFactory.FactoryMethods.Add(typeName, wrapper);
         }
 
@@ -180,17 +180,17 @@ namespace PepperDash.Essentials.Core
             foreach (var type in types.OrderBy(t => t.Key))
             {
                 var description = type.Value.Description;
-                var cType = "Not Specified by Plugin";
+                var Type = "Not Specified by Plugin";
 
-                if (type.Value.CType != null)
+                if (type.Value.Type != null)
                 {
-                    cType = type.Value.CType.FullName;
+                    Type = type.Value.Type.FullName;
                 }
 
                 CrestronConsole.ConsoleCommandResponse(
                     @"Type: '{0}' 
-                    CType: '{1}' 
-                    Description: {2}{3}", type.Key, cType, description, CrestronEnvironment.NewLine);
+                    Type: '{1}' 
+                    Description: {2}{3}", type.Key, Type, description, CrestronEnvironment.NewLine);
             }
         }
 

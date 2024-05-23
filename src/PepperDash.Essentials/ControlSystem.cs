@@ -1,7 +1,7 @@
 ﻿
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Diagnostics;
@@ -172,11 +172,7 @@ namespace PepperDash.Essentials
 
                 directoryPrefix = Directory.GetApplicationRootDirectory();
 
-                var fullVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
-                Global.SetAssemblyVersion(fullVersion);
-
-                //Global.SetAssemblyVersion(fullVersionAtt.InformationalVersion);
+                Global.SetAssemblyVersion(PluginLoader.GetAssemblyVersion(Assembly.GetExecutingAssembly()));
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {

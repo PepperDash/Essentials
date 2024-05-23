@@ -2,7 +2,7 @@
 
 using System;
 using System.Linq;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Serilog.Events;
@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Devices.Common
                 {
                     try
                     {
-                        var factory = (IDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                        var factory = (IDeviceFactory)Activator.CreateInstance(type);
                         factory.LoadTypeFactories();
                     }
                     catch (Exception e)

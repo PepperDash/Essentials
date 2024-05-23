@@ -61,7 +61,7 @@
                 "supportedSystemTypes": [
                     "hudType",
                     "presType",
-                    "vtcType",
+                    "vtType",
                     "custom"
                 ],
                 "type": "rmc3",

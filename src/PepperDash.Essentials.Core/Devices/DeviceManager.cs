@@ -166,7 +166,7 @@ namespace PepperDash.Essentials.Core
 		//    var dev = GetDeviceForKey(devKey);
 		//    if(dev != null)
 		//    {
-		//        var type = dev.GetType().GetCType();
+		//        var type = dev.GetType().GetType();
 		//        var methods = type.GetMethods(BindingFlags.Public|BindingFlags.Instance);
 		//        var sb = new StringBuilder();
 		//        sb.AppendLine(string.Format("{2} methods on [{0}] ({1}):", dev.Key, type.Name, methods.Length));

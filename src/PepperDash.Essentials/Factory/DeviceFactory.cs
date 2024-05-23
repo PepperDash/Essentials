@@ -6,7 +6,7 @@ using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -35,7 +35,7 @@ namespace PepperDash.Essentials
                 {
                     try
                     {
-                        var factory = (IDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                        var factory = (IDeviceFactory)Activator.CreateInstance(type);
                         factory.LoadTypeFactories();
                     }
                     catch (Exception e)

@@ -137,6 +137,7 @@ namespace PepperDash.Essentials.Core
         public static void SetFilePathPrefix(string prefix)
         {
             FilePathPrefix = prefix;
+            Debug.LogMessage(LogEventLevel.Information, "File Path Prefix set to '{0}'", FilePathPrefix);
         }
 
         static string _AssemblyVersion;

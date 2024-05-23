@@ -1,5 +1,5 @@
 ﻿
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Core
                 {
                     try
                     {
-                        var factory = (IProcessorExtensionDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(extension);
+                        var factory = (IProcessorExtensionDeviceFactory)Activator.CreateInstance(extension);
                         factory.LoadFactories();
                     }
                     catch( Exception e )
@@ -55,7 +55,7 @@ namespace PepperDash.Essentials.Core
             ProcessorExtensionDeviceFactory.ProcessorExtensionFactoryMethods.Add(extensionName, new DeviceFactoryWrapper() { FactoryMethod = method });
         }
 
-        public static void AddFactoryForType(string extensionName, string description, CType cType, Func<DeviceConfig, IKeyed> method)
+        public static void AddFactoryForType(string extensionName, string description, Type Type, Func<DeviceConfig, IKeyed> method)
         {
             //Debug.LogMessage(LogEventLevel.Debug, "Adding factory method for type '{0}'", typeName);
 
@@ -65,7 +65,7 @@ namespace PepperDash.Essentials.Core
                 return;
             }
 
-            var wrapper = new DeviceFactoryWrapper() { CType = cType, Description = description, FactoryMethod = method };
+            var wrapper = new DeviceFactoryWrapper() { Type = Type, Description = description, FactoryMethod = method };
             ProcessorExtensionDeviceFactory.ProcessorExtensionFactoryMethods.Add(extensionName, wrapper);
         }
 

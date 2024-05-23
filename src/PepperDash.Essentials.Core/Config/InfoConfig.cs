@@ -1,18 +1,16 @@
 ﻿
 
+using Crestron.SimplSharp;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.Reflection;
-
-using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Core.Config
 {
-	/// <summary>
-	/// Represents the info section of a Config file
-	/// </summary>
-	public class InfoConfig
+    /// <summary>
+    /// Represents the info section of a Config file
+    /// </summary>
+    public class InfoConfig
 	{
 		[JsonProperty("name")]
 		public string Name { get; set; }
