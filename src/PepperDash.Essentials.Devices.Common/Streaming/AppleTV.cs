@@ -13,14 +13,14 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
     [Description("Wrapper class for an IR-Controlled AppleTV")]
-	public class AppleTV : EssentialsBridgeableDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
-	{
+	public class AppleTV : EssentialsBridgeableDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingSource, IRoutingOutputs
+
+    {
 		public IrOutputPortController IrPort { get; private set; }
         public const string StandardDriverName = "Apple_AppleTV_4th_Gen_Essentials.ir";
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeAppleTv; } }

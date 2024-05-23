@@ -1,25 +1,23 @@
 ﻿
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
-using Crestron.SimplSharpPro.DM;
-using Crestron.SimplSharpPro.DM.Endpoints;
-using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using Serilog.Events;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 
 namespace PepperDash.Essentials.Core
 {
-	[Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
+    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IHasPowerControl, IWarmingCooling, IUsageTracking
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
+        public event InputChangedEventHandler InputChanged;
 
         public string CurrentSourceInfoKey { get; set; }
         public SourceListItem CurrentSourceInfo
@@ -96,7 +94,9 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-	    public abstract void ExecuteSwitch(object selector);
+        public RoutingInputPort CurrentInputPort => throw new NotImplementedException();
+
+        public abstract void ExecuteSwitch(object selector);
 
 	    protected void LinkDisplayToApi(DisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
 	        EiscApiAdvanced bridge)

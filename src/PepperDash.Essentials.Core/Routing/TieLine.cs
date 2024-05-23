@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
@@ -88,24 +89,26 @@ namespace PepperDash.Essentials.Core
 
 		public override string ToString()
 		{
-			return string.Format("Tie line: [{0}]{1} --> [{2}]{3}", SourcePort.ParentDevice.Key, SourcePort.Key,
+			return string.Format("Tie line: {0}:{1} --> {2}:{3}", SourcePort.ParentDevice.Key, SourcePort.Key,
 				DestinationPort.ParentDevice.Key, DestinationPort.Key);
 		}
 	}
 
-	//********************************************************************************
+    //********************************************************************************
 
-	public class TieLineCollection : List<TieLine>
-	{
-		public static TieLineCollection Default
-		{
-			get
-			{
-				if (_Default == null)
-					_Default = new TieLineCollection();
-				return _Default;
-			}
-		}
+    public class TieLineCollection : List<TieLine>
+    {
+        public static TieLineCollection Default
+        {
+            get
+            {
+                if (_Default == null)
+                    _Default = new TieLineCollection();
+                return _Default;
+            }
+        }
+
+        [JsonIgnore]
 		static TieLineCollection _Default;
 	}
 }

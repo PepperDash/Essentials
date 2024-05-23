@@ -14,13 +14,13 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Core.Bridges.JoinMaps;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 using Serilog.Events;
+using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {

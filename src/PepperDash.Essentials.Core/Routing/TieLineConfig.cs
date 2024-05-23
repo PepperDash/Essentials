@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core.Config
 		/// <returns>null if config data does not match ports, cards or devices</returns>
 		public TieLine GetTieLine()
 		{
-			Debug.LogMessage(LogEventLevel.Information, "Build TieLine: {0}", this);
+			Debug.LogMessage(LogEventLevel.Information, "Build TieLine: {0}",null, this);
 			// Get the source device
 			var sourceDev = DeviceManager.GetDeviceForKey(SourceKey) as IRoutingOutputs;
 			if (sourceDev == null)
@@ -48,68 +48,29 @@ namespace PepperDash.Essentials.Core.Config
 			}
 
             //Get the source port
-            RoutingOutputPort sourceOutputPort = null;
-            //// If it's a card-based device, get the card and then the source port
-            //if (sourceDev is ICardPortsDevice)
-            //{
-            //    if (SourceCard == null)
-            //    {
-            //        LogError("Card missing from source device config");
-            //        return null;
-            //    }
-            //    sourceOutputPort = (sourceDev as ICardPortsDevice).GetChildOutputPort(SourceCard, SourcePort);
-            //    if (sourceOutputPort == null)
-            //    {
-            //        LogError("Source card does not contain port");
-            //        return null;
-            //    }
-            //}
-            //// otherwise it's a normal port device, get the source port
-            //else
-            //{
-				sourceOutputPort = sourceDev.OutputPorts[SourcePort];
-				if (sourceOutputPort == null)
-				{
-					LogError("Source does not contain port");
-					return null;
-				}
-            //}
+            var sourceOutputPort = sourceDev.OutputPorts[SourcePort];
 
+            if (sourceOutputPort == null)
+			{
+				LogError("Source does not contain port");
+				return null;
+			}
 
-			//Get the Destination port
-			RoutingInputPort destinationInputPort = null;
-            //// If it's a card-based device, get the card and then the Destination port
-            //if (destDev is ICardPortsDevice)
-            //{
-            //    if (DestinationCard == null)
-            //    {
-            //        LogError("Card missing from destination device config");
-            //        return null;
-            //    }
-            //    destinationInputPort = (destDev as ICardPortsDevice).GetChildInputPort(DestinationCard, DestinationPort);
-            //    if (destinationInputPort == null)
-            //    {
-            //        LogError("Destination card does not contain port");
-            //        return null;
-            //    }
-            //}
-            //// otherwise it's a normal port device, get the Destination port
-            //else
-            //{
-				destinationInputPort = destDev.InputPorts[DestinationPort];
-				if (destinationInputPort == null)
+            //Get the Destination port
+            var destinationInputPort = destDev.InputPorts[DestinationPort];
+
+            if (destinationInputPort == null)
 				{
 					LogError("Destination does not contain port");
 					return null;
-				}
-            //}
+				}            
 
 			return new TieLine(sourceOutputPort, destinationInputPort);
 		}
 
 		void LogError(string msg)
 		{
-			Debug.LogMessage(LogEventLevel.Debug, "WARNING: Cannot create tie line: {0}:\r   {1}", msg, this);
+			Debug.LogMessage(LogEventLevel.Error, "WARNING: Cannot create tie line: {message}:\r   {tieLineConfig}",null, msg, this);
 		}
 
 		public override string ToString()

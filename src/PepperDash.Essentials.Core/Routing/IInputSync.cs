@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.Routing
 {
-    public interface IVideoSync: IKeyed
+    public interface IVideoSync : IKeyed
     {
         bool VideoSyncDetected { get; }
 

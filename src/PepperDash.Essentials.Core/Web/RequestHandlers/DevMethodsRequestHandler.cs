@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
+using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
@@ -25,6 +26,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		protected override void HandleGet(HttpCwsContext context)
 		{
             var routeData = context.Request.RouteData;
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Getting DevMethods: {@routeData}", routeData);
             if (routeData == null)
             {
                 context.Response.StatusCode = 400;
