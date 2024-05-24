@@ -1,7 +1,7 @@
 ﻿
 
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.Core
 {
     public class DeviceFactoryWrapper
     {
-        public CType CType { get; set; }
+        public Type CType { get; set; }
         public string Description { get; set; }
         public Func<DeviceConfig, IKeyed> FactoryMethod { get; set; }
 
@@ -69,7 +69,7 @@ namespace PepperDash.Essentials.Core
             DeviceFactory.FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method});
 		}
 
-        public static void AddFactoryForType(string typeName, string description, CType cType, Func<DeviceConfig, IKeyed> method)
+        public static void AddFactoryForType(string typeName, string description, Type cType, Func<DeviceConfig, IKeyed> method)
         {
             //Debug.LogMessage(LogEventLevel.Debug, "Adding factory method for type '{0}'", typeName);
 
@@ -149,18 +149,7 @@ namespace PepperDash.Essentials.Core
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(LogEventLevel.Error, "Exception occurred while creating device {0}: {1}", dc.Key, ex.Message);
-
-                Debug.LogMessage(LogEventLevel.Verbose, "{0}", ex.StackTrace);
-
-                if (ex.InnerException == null)
-                {
-                    return null;
-                }
-
-                Debug.LogMessage(LogEventLevel.Error, "Inner exception while creating device {0}: {1}", dc.Key,
-                    ex.InnerException.Message);
-                Debug.LogMessage(LogEventLevel.Verbose, "{0}", ex.InnerException.StackTrace);
+                Debug.LogMessage(ex, "Exception occurred while creating device {0}: {1}", null, dc.Key, ex.Message);
                 return null;
             }
         }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -119,23 +119,30 @@ namespace PepperDash.Essentials
         /// <param name="fileName"></param>
         static LoadedAssembly LoadAssembly(string filePath)
         {
-            //Debug.LogMessage(LogEventLevel.Verbose, "Attempting to load {0}", filePath);
-            var assembly = Assembly.LoadFrom(filePath);
-            if (assembly != null)
+            try
             {
-                var assyVersion = GetAssemblyVersion(assembly);
+                //Debug.LogMessage(LogEventLevel.Verbose, "Attempting to load {0}", filePath);
+                var assembly = Assembly.LoadFrom(filePath);
+                if (assembly != null)
+                {
+                    var assyVersion = GetAssemblyVersion(assembly);
 
-                var loadedAssembly = new LoadedAssembly(assembly.GetName().Name, assyVersion, assembly);
-                LoadedAssemblies.Add(loadedAssembly);
-                Debug.LogMessage(LogEventLevel.Information, "Loaded assembly '{0}', version {1}", loadedAssembly.Name, loadedAssembly.Version);
-                return loadedAssembly;
-            }
-            else
+                    var loadedAssembly = new LoadedAssembly(assembly.GetName().Name, assyVersion, assembly);
+                    LoadedAssemblies.Add(loadedAssembly);
+                    Debug.LogMessage(LogEventLevel.Information, "Loaded assembly '{0}', version {1}", loadedAssembly.Name, loadedAssembly.Version);
+                    return loadedAssembly;
+                }
+                else
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Unable to load assembly: '{0}'", filePath);
+                }
+
+                return null;
+            } catch(Exception ex)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Unable to load assembly: '{0}'", filePath);
+                Debug.LogMessage(ex, "Error loading assembly from {path}", null, filePath);
+                return null;
             }
-
-            return null;
 
         }
 
@@ -354,7 +361,7 @@ namespace PepperDash.Essentials
                 try
                 {
                     var assy = loadedAssembly.Assembly;
-                    CType[] types = {};
+                    Type[] types = {};
                     try
                     {
                         types = assy.GetTypes();
@@ -439,7 +446,7 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="type"></param>
         /// <param name="loadPlugin"></param>
-        static void LoadCustomLegacyPlugin(CType type, MethodInfo loadPlugin, LoadedAssembly loadedAssembly)
+        static void LoadCustomLegacyPlugin(Type type, MethodInfo loadPlugin, LoadedAssembly loadedAssembly)
         {
             Debug.LogMessage(LogEventLevel.Verbose, "LoadPlugin method found in {0}", type.Name);
 
