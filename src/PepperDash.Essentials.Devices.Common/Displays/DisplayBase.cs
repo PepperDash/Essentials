@@ -29,6 +29,8 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
             protected set
             {
+                if (_currentInputPort == value) return;
+
                 _currentInputPort = value;
 
                 InputChanged?.Invoke(this, _currentInputPort);
