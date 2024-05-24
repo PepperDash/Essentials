@@ -89,7 +89,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var data = EssentialsWebApiHelpers.GetRequestBody(context.Request);
+			var data = context.Request.GetRequestBody();
 			if (data == null)
 			{
 				context.Response.StatusCode = 500;

@@ -7,11 +7,11 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Web
 {
-	public class EssentialsWebApiHelpers
+	public static class EssentialsWebApiHelpers
 	{
-		public static string GetRequestBody(HttpCwsRequest request)
+		public static string GetRequestBody(this HttpCwsRequest request)
 		{
-			var bytes = new Byte[request.ContentLength];
+			var bytes = new byte[request.ContentLength];
 
 			request.InputStream.Read(bytes, 0, request.ContentLength);
 
@@ -22,8 +22,8 @@ namespace PepperDash.Essentials.Core.Web
 		{
 			return new
 			{
-				Name = assembly.Name,
-				Version = assembly.Version
+                assembly.Name,
+                assembly.Version
 			};
 		}
 
@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Core.Web
 		{
 			return new
 			{
-				Key = device.Key,
+                device.Key,
 				Name = (device is IKeyName)
 					? (device as IKeyName).Name
 					: "---"
