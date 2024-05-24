@@ -89,7 +89,7 @@ namespace PepperDash.Essentials.Core.Web
                     Name = "DevList",
                     RouteHandler = new DevListRequestHandler()
                 },
-                new HttpCwsRoute("deviceCommands")
+                new HttpCwsRoute("deviceCommands/{deviceKey}")
                 {
                     Name = "DevJson",
                     RouteHandler = new DevJsonRequestHandler()

@@ -26,6 +26,26 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandlePost(HttpCwsContext context)
 		{
+            var routeData = context.Request.RouteData;
+
+            if(routeData == null)
+            {
+                context.Response.StatusCode = 400;
+                context.Response.StatusDescription = "Bad Request";
+                context.Response.End();
+
+                return;
+            }
+
+            if(!routeData.Values.TryGetValue("deviceKey", out var deviceKey))
+            {
+                context.Response.StatusCode = 400;
+                context.Response.StatusDescription = "Bad Request";
+                context.Response.End();
+
+                return;
+            }
+
 			if (context.Request.ContentLength < 0)
 			{
 				context.Response.StatusCode = 400;
@@ -35,7 +55,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var data = EssentialsWebApiHelpers.GetRequestBody(context.Request);
+			var data = context.Request.GetRequestBody();
+
 			if (string.IsNullOrEmpty(data))
 			{
 				context.Response.StatusCode = 400;
@@ -46,9 +67,14 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 			
 			try
-			{
-                var daw = JsonConvert.DeserializeObject<DeviceActionWrapper>(data);
-				DeviceJsonApi.DoDeviceActionWithJson(data);
+			{                
+                var daw = new DeviceActionWrapper { DeviceKey = (string) deviceKey};
+
+                JsonConvert.PopulateObject(data, daw);
+
+                Debug.LogMessage(LogEventLevel.Verbose, "Device Action Wrapper: {@wrapper}", null, daw);
+
+				DeviceJsonApi.DoDeviceAction(daw);
 
 				context.Response.StatusCode = 200;
 				context.Response.StatusDescription = "OK";
