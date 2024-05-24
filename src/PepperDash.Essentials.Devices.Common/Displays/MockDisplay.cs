@@ -12,7 +12,7 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
-    public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string, string>
+    public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string, string>, IRoutingSinkWithSwitchingWithInputPort, IHasPowerControlWithFeedback
 	{
         public ISelectableItems<string> Inputs { get; private set; }
 
@@ -79,7 +79,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 				eRoutingPortConnectionType.Hdmi, "HDMI2", this);
 			var hdmiIn3 = new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.Hdmi, "HDMI3", this);
-			var hdmiIn4 = new RoutingInputPort(RoutingPortNames.ComponentIn, eRoutingSignalType.AudioVideo,
+			var hdmiIn4 = new RoutingInputPort(RoutingPortNames.HdmiIn4, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.Hdmi, "HDMI4", this);
 			var dpIn = new RoutingInputPort(RoutingPortNames.DisplayPortIn, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.DisplayPort, "DP", this);
