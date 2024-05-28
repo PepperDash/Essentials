@@ -51,7 +51,7 @@ namespace PepperDash.Essentials.Core
 				switch (controlConfig.Method)
 				{
 					case eControlMethod.Com:
-						comm = new ComPortController(deviceConfig.Key + "-com", GetComPort, controlConfig.ComParams, controlConfig);
+						comm = new ComPortController(deviceConfig.Key + "-com", GetComPort, controlConfig.ComParams.Value, controlConfig);
 						break;
                     case eControlMethod.Cec:
                         comm = new CecPortController(deviceConfig.Key + "-cec", GetCecPort, controlConfig);
@@ -115,7 +115,7 @@ namespace PepperDash.Essentials.Core
 			var comPar = config.ComParams;
 			var dev = GetIComPortsDeviceFromManagedDevice(config.ControlPortDevKey);
 			if (dev != null && config.ControlPortNumber <= dev.NumberOfComPorts)
-				return dev.ComPorts[config.ControlPortNumber];
+				return dev.ComPorts[config.ControlPortNumber.Value];
 			Debug.LogMessage(LogEventLevel.Information, "GetComPort: Device '{0}' does not have com port {1}", config.ControlPortDevKey, config.ControlPortNumber);
 			return null;
 		}
@@ -205,11 +205,11 @@ namespace PepperDash.Essentials.Core
         ControlPropertiesConfig
     {
 
-        [JsonProperty("comParams")]
+        [JsonProperty("comParams", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(ComSpecJsonConverter))]
-        public ComPort.ComPortSpec ComParams { get; set; }
+        public ComPort.ComPortSpec? ComParams { get; set; }
 
-        [JsonProperty("cresnetId")]
+        [JsonProperty("cresnetId", NullValueHandling = NullValueHandling.Ignore)]
         public string CresnetId { get; set; }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-        [JsonProperty("infinetId")]
+        [JsonProperty("infinetId", NullValueHandling = NullValueHandling.Ignore)]
         public string InfinetId { get; set; }
 
         /// <summary>
