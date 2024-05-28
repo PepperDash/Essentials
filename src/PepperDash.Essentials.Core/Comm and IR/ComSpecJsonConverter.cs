@@ -23,12 +23,12 @@ namespace PepperDash.Essentials.Core
     {
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            if (objectType == typeof(ComPort.ComPortSpec))
+            if (objectType == typeof(ComPort.ComPortSpec?))
             {
                 var newSer = new JsonSerializer();
                 newSer.Converters.Add(new ComSpecPropsJsonConverter());
                 newSer.ObjectCreationHandling = ObjectCreationHandling.Replace;
-                return newSer.Deserialize<ComPort.ComPortSpec>(reader);
+                return newSer.Deserialize<ComPort.ComPortSpec?>(reader);
             }
             return null;
         }
@@ -38,7 +38,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(ComPort.ComPortSpec);
+            return objectType == typeof(ComPort.ComPortSpec?);
         }
 
         public override bool CanRead { get { return true; } }
