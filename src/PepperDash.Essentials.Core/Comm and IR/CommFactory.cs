@@ -201,23 +201,26 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// 
     /// </summary>
-    public class EssentialsControlPropertiesConfig : 
-        PepperDash.Core.ControlPropertiesConfig
+    public class EssentialsControlPropertiesConfig :
+        ControlPropertiesConfig
     {
 
+        [JsonProperty("comParams")]
         [JsonConverter(typeof(ComSpecJsonConverter))]
-        public ComPort.ComPortSpec ComParams { get; set; }		
+        public ComPort.ComPortSpec ComParams { get; set; }
 
-		public string CresnetId { get; set; }
+        [JsonProperty("cresnetId")]
+        public string CresnetId { get; set; }
 
         /// <summary>
         /// Attempts to provide uint conversion of string CresnetId
         /// </summary>
+        [JsonIgnore]
         public uint CresnetIdInt
         {
             get
             {
-                try 
+                try
                 {
                     return Convert.ToUInt32(CresnetId, 16);
                 }
@@ -228,11 +231,13 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        [JsonProperty("infinetId")]
         public string InfinetId { get; set; }
 
         /// <summary>
         /// Attepmts to provide uiont conversion of string InifinetId
         /// </summary>
+        [JsonIgnore]
         public uint InfinetIdInt
         {
             get
