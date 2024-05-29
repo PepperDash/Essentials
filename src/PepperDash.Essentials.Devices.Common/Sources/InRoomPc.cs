@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Sources
 {
-	public class InRoomPc : EssentialsDevice, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
+	public class InRoomPc : EssentialsDevice, IHasFeedback, IRoutingSource, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
 		public string IconName { get; set; }

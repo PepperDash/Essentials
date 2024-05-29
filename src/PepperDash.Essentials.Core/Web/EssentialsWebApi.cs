@@ -89,7 +89,7 @@ namespace PepperDash.Essentials.Core.Web
                     Name = "DevList",
                     RouteHandler = new DevListRequestHandler()
                 },
-                new HttpCwsRoute("deviceCommands")
+                new HttpCwsRoute("deviceCommands/{deviceKey}")
                 {
                     Name = "DevJson",
                     RouteHandler = new DevJsonRequestHandler()
@@ -163,6 +163,11 @@ namespace PepperDash.Essentials.Core.Web
                 {
                     Name = "Load Config",
                     RouteHandler = new LoadConfigRequestHandler()
+                },
+                new HttpCwsRoute("getTielines")
+                {
+                    Name = "Get TieLines",
+                    RouteHandler = new GetTieLinesRequestHandler()
                 }
 
             };
@@ -233,32 +238,32 @@ namespace PepperDash.Essentials.Core.Web
 		/// </example>
 		public void GetPaths()
 		{
-			Debug.LogMessage(LogEventLevel.Verbose, this, "{0}", new String('-', 50));
+			Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));
 
 			var currentIp = CrestronEthernetHelper.GetEthernetParameter(
 				CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
 			
 			var hostname = CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
+
+            var path = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
+                ? $"http(s)://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws{BasePath}"
+                : $"http(s)://{currentIp}/cws{BasePath}";
 			
-			var path = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server 
-				? string.Format("http(s)://{0}/VirtualControl/Rooms/{1}/cws{2}", hostname, InitialParametersClass.RoomId, BasePath)
-				: string.Format("http(s)://{0}/cws{1}", currentIp, BasePath);
-			
-			Debug.LogMessage(LogEventLevel.Verbose, this, "Server:{0}", path);
+			Debug.LogMessage(LogEventLevel.Information, this, "Server:{path:l}", path);
 
 			var routeCollection = _server.GetRouteCollection();
 			if (routeCollection == null)
 			{
-				Debug.LogMessage(LogEventLevel.Verbose, this, "Server route collection is null");
+				Debug.LogMessage(LogEventLevel.Information, this, "Server route collection is null");
 				return;
 			}
-			Debug.LogMessage(LogEventLevel.Verbose, this, "Configured Routes:");
+			Debug.LogMessage(LogEventLevel.Information, this, "Configured Routes:");
 			foreach (var route in routeCollection)
 			{
-				Debug.LogMessage(LogEventLevel.Verbose, this, "{0}: {1}/{2}", route.Name, path, route.Url);
+				Debug.LogMessage(LogEventLevel.Information, this, "{routeName:l}: {routePath:l}/{routeUrl:l}", route.Name, path, route.Url);
 			}
-			Debug.LogMessage(LogEventLevel.Verbose, this, "{0}", new String('-', 50));
+			Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));
 		}
 	}
 }

@@ -144,21 +144,42 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("isAudioSource")]
         public bool IsAudioSource { get; set; }
 
+        /// <summary>
+        /// Hide source on UI when Avanced Sharing is enabled
+        /// </summary>
+        [JsonProperty("disableAdvancedRouting")]
+        public bool DisableAdvancedRouting { get; set; }
+
+        /// <summary>
+        /// Hide source on UI when Simpl Sharing is enabled
+        /// </summary>
+        [JsonProperty("disableSimpleRouting")]
+        public bool DisableSimpleRouting { get; set; }
+
 		public SourceListItem()
 		{
 			Icon = "Blank";
 		}
 
-        
-	}
+        public override string ToString()
+        {
+            return $"{SourceKey}:{Name}";
+        }
+    }
 
 	public class SourceRouteListItem
 	{
 		[JsonProperty("sourceKey")]
 		public string SourceKey { get; set; }
 
+        [JsonProperty("sourcePortKey")]
+        public string SourcePortKey { get; set; }
+
 		[JsonProperty("destinationKey")]
 		public string DestinationKey { get; set; }
+
+        [JsonProperty("destinationPortKey")]
+        public string DestinationPortKey { get; set; }
 
 		[JsonProperty("type")]
 		public eRoutingSignalType Type { get; set; }

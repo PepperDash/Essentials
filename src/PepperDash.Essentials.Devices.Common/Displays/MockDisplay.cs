@@ -8,12 +8,11 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
-    public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string, string>
+    public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string, string>, IRoutingSinkWithSwitchingWithInputPort, IHasPowerControlWithFeedback
 	{
         public ISelectableItems<string> Inputs { get; private set; }
 
@@ -80,7 +79,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 				eRoutingPortConnectionType.Hdmi, "HDMI2", this);
 			var hdmiIn3 = new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.Hdmi, "HDMI3", this);
-			var hdmiIn4 = new RoutingInputPort(RoutingPortNames.ComponentIn, eRoutingSignalType.AudioVideo,
+			var hdmiIn4 = new RoutingInputPort(RoutingPortNames.HdmiIn4, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.Hdmi, "HDMI4", this);
 			var dpIn = new RoutingInputPort(RoutingPortNames.DisplayPortIn, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.DisplayPort, "DP", this);
@@ -140,18 +139,65 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 		public override void ExecuteSwitch(object selector)
 		{
-			Debug.LogMessage(LogEventLevel.Verbose, this, "ExecuteSwitch: {0}", selector);
+            try
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "ExecuteSwitch: {0}", this, selector);
 
 			if (!_PowerIsOn)
 			{
 				PowerOn();
 			}
 
-			if (!Inputs.Items.TryGetValue(selector.ToString(), out var input))
-				return;
+                if (!Inputs.Items.TryGetValue(selector.ToString(), out var input))
+                    return;
 
-			input.Select();
-		}
+                Debug.LogMessage(LogEventLevel.Verbose, "Selected input: {input}", this, input.Key);
+                input.Select();
+
+                var inputPort = InputPorts.FirstOrDefault(port =>
+                {
+                    Debug.LogMessage(LogEventLevel.Verbose, "Checking input port {inputPort} with selector {portSelector} against {selector}", this, port, port.Selector, selector);
+                    return port.Selector.ToString() == selector.ToString();
+                });
+
+                if (inputPort == null)
+                {
+                    Debug.LogMessage(LogEventLevel.Verbose, "Unable to find input port for selector {selector}", this, selector);                    
+                    return;
+                }
+
+                Debug.LogMessage(LogEventLevel.Verbose, "Setting current input port to {inputPort}", this, inputPort);
+                CurrentInputPort = inputPort;
+            } catch (Exception ex)
+            {
+                Debug.LogMessage(ex, "Error making switch: {Exception}", this, ex);
+            }
+        }
+
+        public void SetInput(string selector)
+        {
+			ISelectableItem currentInput = null;
+
+			try
+			{
+				currentInput = Inputs.Items.SingleOrDefault(Inputs => Inputs.Value.IsSelected).Value;
+			}
+			catch { }
+			
+
+            if (currentInput != null)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, this, "SetInput: {0}", selector);
+                currentInput.IsSelected = false;
+            }
+
+			if (!Inputs.Items.TryGetValue(selector, out var input))
+                return;
+
+			input.IsSelected = true;
+
+			Inputs.CurrentItem = selector;
+        }
 
 
         #region IBasicVolumeWithFeedback Members
@@ -230,7 +276,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 	{
 		public MockDisplayFactory()
 		{
-			TypeNames = new List<string>() { "mockdisplay" };
+			TypeNames = new List<string>() { "mockdisplay, mockdisplay2" };
 		}
 
 		public override EssentialsDevice BuildDevice(DeviceConfig dc)

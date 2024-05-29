@@ -149,18 +149,7 @@ namespace PepperDash.Essentials.Core
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(LogEventLevel.Error, "Exception occurred while creating device {0}: {1}", dc.Key, ex.Message);
-
-                Debug.LogMessage(LogEventLevel.Verbose, "{0}", ex.StackTrace);
-
-                if (ex.InnerException == null)
-                {
-                    return null;
-                }
-
-                Debug.LogMessage(LogEventLevel.Error, "Inner exception while creating device {0}: {1}", dc.Key,
-                    ex.InnerException.Message);
-                Debug.LogMessage(LogEventLevel.Verbose, "{0}", ex.InnerException.StackTrace);
+                Debug.LogMessage(ex, "Exception occurred while creating device {0}: {1}", null, dc.Key, ex.Message);
                 return null;
             }
         }

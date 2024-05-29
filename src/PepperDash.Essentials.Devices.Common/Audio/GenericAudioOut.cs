@@ -8,7 +8,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
@@ -18,6 +17,8 @@ namespace PepperDash.Essentials.Devices.Common
 	/// </summary>
 	public class GenericAudioOut : EssentialsDevice, IRoutingSink
 	{
+        public RoutingInputPort CurrentInputPort => AnyAudioIn;
+
         public event SourceInfoChangeHandler CurrentSourceChange;
 
         public string CurrentSourceInfoKey { get; set; }

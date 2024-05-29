@@ -5,7 +5,6 @@ using Crestron.SimplSharpPro;
 
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Routing;
 using PepperDash.Core;
 using Serilog.Events;
 
@@ -70,7 +69,7 @@ namespace PepperDash.Essentials.Core.Devices
     {
         public LaptopFactory()
         {
-            TypeNames = new List<string>() { "laptop" };
+            TypeNames = new List<string>() { "deprecated" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)

@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Crestron.SimplSharp;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
-using Feedback = PepperDash.Essentials.Core.Feedback;
-using Newtonsoft.Json;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
@@ -20,6 +19,26 @@ namespace PepperDash.Essentials.Devices.Common.Displays
         , IWarmingCooling
         , IUsageTracking
 	{
+        private RoutingInputPort _currentInputPort;
+        public RoutingInputPort CurrentInputPort
+        {
+            get
+            {
+                return _currentInputPort;
+            }
+
+            protected set
+            {
+                if (_currentInputPort == value) return;
+
+                _currentInputPort = value;
+
+                InputChanged?.Invoke(this, _currentInputPort);
+            }
+        }
+
+        public event InputChangedEventHandler InputChanged;
+
         public event SourceInfoChangeHandler CurrentSourceChange;
 
         public string CurrentSourceInfoKey { get; set; }

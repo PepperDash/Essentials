@@ -66,7 +66,7 @@ namespace PepperDash.Essentials
 
             Debug.LogMessage(LogEventLevel.Verbose, "Found {0} Assemblies", assemblyFiles.Length);
 
-            foreach (var fi in assemblyFiles)
+            foreach (var fi in assemblyFiles.Where(fi => fi.Name.Contains("Essentials") || fi.Name.Contains("PepperDash")))
             {
                 string version = string.Empty;
                 Assembly assembly = null;
@@ -130,23 +130,30 @@ namespace PepperDash.Essentials
         /// <param name="fileName"></param>
         static LoadedAssembly LoadAssembly(string filePath)
         {
-            //Debug.LogMessage(LogEventLevel.Verbose, "Attempting to load {0}", filePath);
-            var assembly = Assembly.LoadFrom(filePath);
-            if (assembly != null)
+            try
             {
-                var assyVersion = GetAssemblyVersion(assembly);
+                //Debug.LogMessage(LogEventLevel.Verbose, "Attempting to load {0}", filePath);
+                var assembly = Assembly.LoadFrom(filePath);
+                if (assembly != null)
+                {
+                    var assyVersion = GetAssemblyVersion(assembly);
 
-                var loadedAssembly = new LoadedAssembly(assembly.GetName().Name, assyVersion, assembly);
-                LoadedAssemblies.Add(loadedAssembly);
-                Debug.LogMessage(LogEventLevel.Information, "Loaded assembly '{0}', version {1}", loadedAssembly.Name, loadedAssembly.Version);
-                return loadedAssembly;
-            }
-            else
+                    var loadedAssembly = new LoadedAssembly(assembly.GetName().Name, assyVersion, assembly);
+                    LoadedAssemblies.Add(loadedAssembly);
+                    Debug.LogMessage(LogEventLevel.Information, "Loaded assembly '{0}', version {1}", loadedAssembly.Name, loadedAssembly.Version);
+                    return loadedAssembly;
+                }
+                else
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Unable to load assembly: '{0}'", filePath);
+                }
+
+                return null;
+            } catch(Exception ex)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Unable to load assembly: '{0}'", filePath);
+                Debug.LogMessage(ex, "Error loading assembly from {path}", null, filePath);
+                return null;
             }
-
-            return null;
 
         }
 

@@ -25,8 +25,8 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.20.42" />
-    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-420" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.20.66" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-424" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Crestron\CrestronGenericBaseDevice.cs.orig" />

@@ -1,7 +1,6 @@
 ﻿using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
@@ -43,6 +42,8 @@ namespace PepperDash.Essentials.Devices.Common.Generic
                 CurrentSourceChange?.Invoke(_currentSource, ChangeType.DidChange);
             }
         }
+
+        public RoutingInputPort CurrentInputPort => InputPorts[0];
 
         public event SourceInfoChangeHandler CurrentSourceChange;
     }

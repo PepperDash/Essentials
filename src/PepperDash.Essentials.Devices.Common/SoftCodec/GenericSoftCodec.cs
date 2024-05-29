@@ -3,16 +3,24 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
 {
-    public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingSink
+    public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingOutputs, IRoutingSinkWithSwitching
     {
+        private RoutingInputPort _currentInputPort;
+        public RoutingInputPort CurrentInputPort {
+            get => _currentInputPort;
+            set
+            {
+                _currentInputPort = value;
+
+                InputChanged?.Invoke(this, _currentInputPort);
+            }
+        }
+
         public GenericSoftCodec(string key, string name, GenericSoftCodecProperties props) : base(key, name)
         {
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
@@ -27,7 +35,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
             for(var i = 1; i<= props.ContentInputCount; i++)
             {
-                var inputPort = new RoutingInputPort($"{Key}-contentInput{i}", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
+                var inputPort = new RoutingInputPort($"{Key}-contentInput{i}", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, $"contentInput{i}", this);
 
                 InputPorts.Add(inputPort);
             }
@@ -39,7 +47,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
             for(var i = 1; i <=props.CameraInputCount; i++)
             {
-                var cameraPort = new RoutingInputPort($"{Key}-cameraInput{i}", eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, null, this);
+                var cameraPort = new RoutingInputPort($"{Key}-cameraInput{i}", eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, $"cameraInput{i}", this);
 
                 InputPorts.Add(cameraPort);
             }
@@ -74,6 +82,20 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         SourceListItem _CurrentSourceInfo;
 
         public event SourceInfoChangeHandler CurrentSourceChange;
+        public event InputChangedEventHandler InputChanged;
+
+        public void ExecuteSwitch(object inputSelector)
+        {
+            var inputPort = InputPorts.FirstOrDefault(p => p.Selector == inputSelector);
+
+            if(inputPort == null)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, "No input port found for selector {inputSelector}", inputSelector);
+                return;
+            }
+
+            CurrentInputPort = inputPort;
+        }
     }
 
     public class GenericSoftCodecProperties

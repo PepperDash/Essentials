@@ -34,7 +34,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			allDevices.Sort((a, b) => System.String.Compare(a.Key, b.Key, System.StringComparison.Ordinal));
+			allDevices.Sort((a, b) => string.Compare(a.Key, b.Key, System.StringComparison.Ordinal));
 
 			var deviceList = allDevices.Select(d => EssentialsWebApiHelpers.MapToDeviceListObject(d)).ToList();
 

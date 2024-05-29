@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Crestron.SimplSharp;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -82,7 +83,8 @@ namespace PepperDash.Essentials.Core
                 var convertedParams = mParams
                                     .Select((p, i) => ConvertType(action.Params[i], p.ParameterType))
                                     .ToArray();
-                method.Invoke(obj, convertedParams);
+
+                Task.Run(() => method.Invoke(obj, convertedParams));                
 
 		        CrestronConsole.ConsoleCommandResponse("Method {0} successfully called on device {1}", method.Name,
 		            action.DeviceKey);

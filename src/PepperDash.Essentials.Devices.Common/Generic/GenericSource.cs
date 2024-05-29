@@ -9,12 +9,11 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class GenericSource : EssentialsDevice, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
+	public class GenericSource : EssentialsDevice, IUiDisplayInfo, IRoutingSource, IRoutingOutputs, IUsageTracking
 	{
 
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeNoControls; } }
