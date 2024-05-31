@@ -40,7 +40,7 @@ namespace PepperDash.Essentials.DM
 
             DeviceInfo = new DeviceInfo();
 
-            IsOnline.OutputChange += (currentDevice, args) => { if (args.BoolValue) UpdateDeviceInfo(); };
+            // IsOnline.OutputChange += (currentDevice, args) => { if (args.BoolValue) UpdateDeviceInfo(); };
         }
 
         protected void LinkDmRmcToApi(DmRmcControllerBase rmc, BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
