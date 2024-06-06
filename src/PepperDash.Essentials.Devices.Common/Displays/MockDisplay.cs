@@ -269,14 +269,13 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }
-
-
     }
+
 	public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
 	{
 		public MockDisplayFactory()
 		{
-			TypeNames = new List<string>() { "mockdisplay, mockdisplay2" };
+			TypeNames = new List<string>() { "mockdisplay" , "mockdisplay2" };
 		}
 
 		public override EssentialsDevice BuildDevice(DeviceConfig dc)
