@@ -178,8 +178,8 @@ namespace PepperDash.Essentials.Core
         /// <param name="routeTable">The RouteDescriptor being populated as the route is discovered</param>
         /// <returns>true if source is hit</returns>
         private static bool GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source,
-            RoutingOutputPort sourcePort, List<IRoutingInputsOutputs> alreadyCheckedDevices,
-                eRoutingSignalType signalType, int cycle, RouteDescriptor routeTable, RoutingInputPort destinationPort)
+            RoutingOutputPort outputPortToUse, List<IRoutingInputsOutputs> alreadyCheckedDevices,
+                eRoutingSignalType signalType, int cycle, RouteDescriptor routeTable, RoutingInputPort destinationPort, RoutingOutputPort sourcePort)
         {
             cycle++;
 
@@ -250,14 +250,14 @@ namespace PepperDash.Essentials.Core
                         continue;
                     }
 
-                    var midpointOutputPort = sourcePort ?? tieLine.SourcePort;
+                    var midpointOutputPort = tieLine.SourcePort;
 
                     Debug.LogMessage(LogEventLevel.Verbose, "Trying to find route on {0}", destination, midpointDevice.Key);
 
                     // haven't seen this device yet.  Do it.  Pass the output port to the next
                     // level to enable switching on success
                     var upstreamRoutingSuccess = midpointDevice.GetRouteToSource(source, midpointOutputPort,
-                        alreadyCheckedDevices, signalType, cycle, routeTable, null);
+                        alreadyCheckedDevices, signalType, cycle, routeTable, null, sourcePort);
 
                     if (upstreamRoutingSuccess)
                     {
@@ -277,14 +277,14 @@ namespace PepperDash.Essentials.Core
 
             // we have a route on corresponding inputPort. *** Do the route ***
 
-            if (sourcePort == null)
+            if (destination is IRoutingSink)
             {
                 // it's a sink device
                 routeTable.Routes.Add(new RouteSwitchDescriptor(goodInputPort));
             }
             else if (destination is IRouting)
             {
-                routeTable.Routes.Add(new RouteSwitchDescriptor(sourcePort, goodInputPort));
+                routeTable.Routes.Add(new RouteSwitchDescriptor(outputPortToUse, goodInputPort));
             }
             else // device is merely IRoutingInputOutputs
                 Debug.LogMessage(LogEventLevel.Verbose, "No routing. Passthrough device", destination);
