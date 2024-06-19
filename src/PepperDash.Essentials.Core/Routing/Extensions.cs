@@ -138,7 +138,7 @@ namespace PepperDash.Essentials.Core
             {
                 Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {0}", null, source.Key);
 
-                if (!destination.GetRouteToSource(source, sourcePort, null, signalType, 0, routeDescriptor, destinationPort))
+                if (!destination.GetRouteToSource(source, null, null, signalType, 0, routeDescriptor, destinationPort, sourcePort))
                     routeDescriptor = null;
 
                 return routeDescriptor;
@@ -147,12 +147,12 @@ namespace PepperDash.Essentials.Core
 
             Debug.LogMessage(LogEventLevel.Debug, "Attempting to build audio and video routes from {0}", destination, source.Key);
 
-            var audioSuccess = destination.GetRouteToSource(source, sourcePort, null, eRoutingSignalType.Audio, 0, routeDescriptor, destinationPort);
+            var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, routeDescriptor, destinationPort, sourcePort);
 
             if (!audioSuccess)
                 Debug.LogMessage(LogEventLevel.Debug, "Cannot find audio route to {0}", destination, source.Key);
 
-            var videoSuccess = destination.GetRouteToSource(source, sourcePort, null, eRoutingSignalType.Video, 0, routeDescriptor, destinationPort);
+            var videoSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Video, 0, routeDescriptor, destinationPort, sourcePort);
 
             if (!videoSuccess)
                 Debug.LogMessage(LogEventLevel.Debug, "Cannot find video route to {0}", destination, source.Key);
