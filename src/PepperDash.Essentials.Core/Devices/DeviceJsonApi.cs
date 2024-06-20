@@ -84,7 +84,18 @@ namespace PepperDash.Essentials.Core
                                     .Select((p, i) => ConvertType(action.Params[i], p.ParameterType))
                                     .ToArray();
 
-                Task.Run(() => method.Invoke(obj, convertedParams));                
+                Task.Run(() =>
+					{
+						try
+						{
+							Debug.LogMessage(LogEventLevel.Verbose, "Calling method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+							method.Invoke(obj, convertedParams);
+						}
+						catch(Exception e)
+						{
+							Debug.LogMessage(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+						}
+					});                
 
 		        CrestronConsole.ConsoleCommandResponse("Method {0} successfully called on device {1}", method.Name,
 		            action.DeviceKey);
