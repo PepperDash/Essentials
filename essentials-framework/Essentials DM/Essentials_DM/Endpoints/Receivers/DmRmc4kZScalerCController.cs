@@ -10,12 +10,13 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Core;
 using PepperDash_Essentials_DM;
+using System.Collections.Generic;
 
 namespace PepperDash.Essentials.DM
 {
     [Description("Wrapper Class for DM-RMC-4K-Z-SCALER-C")]
     public class DmRmc4kZScalerCController : DmRmcControllerBase, IRmcRoutingWithFeedback,
-        IIROutputPorts, IComPorts, ICec, IRelayPorts, IHasDmInHdcp, IHasHdmiInHdcp
+        IIROutputPorts, IComPorts, ICec, IRelayPorts, IHasDmInHdcp, IHasHdmiInHdcp, IhasWallMode
     {
         private readonly DmRmc4kzScalerC _rmc;
 
@@ -28,7 +29,7 @@ namespace PepperDash.Essentials.DM
 
         public BoolFeedback HdmiVideoSyncFeedback { get; private set; }
 
-
+        private Dictionary<ushort, EndpointScalerOutput.eWall> WallModes;
 
         /// <summary>
         /// The value of the current video source for the HDMI output on the receiver
@@ -101,6 +102,15 @@ namespace PepperDash.Essentials.DM
             HdmiOut.Port = _rmc.HdmiOutput;
 
             AudioVideoSourceNumericFeedback = new IntFeedback(() => (ushort)(_rmc.SelectedSourceFeedback));
+
+            WallModes = new Dictionary<ushort, EndpointScalerOutput.eWall>()
+            {
+                {0, EndpointScalerOutput.eWall.Disabled},
+                {2211, EndpointScalerOutput.eWall.Mode11},
+                {2212, EndpointScalerOutput.eWall.Mode12},
+                {2221, EndpointScalerOutput.eWall.Mode13},
+                {2222, EndpointScalerOutput.eWall.Mode14}
+            };
         }
 
         void InputStreamChangeEvent(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
@@ -241,5 +251,17 @@ namespace PepperDash.Essentials.DM
             _rmc.HdmiIn.HdcpCapability = hdcpState;
         }
 
+
+        #region IhasWallMode Members
+
+        public void SeteWallMode(ushort walLMode)
+        {
+            EndpointScalerOutput.eWall wallvalue;
+
+            if (WallModes.TryGetValue(walLMode, out wallvalue))
+                _rmc.Scaler.WallMode = wallvalue;
+        }
+
+        #endregion
     }
 }

@@ -68,7 +68,9 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete HdcpInputPortCount = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 1 },
             new JoinMetadata { Description = "Number of Input Ports that support HDCP", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
-
+        [JoinName("ScalerOutWallMode")]
+        public JoinDataComplete ScalerOutWallMode = new JoinDataComplete(new JoinData { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata { Description = "Number of Input Ports that support HDCP", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it
