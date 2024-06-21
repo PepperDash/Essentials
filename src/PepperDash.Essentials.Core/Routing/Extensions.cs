@@ -1,5 +1,6 @@
 ﻿using PepperDash.Core;
 using Serilog.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,6 +31,11 @@ namespace PepperDash.Essentials.Core
 
         private static void ReleaseAndMakeRoute(IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort = null, RoutingOutputPort sourcePort = null)
         {
+            if(destination == null) throw new ArgumentNullException(nameof(destination));
+            if(source == null) throw new ArgumentNullException(nameof(source));
+            if(destinationPort == null) Debug.LogMessage(LogEventLevel.Verbose, "Destination port is null");
+            if(sourcePort == null) Debug.LogMessage(LogEventLevel.Verbose, "Source port is null");
+
             var routeRequest = new RouteRequest
             {
                 Destination = destination,
@@ -141,6 +147,18 @@ namespace PepperDash.Essentials.Core
                 if (!destination.GetRouteToSource(source, null, null, signalType, 0, routeDescriptor, destinationPort, sourcePort))
                     routeDescriptor = null;
 
+                foreach (var route in routeDescriptor.Routes)
+                {
+                    Debug.LogMessage(LogEventLevel.Verbose,
+    @"Route for device: {route}
+InputPort: {InputPort}
+OutputPort: {OutputPort}",
+    destination,
+    route.SwitchingDevice.Key,
+    route.InputPort,
+    route.OutputPort);
+                }
+
                 return routeDescriptor;
             }
             // otherwise, audioVideo needs to be handled as two steps.
@@ -156,6 +174,19 @@ namespace PepperDash.Essentials.Core
 
             if (!videoSuccess)
                 Debug.LogMessage(LogEventLevel.Debug, "Cannot find video route to {0}", destination, source.Key);
+
+            foreach (var route in routeDescriptor.Routes)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, 
+@"Route for device: {route}
+InputPort: {InputPort}
+OutputPort: {OutputPort}", 
+destination, 
+route.SwitchingDevice.Key, 
+route.InputPort, 
+route.OutputPort);
+            }
+
 
             if (!audioSuccess && !videoSuccess)
                 routeDescriptor = null;
@@ -209,17 +240,17 @@ namespace PepperDash.Essentials.Core
             // find a tieLine to a specific destination port without a specific source port
             else if (destinationPort != null && sourcePort == null)
             {
-                directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.Key == destinationPort.Key && t.SourcePort.ParentDevice.Key == source.Key);
+                directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && t.SourcePort.ParentDevice.Key == source.Key);
             }
             // find a tieline to a specific source port without a specific destination port
             else if (destinationPort == null & sourcePort != null)
             {
-                directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.SourcePort.Key == sourcePort.Key);
+                directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.SourcePort.ParentDevice.Key == source.Key && t.SourcePort.Key == sourcePort.Key);
             }
             // find a tieline to a specific source port and destination port
             else if (destinationPort != null && sourcePort != null)
             {
-                directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.Key == destinationPort.Key && t.SourcePort.Key == sourcePort.Key);
+                directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && t.SourcePort.ParentDevice.Key == source.Key && t.SourcePort.Key == sourcePort.Key);
             }
 
             if (directTie != null) // Found a tie directly to the source
@@ -262,6 +293,12 @@ namespace PepperDash.Essentials.Core
                     if (upstreamRoutingSuccess)
                     {
                         Debug.LogMessage(LogEventLevel.Verbose, "Upstream device route found", destination);
+                        Debug.LogMessage(LogEventLevel.Verbose, "Route found on {0}", destination, midpointDevice.Key);
+                        Debug.LogMessage(LogEventLevel.Verbose, 
+@"TieLine:\n
+SourcePort: {SourcePort}\n
+DestinationPort: {DestinationPort}\n"
+, destination, tieLine.SourcePort, tieLine.DestinationPort);
                         goodInputPort = tieLine.DestinationPort;
                         break; // Stop looping the inputs in this cycle
                     }
