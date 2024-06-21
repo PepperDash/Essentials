@@ -229,7 +229,7 @@ route.OutputPort);
             }
             else
             {
-                destinationTieLines = TieLineCollection.Default.Where(t => t.DestinationPort.ParentDevice.Key == destination.Key && (t.Type == signalType || t.Type.HasFlag(eRoutingSignalType.AudioVideo)));
+                destinationTieLines = TieLineCollection.Default.Where(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && (t.Type == signalType || t.Type.HasFlag(eRoutingSignalType.AudioVideo)));
             }
 
             // find the TieLine without a port
