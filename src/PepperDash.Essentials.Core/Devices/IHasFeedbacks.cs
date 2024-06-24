@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using Crestron.SimplSharpPro.DeviceSupport;
-using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using Serilog.Events;
@@ -23,7 +21,7 @@ namespace PepperDash.Essentials.Core
 	{
 		public static void DumpFeedbacksToConsole(this IHasFeedback source, bool getCurrentStates)
 		{
-            CType t = source.GetType();
+            Type t = source.GetType();
             // get the properties and set them into a new collection of NameType wrappers
             var props = t.GetProperties().Select(p => new PropertyNameType(p, t));
 

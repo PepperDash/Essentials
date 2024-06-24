@@ -44,7 +44,10 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         void AddDeviceMessenger(IMobileControlMessenger messenger);
 
         bool CheckForDeviceMessenger(string key);
-    }
+
+		IMobileControlRoomMessenger GetRoomMessenger(string key);
+
+	}
 
     /// <summary>
     /// Describes a mobile control messenger

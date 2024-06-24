@@ -120,7 +120,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 				// Fake cool-down cycle
 				CooldownTimer = new CTimer(o =>
 					{
-						Debug.LogMessage(LogEventLevel.Verbose, this, "Cooldown timer ending");
+						Debug.LogMessage(LogEventLevel.Verbose, "Cooldown timer ending", this);
 						_IsCoolingDown = false;
 						IsCoolingDownFeedback.InvokeFireUpdate();
                         _PowerIsOn = false;
@@ -143,10 +143,10 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             {
                 Debug.LogMessage(LogEventLevel.Verbose, "ExecuteSwitch: {0}", this, selector);
 
-                if (!_PowerIsOn)
-                {
-                    PowerOn();
-                }
+			if (!_PowerIsOn)
+			{
+				PowerOn();
+			}
 
                 if (!Inputs.Items.TryGetValue(selector.ToString(), out var input))
                     return;
@@ -198,7 +198,6 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 			Inputs.CurrentItem = selector;
         }
-
 
 
         #region IBasicVolumeWithFeedback Members
@@ -270,21 +269,19 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }
-
-
     }
 
-    public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
-    {
-        public MockDisplayFactory()
-        {
-            TypeNames = new List<string>() { "mockdisplay2" };
-        }
+	public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
+	{
+		public MockDisplayFactory()
+		{
+			TypeNames = new List<string>() { "mockdisplay" , "mockdisplay2" };
+		}
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Mock Display Device");
-            return new MockDisplay(dc.Key, dc.Name);
-        }
-    }
+		public override EssentialsDevice BuildDevice(DeviceConfig dc)
+		{
+			Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Mock Display Device");
+			return new MockDisplay(dc.Key, dc.Name);
+		}
+	}
 }

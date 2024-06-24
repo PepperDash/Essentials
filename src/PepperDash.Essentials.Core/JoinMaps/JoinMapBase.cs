@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp;
 
@@ -109,7 +109,7 @@ namespace PepperDash.Essentials.Core
         protected void AddJoins(Type type)
         {
             var fields =
-                type.GetCType()
+                type.GetType()
                     .GetFields(BindingFlags.Public | BindingFlags.Instance)
                     .Where(f => f.IsDefined(typeof (JoinNameAttribute), true));
 
@@ -501,7 +501,7 @@ namespace PepperDash.Essentials.Core
         public string GetNameAttribute(MemberInfo memberInfo)
         {
             var name = string.Empty;
-            var attribute = (JoinNameAttribute)CAttribute.GetCustomAttribute(memberInfo, typeof(JoinNameAttribute));
+            var attribute = (JoinNameAttribute)Attribute.GetCustomAttribute(memberInfo, typeof(JoinNameAttribute));
 
             if (attribute == null) return name;
 
@@ -514,7 +514,7 @@ namespace PepperDash.Essentials.Core
     
 
     [AttributeUsage(AttributeTargets.All)]
-    public class JoinNameAttribute : CAttribute
+    public class JoinNameAttribute : Attribute
     {
         private string _Name;
 

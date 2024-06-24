@@ -12,7 +12,7 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using System.Text.RegularExpressions;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 
 using Newtonsoft.Json;
 using Serilog.Events;

@@ -110,7 +110,7 @@ namespace PepperDash.Essentials.Core.Monitoring
             _uptimePollTimer = null;
         }
 
-        private void PollUptime(object obj)
+        public void PollUptime(object obj)
         {
             var consoleResponse = string.Empty;
 
@@ -142,19 +142,22 @@ namespace PepperDash.Essentials.Core.Monitoring
             _uptime = uptimeRaw.Substring(forIndex + 4);
         }
 
-	    private static void ProcessorReboot()
+	    public static void ProcessorReboot()
 	    {
 		    if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Server) return;
+            Debug.LogMessage(LogEventLevel.Information, "Rebooting...");
 
-		    var response = string.Empty;
+
+            var response = string.Empty;
 		    CrestronConsole.SendControlSystemCommand("reboot", ref response);
 	    }
 
-		private static void ProgramReset(uint index)
+		public static void ProgramReset(uint index)
 		{
 			if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Server) return;
+            Debug.LogMessage(LogEventLevel.Information, "Resetting Program {0}...", index);
 
-			if (index <= 0 || index > 10) return;
+            if (index <= 0 || index > 10) return;
 
 			var cmd = string.Format("progreset -p:{0}", index);
 

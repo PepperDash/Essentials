@@ -159,4 +159,13 @@ namespace PepperDash.Essentials.Core
         Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; }
     }
 
+    public interface IHasAccessoryDevices : IKeyName
+    {
+        List<string> AccessoryDeviceKeys { get; }
+    }
+
+    public interface IHasCiscoNavigatorTouchpanel
+    {
+        string CiscoNavigatorTouchpanelKey { get; }
+    }
 }

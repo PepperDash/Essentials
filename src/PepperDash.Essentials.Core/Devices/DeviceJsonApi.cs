@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
@@ -64,7 +64,7 @@ namespace PepperDash.Essentials.Core
 		        action.Params = new object[0];
 		    }
 
-		    CType t = obj.GetType();
+		    Type t = obj.GetType();
 		    try
 		    {
 		        var methods = t.GetMethods().Where(m => m.Name == action.MethodName).ToList();
@@ -84,7 +84,18 @@ namespace PepperDash.Essentials.Core
                                     .Select((p, i) => ConvertType(action.Params[i], p.ParameterType))
                                     .ToArray();
 
-                Task.Run(() => method.Invoke(obj, convertedParams));                
+                Task.Run(() =>
+					{
+						try
+						{
+							Debug.LogMessage(LogEventLevel.Verbose, "Calling method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+							method.Invoke(obj, convertedParams);
+						}
+						catch(Exception e)
+						{
+							Debug.LogMessage(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+						}
+					});                
 
 		        CrestronConsole.ConsoleCommandResponse("Method {0} successfully called on device {1}", method.Name,
 		            action.DeviceKey);
@@ -123,7 +134,7 @@ namespace PepperDash.Essentials.Core
 			if (obj == null)
 				return "{ \"error\":\"No Device\"}";
 
-			CType t = obj.GetType();
+			Type t = obj.GetType();
 			// get the properties and set them into a new collection of NameType wrappers
 			var props = t.GetProperties().Select(p => new PropertyNameType(p, obj));
 			return JsonConvert.SerializeObject(props, Formatting.Indented);
@@ -141,7 +152,7 @@ namespace PepperDash.Essentials.Core
             if(dev == null)
                 return "{ \"error\":\"No Device\"}";
 	
-            object prop = dev.GetType().GetCType().GetProperty(propertyName).GetValue(dev, null);
+            object prop = dev.GetType().GetType().GetProperty(propertyName).GetValue(dev, null);
 
             // var prop = t.GetProperty(propertyName);
             if (prop != null)
@@ -167,7 +178,7 @@ namespace PepperDash.Essentials.Core
 				return "{ \"error\":\"No Device\"}";
 
 			// Package up method names using helper objects
-			CType t = obj.GetType();
+			Type t = obj.GetType();
 			var methods = t.GetMethods()
 				.Where(m => !m.IsSpecialName)
 				.Select(p => new MethodNameParams(p));
@@ -181,7 +192,7 @@ namespace PepperDash.Essentials.Core
 				return "{ \"error\":\"No Device\"}";
 
 			// Package up method names using helper objects
-			CType t = obj.GetType();
+			Type t = obj.GetType();
 			var methods = t.GetMethods()
 				.Where(m => !m.IsSpecialName)
 				.Where(m => m.GetCustomAttributes(typeof(ApiAttribute), true).Any())
@@ -228,7 +239,7 @@ namespace PepperDash.Essentials.Core
 						Debug.LogMessage(LogEventLevel.Information, dev, "  Checking for collection '{0}', index '{1}'", objName, indexStr);
 					}
 
-					CType oType = obj.GetType();
+					Type oType = obj.GetType();
 					var prop = oType.GetProperty(objName);
 					if (prop == null)
 					{
@@ -258,7 +269,7 @@ namespace PepperDash.Essentials.Core
 								obj = indexedPropInfo.GetValue(collection, new object[] { properParam });
 							}
 							// if the index is bad, catch it here.
-							catch (Crestron.SimplSharp.Reflection.TargetInvocationException e)
+							catch (TargetInvocationException e)
 							{
 								if (e.InnerException is ArgumentOutOfRangeException)
 									Debug.LogMessage(LogEventLevel.Information, "  Index Out of range");
@@ -289,7 +300,7 @@ namespace PepperDash.Essentials.Core
             //if (obj == null)
             //    return "{\"error\":\"No object found\"}";
 
-            //CType t = obj.GetType();
+            //Type t = obj.GetType();
 
 
             //// get the properties and set them into a new collection of NameType wrappers
@@ -367,7 +378,7 @@ namespace PepperDash.Essentials.Core
 	}
 
 	[AttributeUsage(AttributeTargets.All)]
-	public class ApiAttribute : CAttribute
+	public class ApiAttribute : Attribute
 	{
 
 	}

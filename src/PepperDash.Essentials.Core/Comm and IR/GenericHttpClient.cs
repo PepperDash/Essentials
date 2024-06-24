@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.Net.Http;
+﻿using Crestron.SimplSharp.Net.Http;
 using PepperDash.Core;
+using System;
 
 namespace PepperDash.Essentials.Core
 {
-	[Obsolete("Please use the builtin HttpClient class instead: https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines")]
+    [Obsolete("Please use the builtin HttpClient class instead: https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines")]
 	public class GenericHttpClient : Device, IBasicCommunication
 	{
 		public HttpClient Client;

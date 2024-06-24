@@ -266,16 +266,16 @@ namespace PepperDash.Essentials.Core
         abstract protected Func<bool> PowerIsOnFeedbackFunc { get; }
 
 
-        public static MockDisplay DefaultDisplay
-        { 
-			get 
-			{
-				if (_DefaultDisplay == null)
-					_DefaultDisplay = new MockDisplay("default", "Default Display");
-				return _DefaultDisplay;
-			} 
-		}
-		static MockDisplay _DefaultDisplay;
+  //      public static MockDisplay DefaultDisplay
+  //      { 
+		//	get 
+		//	{
+		//		if (_DefaultDisplay == null)
+		//			_DefaultDisplay = new MockDisplay("default", "Default Display");
+		//		return _DefaultDisplay;
+		//	} 
+		//}
+		//static MockDisplay _DefaultDisplay;
 
 		public TwoWayDisplayBase(string key, string name)
 			: base(key, name)

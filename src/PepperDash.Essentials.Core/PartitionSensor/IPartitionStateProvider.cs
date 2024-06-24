@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
@@ -13,7 +9,11 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IPartitionStateProvider : IKeyName
     {
+        [JsonIgnore]
         BoolFeedback PartitionPresentFeedback { get; }
+
+        [JsonProperty("partitionPresent")]
+        bool PartitionPresent { get; }
     }
 
     /// <summary>
@@ -21,7 +21,11 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IPartitionController : IPartitionStateProvider
     {
+        [JsonProperty("adjacentRoomKeys")]
         List<string> AdjacentRoomKeys { get; }
+
+        [JsonProperty("isInAutoMode")]
+        bool IsInAutoMode { get; }
 
         void SetPartitionStatePresent();
 

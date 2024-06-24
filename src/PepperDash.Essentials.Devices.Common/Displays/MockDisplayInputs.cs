@@ -54,8 +54,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
     public class MockDisplayInput : ISelectableItem
     {
-        private IHasInputs<string, string> _parent;
-
+        private MockDisplay _parent;
 
         private bool _isSelected;
         
@@ -91,7 +90,12 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
         public void Select()
         {
-            _parent.SetInput(Key);
+            if (!_parent.PowerIsOnFeedback.BoolValue) _parent.PowerOn();
+
+            foreach(var input in _parent.Inputs.Items)
+            {
+                input.Value.IsSelected = input.Key == this.Key;
+            }
         }
     }
 }

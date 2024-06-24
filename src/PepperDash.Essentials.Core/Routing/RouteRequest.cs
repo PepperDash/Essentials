@@ -2,19 +2,22 @@
 {
     public class RouteRequest
     {
-        public IRoutingSink Destination {get; set;}
-        public IRoutingOutputs Source {get; set;}
-        public eRoutingSignalType SignalType {get; set;}
+        public RoutingInputPort DestinationPort { get; set; }
+
+        public RoutingOutputPort SourcePort { get; set; }
+        public IRoutingInputs Destination { get; set; }
+        public IRoutingOutputs Source { get; set; }
+        public eRoutingSignalType SignalType { get; set; }
 
         public void HandleCooldown(object sender, FeedbackEventArgs args)
         {
             var coolingDevice = sender as IWarmingCooling;
-            
-            if(args.BoolValue == false)
+
+            if (args.BoolValue == false)
             {
                 Destination.ReleaseAndMakeRoute(Source, SignalType);
-                
-                if(sender == null) return;
+
+                if (sender == null) return;
 
                 coolingDevice.IsCoolingDownFeedback.OutputChange -= HandleCooldown;
             }

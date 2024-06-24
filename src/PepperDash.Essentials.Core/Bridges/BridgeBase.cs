@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.EthernetCommunication;
@@ -168,7 +168,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
                 Debug.LogMessage(LogEventLevel.Debug, this, "Linking Device: '{0}'", device.Key);
 
-                if (!typeof(IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
+                if (!typeof(IBridgeAdvanced).IsAssignableFrom(device.GetType().GetType()))
                 {
                     Debug.LogMessage(LogEventLevel.Information, this,
                         "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",

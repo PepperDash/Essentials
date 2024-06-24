@@ -12,7 +12,9 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>PepperDash Essentials Devices Common</Title>
     <PackageId>PepperDash.Essentials.Devices.Common</PackageId>
+    <Version>2.0.0-local</Version>
     <InformationalVersion>$(Version)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -28,6 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.20.66" />
-    <PackageReference Include="PepperDashCore" Version="2.0.0-beta-423" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-424" />
   </ItemGroup>
 </Project>

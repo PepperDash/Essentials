@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using System.Reflection;
@@ -9,6 +8,7 @@ using System.Reflection;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Serilog.Events;
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials
 {
@@ -27,24 +27,31 @@ namespace PepperDash.Essentials
         /// </summary>
         static List<LoadedAssembly> LoadedPluginFolderAssemblies;
 
+        public static LoadedAssembly EssentialsAssembly { get; private set; }
+
+        public static LoadedAssembly PepperDashCoreAssembly { get; private set; }
+
+        public static List<LoadedAssembly> EssentialsPluginAssemblies { get; private set; }
+
         /// <summary>
         /// The directory to look in for .cplz plugin packages
         /// </summary>
-        static string _pluginDirectory = Global.FilePathPrefix + "plugins";
+        static string _pluginDirectory => Global.FilePathPrefix + "plugins";
 
         /// <summary>
         /// The directory where plugins will be moved to and loaded from
         /// </summary>
-        static string _loadedPluginsDirectoryPath = _pluginDirectory + Global.DirectorySeparator + "loadedAssemblies";
+        static string _loadedPluginsDirectoryPath => _pluginDirectory + Global.DirectorySeparator + "loadedAssemblies";
 
         // The temp directory where .cplz archives will be unzipped to
-        static string _tempDirectory = _pluginDirectory + Global.DirectorySeparator + "temp";
+        static string _tempDirectory => _pluginDirectory + Global.DirectorySeparator + "temp";
 
 
         static PluginLoader()
         {
             LoadedAssemblies = new List<LoadedAssembly>();
             LoadedPluginFolderAssemblies = new List<LoadedAssembly>();
+            EssentialsPluginAssemblies = new List<LoadedAssembly>();
         }
 
         /// <summary>
@@ -69,6 +76,7 @@ namespace PepperDash.Essentials
                     case ("PepperDashEssentials.dll"):
                         {
                             version = Global.AssemblyVersion;
+                            EssentialsAssembly = new LoadedAssembly(fi.Name, version, assembly);
                             break;
                         }
                     case ("PepperDash_Essentials_Core.dll"):
@@ -81,9 +89,12 @@ namespace PepperDash.Essentials
                             version = Global.AssemblyVersion;
                             break;
                         }
-                    case ("PepperDash_Core.dll"):
+                    case ("PepperDashCore.dll"):
                         {
-                            version = PepperDash.Core.Debug.PepperDashCoreVersion;
+                            Debug.LogMessage(LogEventLevel.Verbose, "Found PepperDash_Core.dll");
+                            version = Debug.PepperDashCoreVersion;
+                            Debug.LogMessage(LogEventLevel.Verbose, "PepperDash_Core Version: {0}", version);
+                            PepperDashCoreAssembly = new LoadedAssembly(fi.Name, version, assembly);
                             break;
                         }
                 }
@@ -151,7 +162,7 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="assembly"></param>
         /// <returns></returns>
-        static string GetAssemblyVersion(Assembly assembly)
+        public static string GetAssemblyVersion(Assembly assembly)
         {
             var ver = assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
             if (ver != null && ver.Length > 0)
@@ -197,12 +208,19 @@ namespace PepperDash.Essentials
         /// <param name="command"></param>
         public static void ReportAssemblyVersions(string command)
         {
-
-            CrestronConsole.ConsoleCommandResponse("Loaded Assemblies:" + CrestronEnvironment.NewLine);
-            foreach (var assembly in LoadedAssemblies)
+            CrestronConsole.ConsoleCommandResponse("Essentials Version: {0}" + CrestronEnvironment.NewLine, Global.AssemblyVersion);
+            CrestronConsole.ConsoleCommandResponse("PepperDash Core Version: {0}" + CrestronEnvironment.NewLine, PepperDashCoreAssembly.Version);
+            CrestronConsole.ConsoleCommandResponse("Essentials Plugin Versions:" + CrestronEnvironment.NewLine);
+            foreach (var assembly in EssentialsPluginAssemblies)
             {
                 CrestronConsole.ConsoleCommandResponse("{0} Version: {1}" + CrestronEnvironment.NewLine, assembly.Name, assembly.Version);
             }
+
+            //CrestronConsole.ConsoleCommandResponse("Loaded Assemblies:" + CrestronEnvironment.NewLine);
+            //foreach (var assembly in LoadedAssemblies)
+            //{
+            //    CrestronConsole.ConsoleCommandResponse("{0} Version: {1}" + CrestronEnvironment.NewLine, assembly.Name, assembly.Version);
+            //}
         }
         /// <summary>
         /// Moves any .dll assemblies not already loaded from the plugins folder to loadedPlugins folder
@@ -382,7 +400,7 @@ namespace PepperDash.Essentials
                             if (typeof (IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract)
                             {
                                 var plugin =
-                                    (IPluginDeviceFactory) Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                                    (IPluginDeviceFactory)Activator.CreateInstance(type);
                                 LoadCustomPlugin(plugin, loadedAssembly);
                             }
                         }
@@ -439,6 +457,9 @@ namespace PepperDash.Essentials
 
             Debug.LogMessage(LogEventLevel.Information, "Loading plugin: {0}", loadedAssembly.Name);
             plugin.LoadTypeFactories();
+
+            if(!EssentialsPluginAssemblies.Contains(loadedAssembly))
+                EssentialsPluginAssemblies.Add(loadedAssembly);
         }
 
         /// <summary>
@@ -493,6 +514,8 @@ namespace PepperDash.Essentials
         /// </summary>
         public static void LoadPlugins()
         {
+            Debug.LogMessage(LogEventLevel.Information, "Attempting to Load Plugins from {_pluginDirectory}", _pluginDirectory);
+
             if (Directory.Exists(_pluginDirectory))
             {
                 Debug.LogMessage(LogEventLevel.Information, "Plugins directory found, checking for plugins");
@@ -521,8 +544,11 @@ namespace PepperDash.Essentials
     /// </summary>
     public class LoadedAssembly
     {
+        [JsonProperty("name")]
         public string Name { get; private set; }
+        [JsonProperty("version")]
         public string Version { get; private set; }
+        [JsonIgnore]
         public Assembly Assembly { get; private set; }
 
         public LoadedAssembly(string name, string version, Assembly assembly)

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Reflection;
+using System.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
@@ -42,7 +42,7 @@ namespace PepperDash.Essentials.Devices.Common
 
         public void PrintExpectedIrCommands()
         {
-            var cmds = typeof (AppleTvIrCommands).GetCType().GetFields(BindingFlags.Public | BindingFlags.Static);
+            var cmds = typeof (AppleTvIrCommands).GetType().GetFields(BindingFlags.Public | BindingFlags.Static);
 
             foreach (var value in cmds.Select(cmd => cmd.GetValue(null)).OfType<string>())
             {

@@ -16,20 +16,41 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Represents a room combination scenario
     /// </summary>
-    public class RoomCombinationScenario: IRoomCombinationScenario
+    public class RoomCombinationScenario: IRoomCombinationScenario, IKeyName
     {
         private RoomCombinationScenarioConfig _config;
 
+        [JsonProperty("key")]
         public string Key { get; set; }
 
+        [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("partitionStates")]
         public List<PartitionState> PartitionStates { get; private set; }
 
+        [JsonProperty("uiMap")]
         public Dictionary<string, string> UiMap { get; set; }
 
         private bool _isActive;
 
+        [JsonProperty("isActive")]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set
+            {
+                if(value == _isActive)
+                {
+                    return;
+                }
+
+                _isActive = value;
+                IsActiveFeedback.FireUpdate();
+            }
+        }
+
+        [JsonIgnore]
         public BoolFeedback IsActiveFeedback { get; private set; }
 
         private List<DeviceActionWrapper> activationActions;
@@ -67,8 +88,7 @@ namespace PepperDash.Essentials.Core
                 }
             }
 
-            _isActive = true;
-            IsActiveFeedback.FireUpdate();
+            IsActive = true;
         }
 
         public void Deactivate()
@@ -83,8 +103,7 @@ namespace PepperDash.Essentials.Core
                 }
             }
 
-            _isActive = false;
-            IsActiveFeedback.FireUpdate();
+            IsActive = false;
         }
 
     }

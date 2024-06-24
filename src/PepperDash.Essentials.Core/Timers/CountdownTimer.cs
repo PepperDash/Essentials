@@ -52,8 +52,8 @@ namespace PepperDash.Essentials.Core
 
                     var timeSpan = FinishTime - DateTime.Now;
 
-                    Debug.LogMessage(LogEventLevel.Verbose, this,
-                        "timeSpan.Minutes == {0}, timeSpan.Seconds == {1}, timeSpan.TotalSeconds == {2}",
+                    Debug.LogMessage(LogEventLevel.Verbose,
+                        "timeSpan.Minutes == {0}, timeSpan.Seconds == {1}, timeSpan.TotalSeconds == {2}", this,
                         timeSpan.Minutes, timeSpan.Seconds, timeSpan.TotalSeconds);
 
                     if (Math.Floor(timeSpan.TotalSeconds) < 60 && Math.Floor(timeSpan.TotalSeconds) >= 0) //ignore milliseconds
@@ -103,6 +103,7 @@ namespace PepperDash.Essentials.Core
         public void Reset()
         {
             _isRunning = false;
+            IsRunningFeedback.FireUpdate();
             Start();
         }
 
@@ -133,7 +134,11 @@ namespace PepperDash.Essentials.Core
         void StopHelper()
         {
             if (_secondTimer != null)
+            {
                 _secondTimer.Stop();
+                _secondTimer = null;
+            }
+
             _isRunning = false;
             IsRunningFeedback.FireUpdate(); 
         }

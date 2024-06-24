@@ -17,6 +17,6 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         Dictionary<TKey, ISelectableItem> Items { get; set; }
 
         [JsonProperty("currentItem")]
-        string CurrentItem { get; set; }
+        TKey CurrentItem { get; set; }
     }
 }

@@ -239,5 +239,13 @@ namespace PepperDash.Essentials.Core
         /// HdBaseTOut
         /// </summary>
         public const string HdBaseTOut = "hdBaseTOut";
+        /// <summary>
+        /// SdiIn
+        /// </summary>
+        public const string SdiIn = "sdiIn";
+        /// <summary>
+        /// SdiOut
+        /// </summary>
+        public const string SdiOut = "sdiOut";
     }
 }

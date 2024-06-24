@@ -80,7 +80,7 @@ namespace PepperDash.Essentials.Core.Web
 			{
 				Type = device.Key,
 				Description = device.Value.Description,
-				CType = device.Value.CType == null ? "---": device.Value.CType.ToString()
+				CType = device.Value.Type == null ? "---": device.Value.Type.ToString()
 			};
 		}
 	}

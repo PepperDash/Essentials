@@ -23,7 +23,10 @@ namespace PepperDash.Essentials.Core.Config
 		public Dictionary<string, Dictionary<string, SourceListItem>> SourceLists { get; set; }
 
         [JsonProperty("destinationLists")]
-        public Dictionary<string, Dictionary<string,DestinationListItem>> DestinationLists { get; set; }
+        public Dictionary<string, Dictionary<string, DestinationListItem>> DestinationLists { get; set; }
+
+        [JsonProperty("audioControlPointLists")]
+        public Dictionary<string, AudioControlPointListItem> AudioControlPointLists { get; set; }
 
         [JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
@@ -37,6 +40,7 @@ namespace PepperDash.Essentials.Core.Config
             Devices = new List<DeviceConfig>();
             SourceLists = new Dictionary<string, Dictionary<string, SourceListItem>>();
             DestinationLists = new Dictionary<string, Dictionary<string, DestinationListItem>>();
+            AudioControlPointLists = new Dictionary<string, AudioControlPointListItem>();
             TieLines = new List<TieLineConfig>();
             JoinMaps = new Dictionary<string, JObject>();
         }
@@ -55,8 +59,8 @@ namespace PepperDash.Essentials.Core.Config
         /// <summary>
         /// Retrieves a DestinationListItem based on the key
         /// </summary>
-        /// <param name="key">key of the item to retrieve</param>
-        /// <returns>DestinationListItem if the key exists, null otherwise</returns>
+        /// <param name="key">key of the list to retrieve</param>
+        /// <returns>DestinationList if the key exists, null otherwise</returns>
 	    public Dictionary<string, DestinationListItem> GetDestinationListForKey(string key)
 	    {
 	        if (string.IsNullOrEmpty(key) || !DestinationLists.ContainsKey(key))
@@ -65,7 +69,20 @@ namespace PepperDash.Essentials.Core.Config
 	        }
 
 	        return DestinationLists[key];
-	    } 
+	    }
+
+        /// <summary>
+        /// Retrieves a AudioControlPointList based on the key
+        /// </summary>
+        /// <param name="key">key of the list to retrieve</param>
+        /// <returns>AudioControlPointList if the key exists, null otherwise</returns>
+        public AudioControlPointListItem GetAudioControlPointListForKey(string key)
+        {
+            if (string.IsNullOrEmpty(key) || !AudioControlPointLists.ContainsKey(key))
+                return null;
+
+            return AudioControlPointLists[key];
+        }
 
         /// <summary>
         /// Checks Devices for an item with a Key that matches and returns it if found. Otherwise, retunes null

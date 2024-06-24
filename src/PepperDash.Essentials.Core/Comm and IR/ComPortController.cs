@@ -101,6 +101,7 @@ namespace PepperDash.Essentials.Core
 				if (StreamDebugging.RxStreamDebuggingIsEnabled)
 					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", ComTextHelper.GetEscapedText(bytes));
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
+				return;
             }
             var textHandler = TextReceived;
             if (textHandler != null)
@@ -108,7 +109,10 @@ namespace PepperDash.Essentials.Core
 				if (StreamDebugging.RxStreamDebuggingIsEnabled)
 					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", s);
                 textHandler(this, new GenericCommMethodReceiveTextArgs(s));
+				return;
             }
+
+			Debug.LogMessage(LogEventLevel.Warning, this, "Received data but no handler is registered");
         }
 
 		public override bool Deactivate()

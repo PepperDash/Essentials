@@ -59,28 +59,81 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public IMobileControlRoomMessenger MobileControlRoomBridge { get; private set; }
 
+        protected const string _defaultListKey = "default";
+
         /// <summary>
         /// The config name of the source list
         /// </summary>
 		/// 
-		protected string _SourceListKey;
+		private string _sourceListKey;
         public string SourceListKey {
 			get
 			{
-				return _SourceListKey;
-			}
-			private set
-			{
-                if (value != _SourceListKey)
+                if(string.IsNullOrEmpty(_sourceListKey))
                 {
-                    _SourceListKey = value;
+                    return _defaultListKey;
+                }
+                else
+                {
+                    return _sourceListKey;
+                }
+			}
+			protected set
+			{
+                if (value != _sourceListKey)
+                {
+                    _sourceListKey = value;
                 }
 			}
 		}
 
-        public string DestinationListKey { get; private set; }
+        private string _destinationListKey;
+        public string DestinationListKey
+        {
+            get 
+            {
+                if (string.IsNullOrEmpty(_destinationListKey))
+                {
+                    return _defaultListKey;
+                }
+                else
+                {
+                    return _destinationListKey;
+                }
+            }
+            protected set
+            {
+                if (value != _destinationListKey)
+                {
+                    _destinationListKey = value;
+                }
+            }
+        }
 
-        protected const string _defaultSourceListKey = "default";
+        private string _audioControlPointListKey;
+        public string AudioControlPointListKey
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_audioControlPointListKey))
+                {
+                    return _defaultListKey;
+                }
+                else
+                {
+                    return _destinationListKey;
+                }
+            }
+            protected set
+            {
+                if (value != _audioControlPointListKey)
+                {
+                    _audioControlPointListKey = value;
+                }
+            }
+        }
+
+
 
         /// <summary>
         /// Timer used for informing the UIs of a shutdown
@@ -141,6 +194,7 @@ namespace PepperDash.Essentials.Core
                 if (!ShutdownPromptTimer.IsRunningFeedback.BoolValue)
                     ShutdownType = eShutdownType.None;
             };
+
             ShutdownPromptTimer.HasFinished += (o, a) => Shutdown(); // Shutdown is triggered 
 
             ShutdownPromptSeconds = 60;
@@ -191,7 +245,7 @@ namespace PepperDash.Essentials.Core
             }
             else
             {
-                sourceListKey = _defaultSourceListKey;
+                sourceListKey = _defaultListKey;
             }
         }
 
