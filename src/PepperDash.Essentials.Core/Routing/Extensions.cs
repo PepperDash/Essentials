@@ -31,10 +31,10 @@ namespace PepperDash.Essentials.Core
 
         private static void ReleaseAndMakeRoute(IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort = null, RoutingOutputPort sourcePort = null)
         {
-            if(destination == null) throw new ArgumentNullException(nameof(destination));
-            if(source == null) throw new ArgumentNullException(nameof(source));
-            if(destinationPort == null) Debug.LogMessage(LogEventLevel.Verbose, "Destination port is null");
-            if(sourcePort == null) Debug.LogMessage(LogEventLevel.Verbose, "Source port is null");
+            if (destination == null) throw new ArgumentNullException(nameof(destination));
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (destinationPort == null) Debug.LogMessage(LogEventLevel.Verbose, "Destination port is null");
+            if (sourcePort == null) Debug.LogMessage(LogEventLevel.Verbose, "Source port is null");
 
             var routeRequest = new RouteRequest
             {
@@ -91,16 +91,22 @@ namespace PepperDash.Essentials.Core
             if (request.Source == null)
                 return;
 
-            var newRoute = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
+            var (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
 
-            if (newRoute == null)
+            if (audioOrSingleRoute == null && videoRoute == null)
                 return;
 
-            RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(newRoute);
+            RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(audioOrSingleRoute);
+
+            if (videoRoute != null)
+            {
+                RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(videoRoute);
+            }
 
             Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
 
-            newRoute.ExecuteRoutes();
+            audioOrSingleRoute.ExecuteRoutes();
+            videoRoute?.ExecuteRoutes();
         }
 
         /// <summary>
@@ -135,64 +141,58 @@ namespace PepperDash.Essentials.Core
         /// of an audio/video route are discovered a route descriptor is returned.  If no route is 
         /// discovered, then null is returned
         /// </summary>
-        public static RouteDescriptor GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort, RoutingOutputPort sourcePort)
+        public static (RouteDescriptor, RouteDescriptor) GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort, RoutingOutputPort sourcePort)
         {
-            var routeDescriptor = new RouteDescriptor(source, destination, signalType);
-
             // if it's a single signal type, find the route
             if (!signalType.HasFlag(eRoutingSignalType.AudioVideo))
             {
-                Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {0}", null, source.Key);
+                var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, signalType);
+                Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
 
-                if (!destination.GetRouteToSource(source, null, null, signalType, 0, routeDescriptor, destinationPort, sourcePort))
-                    routeDescriptor = null;
+                if (!destination.GetRouteToSource(source, null, null, signalType, 0, singleTypeRouteDescriptor, destinationPort, sourcePort))
+                    singleTypeRouteDescriptor = null;
 
-                foreach (var route in routeDescriptor.Routes)
+                foreach (var route in singleTypeRouteDescriptor.Routes)
                 {
-                    Debug.LogMessage(LogEventLevel.Verbose,
-    @"Route for device: {route}
-InputPort: {InputPort}
-OutputPort: {OutputPort}",
-    destination,
-    route.SwitchingDevice.Key,
-    route.InputPort,
-    route.OutputPort);
+                    Debug.LogMessage(LogEventLevel.Verbose, "Route for device: {route}", destination, route.ToString());
                 }
 
-                return routeDescriptor;
+                return (singleTypeRouteDescriptor, null);
             }
             // otherwise, audioVideo needs to be handled as two steps.
 
-            Debug.LogMessage(LogEventLevel.Debug, "Attempting to build audio and video routes from {0}", destination, source.Key);
+            Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key);
 
-            var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, routeDescriptor, destinationPort, sourcePort);
+            var audioRouteDescriptor = new RouteDescriptor(source, destination, eRoutingSignalType.Audio);
+
+            var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
 
             if (!audioSuccess)
                 Debug.LogMessage(LogEventLevel.Debug, "Cannot find audio route to {0}", destination, source.Key);
 
-            var videoSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Video, 0, routeDescriptor, destinationPort, sourcePort);
+            var videoRouteDescriptor = new RouteDescriptor(source, destination, eRoutingSignalType.Video);
+
+            var videoSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Video, 0, videoRouteDescriptor, destinationPort, sourcePort);
 
             if (!videoSuccess)
                 Debug.LogMessage(LogEventLevel.Debug, "Cannot find video route to {0}", destination, source.Key);
 
-            foreach (var route in routeDescriptor.Routes)
+            foreach (var route in audioRouteDescriptor.Routes)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, 
-@"Route for device: {route}
-InputPort: {InputPort}
-OutputPort: {OutputPort}", 
-destination, 
-route.SwitchingDevice.Key, 
-route.InputPort, 
-route.OutputPort);
+                Debug.LogMessage(LogEventLevel.Verbose, "Audio route for device: {route}", destination, route.ToString());
+            }
+
+            foreach (var route in videoRouteDescriptor.Routes)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "Video route for device: {route}", destination, route.ToString());
             }
 
 
             if (!audioSuccess && !videoSuccess)
-                routeDescriptor = null;
+                return (null, null);
 
 
-            return routeDescriptor;
+            return (audioRouteDescriptor, videoRouteDescriptor);
         }
 
         /// <summary>
@@ -214,7 +214,7 @@ route.OutputPort);
         {
             cycle++;
 
-            Debug.LogMessage(LogEventLevel.Verbose, "GetRouteToSource: {0} {1}--> {2}", null, cycle, source.Key, destination.Key);
+            Debug.LogMessage(LogEventLevel.Verbose, "GetRouteToSource: {cycle} {sourceKey}:{sourcePortKey}--> {destinationKey}:{destinationPortKey} {type}", null, cycle, source.Key, sourcePort?.Key ?? "auto", destination.Key, destinationPort?.Key ?? "auto", signalType.ToString());
 
             RoutingInputPort goodInputPort = null;
 
@@ -259,7 +259,7 @@ route.OutputPort);
             }
             else // no direct-connect.  Walk back devices.
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "is not directly connected to {0}. Walking down tie lines", destination, source.Key);
+                Debug.LogMessage(LogEventLevel.Verbose, "is not directly connected to {sourceKey}. Walking down tie lines", destination, source.Key);
 
                 // No direct tie? Run back out on the inputs' attached devices... 
                 // Only the ones that are routing devices
@@ -277,13 +277,13 @@ route.OutputPort);
                     // Check if this previous device has already been walked
                     if (alreadyCheckedDevices.Contains(midpointDevice))
                     {
-                        Debug.LogMessage(LogEventLevel.Verbose, "Skipping input {0} on {1}, this was already checked", destination, midpointDevice.Key, destination.Key);
+                        Debug.LogMessage(LogEventLevel.Verbose, "Skipping input {midpointDeviceKey} on {destinationKey}, this was already checked", destination, midpointDevice.Key, destination.Key);
                         continue;
                     }
 
                     var midpointOutputPort = tieLine.SourcePort;
 
-                    Debug.LogMessage(LogEventLevel.Verbose, "Trying to find route on {0}", destination, midpointDevice.Key);
+                    Debug.LogMessage(LogEventLevel.Verbose, "Trying to find route on {midpointDeviceKey}", destination, midpointDevice.Key);
 
                     // haven't seen this device yet.  Do it.  Pass the output port to the next
                     // level to enable switching on success
@@ -293,12 +293,8 @@ route.OutputPort);
                     if (upstreamRoutingSuccess)
                     {
                         Debug.LogMessage(LogEventLevel.Verbose, "Upstream device route found", destination);
-                        Debug.LogMessage(LogEventLevel.Verbose, "Route found on {0}", destination, midpointDevice.Key);
-                        Debug.LogMessage(LogEventLevel.Verbose, 
-@"TieLine:\n
-SourcePort: {SourcePort}\n
-DestinationPort: {DestinationPort}\n"
-, destination, tieLine.SourcePort, tieLine.DestinationPort);
+                        Debug.LogMessage(LogEventLevel.Verbose, "Route found on {midpointDeviceKey}", destination, midpointDevice.Key);
+                        Debug.LogMessage(LogEventLevel.Verbose, "TieLine: SourcePort: {SourcePort} DestinationPort: {DestinationPort}", destination, tieLine.SourcePort, tieLine.DestinationPort);
                         goodInputPort = tieLine.DestinationPort;
                         break; // Stop looping the inputs in this cycle
                     }
