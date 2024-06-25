@@ -193,6 +193,7 @@ namespace PepperDash.Essentials.Core
         defaultDisplay,
         leftDisplay,
         rightDisplay,
+		centerDisplay,
         programAudio,
         codecContent
     }

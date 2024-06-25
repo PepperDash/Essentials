@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.Core.Config
 {
@@ -27,6 +28,9 @@ namespace PepperDash.Essentials.Core.Config
 
         [JsonProperty("audioControlPointLists")]
         public Dictionary<string, AudioControlPointListItem> AudioControlPointLists { get; set; }
+
+        [JsonProperty("cameraLists")]
+        public Dictionary<string, Dictionary<string, CameraListItem>> CameraLists { get; set; }
 
         [JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
