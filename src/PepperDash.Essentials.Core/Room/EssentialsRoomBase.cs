@@ -133,7 +133,28 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-
+        private string _cameraListKey;
+        public string CameraListKey
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_cameraListKey))
+                {
+                    return _defaultListKey;
+                }
+                else
+                {
+                    return _cameraListKey;
+                }
+            }
+            protected set
+            {
+                if (value != _cameraListKey)
+                {
+                    _cameraListKey = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Timer used for informing the UIs of a shutdown
