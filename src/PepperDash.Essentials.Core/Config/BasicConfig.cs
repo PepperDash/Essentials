@@ -89,6 +89,17 @@ namespace PepperDash.Essentials.Core.Config
         }
 
         /// <summary>
+        /// Checks CameraLists for a given list and returns it if found. Otherwise, returns null
+        /// </summary>
+        public Dictionary<string, CameraListItem> GetCameraListForKey(string key)
+        {
+            if (string.IsNullOrEmpty(key) || !CameraLists.ContainsKey(key))
+                return null;
+
+            return CameraLists[key];
+        }
+
+        /// <summary>
         /// Checks Devices for an item with a Key that matches and returns it if found. Otherwise, retunes null
         /// </summary>
         /// <param name="key">Key of desired device</param>

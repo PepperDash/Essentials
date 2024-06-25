@@ -31,6 +31,8 @@ namespace PepperDash.Essentials.Core
 
         string AudioControlPointListKey { get; }
 
+        string CameraListKey { get; }
+
         SecondsCountdownTimer ShutdownPromptTimer { get; }
         int ShutdownPromptSeconds { get; }
         int ShutdownVacancySeconds { get; }
