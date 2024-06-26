@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core.Devices
+namespace PepperDash.Essentials.Core
 {
     public class CameraListItem
     {
