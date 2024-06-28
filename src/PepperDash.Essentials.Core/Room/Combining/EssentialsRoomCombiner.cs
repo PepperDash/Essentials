@@ -132,8 +132,6 @@ namespace PepperDash.Essentials.Core
 
         void PartitionPresentFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
-            if (!IsInAutoMode) return;
-
             StartDebounceTimer();
         }
 
@@ -239,6 +237,8 @@ namespace PepperDash.Essentials.Core
             {
                 partition.SetAutoMode();
             }
+
+            DetermineRoomCombinationScenario();
         }
 
         public void SetManualMode()

@@ -87,6 +87,8 @@ namespace PepperDash.Essentials.Core
 
         public void SetAutoMode()
         {
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Setting {Key} to Auto Mode", this);
+
             IsInAutoMode = true;
             if (PartitionPresentFeedback != null)
             {
@@ -106,6 +108,8 @@ namespace PepperDash.Essentials.Core
 
         public void SetManualMode()
         {
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Setting {Key} to Manual Mode", this);
+
             IsInAutoMode = false;
             if (PartitionPresentFeedback != null)
             {
