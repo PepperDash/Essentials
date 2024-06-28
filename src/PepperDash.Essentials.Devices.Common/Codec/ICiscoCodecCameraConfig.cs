@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     {
         void SetCameraAssignedSerialNumber(uint cameraId, string serialNumber);
 
-        void SetCameraName(uint videoConnecterId, string name);
+        void SetCameraName(uint videoConnectorId, string name);
 
         void SetInputSourceType(uint videoConnectorId, eCiscoCodecInputSourceType sourceType);
     }
