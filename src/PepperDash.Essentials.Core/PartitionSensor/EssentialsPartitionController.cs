@@ -77,7 +77,14 @@ namespace PepperDash.Essentials.Core
         {
             if (IsInAutoMode)
             {
-                PartitionPresentFeedback.FireUpdate();
+                if(e.BoolValue)
+                {
+                    PartitionPresent = true;
+                }
+                else
+                {
+                    PartitionPresent = false;
+                }
             }
         }
 
@@ -132,7 +139,6 @@ namespace PepperDash.Essentials.Core
             if (!IsInAutoMode)
             {
                 PartitionPresent = true;
-                PartitionPresentFeedback.FireUpdate();
             }
         }
 
@@ -141,7 +147,6 @@ namespace PepperDash.Essentials.Core
             if (!IsInAutoMode)
             {
                 PartitionPresent = false;
-                PartitionPresentFeedback.FireUpdate();
             }
         }
 
