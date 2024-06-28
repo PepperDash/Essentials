@@ -45,6 +45,7 @@ namespace PepperDash.Essentials.Core.Config
             SourceLists = new Dictionary<string, Dictionary<string, SourceListItem>>();
             DestinationLists = new Dictionary<string, Dictionary<string, DestinationListItem>>();
             AudioControlPointLists = new Dictionary<string, AudioControlPointListItem>();
+            CameraLists = new Dictionary<string, Dictionary<string, CameraListItem>>();
             TieLines = new List<TieLineConfig>();
             JoinMaps = new Dictionary<string, JObject>();
         }
