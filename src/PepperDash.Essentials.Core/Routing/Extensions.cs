@@ -1,8 +1,10 @@
-﻿using PepperDash.Core;
-using Serilog.Events;
+﻿using Serilog.Events;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Debug = PepperDash.Core.Debug;
 
 
 namespace PepperDash.Essentials.Core
@@ -21,8 +23,13 @@ namespace PepperDash.Essentials.Core
         /// and then attempts a new Route and if sucessful, stores that RouteDescriptor
         /// in RouteDescriptorCollection.DefaultCollection
         /// </summary>
+        [MethodImpl(MethodImplOptions.NoInlining)] // REMOVE ME
         public static void ReleaseAndMakeRoute(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, string destinationPortKey = "", string sourcePortKey = "")
         {
+            // Remove this line before committing!!!!!
+            var frame = new StackFrame(1, true);
+            Debug.LogMessage(LogEventLevel.Information, "ReleaseAndMakeRoute Called from {method} with params {destinationKey}:{sourceKey}:{signalType}:{destinationPortKey}:{sourcePortKey}", frame.GetMethod().Name, destination.Key, source.Key, signalType.ToString(), destinationPortKey, sourcePortKey);
+
             var inputPort = string.IsNullOrEmpty(destinationPortKey) ? null : destination.InputPorts.FirstOrDefault(p => p.Key == destinationPortKey);
             var outputPort = string.IsNullOrEmpty(sourcePortKey) ? null : source.OutputPorts.FirstOrDefault(p => p.Key == sourcePortKey);
 
@@ -33,8 +40,8 @@ namespace PepperDash.Essentials.Core
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
             if (source == null) throw new ArgumentNullException(nameof(source));
-            if (destinationPort == null) Debug.LogMessage(LogEventLevel.Verbose, "Destination port is null");
-            if (sourcePort == null) Debug.LogMessage(LogEventLevel.Verbose, "Source port is null");
+            if (destinationPort == null) Debug.LogMessage(LogEventLevel.Information, "Destination port is null");
+            if (sourcePort == null) Debug.LogMessage(LogEventLevel.Information, "Source port is null");
 
             var routeRequest = new RouteRequest
             {
@@ -57,7 +64,7 @@ namespace PepperDash.Essentials.Core
 
                 RouteRequests[destination.Key] = routeRequest;
 
-                Debug.LogMessage(LogEventLevel.Verbose, "Device: {0} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {1}", null, destination.Key, routeRequest.Source.Key);
+                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
 
                 return;
             }
@@ -71,14 +78,14 @@ namespace PepperDash.Essentials.Core
 
                 RouteRequests.Add(destination.Key, routeRequest);
 
-                Debug.LogMessage(LogEventLevel.Verbose, "Device: {0} is cooling down.  Storing route request to route to source key: {1}", null, destination.Key, routeRequest.Source.Key);
+                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down.  Storing route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
                 return;
             }
 
             if (RouteRequests.ContainsKey(destination.Key) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == false)
             {
                 RouteRequests.Remove(destination.Key);
-                Debug.LogMessage(LogEventLevel.Verbose, "Device: {0} is NOT cooling down.  Removing stored route request and routing to source key: {1}", null, destination.Key, routeRequest.Source.Key);
+                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
             }
 
             destination.ReleaseRoute();

@@ -1,22 +1,15 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
+﻿using Newtonsoft.Json;
 using PepperDash.Core;
-
-using Newtonsoft.Json;
+using PepperDash.Core.Logging;
 using Serilog.Events;
+using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// Represents a room combination scenario
     /// </summary>
-    public class RoomCombinationScenario: IRoomCombinationScenario, IKeyName
+    public class RoomCombinationScenario : IRoomCombinationScenario, IKeyName
     {
         private RoomCombinationScenarioConfig _config;
 
@@ -40,7 +33,7 @@ namespace PepperDash.Essentials.Core
             get { return _isActive; }
             set
             {
-                if(value == _isActive)
+                if (value == _isActive)
                 {
                     return;
                 }
@@ -78,12 +71,13 @@ namespace PepperDash.Essentials.Core
 
         public void Activate()
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Activating Scenario: '{0}' with {1} action(s) defined", Name, activationActions.Count);   
+            Debug.LogMessage(LogEventLevel.Debug, "Activating Scenario: '{name}' with {activationActionCount} action(s) defined", this, Name, activationActions.Count);
 
             if (activationActions != null)
             {
                 foreach (var action in activationActions)
                 {
+                    this.LogDebug("Running Activation action {@action}", action);
                     DeviceJsonApi.DoDeviceAction(action);
                 }
             }
@@ -93,12 +87,13 @@ namespace PepperDash.Essentials.Core
 
         public void Deactivate()
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Deactivating Scenario: '{0}' with {1} action(s) defined", Name, deactivationActions.Count);
+            Debug.LogMessage(LogEventLevel.Debug, "Deactivating Scenario: '{name}' with {deactivationActionCount} action(s) defined", this, Name, deactivationActions.Count);
 
             if (deactivationActions != null)
             {
                 foreach (var action in deactivationActions)
                 {
+                    this.LogDebug("Running deactivation action {@action}", action);
                     DeviceJsonApi.DoDeviceAction(action);
                 }
             }

@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Crestron.SimplSharp;
+using PepperDash.Core;
+using PepperDash.Core.Logging;
+using Serilog.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp;
-
-using PepperDash.Core;
-using Serilog.Events;
-using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Core
 {
@@ -35,7 +34,7 @@ namespace PepperDash.Essentials.Core
             }
             set
             {
-                if(value == _isInAutoMode)
+                if (value == _isInAutoMode)
                 {
                     return;
                 }
@@ -93,7 +92,7 @@ namespace PepperDash.Essentials.Core
             });
         }
 
-        void CreateScenarios()
+        private void CreateScenarios()
         {
             foreach (var scenarioConfig in _propertiesConfig.Scenarios)
             {
@@ -102,21 +101,20 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-        void SetRooms()
+        private void SetRooms()
         {
             _rooms = new List<IEssentialsRoom>();
 
             foreach (var roomKey in _propertiesConfig.RoomKeys)
             {
-                var room = DeviceManager.GetDeviceForKey(roomKey) as IEssentialsRoom;
-                if (room != null)
+                if (DeviceManager.GetDeviceForKey(roomKey) is IEssentialsRoom room)
                 {
                     _rooms.Add(room);
                 }
             }
         }
 
-        void SetupPartitionStateProviders()
+        private void SetupPartitionStateProviders()
         {
             foreach (var pConfig in _propertiesConfig.Partitions)
             {
@@ -130,18 +128,18 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-        void PartitionPresentFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        private void PartitionPresentFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
             StartDebounceTimer();
         }
 
-        void StartDebounceTimer()
+        private void StartDebounceTimer()
         {
             // default to 500ms for manual mode
             var time = 500;
 
             // if in auto mode, debounce the scenario change
-            if(IsInAutoMode) time = _scenarioChangeDebounceTimeSeconds * 1000;
+            if (IsInAutoMode) time = _scenarioChangeDebounceTimeSeconds * 1000;
 
             if (_scenarioChangeDebounceTimer == null)
             {
@@ -156,7 +154,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Determines the current room combination scenario based on the state of the partition sensors
         /// </summary>
-        void DetermineRoomCombinationScenario()
+        private void DetermineRoomCombinationScenario()
         {
             if (_scenarioChangeDebounceTimer != null)
             {
@@ -164,13 +162,19 @@ namespace PepperDash.Essentials.Core
                 _scenarioChangeDebounceTimer = null;
             }
 
+            this.LogInformation("Determining Combination Scenario");
+
             var currentScenario = RoomCombinationScenarios.FirstOrDefault((s) =>
             {
+                this.LogDebug("Checking scenario {scenarioKey}", s.Key);
                 // iterate the partition states
                 foreach (var partitionState in s.PartitionStates)
                 {
+                    this.LogDebug("checking PartitionState {partitionStateKey}", partitionState.PartitionKey);
                     // get the partition by key
                     var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionState.PartitionKey));
+
+                    this.LogDebug("Expected State: {partitionPresent} Actual State: {partitionState}", partitionState.PartitionPresent, partition.PartitionPresentFeedback.BoolValue);
 
                     if (partition != null && partitionState.PartitionPresent != partition.PartitionPresentFeedback.BoolValue)
                     {
@@ -184,6 +188,7 @@ namespace PepperDash.Essentials.Core
 
             if (currentScenario != null)
             {
+                this.LogInformation("Found combination Scenario {scenarioKey}", currentScenario.Key);
                 CurrentScenario = currentScenario;
             }
         }
@@ -253,7 +258,7 @@ namespace PepperDash.Essentials.Core
 
         public void ToggleMode()
         {
-            if(IsInAutoMode)
+            if (IsInAutoMode)
             {
                 SetManualMode();
             }
