@@ -104,6 +104,7 @@ namespace PepperDash.Essentials.Core
             {
                 _partitionSensor.PartitionPresentFeedback.OutputChange -= PartitionPresentFeedback_OutputChange;
                 _partitionSensor.PartitionPresentFeedback.OutputChange += PartitionPresentFeedback_OutputChange;
+                PartitionPresent = _partitionSensor.PartitionPresentFeedback.BoolValue;
             }
 
             PartitionPresentFeedback.FireUpdate();
@@ -126,6 +127,7 @@ namespace PepperDash.Essentials.Core
             if (_partitionSensor != null)
             {
                 _partitionSensor.PartitionPresentFeedback.OutputChange -= PartitionPresentFeedback_OutputChange;
+                PartitionPresent = _partitionSensor.PartitionPresentFeedback.BoolValue;
             }
 
             PartitionPresentFeedback.FireUpdate();
@@ -137,6 +139,7 @@ namespace PepperDash.Essentials.Core
             if (!IsInAutoMode)
             {
                 PartitionPresent = true;
+                PartitionPresentFeedback.FireUpdate();
             }
         }
 
@@ -145,6 +148,7 @@ namespace PepperDash.Essentials.Core
             if (!IsInAutoMode)
             {
                 PartitionPresent = false;
+                PartitionPresentFeedback.FireUpdate();
             }
         }
 
