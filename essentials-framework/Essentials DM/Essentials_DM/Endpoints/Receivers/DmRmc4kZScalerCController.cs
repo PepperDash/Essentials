@@ -89,6 +89,9 @@ namespace PepperDash.Essentials.DM
 
             VideoOutputResolutionFeedback = new StringFeedback(() => _rmc.HdmiOutput.GetVideoResolutionString());
 
+			VideoWallModeRawFeedback = new IntFeedback("ScalerVideoWallModeRaw",
+				() => (int)_rmc.Scaler.WallModeRawFeedback.UShortValue);
+
             InputPorts = new RoutingPortCollection<RoutingInputPort> { DmIn, HdmiIn };
             OutputPorts = new RoutingPortCollection<RoutingOutputPort> { HdmiOut };
 
@@ -256,12 +259,12 @@ namespace PepperDash.Essentials.DM
 
         #region IhasWallMode Members
 
-        public void SetWallMode(ushort walLMode)
+        public void SetWallMode(ushort wallMode)
         {
-            EndpointScalerOutput.eWall wallvalue;
+            EndpointScalerOutput.eWall wallValue;
 
-            if (WallModes.TryGetValue(walLMode, out wallvalue))
-                _rmc.Scaler.WallMode = wallvalue;
+            if (WallModes.TryGetValue(wallMode, out wallValue))
+                _rmc.Scaler.WallMode = wallValue;
         }
 
         #endregion
@@ -271,7 +274,16 @@ namespace PepperDash.Essentials.DM
             _rmc.Scaler.WallModeRaw.UShortValue = wallMode;
         }
 
-        void Scaler_OutputChange(object scaler ScalerOutputEventArgs args)
+		void Scaler_OutputChange(EndpointScalerOutput scalerOutput, ScalerOutputEventArgs args) 
+		{
+			switch (args.EventId)
+			{
+				case ScalerOutputEventIds.WallModeFeedbackEventId:
+					VideoWallModeRawFeedback.FireUpdate();
+					break;
+			}
+					
+		}
         
     }
 }
