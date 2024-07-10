@@ -91,7 +91,7 @@ namespace PepperDash_Essentials_DM
 
     public interface IhasWallMode
     {
-        void SeteWallMode(ushort walLMode);
+        void SetWallMode(ushort walLMode);
     }
 
 }

@@ -27,6 +27,7 @@ namespace PepperDash.Essentials.DM
         public IntFeedback DmInHdcpStateFeedback { get; private set; }
         public IntFeedback HdmiInHdcpStateFeedback { get; private set; }
 
+
         public BoolFeedback HdmiVideoSyncFeedback { get; private set; }
 
         private Dictionary<ushort, EndpointScalerOutput.eWall> WallModes;
@@ -95,6 +96,7 @@ namespace PepperDash.Essentials.DM
             _rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
             _rmc.HdmiIn.InputStreamChange += InputStreamChangeEvent;
             _rmc.DmInput.InputStreamChange += InputStreamChangeEvent;
+            _rmc.Scaler.OutputChange += Scaler_OutputChange;
 
             _rmc.OnlineStatusChange += _rmc_OnlineStatusChange;
 
@@ -254,7 +256,7 @@ namespace PepperDash.Essentials.DM
 
         #region IhasWallMode Members
 
-        public void SeteWallMode(ushort walLMode)
+        public void SetWallMode(ushort walLMode)
         {
             EndpointScalerOutput.eWall wallvalue;
 
@@ -263,5 +265,13 @@ namespace PepperDash.Essentials.DM
         }
 
         #endregion
+
+        public void SetWallModeRaw(ushort wallMode)
+        {
+            _rmc.Scaler.WallModeRaw.UShortValue = wallMode;
+        }
+
+        void Scaler_OutputChange(object scaler ScalerOutputEventArgs args)
+        
     }
 }
