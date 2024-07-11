@@ -276,13 +276,26 @@ namespace PepperDash.Essentials.DM
 
 		void Scaler_OutputChange(EndpointScalerOutput scalerOutput, ScalerOutputEventArgs args) 
 		{
+			if (scalerOutput == null)
+			{
+				Debug.Console(1, this, "Scaler Output object is null");
+				return;
+			}
+			if (args == null)
+			{
+				Debug.Console(1, this, "Scaler Output Args are null");
+				return;
+			}
+			Debug.Console(2, this, "Scaler Event ID: {0}", args.EventId);
 			switch (args.EventId)
 			{
 				case ScalerOutputEventIds.WallModeFeedbackEventId:
 					VideoWallModeRawFeedback.FireUpdate();
 					break;
-			}
-					
+				default:
+					Debug.Console(2, this, "Scaler Default Unhandled Event ID: {0}", args.EventId);
+					break;
+			}			
 		}
         
     }

@@ -177,6 +177,10 @@ namespace PepperDash.Essentials.DM
                 trilist.SetUShortSigAction(joinMap.ScalerOutWallMode.JoinNumber, a => dmRmcScalerWithVideowall.SetWallMode(a));
                 trilist.SetUShortSigAction(joinMap.ScalerOutWallModeRaw.JoinNumber, a => dmRmcScalerWithVideowall.SetWallModeRaw(a));
 
+				if (rmc.VideoWallModeFeedback != null)
+					rmc.VideoWallModeFeedback.LinkInputSig(trilist.UShortInput[joinMap.ScalerOutWallMode.JoinNumber]);
+				if (rmc.VideoWallModeRawFeedback != null)
+					rmc.VideoWallModeRawFeedback.LinkInputSig(trilist.UShortInput[joinMap.ScalerOutWallModeRaw.JoinNumber]);
 
             }
 
