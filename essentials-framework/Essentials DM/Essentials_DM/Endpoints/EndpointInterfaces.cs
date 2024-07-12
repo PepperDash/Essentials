@@ -88,4 +88,10 @@ namespace PepperDash_Essentials_DM
     {
         eHdcpCapabilityType DisplayPortInHdcpCapability { get; }
     }
+
+    public interface IhasWallMode
+    {
+        void SetWallMode(ushort walLMode);
+    }
+
 }
