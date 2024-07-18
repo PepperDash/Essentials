@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Debug = PepperDash.Core.Debug;
 
 
@@ -22,8 +21,7 @@ namespace PepperDash.Essentials.Core
         /// Gets any existing RouteDescriptor for a destination, clears it using ReleaseRoute
         /// and then attempts a new Route and if sucessful, stores that RouteDescriptor
         /// in RouteDescriptorCollection.DefaultCollection
-        /// </summary>
-        [MethodImpl(MethodImplOptions.NoInlining)] // REMOVE ME
+        /// </summary>        
         public static void ReleaseAndMakeRoute(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, string destinationPortKey = "", string sourcePortKey = "")
         {
             // Remove this line before committing!!!!!
@@ -34,6 +32,17 @@ namespace PepperDash.Essentials.Core
             var outputPort = string.IsNullOrEmpty(sourcePortKey) ? null : source.OutputPorts.FirstOrDefault(p => p.Key == sourcePortKey);
 
             ReleaseAndMakeRoute(destination, source, signalType, inputPort, outputPort);
+        }
+
+        public static void RemoveRouteRequestForDestination(string destinationKey)
+        {
+            Debug.LogMessage(LogEventLevel.Information, "Removing route request for {destination}", null, destinationKey);
+
+            var result = RouteRequests.Remove(destinationKey);
+
+            var messageTemplate = result ? "Route Request for {destination} removed" : "Route Request for {destination} not found";
+
+            Debug.LogMessage(LogEventLevel.Information, messageTemplate, null, destinationKey);
         }
 
         private static void ReleaseAndMakeRoute(IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort = null, RoutingOutputPort sourcePort = null)
