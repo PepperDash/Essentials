@@ -5,6 +5,7 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace PepperDash.Essentials.Core
 {
@@ -47,6 +48,8 @@ namespace PepperDash.Essentials.Core
         private CTimer _scenarioChangeDebounceTimer;
 
         private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
+
+        private Mutex _scenarioChange = new Mutex();
 
         public EssentialsRoomCombiner(string key, EssentialsRoomCombinerPropertiesConfig props)
             : base(key)
@@ -205,29 +208,38 @@ namespace PepperDash.Essentials.Core
             }
             private set
             {
-                if (value != _currentScenario)
+                try
                 {
-                    // Deactivate the old scenario first
-                    if (_currentScenario != null)
+                    _scenarioChange.WaitOne();
+
+                    if (value != _currentScenario)
                     {
-                        _currentScenario.Deactivate();
+                        // Deactivate the old scenario first
+                        if (_currentScenario != null)
+                        {
+                            _currentScenario.Deactivate();
+                        }
+
+                        _currentScenario = value;
+
+                        // Activate the new scenario
+                        if (_currentScenario != null)
+                        {
+                            _currentScenario.Activate();
+
+                            Debug.LogMessage(LogEventLevel.Debug, $"Current Scenario: {_currentScenario.Name}", this);
+                        }
+
+                        var handler = RoomCombinationScenarioChanged;
+                        if (handler != null)
+                        {
+                            handler(this, new EventArgs());
+                        }
                     }
-
-                    _currentScenario = value;
-
-                    // Activate the new scenario
-                    if (_currentScenario != null)
-                    {
-                        _currentScenario.Activate();
-
-                        Debug.LogMessage(LogEventLevel.Debug, $"Current Scenario: {_currentScenario.Name}", this);
-                    }
-
-                    var handler = RoomCombinationScenarioChanged;
-                    if (handler != null)
-                    {
-                        handler(this, new EventArgs());
-                    }
+                }
+                finally
+                {
+                    _scenarioChange.ReleaseMutex();
                 }
             }
         }
