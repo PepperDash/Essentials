@@ -110,10 +110,19 @@ namespace PepperDash.Essentials.Core
 
             foreach (var roomKey in _propertiesConfig.RoomKeys)
             {
-                if (DeviceManager.GetDeviceForKey(roomKey) is IEssentialsRoom room)
+                var room = DeviceManager.GetDeviceForKey(roomKey);
+
+                if (DeviceManager.GetDeviceForKey(roomKey) is IEssentialsRoom essentialsRoom)
                 {
-                    _rooms.Add(room);
+                    _rooms.Add(essentialsRoom);
                 }
+            }
+
+            var rooms = DeviceManager.AllDevices.OfType<IEssentialsRoom>().Cast<Device>();
+
+            foreach (var room in rooms)
+            {
+                room.Deactivate();
             }
         }
 
