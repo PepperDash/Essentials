@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-using PepperDash.Core;
+﻿using PepperDash.Core;
 using Serilog.Events;
+using System.Collections.Generic;
+using System.Linq;
 
 
 namespace PepperDash.Essentials.Core
@@ -33,6 +32,11 @@ namespace PepperDash.Essentials.Core
         /// <param name="descriptor"></param>
         public void AddRouteDescriptor(RouteDescriptor descriptor)
         {
+            if (descriptor == null)
+            {
+                return;
+            }
+
             if (RouteDescriptors.Any(t => t.Destination == descriptor.Destination))
             {
                 Debug.LogMessage(LogEventLevel.Debug, descriptor.Destination,
