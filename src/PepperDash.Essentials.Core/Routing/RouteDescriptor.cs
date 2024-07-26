@@ -14,18 +14,26 @@ namespace PepperDash.Essentials.Core
     public class RouteDescriptor
 	{
 		public IRoutingInputs Destination { get; private set; }
+
+        public RoutingInputPort InputPort { get; private set; }
+
 		public IRoutingOutputs Source { get; private set; }
 		public eRoutingSignalType SignalType { get; private set; }
 		public List<RouteSwitchDescriptor> Routes { get; private set; }
 
 
-		public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, eRoutingSignalType signalType)
+		public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, eRoutingSignalType signalType):this(source,destination, null, signalType)
 		{
-			Destination = destination;
-			Source = source;
-			SignalType = signalType;
-			Routes = new List<RouteSwitchDescriptor>();
 		}
+
+        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, eRoutingSignalType signalType)
+        {
+            Destination = destination;
+            Source = source;
+            SignalType = signalType;
+            InputPort = inputPort;
+            Routes = new List<RouteSwitchDescriptor>();
+        }
 
 		/// <summary>
 		/// Executes all routes described in this collection.  Typically called via

@@ -97,7 +97,7 @@ namespace PepperDash.Essentials.Core
                 Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
             }
 
-            destination.ReleaseRoute();
+            destination.ReleaseRoute(destinationPort?.Key ?? string.Empty);
 
             RunRouteRequest(routeRequest);
         }
@@ -125,13 +125,20 @@ namespace PepperDash.Essentials.Core
             videoRoute?.ExecuteRoutes();
         }
 
+        public static void ReleaseRoute(this IRoutingInputs destination)
+        {
+            ReleaseRoute(destination, string.Empty);
+        }
+
         /// <summary>
         /// Will release the existing route on the destination, if it is found in 
         /// RouteDescriptorCollection.DefaultCollection
         /// </summary>
-        /// <param name="destination"></param>
-        public static void ReleaseRoute(this IRoutingInputs destination)
+        /// <param name="destination"></param>       
+        public static void ReleaseRoute(this IRoutingInputs destination, string inputPortKey)
         {
+
+            Debug.LogMessage(LogEventLevel.Information, "Release route for {inputPortKey}", destination, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
 
             if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
             {
@@ -142,7 +149,7 @@ namespace PepperDash.Essentials.Core
 
             RouteRequests.Remove(destination.Key);
 
-            var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination);
+            var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPortKey);
             if (current != null)
             {
                 Debug.LogMessage(LogEventLevel.Debug, "Releasing current route: {0}", destination, current.Source.Key);
@@ -162,7 +169,7 @@ namespace PepperDash.Essentials.Core
             // if it's a single signal type, find the route
             if (!signalType.HasFlag(eRoutingSignalType.AudioVideo))
             {
-                var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, signalType);
+                var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, signalType);
                 Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
 
                 if (!destination.GetRouteToSource(source, null, null, signalType, 0, singleTypeRouteDescriptor, destinationPort, sourcePort))
@@ -179,14 +186,14 @@ namespace PepperDash.Essentials.Core
 
             Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key);
 
-            var audioRouteDescriptor = new RouteDescriptor(source, destination, eRoutingSignalType.Audio);
+            var audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
 
             var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
 
             if (!audioSuccess)
                 Debug.LogMessage(LogEventLevel.Debug, "Cannot find audio route to {0}", destination, source.Key);
 
-            var videoRouteDescriptor = new RouteDescriptor(source, destination, eRoutingSignalType.Video);
+            var videoRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Video);
 
             var videoSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Video, 0, videoRouteDescriptor, destinationPort, sourcePort);
 
