@@ -29,8 +29,6 @@ namespace PepperDash.Essentials.Core
                 Debug.LogMessage(LogEventLevel.Debug, "Unsubscribing from cooling feedback for {destination}", null, Destination.Key);
                 coolingDevice.IsCoolingDownFeedback.OutputChange -= HandleCooldown;
             }
-
-            Extensions.RemoveRouteRequestForDestination(Destination.Key);
         }
     }
 }
