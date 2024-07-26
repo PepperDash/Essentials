@@ -153,9 +153,6 @@ namespace PepperDash.Essentials.Core
                         Debug.LogMessage(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
                     }
                 });
-
-                Debug.LogMessage(LogEventLevel.Information, "Method {methodName} successfully called on device {deviceKey} with {@params}", null, method.Name,
-                    action.DeviceKey, action.Params);
             }
             catch (Exception ex)
             {

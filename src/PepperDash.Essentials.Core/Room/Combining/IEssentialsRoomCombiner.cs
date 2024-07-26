@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PepperDash.Core;
 
@@ -87,12 +88,12 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Activates this room combination scenario
         /// </summary>
-        void Activate();
+        Task Activate();
 
         /// <summary>
         /// Deactivates this room combination scenario
         /// </summary>
-        void Deactivate();
+        Task Deactivate();
 
         /// <summary>
         /// The state of the partitions that would activate this scenario

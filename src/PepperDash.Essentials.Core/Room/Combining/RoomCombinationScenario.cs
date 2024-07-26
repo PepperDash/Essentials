@@ -3,6 +3,7 @@ using PepperDash.Core;
 using PepperDash.Core.Logging;
 using Serilog.Events;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core
 {
@@ -69,34 +70,42 @@ namespace PepperDash.Essentials.Core
             IsActiveFeedback = new BoolFeedback(() => _isActive);
         }
 
-        public void Activate()
+        public async Task Activate()
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Activating Scenario: '{name}' with {activationActionCount} action(s) defined", this, Name, activationActions.Count);
+            this.LogInformation("Activating Scenario {name} with {activationActionCount} action(s) defined", Name, activationActions.Count);
+
+            List<Task> tasks = new List<Task>();
 
             if (activationActions != null)
             {
                 foreach (var action in activationActions)
                 {
-                    this.LogDebug("Running Activation action {@action}", action);
-                    DeviceJsonApi.DoDeviceAction(action);
+                    this.LogInformation("Running Activation action {@action}", action);
+                    tasks.Add(DeviceJsonApi.DoDeviceActionAsync(action));
                 }
             }
+
+            await Task.WhenAll(tasks);
 
             IsActive = true;
         }
 
-        public void Deactivate()
+        public async Task Deactivate()
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Deactivating Scenario: '{name}' with {deactivationActionCount} action(s) defined", this, Name, deactivationActions.Count);
+            this.LogInformation("Deactivating Scenario {name} with {deactivationActionCount} action(s) defined", Name, deactivationActions.Count);
+
+            List<Task> tasks = new List<Task>();
 
             if (deactivationActions != null)
             {
                 foreach (var action in deactivationActions)
                 {
-                    this.LogDebug("Running deactivation action {@action}", action);
-                    DeviceJsonApi.DoDeviceAction(action);
+                    this.LogInformation("Running deactivation action {actionDeviceKey}:{actionMethod}", action.DeviceKey, action.MethodName);
+                    tasks.Add( DeviceJsonApi.DoDeviceActionAsync(action));
                 }
             }
+
+            await Task.WhenAll(tasks);
 
             IsActive = false;
         }

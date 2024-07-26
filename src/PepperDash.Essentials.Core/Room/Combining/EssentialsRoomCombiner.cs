@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core
 {
@@ -201,8 +202,38 @@ namespace PepperDash.Essentials.Core
             if (currentScenario != null)
             {
                 this.LogInformation("Found combination Scenario {scenarioKey}", currentScenario.Key);
-                CurrentScenario = currentScenario;
+                ChangeScenario(currentScenario);
             }
+        }
+
+        private async Task ChangeScenario(IRoomCombinationScenario newScenario)
+        {
+            
+
+                if (newScenario == _currentScenario)
+                {
+                    return;
+                }
+
+                // Deactivate the old scenario first
+                if (_currentScenario != null)
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Deactivating scenario {currentScenario}", this, _currentScenario.Name);
+                    await _currentScenario.Deactivate();
+                }
+
+                _currentScenario = newScenario;
+
+                // Activate the new scenario
+                if (_currentScenario != null)
+                {
+                    Debug.LogMessage(LogEventLevel.Debug, $"Current Scenario: {_currentScenario.Name}", this);
+                    await _currentScenario.Activate();
+                }
+
+                RoomCombinationScenarioChanged?.Invoke(this, new EventArgs());
+
+            
         }
 
         #region IEssentialsRoomCombiner Members
@@ -214,42 +245,6 @@ namespace PepperDash.Essentials.Core
             get
             {
                 return _currentScenario;
-            }
-            private set
-            {
-                try
-                {
-                    _scenarioChange.WaitOne();
-
-                    if (value != _currentScenario)
-                    {
-                        // Deactivate the old scenario first
-                        if (_currentScenario != null)
-                        {
-                            _currentScenario.Deactivate();
-                        }
-
-                        _currentScenario = value;
-
-                        // Activate the new scenario
-                        if (_currentScenario != null)
-                        {
-                            _currentScenario.Activate();
-
-                            Debug.LogMessage(LogEventLevel.Debug, $"Current Scenario: {_currentScenario.Name}", this);
-                        }
-
-                        var handler = RoomCombinationScenarioChanged;
-                        if (handler != null)
-                        {
-                            handler(this, new EventArgs());
-                        }
-                    }
-                }
-                finally
-                {
-                    _scenarioChange.ReleaseMutex();
-                }
             }
         }
 
