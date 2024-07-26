@@ -60,10 +60,12 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public void ReleaseRoutes()
 		{
-			foreach (var route in Routes)
+			foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
 			{
-				if (route.SwitchingDevice is IRouting)
+				if (route.SwitchingDevice is IRouting switchingDevice)
 				{
+                    switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
+
 					// Pull the route from the port.  Whatever is watching the output's in use tracker is
 					// responsible for responding appropriately.
 					route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
