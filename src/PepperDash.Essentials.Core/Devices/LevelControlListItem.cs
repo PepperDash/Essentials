@@ -65,8 +65,8 @@ namespace PepperDash.Essentials.Core
     [Flags]
     public enum eLevelControlType
     {
-        Level = 0,
-        Mute = 1,
+        Level = 1,
+        Mute = 2,
         LevelAndMute = Level | Mute,
     }
 }

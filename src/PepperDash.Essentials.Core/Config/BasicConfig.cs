@@ -5,6 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.Core.Config
 {
@@ -28,6 +29,9 @@ namespace PepperDash.Essentials.Core.Config
         [JsonProperty("audioControlPointLists")]
         public Dictionary<string, AudioControlPointListItem> AudioControlPointLists { get; set; }
 
+        [JsonProperty("cameraLists")]
+        public Dictionary<string, Dictionary<string, CameraListItem>> CameraLists { get; set; }
+
         [JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
 
@@ -41,6 +45,7 @@ namespace PepperDash.Essentials.Core.Config
             SourceLists = new Dictionary<string, Dictionary<string, SourceListItem>>();
             DestinationLists = new Dictionary<string, Dictionary<string, DestinationListItem>>();
             AudioControlPointLists = new Dictionary<string, AudioControlPointListItem>();
+            CameraLists = new Dictionary<string, Dictionary<string, CameraListItem>>();
             TieLines = new List<TieLineConfig>();
             JoinMaps = new Dictionary<string, JObject>();
         }
@@ -82,6 +87,17 @@ namespace PepperDash.Essentials.Core.Config
                 return null;
 
             return AudioControlPointLists[key];
+        }
+
+        /// <summary>
+        /// Checks CameraLists for a given list and returns it if found. Otherwise, returns null
+        /// </summary>
+        public Dictionary<string, CameraListItem> GetCameraListForKey(string key)
+        {
+            if (string.IsNullOrEmpty(key) || !CameraLists.ContainsKey(key))
+                return null;
+
+            return CameraLists[key];
         }
 
         /// <summary>

@@ -1,22 +1,16 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
+﻿using Newtonsoft.Json;
 using PepperDash.Core;
-
-using Newtonsoft.Json;
+using PepperDash.Core.Logging;
 using Serilog.Events;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// Represents a room combination scenario
     /// </summary>
-    public class RoomCombinationScenario: IRoomCombinationScenario, IKeyName
+    public class RoomCombinationScenario : IRoomCombinationScenario, IKeyName
     {
         private RoomCombinationScenarioConfig _config;
 
@@ -40,7 +34,7 @@ namespace PepperDash.Essentials.Core
             get { return _isActive; }
             set
             {
-                if(value == _isActive)
+                if (value == _isActive)
                 {
                     return;
                 }
@@ -76,32 +70,42 @@ namespace PepperDash.Essentials.Core
             IsActiveFeedback = new BoolFeedback(() => _isActive);
         }
 
-        public void Activate()
+        public async Task Activate()
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Activating Scenario: '{0}' with {1} action(s) defined", Name, activationActions.Count);   
+            this.LogInformation("Activating Scenario {name} with {activationActionCount} action(s) defined", Name, activationActions.Count);
+
+            List<Task> tasks = new List<Task>();
 
             if (activationActions != null)
             {
                 foreach (var action in activationActions)
                 {
-                    DeviceJsonApi.DoDeviceAction(action);
+                    this.LogInformation("Running Activation action {@action}", action);
+                    tasks.Add(DeviceJsonApi.DoDeviceActionAsync(action));
                 }
             }
+
+            await Task.WhenAll(tasks);
 
             IsActive = true;
         }
 
-        public void Deactivate()
+        public async Task Deactivate()
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Deactivating Scenario: '{0}' with {1} action(s) defined", Name, deactivationActions.Count);
+            this.LogInformation("Deactivating Scenario {name} with {deactivationActionCount} action(s) defined", Name, deactivationActions.Count);
+
+            List<Task> tasks = new List<Task>();
 
             if (deactivationActions != null)
             {
                 foreach (var action in deactivationActions)
                 {
-                    DeviceJsonApi.DoDeviceAction(action);
+                    this.LogInformation("Running deactivation action {actionDeviceKey}:{actionMethod}", action.DeviceKey, action.MethodName);
+                    tasks.Add( DeviceJsonApi.DoDeviceActionAsync(action));
                 }
             }
+
+            await Task.WhenAll(tasks);
 
             IsActive = false;
         }

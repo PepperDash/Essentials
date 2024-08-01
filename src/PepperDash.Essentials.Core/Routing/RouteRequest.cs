@@ -1,4 +1,7 @@
-﻿namespace PepperDash.Essentials.Core
+﻿using PepperDash.Core;
+using Serilog.Events;
+
+namespace PepperDash.Essentials.Core
 {
     public class RouteRequest
     {
@@ -11,37 +14,21 @@
 
         public void HandleCooldown(object sender, FeedbackEventArgs args)
         {
-            var coolingDevice = sender as IWarmingCooling;
+            Debug.LogMessage(LogEventLevel.Information, "Handling cooldown route request: {destination}:{destinationPort} -> {source}:{sourcePort} {type}", null, Destination.Key, DestinationPort.Key, Source.Key, SourcePort.Key, SignalType.ToString());
 
-            if (args.BoolValue == false)
+            if (args.BoolValue == true)
             {
-                Destination.ReleaseAndMakeRoute(Source, SignalType);
+                return;
+            }
 
-                if (sender == null) return;
+            Debug.LogMessage(LogEventLevel.Information, "Cooldown complete. Making route from {destination} to {source}", Destination.Key, Source.Key);
+            Destination.ReleaseAndMakeRoute(Source, SignalType, DestinationPort?.Key ?? string.Empty, SourcePort?.Key ?? string.Empty);
 
+            if (sender is IWarmingCooling coolingDevice)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, "Unsubscribing from cooling feedback for {destination}", null, Destination.Key);
                 coolingDevice.IsCoolingDownFeedback.OutputChange -= HandleCooldown;
             }
         }
     }
-
-    /*public class RouteRequest<TInputSelector, TOutputSelector>
-    {
-        public IRoutingSink<TInputSelector> Destination { get; set; }
-        public IRoutingOutputs<TOutputSelector> Source { get; set; }
-        public eRoutingSignalType SignalType { get; set; }
-
-        public void HandleCooldown(object sender, FeedbackEventArgs args)
-        {
-            var coolingDevice = sender as IWarmingCooling;
-
-            if (args.BoolValue == false)
-            {
-                Destination.ReleaseAndMakeRoute(Source, SignalType);
-
-                if (sender == null) return;
-
-                coolingDevice.IsCoolingDownFeedback.OutputChange -= HandleCooldown;
-            }
-        }
-    }*/
 }

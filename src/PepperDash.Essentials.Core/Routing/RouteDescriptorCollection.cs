@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-using PepperDash.Core;
+﻿using PepperDash.Core;
 using Serilog.Events;
+using System.Collections.Generic;
+using System.Linq;
 
 
 namespace PepperDash.Essentials.Core
@@ -33,7 +32,13 @@ namespace PepperDash.Essentials.Core
         /// <param name="descriptor"></param>
         public void AddRouteDescriptor(RouteDescriptor descriptor)
         {
-            if (RouteDescriptors.Any(t => t.Destination == descriptor.Destination))
+            if (descriptor == null)
+            {
+                return;
+            }
+
+            if (RouteDescriptors.Any(t => t.Destination == descriptor.Destination)
+                && RouteDescriptors.Any(t => t.Destination == descriptor.Destination && t.InputPort != null && descriptor.InputPort != null && t.InputPort.Key == descriptor.InputPort.Key))
             {
                 Debug.LogMessage(LogEventLevel.Debug, descriptor.Destination,
                     "Route to [{0}] already exists in global routes table", descriptor.Source.Key);
@@ -48,18 +53,33 @@ namespace PepperDash.Essentials.Core
         /// <returns>null if no RouteDescriptor for a destination exists</returns>
         public RouteDescriptor GetRouteDescriptorForDestination(IRoutingInputs destination)
         {
+            Debug.LogMessage(LogEventLevel.Debug, "Getting route descriptor", destination);
+
             return RouteDescriptors.FirstOrDefault(rd => rd.Destination == destination);
+        }
+
+        public RouteDescriptor GetRouteDescriptorForDestinationAndInputPort(IRoutingInputs destination, string inputPortKey)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, "Getting route descriptor for {inputPortKey}", destination, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+            return RouteDescriptors.FirstOrDefault(rd => rd.Destination == destination && rd.InputPort != null && rd.InputPort.Key == inputPortKey);
         }
 
         /// <summary>
         /// Returns the RouteDescriptor for a given destination AND removes it from collection.
         /// Returns null if no route with the provided destination exists.
         /// </summary>
-        public RouteDescriptor RemoveRouteDescriptor(IRoutingInputs destination)
+        public RouteDescriptor RemoveRouteDescriptor(IRoutingInputs destination, string inputPortKey = "")
         {
-            var descr = GetRouteDescriptorForDestination(destination);
+            Debug.LogMessage(LogEventLevel.Debug, "Removing route descriptor for {inputPortKey}", destination, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+
+            var descr = string.IsNullOrEmpty(inputPortKey) 
+                ? GetRouteDescriptorForDestination(destination)
+                : GetRouteDescriptorForDestinationAndInputPort(destination, inputPortKey);
             if (descr != null)
                 RouteDescriptors.Remove(descr);
+
+            Debug.LogMessage(LogEventLevel.Debug, "Found route descriptor {routeDescriptor}", destination, descr);
+
             return descr;
         }
     }

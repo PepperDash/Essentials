@@ -200,6 +200,9 @@ namespace PepperDash.Essentials.Room.Config
         public string DestinationListKey { get; set; }
         [JsonProperty("audioControlPointListKey")]
         public string AudioControlPointListKey { get; set; }
+        [JsonProperty("cameraListKey")]
+        public string CameraListKey { get; set; }
+
 
         [JsonProperty("defaultSourceItem")]
         public string DefaultSourceItem { get; set; }

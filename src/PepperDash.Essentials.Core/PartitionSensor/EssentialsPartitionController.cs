@@ -1,9 +1,5 @@
-﻿using System;
+﻿using PepperDash.Core;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
@@ -26,6 +22,11 @@ namespace PepperDash.Essentials.Core
         {
             get
             {
+                if (IsInAutoMode)
+                {
+                    return _partitionSensor.PartitionPresentFeedback.BoolValue;
+                }
+
                 return _partitionPresent;
             }
             set
@@ -73,11 +74,11 @@ namespace PepperDash.Essentials.Core
             PartitionPresentFeedback.FireUpdate();
         }
 
-        void PartitionPresentFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        private void PartitionPresentFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
             if (IsInAutoMode)
             {
-                PartitionPresentFeedback.FireUpdate();
+                PartitionPresent = e.BoolValue;
             }
         }
 
@@ -87,6 +88,8 @@ namespace PepperDash.Essentials.Core
 
         public void SetAutoMode()
         {
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Setting {Key} to Auto Mode", this);
+
             IsInAutoMode = true;
             if (PartitionPresentFeedback != null)
             {
@@ -101,11 +104,16 @@ namespace PepperDash.Essentials.Core
             {
                 _partitionSensor.PartitionPresentFeedback.OutputChange -= PartitionPresentFeedback_OutputChange;
                 _partitionSensor.PartitionPresentFeedback.OutputChange += PartitionPresentFeedback_OutputChange;
+                PartitionPresent = _partitionSensor.PartitionPresentFeedback.BoolValue;
             }
+
+            PartitionPresentFeedback.FireUpdate();
         }
 
         public void SetManualMode()
         {
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Setting {Key} to Manual Mode", this);
+
             IsInAutoMode = false;
             if (PartitionPresentFeedback != null)
             {
@@ -119,7 +127,10 @@ namespace PepperDash.Essentials.Core
             if (_partitionSensor != null)
             {
                 _partitionSensor.PartitionPresentFeedback.OutputChange -= PartitionPresentFeedback_OutputChange;
+                PartitionPresent = _partitionSensor.PartitionPresentFeedback.BoolValue;
             }
+
+            PartitionPresentFeedback.FireUpdate();
         }
 
 
