@@ -37,6 +37,8 @@ jobs:
         run: nuget restore .\$($Env:SOLUTION_FILE).sln
       - name: Build Solution        
         run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" -m      
+      - name: Pack Solution
+        run: dotnet pack .\$($Env:SOLUTION_FILE).sln --configuration $env:BUILD_TYPE --output ./output /p:Version="${{ steps.setVersion.outputs.version }}"
       - name: Upload Release
         id: create_release
         uses: ncipollo/release-action@v1
