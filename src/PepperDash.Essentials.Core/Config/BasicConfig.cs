@@ -55,7 +55,7 @@ namespace PepperDash.Essentials.Core.Config
 		/// </summary>
 		public Dictionary<string, SourceListItem> GetSourceListForKey(string key)
 		{
-			if (string.IsNullOrEmpty(key) || !SourceLists.ContainsKey(key))
+			if (SourceLists == null || string.IsNullOrEmpty(key) || !SourceLists.ContainsKey(key))
 				return null;
 			
 			return SourceLists[key];
@@ -68,7 +68,7 @@ namespace PepperDash.Essentials.Core.Config
         /// <returns>DestinationList if the key exists, null otherwise</returns>
 	    public Dictionary<string, DestinationListItem> GetDestinationListForKey(string key)
 	    {
-	        if (string.IsNullOrEmpty(key) || !DestinationLists.ContainsKey(key))
+	        if (DestinationLists == null || string.IsNullOrEmpty(key) || !DestinationLists.ContainsKey(key))
 	        {
 	            return null;
 	        }
@@ -83,7 +83,7 @@ namespace PepperDash.Essentials.Core.Config
         /// <returns>AudioControlPointList if the key exists, null otherwise</returns>
         public AudioControlPointListItem GetAudioControlPointListForKey(string key)
         {
-            if (string.IsNullOrEmpty(key) || !AudioControlPointLists.ContainsKey(key))
+            if (AudioControlPointLists == null ||  string.IsNullOrEmpty(key) || !AudioControlPointLists.ContainsKey(key))
                 return null;
 
             return AudioControlPointLists[key];
@@ -94,7 +94,7 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         public Dictionary<string, CameraListItem> GetCameraListForKey(string key)
         {
-            if (string.IsNullOrEmpty(key) || !CameraLists.ContainsKey(key))
+            if (CameraLists == null || string.IsNullOrEmpty(key) || !CameraLists.ContainsKey(key))
                 return null;
 
             return CameraLists[key];
