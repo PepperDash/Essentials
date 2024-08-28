@@ -51,8 +51,18 @@ namespace PepperDash.Essentials.Core
         /// The key of the device in the DeviceManager for control
         /// </summary>
         [JsonProperty("deviceKey")]
-        public string DeviceKey => DeviceManager.AllDevices.
-            Where(d => d.Key.Contains(ParentDeviceKey) && d.Key.Contains(ItemKey)).FirstOrDefault()?.Key ?? $"{ParentDeviceKey}--{ItemKey}";
+        public string DeviceKey
+        {
+            get
+            {
+                if(string.IsNullOrEmpty(ItemKey)) return ParentDeviceKey;
+                else
+                {
+                    return DeviceManager.AllDevices.
+                    Where(d => d.Key.Contains(ParentDeviceKey) && d.Key.Contains(ItemKey)).FirstOrDefault()?.Key ?? $"{ParentDeviceKey}--{ItemKey}";
+                }
+            }
+        }
 
         /// <summary>
         /// Indicates if the item is a level, mute , or both

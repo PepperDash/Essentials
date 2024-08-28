@@ -9,9 +9,15 @@ namespace PepperDash.Essentials.Core
 {
     public abstract class AudioControlListItemBase
     {
+        /// <summary>
+        /// Key of the parent device in the DeviceManager
+        /// </summary>
         [JsonProperty("parentDeviceKey")]
         public string ParentDeviceKey { get; set; }
 
+        /// <summary>
+        /// Optional key of the item in the parent device
+        /// </summary>
         [JsonProperty("itemKey")]
         public string ItemKey { get; set; }
 
