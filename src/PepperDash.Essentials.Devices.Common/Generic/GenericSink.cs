@@ -4,9 +4,6 @@ using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Devices.Common.Generic
 {
@@ -16,10 +13,9 @@ namespace PepperDash.Essentials.Devices.Common.Generic
         {
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-            var inputPort = new RoutingInputPort($"{Key}-{RoutingPortNames.AnyVideoIn}", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
+            var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);            
 
             InputPorts.Add(inputPort);
-
         }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
@@ -57,8 +53,8 @@ namespace PepperDash.Essentials.Devices.Common.Generic
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Source Device");
-            return new GenericSource(dc.Key, dc.Name);
+            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Sink Device");
+            return new GenericSink(dc.Key, dc.Name);
         }
     }
 }
