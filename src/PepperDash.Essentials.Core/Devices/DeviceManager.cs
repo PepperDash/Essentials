@@ -14,6 +14,7 @@ namespace PepperDash.Essentials.Core
     {
         public static event EventHandler<EventArgs> AllDevicesActivated;
         public static event EventHandler<EventArgs> AllDevicesRegistered;
+        public static event EventHandler<EventArgs> AllDevicesInitialized;
 
         private static readonly CCriticalSection DeviceCriticalSection = new CCriticalSection();
         private static readonly CEvent AllowAddDevicesCEvent = new CEvent(false, true);
@@ -67,7 +68,7 @@ namespace PepperDash.Essentials.Core
                 foreach (var d in Devices.Values)
                 {
                     try
-                    {
+                    { 
                         if (d is Device)
                             (d as Device).PreActivate();
                     }
@@ -123,6 +124,18 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        private static void DeviceManager_Initialized(object sender, EventArgs e)
+        {
+            var allInitialized = Devices.Values.OfType<EssentialsDevice>().All(d => d.IsInitialized);
+
+            if (allInitialized)
+            {
+                Debug.LogMessage(LogEventLevel.Information, "****All Devices Initalized****");
+
+                OnAllDevicesInitialized();
+            }
+        }
+
         private static void OnAllDevicesActivated()
         {
             var handler = AllDevicesActivated;
@@ -135,6 +148,15 @@ namespace PepperDash.Essentials.Core
         private static void OnAllDevicesRegistered()
         {
             var handler = AllDevicesRegistered;
+            if (handler != null)
+            {
+                handler(null, new EventArgs());
+            }
+        }
+
+        private static void OnAllDevicesInitialized()
+        {
+            var handler = AllDevicesInitialized;
             if (handler != null)
             {
                 handler(null, new EventArgs());
@@ -264,6 +286,9 @@ namespace PepperDash.Essentials.Core
                 Devices.Add(newDev.Key, newDev);
                 //if (!(_Devices.Contains(newDev)))
                 //    _Devices.Add(newDev);
+
+                if (newDev is EssentialsDevice essentialsDev)
+                    essentialsDev.Initialized += DeviceManager_Initialized;
             }
             finally
             {

@@ -84,7 +84,15 @@ namespace PepperDash.Essentials.Core
                 SetupPartitionStateProviders();
 
                 SetRooms();
+            });
 
+
+            // Subscribe to the AllDevicesInitialized event
+            // We need to wait until all devices are initialized in case
+            // any actions are dependent on 3rd party devices already being
+            // connected and initialized
+            DeviceManager.AllDevicesInitialized += (o, a) =>
+            {
                 if (IsInAutoMode)
                 {
                     DetermineRoomCombinationScenario();
@@ -93,7 +101,7 @@ namespace PepperDash.Essentials.Core
                 {
                     SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
                 }
-            });
+            };
         }
 
         private void CreateScenarios()
