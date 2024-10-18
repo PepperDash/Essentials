@@ -217,7 +217,7 @@ namespace PepperDash.Essentials.Core.Routing
                     var currentRoute = midpoint.CurrentRoutes.FirstOrDefault(route => {
                         Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Checking {route} against {tieLine}", this, route, tieLine);
 
-                        return route.OutputPort?.Key == tieLine.SourcePort.Key && route.OutputPort?.ParentDevice.Key == tieLine.SourcePort.ParentDevice.Key;
+                        return route.OutputPort != null && route.InputPort != null && route.OutputPort?.Key == tieLine.SourcePort.Key && route.OutputPort?.ParentDevice.Key == tieLine.SourcePort.ParentDevice.Key;
                     });
 
                     if (currentRoute == null)
