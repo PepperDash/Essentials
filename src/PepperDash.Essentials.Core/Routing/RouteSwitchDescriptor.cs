@@ -23,9 +23,9 @@
 		public override string ToString()
 		{
             if (SwitchingDevice is IRouting)
-                return $"{SwitchingDevice?.Key} switches output {OutputPort.Key} to input {InputPort.Key}";
+                return $"{SwitchingDevice?.Key} switches output {OutputPort?.Key} to input {InputPort?.Key}";
             else
-                return $"{SwitchingDevice.Key} switches to input {InputPort.Key}";
+                return $"{SwitchingDevice?.Key} switches to input {InputPort?.Key}";
 		}
 	}
 
