@@ -2206,7 +2206,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     {
                         var preset =  new CodecRoomPreset(UInt16.Parse(id), Description.Value, Defined.BoolValue, true);
 
-                        Debug.Console(2, "Preset ID {0} Converted from Cisco Codec Preset to Essentials Preset");
+                        Debug.Console(2, "Preset ID {0} Converted from Cisco Codec Preset to Essentials Preset, id");
 
                         return preset;
                     }
