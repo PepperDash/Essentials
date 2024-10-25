@@ -65,7 +65,7 @@ namespace PepperDash.Essentials.Core.Routing
 
         private void UpdateDestination(IRoutingSinkWithSwitching destination, RoutingInputPort inputPort)
         {            
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating destination {destination} with inputPort {inputPort}", this,destination?.Key, inputPort?.Key);
+            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating destination {destination} with inputPort {inputPort}", this,destination?.Key, inputPort?.Key);
 
             if(inputPort == null)
             {
@@ -101,7 +101,7 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Getting source for first TieLine {tieLine}", this, firstTieLine);
+            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Getting source for first TieLine {tieLine}", this, firstTieLine);
 
             TieLine sourceTieLine;
             try
@@ -128,7 +128,7 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root TieLine {tieLine}", this, sourceTieLine);           
+            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root TieLine {tieLine}", this, sourceTieLine);           
 
             // Does not handle combinable scenarios or other scenarios where a display might be part of multiple rooms yet.
             var room = DeviceManager.AllDevices.OfType<IEssentialsRoom>().FirstOrDefault((r) => {
@@ -151,7 +151,7 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found room {room} for destination {destination}", this, room.Key, destination.Key);
+            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found room {room} for destination {destination}", this, room.Key, destination.Key);
 
             var sourceList = ConfigReader.ConfigObject.GetSourceListForKey(room.SourceListKey);
 
@@ -161,15 +161,15 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found sourceList for room {room}", this, room.Key);
+            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found sourceList for room {room}", this, room.Key);
 
             var sourceListItem = sourceList.FirstOrDefault(sli => {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose,
-                    "SourceListItem {sourceListItem}:{sourceKey} tieLine sourceport device key {sourcePortDeviceKey}",
-                    this,
-                    sli.Key,
-                    sli.Value.SourceKey,
-                    sourceTieLine.SourcePort.ParentDevice.Key);
+                 //// Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose,
+                 //   "SourceListItem {sourceListItem}:{sourceKey} tieLine sourceport device key {sourcePortDeviceKey}",
+                 //   this,
+                 //   sli.Key,
+                 //   sli.Value.SourceKey,
+                 //   sourceTieLine.SourcePort.ParentDevice.Key);
 
                 return sli.Value.SourceKey.Equals(sourceTieLine.SourcePort.ParentDevice.Key,StringComparison.InvariantCultureIgnoreCase);
             });            
@@ -191,7 +191,7 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {source}", this, source);
+            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {source}", this, source);
 
             destination.CurrentSourceInfo = source;
             destination.CurrentSourceInfoKey = source.SourceKey;
@@ -202,11 +202,11 @@ namespace PepperDash.Essentials.Core.Routing
             TieLine nextTieLine = null;
             try
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "**Following tieLine {tieLine}**", this, tieLine);
+                //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "**Following tieLine {tieLine}**", this, tieLine);
 
                 if (tieLine.SourcePort.ParentDevice is IRoutingWithFeedback midpoint)
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLine Source device {sourceDevice} is midpoint", this, midpoint);
+                    // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLine Source device {sourceDevice} is midpoint", this, midpoint);
 
                     if(midpoint.CurrentRoutes == null || midpoint.CurrentRoutes.Count == 0)
                     {
@@ -215,9 +215,9 @@ namespace PepperDash.Essentials.Core.Routing
                     }
 
                     var currentRoute = midpoint.CurrentRoutes.FirstOrDefault(route => {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Checking {route} against {tieLine}", this, route, tieLine);
+                        //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Checking {route} against {tieLine}", this, route, tieLine);
 
-                        return route.OutputPort.Key == tieLine.SourcePort.Key && route.OutputPort.ParentDevice.Key == tieLine.SourcePort.ParentDevice.Key;
+                        return route.OutputPort != null && route.InputPort != null && route.OutputPort?.Key == tieLine.SourcePort.Key && route.OutputPort?.ParentDevice.Key == tieLine.SourcePort.ParentDevice.Key;
                     });
 
                     if (currentRoute == null)
@@ -226,28 +226,28 @@ namespace PepperDash.Essentials.Core.Routing
                         return null;
                     }
 
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found currentRoute {currentRoute} through {midpoint}", this, currentRoute, midpoint);
+                    //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found currentRoute {currentRoute} through {midpoint}", this, currentRoute, midpoint);
 
                     nextTieLine = TieLineCollection.Default.FirstOrDefault(tl => { 
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Checking {route} against {tieLine}", tl.DestinationPort.Key, currentRoute.InputPort.Key);
+                        //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Checking {route} against {tieLine}", tl.DestinationPort.Key, currentRoute.InputPort.Key);
                         return tl.DestinationPort.Key == currentRoute.InputPort.Key && tl.DestinationPort.ParentDevice.Key == currentRoute.InputPort.ParentDevice.Key; });
 
                     if (nextTieLine != null)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found next tieLine {tieLine}. Walking the chain", this, nextTieLine);
+                        //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found next tieLine {tieLine}. Walking the chain", this, nextTieLine);
                         return GetRootTieLine(nextTieLine);
                     }
 
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root tieLine {tieLine}", this,nextTieLine);
+                    //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root tieLine {tieLine}", this,nextTieLine);
                     return nextTieLine;
                 }
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLIne Source Device {sourceDeviceKey} is IRoutingSource: {isIRoutingSource}", this, tieLine.SourcePort.ParentDevice.Key, tieLine.SourcePort.ParentDevice is IRoutingSource);
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLine Source Device interfaces: {typeFullName}:{interfaces}", this, tieLine.SourcePort.ParentDevice.GetType().FullName, tieLine.SourcePort.ParentDevice.GetType().GetInterfaces().Select(i => i.Name));
+                //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLIne Source Device {sourceDeviceKey} is IRoutingSource: {isIRoutingSource}", this, tieLine.SourcePort.ParentDevice.Key, tieLine.SourcePort.ParentDevice is IRoutingSource);
+                //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLine Source Device interfaces: {typeFullName}:{interfaces}", this, tieLine.SourcePort.ParentDevice.GetType().FullName, tieLine.SourcePort.ParentDevice.GetType().GetInterfaces().Select(i => i.Name));
 
                 if (tieLine.SourcePort.ParentDevice is IRoutingSource || tieLine.SourcePort.ParentDevice is IRoutingOutputs) //end of the chain
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root: {tieLine}", this, tieLine);
+                    // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root: {tieLine}", this, tieLine);
                     return tieLine;
                 }
 

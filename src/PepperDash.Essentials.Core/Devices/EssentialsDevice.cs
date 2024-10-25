@@ -17,6 +17,24 @@ namespace PepperDash.Essentials.Core
     [Description("The base Essentials Device Class")]
     public abstract class EssentialsDevice : Device
     {
+        public event EventHandler Initialized;
+
+        private bool _isInitialized;
+        public bool IsInitialized { 
+            get { return _isInitialized; }
+            private set 
+            { 
+                if (_isInitialized == value) return;
+                
+                _isInitialized = value;
+
+                if (_isInitialized)
+                {
+                    Initialized?.Invoke(this, new EventArgs());
+                }
+            } 
+        }
+
         protected EssentialsDevice(string key)
             : base(key)
         {
@@ -41,6 +59,8 @@ namespace PepperDash.Essentials.Core
                 try
                 {
                     Initialize();
+
+                    IsInitialized = true;
                 }
                 catch (Exception ex)
                 {

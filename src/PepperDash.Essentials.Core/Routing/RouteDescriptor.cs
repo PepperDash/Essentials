@@ -68,19 +68,29 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public void ReleaseRoutes()
 		{
-			foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
-			{
-				if (route.SwitchingDevice is IRouting switchingDevice)
-				{
+            foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
+            {
+                if (route.SwitchingDevice is IRouting switchingDevice)
+                {
+                    if (route.OutputPort == null)
+                    {
+                        continue;
+                    }
+
                     switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
 
-					// Pull the route from the port.  Whatever is watching the output's in use tracker is
-					// responsible for responding appropriately.
-					route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
-					Debug.LogMessage(LogEventLevel.Verbose, "Port {0} releasing. Count={1}",null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
-				}
-			}
-		}
+                    if (route.OutputPort.InUseTracker != null)
+                    {
+                        route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
+                        Debug.LogMessage(LogEventLevel.Verbose, "Port {0} releasing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+                    }
+                    else
+                    {
+                        Debug.LogMessage(LogEventLevel.Error, "InUseTracker is null for OutputPort {0}", null, route.OutputPort.Key);
+                    }
+                }
+            }
+        }
 
 		public override string ToString()
 		{

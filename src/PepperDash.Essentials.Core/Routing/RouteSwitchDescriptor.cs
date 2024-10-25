@@ -5,7 +5,7 @@
     /// </summary>
     public class RouteSwitchDescriptor
 	{
-		public IRoutingInputs SwitchingDevice { get { return InputPort.ParentDevice; } }
+		public IRoutingInputs SwitchingDevice { get { return InputPort?.ParentDevice; } }
 		public RoutingOutputPort OutputPort { get; set; }
 		public RoutingInputPort InputPort { get; set; }
 
@@ -23,9 +23,9 @@
 		public override string ToString()
 		{
             if (SwitchingDevice is IRouting)
-                return $"{SwitchingDevice?.Key} switches output {OutputPort.Key} to input {InputPort.Key}";
+                return $"{(SwitchingDevice != null ? SwitchingDevice.Key : "No Device")} switches output {(OutputPort != null ? OutputPort.Key : "No output port")} to input {(InputPort != null ? InputPort.Key : "No input port")}";
             else
-                return $"{SwitchingDevice.Key} switches to input {InputPort.Key}";
+                return $"{(SwitchingDevice != null ? SwitchingDevice.Key : "No Device")} switches to input {(InputPort != null ? InputPort.Key : "No input port")}";
 		}
 	}
 

@@ -93,6 +93,7 @@ namespace PepperDash.Essentials.Core
 
         void OnDataReceived(string s)
         {
+			var eventSubscribed = false;
 
             var bytesHandler = BytesReceived;
             if (bytesHandler != null)
@@ -101,7 +102,7 @@ namespace PepperDash.Essentials.Core
 				if (StreamDebugging.RxStreamDebuggingIsEnabled)
 					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", ComTextHelper.GetEscapedText(bytes));
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
-				return;
+				eventSubscribed = true;
             }
             var textHandler = TextReceived;
             if (textHandler != null)
@@ -109,10 +110,10 @@ namespace PepperDash.Essentials.Core
 				if (StreamDebugging.RxStreamDebuggingIsEnabled)
 					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", s);
                 textHandler(this, new GenericCommMethodReceiveTextArgs(s));
-				return;
+				eventSubscribed = true;
             }
 
-			Debug.LogMessage(LogEventLevel.Warning, this, "Received data but no handler is registered");
+			if(!eventSubscribed) Debug.LogMessage(LogEventLevel.Warning, this, "Received data but no handler is registered");
         }
 
 		public override bool Deactivate()
