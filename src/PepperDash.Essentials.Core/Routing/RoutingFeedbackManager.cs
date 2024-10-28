@@ -175,6 +175,7 @@ namespace PepperDash.Essentials.Core.Routing
             });            
 
             var source = sourceListItem.Value;
+            var sourceKey = sourceListItem.Key;
 
             if (source == null)
             {
@@ -194,7 +195,7 @@ namespace PepperDash.Essentials.Core.Routing
             // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {source}", this, source);
 
             destination.CurrentSourceInfo = source;
-            destination.CurrentSourceInfoKey = source.SourceKey;
+            destination.CurrentSourceInfoKey = sourceKey;
         }
 
         private TieLine GetRootTieLine(TieLine tieLine)
