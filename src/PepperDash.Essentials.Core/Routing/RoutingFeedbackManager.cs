@@ -192,10 +192,11 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {source}", this, source);
+            //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {@source} with key {sourceKey}", this, source, sourceKey);
 
-            destination.CurrentSourceInfo = source;
             destination.CurrentSourceInfoKey = sourceKey;
+            destination.CurrentSourceInfo = source;
+            
         }
 
         private TieLine GetRootTieLine(TieLine tieLine)
