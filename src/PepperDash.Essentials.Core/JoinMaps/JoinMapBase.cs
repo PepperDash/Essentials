@@ -107,8 +107,7 @@ namespace PepperDash.Essentials.Core
         }
 
         protected void AddJoins(Type type)
-        {
-            type.GetType();
+        {            
             var fields =
                 type.GetFields(BindingFlags.Public | BindingFlags.Instance)
                     .Where(f => f.IsDefined(typeof (JoinNameAttribute), true)).ToList();
