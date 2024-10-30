@@ -175,6 +175,7 @@ namespace PepperDash.Essentials.Core.Routing
             });            
 
             var source = sourceListItem.Value;
+            var sourceKey = sourceListItem.Key;
 
             if (source == null)
             {
@@ -186,15 +187,16 @@ namespace PepperDash.Essentials.Core.Routing
                     Name = sourceTieLine.SourcePort.Key,
                 };
 
-                destination.CurrentSourceInfo = tempSourceListItem; ;
                 destination.CurrentSourceInfoKey = "$transient";
+                destination.CurrentSourceInfo = tempSourceListItem;                
                 return;
             }
 
-            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {source}", this, source);
+            //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {@source} with key {sourceKey}", this, source, sourceKey);
 
+            destination.CurrentSourceInfoKey = sourceKey;
             destination.CurrentSourceInfo = source;
-            destination.CurrentSourceInfoKey = source.SourceKey;
+            
         }
 
         private TieLine GetRootTieLine(TieLine tieLine)
