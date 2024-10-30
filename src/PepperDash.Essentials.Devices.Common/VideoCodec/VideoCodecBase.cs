@@ -1214,7 +1214,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				var entryIndex = counterIndex;
 
 				Debug.LogMessage(LogEventLevel.Verbose, this, "Entry{2:0000} Name: {0}, Folder ID: {1}, Type: {3}, ParentFolderId: {4}",
-					entry.Name, entry.FolderId, entryIndex, entry.GetType().GetType().FullName, entry.ParentFolderId);
+					entry.Name, entry.FolderId, entryIndex, entry.GetType().FullName, entry.ParentFolderId);
 
 				if (entry is DirectoryFolder)
 				{

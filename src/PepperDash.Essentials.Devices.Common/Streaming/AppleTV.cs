@@ -42,7 +42,7 @@ namespace PepperDash.Essentials.Devices.Common
 
         public void PrintExpectedIrCommands()
         {
-            var cmds = typeof (AppleTvIrCommands).GetType().GetFields(BindingFlags.Public | BindingFlags.Static);
+            var cmds = typeof (AppleTvIrCommands).GetFields(BindingFlags.Public | BindingFlags.Static);
 
             foreach (var value in cmds.Select(cmd => cmd.GetValue(null)).OfType<string>())
             {
