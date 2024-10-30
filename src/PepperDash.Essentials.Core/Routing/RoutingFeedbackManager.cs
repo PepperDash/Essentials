@@ -187,8 +187,8 @@ namespace PepperDash.Essentials.Core.Routing
                     Name = sourceTieLine.SourcePort.Key,
                 };
 
-                destination.CurrentSourceInfo = tempSourceListItem; ;
                 destination.CurrentSourceInfoKey = "$transient";
+                destination.CurrentSourceInfo = tempSourceListItem;                
                 return;
             }
 
