@@ -19,81 +19,6 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Core.Bridges
 {
     /// <summary>
-    /// Helper methods for bridges
-    /// </summary>
-    public static class BridgeHelper
-    {
-        public static void PrintJoinMap(string command)
-        {
-            var targets = command.Split(' ');
-
-            var bridgeKey = targets[0].Trim();
-
-            var bridge = DeviceManager.GetDeviceForKey(bridgeKey) as EiscApiAdvanced;
-
-            if (bridge == null)
-            {
-                Debug.LogMessage(LogEventLevel.Information, "Unable to find advanced bridge with key: '{0}'", bridgeKey);
-                return;
-            }
-
-            if (targets.Length > 1)
-            {
-                var deviceKey = targets[1].Trim();
-
-                if (string.IsNullOrEmpty(deviceKey)) return;
-                bridge.PrintJoinMapForDevice(deviceKey);
-            }
-            else
-            {
-                bridge.PrintJoinMaps();
-            }
-        }
-        public static void JoinmapMarkdown(string command)
-        {
-            var targets = command.Split(' ');
-
-            var bridgeKey = targets[0].Trim();
-
-            var bridge = DeviceManager.GetDeviceForKey(bridgeKey) as EiscApiAdvanced;
-
-            if (bridge == null)
-            {
-                Debug.LogMessage(LogEventLevel.Information, "Unable to find advanced bridge with key: '{0}'", bridgeKey);
-                return;
-            }
-
-            if (targets.Length > 1)
-            {
-                var deviceKey = targets[1].Trim();
-
-                if (string.IsNullOrEmpty(deviceKey)) return;
-                bridge.MarkdownJoinMapForDevice(deviceKey, bridgeKey);
-            }
-            else
-            {
-                bridge.MarkdownForBridge(bridgeKey);
-
-            }
-        }
-    }
-
-
-    /// <summary>
-    /// Base class for all bridge class variants
-    /// </summary>
-    public class BridgeBase : EssentialsDevice
-    {
-        public BridgeApi Api { get; protected set; }
-
-        public BridgeBase(string key) :
-            base(key)
-        {
-
-        }
-    }
-
-    /// <summary>
     /// Base class for bridge API variants
     /// </summary>
     public abstract class BridgeApi : EssentialsDevice
@@ -168,19 +93,15 @@ namespace PepperDash.Essentials.Core.Bridges
 
                 Debug.LogMessage(LogEventLevel.Debug, this, "Linking Device: '{0}'", device.Key);
 
-                if (!typeof(IBridgeAdvanced).IsAssignableFrom(device.GetType().GetType()))
+                if (device is IBridgeAdvanced bridge)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, this,
-                        "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
-                        device.Key);
+                    bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                     continue;
                 }
 
-                var bridge = device as IBridgeAdvanced;
-                if (bridge != null)
-                {
-                    bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
-                }
+                Debug.LogMessage(LogEventLevel.Information, this,
+                        "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
+                        device.Key);
             }
         }
 
@@ -249,11 +170,11 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         public virtual void PrintJoinMaps()
         {
-            Debug.LogMessage(LogEventLevel.Information, this, "Join Maps for EISC IPID: {0}", Eisc.ID.ToString("X"));
+            CrestronConsole.ConsoleCommandResponse("Join Maps for EISC IPID: {0}\r\n", Eisc.ID.ToString("X"));
 
             foreach (var joinMap in JoinMaps)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Join map for device '{0}':", joinMap.Key);
+                CrestronConsole.ConsoleCommandResponse("Join map for device '{0}':", joinMap.Key);
                 joinMap.Value.PrintJoinMapInfo();
             }
         }

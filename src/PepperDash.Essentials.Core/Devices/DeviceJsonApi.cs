@@ -206,7 +206,7 @@ namespace PepperDash.Essentials.Core
             if (dev == null)
                 return "{ \"error\":\"No Device\"}";
 
-            object prop = dev.GetType().GetType().GetProperty(propertyName).GetValue(dev, null);
+            object prop = dev.GetType().GetProperty(propertyName).GetValue(dev, null);
 
             // var prop = t.GetProperty(propertyName);
             if (prop != null)
