@@ -194,13 +194,13 @@ namespace PepperDash.Essentials
         /// <param name="command"></param>
         public static void ReportAssemblyVersions(string command)
         {
-            Debug.Console(0, "Loaded Assemblies:");
+
+            CrestronConsole.ConsoleCommandResponse("Loaded Assemblies:" + CrestronEnvironment.NewLine);
             foreach (var assembly in LoadedAssemblies)
             {
-                Debug.Console(0, "{0} Version: {1}", assembly.Name, assembly.Version);
+                CrestronConsole.ConsoleCommandResponse("{0} Version: {1}" + CrestronEnvironment.NewLine, assembly.Name, assembly.Version);
             }
         }
-
         /// <summary>
         /// Moves any .dll assemblies not already loaded from the plugins folder to loadedPlugins folder
         /// </summary>

@@ -940,7 +940,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		        //digitals
 		        tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, meeting.Joinable);
-		        tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, meeting.Id != "0");
+		        tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, meeting.Dialable);
 
 		        //serials
 		        tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, meeting.Organizer);
@@ -994,7 +994,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             //Special Change for protected directory clear
 
-            trilist.SetBoolSigAction(joinMap.DirectoryClearSelected.JoinNumber, (b) => SelectDirectoryEntry(_directoryCodec, 0, _directoryTrilist, _directoryJoinmap));
+            trilist.SetBoolSigAction(joinMap.DirectoryClearSelected.JoinNumber, (b) => SelectDirectoryEntry(codec, 0, trilist, joinMap));
 
 		    // Report feedback for number of contact methods for selected contact
 
@@ -1004,7 +1004,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		    if (codec.DirectoryRoot != null)
 		    {
-                trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)codec.DirectoryRoot.CurrentDirectoryResults.Count);
+				var contactsCount = codec.DirectoryRoot.CurrentDirectoryResults.Where(c => c.ParentFolderId.Equals("root")).ToList().Count;				
+                trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)contactsCount);
+				Debug.Console(2, this, ">>> contactsCount: {0}", contactsCount);
 
                 var clearBytes = XSigHelpers.ClearOutputs();
 
@@ -1020,7 +1022,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 			codec.DirectoryResultReturned += (sender, args) =>
 			{
-				trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)args.Directory.CurrentDirectoryResults.Count);
+				var isRoot = codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false;
+				var argsCount = isRoot 
+					? args.Directory.CurrentDirectoryResults.Where(a => a.ParentFolderId.Equals("root")).ToList().Count
+					: args.Directory.CurrentDirectoryResults.Count;
+
+				trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)argsCount);
+				Debug.Console(2, this, ">>> argsCount: {0}", argsCount);
 
 				var clearBytes = XSigHelpers.ClearOutputs();
 
@@ -1184,46 +1192,47 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             return GetXSigString(tokenArray);
         }
 
-	    private string UpdateDirectoryXSig(CodecDirectory directory, bool isRoot)
-	    {
-	        var xSigMaxIndex = 1023;
-	        var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count > xSigMaxIndex
-	            ? xSigMaxIndex
-	            : directory.CurrentDirectoryResults.Count];
+		private string UpdateDirectoryXSig(CodecDirectory directory, bool isRoot)
+		{
+			var xSigMaxIndex = 1023;
+			var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count > xSigMaxIndex
+				? xSigMaxIndex
+				: directory.CurrentDirectoryResults.Count];
 
-	        Debug.Console(2, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot,
-	            directory.CurrentDirectoryResults.Count, tokenArray.Length);
+			Debug.Console(2, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot, directory.CurrentDirectoryResults.Count, tokenArray.Length);
 
-	        var contacts = directory.CurrentDirectoryResults.Count > xSigMaxIndex
-	            ? directory.CurrentDirectoryResults.Take(xSigMaxIndex)
-	            : directory.CurrentDirectoryResults;
+			var contacts = directory.CurrentDirectoryResults.Count > xSigMaxIndex
+				? directory.CurrentDirectoryResults.Take(xSigMaxIndex)
+				: directory.CurrentDirectoryResults;
 
-	        var counterIndex = 1;
-	        foreach (var entry in contacts)
-	        {
-	            var arrayIndex = counterIndex - 1;
-	            var entryIndex = counterIndex;
+			var contactsToDisplay = isRoot
+				? contacts.Where(c => c.ParentFolderId == "root")
+				: contacts.Where(c => c.ParentFolderId != "root");
 
-	            Debug.Console(2, this, "Entry{2:0000} Name: {0}, Folder ID: {1}", entry.Name, entry.FolderId, entryIndex);
+			var counterIndex = 1;
+			foreach (var entry in contactsToDisplay)
+			{
+				var arrayIndex = counterIndex - 1;
+				var entryIndex = counterIndex;
 
-	            if (entry is DirectoryFolder && entry.ParentFolderId == "root")
-	            {
-	                tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, String.Format("[+] {0}", entry.Name));
+				Debug.Console(2, this, "Entry{2:0000} Name: {0}, Folder ID: {1}, Type: {3}, ParentFolderId: {4}",
+					entry.Name, entry.FolderId, entryIndex, entry.GetType().GetCType().FullName, entry.ParentFolderId);
 
-	                counterIndex++;
-	                counterIndex++;
+				if (entry is DirectoryFolder)
+				{
+					tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, String.Format("[+] {0}", entry.Name));
 
-	                continue;
-	            }
+					counterIndex++;
 
-	            tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, entry.Name);
+					continue;
+				}
 
-	            counterIndex++;
-	        }
+				tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, entry.Name);
 
-	        return GetXSigString(tokenArray);
+				counterIndex++;
+			}
 
-
+			return GetXSigString(tokenArray);
 		}
 
 	    private void LinkVideoCodecCallControlsToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -1393,11 +1402,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, call.IsOnHold);
 
 				//serials
-				tokenArray[arrayIndex] = new XSigSerialToken(stringIndex + 1, call.Name ?? String.Empty);
-				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 2, call.Number ?? String.Empty);
-				tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 3, call.Direction.ToString());
-				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 4, call.Type.ToString());
-				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 5, call.Status.ToString());
+                tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, call.Name ?? String.Empty);
+                tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, call.Number ?? String.Empty);
+                tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, call.Direction.ToString());
+                tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, call.Type.ToString());
+                tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, call.Status.ToString());
                 if(call.Duration != null)
                 {
                     // May need to verify correct string format here
@@ -1417,12 +1426,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 
                 //serials
-				tokenArray[arrayIndex] = new XSigSerialToken(stringIndex + 1, String.Empty);
-				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 2, String.Empty);
-				tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 3, String.Empty);
-				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 4, String.Empty);
-				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 5, String.Empty);
-                tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 6, String.Empty);
+                tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, String.Empty);
+                tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, String.Empty);
+                tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, String.Empty);
+                tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, String.Empty);
+                tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, String.Empty);
+                tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, String.Empty);
 
 				arrayIndex += offset;
 				stringIndex += maxStrings;

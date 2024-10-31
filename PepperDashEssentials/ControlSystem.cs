@@ -13,6 +13,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Fusion;
+using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
@@ -46,28 +47,29 @@ namespace PepperDash.Essentials
         /// </summary>
         public override void InitializeSystem()
         {
-            _startTimer = new CTimer(StartSystem,StartupTime);
-
-
             // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
             // to allow any HD-BaseT DM endpoints to register first.
-            if (Global.ControlSystemIsDmpsType)
+            bool preventInitializationComplete = Global.ControlSystemIsDmpsType;
+            if (preventInitializationComplete)
             {
                 Debug.Console(1, "******************* InitializeSystem() Entering **********************");
-
-                _initializeEvent = new CEvent();
-
+                _startTimer = new CTimer(StartSystem, preventInitializationComplete, StartupTime);
+                _initializeEvent = new CEvent(true, false);
                 DeviceManager.AllDevicesRegistered += (o, a) =>
                 {
                     _initializeEvent.Set();
-                    Debug.Console(1, "******************* InitializeSystem() Exiting **********************");
                 };
-
                 _initializeEvent.Wait(30000);
+                Debug.Console(1, "******************* InitializeSystem() Exiting **********************");
+                SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            }
+            else
+            {
+                _startTimer = new CTimer(StartSystem, preventInitializationComplete, StartupTime);
             }
         }
 
-        private void StartSystem(object obj)
+        private void StartSystem(object preventInitialization)
         {
             DeterminePlatform();
 
@@ -79,36 +81,41 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(PepperDash.Essentials.Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-            {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s);
-            }, "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(BridgeHelper.JoinmapMarkdown, "getjoinmapmarkdown"
+                , "generate markdown of map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(s => Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s), "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 foreach (var tl in TieLineCollection.Default)
-                    CrestronConsole.ConsoleCommandResponse("  {0}\r\n", tl);
+                    CrestronConsole.ConsoleCommandResponse("  {0}{1}", tl, CrestronEnvironment.NewLine);
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 CrestronConsole.ConsoleCommandResponse
-                    ("Current running configuration. This is the merged system and template configuration");
+                    ("Current running configuration. This is the merged system and template configuration" + CrestronEnvironment.NewLine);
                 CrestronConsole.ConsoleCommandResponse(Newtonsoft.Json.JsonConvert.SerializeObject
                     (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
-            {
-                CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r\n" +
-                    "System URL:   {0}\r\n" +
-                    "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
-            }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
+                CrestronConsole.ConsoleCommandResponse(
+                "This system can be found at the following URLs:{2}" +
+                "System URL:   {0}{2}" +
+                "Template URL: {1}{2}",
+                ConfigReader.ConfigObject.SystemUrl,
+                ConfigReader.ConfigObject.TemplateUrl,
+                CrestronEnvironment.NewLine),
+                "portalinfo",
+                "Shows portal URLS from configuration",
+                ConsoleAccessLevelEnum.AccessOperator);
 
 
             CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
@@ -120,7 +127,10 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            if (!(bool)preventInitialization)
+            {
+                SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            }
         }
 
         /// <summary>
@@ -195,6 +205,8 @@ namespace PepperDash.Essentials
                 }
                 else   // Handles Linux OS (Virtual Control)
                 {
+                    Debug.SetDebugLevel(2);
+
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", Global.AssemblyVersion);
 
                     // Set path to User/
@@ -296,6 +308,10 @@ namespace PepperDash.Essentials
             if (!Directory.Exists(pluginDir))
                 Directory.Create(pluginDir);
 
+            var joinmapDir = Global.FilePathPrefix + "joinmaps";
+            if(!Directory.Exists(joinmapDir))
+                Directory.Create(joinmapDir);
+
 			return configExists;
 		}
 
@@ -343,6 +359,7 @@ namespace PepperDash.Essentials
 
             // Build the processor wrapper class
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+			DeviceManager.AddDevice(new EssemtialsWebApi("essentialsWebApi","Essentials Web API"));
 
             // Add global System Monitor device
             if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
@@ -384,20 +401,21 @@ namespace PepperDash.Essentials
                         }
                         else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
                         {
-                            Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
+							Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
 
-                            var butToken = devConf.Properties["buttons"];
-                            if (butToken != null)
-                            {
-                                var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
-                                var tpController = new Essentials.Core.Touchpanels.Mpc3TouchpanelController(devConf.Key, devConf.Name, Global.ControlSystem, buttons);
-                                DeviceManager.AddDevice(tpController);
-                            }
-                            else
-                            {
-                                Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: Unable to deserialize buttons collection for device: {0}", devConf.Key);
-                            }
-                            
+							var butToken = devConf.Properties["buttons"];
+							if (butToken == null)
+							{
+								Debug.Console(0, Debug.ErrorLogLevel.Error,
+									"Error: Unable to deserialize buttons collection for device: {0}", devConf.Key);
+								continue;
+							}
+
+							var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
+							var tpController = new Core.Touchpanels.Mpc3TouchpanelController(
+									string.Format("{0}-keypadButtons", devConf.Key), devConf.Name, Global.ControlSystem, buttons);
+
+							DeviceManager.AddDevice(tpController);	
                         }
                         else
                         {

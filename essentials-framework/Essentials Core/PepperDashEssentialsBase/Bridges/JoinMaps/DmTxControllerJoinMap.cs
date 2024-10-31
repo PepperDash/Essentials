@@ -64,6 +64,16 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete VgaContrast = new JoinDataComplete(new JoinData { JoinNumber = 7, JoinSpan = 1 },
             new JoinMetadata { Description = "DM TX Online", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("Port3HdcpState")]
+        public JoinDataComplete Port3HdcpState = new JoinDataComplete(new JoinData { JoinNumber = 8, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM TX Port 3 HDCP State Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("HdcpInputPortCount")]
+        public JoinDataComplete HdcpInputPortCount = new JoinDataComplete(new JoinData { JoinNumber = 9, JoinSpan = 1 },
+            new JoinMetadata { Description = "Number of Input Ports that support HDCP", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+
+
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it
         /// </summary>
@@ -78,7 +88,8 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         /// <param name="joinStart">Join this join map will start at</param>
         /// <param name="type">Type of the child join map</param>
-        protected DmTxControllerJoinMap(uint joinStart, Type type) : base(joinStart, type)
+        protected DmTxControllerJoinMap(uint joinStart, Type type)
+            : base(joinStart, type)
         {
         }
     }

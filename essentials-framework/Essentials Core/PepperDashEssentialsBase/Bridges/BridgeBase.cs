@@ -46,6 +46,33 @@ namespace PepperDash.Essentials.Core.Bridges
                 bridge.PrintJoinMaps();
             }
         }
+        public static void JoinmapMarkdown(string command)
+        {
+            var targets = command.Split(' ');
+
+            var bridgeKey = targets[0].Trim();
+
+            var bridge = DeviceManager.GetDeviceForKey(bridgeKey) as EiscApiAdvanced;
+
+            if (bridge == null)
+            {
+                Debug.Console(0, "Unable to find advanced bridge with key: '{0}'", bridgeKey);
+                return;
+            }
+
+            if (targets.Length > 1)
+            {
+                var deviceKey = targets[1].Trim();
+
+                if (string.IsNullOrEmpty(deviceKey)) return;
+                bridge.MarkdownJoinMapForDevice(deviceKey, bridgeKey);
+            }
+            else
+            {
+                bridge.MarkdownForBridge(bridgeKey);
+
+            }
+        }
     }
 
 
@@ -82,7 +109,7 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         public EiscApiPropertiesConfig PropertiesConfig { get; private set; }
 
-        protected Dictionary<string, JoinMapBaseAdvanced> JoinMaps { get; private set; }
+        public Dictionary<string, JoinMapBaseAdvanced> JoinMaps { get; private set; }
 
         public BasicTriList Eisc { get; private set; }
 
@@ -138,7 +165,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
                 Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
 
-                if (!typeof (IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
+                if (!typeof(IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
                 {
                     Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
                         "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
@@ -227,6 +254,19 @@ namespace PepperDash.Essentials.Core.Bridges
                 joinMap.Value.PrintJoinMapInfo();
             }
         }
+        /// <summary>
+        /// Generates markdown for all join maps on this bridge
+        /// </summary>
+        public virtual void MarkdownForBridge(string bridgeKey)
+        {
+            Debug.Console(0, this, "Writing Joinmaps to files for EISC IPID: {0}", Eisc.ID.ToString("X"));
+
+            foreach (var joinMap in JoinMaps)
+            {
+                Debug.Console(0, "Generating markdown for device '{0}':", joinMap.Key);
+                joinMap.Value.MarkdownJoinMapInfo(joinMap.Key, bridgeKey);
+            }
+        }
 
         /// <summary>
         /// Prints the join map for a device by key
@@ -242,8 +282,25 @@ namespace PepperDash.Essentials.Core.Bridges
                 return;
             }
 
-            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key); 
+            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key);
             joinMap.PrintJoinMapInfo();
+        }
+        /// <summary>
+        /// Prints the join map for a device by key
+        /// </summary>
+        /// <param name="deviceKey"></param>
+        public void MarkdownJoinMapForDevice(string deviceKey, string bridgeKey)
+        {
+            var joinMap = JoinMaps[deviceKey];
+
+            if (joinMap == null)
+            {
+                Debug.Console(0, this, "Unable to find joinMap for device with key: '{0}'", deviceKey);
+                return;
+            }
+
+            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key);
+            joinMap.MarkdownJoinMapInfo(deviceKey, bridgeKey);
         }
 
         /// <summary>
@@ -352,7 +409,7 @@ namespace PepperDash.Essentials.Core.Bridges
         public List<ApiDevicePropertiesConfig> Devices { get; set; }
 
         [JsonProperty("rooms")]
-        public List<ApiRoomPropertiesConfig> Rooms { get; set; } 
+        public List<ApiRoomPropertiesConfig> Rooms { get; set; }
 
 
         public class ApiDevicePropertiesConfig
@@ -385,7 +442,7 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         public EiscApiAdvancedFactory()
         {
-            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "eiscapiadvancedserver", "eiscapiadvancedclient",  "vceiscapiadv", "vceiscapiadvanced" };
+            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "eiscapiadvancedserver", "eiscapiadvancedclient", "vceiscapiadv", "vceiscapiadvanced" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
@@ -394,35 +451,51 @@ namespace PepperDash.Essentials.Core.Bridges
 
             var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
 
+            BasicTriList eisc;
+
             switch (dc.Type.ToLower())
             {
                 case "eiscapiadv":
                 case "eiscapiadvanced":
-                {
-                    var eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(controlProperties.IpIdInt,
-                        controlProperties.TcpSshProperties.Address, Global.ControlSystem);
-                    return new EiscApiAdvanced(dc, eisc);
-                }
+                    {
+                        eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(controlProperties.IpIdInt,
+                            controlProperties.TcpSshProperties.Address, Global.ControlSystem);
+                        break;
+                    }
                 case "eiscapiadvancedserver":
-                {
-                    var eisc = new EISCServer(controlProperties.IpIdInt, Global.ControlSystem);
-                    return new EiscApiAdvanced(dc, eisc);
-                }
+                    {
+                        eisc = new EISCServer(controlProperties.IpIdInt, Global.ControlSystem);
+                        break;
+                    }
                 case "eiscapiadvancedclient":
-                {
-                    var eisc = new EISCClient(controlProperties.IpIdInt, controlProperties.TcpSshProperties.Address, Global.ControlSystem);
-                    return new EiscApiAdvanced(dc, eisc);
-                }
+                    {
+                        eisc = new EISCClient(controlProperties.IpIdInt, controlProperties.TcpSshProperties.Address, Global.ControlSystem);
+                        break;
+                    }
                 case "vceiscapiadv":
                 case "vceiscapiadvanced":
-                {
-                    var eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, InitialParametersClass.RoomId,
-                        Global.ControlSystem);
-                    return new EiscApiAdvanced(dc, eisc);
-                }
+                    {
+                        if (string.IsNullOrEmpty(controlProperties.RoomId))
+                        {
+                            Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to build VC-4 EISC Client for device {0}. Room ID is missing or empty", dc.Key);
+                            eisc = null;
+                            break;
+                        }
+                        eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, controlProperties.RoomId,
+                            Global.ControlSystem);
+                        break;
+                    }
                 default:
-                    return null;
+                    eisc = null;
+                    break;
             }
+
+            if (eisc == null)
+            {
+                return null;
+            }
+
+            return new EiscApiAdvanced(dc, eisc);
         }
     }
 

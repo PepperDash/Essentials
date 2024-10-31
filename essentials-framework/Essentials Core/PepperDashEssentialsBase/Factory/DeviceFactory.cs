@@ -172,37 +172,42 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Prints the type names and associated metadata from the FactoryMethods collection.
         /// </summary>
-        /// <param name="command"></param>
+        /// <param name="filter"></param>
         public static void GetDeviceFactoryTypes(string filter)
         {
-            Dictionary<string, DeviceFactoryWrapper> types = new Dictionary<string, DeviceFactoryWrapper>();
+            var types = !string.IsNullOrEmpty(filter)
+                ? FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value)
+                : FactoryMethods;
 
-            if (!string.IsNullOrEmpty(filter))
-            {
-                types = FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value);
-            }
-            else
-            {
-                types = FactoryMethods;
-            }
-
-            Debug.Console(0, "Device Types:");
+            CrestronConsole.ConsoleCommandResponse("Device Types:");
 
             foreach (var type in types.OrderBy(t => t.Key))
             {
                 var description = type.Value.Description;
                 var cType = "Not Specified by Plugin";
 
-                if(type.Value.CType != null)
+                if (type.Value.CType != null)
                 {
                     cType = type.Value.CType.FullName;
                 }
 
-                Debug.Console(0, 
+                CrestronConsole.ConsoleCommandResponse(
                     @"Type: '{0}' 
                     CType: '{1}' 
                     Description: {2}", type.Key, cType, description);
             }
         }
+
+		/// <summary>
+		/// Returns the device factory dictionary
+		/// </summary>
+		/// <param name="filter"></param>
+		/// <returns></returns>
+	    public static Dictionary<string, DeviceFactoryWrapper> GetDeviceFactoryDictionary(string filter)
+		{
+			return string.IsNullOrEmpty(filter) 
+				? FactoryMethods
+				: FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value);
+		}
     }
 }

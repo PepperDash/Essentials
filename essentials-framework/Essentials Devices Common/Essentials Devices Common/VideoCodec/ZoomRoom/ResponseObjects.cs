@@ -303,11 +303,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					{
 						var contact = new InvitableDirectoryContact { Name = c.ScreenName, ContactId = c.Jid };
 
-                        contact.ContactMethods.Add(new ContactMethod() { Number = c.Jid, Device = eContactMethodDevice.Video, CallType = eContactMethodCallType.Video, ContactMethodId = c.Jid });
+                        contact.ContactMethods.Add(new ContactMethod()
+                        {
+	                        Number = c.Jid, 
+							Device = eContactMethodDevice.Video, 
+							CallType = eContactMethodCallType.Video, 
+							ContactMethodId = c.Jid
+                        });
 
 						if (folders.Count > 0)
 						{
-							contact.ParentFolderId = c.IsZoomRoom ? "rooms" : "contacts";
+							contact.ParentFolderId = c.IsZoomRoom
+								? roomFolder.FolderId // "rooms" 
+								: contactFolder.FolderId; // "contacts"
 						}
 
 						contacts.Add(contact);
@@ -1501,6 +1509,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					meeting.EndTime = b.EndTime;
 
 				meeting.Privacy = b.IsPrivate ? eMeetingPrivacy.Private : eMeetingPrivacy.Public;
+
+				meeting.Dialable = meeting.Id != "0";
 
 				// No meeting.Calls data exists for Zoom Rooms.  Leaving out for now.
 				var now = DateTime.Now;

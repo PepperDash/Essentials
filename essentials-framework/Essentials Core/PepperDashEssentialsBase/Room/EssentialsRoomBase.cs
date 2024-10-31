@@ -35,7 +35,7 @@ namespace PepperDash.Essentials.Core
         public BoolFeedback IsWarmingUpFeedback { get; private set; }
         public BoolFeedback IsCoolingDownFeedback { get; private set; }
 
-        public IOccupancyStatusProvider RoomOccupancy { get; private set; }
+        public IOccupancyStatusProvider RoomOccupancy { get; protected set; }
 
         public bool OccupancyStatusProviderIsRemote { get; private set; }
 
@@ -343,7 +343,7 @@ namespace PepperDash.Essentials.Core
 
         void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
         {
-            if (RoomOccupancy.RoomIsOccupiedFeedback.BoolValue == false)
+            if (RoomOccupancy.RoomIsOccupiedFeedback.BoolValue == false  && AllowVacancyTimerToStart())
             {
                 Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Notice: Vacancy Detected");
                 // Trigger the timer when the room is vacant
@@ -362,6 +362,15 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="o"></param>
         public abstract void RoomVacatedForTimeoutPeriod(object o);
+
+        /// <summary>
+        /// Allow the vacancy event from an occupancy sensor to turn the room off.
+        /// </summary>
+        /// <returns>If the timer should be allowed. Defaults to true</returns>
+        protected virtual bool AllowVacancyTimerToStart()
+        {
+            return true;
+        }
     }
         
     /// <summary>

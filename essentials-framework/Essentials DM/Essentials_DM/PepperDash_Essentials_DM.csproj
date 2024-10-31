@@ -59,7 +59,7 @@
       <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="PepperDash_Core, Version=1.0.42.30563, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDash_Core, Version=1.3.3.32940, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\PepperDashCore\lib\net35\PepperDash_Core.dll</HintPath>
     </Reference>
@@ -104,7 +104,13 @@
     <Compile Include="Chassis\HdMd8xNController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEBridgeableController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
+    <Compile Include="Chassis\HdPsXxxAnalogAuxMixerController.cs" />
+    <Compile Include="Chassis\HdPsXxxController.cs" />
+    <Compile Include="Chassis\HdPsXxxOutputAudioController.cs" />
+    <Compile Include="Config\HdPsXxxPropertiesConfig.cs" />
     <Compile Include="Config\InputPropertiesConfig.cs" />
+    <Compile Include="Endpoints\EndpointInterfaces.cs" />
+    <Compile Include="Endpoints\DGEs\DgeJoinMap.cs" />
     <Compile Include="Endpoints\DGEs\DmDge200CController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4kZ100CController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4kZScalerCController.cs" />
@@ -151,6 +157,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VideoStatusHelpers.cs" />
     <None Include="app.config" />
+    <None Include="ClassDiagram1.cd" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>

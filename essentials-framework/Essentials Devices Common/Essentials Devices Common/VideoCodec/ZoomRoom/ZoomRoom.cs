@@ -59,8 +59,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private CameraBase _selectedCamera;
         private string _lastDialedMeetingNumber;
 
+        private CTimer contactsDebounceTimer;
+
 
 		private readonly ZoomRoomPropertiesConfig _props;
+
+		private bool _meetingPasswordRequired;
+
+        private bool _waitingForUserToAcceptOrRejectIncomingCall;
+
+		public void Poll(string pollString)
+		{
+			if(_meetingPasswordRequired || _waitingForUserToAcceptOrRejectIncomingCall) return;
+			
+			SendText(string.Format("{0}{1}", pollString, SendDelimiter));
+		}
 
 		public ZoomRoom(DeviceConfig config, IBasicCommunication comm)
 			: base(config)
@@ -75,13 +88,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			if (_props.CommunicationMonitorProperties != null)
 			{
-				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication,
-					_props.CommunicationMonitorProperties);
+				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, _props.CommunicationMonitorProperties.PollInterval, _props.CommunicationMonitorProperties.TimeToWarning, _props.CommunicationMonitorProperties.TimeToError,
+					() => Poll(_props.CommunicationMonitorProperties.PollString));
 			}
 			else
 			{
-				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000,
-					"zStatus SystemUnit" + SendDelimiter);
+				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, () => Poll("zStatus SystemUnit"));
 			}
 
 			DeviceManager.AddDevice(CommunicationMonitor);
@@ -366,26 +378,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void SelectCamera(string key)
 		{
-			if (Cameras == null)
-			{
-				return;
-			}
+            if (CameraIsMutedFeedback.BoolValue)
+            {
+                CameraMuteOff();
+            }
 
-			var camera = Cameras.FirstOrDefault(c => c.Key.IndexOf(key, StringComparison.OrdinalIgnoreCase) > -1);
-			if (camera != null)
-			{
-				Debug.Console(1, this, "Selected Camera with key: '{0}'", camera.Key);
-				SelectedCamera = camera;
-
-                if (CameraIsMutedFeedback.BoolValue)
-                {
-                    CameraMuteOff();
-                }
-			}
-			else
-			{
-				Debug.Console(1, this, "Unable to select camera with key: '{0}'", key);
-			}
+            SendText(string.Format("zConfiguration Video Camera selectedId: {0}", key));
 		}
 
 		public CameraBase FarEndCamera { get; private set; }
@@ -648,8 +646,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				if (a.PropertyName == "SelectedId")
 				{
-					SelectCamera(Configuration.Video.Camera.SelectedId);
-					// this will in turn fire the affected feedbacks
+                    if (Cameras == null)
+                    {
+                        return;
+                    }
+
+                    var camera = Cameras.FirstOrDefault(c => c.Key.IndexOf(Configuration.Video.Camera.SelectedId, StringComparison.OrdinalIgnoreCase) > -1);
+                    if (camera != null)
+                    {
+                        Debug.Console(1, this, "Camera selected with key: '{0}'", camera.Key);
+
+                        SelectedCamera = camera;
+
+                        if (CameraIsMutedFeedback.BoolValue)
+                        {
+                            CameraMuteOff();
+                        }
+                    }
+                    else
+                    {
+                        Debug.Console(1, this, "No camera found with key: '{0}'", Configuration.Video.Camera.SelectedId);
+                    }
 				}
 			};
 
@@ -960,6 +977,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void SendText(string command)
 		{
+            if (_meetingPasswordRequired)
+            {
+                Debug.Console(2, this, "Blocking commands to ZoomRoom while waiting for user to enter meeting password");
+                return;
+            }
+
+            if (_waitingForUserToAcceptOrRejectIncomingCall)
+            {
+                Debug.Console(2, this, "Blocking commands to ZoomRoom while waiting for user to accept or reject incoming call");
+                return;
+            }
+
 			if (CommDebuggingIsOn)
 			{
 				Debug.Console(1, this, "Sending: '{0}'", command);
@@ -1355,22 +1384,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.Phonebook);
 
-								var directoryResults =
-									zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
-
-								if (!PhonebookSyncState.InitialSyncComplete)
-								{
-									PhonebookSyncState.InitialPhonebookFoldersReceived();
-									PhonebookSyncState.PhonebookRootEntriesReceived();
-									PhonebookSyncState.SetPhonebookHasFolders(true);
-									PhonebookSyncState.SetNumberOfContacts(Status.Phonebook.Contacts.Count);
-								}
-
-								directoryResults.ResultsFolderId = "root";
-
-								DirectoryRoot = directoryResults;
-
-								CurrentDirectoryResult = directoryResults;
+                                UpdateDirectory();
 
 								break;
 							}
@@ -1499,35 +1513,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						{
 							case "phonebook":
 							{
+                                zStatus.Contact contact = new zStatus.Contact();
+
 								if (responseObj["Updated Contact"] != null)
-								{
-									var updatedContact =
-										JsonConvert.DeserializeObject<zStatus.Contact>(
-											responseObj["Updated Contact"].ToString());
-
-									var existingContact =
-										Status.Phonebook.Contacts.FirstOrDefault(c => c.Jid.Equals(updatedContact.Jid));
-
-									if (existingContact != null)
-									{
-										// Update existing contact
-										JsonConvert.PopulateObject(responseObj["Updated Contact"].ToString(),
-											existingContact);
-									}
+								{                                    
+                                    contact = responseObj["Updated Contact"].ToObject<zStatus.Contact>();									
 								}
 								else if (responseObj["Added Contact"] != null)
 								{
-									var jToken = responseObj["Updated Contact"];
-									if (jToken != null)
-									{
-										var newContact =
-											JsonConvert.DeserializeObject<zStatus.Contact>(
-												jToken.ToString());
-
-										// Add a new contact
-										Status.Phonebook.Contacts.Add(newContact);
-									}
+									contact = responseObj["Added Contact"].ToObject<zStatus.Contact>();
 								}
+
+                                var existingContactIndex = Status.Phonebook.Contacts.FindIndex(c => c.Jid.Equals(contact.Jid));
+
+                                if (existingContactIndex > 0)
+                                {                                    
+                                    Status.Phonebook.Contacts[existingContactIndex] = contact;
+                                } 
+                                else 
+                                {                                    
+                                    Status.Phonebook.Contacts.Add(contact);
+                                }
+
+                                if(contactsDebounceTimer == null)
+                                {
+                                    contactsDebounceTimer = new CTimer(o => UpdateDirectory(), 2000);
+                                }
+                                else
+                                {
+                                    contactsDebounceTimer.Reset();
+                                }                                
 
 								break;
 							}
@@ -1584,6 +1599,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 										Id = incomingCall.callerJID
 									};
 
+                                    _waitingForUserToAcceptOrRejectIncomingCall = true;
+
 									ActiveCalls.Add(newCall);
 
 									OnCallStatusChange(newCall);
@@ -1609,6 +1626,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 										OnCallStatusChange(existingCall);
 									}
+
+                                    _waitingForUserToAcceptOrRejectIncomingCall = false;
 
 									UpdateCallStatus();
 								}
@@ -1992,6 +2011,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// </summary>
 		private void GetBookings()
 		{
+			if (_meetingPasswordRequired || _waitingForUserToAcceptOrRejectIncomingCall) return;
+
 			SendText("zCommand Bookings List");
 		}
 
@@ -2179,6 +2200,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     );
             }
 
+			_meetingPasswordRequired = false;
             base.OnCallStatusChange(item);
 
 			Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
@@ -2215,6 +2237,42 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 Debug.Console(1, this, "Exception getting sharing status: {0}", e.Message);
                 Debug.Console(2, this, "{0}", e.StackTrace);
                 return sharingState;
+            }
+        }
+
+        private void UpdateDirectory()
+        {
+            Debug.Console(2, this, "Updating directory");
+            var directoryResults = zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
+
+            if (!PhonebookSyncState.InitialSyncComplete)
+            {
+                PhonebookSyncState.InitialPhonebookFoldersReceived();
+                PhonebookSyncState.PhonebookRootEntriesReceived();
+                PhonebookSyncState.SetPhonebookHasFolders(true);
+                PhonebookSyncState.SetNumberOfContacts(Status.Phonebook.Contacts.Count);
+            }
+
+            directoryResults.ResultsFolderId = "root";
+
+            DirectoryRoot = directoryResults;
+
+            CurrentDirectoryResult = directoryResults;
+
+            //
+            if (contactsDebounceTimer != null)
+            {
+                ClearContactDebounceTimer();
+            }
+        }
+
+        private void ClearContactDebounceTimer()
+        {
+            Debug.Console(2, this, "Clearing Timer");
+            if (!contactsDebounceTimer.Disposed && contactsDebounceTimer != null)
+            {
+                contactsDebounceTimer.Dispose();
+                contactsDebounceTimer = null;
             }
         }
 
@@ -2549,7 +2607,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			PasswordRequired += (devices, args) =>
 			{
-                Debug.Console(0, this, "***********************************PaswordRequired. Message: {0} Cancelled: {1} Last Incorrect: {2} Failed: {3}", args.Message, args.LoginAttemptCancelled, args.LastAttemptWasIncorrect, args.LoginAttemptFailed);
+                Debug.Console(2, this, "***********************************PaswordRequired. Message: {0} Cancelled: {1} Last Incorrect: {2} Failed: {3}", args.Message, args.LoginAttemptCancelled, args.LastAttemptWasIncorrect, args.LoginAttemptFailed);
 
 				if (args.LoginAttemptCancelled)
 				{
@@ -2626,6 +2684,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void AcceptCall()
 		{
+            _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			var incomingCall =
 				ActiveCalls.FirstOrDefault(
 					c => c.Status.Equals(eCodecCallStatus.Ringing) && c.Direction.Equals(eCodecCallDirection.Incoming));
@@ -2635,6 +2695,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public override void AcceptCall(CodecActiveCallItem call)
 		{
+            _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText(string.Format("zCommand Call Accept callerJID: {0}", call.Id));
 
 			call.Status = eCodecCallStatus.Connected;
@@ -2646,6 +2708,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void RejectCall()
 		{
+            _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			var incomingCall =
 				ActiveCalls.FirstOrDefault(
 					c => c.Status.Equals(eCodecCallStatus.Ringing) && c.Direction.Equals(eCodecCallDirection.Incoming));
@@ -2655,6 +2719,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public override void RejectCall(CodecActiveCallItem call)
 		{
+            _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText(string.Format("zCommand Call Reject callerJID: {0}", call.Id));
 
 			call.Status = eCodecCallStatus.Disconnected;
@@ -2781,16 +2847,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void LeaveMeeting()
         {
-            SendText("zCommand Call Leave");
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
+			SendText("zCommand Call Leave");
         }
 
 		public override void EndCall(CodecActiveCallItem call)
 		{
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText("zCommand Call Disconnect");
 		}
 
 		public override void EndAllCalls()
 		{
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText("zCommand Call Disconnect");
 		}
 
@@ -3440,17 +3515,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void SubmitPassword(string password)
         {
+            _meetingPasswordRequired = false;
             Debug.Console(2, this, "Password Submitted: {0}", password);
             Dial(_lastDialedMeetingNumber, password);
-            //OnPasswordRequired(false, false, true, "");		
         }
 
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
         {
+			_meetingPasswordRequired = !loginFailed || !loginCancelled;
+
             var handler = PasswordRequired;
             if (handler != null)
-            {
-                handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
+            {	            
+				Debug.Console(2, this, "Meeting Password Required: {0}", _meetingPasswordRequired);
+
+	            handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
             }
         }
 

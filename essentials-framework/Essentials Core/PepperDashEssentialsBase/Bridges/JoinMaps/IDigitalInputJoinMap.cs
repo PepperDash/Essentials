@@ -7,7 +7,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("InputState")]
         public JoinDataComplete InputState = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata { Description = "Room Email Url", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata { Description = "Input State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it

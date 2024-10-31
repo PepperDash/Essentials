@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Text;
 using Crestron.SimplSharp.Reflection;
+using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
@@ -98,22 +101,22 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void PrintJoinMapInfo()
         {
-            Debug.Console(0, "{0}:\n", GetType().Name);
+            CrestronConsole.ConsoleCommandResponse("{0}:\n", GetType().Name);
 
             // Get the joins of each type and print them
-            Debug.Console(0, "Digitals:");
+            CrestronConsole.ConsoleCommandResponse("Digitals:");
             var digitals = Joins.Where(j => (j.Value.JoinType & eJoinType.Digital) == eJoinType.Digital).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Digital Joins", digitals.Count); 
+            CrestronConsole.ConsoleCommandResponse("Found {0} Digital Joins", digitals.Count); 
             PrintJoinList(GetSortedJoins(digitals));
 
-            Debug.Console(0, "Analogs:");
+            CrestronConsole.ConsoleCommandResponse("Analogs:");
             var analogs = Joins.Where(j => (j.Value.JoinType & eJoinType.Analog) == eJoinType.Analog).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Analog Joins", analogs.Count); 
+            CrestronConsole.ConsoleCommandResponse("Found {0} Analog Joins", analogs.Count); 
             PrintJoinList(GetSortedJoins(analogs));
 
-            Debug.Console(0, "Serials:");
+            CrestronConsole.ConsoleCommandResponse("Serials:");
             var serials = Joins.Where(j => (j.Value.JoinType & eJoinType.Serial) == eJoinType.Serial).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Serial Joins", serials.Count);
+            CrestronConsole.ConsoleCommandResponse("Found {0} Serial Joins", serials.Count);
             PrintJoinList(GetSortedJoins(serials));
 
         }
@@ -136,7 +139,7 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var join in joins)
             {
-                Debug.Console(0,
+                CrestronConsole.ConsoleCommandResponse(
                     @"Join Number: {0} | Label: '{1}' | JoinSpan: '{2}' | Type: '{3}' | Capabilities: '{4}'",
                         join.Value.JoinNumber,
                         join.Value.Label,
@@ -193,19 +196,6 @@ namespace PepperDash.Essentials.Core
 
         protected void AddJoins(Type type)
         {
-            // Add all the JoinDataComplete properties to the Joins Dictionary and pass in the offset 
-            //Joins = this.GetType()
-            //    .GetCType()
-            //    .GetFields(BindingFlags.Public | BindingFlags.Instance)
-            //    .Where(field => field.IsDefined(typeof(JoinNameAttribute), true))
-            //    .Select(field => (JoinDataComplete)field.GetValue(this))
-            //    .ToDictionary(join => join.GetNameAttribute(), join =>
-            //        {
-            //            join.SetJoinOffset(_joinOffset);
-            //            return join;
-            //        });
-
-            //type = this.GetType(); <- this wasn't working because 'this' was always the base class, never the derived class
             var fields =
                 type.GetCType()
                     .GetFields(BindingFlags.Public | BindingFlags.Instance)
@@ -219,7 +209,7 @@ namespace PepperDash.Essentials.Core
 
                 if (value == null)
                 {
-                    Debug.Console(0, "Unable to caset base class to {0}", type.Name);
+                    Debug.Console(0, "Unable to cast base class to {0}", type.Name);
                     continue;
                 }
 
@@ -244,23 +234,69 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void PrintJoinMapInfo()
         {
-            Debug.Console(0, "{0}:\n", GetType().Name);
+            var sb = JoinmapStringBuilder();
+
+            CrestronConsole.ConsoleCommandResponse(sb.ToString());
+        }
+
+        private StringBuilder JoinmapStringBuilder()
+        {
+            var sb = new StringBuilder();
 
             // Get the joins of each type and print them
-            Debug.Console(0, "Digitals:");
-            var digitals = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Digital) == eJoinType.Digital).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Digital Joins", digitals.Count);
-            PrintJoinList(GetSortedJoins(digitals));
+            sb.AppendLine(String.Format("# {0}", GetType().Name));
+            sb.AppendLine();
+            sb.AppendLine("## Digitals");
+            sb.AppendLine();
+            // Get the joins of each type and print them
+            var digitals =
+                Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Digital) == eJoinType.Digital)
+                    .ToDictionary(j => j.Key, j => j.Value);
+            var digitalSb = AppendJoinList(GetSortedJoins(digitals));
+            digitalSb.AppendLine("## Analogs");
+            digitalSb.AppendLine();
 
-            Debug.Console(0, "Analogs:");
-            var analogs = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Analog) == eJoinType.Analog).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Analog Joins", analogs.Count);
-            PrintJoinList(GetSortedJoins(analogs));
-            
-            Debug.Console(0, "Serials:");
-            var serials = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Serial) == eJoinType.Serial).ToDictionary(j => j.Key, j => j.Value);
-            Debug.Console(2, "Found {0} Serial Joins", serials.Count);
-            PrintJoinList(GetSortedJoins(serials));
+            var analogs =
+                Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Analog) == eJoinType.Analog)
+                    .ToDictionary(j => j.Key, j => j.Value);
+            var analogSb = AppendJoinList(GetSortedJoins(analogs));
+            analogSb.AppendLine("## Serials");
+            analogSb.AppendLine();
+
+            var serials =
+                Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Serial) == eJoinType.Serial)
+                    .ToDictionary(j => j.Key, j => j.Value);
+            var serialSb = AppendJoinList(GetSortedJoins(serials));
+
+            sb.EnsureCapacity(sb.Length + digitalSb.Length + analogSb.Length + serialSb.Length);
+            sb.Append(digitalSb).Append(analogSb).Append(serialSb);
+            return sb;
+        }
+
+        /// <summary>
+        /// Prints the join information to console
+        /// </summary>
+        public void MarkdownJoinMapInfo(string deviceKey, string bridgeKey)
+        {
+            var pluginType = GetType().Name;
+
+            CrestronConsole.ConsoleCommandResponse("{0}:\n", pluginType);
+
+
+
+            WriteJoinmapMarkdown(JoinmapStringBuilder(), pluginType, bridgeKey, deviceKey);
+
+        }
+
+        private static void WriteJoinmapMarkdown(StringBuilder stringBuilder, string pluginType, string bridgeKey, string deviceKey)
+        {
+            var fileName = String.Format("{0}{1}{2}__{3}__{4}.md", Global.FilePathPrefix, "joinMaps/", pluginType, bridgeKey, deviceKey);
+
+            using (var sw = new StreamWriter(fileName))
+            {
+                sw.WriteLine(stringBuilder.ToString());
+                CrestronConsole.ConsoleCommandResponse("Joinmap Readme generated and written to {0}", fileName);
+            }
 
         }
 
@@ -269,7 +305,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="joins"></param>
         /// <returns></returns>
-        List<KeyValuePair<string, JoinDataComplete>> GetSortedJoins(Dictionary<string, JoinDataComplete> joins)
+        static List<KeyValuePair<string, JoinDataComplete>> GetSortedJoins(Dictionary<string, JoinDataComplete> joins)
         {
             var sortedJoins = joins.ToList();
 
@@ -278,19 +314,38 @@ namespace PepperDash.Essentials.Core
             return sortedJoins;
         }
 
-        void PrintJoinList(List<KeyValuePair<string, JoinDataComplete>> joins)
+
+        static StringBuilder AppendJoinList(List<KeyValuePair<string, JoinDataComplete>> joins)
         {
+            var sb = new StringBuilder();
+            const string stringFormatter = "| {0} | {1} | {2} | {3} | {4} |";
+            const int joinNumberLen = 11;
+            const int joinSpanLen = 9;
+            const int typeLen = 19;
+            const int capabilitiesLen = 12;
+            var descriptionLen = (from @join in joins select @join.Value into j select j.Metadata.Description.Length).Concat(new[] {11}).Max();
+
+            //build header
+            sb.AppendLine(String.Format(stringFormatter, 
+                String.Format("Join Number").PadRight(joinNumberLen, ' '), 
+                String.Format("Join Span").PadRight(joinSpanLen, ' '), 
+                String.Format("Description").PadRight(descriptionLen, ' '), 
+                String.Format("Type").PadRight(typeLen, ' '),
+                 String.Format("Capabilities").PadRight(capabilitiesLen, ' ')));
+            //build table seperator
+            sb.AppendLine(String.Format(stringFormatter,
+                new String('-', joinNumberLen),
+                new String('-', joinSpanLen),
+                new String('-', descriptionLen),
+                new String('-', typeLen),
+                new String('-', capabilitiesLen)));
+
             foreach (var join in joins)
             {
-                Debug.Console(0,
-                    @"Join Number: {0} | JoinSpan: '{1}' | JoinName: {2} | Description: '{3}' | Type: '{4}' | Capabilities: '{5}'",
-                        join.Value.JoinNumber,
-                        join.Value.JoinSpan,
-                        join.Key,
-                        String.IsNullOrEmpty(join.Value.AttributeName) ? join.Value.Metadata.Label : join.Value.AttributeName,
-                        join.Value.Metadata.JoinType.ToString(),
-                        join.Value.Metadata.JoinCapabilities.ToString());
+                sb.AppendLine(join.Value.GetMarkdownFormattedData(stringFormatter, descriptionLen));
             }
+            sb.AppendLine();
+            return sb;
         }
 
         /// <summary>
@@ -301,15 +356,17 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var customJoinData in joinData)
             {
-                var join = Joins[customJoinData.Key];
+                JoinDataComplete join;
+
+                if (!Joins.TryGetValue(customJoinData.Key, out join))
+                {
+                    Debug.Console(2, "No matching key found in join map for: '{0}'", customJoinData.Key);
+                    continue;
+                }
 
                 if (join != null)
                 {
                     join.SetCustomJoinData(customJoinData.Value);
-                }
-                else
-                {
-                    Debug.Console(2, "No matching key found in join map for: '{0}'", customJoinData.Key);
                 }
             }
 
@@ -458,6 +515,64 @@ namespace PepperDash.Essentials.Core
             _data = data;
             Metadata = metadata;
         }
+
+        public string GetMarkdownFormattedData(string stringFormatter, int descriptionLen)
+        {
+
+            //Fixed Width Headers
+            var joinNumberLen = String.Format("Join Number").Length;
+            var joinSpanLen = String.Format("Join Span").Length;
+            var typeLen = String.Format("AnalogDigitalSerial").Length;
+            var capabilitiesLen = String.Format("ToFromFusion").Length;
+
+            //Track which one failed, if it did
+            const string placeholder = "unknown";
+            var dataArray = new Dictionary<string, string>
+            {
+                {"joinNumber", placeholder.PadRight(joinNumberLen, ' ')},
+                {"joinSpan", placeholder.PadRight(joinSpanLen, ' ')},
+                {"description", placeholder.PadRight(descriptionLen, ' ')},
+                {"joinType", placeholder.PadRight(typeLen, ' ')},
+                {"capabilities", placeholder.PadRight(capabilitiesLen, ' ')}
+            };
+
+
+            try
+            {
+                dataArray["joinNumber"] = String.Format("{0}", JoinNumber.ToString(CultureInfo.InvariantCulture).ReplaceIfNullOrEmpty(placeholder)).PadRight(joinNumberLen, ' ');
+                dataArray["joinSpan"] = String.Format("{0}", JoinSpan.ToString(CultureInfo.InvariantCulture).ReplaceIfNullOrEmpty(placeholder)).PadRight(joinSpanLen, ' ');
+                dataArray["description"] = String.Format("{0}", Metadata.Description.ReplaceIfNullOrEmpty(placeholder)).PadRight(descriptionLen, ' ');
+                dataArray["joinType"] = String.Format("{0}", Metadata.JoinType.ToString().ReplaceIfNullOrEmpty(placeholder)).PadRight(typeLen, ' ');
+                dataArray["capabilities"] = String.Format("{0}", Metadata.JoinCapabilities.ToString().ReplaceIfNullOrEmpty(placeholder)).PadRight(capabilitiesLen, ' ');
+
+                return String.Format(stringFormatter,
+                    dataArray["joinNumber"],
+                    dataArray["joinSpan"],
+                    dataArray["description"],
+                    dataArray["joinType"],
+                    dataArray["capabilities"]);
+
+            }
+            catch (Exception e)
+            {
+                //Don't Throw - we don't want to kill the system if this falls over - it's not mission critical. Print the error, use placeholder data
+                var errorKey = string.Empty;
+                foreach (var item in dataArray)
+                {
+                    if (item.Value.TrimEnd() == placeholder) continue;
+                    errorKey = item.Key;
+                    break;
+                }
+                Debug.Console(0, "Unable to decode join metadata {1}- {0}", e.Message, !String.IsNullOrEmpty(errorKey) ? (' ' + errorKey) : String.Empty);
+                return String.Format(stringFormatter,
+                    dataArray["joinNumber"],
+                    dataArray["joinSpan"],
+                    dataArray["description"],
+                    dataArray["joinType"],
+                    dataArray["capabilities"]);
+            }
+        }
+
 
         /// <summary>
         /// Sets the join offset value

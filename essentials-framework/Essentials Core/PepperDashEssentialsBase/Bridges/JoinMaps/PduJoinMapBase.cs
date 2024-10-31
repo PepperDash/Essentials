@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("Online")]
         public JoinDataComplete Online = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata { Description = "PDU Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata { Description = "Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("OutletCount")]
         public JoinDataComplete OutletCount = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
