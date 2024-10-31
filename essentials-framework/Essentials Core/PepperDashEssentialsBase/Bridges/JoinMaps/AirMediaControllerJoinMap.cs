@@ -20,6 +20,18 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete AutomaticInputRoutingEnabled = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
             new JoinMetadata { Description = "Air Media Automatic Input Routing Enable(d)", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
+        [JoinName("HdmiInHdcpSupportOn")]
+        public JoinDataComplete HdmiInHdcpSupportOn = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata { Description = "Turns on HDCP support for HDMI in.  Reports state as FB", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("HdmiInHdcpSupportOff")]
+        public JoinDataComplete HdmiInHdcpSupportOff = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata { Description = "Turns off HDCP support for HDMI in.  Reports state as FB", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("HdmiInDisabledByHdcp")]
+        public JoinDataComplete HdmiInDisabledByHdcp = new JoinDataComplete(new JoinData { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata { Description = "Reports if ", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("VideoOut")]
         public JoinDataComplete VideoOut = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Air Media Video Route Select / Feedback", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });

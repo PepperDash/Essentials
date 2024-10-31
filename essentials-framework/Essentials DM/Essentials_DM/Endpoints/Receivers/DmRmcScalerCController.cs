@@ -51,6 +51,7 @@ namespace PepperDash.Essentials.DM
 		    InputPorts = new RoutingPortCollection<RoutingInputPort> {DmIn};
 		    OutputPorts = new RoutingPortCollection<RoutingOutputPort> {HdmiOut};
 
+
             // Set Ports for CEC
             HdmiOut.Port = _rmc.HdmiOutput;
         }
