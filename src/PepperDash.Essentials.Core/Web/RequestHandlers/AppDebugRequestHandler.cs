@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
-using System;
 using Serilog.Events;
 using Newtonsoft.Json.Converters;
 
@@ -27,7 +26,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-			var appDebug = new AppDebug { MinimumLevel = Debug.WebsocketMinimumLogLevel };
+			var appDebug = new AppDebug { MinimumLevel = Debug.WebsocketMinimumLevel };
 
 			var body = JsonConvert.SerializeObject(appDebug, Formatting.Indented);
 
@@ -67,7 +66,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
 			Debug.SetWebSocketMinimumDebugLevel(requestBody.MinimumLevel);
 
-			appDebug.MinimumLevel = Debug.WebsocketMinimumLogLevel;
+			appDebug.MinimumLevel = Debug.WebsocketMinimumLevel;
 			var responseBody = JsonConvert.SerializeObject(appDebug, Formatting.Indented);
 
 			context.Response.StatusCode = 200;

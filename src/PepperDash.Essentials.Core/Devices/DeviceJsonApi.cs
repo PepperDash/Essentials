@@ -91,7 +91,7 @@ namespace PepperDash.Essentials.Core
                         }
                         catch (Exception e)
                         {
-                            Debug.LogMessage(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+                            Debug.LogError(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
                         }
                     });
 
@@ -111,7 +111,7 @@ namespace PepperDash.Essentials.Core
             var obj = FindObjectOnPath(key);
             if (obj == null)
             {
-                Debug.LogMessage(LogEventLevel.Warning, "Unable to find object at path {deviceKey}", null, key);
+                Debug.LogMessage(LogEventLevel.Warning, "Unable to find object at path {deviceKey}", key);
                 return;
             }
 
@@ -130,9 +130,7 @@ namespace PepperDash.Essentials.Core
 
                 if (method == null)
                 {
-                    Debug.LogMessage(LogEventLevel.Warning,
-                        "Unable to find method with name {methodName} and that matches parameters {@parameters}", null, action.MethodName,
-                        action.Params);
+                    Debug.LogMessage(LogEventLevel.Warning, "Unable to find method with name {methodName} and that matches parameters {@parameters}", action.MethodName, action.Params);
                     return;
                 }
                 var mParams = method.GetParameters();
@@ -145,18 +143,18 @@ namespace PepperDash.Essentials.Core
                 {
                     try
                     {
-                        Debug.LogMessage(LogEventLevel.Verbose, "Calling method {methodName} on device {deviceKey} with {@params}", null, method.Name, action.DeviceKey, action.Params);
+                        Debug.LogMessage(LogEventLevel.Verbose, "Calling method {methodName} on device {deviceKey} with {@params}", method.Name, action.DeviceKey, action.Params);
                         method.Invoke(obj, convertedParams);
                     }
                     catch (Exception e)
                     {
-                        Debug.LogMessage(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+                        Debug.LogError(e, "Error invoking method {methodName} on device {deviceKey}", method.Name, action.DeviceKey);
                     }
                 });
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Unable to call method with name {methodName} with {@parameters}", null, action.MethodName, action.Params);
+                Debug.LogError(ex, "Unable to call method with name {methodName} with {@parameters}", action.MethodName, action.Params);
             }
         }
 

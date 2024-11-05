@@ -92,7 +92,6 @@ namespace PepperDash.Essentials
 
         private void StartSystem(object preventInitialization)
         {
-            Debug.SetErrorLogMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
 
             DeterminePlatform();
 
@@ -241,7 +240,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.LogMessage(e, "Unable to determine platform due to exception");                
+                Debug.LogError(e, "Unable to determine platform due to exception");                
             }
         }
 
@@ -297,7 +296,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.LogMessage(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
+                Debug.LogFatal(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
             }
             finally
             {
@@ -431,7 +430,7 @@ namespace PepperDash.Essentials
                 }
                 catch (Exception e)
                 {
-                    Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.",args: new[] { devConf.Key });
+                    Debug.LogError(e, "ERROR: Creating device {deviceKey:l}. Skipping device.",args: new[] { devConf.Key });
                 }
             }
             Debug.LogMessage(LogEventLevel.Information, "All Devices Loaded.");

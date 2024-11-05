@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.Core.Routing
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error handling midpoint update from {midpointKey}:{Exception}", this, midpoint.Key, ex);
+                Debug.LogError<RoutingFeedbackManager>(ex, "Error handling midpoint update from {midpointKey}:{Exception}", this, midpoint.Key, ex);
             }
         }
 
@@ -59,7 +59,7 @@ namespace PepperDash.Essentials.Core.Routing
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error handling Sink update from {senderKey}:{Exception}", this, sender.Key, ex);
+                Debug.LogError<RoutingFeedbackManager>(ex, "Error handling Sink update from {senderKey}:{Exception}", this, sender.Key, ex);
             }
         }
 
@@ -97,7 +97,7 @@ namespace PepperDash.Essentials.Core.Routing
                 }
             } catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error getting first tieline: {Exception}", this, ex);
+                Debug.LogError<RoutingFeedbackManager>(this, ex, "Error getting first tieline: {Exception}", ex);
                 return;
             }
 
@@ -124,7 +124,7 @@ namespace PepperDash.Essentials.Core.Routing
                 }
             } catch(Exception ex)
             {
-                Debug.LogMessage(ex, "Error getting sourceTieLine: {Exception}", this, ex);
+                Debug.LogError<RoutingFeedbackManager>(this, ex, "Error getting sourceTieLine: {Exception}", ex);
                 return;
             }
 
@@ -261,7 +261,7 @@ namespace PepperDash.Essentials.Core.Routing
                 }
             } catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error walking tieLines: {Exception}", this, ex);
+                Debug.LogError(this, ex, "Error walking tieLines: {Exception}", ex);
                 return null;
             }
 

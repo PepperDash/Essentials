@@ -71,8 +71,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 var daw = new DeviceActionWrapper { DeviceKey = (string) deviceKey};
 
                 JsonConvert.PopulateObject(data, daw);
-
-                Debug.LogMessage(LogEventLevel.Verbose, "Device Action Wrapper: {@wrapper}", null, daw);
+                Debug.LogMessage<DevJsonRequestHandler>(LogEventLevel.Verbose, "Device Action Wrapper: {@wrapper}", null, daw);
 
 				DeviceJsonApi.DoDeviceAction(daw);
 
@@ -82,7 +81,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 			catch (Exception ex)
 			{
-				Debug.LogMessage(ex, "Error handling device command: {Exception}");				
+				Debug.LogError<DevJsonRequestHandler>(ex, "Error handling device command: {Exception}");				
 
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";

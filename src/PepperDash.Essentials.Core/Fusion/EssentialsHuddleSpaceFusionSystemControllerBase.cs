@@ -1040,21 +1040,18 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         private void PrintTodaysSchedule()
         {
-            if (Debug.Level > 1)
+            if (_currentSchedule.Meetings.Count > 0)
             {
-                if (_currentSchedule.Meetings.Count > 0)
-                {
-                    Debug.LogMessage(LogEventLevel.Debug, this, "Today's Schedule for '{0}'\n", Room.Name);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Today's Schedule for '{0}'\n", Room.Name);
 
-                    foreach (var e in _currentSchedule.Meetings)
-                    {
-                        Debug.LogMessage(LogEventLevel.Debug, this, "Subject: {0}", e.Subject);
-                        Debug.LogMessage(LogEventLevel.Debug, this, "Organizer: {0}", e.Organizer);
-                        Debug.LogMessage(LogEventLevel.Debug, this, "MeetingID: {0}", e.MeetingID);
-                        Debug.LogMessage(LogEventLevel.Debug, this, "Start Time: {0}", e.dtStart);
-                        Debug.LogMessage(LogEventLevel.Debug, this, "End Time: {0}", e.dtEnd);
-                        Debug.LogMessage(LogEventLevel.Debug, this, "Duration: {0}\n", e.DurationInMinutes);
-                    }
+                foreach (var e in _currentSchedule.Meetings)
+                {
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Subject: {0}", e.Subject);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Organizer: {0}", e.Organizer);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "MeetingID: {0}", e.MeetingID);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Start Time: {0}", e.dtStart);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "End Time: {0}", e.dtEnd);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Duration: {0}\n", e.DurationInMinutes);
                 }
             }
         }

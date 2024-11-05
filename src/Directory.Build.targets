@@ -15,11 +15,15 @@
     <MakeDir Directories="$(PackageOutputPath)\$(AssemblyName)" Condition="!Exists('$(PackageOutputPath)\$(AssemblyName)')" />
     <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cplz" Overwrite="true"/>    
   </Target>
-  <Target Name="Copy CPZ NET6" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' == 'net6.0' ) Or ( '$(TargetFramework)' == 'net8.0' ))">
+  <Target Name="Copy CPZ NET6" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' == 'net6.0' ))">
     <Message Text="Copying CPZ"></Message>
     <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz" />
   </Target>
-  <Target Name="Copy CPZ NET47" AfterTargets="SimplSharpPostProcess47" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' ))">
+	<Target Name="Copy CPZ NET8" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' == 'net8.0' ))">
+		<Message Text="Copying CPZ"></Message>
+		<Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz" />
+	</Target>
+  <Target Name="Copy CPZ NET47" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' == 'net472' ))">
     <Message Text="Copying CPZ"></Message>
     <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz" />
   </Target>

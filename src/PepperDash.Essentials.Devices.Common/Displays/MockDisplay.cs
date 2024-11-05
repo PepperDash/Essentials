@@ -120,7 +120,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 				// Fake cool-down cycle
 				CooldownTimer = new CTimer(o =>
 					{
-						Debug.LogMessage(LogEventLevel.Verbose, "Cooldown timer ending", this);
+						Debug.LogMessage(LogEventLevel.Verbose, this, "Cooldown timer ending");
 						_IsCoolingDown = false;
 						IsCoolingDownFeedback.InvokeFireUpdate();
                         _PowerIsOn = false;
@@ -141,7 +141,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		{
             try
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "ExecuteSwitch: {0}", this, selector);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "ExecuteSwitch: {0}", selector);
 
 			if (!_PowerIsOn)
 			{
@@ -156,21 +156,21 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
                 var inputPort = InputPorts.FirstOrDefault(port =>
                 {
-                    Debug.LogMessage(LogEventLevel.Verbose, "Checking input port {inputPort} with selector {portSelector} against {selector}", this, port, port.Selector, selector);
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "Checking input port {inputPort} with selector {portSelector} against {selector}",  port, port.Selector, selector);
                     return port.Selector.ToString() == selector.ToString();
                 });
 
                 if (inputPort == null)
                 {
-                    Debug.LogMessage(LogEventLevel.Verbose, "Unable to find input port for selector {selector}", this, selector);                    
+                    Debug.LogMessage(LogEventLevel.Verbose, this, "Unable to find input port for selector {selector}", selector);                    
                     return;
                 }
 
-                Debug.LogMessage(LogEventLevel.Verbose, "Setting current input port to {inputPort}", this, inputPort);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Setting current input port to {inputPort}", inputPort);
                 CurrentInputPort = inputPort;
             } catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error making switch: {Exception}", this, ex);
+                Debug.LogError<MockDisplay>(this, ex, "Error making switch");
             }
         }
 

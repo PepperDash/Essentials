@@ -102,14 +102,11 @@ namespace PepperDash.Essentials
                 LoadedAssemblies.Add(new LoadedAssembly(fi.Name, version, assembly));
             }
 
-            if (Debug.Level > 1)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, "Loaded Assemblies:");
+            Debug.LogMessage(LogEventLevel.Verbose, "Loaded Assemblies:");
 
-                foreach (var assembly in LoadedAssemblies)
-                {
-                    Debug.LogMessage(LogEventLevel.Verbose, "Assembly: {0}", assembly.Name);
-                }
+            foreach (var assembly in LoadedAssemblies)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "Assembly: {0}", assembly.Name);
             }
         }
 
@@ -151,7 +148,7 @@ namespace PepperDash.Essentials
                 return null;
             } catch(Exception ex)
             {
-                Debug.LogMessage(ex, "Error loading assembly from {path}", null, filePath);
+                Debug.LogError(ex, "Error loading assembly from {path}", filePath);
                 return null;
             }
 
@@ -360,8 +357,8 @@ namespace PepperDash.Essentials
             foreach (var pluginFile in pluginFiles)
             {
                 var loadedAssembly = LoadAssembly(pluginFile.FullName);
-
-                LoadedPluginFolderAssemblies.Add(loadedAssembly);
+                if (loadedAssembly != null)
+                    LoadedPluginFolderAssemblies.Add(loadedAssembly);
             }
 
             Debug.LogMessage(LogEventLevel.Information, "All Plugins Loaded.");
@@ -379,50 +376,44 @@ namespace PepperDash.Essentials
                 try
                 {
                     var assy = loadedAssembly.Assembly;
-                    Type[] types = {};
                     try
                     {
-                        types = assy.GetTypes();
+                        var types = assy.GetTypes().ToList();
                         Debug.LogMessage(LogEventLevel.Debug, $"Got types for assembly {assy.GetName().Name}");
+
+                        foreach (var type in types)
+                        {
+                            try
+                            {
+                                if (typeof(IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract)
+                                {
+                                    var plugin = (IPluginDeviceFactory)Activator.CreateInstance(type);
+                                    LoadCustomPlugin(plugin, loadedAssembly);
+                                }
+                            }
+                            catch (NotSupportedException)
+                            {
+                                //this happens for dlls that aren't PD dlls, like ports of Mono classes into S#. Swallowing.                               
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.LogError(e, "Error loading plugin type: {Type}", type.Name);
+                            }
+                        }
                     }
                     catch (TypeLoadException e)
                     {
-                        Debug.LogMessage(LogEventLevel.Error, "Unable to get types for assembly {0}: {1}",
-                            loadedAssembly.Name, e.Message);
-                        Debug.LogMessage(LogEventLevel.Verbose, e.StackTrace);
-                        continue;
+                        Debug.LogError(e, "Unable to get types for assembly {0}", loadedAssembly.Name);
                     }
-
-                    foreach (var type in types)
+                    catch (Exception e)
                     {
-                        try
-                        {                    
-                            if (typeof (IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract)
-                            {
-                                var plugin =
-                                    (IPluginDeviceFactory)Activator.CreateInstance(type);
-                                LoadCustomPlugin(plugin, loadedAssembly);
-                            }
-                        }
-                        catch (NotSupportedException)
-                        {
-                            //this happens for dlls that aren't PD dlls, like ports of Mono classes into S#. Swallowing.                               
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogMessage(LogEventLevel.Error, "Load Plugin not found. {0}.{2} is not a plugin factory. Exception: {1}",
-                                loadedAssembly.Name, e.Message, type.Name);
-                            continue;
-                        }
 
+                        Debug.LogError(e, "Unable to get types for assembly {0}", loadedAssembly.Name);
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Error Loading assembly {0}: {1}",
-                           loadedAssembly.Name, e.Message);
-                    Debug.LogMessage(LogEventLevel.Verbose, "{0}", e.StackTrace);
-                    continue;
+                    Debug.LogError(e, "Error loading plugin assembly:{Assembly}", loadedAssembly);
                 }
             }
             // plugin dll will be loaded.  Any classes in plugin should have a static constructor

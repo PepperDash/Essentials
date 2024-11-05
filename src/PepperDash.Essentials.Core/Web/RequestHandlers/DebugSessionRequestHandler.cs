@@ -24,7 +24,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// Gets details for a debug session
         /// </summary>
         /// <param name="context"></param>
-        protected override void HandleGet(Crestron.SimplSharp.WebScripting.HttpCwsContext context)
+        protected override void HandleGet(HttpCwsContext context)
         {
             var routeData = context.Request.RouteData;
             if (routeData == null)
@@ -38,29 +38,12 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
             try
             {
-                var ip = CrestronEthernetHelper.GetEthernetParameter(
-                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
-
-                var port = 0;
-
-                if (!Debug.WebsocketSink.IsRunning)
+                var data = new
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Starting WS Server");
-                    // Generate a random port within a specified range
-                    port = new Random().Next(65435, 65535);
-                    // Start the WS Server
-                    Debug.WebsocketSink.StartServerAndSetPort(port);
-                    Debug.SetWebSocketMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
-                }
-
-                var url = Debug.WebsocketSink.Url;
-
-                object data = new
-                {
-                    url = Debug.WebsocketSink.Url
+                    url = "" // TODO: Add the URL of the websocket server
                 };
 
-                Debug.LogMessage(LogEventLevel.Information, "Debug Session URL: {0}", url);
+                Debug.LogMessage(LogEventLevel.Information, "Debug Session URL: {0}", data.url);
 
                 // Return the port number with the full url of the WS Server
                 var res = JsonConvert.SerializeObject(data);
@@ -84,8 +67,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// <param name="context"></param>
         protected override void HandlePost(HttpCwsContext context)
         {
-            Debug.WebsocketSink.StopServer();
-
             context.Response.StatusCode = 200;
             context.Response.StatusDescription = "OK";
             context.Response.End();

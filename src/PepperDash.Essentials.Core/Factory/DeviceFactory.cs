@@ -149,7 +149,7 @@ namespace PepperDash.Essentials.Core
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Exception occurred while creating device {0}: {1}", null, dc.Key, ex.Message);
+                Debug.LogError(ex, "Exception occurred while creating device {0}: {1}", dc.Key, ex.Message);
                 return null;
             }
         }

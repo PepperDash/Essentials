@@ -193,7 +193,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		void SendBytes(byte[] b)
 		{
 			
-			if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
+			if (Debug.ConsoleMinimumLevel == LogEventLevel.Verbose) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
 				Debug.LogMessage(LogEventLevel.Verbose, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
 
 			Communication.SendBytes(b);
@@ -209,7 +209,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 // Append the incoming bytes with whatever is in the buffer
                 IncomingBuffer.CopyTo(newBytes, 0);
                 e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
-                if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
+                if (Debug.ConsoleMinimumLevel == LogEventLevel.Verbose) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
                     Debug.LogMessage(LogEventLevel.Verbose, this, "Received:{0}", ComTextHelper.GetEscapedText(newBytes));
 
                 byte[] message = new byte[] { };

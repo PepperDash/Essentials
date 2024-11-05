@@ -134,12 +134,6 @@ namespace PepperDash.Essentials.Core
 
                 Joins.Add(joinName, value);
             }
-
-
-            if (Debug.Level > 0)
-            {
-                PrintJoinMapInfo();
-            }
         }
 
         /// <summary>
