@@ -1,4 +1,4 @@
-﻿namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.Factory
 {
     /// <summary>
     /// Defines a class that is capable of loading device types

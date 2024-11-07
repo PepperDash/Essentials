@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Feedbacks
 {
     /// <summary>
     /// A Feedback whose output is derived from the return value of a provided Func.
@@ -32,7 +29,7 @@ namespace PepperDash.Essentials.Core
         List<BoolInputSig> LinkedInputSigs = new List<BoolInputSig>();
         List<BoolInputSig> LinkedComplementInputSigs = new List<BoolInputSig>();
 
-        List<Crestron.SimplSharpPro.DeviceSupport.Feedback> LinkedCrestronFeedbacks = new List<Crestron.SimplSharpPro.DeviceSupport.Feedback>();
+        List<global::Crestron.SimplSharpPro.DeviceSupport.Feedback> LinkedCrestronFeedbacks = new List<global::Crestron.SimplSharpPro.DeviceSupport.Feedback>();
 
         /// <summary>
         /// Creates the feedback with the Func as described.
@@ -121,7 +118,7 @@ namespace PepperDash.Essentials.Core
         /// Links a Crestron Feedback object
         /// </summary>
         /// <param name="feedback"></param>
-        public void LinkCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
+        public void LinkCrestronFeedback(global::Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
         {
             LinkedCrestronFeedbacks.Add(feedback);
             UpdateCrestronFeedback(feedback);
@@ -131,7 +128,7 @@ namespace PepperDash.Essentials.Core
         /// 
         /// </summary>
         /// <param name="feedback"></param>
-        public void UnlinkCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
+        public void UnlinkCrestronFeedback(global::Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
         {
             LinkedCrestronFeedbacks.Remove(feedback);
         }
@@ -162,7 +159,7 @@ namespace PepperDash.Essentials.Core
             sig.BoolValue = !_BoolValue;
         }
 
-        void UpdateCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
+        void UpdateCrestronFeedback(global::Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
         {
             feedback.State = _BoolValue;
         }

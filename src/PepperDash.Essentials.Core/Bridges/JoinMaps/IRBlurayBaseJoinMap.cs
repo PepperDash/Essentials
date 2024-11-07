@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+using PepperDash.Essentials.Core.JoinMaps;
 
-namespace PepperDash.Essentials.Core.Bridges
+namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
     /// <summary>
     /// Join map for IRBlurayBase devices

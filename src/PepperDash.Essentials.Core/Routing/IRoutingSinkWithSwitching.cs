@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.Routing
 {
     public delegate void InputChangedEventHandler(IRoutingSinkWithSwitching destination, RoutingInputPort currentPort);
 

@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using PepperDash.Core;
-
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
 	/// <summary>
 	/// Basically a List , with an indexer to find ports by key name

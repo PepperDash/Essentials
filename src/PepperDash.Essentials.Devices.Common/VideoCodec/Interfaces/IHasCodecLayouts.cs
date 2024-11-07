@@ -9,6 +9,7 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Feedbacks;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {

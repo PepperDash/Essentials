@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
-
-using System.ComponentModel;
-
+﻿using Crestron.SimplSharpPro;
 using PepperDash.Core;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Monitoring
 {
 	/// <summary>
 	/// 

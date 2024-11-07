@@ -16,6 +16,9 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec

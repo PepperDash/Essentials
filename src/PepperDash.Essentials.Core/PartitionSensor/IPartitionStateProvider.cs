@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.PartitionSensor
 {
     /// <summary>
     /// Describes the functionality of a device that senses and provides partition state

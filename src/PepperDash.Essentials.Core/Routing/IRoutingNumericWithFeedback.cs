@@ -1,4 +1,4 @@
-﻿namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Defines an IRoutingNumeric with a feedback event 

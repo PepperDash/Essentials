@@ -1,8 +1,9 @@
 ﻿using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using PepperDash.Essentials.Room.Config;
 using System.Collections.Generic;
+using PepperDash.Essentials.Core.Room;
+using PepperDash.Essentials.Core.Room.Config;
 using TwoWayDisplayBase = PepperDash.Essentials.Devices.Common.Displays.TwoWayDisplayBase;
 
 

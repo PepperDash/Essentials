@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Crestron.SimplSharpPro;
-
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.VideoStatus;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Devices
+namespace PepperDash.Essentials.Core.Devices.PC
 {
 	[Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
 	public class InRoomPc : EssentialsDevice, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking

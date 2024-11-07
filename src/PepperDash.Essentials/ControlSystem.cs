@@ -1,5 +1,4 @@
-﻿
-using Crestron.SimplSharp;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using System.Reflection;
 using Crestron.SimplSharpPro;
@@ -13,8 +12,13 @@ using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Web;
 using System;
 using System.Linq;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Factory;
+using PepperDash.Essentials.Core.Plugins;
 using Serilog.Events;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Secrets;
 
 namespace PepperDash.Essentials
 {
@@ -26,8 +30,7 @@ namespace PepperDash.Essentials
         private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
-        public ControlSystem()
-            : base()
+        public ControlSystem() : base()
         {
             Thread.MaxNumberOfUserThreads = 400;
             Global.ControlSystem = this;
@@ -103,7 +106,7 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -255,7 +258,7 @@ namespace PepperDash.Essentials
 
                 PluginLoader.AddProgramAssemblies();
 
-                _ = new Core.DeviceFactory();
+                _ = new DeviceFactory();
                 _ = new Devices.Common.DeviceFactory();
                 _ = new DeviceFactory();
 
@@ -421,7 +424,7 @@ namespace PepperDash.Essentials
 
 
                     if (newDev == null)
-                        newDev = Core.DeviceFactory.GetDevice(devConf);
+                        newDev = DeviceFactory.GetDevice(devConf);
 
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
@@ -477,7 +480,7 @@ namespace PepperDash.Essentials
 
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
-                var room = Core.DeviceFactory.GetDevice(roomConfig);
+                var room = DeviceFactory.GetDevice(roomConfig);
 
                 DeviceManager.AddDevice(room);
                 if (room is ICustomMobileControl)

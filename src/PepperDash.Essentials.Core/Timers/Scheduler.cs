@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Scheduler;
-
 using PepperDash.Core;
-using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Core.Room.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Timers
 {
     /// <summary>
     /// Global Scheduler for the system

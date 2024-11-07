@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Crestron.SimplSharpPro.DeviceSupport;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
-namespace PepperDash.Essentials.Core.PageManagers
+namespace PepperDash.Essentials.Core.UI_PageManagers
 {
 	/// <summary>
 	/// The PageManager classes are used to bridge a device to subpage

@@ -1,14 +1,17 @@
-﻿using Crestron.SimplSharp;
-using PepperDash.Core;
-using PepperDash.Core.Logging;
-using Serilog.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Crestron.SimplSharp;
+using PepperDash.Core;
+using PepperDash.Core.Logging;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.PartitionSensor;
+using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Room.Combining
 {
     public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombiner
     {

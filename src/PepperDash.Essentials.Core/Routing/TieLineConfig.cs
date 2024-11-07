@@ -1,18 +1,8 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharpPro;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
+﻿using PepperDash.Core;
+using PepperDash.Essentials.Core.Devices;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Config
+namespace PepperDash.Essentials.Core.Routing
 {
 	public class TieLineConfig
 	{

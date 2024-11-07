@@ -1,10 +1,9 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
 
-namespace PepperDash.Essentials.Room.Config
+namespace PepperDash.Essentials.Core.Room.Config
 {
     /// <summary>
     /// 

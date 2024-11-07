@@ -1,6 +1,6 @@
 ﻿using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
 	/// <summary>
 	/// Describes things needed to show on UI

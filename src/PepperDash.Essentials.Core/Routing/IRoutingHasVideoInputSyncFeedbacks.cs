@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DM;
+﻿using PepperDash.Essentials.Core.Feedbacks;
 
-using PepperDash.Core;
-
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
 
 	public interface IRoutingHasVideoInputSyncFeedbacks

@@ -1,7 +1,6 @@
 ﻿using PepperDash.Core;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Base class for RoutingInput and Output ports

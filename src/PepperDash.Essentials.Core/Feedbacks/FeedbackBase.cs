@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Feedbacks
 {
 	public abstract class Feedback : IKeyed
 	{

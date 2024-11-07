@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
-using System.Reflection;
-
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
-using Serilog.Events;
 using Newtonsoft.Json;
+using PepperDash.Core;
+using Serilog.Events;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.Core.Plugins
 {
     /// <summary>
     /// Deals with loading plugins at runtime
@@ -250,14 +248,14 @@ namespace PepperDash.Essentials
                         filePath = _loadedPluginsDirectoryPath + Global.DirectorySeparator + pluginFile.Name;
 
                         // Check if there is a previous file in the loadedPlugins directory and delete
-                        if (File.Exists(filePath))
+                        if (global::Crestron.SimplSharp.CrestronIO.File.Exists(filePath))
                         {
                             Debug.LogMessage(LogEventLevel.Information, "Found existing file in loadedPlugins: {0} Deleting and moving new file to replace it", filePath);
-                            File.Delete(filePath);
+                            global::Crestron.SimplSharp.CrestronIO.File.Delete(filePath);
                         }
 
                         // Move the file
-                        File.Move(pluginFile.FullName, filePath);
+                        global::Crestron.SimplSharp.CrestronIO.File.Move(pluginFile.FullName, filePath);
                         Debug.LogMessage(LogEventLevel.Verbose, "Moved {0} to {1}", pluginFile.FullName, filePath);
                     }
                     else
@@ -313,14 +311,14 @@ namespace PepperDash.Essentials
                             filePath = _loadedPluginsDirectoryPath + Global.DirectorySeparator + tempFile.Name;
 
                             // Check if there is a previous file in the loadedPlugins directory and delete
-                            if (File.Exists(filePath))
+                            if (global::Crestron.SimplSharp.CrestronIO.File.Exists(filePath))
                             {
                                 Debug.LogMessage(LogEventLevel.Information, "Found existing file in loadedPlugins: {0} Deleting and moving new file to replace it", filePath);
-                                File.Delete(filePath);
+                                global::Crestron.SimplSharp.CrestronIO.File.Delete(filePath);
                             }
 
                             // Move the file
-                            File.Move(tempFile.FullName, filePath);
+                            global::Crestron.SimplSharp.CrestronIO.File.Move(tempFile.FullName, filePath);
                             Debug.LogMessage(LogEventLevel.Verbose, "Moved {0} to {1}", tempFile.FullName, filePath);
                         }
                         else

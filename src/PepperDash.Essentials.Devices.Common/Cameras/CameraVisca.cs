@@ -15,6 +15,12 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Communications;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Monitoring;
+using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras

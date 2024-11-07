@@ -11,7 +11,11 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Communications;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Monitoring;
 using Serilog.Events;
 
 //using PepperDash.Essentials.Devices.Common.Cameras;

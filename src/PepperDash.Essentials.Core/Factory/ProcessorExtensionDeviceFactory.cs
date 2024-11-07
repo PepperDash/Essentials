@@ -1,13 +1,14 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Plugins;
+using PepperDash.Essentials.Core.Secrets;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Factory
 {
 
     public class ProcessorExtensionDeviceFactory

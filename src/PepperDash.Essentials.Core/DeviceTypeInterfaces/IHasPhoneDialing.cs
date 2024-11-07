@@ -1,5 +1,6 @@
 ﻿using System;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {

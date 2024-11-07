@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.SmartObjects.SubpageReferencList;
 using Serilog.Events;
 
 

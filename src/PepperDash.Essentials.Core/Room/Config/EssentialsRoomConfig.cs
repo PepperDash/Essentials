@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Privacy;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Microphone_Privacy;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Room.Config
+namespace PepperDash.Essentials.Core.Room.Config
 {
 	public class EssentialsRoomConfigHelper
 	{

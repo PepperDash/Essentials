@@ -1,16 +1,14 @@
-﻿
-
-using System;
-using Crestron.SimplSharp;
+﻿using System;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Communications
 {
 	/// <summary>
 	/// 

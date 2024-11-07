@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.JoinMaps;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {

@@ -5,6 +5,12 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.InUseTracking;
+using PepperDash.Essentials.Core.Room;
+using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Sources;
 using Serilog.Events;
 

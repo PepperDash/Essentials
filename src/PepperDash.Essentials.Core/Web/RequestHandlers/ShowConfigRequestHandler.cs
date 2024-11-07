@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Config.Essentials;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {

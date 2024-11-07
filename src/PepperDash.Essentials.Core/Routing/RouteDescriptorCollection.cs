@@ -1,10 +1,9 @@
-﻿using PepperDash.Core;
-using Serilog.Events;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using PepperDash.Core;
+using Serilog.Events;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// A collection of RouteDescriptors - typically the static DefaultCollection is used

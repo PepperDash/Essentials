@@ -17,9 +17,14 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Core.Bridges.JoinMaps;
-using Feedback = PepperDash.Essentials.Core.Feedback;
+using PepperDash.Essentials.Core.Extensions;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Monitoring;
+using Feedback = PepperDash.Essentials.Core.Feedbacks.Feedback;
 using Serilog.Events;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Touchpanels;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {

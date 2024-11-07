@@ -10,7 +10,11 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.JoinMaps;
 using Serilog.Events;
 
 

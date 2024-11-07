@@ -1,13 +1,15 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
-using PepperDash.Core.JsonStandardObjects;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Monitoring;
 using Serilog.Events;
+using Feedback = PepperDash.Essentials.Core.Feedbacks.Feedback;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Crestron
 {
 	public abstract class CrestronGenericBaseDevice : EssentialsDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
 	{

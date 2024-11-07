@@ -1,8 +1,9 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Presets;
+using PepperDash.Essentials.Core.Touchpanels;
 
-namespace PepperDash.Essentials.Core.PageManagers
+namespace PepperDash.Essentials.Core.UI_PageManagers
 {
 	/// <summary>
 	/// A fixed-layout page manager that expects a DPad on the right, fixed portion of the page, and a two/three 

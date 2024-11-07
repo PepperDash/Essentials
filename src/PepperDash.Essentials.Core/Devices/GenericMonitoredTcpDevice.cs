@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Monitoring;
 using Serilog.Events;
 
 

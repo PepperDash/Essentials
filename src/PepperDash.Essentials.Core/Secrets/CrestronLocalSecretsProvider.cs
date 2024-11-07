@@ -2,11 +2,9 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
 using PepperDash.Core;
-using Crestron.SimplSharpPro;
 using Serilog.Events;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Secrets
 {
     public class CrestronLocalSecretsProvider : ISecretProvider
     {

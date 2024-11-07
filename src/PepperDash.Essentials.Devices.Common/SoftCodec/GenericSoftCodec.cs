@@ -5,6 +5,8 @@ using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 using System.Collections.Generic;
 using System.Linq;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
 {

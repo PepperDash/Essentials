@@ -1,11 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
-using Serilog.Events;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Room.Combining
 {
     /// <summary>
     /// Represents a room combination scenario

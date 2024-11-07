@@ -2,6 +2,9 @@
 using PepperDash.Essentials.Core.Config;
 using System;
 using System.Linq;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Room;
 
 namespace PepperDash.Essentials.Core.Routing
 {

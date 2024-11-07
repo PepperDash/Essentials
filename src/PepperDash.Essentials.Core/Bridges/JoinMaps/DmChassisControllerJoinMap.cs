@@ -1,6 +1,7 @@
 using System;
+using PepperDash.Essentials.Core.JoinMaps;
 
-namespace PepperDash.Essentials.Core.Bridges
+namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
     public class DmChassisControllerJoinMap : JoinMapBaseAdvanced
     {

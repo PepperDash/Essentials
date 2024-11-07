@@ -1,6 +1,6 @@
 ﻿using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Secrets
 {
     /// <summary>
     /// All ISecrecretProvider classes must implement this interface.

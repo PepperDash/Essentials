@@ -1,5 +1,8 @@
 ﻿using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Room;
+using PepperDash.Essentials.Core.Room.Config;
+using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common.Room
 {

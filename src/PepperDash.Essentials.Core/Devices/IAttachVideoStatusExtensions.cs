@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Linq;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.VideoStatus;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
 	public static class IAttachVideoStatusExtensions
 	{

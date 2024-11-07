@@ -1,17 +1,23 @@
-﻿
-
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Monitoring;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Touchpanels;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Feedback = PepperDash.Essentials.Core.Feedbacks.Feedback;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Display
 {
     [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IHasPowerControl, IWarmingCooling, IUsageTracking

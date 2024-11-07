@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
-
-using PepperDash.Essentials.Core;
-
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 using Serilog.Events;
 
-
-namespace PepperDash.Essentials.License
+namespace PepperDash.Essentials.Core.License
 {
 	public abstract class LicenseManager
 	{

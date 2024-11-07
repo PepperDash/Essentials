@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Factory;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Plugins
 {
     /// <summary>
     /// Defines a class that is capable of loading custom plugin device types

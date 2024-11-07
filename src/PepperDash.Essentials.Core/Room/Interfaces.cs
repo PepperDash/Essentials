@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Microphone_Privacy;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Timers;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Room
 {
     /// <summary>
     /// For rooms with in call feedback
@@ -156,7 +156,7 @@ namespace PepperDash.Essentials.Core
 
     public interface IMicrophonePrivacy
     {
-        Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; }
+        MicrophonePrivacyController MicrophonePrivacy { get; }
     }
 
     public interface IHasAccessoryDevices : IKeyName

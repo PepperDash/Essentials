@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.Core.Shades
 {

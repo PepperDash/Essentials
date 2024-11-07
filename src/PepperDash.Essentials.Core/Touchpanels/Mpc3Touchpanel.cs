@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
 using Serilog.Events;
+using Feedback = PepperDash.Essentials.Core.Feedbacks.Feedback;
 
 namespace PepperDash.Essentials.Core.Touchpanels
 {
@@ -280,7 +284,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			Debug.LogMessage(LogEventLevel.Debug, this, "BaseEvent: eventId-'{0}', index-'{1}'", args.EventId, args.Index);
 		}
 
-		private void _touchpanel_ButtonStateChange(GenericBase device, Crestron.SimplSharpPro.DeviceSupport.ButtonEventArgs args)
+		private void _touchpanel_ButtonStateChange(GenericBase device, ButtonEventArgs args)
 		{
 			Debug.LogMessage(LogEventLevel.Debug, this, "ButtonStateChange: buttonNumber-'{0}' buttonName-'{1}', buttonState-'{2}'", args.Button.Number, args.Button.Name, args.NewButtonState);
 			var type = args.NewButtonState.ToString();

@@ -1,20 +1,12 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Crestron.SimplSharp.Net.Http;
-using Crestron.SimplSharpPro.Diagnostics;
-
+using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Config
+namespace PepperDash.Essentials.Core.Config.Essentials
 {
     public static class ConfigUpdater
     {
@@ -160,7 +152,7 @@ namespace PepperDash.Essentials.Core.Config
 
                 // Moves the file and appends the .bak extension
                 var fileDest = archiveDirectoryPath + "/" + file.Name + ".bak";
-                if(!File.Exists(fileDest))
+                if(!global::Crestron.SimplSharp.CrestronIO.File.Exists(fileDest))
                 {
                   file.MoveTo(fileDest);
                 }

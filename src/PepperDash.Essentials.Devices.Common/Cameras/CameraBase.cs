@@ -17,6 +17,12 @@ using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Monitoring;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Touchpanels;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras

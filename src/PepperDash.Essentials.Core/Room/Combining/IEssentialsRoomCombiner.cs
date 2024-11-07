@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.PartitionSensor;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Room.Combining
 {
     /// <summary>
     /// Describes the functionality for an EssentailsRoomCombiner device

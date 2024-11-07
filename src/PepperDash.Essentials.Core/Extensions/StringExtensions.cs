@@ -1,11 +1,6 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Extensions
 {
     public static class StringExtensions
     {

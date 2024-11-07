@@ -4,7 +4,7 @@
     <Configurations>Debug;Release;Debug 4.7.2</Configurations>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFrameworks>net472;net6</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <AssemblyName>Essentials Devices Common</AssemblyName>

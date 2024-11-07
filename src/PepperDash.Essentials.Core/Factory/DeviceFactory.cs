@@ -1,16 +1,16 @@
-﻿
-
-using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Crestron.SimplSharp;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Plugins;
+using PepperDash.Essentials.Core.Secrets;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Factory
 {
     public class DeviceFactoryWrapper
     {
@@ -32,7 +32,8 @@ namespace PepperDash.Essentials.Core
             var assy = Assembly.GetExecutingAssembly();
             PluginLoader.SetEssentialsAssembly(assy.GetName().Name, assy);
 
-            var types = assy.GetTypes().Where(ct => typeof(IDeviceFactory).IsAssignableFrom(ct) && !ct.IsInterface && !ct.IsAbstract);
+            var types = assy.GetTypes()
+                .Where(ct => typeof(IDeviceFactory).IsAssignableFrom(ct) && !ct.IsInterface && !ct.IsAbstract);
 
             if (types != null)
             {
@@ -45,37 +46,41 @@ namespace PepperDash.Essentials.Core
                     }
                     catch (Exception e)
                     {
-                        Debug.LogMessage(LogEventLevel.Information, "Unable to load type: '{1}' DeviceFactory: {0}", e, type.Name);
+                        Debug.LogMessage(LogEventLevel.Information, "Unable to load type: '{1}' DeviceFactory: {0}", e,
+                            type.Name);
                     }
                 }
             }
         }
 
-		/// <summary>
-		/// A dictionary of factory methods, keyed by config types, added by plugins.
-		/// These methods are looked up and called by GetDevice in this class.
-		/// </summary>
-		static Dictionary<string, DeviceFactoryWrapper> FactoryMethods =
+        /// <summary>
+        /// A dictionary of factory methods, keyed by config types, added by plugins.
+        /// These methods are looked up and called by GetDevice in this class.
+        /// </summary>
+        static Dictionary<string, DeviceFactoryWrapper> FactoryMethods =
             new Dictionary<string, DeviceFactoryWrapper>(StringComparer.OrdinalIgnoreCase);
 
-		/// <summary>
-		/// Adds a plugin factory method
-		/// </summary>
-		/// <param name="dc"></param>
-		/// <returns></returns>
-		public static void AddFactoryForType(string typeName, Func<DeviceConfig, IKeyed> method) 
-		{
+        /// <summary>
+        /// Adds a plugin factory method
+        /// </summary>
+        /// <param name="dc"></param>
+        /// <returns></returns>
+        public static void AddFactoryForType(string typeName, Func<DeviceConfig, IKeyed> method)
+        {
             //Debug.LogMessage(LogEventLevel.Debug, "Adding factory method for type '{0}'", typeName);
-            DeviceFactory.FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method});
-		}
+            DeviceFactory.FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method });
+        }
 
-        public static void AddFactoryForType(string typeName, string description, Type Type, Func<DeviceConfig, IKeyed> method)
+        public static void AddFactoryForType(string typeName, string description, Type Type,
+            Func<DeviceConfig, IKeyed> method)
         {
             //Debug.LogMessage(LogEventLevel.Debug, "Adding factory method for type '{0}'", typeName);
 
-            if(FactoryMethods.ContainsKey(typeName))
+            if (FactoryMethods.ContainsKey(typeName))
             {
-                Debug.LogMessage(LogEventLevel.Information, "Unable to add type: '{0}'.  Already exists in DeviceFactory", typeName);
+                Debug.LogMessage(LogEventLevel.Information,
+                    "Unable to add type: '{0}'.  Already exists in DeviceFactory",
+                    typeName);
                 return;
             }
 
@@ -93,6 +98,7 @@ namespace PepperDash.Essentials.Core
                     //var secret = GetSecret(JsonConvert.DeserializeObject<SecretsPropertiesConfig>(prop.Children().First().ToString()));
                     prop.Parent.Replace(secret);
                 }
+
                 var recurseProp = prop.Value as JObject;
                 if (recurseProp == null) return;
                 CheckForSecrets(recurseProp.Properties());
@@ -104,7 +110,7 @@ namespace PepperDash.Essentials.Core
             var secretProvider = SecretsManager.GetSecretProviderByKey(data.Provider);
             if (secretProvider == null) return null;
             var secret = secretProvider.GetSecret(data.Key);
-            if (secret != null) return (string) secret.Value;
+            if (secret != null) return (string)secret.Value;
             Debug.LogMessage(LogEventLevel.Debug,
                 "Unable to retrieve secret {0}{1} - Make sure you've added it to the secrets provider",
                 data.Provider, data.Key);
@@ -183,16 +189,16 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-		/// <summary>
-		/// Returns the device factory dictionary
-		/// </summary>
-		/// <param name="filter"></param>
-		/// <returns></returns>
-	    public static Dictionary<string, DeviceFactoryWrapper> GetDeviceFactoryDictionary(string filter)
-		{
-			return string.IsNullOrEmpty(filter) 
-				? FactoryMethods
-				: FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value);
-		}
+        /// <summary>
+        /// Returns the device factory dictionary
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public static Dictionary<string, DeviceFactoryWrapper> GetDeviceFactoryDictionary(string filter)
+        {
+            return string.IsNullOrEmpty(filter)
+                ? FactoryMethods
+                : FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value);
+        }
     }
 }

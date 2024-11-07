@@ -1,14 +1,7 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Newtonsoft.Json;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Extensions
 {
     public static class JsonExtensions
     {

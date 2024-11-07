@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
 	public interface IHasFeedback : IKeyed
 	{

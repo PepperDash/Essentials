@@ -11,6 +11,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Devices;
 using Serilog.Events;
 
 

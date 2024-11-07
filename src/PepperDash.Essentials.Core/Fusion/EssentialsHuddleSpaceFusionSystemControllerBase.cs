@@ -1,19 +1,28 @@
-﻿
-
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXml.Serialization;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Fusion;
 using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using Crestron.SimplSharpPro.UI;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Devices.PC;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Display;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Monitoring;
+using PepperDash.Essentials.Core.Room;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Touchpanels;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
@@ -301,7 +310,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 if (File.Exists(filePath))
                 {
-                    var json = File.ReadToEnd(filePath, Encoding.ASCII);
+                    var json = File.ReadAllText(filePath, Encoding.ASCII);
 
                     _guiDs = JsonConvert.DeserializeObject<FusionRoomGuids>(json);
 
@@ -1088,7 +1097,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     }
                 }
 
-                var laptops = dict.Where(d => d.Value.SourceDevice is Devices.Laptop);
+                var laptops = dict.Where(d => d.Value.SourceDevice is Laptop);
                 i = 1;
                 foreach (var kvp in laptops)
                 {
@@ -1213,7 +1222,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 var uiDev = dev as IHasBasicTriListWithSmartObject;
                 if (uiDev != null)
                 {
-                    if (uiDev.Panel is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
+                    if (uiDev.Panel is XpanelForSmartGraphics)
                     {
                         attrNum = attrNum + touchpanelNum;
 

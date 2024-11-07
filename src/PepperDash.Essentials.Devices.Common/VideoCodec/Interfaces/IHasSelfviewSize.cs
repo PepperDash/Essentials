@@ -1,4 +1,5 @@
-﻿using PepperDash.Essentials.Devices.Common.VideoCodec;
+﻿using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {

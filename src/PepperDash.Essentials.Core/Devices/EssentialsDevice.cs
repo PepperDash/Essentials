@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
-using System.Reflection;
-
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Factory;
+using PepperDash.Essentials.Core.Plugins;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Defines the basic needs for an EssentialsDevice to enable it to be build by an IDeviceFactory class

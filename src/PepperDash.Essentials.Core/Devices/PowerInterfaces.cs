@@ -1,7 +1,9 @@
 ﻿using Crestron.SimplSharp;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Interface for any device that has a battery that can be monitored
@@ -45,43 +47,4 @@ namespace PepperDash.Essentials.Core
         IntFeedback InputCurrentFeedback { get; }
         IntFeedback OutputCurrentFeedback { get; }
     }
-
-    /// <summary>
-    /// Interface for any device that is able to control its power, has a configurable reboot time, and has batteries that can be monitored
-    /// </summary>
-    public interface IHasPowerCycleWithBattery : IHasPowerCycle, IHasBatteryStats
-    {
-        
-    }
-
-    /// <summary>
-    /// Interface for any device that is able to control it's power and has a configurable reboot time
-    /// </summary>
-    public interface IHasPowerCycle : IKeyName, IHasPowerControlWithFeedback
-    {
-        /// <summary>
-        /// Delay between power off and power on for reboot
-        /// </summary>
-        int PowerCycleTimeMs { get; }
-
-        /// <summary>
-        /// Reboot outlet
-        /// </summary>
-        void PowerCycle();
-    }
-
-    /// <summary>
-    /// Interface for any device that contains a collection of IHasPowerReboot Devices
-    /// </summary>
-    public interface IHasControlledPowerOutlets : IKeyName
-    {
-        /// <summary>
-        /// Collection of IPduOutlets
-        /// </summary>
-        ReadOnlyDictionary<int, IHasPowerCycle> PduOutlets { get; }
-
-    }
-
-
-
 }

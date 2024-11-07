@@ -12,6 +12,7 @@ using Newtonsoft.Json.Converters;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.Codec

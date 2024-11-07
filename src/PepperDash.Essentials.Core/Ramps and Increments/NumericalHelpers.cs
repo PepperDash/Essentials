@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Ramps_and_Increments
 {
     public class NumericalHelpers 
     {  

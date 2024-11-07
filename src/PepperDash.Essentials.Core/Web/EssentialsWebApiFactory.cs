@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Web

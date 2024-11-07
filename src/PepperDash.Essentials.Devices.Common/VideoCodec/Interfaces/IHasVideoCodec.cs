@@ -5,6 +5,9 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Room;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {

@@ -1,12 +1,9 @@
-﻿
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Crestron.SimplSharp.Scheduler;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
 
-namespace PepperDash.Essentials.Room.Config
+namespace PepperDash.Essentials.Core.Room.Config
 {
     public class EssentialsRoomScheduledEventsConfig
     {

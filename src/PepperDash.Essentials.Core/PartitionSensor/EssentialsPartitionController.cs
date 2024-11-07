@@ -1,7 +1,8 @@
-﻿using PepperDash.Core;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.PartitionSensor
 {
     /// <summary>
     /// Represents an abstract controller device for a partition dividing rooms that are combinable

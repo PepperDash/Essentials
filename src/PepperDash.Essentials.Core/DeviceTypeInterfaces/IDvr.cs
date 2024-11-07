@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
+﻿using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Essentials.Core.Touchpanels;
 
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.SmartObjects;
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
 	/// <summary>
 	/// 

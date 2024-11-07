@@ -1,7 +1,6 @@
 ﻿using System;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     public class RoutingOutputPort : RoutingPort
 	{
@@ -10,7 +9,7 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public IRoutingOutputs ParentDevice { get; private set; }
 
-		public InUseTracking InUseTracker { get; private set; }
+		public InUseTracking.InUseTracking InUseTracker { get; private set; }
 
 
 		/// <summary>
@@ -29,7 +28,7 @@ namespace PepperDash.Essentials.Core
 			: base(key, type, connType, selector, isInternal)
 		{
             ParentDevice = parent ?? throw new ArgumentNullException(nameof(parent));
-			InUseTracker = new InUseTracking();
+			InUseTracker = new InUseTracking.InUseTracking();
 		}
 
         public override string ToString()

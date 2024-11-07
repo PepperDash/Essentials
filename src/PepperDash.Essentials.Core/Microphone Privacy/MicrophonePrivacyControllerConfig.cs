@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
 
-using PepperDash.Essentials.Core.CrestronIO;
-
-namespace PepperDash.Essentials.Core.Privacy
+namespace PepperDash.Essentials.Core.Microphone_Privacy
 {
     public class MicrophonePrivacyControllerConfig
     {

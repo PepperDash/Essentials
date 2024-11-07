@@ -1,24 +1,16 @@
-﻿
-
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Globalization;
 using Crestron.SimplSharp;
-using System.Collections.Generic;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
-
 using PepperDash.Core;
-using PepperDash.Essentials.License;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
+using PepperDash.Essentials.Core.Ethernet;
+using PepperDash.Essentials.Core.License;
 using Serilog.Events;
-
 
 namespace PepperDash.Essentials.Core
 {
@@ -110,7 +102,7 @@ namespace PepperDash.Essentials.Core
         {
             get
             {
-                return Crestron.SimplSharp.CrestronIO.Directory.GetApplicationDirectory();
+                return global::Crestron.SimplSharp.CrestronIO.Directory.GetApplicationDirectory();
             }
         }
 

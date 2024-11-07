@@ -1,19 +1,8 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System;
 using Crestron.SimplSharpPro;
-
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-using PepperDash.Core;
-
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Communications
 {
     /// <summary>
     /// This converter creates a proper ComPort.ComPortSpec struct from more-friendly JSON values.  It uses

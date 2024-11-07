@@ -1,21 +1,18 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Reflection;
-using Crestron.SimplSharp.CrestronIO;
+using System.Text;
 using Crestron.SimplSharp;
-
-using PepperDash.Core;
-using PepperDash.Essentials.Core.Config;
-
+using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
+using PepperDash.Core;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Extensions;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.JoinMaps
 {
     public static class JoinMapHelper
     {

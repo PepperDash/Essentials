@@ -1,5 +1,6 @@
 ﻿using PepperDash.Essentials.Core.Shades;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.Devices.Common.Shades
 {

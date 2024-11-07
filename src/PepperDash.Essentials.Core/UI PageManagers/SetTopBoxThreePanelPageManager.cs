@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Presets;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.PageManagers
+namespace PepperDash.Essentials.Core.UI_PageManagers
 {
 	public class ThreePanelPlusOnePageManager : PageManager
 	{
@@ -72,7 +72,7 @@ namespace PepperDash.Essentials.Core.PageManagers
             }
 		}
 
-        void tabSo_SigChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.SmartObjectEventArgs args)
+        void tabSo_SigChange(global::Crestron.SimplSharpPro.GenericBase currentDevice, global::Crestron.SimplSharpPro.SmartObjectEventArgs args)
         {
             var uo = args.Sig.UserObject;
             if(uo is Action<bool>)

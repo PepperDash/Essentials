@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using System;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     public delegate void RouteChangedEventHandler(IRoutingWithFeedback midpoint, RouteSwitchDescriptor newRoute);
     /// <summary>

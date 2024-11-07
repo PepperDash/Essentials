@@ -14,6 +14,10 @@ using PepperDash.Essentials.Core.Bridges;
 
 
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.JoinMaps;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.CrestronIO

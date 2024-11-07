@@ -1,16 +1,9 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using PepperDash.Core;
-
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using PepperDash.Core;
+using PepperDash.Essentials.Core.Devices;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Room.Combining
 {
     /// <summary>
     /// Config properties for an EssentialsRoomCombiner device

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Communications;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Touchpanels
 {
     public class CrestronTouchpanelPropertiesConfig
     {

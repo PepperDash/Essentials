@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using PepperDash.Essentials.Room.Config;
+﻿using PepperDash.Core;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Timers;
 
-using PepperDash.Core;
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Room
 {
     /// <summary>
     /// Describes the basic functionality of an EssentialsRoom

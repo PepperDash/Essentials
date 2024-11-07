@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Routing;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
 	/// <summary>
 	/// Defines minimal volume and mute control methods

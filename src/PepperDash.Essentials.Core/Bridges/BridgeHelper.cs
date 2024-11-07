@@ -1,4 +1,5 @@
 ﻿using PepperDash.Core;
+using PepperDash.Essentials.Core.Devices;
 using Serilog.Events;
 
 //using PepperDash.Essentials.Devices.Common.Cameras;

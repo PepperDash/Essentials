@@ -1,7 +1,6 @@
 ﻿using System;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Basic RoutingInput with no statuses.

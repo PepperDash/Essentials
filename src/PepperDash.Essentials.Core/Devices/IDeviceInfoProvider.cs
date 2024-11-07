@@ -1,7 +1,6 @@
-﻿using System;
-using PepperDash.Core;
+﻿using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core.DeviceInfo
+namespace PepperDash.Essentials.Core.Device_Info
 {
     public interface IDeviceInfoProvider:IKeyed
     {

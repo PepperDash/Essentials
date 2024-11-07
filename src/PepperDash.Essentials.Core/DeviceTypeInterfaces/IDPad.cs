@@ -1,10 +1,8 @@
-﻿using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
+﻿using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.SmartObjects;
+using PepperDash.Essentials.Core.Touchpanels;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
 	/// <summary>
 	/// 

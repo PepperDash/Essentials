@@ -8,7 +8,15 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Feedback = PepperDash.Essentials.Core.Feedback;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Monitoring;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Touchpanels;
+using Feedback = PepperDash.Essentials.Core.Feedbacks.Feedback;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {

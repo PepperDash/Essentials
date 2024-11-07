@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Core;
-using System.Collections.Generic;
+using PepperDash.Essentials.Core.Routing;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// 

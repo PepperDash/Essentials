@@ -10,6 +10,7 @@ using PepperDash.Core;
 
 //using SSMono.IO;
 using PepperDash.Core.WebApi.Presets;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Presets

@@ -1,8 +1,8 @@
 ﻿using System;
 using Crestron.SimplSharpPro;
-using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Core.Room.Config;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Room
 {
     public class EssentialsRoomEmergencyContactClosure : EssentialsRoomEmergencyBase
     {

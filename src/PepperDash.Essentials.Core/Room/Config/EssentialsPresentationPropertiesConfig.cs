@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Room.Config
+namespace PepperDash.Essentials.Core.Room.Config
 {
     /// <summary>
     /// 

@@ -1,10 +1,9 @@
 ﻿using System;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Touchpanels
 {
 	public class ModalDialog
 	{

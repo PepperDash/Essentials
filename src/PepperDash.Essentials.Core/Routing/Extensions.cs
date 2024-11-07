@@ -1,12 +1,13 @@
-﻿using Serilog.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using Serilog.Events;
 using Debug = PepperDash.Core.Debug;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
 
     /// <summary>

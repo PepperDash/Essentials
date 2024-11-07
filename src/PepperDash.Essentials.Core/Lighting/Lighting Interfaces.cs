@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 
 namespace PepperDash.Essentials.Core.Lighting
 {

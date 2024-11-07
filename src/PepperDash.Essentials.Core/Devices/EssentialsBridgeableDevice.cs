@@ -1,7 +1,7 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core.Bridges;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     public abstract class EssentialsBridgeableDevice:EssentialsDevice, IBridgeAdvanced
     {

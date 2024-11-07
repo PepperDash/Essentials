@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Crestron.SimplSharp;
-
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Monitoring;
 using Serilog.Events;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Communications
 {
 	public class ConsoleCommMockDevice : EssentialsDevice, ICommunicationMonitor
 	{

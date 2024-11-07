@@ -4,6 +4,7 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using PepperDash.Essentials.Core.Ethernet;
 
 namespace PepperDash.Essentials.Core.Config
 {

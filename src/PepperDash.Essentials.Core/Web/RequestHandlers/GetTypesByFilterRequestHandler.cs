@@ -2,6 +2,7 @@
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Factory;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {

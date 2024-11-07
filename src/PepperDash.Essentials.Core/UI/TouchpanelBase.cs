@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using PepperDash.Essentials.Core;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
-using Crestron.SimplSharpPro.UI;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Room.Combining;
+using PepperDash.Essentials.Core.Touchpanels;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.UI
@@ -153,7 +151,7 @@ namespace PepperDash.Essentials.Core.UI
             SetupPanelDrivers(newRoomKey);
         }
 
-        private void Panel_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
+        private void Panel_SigChange(object currentDevice, SigEventArgs args)
 		{
 			Debug.LogMessage(LogEventLevel.Verbose, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
 			var uo = args.Sig.UserObject;

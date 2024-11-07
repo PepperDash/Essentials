@@ -1,18 +1,15 @@
-﻿
-
-using Crestron.SimplSharp;
-using Newtonsoft.Json;
-using PepperDash.Core;
-using Serilog.Events;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Crestron.SimplSharp;
+using Newtonsoft.Json;
+using PepperDash.Core;
+using Serilog.Events;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     public class DeviceJsonApi
     {

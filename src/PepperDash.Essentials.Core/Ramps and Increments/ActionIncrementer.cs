@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 
-using PepperDash.Core;
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Ramps_and_Increments
 {
     /// <summary>
     /// An incrementer that can use the values of some other object/primitive value to do its thing.

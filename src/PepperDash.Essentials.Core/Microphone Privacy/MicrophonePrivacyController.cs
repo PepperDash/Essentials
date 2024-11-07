@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
 using Serilog.Events;
 
-
-namespace PepperDash.Essentials.Core.Privacy
+namespace PepperDash.Essentials.Core.Microphone_Privacy
 {
     /// <summary>
     /// Used for applications where one or more microphones with momentary contact closure outputs are used to
@@ -246,9 +243,9 @@ namespace PepperDash.Essentials.Core.Privacy
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new MIcrophonePrivacyController Device");
-            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Privacy.MicrophonePrivacyControllerConfig>(dc.Properties.ToString());
+            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<MicrophonePrivacyControllerConfig>(dc.Properties.ToString());
 
-            return new Core.Privacy.MicrophonePrivacyController(dc.Key, props);
+            return new MicrophonePrivacyController(dc.Key, props);
         }
     }
 

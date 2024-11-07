@@ -1,14 +1,16 @@
-﻿using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using PepperDash.Core;
-using Serilog.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
+using PepperDash.Core;
+using PepperDash.Essentials.Core.Communications;
+using PepperDash.Essentials.Core.Monitoring;
+using PepperDash.Essentials.Core.Routing;
+using Serilog.Events;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     public static class DeviceManager
     {

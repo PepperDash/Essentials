@@ -1,21 +1,13 @@
-﻿
-
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharpPro;
 using System.Reflection;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Factory;
+using PepperDash.Essentials.Core.Plugins;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.Factory
 {
+    /*
     /// <summary>
     /// Responsible for loading all of the device types for this library
     /// </summary>
@@ -45,5 +37,5 @@ namespace PepperDash.Essentials
                 }
             }
         }
-    }
+    }*/
 }

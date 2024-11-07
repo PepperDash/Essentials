@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-
 using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Ramps_and_Increments
 {
     /// <summary>
     /// Attaches to UShortInputSig and does incremental ramping of the signal 

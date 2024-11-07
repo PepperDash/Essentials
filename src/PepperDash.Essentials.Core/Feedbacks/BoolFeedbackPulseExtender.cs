@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-namespace PepperDash.Essentials.Core
+﻿using Crestron.SimplSharp;
+
+namespace PepperDash.Essentials.Core.Feedbacks
 {
 	/// <summary>
 	/// A class that wraps a BoolFeedback with logic that extends it's true state for

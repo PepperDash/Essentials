@@ -1,7 +1,7 @@
-﻿using PepperDash.Core;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     public interface IDspPresets
     {

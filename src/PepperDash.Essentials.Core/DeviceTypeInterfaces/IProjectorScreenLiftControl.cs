@@ -2,6 +2,7 @@
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using PepperDash.Essentials.Core.Feedbacks;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {

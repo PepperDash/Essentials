@@ -1,19 +1,19 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronSockets;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
-
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Touchpanels;
 using Serilog.Events;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Communications
 {
     /// <summary>
     /// Serves as a generic wrapper class for all styles of IBasicCommuncation ports

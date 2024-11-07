@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.UI;
-
-namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.SmartObjects.SubpageReferencList
 {
 	public class SubpageReferenceListItem
 	{

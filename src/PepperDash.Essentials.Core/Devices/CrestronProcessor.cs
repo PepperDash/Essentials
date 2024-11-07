@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
+using Crestron.SimplSharpPro;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.CrestronIO;
 using Serilog.Events;
@@ -17,7 +14,7 @@ namespace PepperDash.Essentials.Core.Devices
     {
         public Dictionary<uint, ISwitchedOutput> SwitchedOutputs { get; private set; }
 
-        public Crestron.SimplSharpPro.CrestronControlSystem Processor { get; private set; }
+        public CrestronControlSystem Processor { get; private set; }
 
         public CrestronProcessor(string key)
             : base(key)

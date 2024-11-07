@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Factory;
+using PepperDash.Essentials.Core.Plugins;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common

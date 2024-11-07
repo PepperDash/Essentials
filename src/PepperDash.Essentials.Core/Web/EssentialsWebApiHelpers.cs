@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Factory;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Plugins;
 
 namespace PepperDash.Essentials.Core.Web
 {

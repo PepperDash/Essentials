@@ -1,8 +1,8 @@
-﻿using PepperDash.Essentials.Room.Config;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using PepperDash.Essentials.Core.Room.Config;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Room
 {
     public interface IRoomEventSchedule
     {

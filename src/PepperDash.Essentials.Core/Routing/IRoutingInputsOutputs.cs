@@ -1,4 +1,4 @@
-﻿namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// For devices like RMCs, baluns, other devices with no switching.

@@ -5,6 +5,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core;
 using PepperDash.Core.Web;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Web.RequestHandlers;
 using Serilog.Events;
 

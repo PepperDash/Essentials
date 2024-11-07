@@ -1,10 +1,8 @@
-﻿
-using System;
-
+﻿using System;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Monitoring
 {
 	public interface IStatusMonitor
 	{

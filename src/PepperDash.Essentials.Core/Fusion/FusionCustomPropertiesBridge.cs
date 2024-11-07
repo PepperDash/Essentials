@@ -12,6 +12,8 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Room;
+using PepperDash.Essentials.Core.Room.Behaviours;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Fusion

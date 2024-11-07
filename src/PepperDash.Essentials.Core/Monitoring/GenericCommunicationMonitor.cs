@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
-
-using System.ComponentModel;
-
 using PepperDash.Core;
 using Serilog.Events;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Monitoring
 {
 	/// <summary>
 	/// Used for monitoring comms that are IBasicCommunication. Will send a poll string and provide an event when

@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Communications;
+using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Display
 {
 	[Obsolete("Please use PepperDash.Essentials.Device.Common, this will be removed in 2.1")]
     public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
