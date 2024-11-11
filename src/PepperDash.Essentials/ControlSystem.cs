@@ -36,29 +36,6 @@ namespace PepperDash.Essentials
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
 
             Debug.SetErrorLogMinimumDebugLevel(CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? LogEventLevel.Warning : LogEventLevel.Verbose);
-
-            // AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
-        }
-
-        private System.Reflection.Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            var assemblyName = new System.Reflection.AssemblyName(args.Name).Name;
-            if (assemblyName == "PepperDash_Core")
-            {
-                return System.Reflection.Assembly.LoadFrom("PepperDashCore.dll");
-            }
-
-            if (assemblyName == "PepperDash_Essentials_Core")
-            {
-                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Core.dll");
-            }
-
-            if (assemblyName == "Essentials Devices Common")
-            {
-                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Devices.Common.dll");
-            }
-
-            return null;
         }
 
         /// <summary>
