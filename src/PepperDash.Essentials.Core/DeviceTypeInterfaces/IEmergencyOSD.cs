@@ -8,7 +8,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     public interface IEmergencyOSD
     {
-        void ShowEmergencyMessage();
+        void ShowEmergencyMessage(string roomKey);
         void HideEmergencyMessage();
     }
 }
