@@ -16,7 +16,7 @@
     public class EssentialsRoomEmergencyTriggerConfig
     {
         /// <summary>
-        /// contact,
+        /// contact,versiport
         /// </summary>
         public string Type { get; set; }
         /// <summary>

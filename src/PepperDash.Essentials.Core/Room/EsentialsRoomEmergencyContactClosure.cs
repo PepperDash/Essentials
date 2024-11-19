@@ -37,7 +37,7 @@ namespace PepperDash.Essentials.Core
                     cs.VersiPorts[portNum].Register();
                     cs.VersiPorts[portNum].SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);
                     cs.VersiPorts[portNum].DisablePullUpResistor = true;
-                    cs.VersiPorts[portNum].VersiportChange += EssentialsRoomEmergencyContactClosure_VersiportChange; ;
+                    cs.VersiPorts[portNum].VersiportChange += EssentialsRoomEmergencyContactClosure_VersiportChange;
                 }
             }
             Behavior = config.Behavior;
