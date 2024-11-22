@@ -61,12 +61,13 @@ namespace PepperDash.Essentials.Core
                 SignalType = signalType
             };
 
-            var coolingDevice = destination as IWarmingCooling;
+            
 
+            var coolingDevice = destination as IWarmingCooling;
 
             //We already have a route request for this device, and it's a cooling device and is cooling
             if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-            {
+            {                
                 coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRouteRequest.HandleCooldown;
 
                 coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
@@ -80,20 +81,23 @@ namespace PepperDash.Essentials.Core
 
             //New Request
             if (coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-            {
-                coolingDevice.IsCoolingDownFeedback.OutputChange -= routeRequest.HandleCooldown;
-
+            {               
                 coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
 
                 RouteRequests.Add(destination.Key, routeRequest);
 
-                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down.  Storing route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
+                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down. Storing route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
                 return;
             }
 
             if (RouteRequests.ContainsKey(destination.Key) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == false)
             {
+                var handledRequest = RouteRequests[destination.Key];
+
+                coolingDevice.IsCoolingDownFeedback.OutputChange -= handledRequest.HandleCooldown;
+
                 RouteRequests.Remove(destination.Key);
+
                 Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
             }
 
