@@ -12,19 +12,19 @@ namespace PepperDash.Essentials.Core
     /// Represents an collection of individual route steps between Source and Destination
     /// </summary>
     public class RouteDescriptor
-	{
-		public IRoutingInputs Destination { get; private set; }
+    {
+        public IRoutingInputs Destination { get; private set; }
 
         public RoutingInputPort InputPort { get; private set; }
 
-		public IRoutingOutputs Source { get; private set; }
-		public eRoutingSignalType SignalType { get; private set; }
-		public List<RouteSwitchDescriptor> Routes { get; private set; }
+        public IRoutingOutputs Source { get; private set; }
+        public eRoutingSignalType SignalType { get; private set; }
+        public List<RouteSwitchDescriptor> Routes { get; private set; }
 
 
-		public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, eRoutingSignalType signalType):this(source,destination, null, signalType)
-		{
-		}
+        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, eRoutingSignalType signalType) : this(source, destination, null, signalType)
+        {
+        }
 
         public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, eRoutingSignalType signalType)
         {
@@ -35,20 +35,20 @@ namespace PepperDash.Essentials.Core
             Routes = new List<RouteSwitchDescriptor>();
         }
 
-		/// <summary>
-		/// Executes all routes described in this collection.  Typically called via
-		/// extension method IRoutingInputs.ReleaseAndMakeRoute()
-		/// </summary>
-		public void ExecuteRoutes()
-		{
-			foreach (var route in Routes)
-			{
-				Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}",null, route.ToString());
+        /// <summary>
+        /// Executes all routes described in this collection.  Typically called via
+        /// extension method IRoutingInputs.ReleaseAndMakeRoute()
+        /// </summary>
+        public void ExecuteRoutes()
+        {
+            foreach (var route in Routes)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", null, route.ToString());
 
                 if (route.SwitchingDevice is IRoutingSinkWithSwitching sink)
-                {                   
+                {
                     sink.ExecuteSwitch(route.InputPort.Selector);
-                    continue; 
+                    continue;
                 }
 
                 if (route.SwitchingDevice is IRouting switchingDevice)
@@ -59,15 +59,15 @@ namespace PepperDash.Essentials.Core
 
                     Debug.LogMessage(LogEventLevel.Verbose, "Output port {0} routing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
                 }
-			}
-		}
+            }
+        }
 
-		/// <summary>
-		/// Releases all routes in this collection. Typically called via
-		/// extension method IRoutingInputs.ReleaseAndMakeRoute()
-		/// </summary>
-		public void ReleaseRoutes()
-		{
+        /// <summary>
+        /// Releases all routes in this collection. Typically called via
+        /// extension method IRoutingInputs.ReleaseAndMakeRoute()
+        /// </summary>
+        public void ReleaseRoutes()
+        {
             foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
             {
                 if (route.SwitchingDevice is IRouting switchingDevice)
@@ -76,8 +76,6 @@ namespace PepperDash.Essentials.Core
                     {
                         continue;
                     }
-
-                    switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
 
                     if (route.OutputPort.InUseTracker != null)
                     {
@@ -92,12 +90,12 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-		public override string ToString()
-		{
-			var routesText = Routes.Select(r => r.ToString()).ToArray();
-			return string.Format("Route table from {0} to {1}:\r{2}", Source.Key, Destination.Key, string.Join("\r", routesText));
-		}
-	}
+        public override string ToString()
+        {
+            var routesText = Routes.Select(r => r.ToString()).ToArray();
+            return string.Format("Route table from {0} to {1}:\r{2}", Source.Key, Destination.Key, string.Join("\r", routesText));
+        }
+    }
 
     /*/// <summary>
     /// Represents an collection of individual route steps between Source and Destination
