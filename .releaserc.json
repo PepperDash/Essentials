@@ -1,6 +1,6 @@
 {
   "branches": [
-    "main-2.0.0",
+    "main",
     {
       "name": "development-2.0.0",
       "prerelease": true
