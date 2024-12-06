@@ -34,6 +34,8 @@ jobs:
           $phase = ""
           $newVersionString = ""
 
+          Write-Host "Current GitHub Ref: $Env:GITHUB_REF"
+
           switch -regex ($Env:GITHUB_REF) {
             '^refs\/pull\/*.' {
               $phase = 'beta';
@@ -57,7 +59,11 @@ jobs:
               $phase = 'beta'
               $newVersionString = "{0}-{1}-{2}" -f $newVersion, $phase, $Env:GITHUB_RUN_NUMBER
             }  
-          }          
+          }   
+
+            Write-Host "Version to be used: $newVersionString"
+            Write-Host "Build Phase: $phase"
+
           echo "version=$newVersionString" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append      
       - name: Setup MS Build
         uses: microsoft/setup-msbuild@v1.1
