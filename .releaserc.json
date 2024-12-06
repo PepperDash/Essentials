@@ -3,19 +3,19 @@
     "main",
     {
       "name": "development-2.0.0",
-      "prerelease": "dev"
+      "prerelease": true
     },
     {
       "name": "feature-2.0.0/*",
-      "prerelease": "beta"
+      "prerelease": true
     },
     {
       "name": "hotfix-2.0.0/*",
-      "prerelease": "patch"
+      "prerelease": true
     },
     {
       "name": "release-2.0.0/*",
-      "prerelease": "rc"
+      "prerelease": true
     }
   ],
   "plugins": [
