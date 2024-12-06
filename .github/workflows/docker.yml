@@ -56,8 +56,8 @@ jobs:
             }  
           }   
 
-            Write-Host "Version to be used: $newVersionString"
-            Write-Host "Build Phase: $phase"
+          Write-Host "Version to be used: $newVersionString"
+          Write-Host "Build Phase: $phase"
 
           echo "version=$newVersionString" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
       - name: Setup MS Build
@@ -66,20 +66,17 @@ jobs:
         run: nuget restore .\$($Env:SOLUTION_FILE).sln
       # Build the solutions in the docker image
       - name: Build Solution
-        run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" -m
+        run: dotnet build .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" -m
       - name: Pack Solution
         run: dotnet pack .\$($Env:SOLUTION_FILE).sln --configuration $env:BUILD_TYPE --output ./output /p:Version="${{ steps.setVersion.outputs.version }}"
       - name: Create tag for non-rc builds
-        if: contains(steps.setVersion.outputs.version, 'alpha')
+        if: ${{ !contains(steps.setVersion.outputs.version, 'rc') }}
         run: |
           git tag ${{ steps.setVersion.outputs.version }}
           git push --tags origin
       # Create the release on the source repo
       - name: Create Release
         id: create_release
-        #        if: contains(steps.setVersion.outputs.version,'-rc-') ||
-        #            contains(steps.setVersion.outputs.version,'-hotfix-') ||
-        #            contains(steps.setVersion.outputs.version, '-beta-')
         uses: ncipollo/release-action@v1
         with:
           artifacts: 'output\**\*.*(cpz|cplz)'
