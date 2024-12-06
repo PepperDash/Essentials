@@ -3,7 +3,7 @@
     "main",
     {
       "name": "development-2.0.0",
-      "prerelease": "dev"
+      "prerelease": true
     },
     {
       "name": "feature-2.0.0/*",
