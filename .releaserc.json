@@ -7,13 +7,15 @@
     },
     {
       "name": "feature-2.0.0/*",
-      "prerelease": true,
-      "channel": "beta"
+      "prerelease": true
     },
     {
       "name": "hotfix-2.0.0/*",
-      "prerelease": true,
-      "channel": "alpha"
+      "prerelease": true
+    },
+    {
+      "name": "release-2.0.0/*",
+      "prerelease": true
     }
   ],
   "plugins": [
