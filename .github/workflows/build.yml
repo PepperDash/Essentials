@@ -24,51 +24,9 @@ jobs:
         env:
           GITHUB_REF: ${{ github.ref }}
 
-      - name: Set Version Number and Phase
+      - name: Git Version
         id: get_version
-        run: |
-          # Set initial version
-          latestVersion="2.0.0"
-          newVersion="$latestVersion"
-          phase=""
-          newVersionString=""
-
-          # Output current GitHub Ref
-          echo "Current GitHub Ref: $GITHUB_REF"
-
-          # Determine the phase and version string based on the branch
-          case $GITHUB_REF in
-            refs/pull/*)
-              phase="beta"
-              newVersionString="${newVersion}-${phase}-${GITHUB_RUN_NUMBER}"
-              ;;
-            refs/heads/hotfix-2.0.0/*)
-              phase="hotfix"
-              newVersionString="${newVersion}-${phase}-${GITHUB_RUN_NUMBER}"
-              ;;
-            refs/heads/release-2.0.0/*)
-              splitRef=(${GITHUB_REF//\// })
-              version="${splitRef[-1]//v/}"
-              phase="rc"
-              newVersionString="${version}-${phase}-${GITHUB_RUN_NUMBER}"
-              ;;
-            refs/heads/feature-2.0.0/*)
-              phase="alpha"
-              newVersionString="${newVersion}-${phase}-${GITHUB_RUN_NUMBER}"
-              ;;
-            development-2.0.0)
-              phase="beta"
-              newVersionString="${newVersion}-${phase}-${GITHUB_RUN_NUMBER}"
-              ;;
-          esac
-
-          # Output the final determined version and build phase
-          echo "Version to be used: $newVersionString"
-          echo "Build Phase: $phase"
-
-          # Write the version to the GitHub environment file
-          echo "version=$newVersionString" >> $GITHUB_ENV
-          echo "tag=v$newVersionString" >> $GITHUB_ENV
+        uses: codacy/git-version@2.7.1
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
@@ -77,8 +35,6 @@ jobs:
 
       - name: Restore .NET dependencies
         run: dotnet restore
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build .NET project
         run: dotnet build --configuration Release -p:Version=${{ steps.get_version.outputs.version }}
@@ -90,18 +46,15 @@ jobs:
 
       - name: Create Release
         id: create_release
-        if: steps.get_version.outputs.newVersion == 'true'
         uses: ncipollo/release-action@v1
         with:
           prerelease: ${{ steps.get_branch.outcome.branch != 'main' }}
           artifacts: "output/**/*.*(cpz|cplz)"
-          tag: ${{ steps.get_version.outputs.tag }}
+          tag: ${{ steps.get_version.outputs.version }}
           commit: ${{ github.sha }}
           bodyFile: ./CHANGELOG.md
 
       - name: Print results
-        if: steps.get_version.outputs.newVersion == 'true'
         run: |
           echo "# Summary" >> $GITHUB_STEP_SUMMARY
           echo "Version: ${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "Tag: ${{ steps.get_version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
