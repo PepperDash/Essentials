@@ -1,0 +1,86 @@
+name: Essentials Plugin Build Get Version
+
+on:
+  push:
+    branches:
+      - feature-2.0.0/*
+      - hotfix-2.0.0/*
+      - release-2.0.0/*
+      - development-2.0.0
+
+jobs:
+  Build_Project_4-Series:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: get_branch
+        run: |
+          branch=${GITHUB_REF#refs/heads/}
+          echo "branch=$branch" >> $GITHUB_OUTPUT
+          echo "prerelease=${branch//\//-}" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_REF: ${{ github.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Install dependencies
+        run: "npm install -g
+          semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator
+          @semantic-release/changelog @semantic-release/exec conventional-changelog-conventionalcommits"
+
+      - name: Run semantic-release
+        id: get_version
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print summary if no new version
+        if: steps.get_version.outputs.newVersion != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+        run: |
+          echo "# Summary" >> $GITHUB_STEP_SUMMARY
+          echo "No new version generated" >> $GITHUB_STEP_SUMMARY
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.x"
+
+      - name: Restore .NET dependencies
+        run: dotnet restore
+
+      - name: Build .NET project
+        run: dotnet build --configuration Release -p:Version=${{ steps.get_version.outputs.version }}
+
+      - name: Pack .NET project
+        run: dotnet pack --configuration Release -p:Version=${{ steps.get_version.outputs.version }} --output ./output
+
+      - run: ls -la
+
+      - name: Create Release
+        id: create_release
+        if: steps.get_version.outputs.newVersion == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          prerelease: ${{ steps.get_branch.outcome.branch != 'main' }}
+          artifacts: "output/**/*.*(cpz|cplz)"
+          tag: ${{ steps.get_version.outputs.tag }}
+          commit: ${{ github.sha }}
+          bodyFile: ./CHANGELOG.md
+
+      - name: Print results
+        if: steps.get_version.outputs.newVersion == 'true'
+        run: |
+          echo "# Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Version: ${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Tag: ${{ steps.get_version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "New Version: ${{ steps.get_version.outputs.newVersion }}" >> $GITHUB_STEP_SUMMARY
+          echo "Channel: ${{ steps.get_version.outputs.channel }}" >> $GITHUB_STEP_SUMMARY
+          echo "Type: ${{ steps.get_version.outputs.type }}" >> $GITHUB_STEP_SUMMARY
