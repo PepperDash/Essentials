@@ -1,5 +1,3 @@
-﻿
-
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using PepperDash.Core;
@@ -10,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
 
 namespace PepperDash.Essentials.Core
 {
@@ -141,18 +138,26 @@ namespace PepperDash.Essentials.Core
                                     .Select((p, i) => ConvertType(action.Params[i], p.ParameterType))
                                     .ToArray();
 
-                await Task.Run(() =>
+                try
                 {
-                    try
+                    Debug.LogMessage(LogEventLevel.Verbose, "Calling method {methodName} on device {deviceKey} with {@params}", null, method.Name, action.DeviceKey, action.Params);
+                    var result = method.Invoke(obj, convertedParams);
+                    
+                    // If the method returns a Task, await it
+                    if (result is Task task)
                     {
-                        Debug.LogMessage(LogEventLevel.Verbose, "Calling method {methodName} on device {deviceKey} with {@params}", null, method.Name, action.DeviceKey, action.Params);
-                        method.Invoke(obj, convertedParams);
+                        await task;
                     }
-                    catch (Exception e)
+                    // If the method returns a Task<T>, await it
+                    else if (result != null && result.GetType().IsGenericType && result.GetType().GetGenericTypeDefinition() == typeof(Task<>))
                     {
-                        Debug.LogMessage(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+                        await (Task)result;
                     }
-                });
+                }
+                catch (Exception e)
+                {
+                    Debug.LogMessage(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+                }
             }
             catch (Exception ex)
             {
