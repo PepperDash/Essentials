@@ -179,7 +179,8 @@ namespace PepperDash.Essentials.Core
                 if (!destination.GetRouteToSource(source, null, null, signalType, 0, singleTypeRouteDescriptor, destinationPort, sourcePort))
                     singleTypeRouteDescriptor = null;
 
-                foreach (var route in singleTypeRouteDescriptor.Routes)
+                var routes = singleTypeRouteDescriptor?.Routes ?? new List<RouteSwitchDescriptor>();
+                foreach (var route in routes)
                 {
                     Debug.LogMessage(LogEventLevel.Verbose, "Route for device: {route}", destination, route.ToString());
                 }
