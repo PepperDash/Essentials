@@ -143,7 +143,7 @@ namespace PepperDash.Essentials.Core
         {
             try
             {
-                Debug.LogMessage(LogEventLevel.Information, "Release route for '{destination}':'{inputPortKey}'", destination?.Key ?? "", string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+                Debug.LogMessage(LogEventLevel.Information, "Release route for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
 
                 if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
                 {
@@ -162,7 +162,7 @@ namespace PepperDash.Essentials.Core
                 }
             } catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'",null, destination?.Key ?? "", string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+                Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'",null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
             }
         }
 

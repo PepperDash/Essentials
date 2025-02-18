@@ -53,14 +53,14 @@ namespace PepperDash.Essentials.Core
         /// <returns>null if no RouteDescriptor for a destination exists</returns>
         public RouteDescriptor GetRouteDescriptorForDestination(IRoutingInputs destination)
         {
-            Debug.LogMessage(LogEventLevel.Information, "Getting route descriptor for '{destination}'", destination?.Key ?? "");
+            Debug.LogMessage(LogEventLevel.Information, "Getting route descriptor for '{destination}'", destination?.Key ?? null);
 
             return RouteDescriptors.FirstOrDefault(rd => rd.Destination == destination);
         }
 
         public RouteDescriptor GetRouteDescriptorForDestinationAndInputPort(IRoutingInputs destination, string inputPortKey)
         {
-            Debug.LogMessage(LogEventLevel.Information, "Getting route descriptor for '{destination}':'{inputPortKey}'", destination?.Key ?? "", string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+            Debug.LogMessage(LogEventLevel.Information, "Getting route descriptor for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
             return RouteDescriptors.FirstOrDefault(rd => rd.Destination == destination && rd.InputPort != null && rd.InputPort.Key == inputPortKey);
         }
 
@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public RouteDescriptor RemoveRouteDescriptor(IRoutingInputs destination, string inputPortKey = "")
         {
-            Debug.LogMessage(LogEventLevel.Information, "Removing route descriptor for '{destination}':'{inputPortKey}'", destination.Key ?? "", string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+            Debug.LogMessage(LogEventLevel.Information, "Removing route descriptor for '{destination}':'{inputPortKey}'", destination.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
 
             var descr = string.IsNullOrEmpty(inputPortKey) 
                 ? GetRouteDescriptorForDestination(destination)
