@@ -141,23 +141,28 @@ namespace PepperDash.Essentials.Core
         /// <param name="destination"></param>       
         public static void ReleaseRoute(this IRoutingInputs destination, string inputPortKey)
         {
-
-            Debug.LogMessage(LogEventLevel.Information, "Release route for {inputPortKey}", destination, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
-
-            if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
+            try
             {
-                var coolingDevice = destination as IWarmingCooling;
+                Debug.LogMessage(LogEventLevel.Information, "Release route for '{destination}':'{inputPortKey}'", destination?.Key ?? "", string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
 
-                coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRequest.HandleCooldown;
-            }
+                if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
+                {
+                    var coolingDevice = destination as IWarmingCooling;
 
-            RouteRequests.Remove(destination.Key);
+                    coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRequest.HandleCooldown;
+                }
 
-            var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPortKey);
-            if (current != null)
+                RouteRequests.Remove(destination.Key);
+
+                var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPortKey);
+                if (current != null)
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
+                    current.ReleaseRoutes();
+                }
+            } catch (Exception ex)
             {
-                Debug.LogMessage(LogEventLevel.Debug, "Releasing current route: {0}", destination, current.Source.Key);
-                current.ReleaseRoutes();
+                Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'",null, destination?.Key ?? "", string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
             }
         }
 
