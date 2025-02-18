@@ -108,25 +108,31 @@ namespace PepperDash.Essentials.Core
 
         private static void RunRouteRequest(RouteRequest request)
         {
-            if (request.Source == null)
-                return;
-
-            var (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
-
-            if (audioOrSingleRoute == null && videoRoute == null)
-                return;
-
-            RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(audioOrSingleRoute);
-
-            if (videoRoute != null)
+            try
             {
-                RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(videoRoute);
+                if (request.Source == null)
+                    return;
+
+                var (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
+
+                if (audioOrSingleRoute == null && videoRoute == null)
+                    return;
+
+                RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(audioOrSingleRoute);
+
+                if (videoRoute != null)
+                {
+                    RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(videoRoute);
+                }
+
+                Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
+
+                audioOrSingleRoute.ExecuteRoutes();
+                videoRoute?.ExecuteRoutes();
+            } catch(Exception ex)
+            {
+                Debug.LogMessage(ex,"Exception Running Route Request", null, )
             }
-
-            Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
-
-            audioOrSingleRoute.ExecuteRoutes();
-            videoRoute?.ExecuteRoutes();
         }
 
         public static void ReleaseRoute(this IRoutingInputs destination)

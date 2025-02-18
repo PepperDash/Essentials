@@ -41,7 +41,7 @@ namespace PepperDash.Essentials.Core
                 && RouteDescriptors.Any(t => t.Destination == descriptor.Destination && t.InputPort != null && descriptor.InputPort != null && t.InputPort.Key == descriptor.InputPort.Key))
             {
                 Debug.LogMessage(LogEventLevel.Debug, descriptor.Destination,
-                    "Route to [{0}] already exists in global routes table", descriptor.Source.Key);
+                    "Route to [{0}] already exists in global routes table", descriptor?.Source?.Key);
                 return;
             }
             RouteDescriptors.Add(descriptor);
