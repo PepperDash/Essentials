@@ -131,7 +131,7 @@ namespace PepperDash.Essentials.Core
                 videoRoute?.ExecuteRoutes();
             } catch(Exception ex)
             {
-                Debug.LogMessage(ex,"Exception Running Route Request", null, )
+                Debug.LogMessage(ex, "Exception Running Route Request {request}", null, request);
             }
         }
 
