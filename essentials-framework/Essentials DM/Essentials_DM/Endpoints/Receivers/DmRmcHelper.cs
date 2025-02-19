@@ -28,6 +28,9 @@ namespace PepperDash.Essentials.DM
         public StringFeedback EdidPreferredTimingFeedback { get; protected set; }
         public StringFeedback EdidSerialNumberFeedback { get; protected set; }
 
+        public IntFeedback VideoWallModeFeedback { get; protected set; }
+        public IntFeedback VideoWallModeRawFeedback { get; protected set; }
+
         protected DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
             : base(key, name, device)
         {
@@ -167,7 +170,22 @@ namespace PepperDash.Essentials.DM
             trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber,
                 a => routingWithFeedback.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
 
+            var dmRmcScalerWithVideowall = rmc as DmRmc4kZScalerCController;
+
+            if (dmRmcScalerWithVideowall != null)
+            {
+                trilist.SetUShortSigAction(joinMap.ScalerOutWallMode.JoinNumber, a => dmRmcScalerWithVideowall.SetWallMode(a));
+                trilist.SetUShortSigAction(joinMap.ScalerOutWallModeRaw.JoinNumber, a => dmRmcScalerWithVideowall.SetWallModeRaw(a));
+
+				if (rmc.VideoWallModeFeedback != null)
+					rmc.VideoWallModeFeedback.LinkInputSig(trilist.UShortInput[joinMap.ScalerOutWallMode.JoinNumber]);
+				if (rmc.VideoWallModeRawFeedback != null)
+					rmc.VideoWallModeRawFeedback.LinkInputSig(trilist.UShortInput[joinMap.ScalerOutWallModeRaw.JoinNumber]);
+
+            }
+
         }
+
 
         #region Implementation of IDeviceInfoProvider
 
