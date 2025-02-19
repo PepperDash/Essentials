@@ -81,11 +81,9 @@ namespace PepperDash.Essentials.Core
                 foreach (var action in activationActions)
                 {
                     this.LogInformation("Running Activation action {@action}", action);
-                    tasks.Add(DeviceJsonApi.DoDeviceActionAsync(action));
+                    await DeviceJsonApi.DoDeviceActionAsync(action);
                 }
             }
-
-            await Task.WhenAll(tasks);
 
             IsActive = true;
         }
@@ -101,11 +99,9 @@ namespace PepperDash.Essentials.Core
                 foreach (var action in deactivationActions)
                 {
                     this.LogInformation("Running deactivation action {actionDeviceKey}:{actionMethod}", action.DeviceKey, action.MethodName);
-                    tasks.Add( DeviceJsonApi.DoDeviceActionAsync(action));
+                    await DeviceJsonApi.DoDeviceActionAsync(action);
                 }
             }
-
-            await Task.WhenAll(tasks);
 
             IsActive = false;
         }
