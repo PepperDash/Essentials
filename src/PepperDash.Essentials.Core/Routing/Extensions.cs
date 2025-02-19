@@ -58,6 +58,68 @@ namespace PepperDash.Essentials.Core
             Debug.LogMessage(LogEventLevel.Information, messageTemplate, null, destinationKey);
         }
 
+        /// <summary>
+        /// Builds a RouteDescriptor that contains the steps necessary to make a route between devices.  
+        /// Routes of type AudioVideo will be built as two separate routes, audio and video. If
+        /// a route is discovered, a new RouteDescriptor is returned.  If one or both parts
+        /// of an audio/video route are discovered a route descriptor is returned.  If no route is 
+        /// discovered, then null is returned
+        /// </summary>
+        public static (RouteDescriptor, RouteDescriptor) GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort, RoutingOutputPort sourcePort)
+        {
+            // if it's a single signal type, find the route
+            if (!signalType.HasFlag(eRoutingSignalType.AudioVideo))
+            {
+                var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, signalType);
+                Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
+
+                if (!destination.GetRouteToSource(source, null, null, signalType, 0, singleTypeRouteDescriptor, destinationPort, sourcePort))
+                    singleTypeRouteDescriptor = null;
+
+                var routes = singleTypeRouteDescriptor?.Routes ?? new List<RouteSwitchDescriptor>();
+                foreach (var route in routes)
+                {
+                    Debug.LogMessage(LogEventLevel.Verbose, "Route for device: {route}", destination, route.ToString());
+                }
+
+                return (singleTypeRouteDescriptor, null);
+            }
+            // otherwise, audioVideo needs to be handled as two steps.
+
+            Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key);
+
+            var audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
+
+            var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
+
+            if (!audioSuccess)
+                Debug.LogMessage(LogEventLevel.Debug, "Cannot find audio route to {0}", destination, source.Key);
+
+            var videoRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Video);
+
+            var videoSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Video, 0, videoRouteDescriptor, destinationPort, sourcePort);
+
+            if (!videoSuccess)
+                Debug.LogMessage(LogEventLevel.Debug, "Cannot find video route to {0}", destination, source.Key);
+
+            foreach (var route in audioRouteDescriptor.Routes)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "Audio route for device: {route}", destination, route.ToString());
+            }
+
+            foreach (var route in videoRouteDescriptor.Routes)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "Video route for device: {route}", destination, route.ToString());
+            }
+
+
+            if (!audioSuccess && !videoSuccess)
+                return (null, null);
+
+
+            return (audioRouteDescriptor, videoRouteDescriptor);
+        }
+
         private static void ReleaseAndMakeRoute(IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort = null, RoutingOutputPort sourcePort = null)
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
@@ -176,68 +238,6 @@ namespace PepperDash.Essentials.Core
             {
                 Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'",null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
             }
-        }
-
-        /// <summary>
-        /// Builds a RouteDescriptor that contains the steps necessary to make a route between devices.  
-        /// Routes of type AudioVideo will be built as two separate routes, audio and video. If
-        /// a route is discovered, a new RouteDescriptor is returned.  If one or both parts
-        /// of an audio/video route are discovered a route descriptor is returned.  If no route is 
-        /// discovered, then null is returned
-        /// </summary>
-        public static (RouteDescriptor, RouteDescriptor) GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort, RoutingOutputPort sourcePort)
-        {
-            // if it's a single signal type, find the route
-            if (!signalType.HasFlag(eRoutingSignalType.AudioVideo))
-            {
-                var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, signalType);
-                Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
-
-                if (!destination.GetRouteToSource(source, null, null, signalType, 0, singleTypeRouteDescriptor, destinationPort, sourcePort))
-                    singleTypeRouteDescriptor = null;
-
-                var routes = singleTypeRouteDescriptor?.Routes ?? new List<RouteSwitchDescriptor>();
-                foreach (var route in routes)
-                {
-                    Debug.LogMessage(LogEventLevel.Verbose, "Route for device: {route}", destination, route.ToString());
-                }
-
-                return (singleTypeRouteDescriptor, null);
-            }
-            // otherwise, audioVideo needs to be handled as two steps.
-
-            Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key);
-
-            var audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
-
-            var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
-
-            if (!audioSuccess)
-                Debug.LogMessage(LogEventLevel.Debug, "Cannot find audio route to {0}", destination, source.Key);
-
-            var videoRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Video);
-
-            var videoSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Video, 0, videoRouteDescriptor, destinationPort, sourcePort);
-
-            if (!videoSuccess)
-                Debug.LogMessage(LogEventLevel.Debug, "Cannot find video route to {0}", destination, source.Key);
-
-            foreach (var route in audioRouteDescriptor.Routes)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, "Audio route for device: {route}", destination, route.ToString());
-            }
-
-            foreach (var route in videoRouteDescriptor.Routes)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, "Video route for device: {route}", destination, route.ToString());
-            }
-
-
-            if (!audioSuccess && !videoSuccess)
-                return (null, null);
-
-
-            return (audioRouteDescriptor, videoRouteDescriptor);
         }
 
         /// <summary>
