@@ -1,4 +1,6 @@
-﻿using Serilog.Events;
+﻿using PepperDash.Essentials.Core.Queues;
+using PepperDash.Essentials.Core.Routing;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +19,8 @@ namespace PepperDash.Essentials.Core
     {
         private static readonly Dictionary<string, RouteRequest> RouteRequests = new Dictionary<string, RouteRequest>();
 
+        private static readonly GenericQueue routeRequestQueue = new GenericQueue("routingQueue");
+
         /// <summary>
         /// Gets any existing RouteDescriptor for a destination, clears it using ReleaseRoute
         /// and then attempts a new Route and if sucessful, stores that RouteDescriptor
@@ -32,6 +36,15 @@ namespace PepperDash.Essentials.Core
             var outputPort = string.IsNullOrEmpty(sourcePortKey) ? null : source.OutputPorts.FirstOrDefault(p => p.Key == sourcePortKey);
 
             ReleaseAndMakeRoute(destination, source, signalType, inputPort, outputPort);
+        }
+        public static void ReleaseRoute(this IRoutingInputs destination)
+        {
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, string.Empty));
+        }
+
+        public static void ReleaseRoute(this IRoutingInputs destination, string inputPortKey)
+        {
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, inputPortKey));
         }
 
         public static void RemoveRouteRequestForDestination(string destinationKey)
@@ -59,9 +72,7 @@ namespace PepperDash.Essentials.Core
                 Source = source,
                 SourcePort = sourcePort,
                 SignalType = signalType
-            };
-
-            
+            };            
 
             var coolingDevice = destination as IWarmingCooling;
 
@@ -101,9 +112,9 @@ namespace PepperDash.Essentials.Core
                 Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
             }
 
-            destination.ReleaseRoute(destinationPort?.Key ?? string.Empty);
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination,destinationPort?.Key ?? string.Empty));
 
-            RunRouteRequest(routeRequest);
+            routeRequestQueue.Enqueue(new RouteRequestQueueItem(RunRouteRequest, routeRequest));            
         }
 
         private static void RunRouteRequest(RouteRequest request)
@@ -133,19 +144,14 @@ namespace PepperDash.Essentials.Core
             {
                 Debug.LogMessage(ex, "Exception Running Route Request {request}", null, request);
             }
-        }
-
-        public static void ReleaseRoute(this IRoutingInputs destination)
-        {
-            ReleaseRoute(destination, string.Empty);
-        }
+        }        
 
         /// <summary>
         /// Will release the existing route on the destination, if it is found in 
         /// RouteDescriptorCollection.DefaultCollection
         /// </summary>
         /// <param name="destination"></param>       
-        public static void ReleaseRoute(this IRoutingInputs destination, string inputPortKey)
+        private static void ReleaseRouteInternal(IRoutingInputs destination, string inputPortKey)
         {
             try
             {
