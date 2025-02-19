@@ -38,5 +38,10 @@ namespace PepperDash.Essentials.Core
                 Debug.LogMessage(ex, "Exception handling cooldown", Destination);
             }
         }
+
+        public override string ToString()
+        {
+            return $"Route {Source?.Key ?? "No Source Device"}:{SourcePort?.Key ?? "auto"} to {Destination?.Key ?? "No Destination Device"}:{DestinationPort?.Key ?? "auto"}";
+        }
     }
 }

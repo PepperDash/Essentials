@@ -1,5 +1,7 @@
-﻿using PepperDash.Essentials.Core.Queues;
+﻿using PepperDash.Core;
+using PepperDash.Essentials.Core.Queues;
 using System;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Routing
 {
@@ -16,6 +18,7 @@ namespace PepperDash.Essentials.Core.Routing
 
         public void Dispatch()
         {
+            Debug.LogMessage(LogEventLevel.Information, "Dispatching route request {routeRequest}", null, routeRequest);
             action(routeRequest);
         }
     }
@@ -35,6 +38,7 @@ namespace PepperDash.Essentials.Core.Routing
 
         public void Dispatch()
         {
+            Debug.LogMessage(LogEventLevel.Information, "Dispatching release route request for {destination}:{inputPortKey}", null, destination?.Key ?? "no destination", string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
             action(destination, inputPortKey);
         }
     }
