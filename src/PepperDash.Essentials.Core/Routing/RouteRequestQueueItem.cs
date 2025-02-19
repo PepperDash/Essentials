@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core.Routing
         }
     }
 
-    public class ReleaseRouteQueueItem: IQueueMessage
+    public class ReleaseRouteQueueItem : IQueueMessage
     {
         private readonly Action<IRoutingInputs, string> action;
         private readonly IRoutingInputs destination;
@@ -33,7 +33,9 @@ namespace PepperDash.Essentials.Core.Routing
             this.inputPortKey = inputPortKey;
         }
 
-        public void Dispatch() {
+        public void Dispatch()
+        {
             action(destination, inputPortKey);
         }
+    }
 }
