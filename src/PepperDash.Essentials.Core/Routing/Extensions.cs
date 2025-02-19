@@ -108,25 +108,31 @@ namespace PepperDash.Essentials.Core
 
         private static void RunRouteRequest(RouteRequest request)
         {
-            if (request.Source == null)
-                return;
-
-            var (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
-
-            if (audioOrSingleRoute == null && videoRoute == null)
-                return;
-
-            RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(audioOrSingleRoute);
-
-            if (videoRoute != null)
+            try
             {
-                RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(videoRoute);
+                if (request.Source == null)
+                    return;
+
+                var (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
+
+                if (audioOrSingleRoute == null && videoRoute == null)
+                    return;
+
+                RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(audioOrSingleRoute);
+
+                if (videoRoute != null)
+                {
+                    RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(videoRoute);
+                }
+
+                Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
+
+                audioOrSingleRoute.ExecuteRoutes();
+                videoRoute?.ExecuteRoutes();
+            } catch(Exception ex)
+            {
+                Debug.LogMessage(ex, "Exception Running Route Request {request}", null, request);
             }
-
-            Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
-
-            audioOrSingleRoute.ExecuteRoutes();
-            videoRoute?.ExecuteRoutes();
         }
 
         public static void ReleaseRoute(this IRoutingInputs destination)
@@ -141,23 +147,28 @@ namespace PepperDash.Essentials.Core
         /// <param name="destination"></param>       
         public static void ReleaseRoute(this IRoutingInputs destination, string inputPortKey)
         {
-
-            Debug.LogMessage(LogEventLevel.Information, "Release route for {inputPortKey}", destination, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
-
-            if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
+            try
             {
-                var coolingDevice = destination as IWarmingCooling;
+                Debug.LogMessage(LogEventLevel.Information, "Release route for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
 
-                coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRequest.HandleCooldown;
-            }
+                if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
+                {
+                    var coolingDevice = destination as IWarmingCooling;
 
-            RouteRequests.Remove(destination.Key);
+                    coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRequest.HandleCooldown;
+                }
 
-            var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPortKey);
-            if (current != null)
+                RouteRequests.Remove(destination.Key);
+
+                var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPortKey);
+                if (current != null)
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
+                    current.ReleaseRoutes();
+                }
+            } catch (Exception ex)
             {
-                Debug.LogMessage(LogEventLevel.Debug, "Releasing current route: {0}", destination, current.Source.Key);
-                current.ReleaseRoutes();
+                Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'",null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
             }
         }
 
@@ -179,7 +190,8 @@ namespace PepperDash.Essentials.Core
                 if (!destination.GetRouteToSource(source, null, null, signalType, 0, singleTypeRouteDescriptor, destinationPort, sourcePort))
                     singleTypeRouteDescriptor = null;
 
-                foreach (var route in singleTypeRouteDescriptor.Routes)
+                var routes = singleTypeRouteDescriptor?.Routes ?? new List<RouteSwitchDescriptor>();
+                foreach (var route in routes)
                 {
                     Debug.LogMessage(LogEventLevel.Verbose, "Route for device: {route}", destination, route.ToString());
                 }

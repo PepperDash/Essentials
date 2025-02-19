@@ -41,7 +41,7 @@ namespace PepperDash.Essentials.Core
                 && RouteDescriptors.Any(t => t.Destination == descriptor.Destination && t.InputPort != null && descriptor.InputPort != null && t.InputPort.Key == descriptor.InputPort.Key))
             {
                 Debug.LogMessage(LogEventLevel.Debug, descriptor.Destination,
-                    "Route to [{0}] already exists in global routes table", descriptor.Source.Key);
+                    "Route to [{0}] already exists in global routes table", descriptor?.Source?.Key);
                 return;
             }
             RouteDescriptors.Add(descriptor);
@@ -53,14 +53,14 @@ namespace PepperDash.Essentials.Core
         /// <returns>null if no RouteDescriptor for a destination exists</returns>
         public RouteDescriptor GetRouteDescriptorForDestination(IRoutingInputs destination)
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Getting route descriptor", destination);
+            Debug.LogMessage(LogEventLevel.Information, "Getting route descriptor for '{destination}'", destination?.Key ?? null);
 
             return RouteDescriptors.FirstOrDefault(rd => rd.Destination == destination);
         }
 
         public RouteDescriptor GetRouteDescriptorForDestinationAndInputPort(IRoutingInputs destination, string inputPortKey)
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Getting route descriptor for {inputPortKey}", destination, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+            Debug.LogMessage(LogEventLevel.Information, "Getting route descriptor for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
             return RouteDescriptors.FirstOrDefault(rd => rd.Destination == destination && rd.InputPort != null && rd.InputPort.Key == inputPortKey);
         }
 
@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public RouteDescriptor RemoveRouteDescriptor(IRoutingInputs destination, string inputPortKey = "")
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Removing route descriptor for {inputPortKey}", destination, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+            Debug.LogMessage(LogEventLevel.Information, "Removing route descriptor for '{destination}':'{inputPortKey}'", destination.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
 
             var descr = string.IsNullOrEmpty(inputPortKey) 
                 ? GetRouteDescriptorForDestination(destination)
@@ -78,7 +78,7 @@ namespace PepperDash.Essentials.Core
             if (descr != null)
                 RouteDescriptors.Remove(descr);
 
-            Debug.LogMessage(LogEventLevel.Debug, "Found route descriptor {routeDescriptor}", destination, descr);
+            Debug.LogMessage(LogEventLevel.Information, "Found route descriptor {routeDescriptor}", destination, descr);
 
             return descr;
         }

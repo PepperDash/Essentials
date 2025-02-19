@@ -24,6 +24,7 @@ namespace PepperDash.Essentials.Room.Config
                 //switch on emergency type here.  Right now only contact and shutdown
                 var e = new EssentialsRoomEmergencyContactClosure(room.Key + "-emergency", props.Emergency, room);
                 DeviceManager.AddDevice(e);
+                return e;
             }
             return null;
         }

@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
     /// <summary>
     /// Represents a generic digital input deviced tied to a versiport
     /// </summary>
-    public class GenericVersiportDigitalInputDevice : EssentialsBridgeableDevice, IDigitalInput
+    public class GenericVersiportDigitalInputDevice : EssentialsBridgeableDevice, IDigitalInput, IPartitionStateProvider
     {
         public Versiport InputPort { get; private set; }
 
@@ -35,10 +35,15 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
         }
 
+        public BoolFeedback PartitionPresentFeedback { get; }
+
+        public bool PartitionPresent => !InputStateFeedbackFunc();
+
         public GenericVersiportDigitalInputDevice(string key, string name, Func<IOPortConfig, Versiport> postActivationFunc, IOPortConfig config) :
             base(key, name)
         {
             InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
+            PartitionPresentFeedback = new BoolFeedback(() => !InputStateFeedbackFunc());
 
             AddPostActivationAction(() =>
             {
@@ -52,7 +57,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
                 InputPort.VersiportChange += InputPort_VersiportChange;
 
-
+                InputStateFeedback.FireUpdate();
+                PartitionPresentFeedback.FireUpdate();
 
                 Debug.LogMessage(LogEventLevel.Debug, this, "Created GenericVersiportDigitalInputDevice on port '{0}'.  DisablePullUpResistor: '{1}'", config.PortNumber, InputPort.DisablePullUpResistor);
 
@@ -65,7 +71,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
 			Debug.LogMessage(LogEventLevel.Debug, this, "Versiport change: {0}", args.Event);
 
             if(args.Event == eVersiportEvent.DigitalInChange)
+            {
                 InputStateFeedback.FireUpdate();
+                PartitionPresentFeedback.FireUpdate();
+            }
         }
 
 
