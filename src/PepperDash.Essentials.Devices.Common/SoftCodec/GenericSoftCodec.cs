@@ -28,14 +28,14 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
             for(var i = 1; i <= props.OutputCount; i++)
             {
-                var outputPort = new RoutingOutputPort($"{Key}-output{i}", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
+                var outputPort = new RoutingOutputPort($"output{i}", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
 
                 OutputPorts.Add(outputPort);
             }
 
             for(var i = 1; i<= props.ContentInputCount; i++)
             {
-                var inputPort = new RoutingInputPort($"{Key}-contentInput{i}", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, $"contentInput{i}", this);
+                var inputPort = new RoutingInputPort($"contentInput{i}", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, $"contentInput{i}", this);
 
                 InputPorts.Add(inputPort);
             }
@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
             for(var i = 1; i <=props.CameraInputCount; i++)
             {
-                var cameraPort = new RoutingInputPort($"{Key}-cameraInput{i}", eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, $"cameraInput{i}", this);
+                var cameraPort = new RoutingInputPort($"cameraInput{i}", eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, $"cameraInput{i}", this);
 
                 InputPorts.Add(cameraPort);
             }
