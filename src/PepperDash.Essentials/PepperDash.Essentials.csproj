@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.20.66" />
-    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-424" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-450" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />
