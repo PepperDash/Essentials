@@ -1,4 +1,6 @@
-﻿using Serilog.Events;
+﻿using PepperDash.Essentials.Core.Queues;
+using PepperDash.Essentials.Core.Routing;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +19,8 @@ namespace PepperDash.Essentials.Core
     {
         private static readonly Dictionary<string, RouteRequest> RouteRequests = new Dictionary<string, RouteRequest>();
 
+        private static readonly GenericQueue routeRequestQueue = new GenericQueue("routingQueue");
+
         /// <summary>
         /// Gets any existing RouteDescriptor for a destination, clears it using ReleaseRoute
         /// and then attempts a new Route and if sucessful, stores that RouteDescriptor
@@ -33,6 +37,15 @@ namespace PepperDash.Essentials.Core
 
             ReleaseAndMakeRoute(destination, source, signalType, inputPort, outputPort);
         }
+        public static void ReleaseRoute(this IRoutingInputs destination)
+        {
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, string.Empty));
+        }
+
+        public static void ReleaseRoute(this IRoutingInputs destination, string inputPortKey)
+        {
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, inputPortKey));
+        }
 
         public static void RemoveRouteRequestForDestination(string destinationKey)
         {
@@ -43,133 +56,6 @@ namespace PepperDash.Essentials.Core
             var messageTemplate = result ? "Route Request for {destination} removed" : "Route Request for {destination} not found";
 
             Debug.LogMessage(LogEventLevel.Information, messageTemplate, null, destinationKey);
-        }
-
-        private static void ReleaseAndMakeRoute(IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort = null, RoutingOutputPort sourcePort = null)
-        {
-            if (destination == null) throw new ArgumentNullException(nameof(destination));
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (destinationPort == null) Debug.LogMessage(LogEventLevel.Information, "Destination port is null");
-            if (sourcePort == null) Debug.LogMessage(LogEventLevel.Information, "Source port is null");
-
-            var routeRequest = new RouteRequest
-            {
-                Destination = destination,
-                DestinationPort = destinationPort,
-                Source = source,
-                SourcePort = sourcePort,
-                SignalType = signalType
-            };
-
-            
-
-            var coolingDevice = destination as IWarmingCooling;
-
-            //We already have a route request for this device, and it's a cooling device and is cooling
-            if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-            {                
-                coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRouteRequest.HandleCooldown;
-
-                coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
-
-                RouteRequests[destination.Key] = routeRequest;
-
-                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
-
-                return;
-            }
-
-            //New Request
-            if (coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-            {               
-                coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
-
-                RouteRequests.Add(destination.Key, routeRequest);
-
-                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down. Storing route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
-                return;
-            }
-
-            if (RouteRequests.ContainsKey(destination.Key) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == false)
-            {
-                var handledRequest = RouteRequests[destination.Key];
-
-                coolingDevice.IsCoolingDownFeedback.OutputChange -= handledRequest.HandleCooldown;
-
-                RouteRequests.Remove(destination.Key);
-
-                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
-            }
-
-            destination.ReleaseRoute(destinationPort?.Key ?? string.Empty);
-
-            RunRouteRequest(routeRequest);
-        }
-
-        private static void RunRouteRequest(RouteRequest request)
-        {
-            try
-            {
-                if (request.Source == null)
-                    return;
-
-                var (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
-
-                if (audioOrSingleRoute == null && videoRoute == null)
-                    return;
-
-                RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(audioOrSingleRoute);
-
-                if (videoRoute != null)
-                {
-                    RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(videoRoute);
-                }
-
-                Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
-
-                audioOrSingleRoute.ExecuteRoutes();
-                videoRoute?.ExecuteRoutes();
-            } catch(Exception ex)
-            {
-                Debug.LogMessage(ex, "Exception Running Route Request {request}", null, request);
-            }
-        }
-
-        public static void ReleaseRoute(this IRoutingInputs destination)
-        {
-            ReleaseRoute(destination, string.Empty);
-        }
-
-        /// <summary>
-        /// Will release the existing route on the destination, if it is found in 
-        /// RouteDescriptorCollection.DefaultCollection
-        /// </summary>
-        /// <param name="destination"></param>       
-        public static void ReleaseRoute(this IRoutingInputs destination, string inputPortKey)
-        {
-            try
-            {
-                Debug.LogMessage(LogEventLevel.Information, "Release route for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
-
-                if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
-                {
-                    var coolingDevice = destination as IWarmingCooling;
-
-                    coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRequest.HandleCooldown;
-                }
-
-                RouteRequests.Remove(destination.Key);
-
-                var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPortKey);
-                if (current != null)
-                {
-                    Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
-                    current.ReleaseRoutes();
-                }
-            } catch (Exception ex)
-            {
-                Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'",null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
-            }
         }
 
         /// <summary>
@@ -232,6 +118,126 @@ namespace PepperDash.Essentials.Core
 
 
             return (audioRouteDescriptor, videoRouteDescriptor);
+        }
+
+        private static void ReleaseAndMakeRoute(IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort = null, RoutingOutputPort sourcePort = null)
+        {
+            if (destination == null) throw new ArgumentNullException(nameof(destination));
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (destinationPort == null) Debug.LogMessage(LogEventLevel.Information, "Destination port is null");
+            if (sourcePort == null) Debug.LogMessage(LogEventLevel.Information, "Source port is null");
+
+            var routeRequest = new RouteRequest
+            {
+                Destination = destination,
+                DestinationPort = destinationPort,
+                Source = source,
+                SourcePort = sourcePort,
+                SignalType = signalType
+            };            
+
+            var coolingDevice = destination as IWarmingCooling;
+
+            //We already have a route request for this device, and it's a cooling device and is cooling
+            if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
+            {                
+                coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRouteRequest.HandleCooldown;
+
+                coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
+
+                RouteRequests[destination.Key] = routeRequest;
+
+                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
+
+                return;
+            }
+
+            //New Request
+            if (coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
+            {               
+                coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
+
+                RouteRequests.Add(destination.Key, routeRequest);
+
+                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down. Storing route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
+                return;
+            }
+
+            if (RouteRequests.ContainsKey(destination.Key) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == false)
+            {
+                var handledRequest = RouteRequests[destination.Key];
+
+                coolingDevice.IsCoolingDownFeedback.OutputChange -= handledRequest.HandleCooldown;
+
+                RouteRequests.Remove(destination.Key);
+
+                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
+            }
+
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination,destinationPort?.Key ?? string.Empty));
+
+            routeRequestQueue.Enqueue(new RouteRequestQueueItem(RunRouteRequest, routeRequest));            
+        }
+
+        private static void RunRouteRequest(RouteRequest request)
+        {
+            try
+            {
+                if (request.Source == null)
+                    return;
+
+                var (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
+
+                if (audioOrSingleRoute == null && videoRoute == null)
+                    return;
+
+                RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(audioOrSingleRoute);
+
+                if (videoRoute != null)
+                {
+                    RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(videoRoute);
+                }
+
+                Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
+
+                audioOrSingleRoute.ExecuteRoutes();
+                videoRoute?.ExecuteRoutes();
+            } catch(Exception ex)
+            {
+                Debug.LogMessage(ex, "Exception Running Route Request {request}", null, request);
+            }
+        }        
+
+        /// <summary>
+        /// Will release the existing route on the destination, if it is found in 
+        /// RouteDescriptorCollection.DefaultCollection
+        /// </summary>
+        /// <param name="destination"></param>       
+        private static void ReleaseRouteInternal(IRoutingInputs destination, string inputPortKey)
+        {
+            try
+            {
+                Debug.LogMessage(LogEventLevel.Information, "Release route for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+
+                if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
+                {
+                    var coolingDevice = destination as IWarmingCooling;
+
+                    coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRequest.HandleCooldown;
+                }
+
+                RouteRequests.Remove(destination.Key);
+
+                var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPortKey);
+                if (current != null)
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
+                    current.ReleaseRoutes();
+                }
+            } catch (Exception ex)
+            {
+                Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'",null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+            }
         }
 
         /// <summary>
