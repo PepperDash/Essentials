@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Core.Intersystem;
 using PepperDash.Core.Intersystem.Tokens;
@@ -20,6 +19,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using Serilog.Events;
 using Feedback = PepperDash.Essentials.Core.Feedback;
+using System.Text;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
