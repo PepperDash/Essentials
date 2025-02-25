@@ -173,7 +173,7 @@ namespace PepperDash.Essentials
 
                 var dirSeparator = Global.DirectorySeparator;
 
-                string directoryPrefix;
+                string directoryPrefix; 
 
                 directoryPrefix = Directory.GetApplicationRootDirectory();
 
@@ -181,24 +181,10 @@ namespace PepperDash.Essentials
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {
-                    string userFolder;
-                    string nvramFolder;
-                    bool is4series = false;
+                    string userFolder = "user";
+                    string nvramFolder = "nvram";    
 
-                    if (eCrestronSeries.Series4 == (Global.ProcessorSeries & eCrestronSeries.Series4)) // Handle 4-series
-                    {
-                        is4series = true;
-                        // Set path to user/
-                        userFolder = "user";
-                        nvramFolder = "nvram";
-                    }
-                    else
-                    {
-                        userFolder = "User";
-                        nvramFolder = "Nvram";
-                    }                    
-                    
-                    Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on {processorSeries:l} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
+                    Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on {processorSeries:l} Appliance", Global.AssemblyVersion, "4-series");
                     //Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
 
                     // Check if User/ProgramX exists
@@ -361,6 +347,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 
 		/// </summary>
+
 		void Load()
 		{
 			LoadDevices();
