@@ -1,5 +1,4 @@
-﻿
-using Crestron.SimplSharp;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using System.Reflection;
 using Crestron.SimplSharpPro;
@@ -28,7 +27,9 @@ namespace PepperDash.Essentials
 
         public ControlSystem()
             : base()
+
         {
+            
             Thread.MaxNumberOfUserThreads = 400;
             Global.ControlSystem = this;
             DeviceManager.Initialize(this);
@@ -36,7 +37,7 @@ namespace PepperDash.Essentials
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
 
             Debug.SetErrorLogMinimumDebugLevel(CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? LogEventLevel.Warning : LogEventLevel.Verbose);
-
+            
             // AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
         }
 
@@ -96,6 +97,9 @@ namespace PepperDash.Essentials
 
             DeterminePlatform();
 
+            // Print .NET runtime version
+            Debug.LogMessage(LogEventLevel.Information, "Running on .NET runtime version: {0}", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
+
             if (Debug.DoNotLoadConfigOnNextBoot)
             {
                 CrestronConsole.AddNewConsoleCommand(s => CrestronInvoke.BeginInvoke((o) => GoWithLoad()), "go", "Loads configuration file",
@@ -144,7 +148,7 @@ namespace PepperDash.Essentials
             CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
                 "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
 
-            DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
+            //DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
 
             if (!Debug.DoNotLoadConfigOnNextBoot)
             {

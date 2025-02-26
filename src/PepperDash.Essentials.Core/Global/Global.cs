@@ -35,7 +35,8 @@ namespace PepperDash.Essentials.Core
         public static eCrestronSeries ProcessorSeries { get { return CrestronEnvironment.ProgramCompatibility; } }
 
         // TODO: consider making this configurable later
-        public static IFormatProvider Culture = CultureInfo.CreateSpecificCulture("en-US");
+        public static IFormatProvider Culture = CultureInfo.InvariantCulture;
+
 
         /// <summary>
         /// True when the processor type is a DMPS variant

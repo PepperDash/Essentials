@@ -6,9 +6,9 @@
   <PropertyGroup>
     <RootNamespace>PepperDash.Essentials</RootNamespace>
     <AssemblyName>PepperDashEssentials</AssemblyName>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net6;net8</TargetFrameworks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <OutputPath>$(ProjectDir)bin\$(Configuration)\</OutputPath>
     <Title>PepperDash Essentials</Title>
     <PackageId>PepperDashEssentials</PackageId>
     <InformationalVersion>$(Version)</InformationalVersion>
