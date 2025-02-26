@@ -6,7 +6,7 @@
   <PropertyGroup>
     <RootNamespace>PepperDash.Essentials</RootNamespace>
     <AssemblyName>PepperDashEssentials</AssemblyName>
-    <TargetFrameworks>net6;net8</TargetFrameworks>
+    <TargetFramework>net8</TargetFramework>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>$(ProjectDir)bin\$(Configuration)\</OutputPath>
     <Title>PepperDash Essentials</Title>
@@ -14,6 +14,9 @@
     <Version>2.0.0-local</Version>
     <InformationalVersion>$(Version)</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ProjectType>Program</ProjectType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -48,8 +51,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.90" />
-    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-459" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.90" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-462" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />

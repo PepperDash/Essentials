@@ -4,7 +4,7 @@
     <Configurations>Debug;Release;Debug 4.7.2</Configurations>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFrameworks>net6;net8</TargetFrameworks>
+    <TargetFramework>net8</TargetFramework>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <AssemblyName>Essentials Devices Common</AssemblyName>
@@ -30,6 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.90" />
-    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-459" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-462" />
   </ItemGroup>
 </Project>
