@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PepperDash.Essentials.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
@@ -18,6 +19,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
     /// </summary>
     public class DebugSessionRequestHandler : WebApiBaseRequestHandler
     {    
+
+        private readonly DebugWebsocketSink _sink = new DebugWebsocketSink();
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -49,21 +53,21 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
                 var port = 0;
 
-                if (!Debug.WebsocketSink.IsRunning)
+                if (!_sink.IsRunning)
                 {
                     Debug.LogMessage(LogEventLevel.Information, "Starting WS Server");
                     // Generate a random port within a specified range
                     port = new Random().Next(65435, 65535);
                     // Start the WS Server
-                    Debug.WebsocketSink.StartServerAndSetPort(port);
+                    _sink.StartServerAndSetPort(port);
                     Debug.SetWebSocketMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
                 }
 
-                var url = Debug.WebsocketSink.Url;
+                var url = _sink.Url;
 
                 object data = new
                 {
-                    url = Debug.WebsocketSink.Url
+                    url = _sink.Url
                 };
 
                 Debug.LogMessage(LogEventLevel.Information, "Debug Session URL: {0}", url);
@@ -90,7 +94,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// <param name="context"></param>
         protected override void HandlePost(HttpCwsContext context)
         {
-            Debug.WebsocketSink.StopServer();
+            _sink.StopServer();
 
             context.Response.StatusCode = 200;
             context.Response.StatusDescription = "OK";
