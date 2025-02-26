@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
@@ -7,7 +9,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronLogger;
-using Newtonsoft.Json;
+using Formatting = NewtonsoftJson::Newtonsoft.Json.Formatting;
+using JsonConvert = NewtonsoftJson::Newtonsoft.Json.JsonConvert;
 using PepperDash.Core.Logging;
 using Serilog;
 using Serilog.Context;

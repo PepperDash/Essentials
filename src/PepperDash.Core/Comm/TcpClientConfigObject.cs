@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿extern alias NewtonsoftJson;
+
+using JsonProperty = NewtonsoftJson::Newtonsoft.Json.JsonPropertyAttribute;
 
 namespace PepperDash.Core
 {

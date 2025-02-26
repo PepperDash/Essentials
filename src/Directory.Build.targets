@@ -1,14 +1,14 @@
 <Project>
   <ItemGroup>    
-    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).clz" Condition="$(ProjectType) == 'Library'">
+    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).clz" Condition="$(ProjectType) == 'Library' And '$(TargetFramework)' != '' And '$(TargetName)' != '' And '$(TargetDir)' != ''">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
     </None>
-    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" Condition="$(ProjectType) == 'Program'">
+    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" Condition="$(ProjectType) == 'Program' And '$(TargetFramework)' != '' And '$(TargetName)' != '' And '$(TargetDir)' != '' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' )">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
     </None>
-    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz" Condition="$(ProjectType) == 'ProgramLibrary'">
+    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz" Condition="$(ProjectType) == 'ProgramLibrary' And '$(TargetFramework)' != '' And '$(TargetName)' != '' And '$(TargetDir)' != ''">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
     </None>

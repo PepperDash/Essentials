@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿extern alias NewtonsoftJson;
+
+using System.Collections.Generic;
 using Crestron.SimplSharp;
-using Newtonsoft.Json;
+using JsonProperty = NewtonsoftJson::Newtonsoft.Json.JsonPropertyAttribute;
 
 namespace PepperDash.Core.Logging
 {

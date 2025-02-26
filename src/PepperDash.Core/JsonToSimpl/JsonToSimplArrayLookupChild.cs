@@ -1,6 +1,8 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using JArray = NewtonsoftJson::Newtonsoft.Json.Linq.JArray;
 using Serilog.Events;
 
 namespace PepperDash.Core.JsonToSimpl
@@ -129,7 +131,7 @@ namespace PepperDash.Core.JsonToSimpl
 					var item = array.FirstOrDefault(o =>
 					{
 						var prop = o[SearchPropertyName];
-						return prop != null && prop.Value<string>()
+						return prop != null && ((string)prop)
 						.Equals(SearchPropertyValue, StringComparison.OrdinalIgnoreCase);
 					});
 					if (item == null)

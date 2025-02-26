@@ -1,10 +1,15 @@
+extern alias NewtonsoftJson;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using JArray = NewtonsoftJson::Newtonsoft.Json.Linq.JArray;
+using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
+using JValue = NewtonsoftJson::Newtonsoft.Json.Linq.JValue;
+using JsonSerializationException = NewtonsoftJson::Newtonsoft.Json.JsonSerializationException;
+using JsonTextReader = NewtonsoftJson::Newtonsoft.Json.JsonTextReader;
 
 namespace PepperDash.Core.JsonToSimpl
 {
@@ -165,7 +170,7 @@ namespace PepperDash.Core.JsonToSimpl
 				#if NET6_0
                 using (var reader = new JsonTextReader(new System.IO.StringReader(json)))
 #else
-                using (var reader = new JsonTextReader(new Crestron.SimplSharp.CrestronIO.StringReader(json)))
+                using (var reader = new JsonTextReader(new System.IO.StringReader(json)))
 #endif
 				{
 					var startDepth = reader.Depth;
@@ -189,7 +194,7 @@ namespace PepperDash.Core.JsonToSimpl
 				#if NET6_0
                 using (var reader = new JsonTextReader(new System.IO.StringReader(json)))
 #else
-                using (var reader = new JsonTextReader(new Crestron.SimplSharp.CrestronIO.StringReader(json)))
+                using (var reader = new JsonTextReader(new System.IO.StringReader(json)))
 #endif
 				{
 					var startDepth = reader.Depth;

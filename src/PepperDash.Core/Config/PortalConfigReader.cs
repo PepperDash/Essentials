@@ -1,11 +1,17 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Formatting = NewtonsoftJson::Newtonsoft.Json.Formatting;
+using JArray = NewtonsoftJson::Newtonsoft.Json.Linq.JArray;
+using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
+using JToken = NewtonsoftJson::Newtonsoft.Json.Linq.JToken;
 using PepperDash.Core;
 using Serilog.Events;
+
+
 
 namespace PepperDash.Core.Config
 {
@@ -56,12 +62,12 @@ namespace PepperDash.Core.Config
 						var merged = MergeConfigs(jsonObj);
 						if (jsonObj[systemUrl] != null)
 						{
-							merged[systemUrl] = jsonObj[systemUrl].Value<string>();
+							merged[systemUrl] = (string)jsonObj[systemUrl];
 						}
 
 						if (jsonObj[templateUrl] != null)
 						{
-							merged[templateUrl] = jsonObj[templateUrl].Value<string>();
+							merged[templateUrl] = (string)jsonObj[templateUrl];
 						}
 
 						jsonObj = merged;

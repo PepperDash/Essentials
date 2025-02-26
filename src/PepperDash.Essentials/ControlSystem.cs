@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
@@ -12,7 +12,6 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash.Essentials.Core.Web;
 using Serilog.Events;
 
 namespace PepperDash.Essentials
@@ -33,12 +32,39 @@ namespace PepperDash.Essentials
         /// </summary>
         public ControlSystem()
             : base()
+
         {
+            
             Thread.MaxNumberOfUserThreads = 400;
             Global.ControlSystem = this;
             DeviceManager.Initialize(this);
             SecretsManager.Initialize();
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
+
+            Debug.SetErrorLogMinimumDebugLevel(CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? LogEventLevel.Warning : LogEventLevel.Verbose);
+            
+            // AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
+        }
+
+        private System.Reflection.Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var assemblyName = new System.Reflection.AssemblyName(args.Name).Name;
+            if (assemblyName == "PepperDash_Core")
+            {
+                return System.Reflection.Assembly.LoadFrom("PepperDashCore.dll");
+            }
+
+            if (assemblyName == "PepperDash_Essentials_Core")
+            {
+                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Core.dll");
+            }
+
+            if (assemblyName == "Essentials Devices Common")
+            {
+                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Devices.Common.dll");
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -74,6 +100,9 @@ namespace PepperDash.Essentials
         private void StartSystem(object preventInitialization)
         {
             DeterminePlatform();
+
+            // Print .NET runtime version
+            Debug.LogMessage(LogEventLevel.Information, "Running on .NET runtime version: {0}", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
 
             if (Debug.DoNotLoadConfigOnNextBoot)
             {
@@ -123,7 +152,7 @@ namespace PepperDash.Essentials
             CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
                 "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
 
-            DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
+            //DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
 
             if (!Debug.DoNotLoadConfigOnNextBoot)
             {

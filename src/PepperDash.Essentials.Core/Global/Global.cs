@@ -54,9 +54,10 @@ namespace PepperDash.Essentials.Core
 
         // TODO: consider making this configurable later
         /// <summary>
-        /// The CultureInfo for formatting
+        /// Gets or sets the CultureInfo for the running system.  Default is InvariantCulture.  This is used for all parsing and formatting in Essentials to ensure consistent behavior regardless of the culture settings of the processor.
         /// </summary>
-        public static IFormatProvider Culture = CultureInfo.CreateSpecificCulture("en-US");
+        public static IFormatProvider Culture = CultureInfo.InvariantCulture;
+
 
         /// <summary>
         /// True when the processor type is a DMPS variant

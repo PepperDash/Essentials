@@ -1,10 +1,13 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
-using Newtonsoft.Json;
+using JsonProperty = NewtonsoftJson::Newtonsoft.Json.JsonPropertyAttribute;
+using Required = NewtonsoftJson::Newtonsoft.Json.Required;
 
 namespace PepperDash.Core
 {

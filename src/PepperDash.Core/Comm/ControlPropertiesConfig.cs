@@ -1,7 +1,12 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using Crestron.SimplSharp;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using JsonConverter = NewtonsoftJson::Newtonsoft.Json.JsonConverterAttribute;
+using JsonIgnore = NewtonsoftJson::Newtonsoft.Json.JsonIgnoreAttribute;
+using JsonProperty = NewtonsoftJson::Newtonsoft.Json.JsonPropertyAttribute;
+using NullValueHandling = NewtonsoftJson::Newtonsoft.Json.NullValueHandling;
+using StringEnumConverter = NewtonsoftJson::Newtonsoft.Json.Converters.StringEnumConverter;
 
 namespace PepperDash.Core
 {

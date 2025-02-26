@@ -1,8 +1,12 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
-using Newtonsoft.Json;
+using JsonConverter = NewtonsoftJson::Newtonsoft.Json.JsonConverterAttribute;
+using JsonProperty = NewtonsoftJson::Newtonsoft.Json.JsonPropertyAttribute;
+using StringEnumConverter = NewtonsoftJson::Newtonsoft.Json.Converters.StringEnumConverter;
 
 namespace PepperDash.Core
 {
@@ -88,7 +92,7 @@ namespace PepperDash.Core
         /// The current socket status of the client
         /// </summary>
         [JsonProperty("clientStatus")]
-        [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        [JsonConverter(typeof(StringEnumConverter))]
         SocketStatus ClientStatus { get; }
     }
 

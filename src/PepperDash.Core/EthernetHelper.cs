@@ -1,5 +1,7 @@
-﻿using Crestron.SimplSharp;
-using Newtonsoft.Json;
+﻿extern alias NewtonsoftJson;
+
+using Crestron.SimplSharp;
+using JsonProperty = NewtonsoftJson::Newtonsoft.Json.JsonPropertyAttribute;
 using Serilog.Events;
 
 namespace PepperDash.Core

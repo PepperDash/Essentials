@@ -1,9 +1,11 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using Newtonsoft.Json;
+using JsonProperty = NewtonsoftJson::Newtonsoft.Json.JsonPropertyAttribute;
 using Serilog;
 
 namespace PepperDash.Core

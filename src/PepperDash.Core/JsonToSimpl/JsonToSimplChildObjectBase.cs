@@ -1,7 +1,9 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using JValue = NewtonsoftJson::Newtonsoft.Json.Linq.JValue;
 
 namespace PepperDash.Core.JsonToSimpl
 {
@@ -233,7 +235,7 @@ namespace PepperDash.Core.JsonToSimpl
 						if (isCount)
 							response = (t.HasValues ? t.Children().Count() : 0).ToString();
 						else
-							response = t.Value<string>();
+							response = (string)t;
 						Debug.Console(1, "   ='{0}'", response);
 						return true;
 					}

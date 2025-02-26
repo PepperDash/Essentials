@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +18,7 @@ using X509Certificate2 = System.Security.Cryptography.X509Certificates.X509Certi
 using System.IO;
 using Org.BouncyCastle.Asn1.X509;
 using Serilog.Formatting;
-using Newtonsoft.Json.Linq;
+using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using Serilog.Formatting.Json;
 
 namespace PepperDash.Core

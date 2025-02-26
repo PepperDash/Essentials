@@ -1,7 +1,10 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
-using Newtonsoft.Json.Linq;
+using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
+using JValue = NewtonsoftJson::Newtonsoft.Json.Linq.JValue;
 
 namespace PepperDash.Core.JsonToSimpl
 {

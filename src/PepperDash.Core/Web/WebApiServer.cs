@@ -1,10 +1,13 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Formatting = NewtonsoftJson::Newtonsoft.Json.Formatting;
+using JsonConvert = NewtonsoftJson::Newtonsoft.Json.JsonConvert;
+using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Core.Web

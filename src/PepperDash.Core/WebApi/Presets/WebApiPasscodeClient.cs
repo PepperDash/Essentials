@@ -1,10 +1,12 @@
-﻿using System;
+﻿extern alias NewtonsoftJson;
+
+using System;
 using Crestron.SimplSharp;                          				// For Basic SIMPL# Classes
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharp.Net.Https;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using JsonConvert = NewtonsoftJson::Newtonsoft.Json.JsonConvert;
+using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using PepperDash.Core.JsonToSimpl;
 
 
