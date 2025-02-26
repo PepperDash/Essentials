@@ -26,7 +26,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.90" />
-    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-458" />
+    <PackageReference Include="PepperDashCore" Version="2.0.0-alpha-459" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Crestron\CrestronGenericBaseDevice.cs.orig" />

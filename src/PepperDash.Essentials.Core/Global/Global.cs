@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Globalization;
@@ -280,6 +278,18 @@ namespace PepperDash.Essentials.Core
 				CrestronConsole.PrintLine("Error starting CrestronDataStoreStatic: {0}", err);
 				return;
 			}
+
+            try
+            {
+                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en");
+                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CreateSpecificCulture("en");
+            }
+            catch (CultureNotFoundException)
+            {
+                // If specific culture fails, fall back to invariant
+                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+            }
 		}
 
 	}
