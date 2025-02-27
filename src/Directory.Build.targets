@@ -10,17 +10,72 @@
     </None>
   </ItemGroup>
   <Target Name="Create CPLZ" AfterTargets="Build; AfterRebuild" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != ''">
-    <Message Text="Creating CPLZ $(TargetDir)"></Message>
+    <Message Text="Creating CPLZ $(TargetDir)" Importance="high" />
+    <Message Text="PackageOutputPath: $(PackageOutputPath)" Importance="high" />
+    <Message Text="AssemblyName: $(AssemblyName)" Importance="high" />
+    <Message Text="TargetName: $(TargetName)" Importance="high" />
+    <Message Text="Version: $(Version)" Importance="high" />
+    <Message Text="TargetFramework: $(TargetFramework)" Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists($(PackageOutputPath))" />
     <MakeDir Directories="$(PackageOutputPath)\$(AssemblyName)" Condition="!Exists('$(PackageOutputPath)\$(AssemblyName)')" />
     <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cplz" Overwrite="true"/>    
   </Target>
-  <Target Name="Copy CPZ NET6" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' == 'net6.0' ) Or ( '$(TargetFramework)' == 'net8.0' ))">
-    <Message Text="Copying CPZ"></Message>
-    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz" />
+  <Target Name="Debug Variables" BeforeTargets="Build">
+      <Message Text="================ Debug Variables ================" Importance="high" />
+      <Message Text="ProjectType: '$(ProjectType)'" Importance="high" />
+      <Message Text="TargetFramework: '$(TargetFramework)'" Importance="high" />
+      <Message Text="TargetDir: '$(TargetDir)'" Importance="high" />
+      <Message Text="===============================================" Importance="high" />
   </Target>
-  <Target Name="Copy CPZ NET47" AfterTargets="SimplSharpPostProcess47" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' ))">
-    <Message Text="Copying CPZ"></Message>
-    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz" />
+
+  <Target Name="Copy CPZ NET6" 
+          AfterTargets="Build"
+          DependsOnTargets="BuildDependencies"
+          Condition="'$(ProjectType)' == 'Program' And ('$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net8.0')">
+      <Message Text="========================================" Importance="high" />
+      <Message Text="Starting CPZ Build Process" Importance="high" />
+      <Message Text="ProjectType: '$(ProjectType)'" Importance="high" />
+      <Message Text="TargetFramework: '$(TargetFramework)'" Importance="high" />
+      <Message Text="MSBuildProjectDirectory: '$(MSBuildProjectDirectory)'" Importance="high" />
+      <Message Text="PATH: '$(PATH)'" Importance="high" />
+      <Message Text="========================================" Importance="high" />
+
+      <!-- Check for SimplSharp compiler -->
+      <PropertyGroup>
+          <SimplSharpCompilerPath>$(HOME)/.crestron/SimplSharpPro/SimplSharpCompiler</SimplSharpCompilerPath>
+      </PropertyGroup>
+
+      <Warning Text="SimplSharpCompiler not found at: $(SimplSharpCompilerPath)"
+              Condition="!Exists('$(SimplSharpCompilerPath)')" />
+
+      <!-- Run the SimplSharp compiler to create CPZ -->
+      <Exec Command="&quot;$(SimplSharpCompilerPath)&quot; &quot;$(MSBuildProjectDirectory)&quot; &quot;$(TargetDir)&quot;" 
+            IgnoreExitCode="false"
+            WorkingDirectory="$(MSBuildProjectDirectory)"
+            ConsoleToMSBuild="true"
+            Condition="Exists('$(SimplSharpCompilerPath)')">
+          <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+      </Exec>
+      
+      <Message Text="SimplSharp Output: $(OutputOfExec)" Importance="high" />
+      
+      <!-- Create output directory -->
+      <MakeDir Directories="$(PackageOutputPath)\$(AssemblyName)" 
+              Condition="!Exists('$(PackageOutputPath)\$(AssemblyName)')" />
+      
+      <!-- Copy the CPZ file -->
+      <Copy SourceFiles="$(TargetDir)$(TargetName).cpz" 
+            DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz"
+            Condition="Exists('$(TargetDir)$(TargetName).cpz')" />
+              
+      <Message Text="CPZ Build completed"
+              Condition="Exists('$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz')"
+              Importance="high" />
+  </Target>
+
+  <Target Name="BuildDependencies">
+      <MSBuild Projects="@(ProjectReference)"
+              Targets="Build"
+              BuildInParallel="true" />
   </Target>
 </Project>
