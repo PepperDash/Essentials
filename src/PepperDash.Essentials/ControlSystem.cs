@@ -471,7 +471,16 @@ namespace PepperDash.Essentials
             {
                 var room = Core.DeviceFactory.GetDevice(roomConfig);
 
-                DeviceManager.AddDevice(room);
+                if(room == null)
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "ERROR: Cannot load unknown room type '{roomType:l}', key '{roomKey:l}'.", roomConfig.Type, roomConfig.Key);
+                    continue;
+                }
+                else 
+                {
+                    DeviceManager.AddDevice(room);
+                }
+                
                 if (room is ICustomMobileControl)
                 {
                     continue;                    
