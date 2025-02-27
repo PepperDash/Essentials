@@ -76,12 +76,9 @@ jobs:
       # Create the release on the source repo
       - name: Create Release
         id: create_release
-#        if: contains(steps.setVersion.outputs.version,'-rc-') ||
-#            contains(steps.setVersion.outputs.version,'-hotfix-') ||
-#            contains(steps.setVersion.outputs.version, '-beta-')
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'output\**\*.*(cpz|cplz)'
+          artifacts: 'output/**/*.{cpz,cplz}'
           generateReleaseNotes: true
           prerelease: ${{contains('debug', env.BUILD_TYPE)}}
           tag: ${{ steps.setVersion.outputs.version }}
