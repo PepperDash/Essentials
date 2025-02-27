@@ -66,8 +66,39 @@ jobs:
       # Build the solutions in the docker image
       - name: Build Solution        
         run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" -m
+      - name: Debug CPZ Files
+        shell: powershell
+        run: |
+          Write-Host "Checking for CPZ files..."
+          $targetDir = ".\$($Env:SOLUTION_FILE)\bin\$($Env:BUILD_TYPE)\net472\"
+          $outputDir = ".\output\"
+          
+          Write-Host "Files in target directory:"
+          Get-ChildItem -Path $targetDir -Recurse | Where-Object { $_.Extension -eq ".cpz" } | ForEach-Object { Write-Host $_.FullName }
+          
+          Write-Host "Files in output directory:"
+          Get-ChildItem -Path $outputDir -Recurse | Where-Object { $_.Extension -eq ".cpz" } | ForEach-Object { Write-Host $_.FullName }
+          
+          # Copy CPZ files to output if they exist but weren't copied
+          Get-ChildItem -Path $targetDir -Recurse | Where-Object { $_.Extension -eq ".cpz" } | ForEach-Object {
+            $destPath = Join-Path $outputDir "$($Env:SOLUTION_FILE)\$($_.Name)"
+            Write-Host "Copying $($_.FullName) to $destPath"
+            Copy-Item -Path $_.FullName -Destination $destPath -Force
+          }
       - name: Pack Solution
-        run: dotnet pack .\$($Env:SOLUTION_FILE).sln --configuration $env:BUILD_TYPE --output ./output /p:Version="${{ steps.setVersion.outputs.version }}"
+        run: |
+          dotnet pack .\$($Env:SOLUTION_FILE).sln --configuration $env:BUILD_TYPE --output ./output /p:Version="${{ steps.setVersion.outputs.version }}" /p:IncludeSymbols=true /p:IncludeSource=true
+          
+          # Ensure CPZ files are included in the package
+          $cpzFiles = Get-ChildItem -Path . -Recurse | Where-Object { $_.Extension -eq ".cpz" }
+          if ($cpzFiles.Count -eq 0) {
+            Write-Host "WARNING: No CPZ files found!"
+          } else {
+            Write-Host "Found $($cpzFiles.Count) CPZ files"
+            foreach ($file in $cpzFiles) {
+              Write-Host "CPZ file: $($file.FullName)"
+            }
+          }
       - name: Create tag for non-rc builds
         if: contains(steps.setVersion.outputs.version, 'alpha')
         run: |
@@ -78,7 +109,7 @@ jobs:
         id: create_release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'output/**/*.{cpz,cplz}'
+          artifacts: 'output\**\*.*(cpz|cplz)'
           generateReleaseNotes: true
           prerelease: ${{contains('debug', env.BUILD_TYPE)}}
           tag: ${{ steps.setVersion.outputs.version }}

@@ -1,5 +1,10 @@
 <Project>
   <ItemGroup>
+    <!-- Ensure we're looking in all possible locations for CPZ files -->
+    <None Include="$(TargetDir)*.cpz" Condition="$(ProjectType) == 'Program'">
+      <Pack>true</Pack>
+      <PackagePath>build;</PackagePath>
+    </None>
     <None Include="$(PackageOutputPath)\$(AssemblyName)\*.cpz" Condition="$(ProjectType) == 'Program'">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
@@ -27,7 +32,29 @@
       <Message Text="TargetDir: '$(TargetDir)'" Importance="high" />
       <Message Text="===============================================" Importance="high" />
   </Target>
-
+  <Target Name="Copy CPZ NET472" 
+          AfterTargets="Build"
+          DependsOnTargets="BuildDependencies"
+          Condition="'$(ProjectType)' == 'Program' And '$(TargetFramework)' == 'net472'">
+      <Message Text="========================================" Importance="high" />
+      <Message Text="Starting CPZ Build Process for NET472" Importance="high" />
+      <Message Text="ProjectType: '$(ProjectType)'" Importance="high" />
+      <Message Text="TargetFramework: '$(TargetFramework)'" Importance="high" />
+      <Message Text="========================================" Importance="high" />
+      
+      <!-- Create output directory -->
+      <MakeDir Directories="$(PackageOutputPath)\$(AssemblyName)" 
+              Condition="!Exists('$(PackageOutputPath)\$(AssemblyName)')" />
+      
+      <!-- Copy the CPZ file -->
+      <Copy SourceFiles="$(TargetDir)$(TargetName).cpz" 
+            DestinationFiles="$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz"
+            Condition="Exists('$(TargetDir)$(TargetName).cpz')" />
+              
+      <Message Text="CPZ Build completed for NET472"
+              Condition="Exists('$(PackageOutputPath)\$(AssemblyName)\$(TargetName).$(Version).$(TargetFramework).cpz')"
+              Importance="high" />
+  </Target>
   <Target Name="Copy CPZ NET6" 
           AfterTargets="Build"
           DependsOnTargets="BuildDependencies"
