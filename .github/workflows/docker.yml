@@ -70,20 +70,36 @@ jobs:
         shell: powershell
         run: |
           Write-Host "Checking for CPZ files..."
-          $targetDir = ".\$($Env:SOLUTION_FILE)\bin\$($Env:BUILD_TYPE)\net472\"
-          $outputDir = ".\output\"
-          
-          Write-Host "Files in target directory:"
-          Get-ChildItem -Path $targetDir -Recurse | Where-Object { $_.Extension -eq ".cpz" } | ForEach-Object { Write-Host $_.FullName }
-          
-          Write-Host "Files in output directory:"
-          Get-ChildItem -Path $outputDir -Recurse | Where-Object { $_.Extension -eq ".cpz" } | ForEach-Object { Write-Host $_.FullName }
-          
-          # Copy CPZ files to output if they exist but weren't copied
-          Get-ChildItem -Path $targetDir -Recurse | Where-Object { $_.Extension -eq ".cpz" } | ForEach-Object {
-            $destPath = Join-Path $outputDir "$($Env:SOLUTION_FILE)\$($_.Name)"
-            Write-Host "Copying $($_.FullName) to $destPath"
-            Copy-Item -Path $_.FullName -Destination $destPath -Force
+
+          # First, let's find out the actual directory structure
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "Directory structure:"
+          Get-ChildItem -Path . -Directory -Recurse -Depth 2 | ForEach-Object { Write-Host $_.FullName }
+
+          # Look for all CPZ files in the repository
+          Write-Host "Searching for all CPZ files in the repository:"
+          $cpzFiles = Get-ChildItem -Path . -Recurse -Filter "*.cpz"
+          if ($cpzFiles.Count -eq 0) {
+              Write-Host "No CPZ files found in the repository."
+          } else {
+              Write-Host "Found $($cpzFiles.Count) CPZ files:"
+              foreach ($file in $cpzFiles) {
+                  Write-Host "  $($file.FullName)"
+              }
+              
+              # Create output directory if it doesn't exist
+              $outputDir = ".\output\build"
+              if (-not (Test-Path $outputDir)) {
+                  New-Item -ItemType Directory -Path $outputDir -Force
+                  Write-Host "Created output directory: $outputDir"
+              }
+              
+              # Copy all CPZ files to the output directory
+              foreach ($file in $cpzFiles) {
+                  $destPath = Join-Path $outputDir $file.Name
+                  Write-Host "Copying $($file.FullName) to $destPath"
+                  Copy-Item -Path $file.FullName -Destination $destPath -Force
+              }
           }
       - name: Pack Solution
         run: |

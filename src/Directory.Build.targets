@@ -1,11 +1,20 @@
 <Project>
+<Project>
   <ItemGroup>
-    <!-- Ensure we're looking in all possible locations for CPZ files -->
+    <!-- Include CPZ files from multiple possible locations -->
     <None Include="$(TargetDir)*.cpz" Condition="$(ProjectType) == 'Program'">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
     </None>
-    <None Include="$(PackageOutputPath)\$(AssemblyName)\*.cpz" Condition="$(ProjectType) == 'Program'">
+    <None Include="$(OutputPath)*.cpz" Condition="$(ProjectType) == 'Program'">
+      <Pack>true</Pack>
+      <PackagePath>build;</PackagePath>
+    </None>
+    <None Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\**\*.cpz" Condition="$(ProjectType) == 'Program'">
+      <Pack>true</Pack>
+      <PackagePath>build;</PackagePath>
+    </None>
+    <None Include="$(PackageOutputPath)\build\*.cpz" Condition="$(ProjectType) == 'Program'">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
     </None>
@@ -14,6 +23,8 @@
       <PackagePath>build;</PackagePath>
     </None>
   </ItemGroup>
+  <!-- Rest of your targets remain the same -->
+</Project>
   <Target Name="Create CPLZ" AfterTargets="Build; AfterRebuild" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != ''">
     <Message Text="Creating CPLZ $(TargetDir)" Importance="high" />
     <Message Text="PackageOutputPath: $(PackageOutputPath)" Importance="high" />
