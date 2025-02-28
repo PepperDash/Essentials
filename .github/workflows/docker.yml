@@ -103,7 +103,7 @@ jobs:
           }
       - name: Pack Solution
         run: |
-          dotnet pack .\$($Env:SOLUTION_FILE).sln --configuration $env:BUILD_TYPE --output ./output /p:Version="${{ steps.setVersion.outputs.version }}" /p:IncludeSymbols=true /p:IncludeSource=true
+          dotnet pack .\$($Env:SOLUTION_FILE).sln --configuration $env:BUILD_TYPE --output ./output /p:Version="${{ steps.setVersion.outputs.version }}" 
           
           # Ensure CPZ files are included in the package
           $cpzFiles = Get-ChildItem -Path . -Recurse | Where-Object { $_.Extension -eq ".cpz" }
