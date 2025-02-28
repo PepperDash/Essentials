@@ -66,8 +66,55 @@ jobs:
       # Build the solutions in the docker image
       - name: Build Solution        
         run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" -m
+      - name: Debug CPZ Files
+        shell: powershell
+        run: |
+          Write-Host "Checking for CPZ files..."
+
+          # First, let's find out the actual directory structure
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "Directory structure:"
+          Get-ChildItem -Path . -Directory -Recurse -Depth 2 | ForEach-Object { Write-Host $_.FullName }
+
+          # Look for all CPZ files in the repository
+          Write-Host "Searching for all CPZ files in the repository:"
+          $cpzFiles = Get-ChildItem -Path . -Recurse -Filter "*.cpz"
+          if ($cpzFiles.Count -eq 0) {
+              Write-Host "No CPZ files found in the repository."
+          } else {
+              Write-Host "Found $($cpzFiles.Count) CPZ files:"
+              foreach ($file in $cpzFiles) {
+                  Write-Host "  $($file.FullName)"
+              }
+              
+              # Create output directory if it doesn't exist
+              $outputDir = ".\output\build"
+              if (-not (Test-Path $outputDir)) {
+                  New-Item -ItemType Directory -Path $outputDir -Force
+                  Write-Host "Created output directory: $outputDir"
+              }
+              
+              # Copy all CPZ files to the output directory
+              foreach ($file in $cpzFiles) {
+                  $destPath = Join-Path $outputDir $file.Name
+                  Write-Host "Copying $($file.FullName) to $destPath"
+                  Copy-Item -Path $file.FullName -Destination $destPath -Force
+              }
+          }
       - name: Pack Solution
-        run: dotnet pack .\$($Env:SOLUTION_FILE).sln --configuration $env:BUILD_TYPE --output ./output /p:Version="${{ steps.setVersion.outputs.version }}"
+        run: |
+          dotnet pack .\$($Env:SOLUTION_FILE).sln --configuration $env:BUILD_TYPE --output ./output /p:Version="${{ steps.setVersion.outputs.version }}" 
+          
+          # Ensure CPZ files are included in the package
+          $cpzFiles = Get-ChildItem -Path . -Recurse | Where-Object { $_.Extension -eq ".cpz" }
+          if ($cpzFiles.Count -eq 0) {
+            Write-Host "WARNING: No CPZ files found!"
+          } else {
+            Write-Host "Found $($cpzFiles.Count) CPZ files"
+            foreach ($file in $cpzFiles) {
+              Write-Host "CPZ file: $($file.FullName)"
+            }
+          }
       - name: Create tag for non-rc builds
         if: contains(steps.setVersion.outputs.version, 'alpha')
         run: |
@@ -76,9 +123,6 @@ jobs:
       # Create the release on the source repo
       - name: Create Release
         id: create_release
-#        if: contains(steps.setVersion.outputs.version,'-rc-') ||
-#            contains(steps.setVersion.outputs.version,'-hotfix-') ||
-#            contains(steps.setVersion.outputs.version, '-beta-')
         uses: ncipollo/release-action@v1
         with:
           artifacts: 'output\**\*.*(cpz|cplz)'
