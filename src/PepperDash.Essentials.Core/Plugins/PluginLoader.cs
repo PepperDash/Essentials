@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
@@ -672,7 +672,10 @@ namespace PepperDash.Essentials
             }
             
             // Update incompatible plugins with dependency information
-            UpdateIncompatiblePluginDependencies();
+            var pluginDependencies = new Dictionary<string, List<string>>();
+            // Populate pluginDependencies with relevant data
+            // Example: pluginDependencies["PluginA"] = new List<string> { "Dependency1", "Dependency2" };
+            UpdateIncompatiblePluginDependencies(pluginDependencies);
             
             // plugin dll will be loaded.  Any classes in plugin should have a static constructor
             // that registers that class with the Core.DeviceFactory
