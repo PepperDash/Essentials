@@ -1,0 +1,241 @@
+name: Essentials v3 Development Build
+
+on:
+  push:
+    branches:
+      - feature-3.0.0/*
+      - hotfix-3.0.0/*
+      - release-3.0.0/*
+      - development-3.0.0
+
+env:
+  SOLUTION_PATH: .
+  SOLUTION_FILE: PepperDash.Essentials
+  VERSION: 0.0.0-buildtype-buildnumber
+  BUILD_TYPE: Debug
+  RELEASE_BRANCH: main
+jobs:
+  Build_Project_4-Series:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      # Detect environment (Act vs GitHub)
+      - name: Detect environment
+        id: detect_env
+        run: |
+          if [ -n "$ACT" ]; then
+            echo "is_local=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_local=false" >> $GITHUB_OUTPUT
+          fi
+          
+      # Install all prerequisites
+      - name: Install prerequisites
+        run: |
+          apt-get update
+          apt-get install -y curl wget libicu-dev git unzip
+          
+      - name: Set Version Number
+        id: setVersion
+        shell: bash
+        run: |
+          latestVersion="3.0.0"
+          newVersion=$latestVersion
+          phase=""
+          newVersionString=""
+          
+          if [[ $GITHUB_REF =~ ^refs/pull/.* ]]; then
+            phase="beta"
+            newVersionString="${newVersion}-${phase}-${GITHUB_RUN_NUMBER}"
+          elif [[ $GITHUB_REF =~ ^refs/heads/hotfix-3.0.0/.* ]]; then
+            phase="hotfix"
+            newVersionString="${newVersion}-${phase}-${GITHUB_RUN_NUMBER}"
+          elif [[ $GITHUB_REF =~ ^refs/heads/feature-3.0.0/.* ]]; then
+            phase="alpha"
+            newVersionString="${newVersion}-${phase}-${GITHUB_RUN_NUMBER}"
+          elif [[ $GITHUB_REF == "refs/heads/development-3.0.0" ]]; then
+            phase="beta"
+            newVersionString="${newVersion}-${phase}-${GITHUB_RUN_NUMBER}"
+          elif [[ $GITHUB_REF =~ ^refs/heads/release-3.0.0/.* ]]; then
+            version=$(echo $GITHUB_REF | awk -F '/' '{print $NF}' | sed 's/v//')
+            phase="rc"
+            newVersionString="${version}-${phase}-${GITHUB_RUN_NUMBER}"
+          else
+            # For local builds or unrecognized branches
+            newVersionString="${newVersion}-local"
+          fi
+          
+          echo "version=$newVersionString" >> $GITHUB_OUTPUT
+      
+      # Create Build Properties file
+      - name: Create Build Properties
+        run: |
+          cat > Directory.Build.props << EOF
+          <Project>
+            <PropertyGroup>
+              <Version>${{ steps.setVersion.outputs.version }}</Version>
+              <AssemblyVersion>${{ steps.setVersion.outputs.version }}</AssemblyVersion>
+              <FileVersion>${{ steps.setVersion.outputs.version }}</FileVersion>
+              <InformationalVersion>${{ steps.setVersion.outputs.version }}</InformationalVersion>
+              <PackageVersion>${{ steps.setVersion.outputs.version }}</PackageVersion>
+              <NuGetVersion>${{ steps.setVersion.outputs.version }}</NuGetVersion>
+            </PropertyGroup>
+          </Project>
+          EOF
+          
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+          
+      - name: Restore NuGet Packages
+        run: dotnet restore ${SOLUTION_FILE}.sln
+        
+      - name: Build Solution
+        run: dotnet build ${SOLUTION_FILE}.sln --configuration ${BUILD_TYPE} --no-restore
+      
+      # Copy the CPZ file to the output directory with version in the filename
+      - name: Copy and Rename CPZ Files
+        run: |
+          mkdir -p ./output/cpz
+          
+          # Find the main CPZ file in the build output
+          if [ -f "./src/PepperDash.Essentials/bin/${BUILD_TYPE}/net8/PepperDashEssentials.cpz" ]; then
+            cp "./src/PepperDash.Essentials/bin/${BUILD_TYPE}/net8/PepperDashEssentials.cpz" "./output/cpz/PepperDashEssentials.${{ steps.setVersion.outputs.version }}.cpz"
+            echo "Main CPZ file copied and renamed successfully."
+          else
+            echo "Warning: Main CPZ file not found at expected location."
+            find ./src -name "*.cpz" | xargs -I {} cp {} ./output/cpz/
+          fi
+        
+      - name: Pack Solution
+        run: dotnet pack ${SOLUTION_FILE}.sln --configuration ${BUILD_TYPE} --output ./output/nuget --no-build
+        
+      # List build artifacts (runs in both environments)
+      - name: List Build Artifacts
+        run: |
+          echo "=== Build Artifacts ==="
+          echo "NuGet Packages:"
+          find ./output/nuget -type f | sort
+          echo ""
+          echo "CPZ/CPLZ Files:"
+          find ./output -name "*.cpz" -o -name "*.cplz" | sort
+          echo "======================="
+        
+      # Enhanced package inspection for local runs
+      - name: Inspect NuGet Packages
+        if: steps.detect_env.outputs.is_local == 'true'
+        run: |
+          echo "=== NuGet Package Details ==="
+          for pkg in $(find ./output/nuget -name "*.nupkg"); do
+            echo "Package: $(basename "$pkg")"
+            echo "Size: $(du -h "$pkg" | cut -f1)"
+            
+            # Extract and show package contents
+            echo "Contents:"
+            unzip -l "$pkg" | tail -n +4 | head -n -2
+            echo "--------------------------"
+            
+            # Try to extract and show the nuspec file (contains metadata)
+            echo "Metadata:"
+            unzip -p "$pkg" "*.nuspec" 2>/dev/null | grep -E "(<id>|<version>|<description>|<authors>|<dependencies>)" || echo "Metadata extraction failed"
+            echo "--------------------------"
+          done
+          echo "==========================="
+      
+      # Tag creation - GitHub version
+      - name: Create tag for non-rc builds (GitHub)
+        if: ${{ !contains(steps.setVersion.outputs.version, 'rc') && steps.detect_env.outputs.is_local == 'false' }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git tag ${{ steps.setVersion.outputs.version }}
+          git push --tags origin
+          
+      # Tag creation - Act mock version
+      - name: Create tag for non-rc builds (Act Mock)
+        if: ${{ !contains(steps.setVersion.outputs.version, 'rc') && steps.detect_env.outputs.is_local == 'true' }}
+        run: |
+          echo "Would create git tag: ${{ steps.setVersion.outputs.version }}"
+          echo "Would push tag to: origin"
+          
+      # Release creation - GitHub version
+      - name: Create Release (GitHub)
+        if: steps.detect_env.outputs.is_local == 'false'
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: 'output/cpz/*,output/**/*.cplz'
+          generateReleaseNotes: true
+          prerelease: ${{contains('debug', env.BUILD_TYPE)}}
+          tag: ${{ steps.setVersion.outputs.version }}
+          
+      # Release creation - Act mock version with enhanced output
+      - name: Create Release (Act Mock)
+        if: steps.detect_env.outputs.is_local == 'true'
+        run: |
+          echo "=== Mock Release Creation ==="
+          echo "Would create release with:"
+          echo "- Tag: ${{ steps.setVersion.outputs.version }}"
+          echo "- Prerelease: ${{contains('debug', env.BUILD_TYPE)}}"
+          echo "- Artifacts matching pattern: output/cpz/*,output/**/*.cplz"
+          echo ""
+          echo "Matching artifacts:"
+          find ./output/cpz -type f
+          find ./output -name "*.cplz"
+          
+          # Detailed info about release artifacts
+          echo ""
+          echo "Artifact Details:"
+          for artifact in $(find ./output/cpz -type f; find ./output -name "*.cplz"); do
+            echo "File: $(basename "$artifact")"
+            echo "Size: $(du -h "$artifact" | cut -f1)"
+            echo "Created: $(stat -c %y "$artifact")"
+            echo "MD5: $(md5sum "$artifact" | cut -d' ' -f1)"
+            echo "--------------------------"
+          done
+          echo "============================"
+          
+      # NuGet setup - GitHub version
+      - name: Setup NuGet (GitHub)
+        if: steps.detect_env.outputs.is_local == 'false'
+        run: |
+          dotnet nuget add source https://nuget.pkg.github.com/pepperdash/index.json -n github -u pepperdash -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+          
+      # NuGet setup - Act mock version
+      - name: Setup NuGet (Act Mock)
+        if: steps.detect_env.outputs.is_local == 'true'
+        run: |
+          echo "=== Mock NuGet Setup ==="
+          echo "Would add GitHub NuGet source: https://nuget.pkg.github.com/pepperdash/index.json"
+          echo "======================="
+          
+      # Publish to NuGet - GitHub version
+      - name: Publish to Nuget (GitHub)
+        if: steps.detect_env.outputs.is_local == 'false'
+        run: dotnet nuget push ./output/nuget/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+        
+      # Publish to NuGet - Act mock version
+      - name: Publish to Nuget (Act Mock)
+        if: steps.detect_env.outputs.is_local == 'true'
+        run: |
+          echo "=== Mock Publish to NuGet ==="
+          echo "Would publish the following packages to https://api.nuget.org/v3/index.json:"
+          find ./output/nuget -name "*.nupkg" | sort
+          echo "============================="
+          
+      # Publish to GitHub NuGet - GitHub version
+      - name: Publish to Github Nuget (GitHub)
+        if: steps.detect_env.outputs.is_local == 'false'
+        run: dotnet nuget push ./output/nuget/*.nupkg --source github --api-key ${{ secrets.GITHUB_TOKEN }}
+        
+      # Publish to GitHub NuGet - Act mock version
+      - name: Publish to Github Nuget (Act Mock)
+        if: steps.detect_env.outputs.is_local == 'true'
+        run: |
+          echo "=== Mock Publish to GitHub NuGet ==="
+          echo "Would publish the following packages to the GitHub NuGet registry:"
+          find ./output/nuget -name "*.nupkg" | sort
+          echo "=================================="
