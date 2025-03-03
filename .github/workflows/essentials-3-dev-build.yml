@@ -30,11 +30,17 @@ jobs:
             echo "is_local=false" >> $GITHUB_OUTPUT
           fi
           
-      # Install all prerequisites
       - name: Install prerequisites
         run: |
-          apt-get update
-          apt-get install -y curl wget libicu-dev git unzip
+          if [ "${{ steps.detect_env.outputs.is_local }}" == "true" ]; then
+            # For Act - no sudo needed
+            apt-get update
+            apt-get install -y curl wget libicu-dev git unzip
+          else
+            # For GitHub runners - sudo required
+            sudo apt-get update
+            sudo apt-get install -y curl wget libicu-dev git unzip
+          fi
           
       - name: Set Version Number
         id: setVersion
