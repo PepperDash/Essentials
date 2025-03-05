@@ -20,6 +20,7 @@ using PepperDash.Essentials.Core.Bridges.JoinMaps;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 using Serilog.Events;
 using PepperDash.Essentials.Core.Routing;
+using System.Text;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
