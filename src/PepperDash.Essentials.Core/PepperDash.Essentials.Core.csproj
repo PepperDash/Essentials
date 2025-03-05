@@ -4,7 +4,7 @@
     <Configurations>Debug;Release;Debug 4.7.2</Configurations>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFrameworks>net472;net6</TargetFrameworks>
+    <TargetFramework>net472</TargetFramework>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <AssemblyName>PepperDash_Essentials_Core</AssemblyName>
