@@ -1,0 +1,36 @@
+{
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "releaseRules": [
+          { "scope": "force-patch", "release": "patch" },
+          { "scope": "no-release", "release": false }
+        ]
+      }
+    ],
+    "@semantic-release/release-notes-generator",    
+    ["@semantic-release/changelog", 
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "verifyReleaseCmd": "echo \"newVersion=true\" >> $GITHUB_OUTPUT",
+        "publishCmd": "echo \"version=${nextRelease.version}\" >> $GITHUB_OUTPUT && echo \"tag=${nextRelease.gitTag}\" >> $GITHUB_OUTPUT && echo \"type=${nextRelease.type}\" >> $GITHUB_OUTPUT && echo \"channel=${nextRelease.channel}\" >> $GITHUB_OUTPUT"
+      }
+    ]
+  ],  
+  "branches": [
+    "main",
+    {"name": "development", "prerelease": "beta", "channel": "beta"},
+    {"name": "release", "prerelease": "rc", "channel": "rc"},
+    {
+      "name": "replace-me-feature-branch",
+      "prerelease": "replace-me-prerelease",
+      "channel": "replace-me-prerelease"
+    }
+  ]
+}
