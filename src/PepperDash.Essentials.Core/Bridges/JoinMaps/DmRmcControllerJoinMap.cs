@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace PepperDash.Essentials.Core.Bridges
 {

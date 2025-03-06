@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Crestron.SimplSharp.CrestronIO;
 using System.Reflection;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -21,6 +20,7 @@ using PepperDash.Essentials.Core.Bridges.JoinMaps;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 using Serilog.Events;
 using PepperDash.Essentials.Core.Routing;
+using System.Text;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
