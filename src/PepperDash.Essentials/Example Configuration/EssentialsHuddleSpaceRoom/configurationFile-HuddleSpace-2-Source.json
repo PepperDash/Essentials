@@ -1,0 +1,232 @@
+{
+    "system": {},
+    "system_url": "",
+    "template_url": "",
+    "template": {
+        "sourceLists": {
+            "default": {
+                "source-2": {
+                    "order": 6,
+                    "type": "route",
+                    "altIcon": "Blank",
+                    "icon": "",
+                    "sourceKey": "wePresent-1",
+                    "includeInSourceList": true,
+                    "volumeControlKey": "$defaultAudio",
+                    "routeList": [
+                        {
+                            "sourceKey": "wePresent-1",
+                            "type": "audioVideo",
+                            "destinationKey": "$defaultAll"
+                        }
+                    ]
+                },
+                "source-1": {
+                    "order": 5,
+                    "type": "route",
+                    "altIcon": "Blank",
+                    "icon": "",
+                    "sourceKey": "inRoomPc-1",
+                    "includeInSourceList": true,
+                    "volumeControlKey": "$defaultAudio",
+                    "routeList": [
+                        {
+                            "sourceKey": "inRoomPc-1",
+                            "type": "audioVideo",
+                            "destinationKey": "$defaultAll"
+                        }
+                    ]
+                },
+                "roomOff": {
+                    "sourceKey": "$off",
+                    "type": "off",
+                    "routeList": [
+                        {
+                            "sourceKey": "$off",
+                            "type": "audioVideo",
+                            "destinationKey": "$defaultAll"
+                        }
+                    ]
+                }
+            }
+        },
+        "devices": [
+            {
+                "name": "RMC3",
+                "group": "processor",
+                "properties": {
+                    "numberOfIrPorts": 2,
+                    "numberOfComPorts": 1
+                },
+                "supportedSystemTypes": [
+                    "hudType",
+                    "presType",
+                    "vtType",
+                    "custom"
+                ],
+                "type": "rmc3",
+                "supportedConfigModes": [
+                    "compliance",
+                    "essentials"
+                ],
+                "supportsCompliance": true,
+                "key": "processor",
+                "uid": 0
+            },
+            {
+                "name": "Room PC",
+                "key": "inRoomPc-1",
+                "type": "inRoomPc",
+                "group": "pc",
+                "uid": 8,
+                "properties": {
+                    "hasAudio": true,
+                    "hasControls": false,
+                    "isDefault": true
+                }
+            },
+            {
+                "name": "Wireless Video",
+                "key": "wePresent-1",
+                "type": "genericSource",
+                "group": "genericSource",
+                "uid": 9,
+                "properties": {
+                    "isDefault": false
+                }
+            },
+            {
+                "name": "Samsung QM Series Display",
+                "key": "display-1",
+                "type": "samsungmdc",
+                "group": "display",
+                "uid": 11,
+                "properties": {
+                    "id": "01",
+                    "control": {
+                        "controlPortDevKey": "processor",
+                        "comParams": {
+                            "parity": "None",
+                            "protocol": "RS232",
+                            "baudRate": 9600,
+                            "softwareHandshake": "None",
+                            "dataBits": 8,
+                            "hardwareHandshake": "None",
+                            "stopBits": 1
+                        },
+                        "controlPortNumber": 1,
+                        "method": "com"
+                    }
+                }
+            },
+            {
+                "name": "TSW-760",
+                "key": "tsw760-1",
+                "type": "tsw760",
+                "group": "touchpanel",
+                "uid": 14,
+                "properties": {
+                    "control": {
+                        "method": "ipid",
+                        "ipid": "03",
+                        "params": {
+                            "deviceReadyResponsePattern": ".*>",
+                            "endOfLineString": "\n"
+                        }
+                    },
+                    "showVolumeGauge": true,
+                    "roomListKey": "",
+                    "showDate": true,
+                    "headerStyle": "Verbose",
+                    "sgdFile": "PepperDash Essentials TSW-760.sgd",
+                    "showTime": true,
+                    "sourcesOverflowCount": 4,
+                    "usesSplashPage": false,
+                    "defaultRoomKey": "room1"
+                }
+            },
+            {
+                "name": "iPad",
+                "key": "crestronApp-1",
+                "type": "crestronApp",
+                "group": "touchpanel",
+                "uid": 15,
+                "properties": {
+                    "control": {
+                        "method": "ipid",
+                        "ipid": "04",
+                        "params": {
+                            "deviceReadyResponsePattern": ".*>",
+                            "endOfLineString": "\n"
+                        }
+                    },
+                    "showVolumeGauge": true,
+                    "roomListKey": "",
+                    "showDate": false,
+                    "headerStyle": "Verbose",
+                    "sgdFile": "PepperDash Essentials iPad.sgd",
+                    "showTime": false,
+                    "sourcesOverflowCount": 5,
+                    "projectName": "PepperDash Essentials iPad",
+                    "defaultRoomKey": "room1",
+                    "usesSplashPage": false
+                }
+            }
+        ],
+        "info": {
+            "processorType": "rmc3",
+            "lastUid": 16,
+            "lastModifiedDate": "2018-02-16T17:54:41.315Z",
+            "systemType": "huddle",
+            "comment": "",
+            "requiredControlSofwareVersion": ""
+        },
+        "tieLines": [
+            {
+                "sourceKey": "inRoomPc-1",
+                "sourcePort": "anyVideoOut",
+                "destinationKey": "display-1",
+                "destinationPort": "HdmiIn1",
+                "type": "audioVideo"
+            },
+            {
+                "sourceKey": "wePresent-1",
+                "sourcePort": "anyOut",
+                "destinationKey": "display-1",
+                "destinationPort": "HdmiIn2",
+                "type": "audioVideo"
+            }
+        ],
+        "rooms": [
+            {
+                "type": "huddle",
+                "name": "Essentials Huddle 2 Inputs",
+                "key": "room1",
+                "properties": {
+                    "defaultDisplayKey": "display-1",
+                    "logo": {
+                        "type": "system",
+                        "url": ""
+                    },
+                    "description": "Huddle Space with 2 sources. RMC3 processor. iPad + TSW-560",
+                    "defaultSourceItem": "source-1",
+                    "hasDsp": false,
+                    "helpMessage": "",
+                    "sourceListKey": "default",
+                    "volumes": {
+                        "master": {
+                            "level": 40,
+                            "deviceKey": "display-1",
+                            "label": "Volume"
+                        }
+                    },
+                    "defaultAudioKey": "display-1",
+                    "defaultVideoBehavior": "basic",
+                    "tech": {
+                        "password": "1234"
+                    }
+                }
+            }
+        ]
+    }
+}

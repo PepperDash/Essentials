@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ProjectType>ProgramLibrary</ProjectType>
+    <Configurations>Debug;Release;Debug 4.7.2</Configurations>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AssemblyName>PepperDash_Essentials_Core</AssemblyName>
+    <RootNamespace>PepperDash.Essentials.Core</RootNamespace>
+    <Title>PepperDash Essentials Core</Title>
+    <PackageId>PepperDash.Essentials.Core</PackageId>
+    <InformationalVersion>$(Version)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Version>2.0.0-local</Version>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 4.7.2|AnyCPU'">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.90" />
+    <PackageReference Include="PepperDashCore" Version="2.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Crestron\CrestronGenericBaseDevice.cs.orig" />
+  </ItemGroup>
+</Project>
