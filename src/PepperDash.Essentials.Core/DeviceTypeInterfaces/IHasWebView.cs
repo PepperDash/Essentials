@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
-    public interface IHasOSD
+    public interface IHasWebView
     {
-        void ShowOsdMessage(string url, string mobileControlPath, string mode, string title, string target);
-        void HideOsdMessage();
+        void ShowWebView(string url, string mobileControlPath, string mode, string title, string target);
+        void HideWebView();
     }
 }
