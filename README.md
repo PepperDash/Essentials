@@ -61,4 +61,3 @@ For detailed documentation, see the [Wiki](https://github.com/PepperDash/Essenti
 ## How-To (Getting Started)
 
 See [Getting Started](https://github.com/PepperDash/Essentials/wiki/Get-started#how-to-get-started)
-
