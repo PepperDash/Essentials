@@ -151,17 +151,16 @@ namespace PepperDash.Essentials.Core
 		{
             if (MonitorBytesReceived) 
             {
-			    Client.BytesReceived += Client_BytesReceived;
+			    Client.BytesReceived -= Client_BytesReceived;
+		        Client.BytesReceived += Client_BytesReceived;
             }
             else
             {
+                Client.TextReceived -= Client_TextReceived;
                 Client.TextReceived += Client_TextReceived;
             }
 
-            if (!IsSocket)
-            {
-                BeginPolling();
-            }
+            BeginPolling();
 		}
 
         void  socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
