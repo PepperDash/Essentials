@@ -13,7 +13,6 @@
     <Product>epi-essentials-mobile-control</Product>
     <Description>This software is a plugin designed to work as a part of PepperDash Essentials for Crestron control processors. This plugin allows for connection to a PepperDash Mobile Control server.</Description>
     <Copyright>Copyright 2020</Copyright>
-    <Version>4.0.0-local</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <InformationalVersion>$(Version)</InformationalVersion>
