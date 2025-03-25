@@ -15,7 +15,7 @@
     <InformationalVersion>$(Version)</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Authors>PepperDash Technology</Authors>
-    <PackageId>PepperDash.Essentials.Plugin.MobileControl.Messengers</PackageId>
+    <PackageId>PepperDash.Essentials.MobileControl.Messengers</PackageId>
     <PackageTags>crestron 4series</PackageTags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

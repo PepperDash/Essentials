@@ -19,7 +19,7 @@
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <Authors>PepperDash Technologies</Authors>
-    <PackageId>PepperDash.Essentials.4Series.Plugin.MobileControl</PackageId>
+    <PackageId>PepperDash.Essentials.MobileControl</PackageId>
     <PackageTags>crestron 4series</PackageTags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
