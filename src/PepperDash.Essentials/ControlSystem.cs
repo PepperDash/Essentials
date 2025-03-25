@@ -261,6 +261,7 @@ namespace PepperDash.Essentials
                 _ = new DeviceFactory();
 
                 _ = new ProcessorExtensionDeviceFactory();
+                _ = new MobileControl.MobileControlFactory();
 
                 Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 
@@ -469,25 +470,33 @@ namespace PepperDash.Essentials
         /// Reads all rooms from config and adds them to DeviceManager
         /// </summary>
         public void LoadRooms()
-        {
+        {            
             if (ConfigReader.ConfigObject.Rooms == null)
             {
                 Debug.LogMessage(LogEventLevel.Information, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
                 return;
             }
 
-            foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
+            foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)         
             {
-                var room = Core.DeviceFactory.GetDevice(roomConfig);
-
-                DeviceManager.AddDevice(room);
-                if (room is ICustomMobileControl)
+                try
                 {
-                    continue;                    
+                    var room = Core.DeviceFactory.GetDevice(roomConfig);
+
+                    DeviceManager.AddDevice(room);
+                    if (room is ICustomMobileControl)
+                    {
+                        continue;
+                    }
+                } catch (Exception ex)
+                {
+                    Debug.LogMessage(ex, "Exception loading room {roomKey}:{roomType}", null, roomConfig.Key, roomConfig.Type);
+                    continue;
                 }
             }
 
             Debug.LogMessage(LogEventLevel.Information, "All Rooms Loaded.");
+
 
         }
 

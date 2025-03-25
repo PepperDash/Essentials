@@ -54,5 +54,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />
     <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj" />
+    <ProjectReference Include="..\PepperDash.Essentials.MobileControl.Messengers\PepperDash.Essentials.MobileControl.Messengers.csproj" />
+    <ProjectReference Include="..\PepperDash.Essentials.MobileControl\PepperDash.Essentials.MobileControl.csproj" />
   </ItemGroup>
 </Project>
