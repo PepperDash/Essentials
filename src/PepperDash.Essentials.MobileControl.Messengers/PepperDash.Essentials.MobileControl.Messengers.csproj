@@ -9,13 +9,12 @@
     <Product>mobile-control-messengers</Product>
     <Copyright>Copyright ©  2024</Copyright>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <InformationalVersion>$(Version)</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Authors>PepperDash Technology</Authors>
     <PackageId>PepperDash.Essentials.Plugin.MobileControl.Messengers</PackageId>
-    <PackageProjectUrl>https://github.com/PepperDash/Essentials</PackageProjectUrl>
     <PackageTags>crestron 4series</PackageTags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
