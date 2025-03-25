@@ -28,6 +28,7 @@ using PepperDash.Essentials.Core.Shades;
 using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Cameras;
+using PepperDash.Essentials.Devices.Common.Displays;
 using PepperDash.Essentials.Devices.Common.SoftCodec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Room.MobileControl;
@@ -35,10 +36,6 @@ using PepperDash.Essentials.Services;
 using PepperDash.Essentials.WebApiHandlers;
 using Serilog.Events;
 using WebSocketSharp;
-using DisplayBase = PepperDash.Essentials.Devices.Common.Displays.DisplayBase;
-using TwoWayDisplayBase = PepperDash.Essentials.Devices.Common.Displays.TwoWayDisplayBase;
-#if SERIES4
-#endif
 
 namespace PepperDash.Essentials
 {
@@ -59,16 +56,11 @@ namespace PepperDash.Essentials
         private readonly List<MobileControlBridgeBase> _roomBridges =
             new List<MobileControlBridgeBase>();
 
-#if SERIES4
         private readonly Dictionary<string, IMobileControlMessenger> _messengers =
             new Dictionary<string, IMobileControlMessenger>();
 
         private readonly Dictionary<string, IMobileControlMessenger> _defaultMessengers =
             new Dictionary<string, IMobileControlMessenger>();
-#else
-        private readonly Dictionary<string, MessengerBase> _deviceMessengers =
-            new Dictionary<string, MessengerBase>();
-#endif
 
         private readonly GenericQueue _transmitToServerQueue;
 
@@ -81,11 +73,10 @@ namespace PepperDash.Essentials
 
         public List<MobileControlBridgeBase> RoomBridges => _roomBridges;
 
-#if SERIES4
         private readonly MobileControlWebsocketServer _directServer;
 
         public MobileControlWebsocketServer DirectServer => _directServer;
-#endif
+
         private readonly CCriticalSection _wsCriticalSection = new CCriticalSection();
 
         public string SystemUrl; //set only from SIMPL Bridge!
@@ -191,7 +182,6 @@ namespace PepperDash.Essentials
                 25
             );
 
-#if SERIES4
             if (Config.DirectServer != null && Config.DirectServer.EnableDirectServer)
             {
                 _directServer = new MobileControlWebsocketServer(
@@ -207,7 +197,6 @@ namespace PepperDash.Essentials
                     25
                 );
             }
-#endif
 
             Host = config.ServerUrl;
             if (!Host.StartsWith("http"))
@@ -514,9 +503,8 @@ namespace PepperDash.Essentials
                     //    messengerAdded = true;
                     //}
 
-                    if (device is TwoWayDisplayBase)
-                    {
-                        var display = device as TwoWayDisplayBase;
+                    if (device is TwoWayDisplayBase twoWayDisplay)
+                    {                        
                         Debug.Console(
                             2,
                             this,
@@ -526,7 +514,7 @@ namespace PepperDash.Essentials
                         var twoWayDisplayMessenger = new TwoWayDisplayBaseMessenger(
                             $"{device.Key}-twoWayDisplay-{Key}",
                             string.Format("/device/{0}", device.Key),
-                            display
+                            twoWayDisplay
                         );
                         AddDefaultDeviceMessenger(twoWayDisplayMessenger);
 
@@ -1281,11 +1269,7 @@ namespace PepperDash.Essentials
             return _messengers.ContainsKey(key);
         }
 
-#if SERIES4
         public void AddDeviceMessenger(IMobileControlMessenger messenger)
-#else
-        public void AddDeviceMessenger(MessengerBase messenger)
-#endif
         {
             if (_messengers.ContainsKey(messenger.Key))
             {
@@ -1815,10 +1799,9 @@ namespace PepperDash.Essentials
             var conn = _wsClient2 == null ? "No client" : (_wsClient2.IsAlive ? "Yes" : "No");
 
             var secSinceLastAck = DateTime.Now - _lastAckMessage;
-#if SERIES4
+
             if (Config.EnableApiServer)
             {
-#endif
             CrestronConsole.ConsoleCommandResponse(
                 @"Mobile Control Edge Server API Information:
 
@@ -1837,7 +1820,6 @@ namespace PepperDash.Essentials
                 conn,
                 secSinceLastAck.Seconds
             );
-#if SERIES4
             }
             else
             {
@@ -1916,7 +1898,6 @@ Mobile Control Direct Server Infromation:
     Not Enabled in Config."
                 );
             }
-#endif
         }
 
         /// <summary>
@@ -1924,7 +1905,7 @@ Mobile Control Direct Server Infromation:
         /// </summary>
         public void RegisterSystemToServer()
         {
-#if SERIES4
+
             if (!Config.EnableApiServer)
             {
                 Debug.Console(
@@ -1934,7 +1915,7 @@ Mobile Control Direct Server Infromation:
                 );
                 return;
             }
-#endif
+
             var result = CreateWebsocket();
 
             if (!result)
@@ -2177,10 +2158,10 @@ Mobile Control Direct Server Infromation:
             var essentialsVersion = Global.AssemblyVersion;
             confObject.Info.RuntimeInfo.AssemblyVersion = essentialsVersion;
 
-//#if DEBUG
+
 //            // Set for local testing
 //            confObject.RuntimeInfo.PluginVersion = "4.0.0-localBuild";
-//#else
+
             // Populate the plugin version
             var pluginVersion = Assembly
                 .GetExecutingAssembly()
@@ -2197,7 +2178,6 @@ Mobile Control Direct Server Infromation:
                 confObject.RuntimeInfo.PepperDashCoreVersion = PluginLoader.PepperDashCoreAssembly.Version;
                 confObject.RuntimeInfo.EssentialsPlugins = PluginLoader.EssentialsPluginAssemblies;
             }
-//#endif
             return confObject;
         }
 
@@ -2218,12 +2198,12 @@ Mobile Control Direct Server Infromation:
         /// <param name="o"></param>
         public void SendMessageObject(IMobileControlMessage o)
         {
-#if SERIES4
+
             if (Config.EnableApiServer)
             {
-#endif
+
             _transmitToServerQueue.Enqueue(new TransmitMessage(o, _wsClient2));
-#if SERIES4
+
             }
 
             if (
@@ -2234,10 +2214,10 @@ Mobile Control Direct Server Infromation:
             {
                 _transmitToClientsQueue.Enqueue(new MessageToClients(o, _directServer));
             }
-#endif
+
         }
 
-#if SERIES4
+
         public void SendMessageObjectToDirectClient(object o)
         {
             if (
@@ -2249,7 +2229,7 @@ Mobile Control Direct Server Infromation:
                 _transmitToClientsQueue.Enqueue(new MessageToClients(o, _directServer));
             }
         }
-#endif
+
 
         /// <summary>
         /// Disconnects the Websocket Client and stops the heartbeat timer

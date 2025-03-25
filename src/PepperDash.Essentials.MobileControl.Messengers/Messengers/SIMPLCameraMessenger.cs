@@ -32,11 +32,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
 
-#if SERIES4
         protected override void RegisterActions()
-#else
-        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
         {
             AddAction("/fullStatus", (id, content) => SendCameraFullMessageObject());
 
@@ -84,11 +80,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             cameraAction(state.Value.Equals("true", StringComparison.InvariantCultureIgnoreCase));
         }
 
-#if SERIES4
-        public void CustomUnregsiterWithAppServer(IMobileControl appServerController)
-#else   
-        public void CustomUnregsiterWithAppServer(MobileControlSystemController appServerController)
-#endif
+        public void CustomUnregisterWithAppServer(IMobileControl appServerController)
         {
             appServerController.RemoveAction(MessagePath + "/fullStatus");
 

@@ -31,11 +31,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             SendRoutingFullMessageObject();
         }
 
-#if SERIES4
         protected override void RegisterActions()
-#else
-        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
         {
             AddAction("/fullStatus", (id, content) => SendRoutingFullMessageObject());
 

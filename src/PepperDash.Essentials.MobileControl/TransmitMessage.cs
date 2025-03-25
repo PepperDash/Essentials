@@ -71,7 +71,7 @@ namespace PepperDash.Essentials
     }
 
 
-#if SERIES4
+
     public class MessageToClients : IQueueMessage
     {
         private readonly MobileControlWebsocketServer _server;
@@ -146,5 +146,4 @@ namespace PepperDash.Essentials
         #endregion
     }
 
-#endif
 }

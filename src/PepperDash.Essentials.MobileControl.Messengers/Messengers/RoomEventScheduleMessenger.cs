@@ -21,11 +21,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         #region Overrides of MessengerBase
 
-#if SERIES4
         protected override void RegisterActions()
-#else
-        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
         {
             AddAction("/saveScheduledEvents", (id, content) => SaveScheduledEvents(content.ToObject<List<ScheduledEventConfig>>()));
             AddAction("/status", (id, content) =>

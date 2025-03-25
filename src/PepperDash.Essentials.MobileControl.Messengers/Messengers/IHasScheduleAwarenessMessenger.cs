@@ -20,11 +20,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             ScheduleSource.CodecSchedule.MeetingEventChange += new EventHandler<MeetingEventArgs>(CodecSchedule_MeetingEventChange);
         }
 
-#if SERIES4
         protected override void RegisterActions()
-#else
-        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
         {
             AddAction("/schedule/fullStatus", (id, content) => SendFullScheduleObject());
         }

@@ -1,9 +1,7 @@
 ﻿using PepperDash.Core;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-#if SERIES4
-#endif
+
 namespace PepperDash.Essentials.Room.MobileControl
 {
     public class ITransportMessenger:MessengerBase

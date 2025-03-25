@@ -1,8 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using TwoWayDisplayBase = PepperDash.Essentials.Devices.Common.Displays.TwoWayDisplayBase;
+using PepperDash.Essentials.Devices.Common.Displays;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -33,11 +32,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostStatusMessage(messageObj);
         }
 
-#if SERIES4
         protected override void RegisterActions()
-#else
-        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
         {
             base.RegisterActions();
 

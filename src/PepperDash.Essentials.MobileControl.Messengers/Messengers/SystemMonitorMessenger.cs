@@ -83,11 +83,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             ));
         }
 
-#if SERIES4
         protected override void RegisterActions()
-#else
-        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
         {
             AddAction("/fullStatus", (id, content) => SendFullStatusMessage());
         }

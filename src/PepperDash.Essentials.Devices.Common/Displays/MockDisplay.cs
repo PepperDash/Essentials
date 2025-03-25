@@ -12,7 +12,7 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
-    public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string, string>, IRoutingSinkWithSwitchingWithInputPort, IHasPowerControlWithFeedback
+    public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string>, IRoutingSinkWithSwitchingWithInputPort, IHasPowerControlWithFeedback
 	{
         public ISelectableItems<string> Inputs { get; private set; }
 

@@ -13,11 +13,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Provides a messaging bridge
     /// </summary>
-#if SERIES4
     public abstract class MessengerBase : EssentialsDevice, IMobileControlMessenger
-#else
-    public abstract class MessengerBase: EssentialsDevice
-#endif
     {
         protected IKeyName _device;
 
@@ -30,11 +26,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// 
         /// </summary>
-#if SERIES4
+
         public IMobileControl AppServerController { get; private set; }
-#else
-        public MobileControlSystemController AppServerController { get; private set; }
-#endif
 
         public string MessagePath { get; private set; }
 
@@ -76,11 +69,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// Registers this messenger with appserver controller
         /// </summary>
         /// <param name="appServerController"></param>
-#if SERIES4
         public void RegisterWithAppServer(IMobileControl appServerController)
-#else
-        public void RegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
         {
             AppServerController = appServerController ?? throw new ArgumentNullException("appServerController");
 
@@ -133,11 +122,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// Implemented in extending classes. Wire up API calls and feedback here
         /// </summary>
         /// <param name="appServerController"></param>
-#if SERIES4
         protected virtual void RegisterActions()
-#else
-        protected virtual void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
         {
 
         }
@@ -174,7 +159,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-#if SERIES4 
         protected void PostStatusMessage(string type, DeviceStateMessageBase deviceState, string clientId = null)
         {
             try
@@ -195,7 +179,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 Debug.LogMessage(ex, "Exception posting status message", this);
             }
         }
-#endif
+
         protected void PostStatusMessage(JToken content, string type = "", string clientId = null)
         {
             try

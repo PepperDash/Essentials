@@ -1,7 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <ProjectType>ProgramLibrary</ProjectType>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">  
   <PropertyGroup>
     <RootNamespace>PepperDash.Essentials</RootNamespace>
     <TargetFramework>net472</TargetFramework>

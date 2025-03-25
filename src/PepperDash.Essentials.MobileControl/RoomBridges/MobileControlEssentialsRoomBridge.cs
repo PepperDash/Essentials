@@ -1,36 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
+using PepperDash.Essentials.AppServer;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using PepperDash.Essentials.Room.MobileControl;
-using PepperDash.Essentials.Room.Config;
-using PepperDash.Essentials.Devices.Common.VideoCodec;
-using PepperDash.Essentials.Devices.Common.AudioCodec;
-using PepperDash.Essentials.Devices.Common.Cameras;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using PepperDash.Essentials.Devices.Common.Room;
-using IShades = PepperDash.Essentials.Core.Shades.IShades;
-using ShadeBase = PepperDash.Essentials.Devices.Common.Shades.ShadeBase;
-using PepperDash.Essentials.Devices.Common.TouchPanel;
-using Crestron.SimplSharp;
-using Volume = PepperDash.Essentials.Room.MobileControl.Volume;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Lighting;
 using PepperDash.Essentials.Core.Shades;
-using PepperDash.Core.Logging;
-
-
-
-#if SERIES4
-using PepperDash.Essentials.AppServer;
-#endif
+using PepperDash.Essentials.Devices.Common.AudioCodec;
+using PepperDash.Essentials.Devices.Common.Cameras;
+using PepperDash.Essentials.Devices.Common.Room;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Room.Config;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using IShades = PepperDash.Essentials.Core.Shades.IShades;
+using ShadeBase = PepperDash.Essentials.Devices.Common.Shades.ShadeBase;
+using Volume = PepperDash.Essentials.Room.MobileControl.Volume;
 
 namespace PepperDash.Essentials
 {
@@ -66,11 +57,8 @@ namespace PepperDash.Essentials
             AddPreActivationAction(GetRoom);
         }
 
-#if SERIES4
+
         protected override void RegisterActions()
-#else
-        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
         {
             // we add actions to the messaging system with a path, and a related action. Custom action
             // content objects can be handled in the controller's LineReceived method - and perhaps other

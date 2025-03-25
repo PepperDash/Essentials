@@ -40,11 +40,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         #region Overrides of MessengerBase
 
-#if SERIES4
         protected override void RegisterActions()
-#else
-        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
+
         {
             AddAction("/presets/fullStatus", (id, content) => {
                 this.LogInformation("getting full status for client {id}", id);

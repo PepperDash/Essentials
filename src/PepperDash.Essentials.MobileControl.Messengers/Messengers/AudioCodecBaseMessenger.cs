@@ -30,11 +30,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             codec.CallStatusChange += Codec_CallStatusChange;
         }
 
-#if SERIES4
         protected override void RegisterActions()
-#else
-        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
-#endif
+
         {
             base.RegisterActions();
 
