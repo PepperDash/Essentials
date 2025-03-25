@@ -9,6 +9,7 @@ using Crestron.SimplSharpPro.Fusion;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
@@ -1245,7 +1246,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 }
 
                 //else 
-                if (dev is DisplayBase)
+                if (dev is IDisplay)
                 {
                     attrNum = attrNum + displayNum;
                     if (attrNum > JoinMap.DisplayOnlineStart.JoinSpan)
@@ -1289,13 +1290,13 @@ namespace PepperDash.Essentials.Core.Fusion
             {
                 //Setup Display Usage Monitoring
 
-                var displays = DeviceManager.AllDevices.Where(d => d is DisplayBase);
+                var displays = DeviceManager.AllDevices.Where(d => d is IDisplay);
 
                 //  Consider updating this in multiple display systems
 
-                foreach (var display in displays.Cast<DisplayBase>())
+                foreach (var display in displays.Cast<IDisplay>())
                 {
-                    display.UsageTracker = new UsageTracking(display) {UsageIsTracked = true};
+                    display.UsageTracker = new UsageTracking(display as Device) {UsageIsTracked = true};
                     display.UsageTracker.DeviceUsageEnded += UsageTracker_DeviceUsageEnded;
                 }
 
@@ -1304,7 +1305,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 {
                     return;
                 }
-                var defaultDisplay = hasDefaultDisplay.DefaultDisplay as DisplayBase;
+                var defaultDisplay = hasDefaultDisplay.DefaultDisplay as IDisplay;
                 if (defaultDisplay == null)
                 {
                     Debug.LogMessage(LogEventLevel.Debug, this, "Cannot link null display to Fusion because default display is null");
@@ -1370,8 +1371,8 @@ namespace PepperDash.Essentials.Core.Fusion
                 }
 
                 // Use extension methods
-                dispAsset.TrySetMakeModel(defaultDisplay);
-                dispAsset.TryLinkAssetErrorToCommunication(defaultDisplay);
+                dispAsset.TrySetMakeModel(defaultDisplay as Device);
+                dispAsset.TryLinkAssetErrorToCommunication(defaultDisplay as Device);
             }
             catch (Exception e)
             {
@@ -1386,7 +1387,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <param name="display"></param>
         /// <param name="displayIndex"></param>
         /// a
-        protected virtual void MapDisplayToRoomJoins(int displayIndex, uint joinOffset, DisplayBase display)
+        protected virtual void MapDisplayToRoomJoins(int displayIndex, uint joinOffset, IDisplay display)
         {
             var displayName = string.Format("Display {0} - ", displayIndex);
 

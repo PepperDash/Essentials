@@ -500,19 +500,19 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is Core.DisplayBase)
-                    {
-                        Debug.Console(2, this, "Adding actions for device: {0}", device.Key);
+                    //if (device is Core.DisplayBase)
+                    //{
+                    //    Debug.Console(2, this, "Adding actions for device: {0}", device.Key);
 
-                        var dbMessenger = new CoreDisplayBaseMessenger(
-                            $"{device.Key}-displayBase-{Key}",
-                            $"/device/{device.Key}",
-                            device as Core.DisplayBase
-                        );
-                        AddDefaultDeviceMessenger(dbMessenger);
+                    //    var dbMessenger = new CoreDisplayBaseMessenger(
+                    //        $"{device.Key}-displayBase-{Key}",
+                    //        $"/device/{device.Key}",
+                    //        device as Core.DisplayBase
+                    //    );
+                    //    AddDefaultDeviceMessenger(dbMessenger);
 
-                        messengerAdded = true;
-                    }
+                    //    messengerAdded = true;
+                    //}
 
                     if (device is TwoWayDisplayBase)
                     {
@@ -524,25 +524,6 @@ namespace PepperDash.Essentials
                             device.Key
                         );
                         var twoWayDisplayMessenger = new TwoWayDisplayBaseMessenger(
-                            $"{device.Key}-twoWayDisplay-{Key}",
-                            string.Format("/device/{0}", device.Key),
-                            display
-                        );
-                        AddDefaultDeviceMessenger(twoWayDisplayMessenger);
-
-                        messengerAdded = true;
-                    }
-
-                    if (device is Core.TwoWayDisplayBase)
-                    {
-                        var display = device as Core.TwoWayDisplayBase;
-                        Debug.Console(
-                            2,
-                            this,
-                            "Adding TwoWayDisplayBase for device: {0}",
-                            device.Key
-                        );
-                        var twoWayDisplayMessenger = new CoreTwoWayDisplayBaseMessenger(
                             $"{device.Key}-twoWayDisplay-{Key}",
                             string.Format("/device/{0}", device.Key),
                             display

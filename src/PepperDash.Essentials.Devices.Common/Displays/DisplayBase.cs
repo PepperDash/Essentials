@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
@@ -12,12 +13,7 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
-    public abstract class DisplayBase : EssentialsDevice
-        , IHasFeedback
-        , IRoutingSinkWithSwitching
-        , IHasPowerControl
-        , IWarmingCooling
-        , IUsageTracking
+    public abstract class DisplayBase : EssentialsDevice, IDisplay
 	{
         private RoutingInputPort _currentInputPort;
         public RoutingInputPort CurrentInputPort

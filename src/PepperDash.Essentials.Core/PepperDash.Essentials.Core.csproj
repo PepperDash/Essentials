@@ -6,6 +6,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <AssemblyName>PepperDash_Essentials_Core</AssemblyName>
     <RootNamespace>PepperDash.Essentials.Core</RootNamespace>
@@ -30,5 +31,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Crestron\CrestronGenericBaseDevice.cs.orig" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Display\" />
   </ItemGroup>
 </Project>

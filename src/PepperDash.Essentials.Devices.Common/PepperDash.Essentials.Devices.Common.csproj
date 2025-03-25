@@ -9,7 +9,7 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <AssemblyName>Essentials Devices Common</AssemblyName>
     <RootNamespace>PepperDash.Essentials.Devices.Common</RootNamespace>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Title>PepperDash Essentials Devices Common</Title>
     <PackageId>PepperDash.Essentials.Devices.Common</PackageId>
     <Version>2.0.0-local</Version>
