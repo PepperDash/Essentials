@@ -22,6 +22,7 @@ using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Displays;
+using PepperDash.Essentials.Devices.Common.Lighting;
 using PepperDash.Essentials.Devices.Common.SoftCodec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Room.MobileControl;
@@ -492,7 +493,7 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is ILightingScenes)
+                    if (device is ILightingScenes || device is LightingBase)
                     {
                         var deviceKey = device.Key;
 
