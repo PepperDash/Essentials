@@ -1,8 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectType>ProgramLibrary</ProjectType>
-  </PropertyGroup>
-  <PropertyGroup>
     <RootNamespace>PepperDash.Essentials.AppServer</RootNamespace>
     <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>mobile-control-messengers</AssemblyTitle>

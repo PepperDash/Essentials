@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectType>ProgramLibrary</ProjectType>
     <Configurations>Debug;Release;Debug 4.7.2</Configurations>
   </PropertyGroup>
   <PropertyGroup>
