@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core.Fusion
 {
     public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupancyStatusProvider
     {
-        protected EssentialsHuddleSpaceRoomFusionRoomJoinMap JoinMap;
+        private readonly EssentialsHuddleSpaceRoomFusionRoomJoinMap JoinMap;
 
         private const string RemoteOccupancyXml = "<Occupancy><Type>Local</Type><State>{0}</State></Occupancy>";
         private readonly bool _guidFileExists;
@@ -30,15 +30,15 @@ namespace PepperDash.Essentials.Core.Fusion
 
         protected StringSigData CurrentRoomSourceNameSig;
 
-        public FusionCustomPropertiesBridge CustomPropertiesBridge = new FusionCustomPropertiesBridge();
+        private readonly FusionCustomPropertiesBridge CustomPropertiesBridge = new FusionCustomPropertiesBridge();
         protected FusionOccupancySensorAsset FusionOccSensor;
-        protected FusionRemoteOccupancySensor FusionRemoteOccSensor;
+        private readonly FusionRemoteOccupancySensor FusionRemoteOccSensor;
 
         protected FusionRoom FusionRoom;
         protected Dictionary<int, FusionAsset> FusionStaticAssets;
-        public long PushNotificationTimeout = 5000;
-        protected IEssentialsRoom Room;
-        public long SchedulePollInterval = 300000;
+        private readonly long PushNotificationTimeout = 5000;
+        private readonly IEssentialsRoom Room;
+        private readonly long SchedulePollInterval = 300000;
 
         private Event _currentMeeting;
         private RoomSchedule _currentSchedule;
@@ -86,7 +86,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         #region Default Display Source Sigs
 
-        private BooleanSigData[] _source = new BooleanSigData[10];
+        private readonly BooleanSigData[] _source = new BooleanSigData[10];
 
         #endregion
 
@@ -152,9 +152,8 @@ namespace PepperDash.Essentials.Core.Fusion
                     ReadGuidFile(guidFilePath);
                 }
 
-                var occupancyRoom = Room as IRoomOccupancy;
 
-                if (occupancyRoom != null)
+                if (Room is IRoomOccupancy occupancyRoom)
                 {
                     if (occupancyRoom.RoomOccupancy != null)
                     {
@@ -368,8 +367,7 @@ namespace PepperDash.Essentials.Core.Fusion
             CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(JoinMap.Display1CurrentSourceName.JoinNumber, JoinMap.Display1CurrentSourceName.AttributeName,
                 eSigIoMask.InputSigOnly);
             // Don't think we need to get current status of this as nothing should be alive yet. 
-            var hasCurrentSourceInfoChange = Room as IHasCurrentSourceInfoChange;
-            if (hasCurrentSourceInfoChange != null)
+            if (Room is IHasCurrentSourceInfoChange hasCurrentSourceInfoChange)
             {
                 hasCurrentSourceInfoChange.CurrentSourceChange += Room_CurrentSourceInfoChange;
             }
@@ -378,8 +376,7 @@ namespace PepperDash.Essentials.Core.Fusion
             FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction(Room.PowerOnToDefaultOrLastSource);
             FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() =>
             {
-                var runRouteAction = Room as IRunRouteAction;
-                if (runRouteAction != null)
+                if (Room is IRunRouteAction runRouteAction)
                 {
                     runRouteAction.RunRouteAction("roomOff", Room.SourceListKey);
                 }
@@ -661,7 +658,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     var extendTime = _currentMeeting.dtEnd - DateTime.Now;
                     var extendMinutesRaw = extendTime.TotalMinutes;
 
-                    extendMinutes = extendMinutes + (int) Math.Round(extendMinutesRaw);
+                    extendMinutes += (int) Math.Round(extendMinutesRaw);
                 }
 
 
@@ -902,12 +899,7 @@ namespace PepperDash.Essentials.Core.Fusion
                                 }
                             }
                         }
-
-                        var handler = RoomInfoChange;
-                        if (handler != null)
-                        {
-                            handler(this, new EventArgs());
-                        }
+                        RoomInfoChange?.Invoke(this, new EventArgs());
 
                         CustomPropertiesBridge.EvaluateRoomInfo(Room.Key, roomInformation);
                     }
@@ -1015,12 +1007,7 @@ namespace PepperDash.Essentials.Core.Fusion
                             }
 
                             // Fire Schedule Change Event 
-                            var handler = ScheduleChange;
-
-                            if (handler != null)
-                            {
-                                handler(this, new ScheduleChangeEventArgs {Schedule = _currentSchedule});
-                            }
+                            ScheduleChange?.Invoke(this, new ScheduleChangeEventArgs { Schedule = _currentSchedule });
                         }
                     }
                 }
@@ -1092,7 +1079,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     }
                 }
 
-                var laptops = dict.Where(d => d.Value.SourceDevice is Devices.Laptop);
+                var laptops = dict.Where(d => d.Value.SourceDevice is IRoutingSource);
                 i = 1;
                 foreach (var kvp in laptops)
                 {
@@ -1124,9 +1111,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <param name="e"></param>
         protected void UsageTracker_DeviceUsageEnded(object sender, DeviceUsageEventArgs e)
         {
-            var deviceTracker = sender as UsageTracking;
-
-            if (deviceTracker == null)
+            if (!(sender is UsageTracking deviceTracker))
             {
                 return;
             }
@@ -1169,8 +1154,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 // And respond to selection in Fusion
                 sigD.OutputSig.SetSigFalseAction(() =>
                 {
-                    var runRouteAction = Room as IRunRouteAction;
-                    if (runRouteAction != null)
+                    if (Room is IRunRouteAction runRouteAction)
                     {
                         runRouteAction.RunRouteAction(routeKey, Room.SourceListKey);
                     }
@@ -1214,12 +1198,11 @@ namespace PepperDash.Essentials.Core.Fusion
                 //uint attrNum = Convert.ToUInt32(keyNum);
 
                 // Check for UI devices
-                var uiDev = dev as IHasBasicTriListWithSmartObject;
-                if (uiDev != null)
+                if (dev is IHasBasicTriListWithSmartObject uiDev)
                 {
                     if (uiDev.Panel is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
                     {
-                        attrNum = attrNum + touchpanelNum;
+                        attrNum += touchpanelNum;
 
                         if (attrNum > JoinMap.XpanelOnlineStart.JoinSpan)
                         {
@@ -1232,7 +1215,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     }
                     else
                     {
-                        attrNum = attrNum + xpanelNum;
+                        attrNum += xpanelNum;
 
                         if (attrNum > JoinMap.TouchpanelOnlineStart.JoinSpan)
                         {
@@ -1248,7 +1231,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 //else 
                 if (dev is IDisplay)
                 {
-                    attrNum = attrNum + displayNum;
+                    attrNum += displayNum;
                     if (attrNum > JoinMap.DisplayOnlineStart.JoinSpan)
                     {
                         continue;
@@ -1300,13 +1283,11 @@ namespace PepperDash.Essentials.Core.Fusion
                     display.UsageTracker.DeviceUsageEnded += UsageTracker_DeviceUsageEnded;
                 }
 
-                var hasDefaultDisplay = Room as IHasDefaultDisplay;
-                if (hasDefaultDisplay == null)
+                if (!(Room is IHasDefaultDisplay hasDefaultDisplay))
                 {
                     return;
                 }
-                var defaultDisplay = hasDefaultDisplay.DefaultDisplay as IDisplay;
-                if (defaultDisplay == null)
+                if (!(hasDefaultDisplay.DefaultDisplay is IDisplay defaultDisplay))
                 {
                     Debug.LogMessage(LogEventLevel.Debug, this, "Cannot link null display to Fusion because default display is null");
                     return;
@@ -1358,8 +1339,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
                 dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
 
-                var defaultTwoWayDisplay = defaultDisplay as IHasPowerControlWithFeedback;
-                if (defaultTwoWayDisplay != null)
+                if (defaultDisplay is IHasPowerControlWithFeedback defaultTwoWayDisplay)
                 {
                     defaultTwoWayDisplay.PowerIsOnFeedback.LinkInputSig(FusionRoom.DisplayPowerOn.InputSig);
                     if (defaultDisplay is IDisplayUsage)
@@ -1392,8 +1372,7 @@ namespace PepperDash.Essentials.Core.Fusion
             var displayName = string.Format("Display {0} - ", displayIndex);
 
 
-            var hasDefaultDisplay = Room as IHasDefaultDisplay;
-            if (hasDefaultDisplay == null || display != hasDefaultDisplay.DefaultDisplay)
+            if (!(Room is IHasDefaultDisplay hasDefaultDisplay) || display != hasDefaultDisplay.DefaultDisplay)
             {
                 return;
             }
@@ -1402,8 +1381,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 eSigIoMask.InputOutputSig);
             defaultDisplayVolume.OutputSig.UserObject = new Action<ushort>(b =>
             {
-                var basicVolumeWithFeedback = display as IBasicVolumeWithFeedback;
-                if (basicVolumeWithFeedback == null)
+                if (!(display is IBasicVolumeWithFeedback basicVolumeWithFeedback))
                 {
                     return;
                 }
@@ -1436,8 +1414,7 @@ namespace PepperDash.Essentials.Core.Fusion
             });
 
 
-            var defaultTwoWayDisplay = display as IHasPowerControlWithFeedback;
-            if (defaultTwoWayDisplay != null)
+            if (display is IHasPowerControlWithFeedback defaultTwoWayDisplay)
             {
                 defaultTwoWayDisplay.PowerIsOnFeedback.LinkInputSig(defaultDisplayPowerOn.InputSig);
                 defaultTwoWayDisplay.PowerIsOnFeedback.LinkComplementInputSig(defaultDisplayPowerOff.InputSig);
@@ -1450,8 +1427,7 @@ namespace PepperDash.Essentials.Core.Fusion
             {
                 if (!b)
                 {
-                    var runRouteAction = Room as IRunRouteAction;
-                    if (runRouteAction != null)
+                    if (Room is IRunRouteAction runRouteAction)
                     {
                         runRouteAction.RunRouteAction("roomOff", Room.SourceListKey);
                     }
@@ -1465,8 +1441,7 @@ namespace PepperDash.Essentials.Core.Fusion
             _errorMessageRollUp = new StatusMonitorCollection(this);
             foreach (var dev in DeviceManager.GetDevices())
             {
-                var md = dev as ICommunicationMonitor;
-                if (md != null)
+                if (dev is ICommunicationMonitor md)
                 {
                     _errorMessageRollUp.AddMonitor(md.CommunicationMonitor);
                     Debug.LogMessage(LogEventLevel.Verbose, this, "Adding '{0}' to room's overall error monitor",
@@ -1532,9 +1507,8 @@ namespace PepperDash.Essentials.Core.Fusion
             // Tie to method on occupancy object
             //occSensorShutdownMinutes.OutputSig.UserObject(new Action(ushort)(b => Room.OccupancyObj.SetShutdownMinutes(b));
 
-            var occRoom = Room as IRoomOccupancy;
 
-            if (occRoom != null)
+            if (Room is IRoomOccupancy occRoom)
             {
                 occRoom.RoomOccupancy.RoomIsOccupiedFeedback.LinkInputSig(occSensorAsset.RoomOccupied.InputSig);
                 occRoom.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
@@ -1601,10 +1575,9 @@ namespace PepperDash.Essentials.Core.Fusion
             // The sig/UO method: Need separate handlers for fixed and user sigs, all flavors, 
             // even though they all contain sigs.
 
-            var sigData = args.UserConfiguredSigDetail as BooleanSigDataFixedName;
 
             BoolOutputSig outSig;
-            if (sigData != null)
+            if (args.UserConfiguredSigDetail is BooleanSigDataFixedName sigData)
             {
                 outSig = sigData.OutputSig;
                 if (outSig.UserObject is Action<bool>)
@@ -1760,8 +1733,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         public static void TrySetMakeModel(this FusionStaticAsset asset, Device device)
         {
-            var mm = device as IMakeModel;
-            if (mm != null)
+            if (device is IMakeModel mm)
             {
                 asset.ParamMake.Value = mm.DeviceMake;
                 asset.ParamModel.Value = mm.DeviceModel;

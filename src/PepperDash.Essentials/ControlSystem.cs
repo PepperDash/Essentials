@@ -261,7 +261,7 @@ namespace PepperDash.Essentials
                 _ = new DeviceFactory();
 
                 _ = new ProcessorExtensionDeviceFactory();
-                _ = new MobileControl.MobileControlFactory();
+                _ = new MobileControlFactory();
 
                 Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Devices.Common.Cameras;
@@ -111,7 +112,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             if (Codec is IHasDirectory dirCodec)
             {
-                Debug.Console(2, this, "Sending Directory.  Directory Item Count: {0}", directory.CurrentDirectoryResults.Count);
+                this.LogVerbose("Sending Directory.  Directory Item Count: {directoryItemCount}", directory.CurrentDirectoryResults.Count);
 
                 //state.CurrentDirectory = PrefixDirectoryFolderItems(directory);
                 state.CurrentDirectory = directory;
@@ -238,7 +239,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 }
                 if (Codec is IHasCodecCameras cameraCodec)
                 {
-                    Debug.Console(2, this, "Adding IHasCodecCameras Actions");
+                    this.LogVerbose("Adding IHasCodecCameras Actions");
 
                     cameraCodec.CameraSelected += CameraCodec_CameraSelected;
 
@@ -254,7 +255,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                     if (Codec is IHasCodecRoomPresets presetsCodec)
                     {
-                        Debug.Console(2, this, "Adding IHasCodecRoomPresets Actions");
+                        this.LogVerbose("Adding IHasCodecRoomPresets Actions");
 
                         presetsCodec.CodecRoomPresetsListHasChanged += PresetsCodec_CameraPresetsListHasChanged;
 
@@ -275,7 +276,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                     if (Codec is IHasCameraAutoMode speakerTrackCodec)
                     {
-                        Debug.Console(2, this, "Adding IHasCameraAutoMode Actions");
+                        this.LogVerbose("Adding IHasCameraAutoMode Actions");
 
                         speakerTrackCodec.CameraAutoModeIsOnFeedback.OutputChange += CameraAutoModeIsOnFeedback_OutputChange;
 
@@ -286,7 +287,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                     if (Codec is IHasCameraOff cameraOffCodec)
                     {
-                        Debug.Console(2, this, "Adding IHasCameraOff Actions");
+                        this.LogVerbose("Adding IHasCameraOff Actions");
 
                         cameraOffCodec.CameraIsOffFeedback.OutputChange += (CameraIsOffFeedback_OutputChange);
 
@@ -298,7 +299,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 if (Codec is IHasCodecSelfView selfViewCodec)
                 {
-                    Debug.Console(2, this, "Adding IHasCodecSelfView Actions");
+                    this.LogVerbose("Adding IHasCodecSelfView Actions");
 
                     AddAction("/cameraSelfView", (id, content) => selfViewCodec.SelfViewModeToggle());
 
@@ -308,7 +309,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 if (Codec is IHasCodecLayouts layoutsCodec)
                 {
-                    Debug.Console(2, this, "Adding IHasCodecLayouts Actions");
+                    this.LogVerbose("Adding IHasCodecLayouts Actions");
 
                     AddAction("/cameraRemoteView", (id, content) => layoutsCodec.LocalLayoutToggle());
 
@@ -317,7 +318,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 if (Codec is IPasswordPrompt pwCodec)
                 {
-                    Debug.Console(2, this, "Adding IPasswordPrompt Actions");
+                    this.LogVerbose("Adding IPasswordPrompt Actions");
 
                     AddAction("/password", (id, content) =>
                     {
@@ -334,7 +335,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                         (sender, args) => PostReceivingContent(args.BoolValue);
                 }
 
-                Debug.Console(2, this, "Adding Privacy & Standby Actions");
+                this.LogVerbose("Adding Privacy & Standby Actions");
 
                 AddAction("/privacyModeOn", (id, content) => Codec.PrivacyModeOn());
                 AddAction("/privacyModeOff", (id, content) => Codec.PrivacyModeOff());
@@ -346,7 +347,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception e)
             {
-                Debug.Console(2, this, "Error: {0}", e);
+                this.LogException(e, "Exception adding paths");
             }
         }
 

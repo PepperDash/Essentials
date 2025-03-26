@@ -7,12 +7,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
 {
     public class IDspPresetsMessenger : MessengerBase
     {
-        private IDspPresets _device;
+        private readonly IDspPresets device;
 
         public IDspPresetsMessenger(string key, string messagePath, IDspPresets device)
-            : base(key, messagePath, device as Device)
+            : base(key, messagePath, device as IKeyName)
         {
-            _device = device;
+            this.device = device;
         }
 
         protected override void RegisterActions()
@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 var message = new IHasDspPresetsStateMessage
                 {
-                    Presets = _device.Presets
+                    Presets = device.Presets
                 };
 
                 PostStatusMessage(message);
@@ -36,7 +36,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 if (!string.IsNullOrEmpty(presetKey))
                 {
-                    _device.RecallPreset(presetKey);
+                    device.RecallPreset(presetKey);
                 }
             });
         }

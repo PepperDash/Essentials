@@ -59,16 +59,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             foreach (var p in systemMonitor.ProgramStatusFeedbackCollection)
             {
-                PostStatusMessage(JToken.FromObject(p.Value.ProgramInfo)
-                );
+                PostStatusMessage(JToken.FromObject(p.Value.ProgramInfo));
             }
         }
 
         private void SendSystemMonitorStatusMessage()
         {
-            Debug.Console(1, "Posting System Monitor Status Message.");
-
             // This takes a while, launch a new thread
+           
             Task.Run(() => PostStatusMessage(JToken.FromObject(new SystemMonitorStateMessage
             {
 

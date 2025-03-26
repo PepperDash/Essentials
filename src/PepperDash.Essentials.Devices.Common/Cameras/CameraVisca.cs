@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 {
 	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IHasPowerControlWithFeedback, IBridgeAdvanced, IHasCameraFocusControl, IHasAutoFocusMode
 	{
-        CameraViscaPropertiesConfig PropertiesConfig;
+        private readonly CameraViscaPropertiesConfig PropertiesConfig;
 
 		public IBasicCommunication Communication { get; private set; }
 
@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         /// <summary>
         /// Used to store the actions to parse inquiry responses as the inquiries are sent
         /// </summary>
-        private CrestronQueue<Action<byte[]>> InquiryResponseQueue;
+        private readonly CrestronQueue<Action<byte[]>> InquiryResponseQueue;
 
         /// <summary>
         /// Camera ID (Default 1)
@@ -45,7 +45,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         public byte PanSpeedFast = 0x13;
         public byte TiltSpeedFast = 0x13;
 
-		private bool IsMoving;
+        // private bool IsMoving;
 		private bool IsZooming;
 
         bool _powerIsOn;
@@ -101,18 +101,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             Capabilities = eCameraCapabilities.Pan | eCameraCapabilities.Tilt | eCameraCapabilities.Zoom | eCameraCapabilities.Focus; 
             
             Communication = comm;
-			var socket = comm as ISocketStatus;
-			if (socket != null)
-			{
-				// This instance uses IP control
-				socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
-			}
-			else
-			{
-				// This instance uses RS-232 control
-			}
+            if (comm is ISocketStatus socket)
+            {
+                // This instance uses IP control
+                socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(Socket_ConnectionChange);
+            }
+            else
+            {
+                // This instance uses RS-232 control
+            }
 
-			Communication.BytesReceived += new EventHandler<GenericCommMethodReceiveBytesArgs>(Communication_BytesReceived);
+            Communication.BytesReceived += new EventHandler<GenericCommMethodReceiveBytesArgs>(Communication_BytesReceived);
 			PowerIsOnFeedback = new BoolFeedback(() => { return PowerIsOn; });
             CameraIsOffFeedback = new BoolFeedback(() => { return !PowerIsOn; });
 
@@ -175,7 +174,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }
 
-	    void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+	    void Socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
 		{
 			Debug.LogMessage(LogEventLevel.Verbose, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
 
@@ -449,12 +448,12 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		public void PanLeft() 
 		{
 			SendPanTiltCommand(new byte[] {0x01, 0x03}, false);
-			IsMoving = true;
+			// IsMoving = true;
 		}
 		public void PanRight() 
 		{
             SendPanTiltCommand(new byte[] { 0x02, 0x03 }, false);
-			IsMoving = true;
+			// IsMoving = true;
 		}
         public void PanStop()
         {
@@ -463,12 +462,12 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		public void TiltDown() 
 		{
             SendPanTiltCommand(new byte[] { 0x03, 0x02 }, false);
-			IsMoving = true;
+			// IsMoving = true;
 		}
 		public void TiltUp() 
 		{
             SendPanTiltCommand(new byte[] { 0x03, 0x01 }, false);
-			IsMoving = true;
+			// IsMoving = true;
 		}
         public void TiltStop()
         {
@@ -507,7 +506,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			{
                 StopSpeedTimer();
                 SendPanTiltCommand(new byte[] { 0x03, 0x03 }, false);
-				IsMoving = false;
+				// IsMoving = false;
 			}
 		}
         public void PositionHome()

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Config;
 using System;
@@ -51,7 +52,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception ex)
             {
-                Debug.Console(0, this, "Exception saving event: {0}\r\n{1}", ex.Message, ex.StackTrace);
+                this.LogException(ex,"Exception saving event");
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using System;
 
@@ -43,7 +44,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     if (!string.IsNullOrEmpty(c.SourceListKey))
                     {
                         // Check for source list in content of message
-                        Debug.Console(1, this, "sourceListKey found in message");
                         sourceListKey = c.SourceListKey;
                     }
 

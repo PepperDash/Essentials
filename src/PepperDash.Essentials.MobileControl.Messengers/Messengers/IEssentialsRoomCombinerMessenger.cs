@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using System;
 using System.Collections.Generic;
@@ -117,7 +118,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception e)
             {
-                Debug.Console(0, this, "Error sending full status: {0}", e);
+                this.LogException(e, "Error sending full status");
             }
         }
 

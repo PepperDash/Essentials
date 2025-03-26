@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer;
 using PepperDash.Essentials.AppServer.Messengers;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                 if (inputPort == null)
                 {
-                    Debug.Console(1, "No input named {0} found for device {1}", s, display.Key);
+                    this.LogWarning("No input named {inputName} found for {deviceKey}", s, display.Key);
                     return;
                 }
 

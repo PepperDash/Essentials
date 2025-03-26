@@ -45,8 +45,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void SendFullStatus()
         {
-            Debug.Console(2, "LightingBaseMessenger GetFullStatus");
-
             var state = new LightingBaseStateMessage
             {
                 Scenes = Device.LightingScenes,
