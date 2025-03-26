@@ -229,7 +229,7 @@ namespace PepperDash.Core
 
             _consoleLoggingLevelSwitch.MinimumLevelChanged += (sender, args) =>
             {
-                Console(0, "Console debug level set to {0}", _consoleLoggingLevelSwitch.MinimumLevel);
+                LogMessage(LogEventLevel.Information, "Console debug level set to {minimumLevel}", _consoleLoggingLevelSwitch.MinimumLevel);
             };
         }
 
@@ -310,7 +310,7 @@ namespace PepperDash.Core
                     _saveTimer.Stop();
                     _saveTimer = null;
                 }
-                Console(0, "Saving debug settings");
+                LogMessage(LogEventLevel.Information, "Saving debug settings");
                 SaveMemory();
             }
         }
@@ -589,7 +589,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Log an Exception using Serilog's default Exception logging mechanism
+        /// Log an Exception as an Error
         /// </summary>
         /// <param name="ex">Exception to log</param>
         /// <param name="message">Message template</param>
@@ -610,7 +610,7 @@ namespace PepperDash.Core
         /// <param name="message">Message template</param>
         /// <param name="device">Optional IKeyed device. If provided, the Key of the device will be added to the log message</param>
         /// <param name="args">Args to put into message template</param>
-        public static void LogMessage(LogEventLevel level, string message, IKeyed device=null, params object[] args)
+        public static void LogMessage(LogEventLevel level, string message, IKeyed device = null, params object[] args)
         {
             using (LogContext.PushProperty("Key", device?.Key))
             {
@@ -620,13 +620,185 @@ namespace PepperDash.Core
 
         public static void LogMessage(LogEventLevel level, string message, params object[] args)
         {
-            LogMessage(level, message, null, args);
+           _logger.Write(level, message, args);
+        }
+
+        public static void LogMessage(LogEventLevel level, Exception ex, string message, params object[] args)
+        {
+            _logger.Write(level, ex, message, args);
         }
 
         public static void LogMessage(LogEventLevel level, IKeyed keyed, string message, params object[] args)
         {
             LogMessage(level, message, keyed, args);
         }
+
+        public static void LogMessage(LogEventLevel level, Exception ex, IKeyed device, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", device?.Key))
+            {
+                _logger.Write(level, ex, message, args);
+            }
+        }
+
+        #region Explicit methods for logging levels
+        public static void LogVerbose(IKeyed keyed, string message, params object[] args)
+        {
+            using(LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Verbose, message, args);
+            }
+        }
+
+        public static void LogVerbose(Exception ex, IKeyed keyed, string message, params object[] args)
+        {
+            using(LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Verbose, ex, message, args);
+            }
+        }
+
+        public static void LogVerbose(string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Verbose, message, args);
+        }
+
+        public static void LogVerbose(Exception ex, string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Verbose, ex, null, message, args);
+        }
+
+        public static void LogDebug(IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Debug, message, args);
+            }
+        }
+
+        public static void LogDebug(Exception ex, IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Debug, ex, message, args);
+            }
+        }
+
+        public static void LogDebug(string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Debug, message, args);
+        }
+
+        public static void LogDebug(Exception ex, string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Debug, ex, null, message, args);
+        }
+
+        public static void LogInformation(IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Information, message, args);
+            }
+        }
+
+        public static void LogInformation(Exception ex, IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Information, ex, message, args);
+            }
+        }
+
+        public static void LogInformation(string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Information, message, args);
+        }
+
+        public static void LogInformation(Exception ex, string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Information, ex, null, message, args);
+        }
+
+        public static void LogWarning(IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Warning, message, args);
+            }
+        }
+
+        public static void LogWarning(Exception ex, IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Warning, ex, message, args);
+            }
+        }
+
+        public static void LogWarning(string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Warning, message, args);
+        }
+
+        public static void LogWarning(Exception ex, string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Warning, ex, null, message, args);
+        }
+
+        public static void LogError(IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Error, message, args);
+            }
+        }
+
+        public static void LogError(Exception ex, IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Error, ex, message, args);
+            }
+        }
+
+        public static void LogError(string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Error, message, args);
+        }
+
+        public static void LogError(Exception ex, string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Error, ex, null, message, args);
+        }
+
+        public static void LogFatal(IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Fatal, message, args);
+            }
+        }
+
+        public static void LogFatal(Exception ex, IKeyed keyed, string message, params object[] args)
+        {
+            using (LogContext.PushProperty("Key", keyed?.Key))
+            {
+                _logger.Write(LogEventLevel.Fatal, ex, message, args);
+            }
+        }
+
+        public static void LogFatal(string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Fatal, message, args);
+        }
+
+        public static void LogFatal(Exception ex, string message, params object[] args)
+        {
+            _logger.Write(LogEventLevel.Fatal, ex, null, message, args);
+        }
+
+        #endregion
 
 
         private static void LogMessage(uint level, string format, params object[] items)
@@ -655,7 +827,7 @@ namespace PepperDash.Core
         /// <param name="level"></param>
         /// <param name="format">Console format string</param>
         /// <param name="items">Object parameters</param>
-        [Obsolete("Use LogMessage methods")]
+        [Obsolete("Use LogMessage methods. Will be removed in 2.2.0 and later versions")]
         public static void Console(uint level, string format, params object[] items)
         {
 
@@ -673,7 +845,7 @@ namespace PepperDash.Core
         /// <summary>
 		/// Logs to Console when at-level, and all messages to error log, including device key			
         /// </summary>
-        [Obsolete("Use LogMessage methods")]
+        [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
         public static void Console(uint level, IKeyed dev, string format, params object[] items)
         {
             LogMessage(level, dev, format, items);
@@ -686,7 +858,7 @@ namespace PepperDash.Core
         /// Prints message to console if current debug level is equal to or higher than the level of this message. Always sends message to Error Log.
         /// Uses CrestronConsole.PrintLine.
         /// </summary>
-        [Obsolete("Use LogMessage methods")]
+        [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
         public static void Console(uint level, IKeyed dev, ErrorLogLevel errorLogLevel,
             string format, params object[] items)
         {           
@@ -696,7 +868,7 @@ namespace PepperDash.Core
         /// <summary>
         /// Logs to Console when at-level, and all messages to error log
         /// </summary>
-        [Obsolete("Use LogMessage methods")]
+        [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
         public static void Console(uint level, ErrorLogLevel errorLogLevel,
             string format, params object[] items)
         {
@@ -708,7 +880,7 @@ namespace PepperDash.Core
         /// or above the level provided, then the output will be written to both console and the log. Otherwise
         /// it will only be written to the log.
         /// </summary>
-        [Obsolete("Use LogMessage methods")]
+        [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
         public static void ConsoleWithLog(uint level, string format, params object[] items)
         {
             LogMessage(level, format, items);
@@ -724,7 +896,7 @@ namespace PepperDash.Core
         /// or above the level provided, then the output will be written to both console and the log. Otherwise
         /// it will only be written to the log.
         /// </summary>
-        [Obsolete("Use LogMessage methods")]
+        [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
         public static void ConsoleWithLog(uint level, IKeyed dev, string format, params object[] items)
         {
             LogMessage(level, dev, format, items);
@@ -738,7 +910,7 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="errorLogLevel"></param>
         /// <param name="str"></param>
-        [Obsolete("Use LogMessage methods")]
+        [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
         public static void LogError(ErrorLogLevel errorLogLevel, string str)
         {
             switch (errorLogLevel)
@@ -782,7 +954,7 @@ namespace PepperDash.Core
 
             var fileName = GetMemoryFileName();
 
-            Console(0, ErrorLogLevel.Notice, "Loading debug settings file from {0}", fileName);
+            LogMessage(LogEventLevel.Information, "Loading debug settings file from {fileName}", fileName);
 
             using (var sw = new StreamWriter(fileName))
             {
@@ -807,7 +979,7 @@ namespace PepperDash.Core
 
                     if (_contexts != null)
                     {
-                        Console(1, "Debug memory restored from file");
+                        LogMessage(LogEventLevel.Debug, "Debug memory restored from file");
                         return;
                     }
                 }
@@ -828,45 +1000,6 @@ namespace PepperDash.Core
             }
 
             return string.Format("{0}{1}user{1}debugSettings{1}{2}.json",Directory.GetApplicationRootDirectory(), Path.DirectorySeparatorChar, InitialParametersClass.RoomId);
-        }
-
-        private static void CheckForMigration()
-        {
-            var oldFilePath = String.Format(@"\nvram\debugSettings\program{0}", InitialParametersClass.ApplicationNumber);
-            var newFilePath = String.Format(@"\user\debugSettings\program{0}", InitialParametersClass.ApplicationNumber);
-
-            //check for file at old path
-            if (!File.Exists(oldFilePath))
-            {
-                Console(0, ErrorLogLevel.Notice,
-                    String.Format(
-                        @"Debug settings file migration not necessary. Using file at \user\debugSettings\program{0}",
-                        InitialParametersClass.ApplicationNumber));
-
-                return;
-            }
-
-            //create the new directory if it doesn't already exist
-            if (!Directory.Exists(@"\user\debugSettings"))
-            {
-                Directory.CreateDirectory(@"\user\debugSettings");
-            }
-
-            Console(0, ErrorLogLevel.Notice,
-                String.Format(
-                    @"File found at \nvram\debugSettings\program{0}. Migrating to \user\debugSettings\program{0}", InitialParametersClass.ApplicationNumber));
-
-            //Copy file from old path to new path, then delete it. This will overwrite the existing file
-            File.Copy(oldFilePath, newFilePath, true);
-            File.Delete(oldFilePath);
-
-            //Check if the old directory is empty, then delete it if it is
-            if (Directory.GetFiles(@"\nvram\debugSettings").Length > 0)
-            {
-                return;
-            }
-
-            Directory.Delete(@"\nvram\debugSettings");
         }
 
         /// <summary>
