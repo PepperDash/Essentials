@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private readonly IProjectorScreenLiftControl device;
 
         public IProjectorScreenLiftControlMessenger(string key, string messagePath, IProjectorScreenLiftControl screenLiftDevice)
-            : base(key, messagePath, screenLiftDevice as Device)
+            : base(key, messagePath, screenLiftDevice as IKeyName)
         {
             device = screenLiftDevice;
         }

@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class ITransportMessenger : MessengerBase
     {
         private readonly ITransport transportDevice;
-        public ITransportMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
+        public ITransportMessenger(string key, string messagePath, ITransport device) : base(key, messagePath, device as IKeyName)
         {
-            transportDevice = device as ITransport;
+            transportDevice = device;
         }
 
         protected override void RegisterActions()

@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     public class ILevelControlsMessenger : MessengerBase
     {
         private ILevelControls levelControlsDevice;
-        public ILevelControlsMessenger(string key, string messagePath, ILevelControls device) : base(key, messagePath, device as Device)
+        public ILevelControlsMessenger(string key, string messagePath, ILevelControls device) : base(key, messagePath, device as IKeyName)
         {
             levelControlsDevice = device;
         }

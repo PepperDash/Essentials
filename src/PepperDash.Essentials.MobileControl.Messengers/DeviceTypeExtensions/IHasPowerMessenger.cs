@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class IHasPowerMessenger : MessengerBase
     {
         private readonly IHasPowerControl powerDevice;
-        public IHasPowerMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
+        public IHasPowerMessenger(string key, string messagePath, IHasPowerControl device) : base(key, messagePath, device as IKeyName)
         {
-            powerDevice = device as IHasPowerControl;
+            powerDevice = device;
         }
 
         protected override void RegisterActions()

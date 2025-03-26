@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private readonly IShadesOpenCloseStop device;
 
         public IShadesOpenCloseStopMessenger(string key, IShadesOpenCloseStop shades, string messagePath)
-            : base(key, messagePath, shades as Device)
+            : base(key, messagePath, shades as IKeyName)
         {
             device = shades;
         }

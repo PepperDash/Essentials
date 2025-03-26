@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private readonly ISwitchedOutput device;
 
         public ISwitchedOutputMessenger(string key, ISwitchedOutput device, string messagePath)
-            : base(key, messagePath, device as Device)
+            : base(key, messagePath, device as IKeyName)
         {
             this.device = device;
         }

@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     public class IMatrixRoutingMessenger : MessengerBase
     {
         private readonly IMatrixRouting matrixDevice;
-        public IMatrixRoutingMessenger(string key, string messagePath, IMatrixRouting device) : base(key, messagePath, device as Device)
+        public IMatrixRoutingMessenger(string key, string messagePath, IMatrixRouting device) : base(key, messagePath, device as IKeyName)
         {
             matrixDevice = device;
         }

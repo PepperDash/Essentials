@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class ISetTopBoxControlsMessenger : MessengerBase
     {
         private readonly ISetTopBoxControls stbDevice;
-        public ISetTopBoxControlsMessenger(string key, string messagePath, IKeyName device) : base(key, messagePath, device)
+        public ISetTopBoxControlsMessenger(string key, string messagePath, ISetTopBoxControls device) : base(key, messagePath, device as IKeyName)
         {
-            stbDevice = device as ISetTopBoxControls;
+            stbDevice = device;
         }
 
         protected override void RegisterActions()

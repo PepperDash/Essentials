@@ -7,7 +7,7 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class IColorMessenger : MessengerBase
     {
         private readonly IColor colorDevice;
-        public IColorMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
+        public IColorMessenger(string key, string messagePath, IColor device) : base(key, messagePath, device as IKeyName)
         {
             colorDevice = device as IColor;
         }

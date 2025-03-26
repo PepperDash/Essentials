@@ -8,9 +8,9 @@ namespace PepperDash.Essentials.Room.MobileControl
     {
         private readonly IChannel channelDevice;
 
-        public IChannelMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
+        public IChannelMessenger(string key, string messagePath, IChannel device) : base(key, messagePath, device as IKeyName)
         {
-            channelDevice = device as IChannel;
+            channelDevice = device;
         }
 
         protected override void RegisterActions()

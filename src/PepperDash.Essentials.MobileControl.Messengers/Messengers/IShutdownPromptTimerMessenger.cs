@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private readonly IShutdownPromptTimer _room;
 
         public IShutdownPromptTimerMessenger(string key, string messagePath, IShutdownPromptTimer room)
-            : base(key, messagePath, room as Device)
+            : base(key, messagePath, room as IKeyName)
         {
             _room = room;
         }

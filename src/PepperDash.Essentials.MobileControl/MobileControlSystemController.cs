@@ -566,18 +566,16 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is ISetTopBoxControls)
+                    if (device is ISetTopBoxControls stbDevice)
                     {
                         this.LogVerbose(
                             "Adding ISetTopBoxControlMessenger for {deviceKey}"
-                        );
-
-                        var dev = device as Device;
+                        );                        
 
                         var messenger = new ISetTopBoxControlsMessenger(
                             $"{device.Key}-stb-{Key}",
                             $"/device/{device.Key}",
-                            dev
+                            stbDevice
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -585,18 +583,16 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is IChannel)
+                    if (device is IChannel channelDevice)
                     {
                         this.LogVerbose(
                             "Adding IChannelMessenger for {deviceKey}", device.Key
-                        );
-
-                        var dev = device as PepperDash.Core.Device;
+                        );                        
 
                         var messenger = new IChannelMessenger(
                             $"{device.Key}-channel-{Key}",
                             $"/device/{device.Key}",
-                            dev
+                            channelDevice
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -604,16 +600,14 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is IColor)
+                    if (device is IColor colorDevice)
                     {
-                        this.LogVerbose("Adding IColorMessenger for {deviceKey}", device.Key);
-
-                        var dev = device as PepperDash.Core.Device;
+                        this.LogVerbose("Adding IColorMessenger for {deviceKey}", device.Key);                        
 
                         var messenger = new IColorMessenger(
                             $"{device.Key}-color-{Key}",
                             $"/device/{device.Key}",
-                            dev
+                            colorDevice
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -621,16 +615,14 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is IDPad)
+                    if (device is IDPad dPadDevice)
                     {
-                        this.LogVerbose("Adding IDPadMessenger for {deviceKey}", device.Key);
-
-                        var dev = device as PepperDash.Core.Device;
+                        this.LogVerbose("Adding IDPadMessenger for {deviceKey}", device.Key);                        
 
                         var messenger = new IDPadMessenger(
                             $"{device.Key}-dPad-{Key}",
                             $"/device/{device.Key}",
-                            dev
+                            dPadDevice
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -638,16 +630,14 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is INumericKeypad)
+                    if (device is INumericKeypad nkDevice)
                     {
-                        this.LogVerbose("Adding INumericKeyapdMessenger for {deviceKey}", device.Key);
-
-                        var dev = device as PepperDash.Core.Device;
+                        this.LogVerbose("Adding INumericKeyapdMessenger for {deviceKey}", device.Key);                        
 
                         var messenger = new INumericKeypadMessenger(
                             $"{device.Key}-numericKeypad-{Key}",
                             $"/device/{device.Key}",
-                            dev
+                            nkDevice
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -655,16 +645,14 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is IHasPowerControl)
+                    if (device is IHasPowerControl pcDevice)
                     {
-                        this.LogVerbose("Adding IHasPowerControlMessenger for {deviceKey}", device.Key);
-
-                        var dev = device as PepperDash.Core.Device;
+                        this.LogVerbose("Adding IHasPowerControlMessenger for {deviceKey}", device.Key);                        
 
                         var messenger = new IHasPowerMessenger(
                             $"{device.Key}-powerControl-{Key}",
                             $"/device/{device.Key}",
-                            dev
+                            pcDevice
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -689,18 +677,16 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is ITransport)
+                    if (device is ITransport transportDevice)
                     {
                         this.LogVerbose(
                             "Adding ITransportMessenger for {deviceKey}", device.Key
-                        );
+                        );                        
 
-                        var dev = device as PepperDash.Core.Device;
-
-                        var messenger = new IChannelMessenger(
+                        var messenger = new ITransportMessenger(
                             $"{device.Key}-transport-{Key}",
                             $"/device/{device.Key}",
-                            dev
+                            transportDevice
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -708,14 +694,14 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is IHasCurrentSourceInfoChange)
+                    if (device is IHasCurrentSourceInfoChange csiChange)
                     {
                         this.LogVerbose("Adding IHasCurrentSourceInfoMessenger for {deviceKey}", device.Key);
 
                         var messenger = new IHasCurrentSourceInfoMessenger(
                             $"{device.Key}-currentSource-{Key}",
                             $"/device/{device.Key}",
-                            device as IHasCurrentSourceInfoChange
+                            csiChange
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -723,7 +709,7 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is ISwitchedOutput)
+                    if (device is ISwitchedOutput switchedDevice)
                     {
                         this.LogVerbose(
                             "Adding ISwitchedOutputMessenger for {deviceKey}", device.Key
@@ -731,7 +717,7 @@ namespace PepperDash.Essentials
 
                         var messenger = new ISwitchedOutputMessenger(
                             $"{device.Key}-switchedOutput-{Key}",
-                            device as ISwitchedOutput,
+                            switchedDevice,
                             $"/device/{device.Key}"
                         );
 
@@ -772,40 +758,6 @@ namespace PepperDash.Essentials
 
                         messengerAdded = true;
                     }
-
-                    // This will work if TKey and TSelector are both string types.
-                    // Otherwise plugin device needs to instantiate ISelectableItemsMessenger and add it to the controller.
-                    //if (device is IHasInputs<string, string> inputs)
-                    //{
-                    //    this.LogVerbose("Adding InputsMessenger<string,string> for {deviceKey}", device.Key);
-
-                    //    var messenger = new ISelectableItemsMessenger<string>(
-                    //        $"{device.Key}-inputs-{Key}",
-                    //        $"/device/{device.Key}",
-                    //        inputs.Inputs,
-                    //        "inputs"
-                    //    );
-
-                    //    AddDefaultDeviceMessenger(messenger);
-
-                    //    messengerAdded = true;
-                    //}
-
-                    //if (device is IHasInputs<byte, int> byteIntInputs)
-                    //{
-                    //       this.LogVerbose("Adding InputsMessenger<byte, int> for {deviceKey}", device.Key);
-
-                    //    var messenger = new ISelectableItemsMessenger<byte>(
-                    //        $"{device.Key}-inputs-{Key}",
-                    //        $"/device/{device.Key}",
-                    //        byteIntInputs.Inputs,
-                    //        "inputs"
-                    //    );
-
-                    //    AddDefaultDeviceMessenger(messenger);
-
-                    //    messengerAdded = true;  
-                    //}
 
                     if (device is IHasInputs<string> stringInputs)
                     {
@@ -854,7 +806,6 @@ namespace PepperDash.Essentials
 
                         messengerAdded = true;
                     }
-
 
                     if (device is IMatrixRouting matrix)
                     {

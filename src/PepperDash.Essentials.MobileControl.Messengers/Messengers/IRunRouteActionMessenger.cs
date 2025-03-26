@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public IRunRouteAction RoutingDevice { get; private set; }
 
         public RunRouteActionMessenger(string key, IRunRouteAction routingDevice, string messagePath)
-            : base(key, messagePath, routingDevice as Device)
+            : base(key, messagePath, routingDevice as IKeyName)
         {
             RoutingDevice = routingDevice ?? throw new ArgumentNullException("routingDevice");
 

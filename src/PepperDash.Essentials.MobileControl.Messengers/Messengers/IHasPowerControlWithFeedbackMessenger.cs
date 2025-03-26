@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private readonly IHasPowerControlWithFeedback _powerControl;
 
         public IHasPowerControlWithFeedbackMessenger(string key, string messagePath, IHasPowerControlWithFeedback powerControl)
-            : base(key, messagePath, powerControl as Device)
+            : base(key, messagePath, powerControl as IKeyName)
         {
             _powerControl = powerControl;
         }

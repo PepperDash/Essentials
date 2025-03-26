@@ -9,7 +9,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private readonly ITechPassword _room;
 
         public ITechPasswordMessenger(string key, string messagePath, ITechPassword room)
-            : base(key, messagePath, room as Device)
+            : base(key, messagePath, room as IKeyName)
         {
             _room = room;
         }

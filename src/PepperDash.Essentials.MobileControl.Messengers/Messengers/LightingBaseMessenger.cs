@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         protected ILightingScenes Device { get; private set; }
 
         public ILightingScenesMessenger(string key, ILightingScenes device, string messagePath)
-            : base(key, messagePath, device as Device)
+            : base(key, messagePath, device as IKeyName)
         {
             Device = device ?? throw new ArgumentNullException("device");
             Device.LightingSceneChange += new EventHandler<LightingSceneChangeEventArgs>(LightingDevice_LightingSceneChange);

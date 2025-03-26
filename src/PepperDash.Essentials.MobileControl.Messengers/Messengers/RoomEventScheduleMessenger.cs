@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
 
         public RoomEventScheduleMessenger(string key, string messagePath, IRoomEventSchedule room)
-            : base(key, messagePath, room as Device)
+            : base(key, messagePath, room as IKeyName)
         {
             _room = room;
         }

@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private readonly IHumiditySensor device;
 
         public IHumiditySensorMessenger(string key, IHumiditySensor device, string messagePath)
-            : base(key, messagePath, device as Device)
+            : base(key, messagePath, device as IKeyName)
         {
             this.device = device;
         }

@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public IHasScheduleAwareness ScheduleSource { get; private set; }
 
         public IHasScheduleAwarenessMessenger(string key, IHasScheduleAwareness scheduleSource, string messagePath)
-            : base(key, messagePath, scheduleSource as Device)
+            : base(key, messagePath, scheduleSource as IKeyName)
         {
             ScheduleSource = scheduleSource ?? throw new ArgumentNullException("scheduleSource");
             ScheduleSource.CodecSchedule.MeetingsListHasChanged += new EventHandler<EventArgs>(CodecSchedule_MeetingsListHasChanged);

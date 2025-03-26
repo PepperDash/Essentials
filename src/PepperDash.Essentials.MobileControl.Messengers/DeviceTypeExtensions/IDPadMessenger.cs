@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class IDPadMessenger : MessengerBase
     {
         private readonly IDPad dpadDevice;
-        public IDPadMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
+        public IDPadMessenger(string key, string messagePath, IDPad device) : base(key, messagePath, device as IKeyName)
         {
-            dpadDevice = device as IDPad;
+            dpadDevice = device;
         }
 
 

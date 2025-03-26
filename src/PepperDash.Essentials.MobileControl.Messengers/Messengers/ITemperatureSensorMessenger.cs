@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private readonly ITemperatureSensor device;
 
         public ITemperatureSensorMessenger(string key, ITemperatureSensor device, string messagePath)
-            : base(key, messagePath, device as Device)
+            : base(key, messagePath, device as IKeyName)
         {
             this.device = device;
         }

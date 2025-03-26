@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class IDvrMessenger : MessengerBase
     {
         private readonly IDvr dvrDevice;
-        public IDvrMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
+        public IDvrMessenger(string key, string messagePath, IDvr device) : base(key, messagePath, device as IKeyName)
         {
-            dvrDevice = device as IDvr;
+            dvrDevice = device;
         }
 
         protected override void RegisterActions()

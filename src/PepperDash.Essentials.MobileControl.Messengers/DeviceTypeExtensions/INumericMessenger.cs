@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class INumericKeypadMessenger : MessengerBase
     {
         private readonly INumericKeypad keypadDevice;
-        public INumericKeypadMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
+        public INumericKeypadMessenger(string key, string messagePath, INumericKeypad device) : base(key, messagePath, device as IKeyName)
         {
-            keypadDevice = device as INumericKeypad;
+            keypadDevice = device;
         }
 
         protected override void RegisterActions()

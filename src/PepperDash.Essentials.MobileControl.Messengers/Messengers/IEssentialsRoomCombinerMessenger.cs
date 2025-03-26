@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private readonly IEssentialsRoomCombiner _roomCombiner;
 
         public IEssentialsRoomCombinerMessenger(string key, string messagePath, IEssentialsRoomCombiner roomCombiner)
-            : base(key, messagePath, roomCombiner as Device)
+            : base(key, messagePath, roomCombiner as IKeyName)
         {
             _roomCombiner = roomCombiner;
         }

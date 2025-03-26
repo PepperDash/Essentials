@@ -9,12 +9,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly TwoWayDisplayBase _display;
 
-        public TwoWayDisplayBaseMessenger(string key, string messagePath) : base(key, messagePath)
-        {
-        }
-
         public TwoWayDisplayBaseMessenger(string key, string messagePath, TwoWayDisplayBase display)
-            : this(key, messagePath)
+            : base(key, messagePath, display)
         {
             _display = display;
         }

@@ -9,10 +9,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
     public class ISelectableItemsMessenger<TKey> : MessengerBase
     {
         private static readonly JsonSerializer serializer = new JsonSerializer { Converters = { new StringEnumConverter() } };
-        private ISelectableItems<TKey> itemDevice;
+        private readonly ISelectableItems<TKey> itemDevice;
 
         private readonly string _propName;
-        public ISelectableItemsMessenger(string key, string messagePath, ISelectableItems<TKey> device, string propName) : base(key, messagePath, device as Device)
+        public ISelectableItemsMessenger(string key, string messagePath, ISelectableItems<TKey> device, string propName) : base(key, messagePath, device as IKeyName)
         {
             itemDevice = device;
             _propName = propName;
