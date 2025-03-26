@@ -8,6 +8,10 @@
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
     </None>
+     <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).clz" Condition="$(ProjectType) == 'Library'">
+      <Pack>true</Pack>
+      <PackagePath>build;</PackagePath>
+    </None>
   </ItemGroup>
   <PropertyGroup Condition="$(ProjectType) == 'ProgramLibrary'">
     <FileName>$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz</FileName>
@@ -33,14 +37,21 @@
     </Delete>
     <Message Text="Deleted files: '@(DeletedList)'" />
   </Target>
-  <Target Name="Copy CLZ" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Library')">
-    <Message Text="Copying CLZ"></Message>
-    <Move SourceFiles="$(TargetDir)\$(TargetName).clz" DestinationFiles="$(TargetDir)\$(TargetName).$(Version).$(TargetFramework).clz"/>
-    <Copy SourceFiles="$(TargetDir)\$(TargetName).$(Version).$(TargetFramework).clz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).clz"/>
-  </Target>
   <Target Name="Copy CPZ" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' ))">
     <Message Text="Copying CPZ"></Message>
     <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cpz" />
+  </Target>
+  <Target Name="Copy CLZ" AfterTargets="SimplSharpPostProcess" Condition="$(ProjectType) == 'Library'">>
+    <Message Text="Copying CLZ"></Message>
+    <Move SourceFiles="$(TargetDir)\$(TargetName).clz" DestinationFiles="$(TargetDir)\$(TargetName).$(Version).clz"/>
+    <Copy SourceFiles="$(TargetDir)\$(TargetName).$(Version).clz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).clz"/>
+  </Target>
+  <Target Name="SimplSharpNewtonsoft" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
+    <ItemGroup>
+      <ReferencePath Condition="'%(FileName)' == 'Newtonsoft.Json.Compact'">
+        <Aliases>doNotUse</Aliases>
+      </ReferencePath>
+    </ItemGroup>
   </Target>
 </Project>
