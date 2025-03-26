@@ -11,7 +11,6 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <Title>PepperDash Essentials</Title>
     <PackageId>PepperDashEssentials</PackageId>
-    <Version>2.0.0-local</Version>
     <InformationalVersion>$(Version)</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
@@ -49,10 +48,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.90" />
-    <PackageReference Include="PepperDashCore" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />
     <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj" />
+    <ProjectReference Include="..\PepperDash.Essentials.MobileControl.Messengers\PepperDash.Essentials.MobileControl.Messengers.csproj" />
+    <ProjectReference Include="..\PepperDash.Essentials.MobileControl\PepperDash.Essentials.MobileControl.csproj" />
   </ItemGroup>
 </Project>

@@ -119,23 +119,23 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var device = DeviceManager.GetDeviceForKey(body.DeviceKey) as IStreamDebugging;
-			if (device == null)
-			{
-				context.Response.StatusCode = 404;
-				context.Response.StatusDescription = "Not Found";
-				context.Response.End();
+            if (!(DeviceManager.GetDeviceForKey(body.DeviceKey) is IStreamDebugging device))
+            {
+                context.Response.StatusCode = 404;
+                context.Response.StatusDescription = "Not Found";
+                context.Response.End();
 
-				return;
-			}
-			
-			eStreamDebuggingSetting debugSetting;
+                return;
+            }
+
+            eStreamDebuggingSetting debugSetting;
 			try
 			{
 				debugSetting = (eStreamDebuggingSetting) Enum.Parse(typeof (eStreamDebuggingSetting), body.Setting, true);				
 			}
 			catch (Exception ex)
 			{
+                Debug.LogMessage(ex, "Exception handling set debug request");
 				context.Response.StatusCode = 500;
 				context.Response.StatusDescription = "Internal Server Error";
 				context.Response.End();
@@ -161,6 +161,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 			catch (Exception ex)
 			{
+                Debug.LogMessage(ex, "Exception handling set debug request");
 				context.Response.StatusCode = 500;
 				context.Response.StatusDescription = "Internal Server Error";
 				context.Response.End();

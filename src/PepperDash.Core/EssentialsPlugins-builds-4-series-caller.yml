@@ -1,0 +1,21 @@
+name: Build Essentials Plugin
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  getVersion:
+    uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-getversion.yml@main
+    secrets: inherit
+  build-4Series:
+    uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-4Series-builds.yml@main
+    secrets: inherit
+    needs: getVersion
+    if: needs.getVersion.outputs.newVersion == 'true'
+    with:
+      newVersion: ${{ needs.getVersion.outputs.newVersion }}
+      version: ${{ needs.getVersion.outputs.version }}
+      tag: ${{ needs.getVersion.outputs.tag }}
+      channel: ${{ needs.getVersion.outputs.channel }}

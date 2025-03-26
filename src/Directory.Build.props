@@ -2,10 +2,10 @@
   <PropertyGroup>
     <Version>2.0.0-local</Version>
     <InformationalVersion>$(Version)</InformationalVersion>
-    <Authors>PepperDash Technologies</Authors>
-    <Company>PepperDash Technologies</Company>
+    <Authors>PepperDash Technology</Authors>
+    <Company>PepperDash Technology</Company>
     <Product>PepperDash Essentials</Product>
-    <Copyright>Copyright ©  2023</Copyright>
+    <Copyright>Copyright ©  2025</Copyright>
     <RepositoryUrl>https://github.com/PepperDash/Essentials</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Crestron; 4series</PackageTags>

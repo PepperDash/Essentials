@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">  
+  <PropertyGroup>
+    <RootNamespace>PepperDash.Essentials</RootNamespace>
+    <TargetFramework>net472</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <Deterministic>false</Deterministic>
+    <AssemblyTitle>epi-essentials-mobile-control</AssemblyTitle>
+    <AssemblyName>epi-essentials-mobile-control</AssemblyName>
+    <Company>PepperDash Technologies</Company>
+    <Product>epi-essentials-mobile-control</Product>
+    <Description>This software is a plugin designed to work as a part of PepperDash Essentials for Crestron control processors. This plugin allows for connection to a PepperDash Mobile Control server.</Description>
+    <Copyright>Copyright 2020</Copyright>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <InformationalVersion>$(Version)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <Authors>PepperDash Technologies</Authors>
+    <PackageId>PepperDash.Essentials.MobileControl</PackageId>
+    <PackageTags>crestron 4series</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>TRACE;DEBUG;SERIES4</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <DefineConstants>TRACE;SERIES4</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="bin\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <None Remove="bin\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="MobileControlSimplDeviceBridge.cs" />
+    <Compile Remove="RoomBridges\MobileControlSIMPLRoomBridge.cs" />
+    <Compile Remove="RoomBridges\SourceDeviceMapDictionary.cs" />
+  </ItemGroup>  
+  <ItemGroup>    
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.90" />
+    <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="C:\Users\awelker\source\Essentials\Essentials\src\PepperDash.Essentials.MobileControl\bin\Debug\net472\PepperDash.Essentials.MobileControl.4.0.0-local.net472.cplz" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="C:\Users\awelker\source\Essentials\Essentials\src\PepperDash.Essentials.MobileControl\bin\Debug\net472\PepperDash.Essentials.MobileControl.4.0.0-local.net472.cplz" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />
+    <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\PepperDash.Essentials.MobileControl.Messengers\PepperDash.Essentials.MobileControl.Messengers.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>  
+</Project>

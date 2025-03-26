@@ -40,9 +40,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         private int _meetingWarningMinutes = 5;
 
-        private Meeting _previousChangedMeeting;
+        //private Meeting _previousChangedMeeting;
 
-        private eMeetingEventChangeType _previousChangeType = eMeetingEventChangeType.Unknown;
+        //private eMeetingEventChangeType _previousChangeType = eMeetingEventChangeType.Unknown;
 
         public int MeetingWarningMinutes
         {
@@ -62,16 +62,11 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             set
             {
                 _meetings = value;
-
-                var handler = MeetingsListHasChanged;
-                if (handler != null)
-                {
-                    handler(this, new EventArgs());
-                }
+                MeetingsListHasChanged?.Invoke(this, new EventArgs());
             }
         }
 
-        private CTimer _scheduleChecker;
+        private readonly CTimer _scheduleChecker;
 
         public CodecScheduleAwareness()
         {
@@ -99,12 +94,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             {
                 // Add this change type to the NotifiedChangeTypes
                 meeting.NotifiedChangeTypes |= changeType;
-
-                var handler = MeetingEventChange;
-                if (handler != null)
-                {
-                    handler(this, new MeetingEventArgs() { ChangeType = changeType, Meeting = meeting });
-                }
+                MeetingEventChange?.Invoke(this, new MeetingEventArgs() { ChangeType = changeType, Meeting = meeting });
             }
             else
             {

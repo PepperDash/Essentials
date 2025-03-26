@@ -16,7 +16,6 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Lighting
 {
-    [Obsolete("Please use PepperDash.Essentials.Devices.Common, this will be removed in 2.1")]
     public abstract class LightingBase : EssentialsBridgeableDevice, ILightingScenes
     {
         #region ILightingScenes Members
@@ -68,12 +67,7 @@ namespace PepperDash.Essentials.Devices.Common.Lighting
                 else
                     scene.IsActive = false;
             }
-
-            var handler = LightingSceneChange;
-            if (handler != null)
-            {
-                handler(this, new LightingSceneChangeEventArgs(CurrentLightingScene));
-            }
+            LightingSceneChange?.Invoke(this, new LightingSceneChangeEventArgs(CurrentLightingScene));
         }
 
 	    protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, uint joinStart,
