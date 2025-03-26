@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
-
-using PepperDash.Core;
+﻿using PepperDash.Core;
 
 
 namespace PepperDash.Essentials.Core
@@ -15,22 +7,6 @@ namespace PepperDash.Essentials.Core
 	{
 		BoolFeedback IsOnline { get; }
 	}
-
-	///// <summary>
-	///// ** WANT THIS AND ALL ITS FRIENDS TO GO AWAY **
-	///// Defines a class that has a list of CueAction objects, typically
-	///// for linking functions to user interfaces or API calls
-	///// </summary>
-	//public interface IHasCueActionList
-	//{
-	//    List<CueActionPair> CueActionList { get; }
-	//}
-
-
-	//public interface IHasComPortsHardware
-	//{
-	//    IComPorts ComPortsDevice { get; }
-	//}
 
 	/// <summary>
 	/// Describes a device that can have a video sync providing device attached to it

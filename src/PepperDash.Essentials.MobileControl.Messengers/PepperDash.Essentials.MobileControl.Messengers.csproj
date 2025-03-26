@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PepperDash.Essentials.AppServer</RootNamespace>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyTitle>mobile-control-messengers</AssemblyTitle>
+    <AssemblyName>mobile-control-messengers</AssemblyName>
+    <Product>mobile-control-messengers</Product>
+    <Copyright>Copyright ©  2024</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <InformationalVersion>$(Version)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Authors>PepperDash Technology</Authors>
+    <PackageId>PepperDash.Essentials.MobileControl.Messengers</PackageId>
+    <PackageTags>crestron 4series</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Messengers\SIMPLAtcMessenger.cs" />
+    <Compile Remove="Messengers\SIMPLCameraMessenger.cs" />
+    <Compile Remove="Messengers\SIMPLDirectRouteMessenger.cs" />
+    <Compile Remove="Messengers\SimplMessengerPropertiesConfig.cs" />
+    <Compile Remove="Messengers\SIMPLRouteMessenger.cs" />
+    <Compile Remove="Messengers\SIMPLVtcMessenger.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.90" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />
+    <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+</Project>

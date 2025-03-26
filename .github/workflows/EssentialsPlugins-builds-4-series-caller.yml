@@ -19,3 +19,4 @@ jobs:
       version: ${{ needs.getVersion.outputs.version }}
       tag: ${{ needs.getVersion.outputs.tag }}
       channel: ${{ needs.getVersion.outputs.channel }}
+      bypassPackageCheck: true

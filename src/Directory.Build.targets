@@ -33,6 +33,11 @@
     </Delete>
     <Message Text="Deleted files: '@(DeletedList)'" />
   </Target>
+  <Target Name="Copy CLZ" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Library')">
+    <Message Text="Copying CLZ"></Message>
+    <Move SourceFiles="$(TargetDir)\$(TargetName).clz" DestinationFiles="$(TargetDir)\$(TargetName).$(Version).$(TargetFramework).clz"/>
+    <Copy SourceFiles="$(TargetDir)\$(TargetName).$(Version).$(TargetFramework).clz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).clz"/>
+  </Target>
   <Target Name="Copy CPZ" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' ))">
     <Message Text="Copying CPZ"></Message>
     <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" />

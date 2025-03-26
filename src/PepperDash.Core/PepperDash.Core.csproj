@@ -1,0 +1,66 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ProjectType>Library</ProjectType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>PepperDash.Core</RootNamespace>
+    <AssemblyName>PepperDashCore</AssemblyName>
+    <TargetFramework>net472</TargetFramework>
+    <Deterministic>true</Deterministic>
+    <NeutralLanguage>en</NeutralLanguage>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <SignAssembly>False</SignAssembly>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>PepperDash Core</Title>
+    <Company>PepperDash Technologies</Company>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/PepperDash/PepperDashCore</RepositoryUrl>
+    <PackageTags>crestron;4series;</PackageTags>   
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>        
+    <InformationalVersion>$(Version)</InformationalVersion>    
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <DefineConstants>TRACE;DEBUG;SERIES4</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <DocumentationFile>bin\4Series\$(Configuration)\PepperDashCore.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="lib\**" />
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="lib\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="lib\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.21.90" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog.Expressions" Version="4.0.0" />
+    <PackageReference Include="Serilog.Formatting.Compact" Version="2.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="SSH.NET" Version="2024.2.0" />
+    <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6'">
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Comm\._GenericSshClient.cs" />
+    <Compile Remove="Comm\._GenericTcpIpClient.cs" />
+    <Compile Remove="Comm\DynamicTCPServer.cs" />
+    <Compile Remove="PasswordManagement\OLD-ARRAY-Config.cs" />
+    <Compile Remove="PasswordManagement\OLD-ARRAY-PasswordClient.cs" />
+    <Compile Remove="PasswordManagement\OLD-ARRAY-PasswordManager.cs" />
+  </ItemGroup>
+</Project>

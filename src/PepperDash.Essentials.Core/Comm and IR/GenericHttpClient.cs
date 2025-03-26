@@ -7,17 +7,19 @@ namespace PepperDash.Essentials.Core
     [Obsolete("Please use the builtin HttpClient class instead: https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines")]
 	public class GenericHttpClient : Device, IBasicCommunication
 	{
-		public HttpClient Client;
+		private readonly HttpClient Client;
 		public event EventHandler<GenericHttpClientEventArgs> ResponseRecived;
 
 		public GenericHttpClient(string key, string name, string hostname)
 			: base(key, name)
 		{
-			Client = new HttpClient();
-			Client.HostName = hostname;
-			
-			
-		}
+            Client = new HttpClient
+            {
+                HostName = hostname
+            };
+
+
+        }
 
 		/// <summary>
 		/// 
@@ -54,9 +56,8 @@ namespace PepperDash.Essentials.Core
 
 				if (responseReceived.ContentString.Length > 0)
 				{
-					if (ResponseRecived != null)
-						ResponseRecived(this, new GenericHttpClientEventArgs(responseReceived.ContentString, (request as HttpClientRequest).Url.ToString(), error));
-				}
+                    ResponseRecived?.Invoke(this, new GenericHttpClientEventArgs(responseReceived.ContentString, (request as HttpClientRequest).Url.ToString(), error));
+                }
 			}
 
 		}

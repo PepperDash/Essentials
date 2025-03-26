@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectType>ProgramLibrary</ProjectType>
     <Configurations>Debug;Release;Debug 4.7.2</Configurations>
   </PropertyGroup>
   <PropertyGroup>
@@ -9,10 +8,9 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <AssemblyName>Essentials Devices Common</AssemblyName>
     <RootNamespace>PepperDash.Essentials.Devices.Common</RootNamespace>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Title>PepperDash Essentials Devices Common</Title>
     <PackageId>PepperDash.Essentials.Devices.Common</PackageId>
-    <Version>2.0.0-local</Version>
     <InformationalVersion>$(Version)</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
@@ -26,10 +24,10 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.90" />
-    <PackageReference Include="PepperDashCore" Version="2.0.1" />
   </ItemGroup>
 </Project>

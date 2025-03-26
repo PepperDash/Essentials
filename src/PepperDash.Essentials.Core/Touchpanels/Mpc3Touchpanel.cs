@@ -4,6 +4,7 @@ using System.Globalization;
 using Crestron.SimplSharpPro;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Touchpanels
@@ -34,9 +35,9 @@ namespace PepperDash.Essentials.Core.Touchpanels
 				Debug.LogMessage(LogEventLevel.Information, this, "touchpanel registration response: {0}", registrationResponse);
 			}
 
-			_touchpanel.BaseEvent += _touchpanel_BaseEvent;
-			_touchpanel.ButtonStateChange += _touchpanel_ButtonStateChange;
-			_touchpanel.PanelStateChange += _touchpanel_PanelStateChange;
+			_touchpanel.BaseEvent += Touchpanel_BaseEvent;
+			_touchpanel.ButtonStateChange += Touchpanel_ButtonStateChange;
+			_touchpanel.PanelStateChange += Touchpanel_PanelStateChange;
 
 			_buttons = buttons;
 			if (_buttons == null)
@@ -74,10 +75,9 @@ namespace PepperDash.Essentials.Core.Touchpanels
 				return;
 			}
 
-			int buttonNumber;
-			TryParseInt(key, out buttonNumber);
+            TryParseInt(key, out int buttonNumber);
 
-			var buttonEventTypes = config.EventTypes;
+            var buttonEventTypes = config.EventTypes;
 			BoolOutputSig enabledFb = null;
 			BoolOutputSig disabledFb = null;
 
@@ -161,11 +161,10 @@ namespace PepperDash.Essentials.Core.Touchpanels
 				return;
 			}
 
-			int buttonNumber;
-			TryParseInt(key, out buttonNumber);
+            TryParseInt(key, out int buttonNumber);
 
-			// Link up the button feedbacks to the specified device feedback
-			var buttonFeedback = config.Feedback;
+            // Link up the button feedbacks to the specified device feedback
+            var buttonFeedback = config.Feedback;
 			if (buttonFeedback == null || string.IsNullOrEmpty(buttonFeedback.DeviceKey))
 			{
 				Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedback not configured, skipping.",
@@ -177,15 +176,14 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 			try
 			{
-				var device = DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) as Device;
-				if (device == null)
-				{
-					Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedback deviceKey '{1}' not found.",
-						key, buttonFeedback.DeviceKey);
-					return;
-				}
+                if (!(DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) is Device device))
+                {
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedback deviceKey '{1}' not found.",
+                        key, buttonFeedback.DeviceKey);
+                    return;
+                }
 
-				deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
+                deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
 				if (deviceFeedback == null)
 				{
 					Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedbackName property '{1}' not found.",
@@ -224,38 +222,37 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			}
 
 			var boolFeedback = deviceFeedback as BoolFeedback;
-			var intFeedback = deviceFeedback as IntFeedback;
 
-			switch (key)
-			{
-				case ("power"):
-					{
-						if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackPower);
-						break;
-					}
-				case ("volumeup"):
-				case ("volumedown"):
-				case ("volumefeedback"):
-					{
-						if (intFeedback != null)
-						{
-							var volumeFeedback = intFeedback;
-							volumeFeedback.LinkInputSig(_touchpanel.VolumeBargraph);
-						}
-						break;
-					}
-				case ("mute"):
-					{
-						if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.FeedbackMute);
-						break;
-					}
-				default:
-					{
-						if (boolFeedback != null) boolFeedback.LinkCrestronFeedback(_touchpanel.Feedbacks[(uint)buttonNumber]);
-						break;
-					}
-			}
-		}
+            switch (key)
+            {
+                case ("power"):
+                    {
+                        boolFeedback?.LinkCrestronFeedback(_touchpanel.FeedbackPower);
+                        break;
+                    }
+                case ("volumeup"):
+                case ("volumedown"):
+                case ("volumefeedback"):
+                    {
+                        if (deviceFeedback is IntFeedback intFeedback)
+                        {
+                            var volumeFeedback = intFeedback;
+                            volumeFeedback.LinkInputSig(_touchpanel.VolumeBargraph);
+                        }
+                        break;
+                    }
+                case ("mute"):
+                    {
+                        boolFeedback?.LinkCrestronFeedback(_touchpanel.FeedbackMute);
+                        break;
+                    }
+                default:
+                    {
+                        boolFeedback?.LinkCrestronFeedback(_touchpanel.Feedbacks[(uint)buttonNumber]);
+                        break;
+                    }
+            }
+        }
 
 		/// <summary>
 		/// Try parse int helper method
@@ -277,12 +274,12 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			}
 		}
 
-		private void _touchpanel_BaseEvent(GenericBase device, BaseEventArgs args)
+		private void Touchpanel_BaseEvent(GenericBase device, BaseEventArgs args)
 		{
 			Debug.LogMessage(LogEventLevel.Debug, this, "BaseEvent: eventId-'{0}', index-'{1}'", args.EventId, args.Index);
 		}
 
-		private void _touchpanel_ButtonStateChange(GenericBase device, Crestron.SimplSharpPro.DeviceSupport.ButtonEventArgs args)
+		private void Touchpanel_ButtonStateChange(GenericBase device, Crestron.SimplSharpPro.DeviceSupport.ButtonEventArgs args)
 		{
 			Debug.LogMessage(LogEventLevel.Debug, this, "ButtonStateChange: buttonNumber-'{0}' buttonName-'{1}', buttonState-'{2}'", args.Button.Number, args.Button.Name, args.NewButtonState);
 			var type = args.NewButtonState.ToString();
@@ -297,7 +294,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 			}
 		}
 
-		private void _touchpanel_PanelStateChange(GenericBase device, BaseEventArgs args)
+		private void Touchpanel_PanelStateChange(GenericBase device, BaseEventArgs args)
 		{
 			Debug.LogMessage(LogEventLevel.Debug, this, "PanelStateChange: eventId-'{0}', index-'{1}'", args.EventId, args.Index);
 		}
@@ -310,7 +307,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		/// <param name="type"></param>
 		public void Press(string buttonKey, string type)
 		{
-			Debug.LogMessage(LogEventLevel.Verbose, this, "Press: buttonKey-'{0}', type-'{1}'", buttonKey, type);
+			this.LogVerbose("Press: buttonKey-'{buttonKey}', type-'{type}'", buttonKey, type);
 
 			// TODO: In future, consider modifying this to generate actions at device activation time
 			//       to prevent the need to dynamically call the method via reflection on each button press
@@ -325,18 +322,12 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 		public void ListButtons()
 		{
-			var line = new string('-', 35);
-
-			Debug.Console(0, this, line);
-
-			Debug.Console(0, this, "MPC3 Controller {0} - Available Butons", Key);
+			this.LogVerbose("MPC3 Controller {0} - Available Buttons", Key);
 
 			foreach (var button in _buttons)
 			{
-				Debug.Console(0, this, "Key: {0}", button.Key);
+				this.LogVerbose("Key: {key}", button.Key);
 			}
-
-			Debug.Console(0, this, line);
 		}
 	}
 
