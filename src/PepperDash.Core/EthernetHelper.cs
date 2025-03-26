@@ -1,5 +1,6 @@
 ﻿using Crestron.SimplSharp;
 using Newtonsoft.Json;
+using Serilog.Events;
 
 namespace PepperDash.Core
 {
@@ -43,7 +44,7 @@ namespace PepperDash.Core
 			{
 				var status = CrestronEthernetHelper.GetEthernetParameter(
 					CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_LINK_STATUS, 0);
-				Debug.Console(0, "LinkActive = {0}", status);
+				Debug.LogMessage(LogEventLevel.Information, "LinkActive = {0}", status);
 				return status == "";
 			}
 		}

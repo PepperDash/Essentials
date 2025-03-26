@@ -741,7 +741,7 @@ namespace PepperDash.Core
         {
             if (HeartbeatEnabled)
             {
-                Debug.Console(2, this, "Starting Heartbeat");
+                this.LogVerbose("Starting Heartbeat");
                 if (HeartbeatSendTimer == null)
                 {
 

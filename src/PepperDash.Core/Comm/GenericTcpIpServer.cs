@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
+using PepperDash.Core.Logging;
 
 namespace PepperDash.Core
 {
@@ -526,7 +527,7 @@ namespace PepperDash.Core
                         {
                             SocketErrorCodes error = myTcpServer.SendDataAsync(i, b, b.Length, (x, y, z) => { });
                             if (error != SocketErrorCodes.SOCKET_OK && error != SocketErrorCodes.SOCKET_OPERATION_PENDING)
-                                Debug.Console(2, error.ToString());
+                                this.LogError("{error}",error.ToString());
                         }
                     }
                 }

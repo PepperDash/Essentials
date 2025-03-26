@@ -17,6 +17,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
+using PepperDash.Core.Logging;
 
 namespace PepperDash.Core
 {
@@ -445,7 +446,7 @@ namespace PepperDash.Core
         /// </summary>
         public void Disconnect()
         {
-            Debug.Console(2, "Disconnect Called");
+            this.LogVerbose("Disconnect Called");
 
             DisconnectCalledByUser = true;
             if (IsConnected)

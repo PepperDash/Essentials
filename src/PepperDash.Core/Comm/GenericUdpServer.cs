@@ -6,6 +6,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using Newtonsoft.Json;
+using PepperDash.Core.Logging;
 
 namespace PepperDash.Core
 {
@@ -279,7 +280,7 @@ namespace PepperDash.Core
             }
             catch (Exception ex)
             {
-                Debug.Console(0, "GenericUdpServer Receive error: {0}{1}", ex.Message, ex.StackTrace);
+                this.LogException(ex, "GenericUdpServer Receive error");
             }
             finally
             {

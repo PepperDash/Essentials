@@ -686,7 +686,7 @@ namespace PepperDash.Core
             }
             catch (Exception e)
             {
-                this.LogException(ex, "DequeueEvent error");
+                this.LogException(e, "DequeueEvent error");
             }
             // Make sure to leave the CCritical section in case an exception above stops this thread, or we won't be able to restart it.
             if (DequeueLock != null)

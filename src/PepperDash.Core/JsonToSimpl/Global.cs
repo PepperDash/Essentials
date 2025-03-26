@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Serilog.Events;
 
 //using PepperDash.Core;
 
@@ -30,7 +31,7 @@ namespace PepperDash.Core.JsonToSimpl
 			if (string.IsNullOrEmpty(master.UniqueID))
 				throw new InvalidOperationException("JSON Master cannot be added with a null UniqueId");
 			
-			Debug.Console(1, "JSON Global adding master {0}", master.UniqueID);
+			Debug.LogMessage(LogEventLevel.Debug, "JSON Global adding master {0}", master.UniqueID);
 
 			if (Masters.Contains(master)) return;
 
