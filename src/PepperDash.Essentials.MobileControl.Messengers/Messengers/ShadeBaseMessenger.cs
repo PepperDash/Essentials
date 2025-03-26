@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Shades;
 using System;
 

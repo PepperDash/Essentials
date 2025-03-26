@@ -79,7 +79,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 PostStatusMessage(JToken.FromObject(message));
             };
 
-            foreach(var partition in _roomCombiner.Partitions)
+            foreach (var partition in _roomCombiner.Partitions)
             {
                 partition.PartitionPresentFeedback.OutputChange += (sender, args) =>
                 {
@@ -101,7 +101,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 foreach (var room in _roomCombiner.Rooms)
                 {
-                    rooms.Add(new RoomCombinerRoom{ Key = room.Key, Name = room.Name });
+                    rooms.Add(new RoomCombinerRoom { Key = room.Key, Name = room.Name });
                 }
 
                 var message = new IEssentialsRoomCombinerStateMessage

@@ -30,6 +30,11 @@
     <Compile Remove="bin\**" />
     <EmbeddedResource Remove="bin\**" />
     <None Remove="bin\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="MobileControlSimplDeviceBridge.cs" />
+    <Compile Remove="RoomBridges\MobileControlSIMPLRoomBridge.cs" />
+    <Compile Remove="RoomBridges\SourceDeviceMapDictionary.cs" />
   </ItemGroup>  
   <ItemGroup>    
     <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.90" />
@@ -48,15 +53,15 @@
     <None Remove="C:\Users\awelker\source\Essentials\Essentials\src\PepperDash.Essentials.MobileControl\bin\Debug\net472\PepperDash.Essentials.MobileControl.4.0.0-local.net472.cplz" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" >
+    <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
-    <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj" >
+    <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
-    <ProjectReference Include="..\PepperDash.Essentials.MobileControl.Messengers\PepperDash.Essentials.MobileControl.Messengers.csproj" >
+    <ProjectReference Include="..\PepperDash.Essentials.MobileControl.Messengers\PepperDash.Essentials.MobileControl.Messengers.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>

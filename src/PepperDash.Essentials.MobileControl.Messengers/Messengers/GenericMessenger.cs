@@ -1,6 +1,4 @@
 ﻿using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {

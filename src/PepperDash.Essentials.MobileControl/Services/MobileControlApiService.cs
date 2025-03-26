@@ -66,7 +66,8 @@ namespace PepperDash.Essentials.Services
                 }
 
                 return authResponse;
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Debug.LogMessage(ex, "Error authorizing with Mobile Control");
                 return new AuthorizationResponse { Authorized = false, Reason = ex.Message };

@@ -3,10 +3,10 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
-using System.Collections.Generic;
-using System.Linq;
 using Serilog.Events;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -36,7 +36,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                         Inputs = matrixDevice.InputSlots.ToDictionary(kvp => kvp.Key, kvp => new RoutingInput(kvp.Value)),
                     };
 
-                    
+
                     PostStatusMessage(message);
                 }
                 catch (Exception e)
@@ -52,7 +52,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 matrixDevice.Route(request.InputKey, request.OutputKey, request.RouteType);
             });
 
-            foreach(var output in matrixDevice.OutputSlots)
+            foreach (var output in matrixDevice.OutputSlots)
             {
                 var key = output.Key;
                 var outputSlot = output.Value;
@@ -66,7 +66,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 };
             }
 
-            foreach(var input in matrixDevice.InputSlots)
+            foreach (var input in matrixDevice.InputSlots)
             {
                 var key = input.Key;
                 var inputSlot = input.Value;
@@ -82,7 +82,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
-    public class  MatrixStateMessage : DeviceStateMessageBase
+    public class MatrixStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("outputs")]
         public Dictionary<string, RoutingOutput> Outputs;
@@ -113,13 +113,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         [JsonProperty("videoSyncDetected", NullValueHandling = NullValueHandling.Ignore)]
 
-        public bool? VideoSyncDetected  => _input?.VideoSyncDetected;
+        public bool? VideoSyncDetected => _input?.VideoSyncDetected;
 
         [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
         public string Key => _input?.Key;
 
         public RoutingInput(IRoutingInputSlot input)
-        {            
+        {
             _input = input;
         }
     }

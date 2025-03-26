@@ -4,7 +4,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
-    public class ISetTopBoxControlsMessenger:MessengerBase
+    public class ISetTopBoxControlsMessenger : MessengerBase
     {
         private readonly ISetTopBoxControls stbDevice;
         public ISetTopBoxControlsMessenger(string key, string messagePath, IKeyName device) : base(key, messagePath, device)
@@ -18,15 +18,15 @@ namespace PepperDash.Essentials.Room.MobileControl
             AddAction("/fullStatus", (id, content) => SendISetTopBoxControlsFullMessageObject());
             AddAction("/dvrList", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => stbDevice?.DvrList(b)));
             AddAction("/replay", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => stbDevice?.Replay(b)));
-        }        
-                /// <summary>
+        }
+        /// <summary>
         /// Helper method to build call status for vtc
         /// </summary>
         /// <returns></returns>
         private void SendISetTopBoxControlsFullMessageObject()
         {
 
-            PostStatusMessage( new SetTopBoxControlsState());
+            PostStatusMessage(new SetTopBoxControlsState());
 
 
         }

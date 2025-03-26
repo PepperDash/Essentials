@@ -1,10 +1,11 @@
 ﻿using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using System;
 
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.RoomBridges
 {
     /// <summary>
     /// 
@@ -102,12 +103,12 @@ namespace PepperDash.Essentials
         /// </summary>
         protected virtual void UserCodeChange()
         {
-            Debug.Console(1, this, "Server user code changed: {0}", UserCode);
+            this.LogDebug("Server user code changed: {userCode}", UserCode);
 
             var qrUrl = string.Format($"{Parent.Host}/api/rooms/{Parent.SystemUuid}/{RoomKey}/qr?x={new Random().Next()}");
             QrCodeUrl = qrUrl;
 
-            Debug.Console(1, this, "Server user code changed: {0} - {1}", UserCode, qrUrl);
+            this.LogDebug("Server user code changed: {userCode} - {qrCodeUrl}", UserCode, qrUrl);
 
             OnUserCodeChanged();
         }

@@ -16,14 +16,14 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Room;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.WebSocketServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using IShades = PepperDash.Essentials.Core.Shades.IShades;
 using ShadeBase = PepperDash.Essentials.Devices.Common.Shades.ShadeBase;
-using Volume = PepperDash.Essentials.Room.MobileControl.Volume;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.RoomBridges
 {
     public class MobileControlEssentialsRoomBridge : MobileControlBridgeBase
     {
@@ -339,7 +339,7 @@ namespace PepperDash.Essentials
             string shareText;
             bool isSharing;
 
-            if (Room is IHasCurrentSourceInfoChange srcInfoRoom && (Room is IHasVideoCodec vcRoom && (vcRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && srcInfoRoom.CurrentSourceInfo != null)))
+            if (Room is IHasCurrentSourceInfoChange srcInfoRoom && Room is IHasVideoCodec vcRoom && vcRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && srcInfoRoom.CurrentSourceInfo != null)
             {
                 shareText = srcInfoRoom.CurrentSourceInfo.PreferredName;
                 isSharing = true;
@@ -532,7 +532,8 @@ namespace PepperDash.Essentials
                 }
 
                 return state;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Debug.LogMessage(ex, "Error getting full status", this);
                 return null;
@@ -560,7 +561,7 @@ namespace PepperDash.Essentials
                 {
                     var zrcTp = DeviceManager.AllDevices.OfType<IMobileControlTouchpanelController>().SingleOrDefault((tp) => tp.ZoomRoomController);
 
-                    configuration.ZoomRoomControllerKey = zrcTp != null ? zrcTp.Key : null;
+                    configuration.ZoomRoomControllerKey = zrcTp?.Key;
                 }
                 catch
                 {
@@ -578,7 +579,7 @@ namespace PepperDash.Essentials
                 // find the room combiner for this room by checking if the room is in the list of rooms for the room combiner
                 var roomCombiner = DeviceManager.AllDevices.OfType<IEssentialsRoomCombiner>().FirstOrDefault();
 
-                configuration.RoomCombinerKey = roomCombiner != null ? roomCombiner.Key : null;
+                configuration.RoomCombinerKey = roomCombiner?.Key;
 
 
                 if (room is IEssentialsRoomPropertiesConfig propertiesConfig)
@@ -620,7 +621,8 @@ namespace PepperDash.Essentials
                         configuration.VideoCodecKey = vcRoom.VideoCodec.Key;
                         configuration.VideoCodecIsZoomRoom = type.Name.Equals("ZoomRoom", StringComparison.InvariantCultureIgnoreCase);
                     }
-                };
+                }
+                ;
 
                 if (room is IHasAudioCodec acRoom)
                 {
@@ -655,7 +657,7 @@ namespace PepperDash.Essentials
 
                             eEnvironmentalDeviceTypes type = eEnvironmentalDeviceTypes.None;
 
-                            if (dev is ILightingScenes || dev is Devices.Common.Lighting.LightingBase)
+                            if (dev is ILightingScenes)
                             {
                                 type = eEnvironmentalDeviceTypes.Lighting;
                             }
@@ -871,7 +873,7 @@ namespace PepperDash.Essentials
         public Dictionary<string, SourceListItem> SourceList { get; set; }
 
         [JsonProperty("destinationList", NullValueHandling = NullValueHandling.Ignore)]
-        public Dictionary<string,  DestinationListItem> DestinationList { get; set;}
+        public Dictionary<string, DestinationListItem> DestinationList { get; set; }
 
         [JsonProperty("audioControlPointList", NullValueHandling = NullValueHandling.Ignore)]
         public AudioControlPointListItem AudioControlPointList { get; set; }

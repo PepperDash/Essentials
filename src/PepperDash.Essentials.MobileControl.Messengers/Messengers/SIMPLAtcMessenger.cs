@@ -1,7 +1,6 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Devices.Common.Codec;
 using System;
 using System.Collections.Generic;
@@ -44,12 +43,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private void SendFullStatus()
         {
             PostStatusMessage(JToken.FromObject(new
-                {
-                    calls = GetCurrentCallList(),
-                    currentCallString = _eisc.GetString(JoinMap.CurrentCallName.JoinNumber),
-                    currentDialString = _eisc.GetString(JoinMap.CurrentDialString.JoinNumber),
-                    isInCall = _eisc.GetString(JoinMap.HookState.JoinNumber) == "Connected"
-                })
+            {
+                calls = GetCurrentCallList(),
+                currentCallString = _eisc.GetString(JoinMap.CurrentCallName.JoinNumber),
+                currentDialString = _eisc.GetString(JoinMap.CurrentDialString.JoinNumber),
+                isInCall = _eisc.GetString(JoinMap.HookState.JoinNumber) == "Connected"
+            })
             );
         }
 
@@ -139,9 +138,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private void SendCallsList()
         {
             PostStatusMessage(JToken.FromObject(new
-                {
-                    calls = GetCurrentCallList(),
-                })
+            {
+                calls = GetCurrentCallList(),
+            })
             );
         }
 

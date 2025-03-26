@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Monitoring;
 using System;
 using System.Threading.Tasks;
@@ -71,15 +70,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             // This takes a while, launch a new thread
             Task.Run(() => PostStatusMessage(JToken.FromObject(new SystemMonitorStateMessage
-                {
+            {
 
-                    TimeZone = systemMonitor.TimeZoneFeedback.IntValue,
-                    TimeZoneName = systemMonitor.TimeZoneTextFeedback.StringValue,
-                    IoControllerVersion = systemMonitor.IoControllerVersionFeedback.StringValue,
-                    SnmpVersion = systemMonitor.SnmpVersionFeedback.StringValue,
-                    BacnetVersion = systemMonitor.BaCnetAppVersionFeedback.StringValue,
-                    ControllerVersion = systemMonitor.ControllerVersionFeedback.StringValue
-                })
+                TimeZone = systemMonitor.TimeZoneFeedback.IntValue,
+                TimeZoneName = systemMonitor.TimeZoneTextFeedback.StringValue,
+                IoControllerVersion = systemMonitor.IoControllerVersionFeedback.StringValue,
+                SnmpVersion = systemMonitor.SnmpVersionFeedback.StringValue,
+                BacnetVersion = systemMonitor.BaCnetAppVersionFeedback.StringValue,
+                ControllerVersion = systemMonitor.ControllerVersionFeedback.StringValue
+            })
             ));
         }
 

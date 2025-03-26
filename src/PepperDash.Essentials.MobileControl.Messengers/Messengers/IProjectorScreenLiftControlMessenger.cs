@@ -7,7 +7,7 @@ using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
-    public class IProjectorScreenLiftControlMessenger: MessengerBase
+    public class IProjectorScreenLiftControlMessenger : MessengerBase
     {
         private readonly IProjectorScreenLiftControl device;
 

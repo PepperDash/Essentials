@@ -43,12 +43,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
         protected override void RegisterActions()
 
         {
-            AddAction("/presets/fullStatus", (id, content) => {
+            AddAction("/presets/fullStatus", (id, content) =>
+            {
                 this.LogInformation("getting full status for client {id}", id);
                 try
                 {
                     SendPresets();
-                } catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Debug.LogMessage(ex, "Exception sending preset full status", this);
                 }

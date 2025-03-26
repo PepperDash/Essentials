@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -81,9 +80,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private void HandleMessage(string path, string id, JToken content)
         {
             // replace base path with empty string. Should leave something like /fullStatus
-            var route = path.Replace(MessagePath, string.Empty); 
+            var route = path.Replace(MessagePath, string.Empty);
 
-            if(!_actions.TryGetValue(route, out var action)) {                
+            if (!_actions.TryGetValue(route, out var action))
+            {
                 return;
             }
 
@@ -136,12 +136,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             try
             {
-                if(message == null)
+                if (message == null)
                 {
                     throw new ArgumentNullException("message");
                 }
 
-                if(_device == null)
+                if (_device == null)
                 {
                     throw new ArgumentNullException("device");
                 }
@@ -154,7 +154,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 PostStatusMessage(JToken.FromObject(message), MessagePath, clientId);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Debug.LogMessage(ex, "Exception posting status message", this);
             }
         }
@@ -202,17 +203,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 Type = $"/event{MessagePath}/{message.EventType}",
                 Content = JToken.FromObject(message),
-            });   
+            });
         }
 
         protected void PostEventMessage(DeviceEventMessageBase message, string eventType)
-        {             
+        {
             message.Key = _device.Key;
-        
+
             message.Name = _device.Name;
 
             message.EventType = eventType;
-        
+
             AppServerController?.SendMessageObject(new MobileControlMessage
             {
                 Type = $"/event{MessagePath}/{eventType}",

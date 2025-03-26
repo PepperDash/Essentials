@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Independentsoft.Json.Parser;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -82,8 +75,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         [JsonProperty("isValid", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsValid { get; set; }
     }
-    
-    class SetTechPasswordContent
+
+    internal class SetTechPasswordContent
     {
         [JsonProperty("oldPassword")]
         public string OldPassword { get; set; }

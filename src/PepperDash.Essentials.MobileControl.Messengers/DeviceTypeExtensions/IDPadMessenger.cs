@@ -4,7 +4,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
-    public class IDPadMessenger:MessengerBase
+    public class IDPadMessenger : MessengerBase
     {
         private readonly IDPad dpadDevice;
         public IDPadMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
         protected override void RegisterActions()
         {
-            base.RegisterActions();               
+            base.RegisterActions();
 
             AddAction("/up", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => dpadDevice?.Up(b)));
             AddAction("/down", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => dpadDevice?.Down(b)));

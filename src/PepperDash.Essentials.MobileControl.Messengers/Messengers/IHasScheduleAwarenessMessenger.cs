@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Devices.Common.Codec;
 using System;
 using System.Collections.Generic;
@@ -28,13 +27,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private void CodecSchedule_MeetingEventChange(object sender, MeetingEventArgs e)
         {
             PostStatusMessage(JToken.FromObject(new MeetingChangeMessage
+            {
+                MeetingChange = new MeetingChange
                 {
-                    MeetingChange = new MeetingChange
-                    {
-                        ChangeType = e.ChangeType.ToString(),
-                        Meeting = e.Meeting
-                    }
-                })
+                    ChangeType = e.ChangeType.ToString(),
+                    Meeting = e.Meeting
+                }
+            })
             );
         }
 

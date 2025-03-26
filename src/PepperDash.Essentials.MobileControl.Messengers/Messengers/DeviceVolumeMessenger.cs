@@ -2,7 +2,6 @@
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
-using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using System;
 
@@ -39,7 +38,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 }
 
                 PostStatusMessage(messageObj);
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Debug.LogMessage(ex, "Exception sending full status", this);
             }
@@ -60,7 +60,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             });
 
             AddAction("/muteToggle", (id, content) =>
-            {                
+            {
                 _localDevice.MuteToggle();
             });
 
@@ -74,21 +74,22 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 _localDevice.MuteOff();
             });
 
-            AddAction("/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => 
+            AddAction("/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Calling {localDevice} volume up with {value}", DeviceKey, b);
                 try
                 {
                     _localDevice.VolumeUp(b);
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Debug.LogMessage(ex, "Got exception during volume up: {Exception}", null, ex);
                 }
-             }));
+            }));
 
 
 
-            AddAction("/volumeDown", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => 
+            AddAction("/volumeDown", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Calling {localDevice} volume down with {value}", DeviceKey, b);
 
@@ -132,7 +133,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     }
                 };
 
-                PostStatusMessage(JToken.FromObject(message));                
+                PostStatusMessage(JToken.FromObject(message));
             };
 
 

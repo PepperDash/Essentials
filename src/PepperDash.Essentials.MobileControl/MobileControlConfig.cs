@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
 using System.Collections.Generic;
 
 namespace PepperDash.Essentials
@@ -57,7 +56,7 @@ namespace PepperDash.Essentials
         [JsonProperty("port")]
         public int Port { get; set; }
 
-        
+
 
     }
 

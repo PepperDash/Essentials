@@ -1,13 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Converters;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -45,7 +40,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             foreach (var input in itemDevice.Items)
             {
                 var key = input.Key;
-                var localItem = input.Value;                
+                var localItem = input.Value;
 
                 AddAction($"/{key}", (id, content) =>
                 {

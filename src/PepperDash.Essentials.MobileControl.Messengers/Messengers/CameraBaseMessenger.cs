@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using System;
 using System.Collections.Generic;
@@ -40,9 +39,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 presetList = presetsCamera.Presets;
 
             PostStatusMessage(JToken.FromObject(new
-                {
-                    presets = presetList
-                })
+            {
+                presets = presetList
+            })
             );
         }
 
@@ -175,14 +174,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 presetList = presetsCamera.Presets;
 
             PostStatusMessage(JToken.FromObject(new
-                {
-                    cameraManualSupported = Camera is IHasCameraControls,
-                    cameraAutoSupported = Camera is IHasCameraAutoMode,
-                    cameraOffSupported = Camera is IHasCameraOff,
-                    cameraMode = GetCameraMode(),
-                    hasPresets = Camera is IHasCameraPresets,
-                    presets = presetList
-                })
+            {
+                cameraManualSupported = Camera is IHasCameraControls,
+                cameraAutoSupported = Camera is IHasCameraAutoMode,
+                cameraOffSupported = Camera is IHasCameraOff,
+                cameraMode = GetCameraMode(),
+                hasPresets = Camera is IHasCameraPresets,
+                presets = presetList
+            })
             );
         }
 

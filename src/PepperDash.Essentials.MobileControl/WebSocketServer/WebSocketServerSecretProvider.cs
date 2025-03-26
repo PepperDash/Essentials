@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.WebSocketServer
 {
     internal class WebSocketServerSecretProvider : CrestronLocalSecretsProvider
     {

@@ -27,14 +27,14 @@ namespace PepperDash.Essentials.Touchpanel
                 var theme = content.ToObject<MobileControlSimpleContent<string>>();
 
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Setting theme to {theme}", this, theme.Value);
-                _tpDevice.UpdateTheme(theme.Value);            
+                _tpDevice.UpdateTheme(theme.Value);
 
-                PostStatusMessage(JToken.FromObject(new {theme =  theme.Value}));
+                PostStatusMessage(JToken.FromObject(new { theme = theme.Value }));
             });
         }
     }
 
-    public class ThemeUpdateMessage:DeviceStateMessageBase
+    public class ThemeUpdateMessage : DeviceStateMessageBase
     {
         [JsonProperty("theme")]
         public string Theme { get; set; }

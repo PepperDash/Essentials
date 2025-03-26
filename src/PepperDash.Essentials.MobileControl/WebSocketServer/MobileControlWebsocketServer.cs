@@ -8,6 +8,7 @@ using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Web;
+using PepperDash.Essentials.RoomBridges;
 using PepperDash.Essentials.WebApiHandlers;
 using Serilog.Events;
 using System;
@@ -23,7 +24,7 @@ using WebSocketSharp.Server;
 using ErrorEventArgs = WebSocketSharp.ErrorEventArgs;
 
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.WebSocketServer
 {
     /// <summary>
     /// Represents the behaviour to associate with a UiClient for WebSocket communication
@@ -255,14 +256,14 @@ namespace PepperDash.Essentials
                 Port = customPort;
             }
 
-            if(parent.Config.DirectServer.AutomaticallyForwardPortToCSLAN == true)
+            if (parent.Config.DirectServer.AutomaticallyForwardPortToCSLAN == true)
             {
                 try
                 {
                     CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
 
 
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Automatically forwarding port {0} to CS LAN", Port);
+                    Debug.LogMessage(LogEventLevel.Information, "Automatically forwarding port {0} to CS LAN", Port);
 
                     var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
                     var csIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
@@ -271,12 +272,12 @@ namespace PepperDash.Essentials
 
                     if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Error adding port forwarding: {0}", result);
+                        Debug.LogMessage(LogEventLevel.Error, "Error adding port forwarding: {0}", result);
                     }
                 }
                 catch (ArgumentException)
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "This processor does not have a CS LAN", this);
+                    Debug.LogMessage(LogEventLevel.Information, "This processor does not have a CS LAN", this);
                 }
                 catch (Exception ex)
                 {
@@ -351,7 +352,7 @@ namespace PepperDash.Essentials
 
                 if (_server.IsListening)
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Mobile Control WebSocket Server listening on port {port}", this, _server.Port);
+                    Debug.LogMessage(LogEventLevel.Information, "Mobile Control WebSocket Server listening on port {port}", this, _server.Port);
                 }
 
                 CrestronEnvironment.ProgramStatusEventHandler += OnProgramStop;
@@ -537,7 +538,7 @@ namespace PepperDash.Essentials
             {
                 Debug.LogMessage(ex, "Error getting application configuration", this);
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Config Object: {config} from {parentConfig}", this, config, _parent.Config);
+                Debug.LogMessage(LogEventLevel.Verbose, "Config Object: {config} from {parentConfig}", this, config, _parent.Config);
             }
 
             return config;
@@ -558,9 +559,9 @@ namespace PepperDash.Essentials
 
                 if (secret != null)
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Secret successfully retrieved", this);
+                    Debug.LogMessage(LogEventLevel.Information, "Secret successfully retrieved", this);
 
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Secret: {0}", this, secret.Value.ToString());
+                    Debug.LogMessage(LogEventLevel.Debug, "Secret: {0}", this, secret.Value.ToString());
 
 
                     // populate the local secrets object
@@ -571,27 +572,27 @@ namespace PepperDash.Essentials
                         // populate the _uiClient collection
                         foreach (var token in _secret.Tokens)
                         {
-                            if(token.Value == null)
+                            if (token.Value == null)
                             {
-                                Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "Token value is null", this);
+                                Debug.LogMessage(LogEventLevel.Warning, "Token value is null", this);
                                 continue;
-                            }   
+                            }
 
-                            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Adding token: {0} for room: {1}", this, token.Key, token.Value.RoomKey);
-                            
-                            if(UiClients == null)
+                            Debug.LogMessage(LogEventLevel.Information, "Adding token: {0} for room: {1}", this, token.Key, token.Value.RoomKey);
+
+                            if (UiClients == null)
                             {
-                                Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "UiClients is null", this);
+                                Debug.LogMessage(LogEventLevel.Warning, "UiClients is null", this);
                                 UiClients = new Dictionary<string, UiClientContext>();
                             }
-                            
+
                             UiClients.Add(token.Key, new UiClientContext(token.Value));
                         }
                     }
 
                     if (UiClients.Count > 0)
                     {
-                        Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Restored {uiClientCount} UiClients from secrets data", this, UiClients.Count);
+                        Debug.LogMessage(LogEventLevel.Information, "Restored {uiClientCount} UiClients from secrets data", this, UiClients.Count);
 
                         foreach (var client in UiClients)
                         {
@@ -602,7 +603,7 @@ namespace PepperDash.Essentials
                             _server.AddWebSocketService(path, () =>
                             {
                                 var c = new UiClient();
-                                Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Constructing UiClient with id: {key}", this, key);
+                                Debug.LogMessage(LogEventLevel.Debug, "Constructing UiClient with id: {key}", this, key);
 
                                 c.Controller = _parent;
                                 c.RoomKey = roomKey;
@@ -623,10 +624,10 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "No secret found");
+                    Debug.LogMessage(LogEventLevel.Warning, "No secret found");
                 }
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "{uiClientCount} UiClients restored from secrets data", this, UiClients.Count);
+                Debug.LogMessage(LogEventLevel.Debug, "{uiClientCount} UiClients restored from secrets data", this, UiClients.Count);
             }
             catch (Exception ex)
             {
@@ -643,7 +644,7 @@ namespace PepperDash.Essentials
             {
                 if (_secret == null)
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Error, "Secret is null", this);
+                    Debug.LogMessage(LogEventLevel.Error, "Secret is null", this);
 
                     _secret = new ServerTokenSecrets(string.Empty);
                 }
@@ -748,17 +749,17 @@ namespace PepperDash.Essentials
             _server.AddWebSocketService(path, () =>
             {
                 var c = new UiClient();
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Constructing UiClient with id: {0}", this, key);
+                Debug.LogMessage(LogEventLevel.Verbose, "Constructing UiClient with id: {0}", this, key);
                 c.Controller = _parent;
                 c.RoomKey = bridge.RoomKey;
                 UiClients[key].SetClient(c);
                 return c;
             });
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Added new WebSocket UiClient service at path: {path}", this, path);
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Token: {@token}", this, token);
+            Debug.LogMessage(LogEventLevel.Information, "Added new WebSocket UiClient service at path: {path}", this, path);
+            Debug.LogMessage(LogEventLevel.Information, "Token: {@token}", this, token);
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "{serviceCount} websocket services present", this, _server.WebSocketServices.Count);
+            Debug.LogMessage(LogEventLevel.Verbose, "{serviceCount} websocket services present", this, _server.WebSocketServices.Count);
 
             UpdateSecret();
 
@@ -970,7 +971,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception ex)
             {
-               this.LogException(ex, "Caught an exception in the OnPost handler");
+                this.LogException(ex, "Caught an exception in the OnPost handler");
             }
         }
 
@@ -1048,7 +1049,7 @@ namespace PepperDash.Essentials
                     var body = Encoding.UTF8.GetBytes(message);
                     res.ContentLength64 = body.LongLength;
                     res.Close(body, true);
-                    
+
                 }
             }
             else
@@ -1101,23 +1102,23 @@ namespace PepperDash.Essentials
 
             if (File.Exists(filePath))
             {
-                if(filePath.EndsWith(".png"))
-                { 
+                if (filePath.EndsWith(".png"))
+                {
                     res.ContentType = "image/png";
                 }
-                else if(filePath.EndsWith(".jpg"))
+                else if (filePath.EndsWith(".jpg"))
                 {
                     res.ContentType = "image/jpeg";
                 }
-                else if(filePath.EndsWith(".gif"))
+                else if (filePath.EndsWith(".gif"))
                 {
                     res.ContentType = "image/gif";
                 }
-                else if(filePath.EndsWith(".svg"))
+                else if (filePath.EndsWith(".svg"))
                 {
                     res.ContentType = "image/svg+xml";
                 }
-                byte[] contents = System.IO.File.ReadAllBytes(filePath);
+                byte[] contents = File.ReadAllBytes(filePath);
                 res.ContentLength64 = contents.LongLength;
                 res.Close(contents, true);
             }
@@ -1126,7 +1127,7 @@ namespace PepperDash.Essentials
                 res.StatusCode = (int)HttpStatusCode.NotFound;
                 res.Close();
             }
-        }   
+        }
 
         /// <summary>
         /// Handles requests to serve files for the Angular single page app
@@ -1137,9 +1138,6 @@ namespace PepperDash.Essentials
         private void HandleUserAppRequest(HttpListenerRequest req, HttpListenerResponse res, string path)
         {
             this.LogVerbose("Requesting User app file");
-
-            var qp = req.QueryString;
-            var token = qp["token"];
 
             string filePath = path.Split('?')[0];
 
@@ -1202,10 +1200,10 @@ namespace PepperDash.Essentials
             this.LogVerbose("Attempting to serve file: {filePath}", filePath);
 
             byte[] contents;
-            if (System.IO.File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 this.LogVerbose("File found: {filePath}", filePath);
-                contents = System.IO.File.ReadAllBytes(filePath);
+                contents = File.ReadAllBytes(filePath);
             }
             else
             {

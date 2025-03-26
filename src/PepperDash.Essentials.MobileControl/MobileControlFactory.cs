@@ -1,24 +1,22 @@
 ﻿using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.MobileControl
+namespace PepperDash.Essentials
 {
     public class MobileControlFactory
     {
-        public MobileControlFactory() {
+        public MobileControlFactory()
+        {
             var assembly = Assembly.GetExecutingAssembly();
 
             PluginLoader.SetEssentialsAssembly(assembly.GetName().Name, assembly);
 
             var types = assembly.GetTypes().Where(t => typeof(IDeviceFactory).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
 
-            if(types == null)
+            if (types == null)
             {
                 return;
             }

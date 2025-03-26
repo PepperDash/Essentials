@@ -5,7 +5,7 @@ namespace PepperDash.Essentials.AppServer
 {
     public class SourceSelectMessageContent
     {
-        
+
         [JsonProperty("sourceListItemKey")]
         public string SourceListItemKey { get; set; }
         [JsonProperty("sourceListKey")]

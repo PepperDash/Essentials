@@ -1,13 +1,9 @@
-﻿using Independentsoft.Exchange;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -33,7 +29,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 PostStatusMessage(message);
             });
 
-            foreach(var levelControl in levelControlsDevice.LevelControlPoints)
+            foreach (var levelControl in levelControlsDevice.LevelControlPoints)
             {
                 // reassigning here just in case of lambda closure issues
                 var key = levelControl.Key;
@@ -78,7 +74,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
-    public class LevelControlStateMessage:DeviceStateMessageBase
+    public class LevelControlStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("levelControls")]
         public Dictionary<string, Volume> Levels { get; set; }

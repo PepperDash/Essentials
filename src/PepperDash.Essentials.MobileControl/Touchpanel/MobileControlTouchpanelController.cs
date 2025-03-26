@@ -10,13 +10,12 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.UI;
-using PepperDash.Essentials.Touchpanel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
-namespace PepperDash.Essentials.Devices.Common.TouchPanel
+namespace PepperDash.Essentials.Touchpanel
 {
     //public interface IMobileControlTouchpanelController 
     //{
@@ -75,7 +74,7 @@ namespace PepperDash.Essentials.Devices.Common.TouchPanel
 
             AddPostActivationAction(SubscribeForMobileControlUpdates);
 
-            ThemeFeedback = new StringFeedback($"{Key}-theme",() => Theme);
+            ThemeFeedback = new StringFeedback($"{Key}-theme", () => Theme);
             AppUrlFeedback = new StringFeedback($"{Key}-appUrl", () => _appUrl);
             QrCodeUrlFeedback = new StringFeedback($"{Key}-qrCodeUrl", () => _bridge?.QrCodeUrl);
             McServerUrlFeedback = new StringFeedback($"{Key}-mcServerUrl", () => _bridge?.McServerUrl);
@@ -357,10 +356,11 @@ namespace PepperDash.Essentials.Devices.Common.TouchPanel
             _bridge = bridge;
 
             _bridge.UserCodeChanged += UpdateFeedbacks;
-            _bridge.AppUrlChanged += (s, a) => { 
-               this.LogInformation("AppURL changed");
+            _bridge.AppUrlChanged += (s, a) =>
+            {
+                this.LogInformation("AppURL changed");
                 SetAppUrl(_bridge.AppUrl);
-                UpdateFeedbacks(s, a); 
+                UpdateFeedbacks(s, a);
             };
 
             SetAppUrl(_bridge.AppUrl);

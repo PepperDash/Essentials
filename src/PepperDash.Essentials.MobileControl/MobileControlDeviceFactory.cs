@@ -2,7 +2,6 @@
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Room.MobileControl;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ namespace PepperDash.Essentials
     public class MobileControlDeviceFactory : EssentialsDeviceFactory<MobileControlSystemController>
     {
         public MobileControlDeviceFactory()
-        {            
+        {
             TypeNames = new List<string> { "appserver", "mobilecontrol", "webserver" };
         }
 
@@ -36,7 +35,7 @@ namespace PepperDash.Essentials
     public class MobileControlSimplFactory : EssentialsDeviceFactory<MobileControlSIMPLRoomBridge>
     {
         public MobileControlSimplFactory()
-        {            
+        {
             TypeNames = new List<string> { "mobilecontrolbridge-ddvc01", "mobilecontrolbridge-simpl" };
         }
 
@@ -55,7 +54,7 @@ namespace PepperDash.Essentials
                     bridge.LogInformation("ERROR: Cannot connect bridge. System controller not present");
                     return;
                 }
-                bridge.LogInformation("Linking to parent controller");                
+                bridge.LogInformation("Linking to parent controller");
 
                 parent.AddDeviceMessenger(bridge);
             });

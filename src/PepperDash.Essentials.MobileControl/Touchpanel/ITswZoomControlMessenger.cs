@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 
 namespace PepperDash.Essentials.Touchpanel
@@ -41,7 +40,7 @@ namespace PepperDash.Essentials.Touchpanel
 
 
             _zoomControl.ZoomInCallFeedback.OutputChange += (s, a) =>
-            {                
+            {
                 PostStatusMessage(JToken.FromObject(
                 new
                 {

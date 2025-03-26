@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PepperDash.Essentials.Core.CrestronIO;
-using PepperDash.Essentials.Core.Shades;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.CrestronIO;
+using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -41,7 +36,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             });
 
-            device.OutputIsOnFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>((o, a) => SendFullStatus());       
+            device.OutputIsOnFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>((o, a) => SendFullStatus());
         }
 
         private void SendFullStatus()

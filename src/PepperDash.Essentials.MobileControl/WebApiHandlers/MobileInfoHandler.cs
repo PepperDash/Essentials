@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.WebSocketServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +31,7 @@ namespace PepperDash.Essentials.WebApiHandlers
             }
             catch (Exception ex)
             {
-                Debug.Console(1, $"exception showing mobile info: {ex.Message}");
-                Debug.Console(2, $"stack trace: {ex.StackTrace}");
+                Debug.LogMessage(ex, "exception showing mobile info");
 
                 context.Response.StatusCode = 500;
                 context.Response.End();
@@ -143,7 +143,7 @@ namespace PepperDash.Essentials.WebApiHandlers
         public string Token => Key;
 
         [JsonProperty("connected")]
-        public bool Connected => context.Client == null ? false : context.Client.Context.WebSocket.IsAlive;
+        public bool Connected => context.Client != null && context.Client.Context.WebSocket.IsAlive;
 
         [JsonProperty("duration")]
         public double Duration => context.Client == null ? 0 : context.Client.ConnectedDuration.TotalSeconds;

@@ -4,6 +4,7 @@ using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core.Queues;
+using PepperDash.Essentials.WebSocketServer;
 using Serilog.Events;
 using System;
 using System.Threading;
@@ -46,19 +47,19 @@ namespace PepperDash.Essentials
                     return;
                 }
 
-                
+
                 var message = JsonConvert.SerializeObject(msgToSend, Formatting.None,
                     new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, Converters = { new IsoDateTimeConverter() } });
 
                 Debug.LogMessage(LogEventLevel.Verbose, "Message TX: {0}", null, message);
 
                 _ws.Send(message);
-                
-                
+
+
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Caught an exception in the Transmit Processor");                
+                Debug.LogMessage(ex, "Caught an exception in the Transmit Processor");
             }
         }
         #endregion
@@ -89,7 +90,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                if(_server == null)
+                if (_server == null)
                 {
                     Debug.LogMessage(LogEventLevel.Warning, "Cannot send message. Server is null");
                     return;
@@ -109,13 +110,13 @@ namespace PepperDash.Essentials
 
                     return;
                 }
-               
-                    _server.SendMessageToAllClients(message);
 
-                    _server.LogVerbose("Message TX To all clients: {message}", null, message);
-                              
+                _server.SendMessageToAllClients(message);
 
-                
+                _server.LogVerbose("Message TX To all clients: {message}", null, message);
+
+
+
             }
             catch (ThreadAbortException)
             {
@@ -123,7 +124,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex,"Caught an exception in the Transmit Processor");
+                Debug.LogMessage(ex, "Caught an exception in the Transmit Processor");
             }
 
 

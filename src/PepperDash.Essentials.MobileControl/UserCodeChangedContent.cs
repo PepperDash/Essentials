@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.AppServer
+namespace PepperDash.Essentials
 {
     public class UserCodeChangedContent
     {

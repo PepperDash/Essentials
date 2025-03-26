@@ -1,20 +1,15 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PepperDash.Essentials.Core;
 using PepperDash.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
-    public class IHasPowerControlWithFeedbackMessenger: MessengerBase
+    public class IHasPowerControlWithFeedbackMessenger : MessengerBase
     {
         private readonly IHasPowerControlWithFeedback _powerControl;
 
-        public IHasPowerControlWithFeedbackMessenger(string key, string messagePath, IHasPowerControlWithFeedback powerControl) 
+        public IHasPowerControlWithFeedbackMessenger(string key, string messagePath, IHasPowerControlWithFeedback powerControl)
             : base(key, messagePath, powerControl as Device)
         {
             _powerControl = powerControl;
@@ -42,9 +37,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private void PowerIsOnFeedback_OutputChange(object sender, FeedbackEventArgs args)
         {
             PostStatusMessage(JToken.FromObject(new
-                {
-                    powerState = args.BoolValue
-                })
+            {
+                powerState = args.BoolValue
+            })
             );
         }
     }

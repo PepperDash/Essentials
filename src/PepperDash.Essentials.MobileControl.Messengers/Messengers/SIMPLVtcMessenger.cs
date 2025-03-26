@@ -2,7 +2,6 @@
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using System;
@@ -44,7 +43,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         /// <param name="appServerController"></param>
         protected override void RegisterActions()
-        {            
+        {
             _eisc.SetStringSigAction(JoinMap.HookState.JoinNumber, s =>
             {
                 _currentCallItem.Status = (eCodecCallStatus)Enum.Parse(typeof(eCodecCallStatus), s, true);

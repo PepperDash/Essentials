@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Room.MobileControl
+namespace PepperDash.Essentials
 {
     public class Volumes
     {

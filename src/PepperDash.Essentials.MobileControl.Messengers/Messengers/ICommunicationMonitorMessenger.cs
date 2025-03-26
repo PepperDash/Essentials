@@ -3,11 +3,6 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -24,7 +19,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => 
+            AddAction("/fullStatus", (id, content) =>
             {
                 PostStatusMessage(new CommunicationMonitorState
                 {
@@ -33,7 +28,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                         IsOnline = _communicationMonitor.CommunicationMonitor.IsOnline,
                         Status = _communicationMonitor.CommunicationMonitor.Status
                     }
-                }); 
+                });
             });
 
             _communicationMonitor.CommunicationMonitor.StatusChange += (sender, args) =>

@@ -60,9 +60,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 sourceKey = "none";
 
             PostStatusMessage(JToken.FromObject(new
-                {
-                    selectedSourceKey = sourceKey
-                })
+            {
+                selectedSourceKey = sourceKey
+            })
             );
         }
     }

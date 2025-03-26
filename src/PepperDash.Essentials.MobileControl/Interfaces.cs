@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PepperDash.Essentials.Room.MobileControl
+namespace PepperDash.Essentials
 {
     /// <summary>
     /// Represents a room whose configuration is derived from runtime data,
@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.Room.MobileControl
     public interface IDelayedConfiguration
     {
 
-        
+
         event EventHandler<EventArgs> ConfigurationIsReady;
     }
 }

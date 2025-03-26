@@ -2,7 +2,6 @@
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -29,7 +28,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 PostStatusMessage(message);
             });
 
-            sourceDevice.CurrentSourceChange += (sender, e) => {
+            sourceDevice.CurrentSourceChange += (sender, e) =>
+            {
                 switch (e)
                 {
                     case ChangeType.DidChange:
@@ -42,11 +42,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
                             break;
                         }
                 }
-            };            
+            };
         }
     }
 
-    public class CurrentSourceStateMessage: DeviceStateMessageBase
+    public class CurrentSourceStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("currentSourceKey", NullValueHandling = NullValueHandling.Ignore)]
         public string CurrentSourceKey { get; set; }

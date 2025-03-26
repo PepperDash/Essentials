@@ -47,10 +47,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private void CurrentInputFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
         {
             PostStatusMessage(JToken.FromObject(new
-                {
-                    currentInput = feedbackEventArgs.StringValue
-                })
-            );            
+            {
+                currentInput = feedbackEventArgs.StringValue
+            })
+            );
         }
 
 
@@ -66,21 +66,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private void IsWarmingFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
         {
             PostStatusMessage(JToken.FromObject(new
-                {
-                    isWarming = feedbackEventArgs.BoolValue
-                })
-            );            
+            {
+                isWarming = feedbackEventArgs.BoolValue
+            })
+            );
         }
 
         private void IsCoolingFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
         {
             PostStatusMessage(JToken.FromObject(new
-                {
-                    isCooling = feedbackEventArgs.BoolValue
-                })
+            {
+                isCooling = feedbackEventArgs.BoolValue
+            })
             );
 
-            
+
         }
 
         #endregion

@@ -1,7 +1,6 @@
 ﻿using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
-using PepperDash.Essentials.AppServer.Messengers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,7 +32,7 @@ namespace PepperDash.Essentials.WebApiHandlers
         private readonly MobileControlSystemController mcController;
 
         [JsonProperty("actionPaths")]
-        public List<ActionPath> ActionPaths => mcController.GetActionDictionaryPaths().Select((path) => new ActionPath { MessengerKey = path.Item1, Path = path.Item2}).ToList();
+        public List<ActionPath> ActionPaths => mcController.GetActionDictionaryPaths().Select((path) => new ActionPath { MessengerKey = path.Item1, Path = path.Item2 }).ToList();
 
         public ActionPathsResponse(MobileControlSystemController mcController)
         {

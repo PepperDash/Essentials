@@ -2,14 +2,12 @@
 using PepperDash.Core;
 using PepperDash.Essentials.AppServer;
 using PepperDash.Essentials.AppServer.Messengers;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
 using System.Linq;
 using DisplayBase = PepperDash.Essentials.Devices.Common.Displays.DisplayBase;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
-    public class DisplayBaseMessenger: MessengerBase
+    public class DisplayBaseMessenger : MessengerBase
     {
         private readonly DisplayBase display;
 
@@ -20,7 +18,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
         protected override void RegisterActions()
         {
-            base.RegisterActions();            
+            base.RegisterActions();
 
             /*AddAction("/powerOn", (id, content) => display.PowerOn());
             AddAction("/powerOff", (id, content) => display.PowerOff());

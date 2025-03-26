@@ -2,7 +2,6 @@
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers

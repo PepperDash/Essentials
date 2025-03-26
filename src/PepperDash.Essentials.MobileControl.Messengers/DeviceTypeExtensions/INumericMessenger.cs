@@ -4,7 +4,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
-    public class INumericKeypadMessenger:MessengerBase
+    public class INumericKeypadMessenger : MessengerBase
     {
         private readonly INumericKeypad keypadDevice;
         public INumericKeypadMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
         protected override void RegisterActions()
         {
-            base.RegisterActions();            
+            base.RegisterActions();
 
             AddAction("/num0", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit0(b)));
             AddAction("/num1", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit1(b)));

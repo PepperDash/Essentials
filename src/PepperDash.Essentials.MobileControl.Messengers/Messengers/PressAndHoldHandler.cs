@@ -3,12 +3,11 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     public static class PressAndHoldHandler
-    {       
+    {
         private const long ButtonHeartbeatInterval = 1000;
 
         private static readonly Dictionary<string, CTimer> _pushedActions = new Dictionary<string, CTimer>();
@@ -54,7 +53,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private static void ResetTimer(string deviceKey, Action<bool> action)
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Attempting to reset timer for {deviceKey}", deviceKey);
-            
+
             if (!_pushedActions.TryGetValue(deviceKey, out CTimer cancelTimer))
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Timer for {deviceKey} not found", deviceKey);
@@ -70,7 +69,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Attempting to stop timer for {deviceKey}", deviceKey);
 
-            if (!_pushedActions.TryGetValue(deviceKey, out CTimer cancelTimer)) {
+            if (!_pushedActions.TryGetValue(deviceKey, out CTimer cancelTimer))
+            {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Timer for {deviceKey} not found", deviceKey);
                 return;
             }
@@ -110,7 +110,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 return;
             }
 
-            timerHandler(deviceKey, action);            
+            timerHandler(deviceKey, action);
         }
     }
 }

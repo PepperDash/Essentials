@@ -125,11 +125,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
 
             PostStatusMessage(JToken.FromObject(new
-                {
-                    cameraMode = GetCameraMode(),
-                    hasPresets = _eisc.GetBool(_joinMap.SupportsPresets.JoinNumber),
-                    presets = presetList
-                })
+            {
+                cameraMode = GetCameraMode(),
+                hasPresets = _eisc.GetBool(_joinMap.SupportsPresets.JoinNumber),
+                presets = presetList
+            })
             );
         }
 

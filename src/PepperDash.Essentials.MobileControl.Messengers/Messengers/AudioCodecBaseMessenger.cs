@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Codec;
 using System;
@@ -103,14 +102,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
             var info = Codec.CodecInfo;
 
             PostStatusMessage(JToken.FromObject(new
+            {
+                isInCall = Codec.IsInCall,
+                calls = Codec.ActiveCalls,
+                info = new
                 {
-                    isInCall = Codec.IsInCall,
-                    calls = Codec.ActiveCalls,
-                    info = new
-                    {
-                        phoneNumber = info.PhoneNumber
-                    }
-                })
+                    phoneNumber = info.PhoneNumber
+                }
+            })
             );
         }
     }
