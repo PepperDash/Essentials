@@ -1,7 +1,9 @@
 ﻿using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.MobileControl;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,13 +52,10 @@ namespace PepperDash.Essentials
 
                 if (parent == null)
                 {
-                    Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
+                    bridge.LogInformation("ERROR: Cannot connect bridge. System controller not present");
                     return;
                 }
-                Debug.Console(0, bridge, "Linking to parent controller");
-
-                /*bridge.AddParent(parent);
-                parent.AddBridge(bridge);*/
+                bridge.LogInformation("Linking to parent controller");                
 
                 parent.AddDeviceMessenger(bridge);
             });
@@ -70,8 +69,7 @@ namespace PepperDash.Essentials
 
             if (mobileControlList.Count > 1)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Warning,
-                    "Multiple instances of Mobile Control Server found.");
+                Debug.LogMessage(LogEventLevel.Warning, "Multiple instances of Mobile Control Server found.");
                 return null;
             }
 
@@ -80,7 +78,7 @@ namespace PepperDash.Essentials
                 return mobileControlList[0];
             }
 
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control not enabled for this system");
+            Debug.LogMessage(LogEventLevel.Warning, "Mobile Control not enabled for this system");
             return null;
         }
     }

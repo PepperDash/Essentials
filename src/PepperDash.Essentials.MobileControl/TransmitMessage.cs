@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core.Queues;
+using Serilog.Events;
 using System;
 using System.Threading;
 using WebSocketSharp;
@@ -32,40 +34,32 @@ namespace PepperDash.Essentials
         {
             try
             {
-
-                //Debug.Console(2, "Dispatching message type: {0}", msgToSend.GetType());
-
-                //Debug.Console(2, "Message: {0}", msgToSend.ToString());
-
-                //var messageToSend = JObject.FromObject(msgToSend);
-
-                if (_ws != null && _ws.IsAlive)
+                if (_ws == null)
                 {
-                    var message = JsonConvert.SerializeObject(msgToSend, Formatting.None,
-                        new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, Converters = { new IsoDateTimeConverter() } });
-
-                    Debug.Console(2, "Message TX: {0}", message);
-
-                    _ws.Send(message);
+                    Debug.LogMessage(LogEventLevel.Warning, "Cannot send message.  Websocket client is null");
+                    return;
                 }
-                else if (_ws == null)
+
+                if (!_ws.IsAlive)
                 {
-                    Debug.Console(1, "Cannot send. No client.");
+                    Debug.LogMessage(LogEventLevel.Warning, "Cannot send message.  Websocket client is not connected");
+                    return;
                 }
+
+                
+                var message = JsonConvert.SerializeObject(msgToSend, Formatting.None,
+                    new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, Converters = { new IsoDateTimeConverter() } });
+
+                Debug.LogMessage(LogEventLevel.Verbose, "Message TX: {0}", null, message);
+
+                _ws.Send(message);
+                
+                
             }
             catch (Exception ex)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Caught an exception in the Transmit Processor {0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
-                Debug.Console(2, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
-
-                if (ex.InnerException != null)
-                {
-                    Debug.Console(0, Debug.ErrorLogLevel.Error, "Inner Exception: {0}", ex.InnerException.Message);
-                    Debug.Console(2, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.InnerException.StackTrace);
-                }
+                Debug.LogMessage(ex, "Caught an exception in the Transmit Processor");                
             }
-
-
         }
         #endregion
     }
@@ -95,35 +89,33 @@ namespace PepperDash.Essentials
         {
             try
             {
-                //Debug.Console(2, "Message: {0}", msgToSend.ToString());
-
-                if (_server != null)
+                if(_server == null)
                 {
-                    Debug.Console(2, _server, Debug.ErrorLogLevel.Notice, "Dispatching message type: {0}", msgToSend.GetType());
-
-                    var message = JsonConvert.SerializeObject(msgToSend, Formatting.None,
-                    new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, Converters = { new IsoDateTimeConverter() } });
-
-                    var clientSpecificMessage = msgToSend as MobileControlMessage;
-                    if (clientSpecificMessage.ClientId != null)
-                    {
-                        var clientId = clientSpecificMessage.ClientId;
-
-                        Debug.Console(2, _server, "Message TX To Client ID: {0} Message: {1}", clientId, message);
-
-                        _server.SendMessageToClient(clientId, message);
-                    }
-                    else
-                    {
-                        _server.SendMessageToAllClients(message);
-
-                        Debug.Console(2, "Message TX To Clients: {0}", message);
-                    }
+                    Debug.LogMessage(LogEventLevel.Warning, "Cannot send message. Server is null");
+                    return;
                 }
-                else if (_server == null)
+
+                var message = JsonConvert.SerializeObject(msgToSend, Formatting.None,
+                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, Converters = { new IsoDateTimeConverter() } });
+
+                var clientSpecificMessage = msgToSend as MobileControlMessage;
+                if (clientSpecificMessage.ClientId != null)
                 {
-                    Debug.Console(1, "Cannot send. No server.");
+                    var clientId = clientSpecificMessage.ClientId;
+
+                    _server.LogVerbose("Message TX To client {clientId} Message: {message}", clientId, message);
+
+                    _server.SendMessageToClient(clientId, message);
+
+                    return;
                 }
+               
+                    _server.SendMessageToAllClients(message);
+
+                    _server.LogVerbose("Message TX To all clients: {message}", null, message);
+                              
+
+                
             }
             catch (ThreadAbortException)
             {
@@ -131,14 +123,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception ex)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Caught an exception in the Transmit Processor {0}", ex.Message);
-                Debug.Console(2, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
-
-                if (ex.InnerException != null)
-                {
-                    Debug.Console(0, Debug.ErrorLogLevel.Error, "----\r\n{0}", ex.InnerException.Message);
-                    Debug.Console(2, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.InnerException.StackTrace);
-                }
+                Debug.LogMessage(ex,"Caught an exception in the Transmit Processor");
             }
 
 

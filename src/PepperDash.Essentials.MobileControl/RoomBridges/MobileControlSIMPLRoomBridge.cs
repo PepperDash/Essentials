@@ -5,6 +5,7 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
@@ -592,7 +593,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                 if (!Eisc.BooleanOutput[JoinMap.UseSourceEnabled.JoinNumber].BoolValue && string.IsNullOrEmpty(name))
                 {
-                    Debug.Console(1, "Source at join {0} does not have a name", JoinMap.SourceNameJoinStart.JoinNumber + i);
+                    this.LogDebug("Source at join {join} does not have a name", JoinMap.SourceNameJoinStart.JoinNumber + i);
                     break;
                 }
 

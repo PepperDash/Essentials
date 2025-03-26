@@ -3,11 +3,13 @@ using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.WebApiHandlers;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,7 +63,7 @@ namespace PepperDash.Essentials
             base.OnOpen();
 
             var url = Context.WebSocket.Url;
-            Debug.Console(2, Debug.ErrorLogLevel.Notice, "New WebSocket Connection from: {0}", url);
+            Debug.LogMessage(LogEventLevel.Verbose, "New WebSocket Connection from: {0}", null, url);
 
             var match = Regex.Match(url.AbsoluteUri, "(?:ws|wss):\\/\\/.*(?:\\/mc\\/api\\/ui\\/join\\/)(.*)");
 
@@ -76,7 +78,7 @@ namespace PepperDash.Essentials
 
             if (Controller == null)
             {
-                Debug.Console(2, "WebSocket UiClient Controller is null");
+                Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Controller is null");
                 _connectionTime = DateTime.Now;
             }
 
@@ -91,37 +93,6 @@ namespace PepperDash.Essentials
             };
 
             Controller.HandleClientMessage(JsonConvert.SerializeObject(clientJoinedMessage));
-            // Inform controller of client joining
-            /*
-            var clientJoined = new MobileControlMessage
-            {
-                Type = "/system/roomKey",
-                ClientId = clientId,
-                Content = RoomKey,
-            };                    
-
-            Controller.SendMessageObjectToDirectClient(clientJoined);
-
-            if (Controller.Config.EnableUiMirroring)
-            {
-                var uiMirrorEnabled = new MobileControlMessage
-                {
-                    Type = "/system/uiMirrorEnabled",
-                    ClientId = clientId,
-                    Content = JToken.FromObject(new MobileControlSimpleContent<bool> { Value = Controller.Config.EnableUiMirroring }),
-                };
-
-                var uiState = new MobileControlMessage
-                {
-                    Type = "/system/uiMirrorState",
-                    ClientId = clientId,
-                    Content = Controller.LastUiState,
-                };
-
-                Controller.SendMessageObjectToDirectClient(uiMirrorEnabled);
-
-                Controller.SendMessageObjectToDirectClient(uiState);
-            }*/
 
             var bridge = Controller.GetRoomBridge(RoomKey);
 
@@ -173,15 +144,14 @@ namespace PepperDash.Essentials
         {
             base.OnClose(e);
 
-            Debug.Console(2, Debug.ErrorLogLevel.Notice, "WebSocket UiClient Closing: {0} reason: {1}", e.Code, e.Reason);
-
+            Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Closing: {0} reason: {1}", null, e.Code, e.Reason);
         }
 
         protected override void OnError(ErrorEventArgs e)
         {
             base.OnError(e);
 
-            Debug.Console(2, Debug.ErrorLogLevel.Notice, "WebSocket UiClient Error: {0} message: {1}", e.Exception, e.Message);
+            Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Error: {exception} message: {message}", e.Exception, e.Message);
         }
     }
 
@@ -333,7 +303,7 @@ namespace PepperDash.Essentials
 
             if (apiServer == null)
             {
-                Debug.Console(0, this, "No API Server available");
+                this.LogInformation("No API Server available");
                 return;
             }
 
@@ -423,7 +393,7 @@ namespace PepperDash.Essentials
 
                 if (bridge == null)
                 {
-                    Debug.Console(0, this, $"Unable to find room with key: {client.DefaultRoomKey}");
+                    this.LogWarning("Unable to find room with key: {defaultRoomKey}", client.DefaultRoomKey);
                     return;
                 }
 
@@ -431,7 +401,7 @@ namespace PepperDash.Essentials
 
                 if (key == null)
                 {
-                    Debug.Console(0, this, $"Unable to generate a client for {client.Key}");
+                    this.LogWarning("Unable to generate a client for {clientKey}", client.Key);
                     continue;
                 }
             }
@@ -440,7 +410,7 @@ namespace PepperDash.Essentials
 
             var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Processor IP: {processorIp}", this);
+            this.LogVerbose("Processor IP: {processorIp}", processorIp);
 
             foreach (var touchpanel in touchpanels.Select(tp =>
             {
@@ -453,19 +423,19 @@ namespace PepperDash.Essentials
             {
                 if (touchpanel.Key == null)
                 {
-                    Debug.Console(0, this, $"Token for touchpanel {touchpanel.Touchpanel.Key} not found");
+                    this.LogWarning("Token for touchpanel {touchpanelKey} not found", touchpanel.Touchpanel.Key);
                     continue;
                 }
 
                 if (touchpanel.Messenger == null)
                 {
-                    Debug.Console(2, this, $"Unable to find room messenger for {touchpanel.Touchpanel.DefaultRoomKey}");
+                    this.LogWarning("Unable to find room messenger for {defaultRoomKey}", touchpanel.Touchpanel.DefaultRoomKey);
                     continue;
                 }
 
                 var appUrl = $"http://{processorIp}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
 
-                Debug.Console(2, this, $"Sending URL {appUrl}");
+                this.LogVerbose("Sending URL {appUrl}", appUrl);
 
                 touchpanel.Messenger.UpdateAppUrl($"http://{processorIp}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}");
             }
@@ -737,7 +707,7 @@ namespace PepperDash.Essentials
 
             if (bridge == null)
             {
-                Debug.Console(0, this, $"Unable to find room with key: {roomKey}");
+                this.LogWarning("Unable to find room with key: {roomKey}", roomKey);
                 return (null, null);
             }
 
@@ -926,7 +896,7 @@ namespace PepperDash.Essentials
 
                 var path = req.RawUrl;
 
-                Debug.Console(2, this, "GET Request received at path: {0}", path);
+                this.LogVerbose("GET Request received at path: {path}", path);
 
                 // Call for user app to join the room with a token
                 if (path.StartsWith("/mc/api/ui/joinroom"))
@@ -972,9 +942,9 @@ namespace PepperDash.Essentials
                 var path = req.RawUrl;
                 var ip = req.RemoteEndPoint.Address.ToString();
 
-                Debug.Console(2, this, "POST Request received at path: {0} from host {1}", path, ip);
+                this.LogVerbose("POST Request received at path: {path} from host {host}", path, ip);
 
-                var body = new System.IO.StreamReader(req.InputStream).ReadToEnd();
+                var body = new StreamReader(req.InputStream).ReadToEnd();
 
                 if (path.StartsWith("/mc/api/log"))
                 {
@@ -990,7 +960,7 @@ namespace PepperDash.Essentials
 
                     await LogClient.SendAsync(logRequest);
 
-                    Debug.Console(2, this, "Log data sent to {0}:{1}", _parent.Config.DirectServer.Logging.Host, _parent.Config.DirectServer.Logging.Port);
+                    this.LogVerbose("Log data sent to {host}:{port}", _parent.Config.DirectServer.Logging.Host, _parent.Config.DirectServer.Logging.Port);
                 }
                 else
                 {
@@ -1000,7 +970,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Caught an exception in the OnPost handler", this);
+               this.LogException(ex, "Caught an exception in the OnPost handler");
             }
         }
 
@@ -1033,7 +1003,7 @@ namespace PepperDash.Essentials
             var qp = req.QueryString;
             var token = qp["token"];
 
-            Debug.Console(2, this, "Join Room Request with token: {0}", token);
+            this.LogVerbose("Join Room Request with token: {token}", token);
 
 
             if (UiClients.TryGetValue(token, out UiClientContext clientContext))
@@ -1074,10 +1044,11 @@ namespace PepperDash.Essentials
                     var message = string.Format("Unable to find bridge with key: {0}", clientContext.Token.RoomKey);
                     res.StatusCode = 404;
                     res.ContentType = "application/json";
+                    this.LogVerbose("{message}", message);
                     var body = Encoding.UTF8.GetBytes(message);
                     res.ContentLength64 = body.LongLength;
                     res.Close(body, true);
-                    Debug.Console(2, this, "{0}", message);
+                    
                 }
             }
             else
@@ -1085,7 +1056,7 @@ namespace PepperDash.Essentials
                 var message = "Token invalid or has expired";
                 res.StatusCode = 401;
                 res.ContentType = "application/json";
-                Debug.Console(2, this, "{0}", message);
+                this.LogVerbose("{message}", message);
                 var body = Encoding.UTF8.GetBytes(message);
                 res.ContentLength64 = body.LongLength;
                 res.Close(body, true);
@@ -1102,7 +1073,7 @@ namespace PepperDash.Essentials
             res.ContentType = "application/json";
             var version = new Version() { ServerVersion = _parent.GetConfigWithPluginVersion().RuntimeInfo.PluginVersion };
             var message = JsonConvert.SerializeObject(version);
-            Debug.Console(2, this, "{0}", message);
+            this.LogVerbose("{message}", message);
 
             var body = Encoding.UTF8.GetBytes(message);
             res.ContentLength64 = body.LongLength;
@@ -1118,7 +1089,7 @@ namespace PepperDash.Essentials
         {
             var path = req.RawUrl;
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Requesting Image: {0}", this, path);
+            Debug.LogMessage(LogEventLevel.Verbose, "Requesting Image: {0}", this, path);
 
             var imageBasePath = Global.DirectorySeparator + "html" + Global.DirectorySeparator + "logo" + Global.DirectorySeparator;
 
@@ -1126,9 +1097,9 @@ namespace PepperDash.Essentials
 
             var filePath = imageBasePath + image;
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Retrieving Image: {0}", this, filePath);
+            Debug.LogMessage(LogEventLevel.Verbose, "Retrieving Image: {0}", this, filePath);
 
-            if (System.IO.File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 if(filePath.EndsWith(".png"))
                 { 
@@ -1165,7 +1136,7 @@ namespace PepperDash.Essentials
         /// <param name="path"></param>
         private void HandleUserAppRequest(HttpListenerRequest req, HttpListenerResponse res, string path)
         {
-            Debug.Console(2, this, "Requesting User app file...");
+            this.LogVerbose("Requesting User app file");
 
             var qp = req.QueryString;
             var token = qp["token"];
@@ -1189,7 +1160,7 @@ namespace PepperDash.Essentials
             // swap the base href prefix for the file path prefix
             filePath = filePath.Replace(_userAppBaseHref, _appPath);
 
-            Debug.Console(2, this, "filepath: {0}", filePath);
+            this.LogVerbose("filepath: {filePath}", filePath);
 
 
             // append index.html if no specific file is specified
@@ -1208,7 +1179,7 @@ namespace PepperDash.Essentials
             // Set ContentType based on file type
             if (filePath.EndsWith(".html"))
             {
-                Debug.Console(2, this, "Client requesting User App...");
+                this.LogVerbose("Client requesting User App");
 
                 res.ContentType = "text/html";
             }
@@ -1228,17 +1199,17 @@ namespace PepperDash.Essentials
                 }
             }
 
-            Debug.Console(2, this, "Attempting to serve file: {0}", filePath);
+            this.LogVerbose("Attempting to serve file: {filePath}", filePath);
 
             byte[] contents;
             if (System.IO.File.Exists(filePath))
             {
-                Debug.Console(2, this, "File found");
+                this.LogVerbose("File found: {filePath}", filePath);
                 contents = System.IO.File.ReadAllBytes(filePath);
             }
             else
             {
-                Debug.Console(2, this, "File not found: {0}", filePath);
+                this.LogVerbose("File not found: {filePath}", filePath);
                 res.StatusCode = (int)HttpStatusCode.NotFound;
                 res.Close();
                 return;
@@ -1250,7 +1221,7 @@ namespace PepperDash.Essentials
 
         public void StopServer()
         {
-            Debug.Console(2, this, "Stopping WebSocket Server");
+            this.LogVerbose("Stopping WebSocket Server");
             _server.Stop(CloseStatusCode.Normal, "Server Shutting Down");
         }
 
@@ -1295,7 +1266,7 @@ namespace PepperDash.Essentials
             }
             else
             {
-                Debug.Console(0, this, "Unable to find client with ID: {0}", clientId);
+                this.LogWarning("Unable to find client with ID: {clientId}", clientId);
             }
         }
     }

@@ -98,19 +98,13 @@ namespace PepperDash.Essentials
                     return ConfigReader.ConfigObject.SystemUuid;
                 }
 
-                Debug.Console(
-                    0,
-                    this,
-                    Debug.ErrorLogLevel.Notice,
+                this.LogWarning(
                     "No system_url value defined in config.  Checking for value from SIMPL Bridge."
                 );
 
                 if (!string.IsNullOrEmpty(SystemUrl))
                 {
-                    Debug.Console(
-                        0,
-                        this,
-                        Debug.ErrorLogLevel.Error,
+                    this.LogError(
                         "No system_url value defined in config or SIMPL Bridge.  Unable to connect to Mobile Control."
                     );
                     return string.Empty;
@@ -206,9 +200,7 @@ namespace PepperDash.Essentials
 
             ApiService = new MobileControlApiService(Host);
 
-            Debug.Console(
-                0,
-                this,
+            this.LogInformation(
                 "Mobile UI controller initializing for server:{0}",
                 config.ServerUrl
             );
@@ -250,15 +242,15 @@ namespace PepperDash.Essentials
 
         private void SetupDefaultRoomMessengers()
         {
-            Debug.LogMessage(LogEventLevel.Verbose, "Setting up room messengers", this);
+            this.LogVerbose("Setting up room messengers");
+
             foreach (var room in DeviceManager.AllDevices.OfType<IEssentialsRoom>())
             {
-                Debug.LogMessage(
-                    LogEventLevel.Verbose,
-                    "Setting up room messengers for room: {key}",
-                    this,
+                this.LogVerbose(
+                    "Setting up room messengers for room: {key}",                    
                     room.Key
                 );
+
                 var messenger = new MobileControlEssentialsRoomBridge(room);
 
                 messenger.AddParent(this);
@@ -267,16 +259,14 @@ namespace PepperDash.Essentials
 
                 AddDefaultDeviceMessenger(messenger);
 
-                Debug.LogMessage(
-                    LogEventLevel.Verbose,
-                    "Attempting to set up default room messengers for room: {0}",
-                    this,
+                this.LogVerbose(
+                    "Attempting to set up default room messengers for room: {0}",                    
                     room.Key
                 );
 
                 if (room is IRoomEventSchedule)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Setting up event schedule messenger for room: {key}", this, room.Key);
+                    this.LogInformation("Setting up event schedule messenger for room: {key}", room.Key);
 
                     var scheduleMessenger = new RoomEventScheduleMessenger(
                         $"{room.Key}-schedule-{Key}",
@@ -289,7 +279,7 @@ namespace PepperDash.Essentials
 
                 if (room is ITechPassword)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Setting up tech password messenger for room: {key}", this, room.Key);
+                    this.LogInformation("Setting up tech password messenger for room: {key}", room.Key);
 
                     var techPasswordMessenger = new ITechPasswordMessenger(
                         $"{room.Key}-techPassword-{Key}",
@@ -302,7 +292,7 @@ namespace PepperDash.Essentials
 
                 if (room is IShutdownPromptTimer)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Setting up shutdown prompt timer messenger for room: {key}", this, room.Key);
+                    this.LogInformation("Setting up shutdown prompt timer messenger for room: {key}", this, room.Key);
 
                     var shutdownPromptTimerMessenger = new IShutdownPromptTimerMessenger(
                         $"{room.Key}-shutdownPromptTimer-{Key}",
@@ -315,7 +305,7 @@ namespace PepperDash.Essentials
 
                 if (room is ILevelControls levelControls)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Setting up level controls messenger for room: {key}", this, room.Key);
+                    this.LogInformation("Setting up level controls messenger for room: {key}", this, room.Key);
 
                     var levelControlsMessenger = new ILevelControlsMessenger(
                         $"{room.Key}-levelControls-{Key}",
@@ -334,77 +324,71 @@ namespace PepperDash.Essentials
         private void SetupDefaultDeviceMessengers()
         {
             bool messengerAdded = false;
+
             var allDevices = DeviceManager.AllDevices.Where((d) => !(d is IEssentialsRoom));
-            Debug.LogMessage(
-                LogEventLevel.Verbose,
-                "All Devices that aren't rooms count: {0}",
-                this,
+
+            this.LogInformation(
+                "All Devices that aren't rooms count: {0}",                
                 allDevices?.Count()
             );
+
             var count = allDevices.Count();
+
             foreach (var device in allDevices)
             {
                 try
                 {
-                    Debug.LogMessage(
-                        LogEventLevel.Verbose,
-                        "Attempting to set up device messengers for device: {0}",
-                        this,
+                    this.LogVerbose(
+                        "Attempting to set up device messengers for {deviceKey}",
                         device.Key
                     );
+
                     // StatusMonitorBase which is prop of ICommunicationMonitor is not a PepperDash.Core.Device, but is in the device array
                     if (device is ICommunicationMonitor)
                     {
-                        Debug.LogMessage(
-                            LogEventLevel.Verbose,
-                            "Trying to cast to ICommunicationMonitor for device: {0}",
-                            this,
+                        this.LogVerbose(
+                            "Checking if {deviceKey} implements ICommunicationMonitor",
                             device.Key
                         );
-                        var commMonitor = device as ICommunicationMonitor;
-                        if (commMonitor == null)
+
+                        if (!(device is ICommunicationMonitor commMonitor))
                         {
-                            Debug.LogMessage(
-                                LogEventLevel.Debug,
-                                "[Error] CommunicationMonitor cast is null for device: {0}. Skipping CommunicationMonitorMessenger",
-                                this,
+                            this.LogDebug(
+                                "{deviceKey} does not implement ICommunicationMonitor. Skipping CommunicationMonitorMessenger",
                                 device.Key
                             );
-                            Debug.LogMessage(
-                                LogEventLevel.Debug,
-                                "AllDevices Completed a device. Devices Left: {0}",
-                                this,
-                                --count
-                            );
+
+                            this.LogDebug("Created all messengers for {deviceKey}. Devices Left: {deviceCount}", device.Key, --count);
+
                             continue;
                         }
-                        Debug.LogMessage(
-                            LogEventLevel.Debug,
-                            "Adding CommunicationMonitorMessenger for device: {0}",
-                            this,
+
+                        this.LogDebug(
+                            "Adding CommunicationMonitorMessenger for {deviceKey}",
                             device.Key
                         );
+
                         var commMessenger = new ICommunicationMonitorMessenger(
                             $"{device.Key}-commMonitor-{Key}",
                             string.Format("/device/{0}", device.Key),
                             commMonitor
                         );
+
                         AddDefaultDeviceMessenger(commMessenger);
+
                         messengerAdded = true;
                     }
 
-                    if (device is CameraBase)
+                    if (device is CameraBase cameraDevice)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            "Adding CameraBaseMessenger for device: {0}",
+                        this.LogVerbose(
+                            "Adding CameraBaseMessenger for {deviceKey}",
                             device.Key
                         );
 
                         var cameraMessenger = new CameraBaseMessenger(
                             $"{device.Key}-cameraBase-{Key}",
-                            device as CameraBase,
+                            cameraDevice,
                             $"/device/{device.Key}"
                         );
 
@@ -415,10 +399,8 @@ namespace PepperDash.Essentials
 
                     if (device is BlueJeansPc)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            "Adding IRunRouteActionMessnger for device: {0}",
+                        this.LogVerbose(
+                            "Adding IRunRouteActionMessnger for {deviceKey}",
                             device.Key
                         );
 
@@ -435,30 +417,16 @@ namespace PepperDash.Essentials
 
                     if (device is ITvPresetsProvider)
                     {
-                        Debug.LogMessage(
-                            LogEventLevel.Verbose,
-                            "Trying to cast to ITvPresetsProvider for device: {0}",
-                            this,
+                        this.LogVerbose(
+                            "Trying to cast to ITvPresetsProvider for {deviceKey}",
                             device.Key
                         );
 
                         var presetsDevice = device as ITvPresetsProvider;
 
-                        if (presetsDevice.TvPresets == null)
-                        {
-                            Debug.Console(
-                                2,
-                                this,
-                                "TvPresets is null for device: '{0}'. Skipping DevicePresetsModelMessenger",
-                                device.Key
-                            );
-                        }
-                        else
-                        {
-                            Debug.Console(
-                                2,
-                                this,
-                                "Adding ITvPresetsProvider for device: {0}",
+
+                            this.LogVerbose(
+                                "Adding ITvPresetsProvider for {deviceKey}",
                                 device.Key
                             );
 
@@ -472,11 +440,11 @@ namespace PepperDash.Essentials
 
                             messengerAdded = true;
                         }
-                    }
+                    
 
                     if (device is DisplayBase)
                     {
-                        Debug.Console(2, this, "Adding actions for device: {0}", device.Key);
+                        this.LogVerbose(    "Adding actions for device: {0}", device.Key);
 
                         var dbMessenger = new DisplayBaseMessenger(
                             $"{device.Key}-displayBase-{Key}",
@@ -489,26 +457,10 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    //if (device is Core.DisplayBase)
-                    //{
-                    //    Debug.Console(2, this, "Adding actions for device: {0}", device.Key);
-
-                    //    var dbMessenger = new CoreDisplayBaseMessenger(
-                    //        $"{device.Key}-displayBase-{Key}",
-                    //        $"/device/{device.Key}",
-                    //        device as Core.DisplayBase
-                    //    );
-                    //    AddDefaultDeviceMessenger(dbMessenger);
-
-                    //    messengerAdded = true;
-                    //}
-
                     if (device is TwoWayDisplayBase twoWayDisplay)
                     {                        
-                        Debug.Console(
-                            2,
-                            this,
-                            "Adding TwoWayDisplayBase for device: {0}",
+                        this.LogVerbose(
+                            "Adding TwoWayDisplayBase for {deviceKey}",
                             device.Key
                         );
                         var twoWayDisplayMessenger = new TwoWayDisplayBaseMessenger(
@@ -524,12 +476,11 @@ namespace PepperDash.Essentials
                     if (device is IBasicVolumeWithFeedback)
                     {
                         var deviceKey = device.Key;
-                        Debug.Console(
-                            2,
-                            this,
-                            "Adding IBasicVolumeControlWithFeedback for device: {0}",
-                            deviceKey
-                        );
+                    this.LogVerbose(
+                        "Adding IBasicVolumeControlWithFeedback for {deviceKey}",
+                        deviceKey
+                    );
+                    
                         var volControlDevice = device as IBasicVolumeWithFeedback;
                         var messenger = new DeviceVolumeMessenger(
                             $"{device.Key}-volume-{Key}",
@@ -544,12 +495,12 @@ namespace PepperDash.Essentials
                     if (device is ILightingScenes)
                     {
                         var deviceKey = device.Key;
-                        Debug.Console(
-                            2,
-                            this,
-                            "Adding LightingBaseMessenger for device: {0}",
+
+                        this.LogVerbose(
+                            "Adding LightingBaseMessenger for {deviceKey}",
                             deviceKey
                         );
+                    
                         var lightingDevice = device as ILightingScenes;
                         var messenger = new ILightingScenesMessenger(
                             $"{device.Key}-lighting-{Key}",
@@ -565,12 +516,12 @@ namespace PepperDash.Essentials
                     {
                         var deviceKey = device.Key;
                         var shadeDevice = device as IShadesOpenCloseStop;
-                        Debug.Console(
-                            2,
-                            this,
-                            "Adding ShadeBaseMessenger for device: {0}",
+                        
+                        this.LogVerbose(
+                            "Adding ShadeBaseMessenger for {deviceKey}",
                             deviceKey
                         );
+
                         var messenger = new IShadesOpenCloseStopMessenger(
                             $"{device.Key}-shades-{Key}",
                             shadeDevice,
@@ -583,11 +534,8 @@ namespace PepperDash.Essentials
 
                     if (device is VideoCodecBase codec)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding VideoCodecBaseMessenger for device: {codec.Key}"
-                        );
+                        this.LogVerbose(
+                            "Adding VideoCodecBaseMessenger for {deviceKey}", codec.Key                        );
 
                         var messenger = new VideoCodecBaseMessenger(
                             $"{codec.Key}-videoCodec-{Key}",
@@ -602,10 +550,8 @@ namespace PepperDash.Essentials
 
                     if (device is AudioCodecBase audioCodec)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding AudioCodecBaseMessenger for device: {audioCodec.Key}"
+                        this.LogVerbose(
+                            "Adding AudioCodecBaseMessenger for {deviceKey}", audioCodec.Key
                         );
 
                         var messenger = new AudioCodecBaseMessenger(
@@ -621,13 +567,11 @@ namespace PepperDash.Essentials
 
                     if (device is ISetTopBoxControls)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding ISetTopBoxControlMessenger for device: {device.Key}"
+                        this.LogVerbose(
+                            "Adding ISetTopBoxControlMessenger for {deviceKey}"
                         );
 
-                        var dev = device as PepperDash.Core.Device;
+                    var dev = device as Device;
 
                         var messenger = new ISetTopBoxControlsMessenger(
                             $"{device.Key}-stb-{Key}",
@@ -642,10 +586,8 @@ namespace PepperDash.Essentials
 
                     if (device is IChannel)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding IChannelMessenger for device: {device.Key}"
+                        this.LogVerbose(
+                            "Adding IChannelMessenger for {deviceKey}", device.Key
                         );
 
                         var dev = device as PepperDash.Core.Device;
@@ -663,7 +605,7 @@ namespace PepperDash.Essentials
 
                     if (device is IColor)
                     {
-                        Debug.Console(2, this, $"Adding IColorMessenger for device: {device.Key}");
+                        this.LogVerbose("Adding IColorMessenger for {deviceKey}", device.Key);
 
                         var dev = device as PepperDash.Core.Device;
 
@@ -680,7 +622,7 @@ namespace PepperDash.Essentials
 
                     if (device is IDPad)
                     {
-                        Debug.Console(2, this, $"Adding IDPadMessenger for device: {device.Key}");
+                        this.LogVerbose("Adding IDPadMessenger for {deviceKey}", device.Key);
 
                         var dev = device as PepperDash.Core.Device;
 
@@ -697,11 +639,7 @@ namespace PepperDash.Essentials
 
                     if (device is INumericKeypad)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding INumericKeyapdMessenger for device: {device.Key}"
-                        );
+                    this.LogVerbose("Adding INumericKeyapdMessenger for {deviceKey}", device.Key);
 
                         var dev = device as PepperDash.Core.Device;
 
@@ -718,11 +656,7 @@ namespace PepperDash.Essentials
 
                     if (device is IHasPowerControl)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding IHasPowerControlMessenger for device: {device.Key}"
-                        );
+                        this.LogVerbose("Adding IHasPowerControlMessenger for {deviceKey}", device.Key);
 
                         var dev = device as PepperDash.Core.Device;
 
@@ -740,10 +674,8 @@ namespace PepperDash.Essentials
                     if (device is IHasPowerControlWithFeedback powerControl)
                     {
                         var deviceKey = device.Key;
-                        Debug.Console(
-                            2,
-                            this,
-                            "Adding IHasPowerControlWithFeedbackMessenger for device: {0}",
+                        this.LogVerbose(
+                            "Adding IHasPowerControlWithFeedbackMessenger for {deviceKey}",
                             deviceKey
                         );
 
@@ -758,10 +690,8 @@ namespace PepperDash.Essentials
 
                     if (device is ITransport)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding ITransportMessenger for device: {device.Key}"
+                        this.LogVerbose(
+                            "Adding ITransportMessenger for {deviceKey}", device.Key
                         );
 
                         var dev = device as PepperDash.Core.Device;
@@ -779,11 +709,7 @@ namespace PepperDash.Essentials
 
                     if (device is IHasCurrentSourceInfoChange)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding IHasCurrentSourceInfoMessenger for device: {device.Key}"
-                        );
+                        this.LogVerbose("Adding IHasCurrentSourceInfoMessenger for {deviceKey}", device.Key );
 
                         var messenger = new IHasCurrentSourceInfoMessenger(
                             $"{device.Key}-currentSource-{Key}",
@@ -798,10 +724,8 @@ namespace PepperDash.Essentials
 
                     if (device is ISwitchedOutput)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding ISwitchedOutputMessenger for device: {device.Key}"
+                        this.LogVerbose(
+                            "Adding ISwitchedOutputMessenger for {deviceKey}", device.Key
                         );
 
                         var messenger = new ISwitchedOutputMessenger(
@@ -817,10 +741,7 @@ namespace PepperDash.Essentials
 
                     if (device is IDeviceInfoProvider provider)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding IHasDeviceInfoMessenger for device: {device.Key}"
+                        this.LogVerbose("Adding IHasDeviceInfoMessenger for {deviceKey}", device.Key
                         );
 
                         var messenger = new DeviceInfoMessenger(
@@ -836,10 +757,8 @@ namespace PepperDash.Essentials
 
                     if (device is ILevelControls levelControls)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding LevelControlsMessenger for device: {device.Key}"
+                        this.LogVerbose(
+                            "Adding LevelControlsMessenger for {deviceKey}", device.Key
                         );
 
                         var messenger = new ILevelControlsMessenger(
@@ -855,41 +774,41 @@ namespace PepperDash.Essentials
 
                     // This will work if TKey and TSelector are both string types.
                     // Otherwise plugin device needs to instantiate ISelectableItemsMessenger and add it to the controller.
-                    if (device is IHasInputs<string, string> inputs)
-                    {
-                        Debug.Console(2, this, $"Adding InputsMessenger for device: {device.Key}");
+                    //if (device is IHasInputs<string, string> inputs)
+                    //{
+                    //    this.LogVerbose("Adding InputsMessenger<string,string> for {deviceKey}", device.Key);
 
-                        var messenger = new ISelectableItemsMessenger<string>(
-                            $"{device.Key}-inputs-{Key}",
-                            $"/device/{device.Key}",
-                            inputs.Inputs,
-                            "inputs"
-                        );
+                    //    var messenger = new ISelectableItemsMessenger<string>(
+                    //        $"{device.Key}-inputs-{Key}",
+                    //        $"/device/{device.Key}",
+                    //        inputs.Inputs,
+                    //        "inputs"
+                    //    );
 
-                        AddDefaultDeviceMessenger(messenger);
+                    //    AddDefaultDeviceMessenger(messenger);
 
-                        messengerAdded = true;
-                    }
+                    //    messengerAdded = true;
+                    //}
 
-                    if (device is IHasInputs<byte, int> byteIntInputs)
-                    {
-                           Debug.Console(2, this, $"Adding InputsMessenger for device: {device.Key}");
+                    //if (device is IHasInputs<byte, int> byteIntInputs)
+                    //{
+                    //       this.LogVerbose("Adding InputsMessenger<byte, int> for {deviceKey}", device.Key);
 
-                        var messenger = new ISelectableItemsMessenger<byte>(
-                            $"{device.Key}-inputs-{Key}",
-                            $"/device/{device.Key}",
-                            byteIntInputs.Inputs,
-                            "inputs"
-                        );
+                    //    var messenger = new ISelectableItemsMessenger<byte>(
+                    //        $"{device.Key}-inputs-{Key}",
+                    //        $"/device/{device.Key}",
+                    //        byteIntInputs.Inputs,
+                    //        "inputs"
+                    //    );
 
-                        AddDefaultDeviceMessenger(messenger);
+                    //    AddDefaultDeviceMessenger(messenger);
 
-                        messengerAdded = true;  
-                    }
+                    //    messengerAdded = true;  
+                    //}
 
                     if (device is IHasInputs<string> stringInputs)
                     {
-                        Debug.Console(2, this, $"Adding InputsMessenger for device: {device.Key}");
+                        this.LogVerbose("Adding InputsMessenger<string> for {deviceKey}", device.Key);
 
                         var messenger = new ISelectableItemsMessenger<string>(
                             $"{device.Key}-inputs-{Key}",
@@ -905,7 +824,7 @@ namespace PepperDash.Essentials
 
                     if (device is IHasInputs<byte> byteInputs)
                     {
-                        Debug.Console(2, this, $"Adding InputsMessenger for device: {device.Key}");
+                        this.LogVerbose("Adding InputsMessenger for {deviceKey}", device.Key);
 
                         var messenger = new ISelectableItemsMessenger<byte>(
                             $"{device.Key}-inputs-{Key}",
@@ -921,7 +840,7 @@ namespace PepperDash.Essentials
 
                     if (device is IHasInputs<int> intInputs)
                     {
-                        Debug.Console(2, this, $"Adding InputsMessenger for device: {device.Key}");
+                        this.LogVerbose("Adding InputsMessenger for {deviceKey}", device.Key);
 
                         var messenger = new ISelectableItemsMessenger<int>(
                             $"{device.Key}-inputs-{Key}",
@@ -938,10 +857,8 @@ namespace PepperDash.Essentials
 
                     if (device is IMatrixRouting matrix)
                     {
-                        Debug.LogMessage(
-                            Serilog.Events.LogEventLevel.Verbose,
-                            "Adding IMatrixRoutingMessenger for device: {key}",
-                            this,
+                        this.LogVerbose(
+                            "Adding IMatrixRoutingMessenger for {deviceKey}",
                             device.Key
                         );
 
@@ -958,10 +875,8 @@ namespace PepperDash.Essentials
 
                     if (device is ITemperatureSensor tempSensor)
                     {
-                        Debug.LogMessage(
-                            Serilog.Events.LogEventLevel.Verbose,
-                            "Adding ITemperatureSensor for device: {key}",
-                            this,
+                        this.LogVerbose(
+                            "Adding ITemperatureSensor for {deviceKey}",
                             device.Key
                         );
 
@@ -978,10 +893,8 @@ namespace PepperDash.Essentials
 
                     if (device is IHumiditySensor humSensor)
                     {
-                        Debug.LogMessage(
-                            Serilog.Events.LogEventLevel.Verbose,
-                            "Adding IHumiditySensor for device: {key}",
-                            this,
+                        this.LogVerbose(
+                            "Adding IHumiditySensor for {deviceKey}",
                             device.Key
                         );
 
@@ -998,10 +911,8 @@ namespace PepperDash.Essentials
 
                     if (device is IEssentialsRoomCombiner roomCombiner)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding IEssentialsRoomCombinerMessenger for device: {device.Key}"
+                        this.LogVerbose(
+                            "Adding IEssentialsRoomCombinerMessenger for {deviceKey}", device.Key
                         );
 
                         var messenger = new IEssentialsRoomCombinerMessenger(
@@ -1014,12 +925,10 @@ namespace PepperDash.Essentials
 
                         messengerAdded = true;
                     }
+
                     if (device is IProjectorScreenLiftControl screenLiftControl)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding IProjectorScreenLiftControlMessenger for device: {device.Key}"
+                        this.LogVerbose("Adding IProjectorScreenLiftControlMessenger for {deviceKey}", device.Key
                         );
 
                         var messenger = new IProjectorScreenLiftControlMessenger(
@@ -1035,10 +944,7 @@ namespace PepperDash.Essentials
 
                    if (device is IDspPresets dspPresets)
                     {
-                        Debug.Console(
-                            2,
-                            this,
-                            $"Adding IDspPresetsMessenger for device: {device.Key}"
+                        this.LogVerbose("Adding IDspPresetsMessenger for {deviceKey}", device.Key
                         );
 
                         var messenger = new IDspPresetsMessenger(
@@ -1052,39 +958,32 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    Debug.LogMessage(
-                        LogEventLevel.Verbose,
-                        "Trying to cast to generic device for device: {key}",
-                        this,
-                        device.Key
-                    );
+                    this.LogVerbose("Trying to cast to generic device for device: {key}", device.Key      );
+
                     if (device is EssentialsDevice)
                     {
                         var genericDevice = device as EssentialsDevice;
+                        
                         if (genericDevice == null || messengerAdded)
                         {
-                            Debug.LogMessage(
-                                LogEventLevel.Verbose,
-                                "Skipping GenericMessenger for device: {0}. Messenger Added: {1}. GenericDevice null: {2}",
-                                this,
+                            this.LogVerbose(
+                                "Skipping GenericMessenger for {deviceKey}. Messenger(s) Added: {messengersAdded}.",
                                 device.Key,
-                                messengerAdded,
-                                genericDevice == null
+                                messengerAdded
                             );
-                            Debug.LogMessage(
-                                LogEventLevel.Debug,
-                                "AllDevices Completed a device. Devices Left: {0}",
-                                this,
+                            this.LogDebug(
+                                "AllDevices Completed a device. Devices Left: {count}",
                                 --count
                             );
                             continue;
                         }
-                        Debug.LogMessage(
-                            LogEventLevel.Debug,
-                            "Adding GenericMessenger for device: {0}",
+
+                        this.LogDebug(
+                            "Adding GenericMessenger for {deviceKey}",
                             this,
                             genericDevice?.Key
                         );
+
                         AddDefaultDeviceMessenger(
                             new GenericMessenger(
                                 genericDevice.Key + "-" + Key + "-generic",
@@ -1095,29 +994,20 @@ namespace PepperDash.Essentials
                     }
                     else
                     {
-                        Debug.LogMessage(
-                            LogEventLevel.Verbose,
-                            "Not Essentials Device. Skipping GenericMessenger for device: {0}",
-                            this,
+                        this.LogVerbose(
+                            "Not Essentials Device. Skipping GenericMessenger for {deviceKey}",
                             device.Key
                         );
                     }
-                    Debug.LogMessage(
-                        LogEventLevel.Debug,
-                        "AllDevices Completed a device. Devices Left: {0}",
-                        this,
+                    this.LogDebug(
+                        "AllDevices Completed a device. Devices Left: {count}",
                         --count
                     );
                 }
+
                 catch (Exception ex)
                 {
-                    Debug.LogMessage(
-                        LogEventLevel.Verbose,
-                        "[ERROR] setting up default device messengers: {0}",
-                        this,
-                        ex.Message
-                    );
-                    Debug.LogMessage(ex, "[ERROR] setting up default device messengers", this);
+                    this.LogException(ex, "Exception setting up default device messengers");
                 }
             }
         }
@@ -1130,10 +1020,11 @@ namespace PepperDash.Essentials
 
             if (apiServer == null)
             {
-                Debug.Console(0, this, "No API Server available");
+                this.LogWarning("No API Server available");
                 return;
             }
 
+            // TODO: Add routes for the rest of the MC console commands
             var routes = new List<HttpCwsRoute>
             {
                 new HttpCwsRoute($"device/{Key}/authorize")
@@ -1204,31 +1095,28 @@ namespace PepperDash.Essentials
                 s =>
                 {
                     _disableReconnect = false;
-                    Debug.Console(
-                        1,
-                        this,
-                        Debug.ErrorLogLevel.Notice,
-                        "User command: {0}",
-                        "mobileConnect"
+
+                    CrestronConsole.ConsoleCommandResponse(
+                        $"Connecting to MC API server"
                     );
-                    ConnectWebsocketClient();
+
+                    ConnectWebsocketClient();                    
                 },
                 "mobileconnect",
                 "Forces connect of websocket",
                 ConsoleAccessLevelEnum.AccessOperator
             );
+
             CrestronConsole.AddNewConsoleCommand(
                 s =>
                 {
                     _disableReconnect = true;
-                    Debug.Console(
-                        1,
-                        this,
-                        Debug.ErrorLogLevel.Notice,
-                        "User command: {0}",
-                        "mobileDisco"
-                    );
+                    
                     CleanUpWebsocketClient();
+
+                    CrestronConsole.ConsoleCommandResponse(
+                        $"Disonnected from MC API server"
+                    );
                 },
                 "mobiledisco",
                 "Disconnects websocket",
@@ -1273,7 +1161,7 @@ namespace PepperDash.Essentials
         {
             if (_messengers.ContainsKey(messenger.Key))
             {
-                Debug.Console(1, this, "Messenger with key {0} already added", messenger.Key);
+                this.LogWarning("Messenger with key {messengerKey) already added", messenger.Key);
                 return;
             }
 
@@ -1287,10 +1175,8 @@ namespace PepperDash.Essentials
                 _roomBridges.Add(roomBridge);
             }
 
-            Debug.Console(
-                2,
-                this,
-                "Adding messenger with key {0} for path {1}",
+            this.LogVerbose(
+                "Adding messenger with key {messengerKey} for path {messengerPath}",
                 messenger.Key,
                 messenger.MessagePath
             );
@@ -1304,10 +1190,8 @@ namespace PepperDash.Essentials
         {
             if (_defaultMessengers.ContainsKey(messenger.Key))
             {
-                Debug.Console(
-                    1,
-                    this,
-                    "Default messenger with key {0} already added",
+                this.LogWarning(
+                    "Default messenger with key {messengerKey} already added",
                     messenger.Key
                 );
                 return;
@@ -1317,10 +1201,8 @@ namespace PepperDash.Essentials
             {
                 simplMessenger.ConfigurationIsReady += Bridge_ConfigurationIsReady;
             }
-            Debug.Console(
-                2,
-                this,
-                "Adding default messenger with key {0} for path {1}",
+            this.LogVerbose(
+                "Adding default messenger with key {messengerKey} for path {messengerPath}",
                 messenger.Key,
                 messenger.MessagePath
             );
@@ -1335,10 +1217,8 @@ namespace PepperDash.Essentials
 
         private void RegisterMessengerWithServer(IMobileControlMessenger messenger)
         {
-            Debug.Console(
-                2,
-                this,
-                "Registering messenger with key {0} for path {1}",
+            this.LogVerbose(
+                "Registering messenger with key {messengerKey} for path {messengerPath}",
                 messenger.Key,
                 messenger.MessagePath
             );
@@ -1356,16 +1236,7 @@ namespace PepperDash.Essentials
                 }
                 catch (Exception ex)
                 {
-                    Debug.Console(
-                        0,
-                        this,
-                        $"Exception registering paths for {messenger.Key}: {ex.Message}"
-                    );
-                    Debug.Console(
-                        2,
-                        this,
-                        $"Exception registering paths for {messenger.Key}: {ex.StackTrace}"
-                    );
+                    this.LogException(ex, "Exception registering custom messenger {messengerKey}", messenger.Key);
                     continue;
                 }
             }
@@ -1378,16 +1249,7 @@ namespace PepperDash.Essentials
                 }
                 catch (Exception ex)
                 {
-                    Debug.Console(
-                        0,
-                        this,
-                        $"Exception registering paths for {messenger.Key}: {ex.Message}"
-                    );
-                    Debug.Console(
-                        2,
-                        this,
-                        $"Exception registering paths for {messenger.Key}: {ex.StackTrace}"
-                    );
+                    this.LogException(ex, "Exception registering default messenger {messengerKey}", messenger.Key);
                     continue;
                 }
             }
@@ -1417,7 +1279,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.Console(0, "Unable to find MobileControlSystemController in Devices: {0}", e);
+                Debug.LogMessage(e, "Unable to find MobileControlSystemController in Devices");
                 return null;
             }
         }
@@ -1435,10 +1297,7 @@ namespace PepperDash.Essentials
 
             if (string.IsNullOrEmpty(SystemUuid))
             {
-                Debug.Console(
-                    0,
-                    this,
-                    Debug.ErrorLogLevel.Error,
+                this.LogError(
                     "System UUID not defined. Unable to connect to Mobile Control"
                 );
                 return false;
@@ -1452,10 +1311,8 @@ namespace PepperDash.Essentials
                 Log =
                 {
                     Output = (data, s) =>
-                        Debug.Console(
-                            1,
-                            Debug.ErrorLogLevel.Notice,
-                            "Message from websocket: {0}",
+                        this.LogDebug(
+                            "Message from websocket: {message}",
                             data
                         )
                 }
@@ -1477,10 +1334,7 @@ namespace PepperDash.Essentials
         {
             if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Appliance)
             {
-                Debug.Console(
-                    0,
-                    this,
-                    Debug.ErrorLogLevel.Notice,
+                this.LogWarning(                    
                     "System Monitor does not exist for this platform. Skipping..."
                 );
                 return;
@@ -1497,22 +1351,13 @@ namespace PepperDash.Essentials
             AddDeviceMessenger(messenger);
         }
 
-        /*        public void CreateMobileControlRoomBridge(IEssentialsRoom room, IMobileControl parent)
-                {
-                    var bridge = new MobileControlEssentialsRoomBridge(room);
-                    AddBridgePostActivationAction(bridge);
-                    DeviceManager.AddDevice(bridge);
-                }     */
-
         #endregion
 
         private void SetWebsocketDebugLevel(string cmdparameters)
         {
             if (CrestronEnvironment.ProgramCompatibility == eCrestronSeries.Series4)
             {
-                Debug.Console(
-                    0,
-                    this,
+                this.LogInformation(
                     "Setting websocket log level not currently allowed on 4 series."
                 );
                 return; // Web socket log level not currently allowed in series4
@@ -1520,22 +1365,14 @@ namespace PepperDash.Essentials
 
             if (string.IsNullOrEmpty(cmdparameters))
             {
-                Debug.Console(0, this, "Current Websocket debug level: {0}", _wsLogLevel);
+                this.LogInformation("Current Websocket debug level: {webSocketDebugLevel}", _wsLogLevel);
                 return;
             }
 
             if (cmdparameters.ToLower().Contains("help") || cmdparameters.ToLower().Contains("?"))
             {
-                Debug.Console(
-                    0,
-                    this,
-                    "valid options are:\r\n{0}\r\n{1}\r\n{2}\r\n{3}\r\n{4}\r\n{5}\r\n",
-                    LogLevel.Trace,
-                    LogLevel.Debug,
-                    LogLevel.Info,
-                    LogLevel.Warn,
-                    LogLevel.Error,
-                    LogLevel.Fatal
+                CrestronConsole.ConsoleCommandResponse(
+                    $"valid options are:\r\n{LogLevel.Trace}\r\n{LogLevel.Debug}\r\n{LogLevel.Info}\r\n{LogLevel.Warn}\r\n{LogLevel.Error}\r\n{LogLevel.Fatal}\r\n"
                 );
             }
 
@@ -1550,34 +1387,16 @@ namespace PepperDash.Essentials
                     _wsClient2.Log.Level = _wsLogLevel;
                 }
 
-                Debug.Console(0, this, "Websocket log level set to {0}", debugLevel);
+                CrestronConsole.ConsoleCommandResponse($"Websocket log level set to {debugLevel}");
             }
             catch
             {
-                Debug.Console(
-                    0,
-                    this,
-                    "{0} is not a valid debug level. Valid options are: {1}, {2}, {3}, {4}, {5}, {6}",
-                    cmdparameters,
-                    LogLevel.Trace,
-                    LogLevel.Debug,
-                    LogLevel.Info,
-                    LogLevel.Warn,
-                    LogLevel.Error,
-                    LogLevel.Fatal
+                CrestronConsole.ConsoleCommandResponse(
+                    $"{cmdparameters} is not a valid debug level. Valid options are:\r\n{LogLevel.Trace}\r\n{LogLevel.Debug}\r\n{LogLevel.Info}\r\n{LogLevel.Warn}\r\n{LogLevel.Error}\r\n{LogLevel.Fatal}\r\n"
                 );
+                
             }
         }
-
-        /*        private void AddBridgePostActivationAction(MobileControlBridgeBase bridge)
-                {
-                    bridge.AddPostActivationAction(() =>
-                    {
-                        Debug.Console(0, bridge, "Linking to parent controller");
-                        bridge.AddParent(this);
-                        AddBridge(bridge);
-                    });
-                }*/
 
         /// <summary>
         /// Sends message to server to indicate the system is shutting down
@@ -1653,11 +1472,7 @@ namespace PepperDash.Essentials
                     )
                 )
                 {
-                    Debug.Console(
-                        0,
-                        this,
-                        $"Messenger of type {messenger.GetType().Name} already exists. Skipping actions for {messenger.Key}"
-                    );
+                    this.LogWarning("Messenger of type {messengerType} already exists. Skipping actions for {messengerKey}", messenger.GetType().Name, messenger.Key);
                     return;
                 }
 
@@ -1702,7 +1517,7 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         private void Bridge_ConfigurationIsReady(object sender, EventArgs e)
         {
-            Debug.Console(1, this, "Bridge ready.  Registering");
+            this.LogDebug("Bridge ready.  Registering");
 
             // send the configuration object to the server
 
@@ -1726,7 +1541,7 @@ namespace PepperDash.Essentials
         /// <param name="o"></param>
         private void ReconnectToServerTimerCallback(object o)
         {
-            Debug.Console(1, this, "Attempting to reconnect to server...");
+            this.LogDebug("Attempting to reconnect to server...");
 
             ConnectWebsocketClient();
         }
@@ -1769,12 +1584,12 @@ namespace PepperDash.Essentials
 
                 if (response.Authorized)
                 {
-                    Debug.Console(0, this, "System authorized, sending config.");
+                    this.LogDebug("System authorized, sending config.");
                     RegisterSystemToServer();
                     return;
                 }
 
-                Debug.Console(0, this, response.Reason);
+                this.LogInformation(response.Reason);
             });
         }
 
@@ -1908,9 +1723,7 @@ Mobile Control Direct Server Infromation:
 
             if (!Config.EnableApiServer)
             {
-                Debug.Console(
-                    0,
-                    this,
+                this.LogInformation(
                     "ApiServer disabled via config.  Cancelling attempt to register to server."
                 );
                 return;
@@ -1920,7 +1733,7 @@ Mobile Control Direct Server Infromation:
 
             if (!result)
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Unable to create websocket.");
+                this.LogFatal("Unable to create websocket.");
                 return;
             }
 
@@ -1957,11 +1770,8 @@ Mobile Control Direct Server Infromation:
                 //Fires OnMessage event when PING is received.
                 _wsClient2.EmitOnPing = true;
 
-                Debug.Console(
-                    1,
-                    this,
-                    Debug.ErrorLogLevel.Notice,
-                    "Connecting mobile control client to {0}",
+                this.LogDebug(
+                    "Connecting mobile control client to {mobileControlUrl}",
                     _wsClient2.Url
                 );
 
@@ -1985,26 +1795,21 @@ Mobile Control Direct Server Infromation:
             }
             catch (InvalidOperationException)
             {
-                Debug.Console(
-                    0,
-                    Debug.ErrorLogLevel.Error,
+                this.LogError(
                     "Maximum retries exceeded. Restarting websocket"
                 );
                 HandleConnectFailure();
             }
             catch (IOException ex)
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Error, "IO Exception\r\n{0}", ex);
+                this.LogException(ex, "IO Exception on connect");
                 HandleConnectFailure();
             }
             catch (Exception ex)
             {
-                Debug.Console(
-                    0,
-                    Debug.ErrorLogLevel.Error,
-                    "Error on Websocket Connect: {0}\r\nStack Trace: {1}",
-                    ex.Message,
-                    ex.StackTrace
+                this.LogException(
+                    ex,
+                    "Error on Websocket Connect"
                 );
                 HandleConnectFailure();
             }
@@ -2024,10 +1829,8 @@ Mobile Control Direct Server Infromation:
                 Log =
                 {
                     Output = (data, s) =>
-                        Debug.Console(
-                            1,
-                            Debug.ErrorLogLevel.Notice,
-                            "Message from websocket: {0}",
+                        this.LogDebug(
+                            "Message from websocket: {message}",
                             data
                         )
                 }
@@ -2055,7 +1858,7 @@ Mobile Control Direct Server Infromation:
         {
             StopServerReconnectTimer();
             StartPingTimer();
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Mobile Control API connected");
+            this.LogInformation("Mobile Control API connected");
             SendMessageObject(new MobileControlMessage { Type = "hello" });
         }
 
@@ -2087,7 +1890,8 @@ Mobile Control Direct Server Infromation:
         /// <param name="e"></param>
         private void HandleError(object sender, ErrorEventArgs e)
         {
-            Debug.Console(1, this, "Websocket error {0}", e.Message);
+            this.LogError("Websocket error {0}", e.Message);
+
             IsAuthorized = false;
             StartServerReconnectTimer();
         }
@@ -2099,11 +1903,8 @@ Mobile Control Direct Server Infromation:
         /// <param name="e"></param>
         private void HandleClose(object sender, CloseEventArgs e)
         {
-            Debug.Console(
-                1,
-                this,
-                Debug.ErrorLogLevel.Notice,
-                "Websocket close {0} {1}, clean={2}",
+            this.LogDebug(
+                "Websocket close {code} {reason}, clean={wasClean}",
                 e.Code,
                 e.Reason,
                 e.WasClean
@@ -2125,7 +1926,7 @@ Mobile Control Direct Server Infromation:
         /// </summary>
         private void SendInitialMessage()
         {
-            Debug.Console(1, this, "Sending initial join message");
+            this.LogInformation("Sending initial join message");
 
             var touchPanels = DeviceManager
                 .AllDevices.OfType<IMobileControlTouchpanelController>()
@@ -2241,7 +2042,7 @@ Mobile Control Direct Server Infromation:
                 return;
             }
 
-            Debug.Console(1, this, "Disconnecting websocket");
+            this.LogDebug("Disconnecting websocket");
 
             _wsClient2.Close();
         }
@@ -2272,10 +2073,8 @@ Mobile Control Direct Server Infromation:
 
         private void PingTimerCallback(object o)
         {
-            Debug.Console(
-                1,
-                this,
-                Debug.ErrorLogLevel.Notice,
+            this.LogDebug(
+                
                 "Ping timer expired. Closing websocket"
             );
 
@@ -2285,12 +2084,8 @@ Mobile Control Direct Server Infromation:
             }
             catch (Exception ex)
             {
-                Debug.Console(
-                    0,
-                    Debug.ErrorLogLevel.Error,
-                    "Exception closing websocket: {0}\r\nStack Trace: {1}",
-                    ex.Message,
-                    ex.StackTrace
+                this.LogException(ex,
+                    "Exception closing websocket"
                 );
 
                 HandleConnectFailure();
@@ -2307,7 +2102,7 @@ Mobile Control Direct Server Infromation:
                 ReconnectToServerTimerCallback,
                 ServerReconnectInterval
             );
-            Debug.Console(1, this, "Reconnect Timer Started.");
+            this.LogDebug("Reconnect Timer Started.");
         }
 
         /// <summary>
@@ -2343,21 +2138,6 @@ Mobile Control Direct Server Infromation:
             }
         }
 
-        //private void HandleClientJoined(JToken content)
-        //{
-        //    var clientId = content["clientId"].Value<string>();
-        //    var roomKey = content["roomKey"].Value<string>();
-
-        //    SendMessageObject(
-        //        new MobileControlMessage
-        //        {
-        //            Type = "/system/roomKey",
-        //            ClientId = clientId,
-        //            Content = roomKey
-        //        }
-        //    );
-        //}
-
         private void HandleClientJoined(JToken content)
         {
             var clientId = content["clientId"].Value<string>();
@@ -2379,8 +2159,8 @@ Mobile Control Direct Server Infromation:
 
             if (!_roomCombiner.CurrentScenario.UiMap.ContainsKey(roomKey))
             {
-                Debug.Console(0, this,
-                    "Unable to find correct roomKey for {0} in current scenario. Returning {0} as roomKey", roomKey);
+                this.LogWarning(
+                    "Unable to find correct roomKey for {roomKey} in current scenario. Returning {roomKey} as roomKey", roomKey);
 
                 var message = new MobileControlMessage
                 {
@@ -2418,14 +2198,7 @@ Mobile Control Direct Server Infromation:
             catch
             {
                 qrChecksum = new JValue(string.Empty);
-            }
-
-            Debug.Console(
-                1,
-                this,
-                "QR checksum: {0}",
-                qrChecksum == null ? string.Empty : qrChecksum.Value<string>()
-            );
+            }            
 
             if (code == null)
             {
@@ -2462,10 +2235,8 @@ Mobile Control Direct Server Infromation:
 
             if (!messageText.Contains("/system/heartbeat"))
             {
-                Debug.LogMessage(
-                    LogEventLevel.Debug,
+                this.LogDebug(
                     "Message RX: {messageText}",
-                    this,
                     messageText
                 );
             }
@@ -2499,7 +2270,7 @@ Mobile Control Direct Server Infromation:
                         DeviceJsonApi.DoDeviceAction(wrapper);
                         break;
                     case "close":
-                        Debug.Console(1, this, "Received close message from server.");
+                        this.LogDebug("Received close message from server");
                         break;
                     default:
                         // Incoming message example
@@ -2535,10 +2306,9 @@ Mobile Control Direct Server Infromation:
             }
             catch (Exception err)
             {
-                Debug.LogMessage(
+                this.LogException(
                     err,
                     "Unable to parse {message}",
-                    this,
                     messageText
                 );
             }

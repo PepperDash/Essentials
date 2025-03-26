@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Web;
+using Serilog.Events;
 
 namespace PepperDash.Essentials.WebApiHandlers
 {
@@ -113,7 +114,7 @@ namespace PepperDash.Essentials.WebApiHandlers
 
             if (!server.Server.RemoveWebSocketService(path))
             {
-                Debug.Console(0, $"Unable to remove client with token {request.Token}");
+                Debug.LogMessage(LogEventLevel.Warning, "Unable to remove client with token {token}", request.Token);
 
                 var response = new ClientResponse
                 {

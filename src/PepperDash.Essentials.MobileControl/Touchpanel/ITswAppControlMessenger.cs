@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
@@ -19,7 +20,7 @@ namespace PepperDash.Essentials.Touchpanel
         {
             if (_appControl == null)
             {
-                Debug.Console(0, this, $"{_device.Key} does not implement ITswAppControl");
+                this.LogInformation("{deviceKey} does not implement ITswAppControl", _device.Key);
                 return;
             }
 
