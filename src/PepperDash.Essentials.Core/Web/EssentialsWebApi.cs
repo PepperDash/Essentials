@@ -207,7 +207,7 @@ namespace PepperDash.Essentials.Core.Web
 		{
             AddRoute(new HttpCwsRoute("apiPaths") {
                 Name = "GetPaths",
-                RouteHandler = new GetRoutesHandler(_server.GetRouteCollection())
+                RouteHandler = new GetRoutesHandler(_server.GetRouteCollection(), BasePath)
             });
 
             // If running on an appliance
