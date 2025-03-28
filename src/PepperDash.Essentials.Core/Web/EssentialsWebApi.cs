@@ -144,17 +144,17 @@ namespace PepperDash.Essentials.Core.Web
                     Name = "GetJoinMapsForDeviceKey",
                     RouteHandler = new GetJoinMapForDeviceKeyRequestHandler()
                 },
-				new HttpCwsRoute("debugSession")
-				{
-					Name = "DebugSession",
-					RouteHandler = new DebugSessionRequestHandler()
-				},
-				new HttpCwsRoute("doNotLoadConfigOnNextBoot")
-				{
-					Name = "DoNotLoadConfigOnNextBoot",
-					RouteHandler = new DoNotLoadConfigOnNextBootRequestHandler()
-				},
-				new HttpCwsRoute("restartProgram")
+                new HttpCwsRoute("debugSession")
+                {
+                    Name = "DebugSession",
+                    RouteHandler = new DebugSessionRequestHandler()
+                },
+                new HttpCwsRoute("doNotLoadConfigOnNextBoot")
+                {
+                    Name = "DoNotLoadConfigOnNextBoot",
+                    RouteHandler = new DoNotLoadConfigOnNextBootRequestHandler()
+                },
+                new HttpCwsRoute("restartProgram")
                 {
                     Name = "Restart Program",
                     RouteHandler = new RestartProgramRequestHandler()
@@ -164,12 +164,16 @@ namespace PepperDash.Essentials.Core.Web
                     Name = "Load Config",
                     RouteHandler = new LoadConfigRequestHandler()
                 },
-                new HttpCwsRoute("getTielines")
+                new HttpCwsRoute("tielines")
                 {
                     Name = "Get TieLines",
                     RouteHandler = new GetTieLinesRequestHandler()
-                }
-
+                },
+                new HttpCwsRoute("device/{deviceKey}/routingPorts")
+                {
+                    Name = "Get Routing Ports for a device",
+                    RouteHandler = new GetRoutingPortsHandler()
+                },
             };
 
             AddRoute(routes);
@@ -196,13 +200,18 @@ namespace PepperDash.Essentials.Core.Web
             }
         }
 
-		/// <summary>
-		/// Initializes the CWS class
-		/// </summary>
-		public override void Initialize()
+        /// <summary>
+        /// Initializes the CWS class
+        /// </summary>
+        public override void Initialize()
 		{
-			// If running on an appliance
-			if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
+            AddRoute(new HttpCwsRoute("apiPaths") {
+                Name = "GetPaths",
+                RouteHandler = new GetRoutesHandler(_server.GetRouteCollection())
+            });
+
+            // If running on an appliance
+            if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
 			{
 				/*
 					WEBSERVER [ON | OFF | TIMEOUT <VALUE IN SECONDS> | MAXSESSIONSPERUSER <Number of sessions>]
@@ -247,8 +256,8 @@ namespace PepperDash.Essentials.Core.Web
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
 
             var path = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
-                ? $"http(s)://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws{BasePath}"
-                : $"http(s)://{currentIp}/cws{BasePath}";
+                ? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws{BasePath}"
+                : $"https://{currentIp}/cws{BasePath}";
 			
 			Debug.LogMessage(LogEventLevel.Information, this, "Server:{path:l}", path);
 
