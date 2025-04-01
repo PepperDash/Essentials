@@ -116,64 +116,6 @@ namespace PepperDash.Essentials.RoomBridges
             if (Room is IRunDefaultPresentRoute defaultRoom)
                 AddAction("/defaultsource", (id, content) => defaultRoom.RunDefaultPresentRoute());
 
-            if (Room is IHasCurrentVolumeControls volumeRoom)
-            {
-                volumeRoom.CurrentVolumeDeviceChange += Room_CurrentVolumeDeviceChange;
-
-                if (volumeRoom.CurrentVolumeControls == null) return;
-
-                AddAction("/volumes/master/level", (id, content) =>
-                {
-                    var msg = content.ToObject<MobileControlSimpleContent<ushort>>();
-
-
-                    if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
-                        basicVolumeWithFeedback.SetVolume(msg.Value);
-                });
-
-                AddAction("/volumes/master/muteToggle", (id, content) => volumeRoom.CurrentVolumeControls.MuteToggle());
-
-                AddAction("/volumes/master/muteOn", (id, content) =>
-                {
-                    if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
-                        basicVolumeWithFeedback.MuteOn();
-                });
-
-                AddAction("/volumes/master/muteOff", (id, content) =>
-                {
-                    if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
-                        basicVolumeWithFeedback.MuteOff();
-                });
-
-                AddAction("/volumes/master/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
-                    {
-                        if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
-                        {
-                            basicVolumeWithFeedback.VolumeUp(b);
-                        }
-                    }
-                ));
-
-                AddAction("/volumes/master/volumeDown", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
-                {
-                    if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
-                    {
-                        basicVolumeWithFeedback.VolumeDown(b);
-                    }
-                }
-                ));
-
-
-                // Registers for initial volume events, if possible
-                if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback currentVolumeDevice)
-                {
-                    this.LogVerbose("Registering for volume feedback events");
-
-                    currentVolumeDevice.MuteFeedback.OutputChange += MuteFeedback_OutputChange;
-                    currentVolumeDevice.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
-                }
-            }
-
             if (Room is IHasCurrentSourceInfoChange sscRoom)
                 sscRoom.CurrentSourceChange += Room_CurrentSingleSourceChange;
 
@@ -212,6 +154,63 @@ namespace PepperDash.Essentials.RoomBridges
             Room.IsWarmingUpFeedback.OutputChange += IsWarmingUpFeedback_OutputChange;
 
             AddTechRoomActions();
+
+            if (Room is IHasCurrentVolumeControls volumeRoom)
+            {
+                volumeRoom.CurrentVolumeDeviceChange += Room_CurrentVolumeDeviceChange;
+
+                if (volumeRoom.CurrentVolumeControls == null) return;
+
+                AddAction("/volumes/master/level", (id, content) =>
+                {
+                    var msg = content.ToObject<MobileControlSimpleContent<ushort>>();
+
+
+                    if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
+                        basicVolumeWithFeedback.SetVolume(msg.Value);
+                });
+
+                AddAction("/volumes/master/muteToggle", (id, content) => volumeRoom.CurrentVolumeControls.MuteToggle());
+
+                AddAction("/volumes/master/muteOn", (id, content) =>
+                {
+                    if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
+                        basicVolumeWithFeedback.MuteOn();
+                });
+
+                AddAction("/volumes/master/muteOff", (id, content) =>
+                {
+                    if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
+                        basicVolumeWithFeedback.MuteOff();
+                });
+
+                AddAction("/volumes/master/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
+                {
+                    if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
+                    {
+                        basicVolumeWithFeedback.VolumeUp(b);
+                    }
+                }
+                ));
+
+                AddAction("/volumes/master/volumeDown", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
+                {
+                    if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
+                    {
+                        basicVolumeWithFeedback.VolumeDown(b);
+                    }
+                }
+                ));
+
+                // Registers for initial volume events, if possible
+                if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback currentVolumeDevice)
+                {
+                    this.LogVerbose("Registering for volume feedback events");
+
+                    currentVolumeDevice.MuteFeedback.OutputChange += MuteFeedback_OutputChange;
+                    currentVolumeDevice.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
+                }
+            }
         }
 
         private void OnTouchPanelsUpdated(JToken content)
