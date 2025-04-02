@@ -12,7 +12,6 @@ using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static PepperDash.Essentials.AppServer.Messengers.VideoCodecBaseStateMessage.CameraStatus;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -78,16 +77,23 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="e"></param>
         private void CallHistory_RecentCallsListHasChanged(object sender, EventArgs e)
         {
-            var state = new VideoCodecBaseStateMessage();
-
-            if (!(sender is CodecCallHistory codecCallHistory)) return;
-            var recents = codecCallHistory.RecentCalls;
-
-            if (recents != null)
+            try
             {
-                state.RecentCalls = recents;
+                var state = new VideoCodecBaseStateMessage();
 
-                PostStatusMessage(state);
+                if (!(sender is CodecCallHistory codecCallHistory)) return;
+                var recents = codecCallHistory.RecentCalls;
+
+                if (recents != null)
+                {
+                    state.RecentCalls = recents;
+
+                    PostStatusMessage(state);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error posting call history");
             }
         }
 
@@ -107,28 +113,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         protected void SendDirectory(CodecDirectory directory)
         {
-            var state = new VideoCodecBaseStateMessage();
-
-
-            if (Codec is IHasDirectory dirCodec)
+            try
             {
-                this.LogVerbose("Sending Directory.  Directory Item Count: {directoryItemCount}", directory.CurrentDirectoryResults.Count);
+                var state = new VideoCodecBaseStateMessage();
 
-                //state.CurrentDirectory = PrefixDirectoryFolderItems(directory);
-                state.CurrentDirectory = directory;
-                CrestronInvoke.BeginInvoke((o) => PostStatusMessage(state));
 
-                /*                var directoryMessage = new
-                                {
-                                    currentDirectory = new
-                                    {
-                                        directoryResults = prefixedDirectoryResults,
-                                        isRootDirectory = isRoot
-                                    }
-                                };
+                if (Codec is IHasDirectory dirCodec)
+                {
+                    this.LogVerbose("Sending Directory.  Directory Item Count: {directoryItemCount}", directory.CurrentDirectoryResults.Count);
 
-                                //Spool up a thread in case this is a large quantity of data
-                                CrestronInvoke.BeginInvoke((o) => PostStatusMessage(directoryMessage));           */
+                    //state.CurrentDirectory = PrefixDirectoryFolderItems(directory);
+                    state.CurrentDirectory = directory;
+
+                    CrestronInvoke.BeginInvoke((o) => PostStatusMessage(state));
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error sending directory");
             }
         }
 
@@ -139,14 +141,20 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="e"></param>
         private void Codec_IsReadyChange(object sender, EventArgs e)
         {
-            var state = new VideoCodecBaseStateMessage
+            try
             {
-                IsReady = true
-            };
+                var state = new VideoCodecBaseStateMessage
+                {
+                    IsReady = true
+                };
 
-            PostStatusMessage(state);
+                PostStatusMessage(state);
 
-            SendFullStatus();
+                SendFullStatus();
+            } catch (Exception ex)
+            {
+                this.LogError(ex, "Error sending codec ready status");
+            }
         }
 
         /// <summary>
@@ -353,32 +361,51 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void SharingSourceFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
-            var state = new VideoCodecBaseStateMessage
+            try
             {
-                SharingSource = e.StringValue
-            };
+                var state = new VideoCodecBaseStateMessage
+                {
+                    SharingSource = e.StringValue
+                };
 
-            PostStatusMessage(state);
+                PostStatusMessage(state);
+            } catch (Exception ex)
+            {
+                this.LogError(ex, "Error posting sharing source");
+            }
         }
 
         private void SharingContentIsOnFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
-            var state = new VideoCodecBaseStateMessage
+            try
             {
-                SharingContentIsOn = e.BoolValue
-            };
+                var state = new VideoCodecBaseStateMessage
+                {
+                    SharingContentIsOn = e.BoolValue
+                };
 
-            PostStatusMessage(state);
+                PostStatusMessage(state);
+            } catch (Exception ex)
+            {
+                this.LogError(ex, "Error posting sharing content");
+            }
         }
 
         private void PhonebookSyncState_InitialSyncCompleted(object sender, EventArgs e)
         {
-            var state = new VideoCodecBaseStateMessage
+            try
             {
-                InitialPhonebookSyncComplete = true
-            };
+                var state = new VideoCodecBaseStateMessage
+                {
+                    InitialPhonebookSyncComplete = true
+                };
 
-            PostStatusMessage(state);
+                PostStatusMessage(state);
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error posting phonebook sync state");
+            }
         }
 
         private void CameraIsOffFeedback_OutputChange(object sender, FeedbackEventArgs e)
@@ -404,8 +431,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void CameraCodec_CameraSelected(object sender, CameraSelectedEventArgs e)
         {
-            MapCameraActions();
-            PostSelectedCamera();
+            try
+            {
+                MapCameraActions();
+                PostSelectedCamera();
+            } catch(Exception ex)
+            {
+                this.LogError(ex, "Exception handling camera selected event");
+            }
         }
 
         /// <summary>
@@ -564,20 +597,27 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void PostCallHistory()
         {
-            var codec = (Codec as IHasCallHistory);
-
-            if (codec != null)
+            try
             {
-                var status = new VideoCodecBaseStateMessage();
+                var codec = (Codec as IHasCallHistory);
 
-                var recents = codec.CallHistory.RecentCalls;
-
-                if (recents != null)
+                if (codec != null)
                 {
-                    status.RecentCalls = codec.CallHistory.RecentCalls;
+                    var status = new VideoCodecBaseStateMessage();
 
-                    PostStatusMessage(status);
+                    var recents = codec.CallHistory.RecentCalls;
+
+                    if (recents != null)
+                    {
+                        status.RecentCalls = codec.CallHistory.RecentCalls;
+
+                        PostStatusMessage(status);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error posting call history");
             }
         }
 
@@ -609,23 +649,30 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         private void GetDirectoryRoot()
         {
-            if (!(Codec is IHasDirectory dirCodec))
+            try
             {
-                // do something else?
-                return;
-            }
-            if (!dirCodec.PhonebookSyncState.InitialSyncComplete)
-            {
-                var state = new VideoCodecBaseStateMessage
+                if (!(Codec is IHasDirectory dirCodec))
                 {
-                    InitialPhonebookSyncComplete = false
-                };
+                    // do something else?
+                    return;
+                }
+                if (!dirCodec.PhonebookSyncState.InitialSyncComplete)
+                {
+                    var state = new VideoCodecBaseStateMessage
+                    {
+                        InitialPhonebookSyncComplete = false
+                    };
 
-                PostStatusMessage(state);
-                return;
+                    PostStatusMessage(state);
+                    return;
+                }
+
+                dirCodec.SetCurrentDirectoryToRoot();
             }
-
-            dirCodec.SetCurrentDirectoryToRoot();
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error getting directory root");
+            }
         }
 
         /// <summary>
@@ -654,14 +701,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         private void SendIsReady()
         {
-            var status = new VideoCodecBaseStateMessage();
+            try
+            {
+                var status = new VideoCodecBaseStateMessage();
 
-            var codecType = Codec.GetType();
+                var codecType = Codec.GetType();
 
-            status.IsReady = Codec.IsReady;
-            status.IsZoomRoom = codecType.GetInterface("IHasZoomRoomLayouts") != null;
+                status.IsReady = Codec.IsReady;
+                status.IsZoomRoom = codecType.GetInterface("IHasZoomRoomLayouts") != null;
 
-            PostStatusMessage(status);
+                PostStatusMessage(status);
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error sending codec ready status");
+            }
         }
 
         /// <summary>
@@ -670,55 +724,60 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <returns></returns>
         protected VideoCodecBaseStateMessage GetStatus()
         {
-            var status = new VideoCodecBaseStateMessage();
-
-
-            if (Codec is IHasCodecCameras camerasCodec)
+            try
             {
-                status.Cameras = new VideoCodecBaseStateMessage.CameraStatus
+                var status = new VideoCodecBaseStateMessage();
+
+                if (Codec is IHasCodecCameras camerasCodec)
                 {
-                    CameraManualIsSupported = true,
-                    CameraAutoIsSupported = Codec.SupportsCameraAutoMode,
-                    CameraOffIsSupported = Codec.SupportsCameraOff,
-                    CameraMode = GetCameraMode(),
-                    Cameras = camerasCodec.Cameras,
-                    SelectedCamera = GetSelectedCamera(camerasCodec)
-                };
-            }
+                    status.Cameras = new CameraStatus
+                    {
+                        CameraManualIsSupported = true,
+                        CameraAutoIsSupported = Codec.SupportsCameraAutoMode,
+                        CameraOffIsSupported = Codec.SupportsCameraOff,
+                        CameraMode = GetCameraMode(),
+                        Cameras = camerasCodec.Cameras,
+                        SelectedCamera = GetSelectedCamera(camerasCodec)
+                    };
+                }
 
-            if (Codec is IHasDirectory directoryCodec)
+                if (Codec is IHasDirectory directoryCodec)
+                {
+                    status.HasDirectory = true;
+                    status.HasDirectorySearch = true;
+                    status.CurrentDirectory = directoryCodec.CurrentDirectoryResult;
+                }
+
+                var codecType = Codec.GetType();
+
+                status.CameraSelfViewIsOn = Codec is IHasCodecSelfView && (Codec as IHasCodecSelfView).SelfviewIsOnFeedback.BoolValue;
+                status.IsInCall = Codec.IsInCall;
+                status.PrivacyModeIsOn = Codec.PrivacyModeIsOnFeedback.BoolValue;
+                status.SharingContentIsOn = Codec.SharingContentIsOnFeedback.BoolValue;
+                status.SharingSource = Codec.SharingSourceFeedback.StringValue;
+                status.StandbyIsOn = Codec.StandbyIsOnFeedback.BoolValue;
+                status.Calls = Codec.ActiveCalls;
+                status.Info = Codec.CodecInfo;
+                status.ShowSelfViewByDefault = Codec.ShowSelfViewByDefault;
+                status.SupportsAdHocMeeting = Codec is IHasStartMeeting;
+                status.HasRecents = Codec is IHasCallHistory;
+                status.HasCameras = Codec is IHasCameras;
+                status.Presets = GetCurrentPresets();
+                status.IsZoomRoom = codecType.GetInterface("IHasZoomRoomLayouts") != null;
+                status.ReceivingContent = Codec is IHasFarEndContentStatus && (Codec as IHasFarEndContentStatus).ReceivingContent.BoolValue;
+
+                if (Codec is IHasMeetingInfo meetingInfoCodec)
+                {
+                    status.MeetingInfo = meetingInfoCodec.MeetingInfo;
+                }
+
+                return status;
+            }
+            catch (Exception ex)
             {
-                status.HasDirectory = true;
-                status.HasDirectorySearch = true;
-                status.CurrentDirectory = directoryCodec.CurrentDirectoryResult;
+                this.LogError(ex, "Error getting codec status");
+                return null;
             }
-
-            var codecType = Codec.GetType();
-
-            status.CameraSelfViewIsOn = Codec is IHasCodecSelfView && (Codec as IHasCodecSelfView).SelfviewIsOnFeedback.BoolValue;
-            status.IsInCall = Codec.IsInCall;
-            status.PrivacyModeIsOn = Codec.PrivacyModeIsOnFeedback.BoolValue;
-            status.SharingContentIsOn = Codec.SharingContentIsOnFeedback.BoolValue;
-            status.SharingSource = Codec.SharingSourceFeedback.StringValue;
-            status.StandbyIsOn = Codec.StandbyIsOnFeedback.BoolValue;
-            status.Calls = Codec.ActiveCalls;
-            status.Info = Codec.CodecInfo;
-            status.ShowSelfViewByDefault = Codec.ShowSelfViewByDefault;
-            status.SupportsAdHocMeeting = Codec is IHasStartMeeting;
-            status.HasRecents = Codec is IHasCallHistory;
-            status.HasCameras = Codec is IHasCameras;
-            status.Presets = GetCurrentPresets();
-            status.IsZoomRoom = codecType.GetInterface("IHasZoomRoomLayouts") != null;
-            status.ReceivingContent = Codec is IHasFarEndContentStatus && (Codec as IHasFarEndContentStatus).ReceivingContent.BoolValue;
-
-            if (Codec is IHasMeetingInfo meetingInfoCodec)
-            {
-                status.MeetingInfo = meetingInfoCodec.MeetingInfo;
-            }
-
-            //Debug.Console(2, this, "VideoCodecBaseStatus:\n{0}", JsonConvert.SerializeObject(status)); 
-
-            return status;
         }
 
         protected virtual void SendFullStatus()
@@ -733,22 +792,36 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void PostReceivingContent(bool receivingContent)
         {
-            var state = new VideoCodecBaseStateMessage
+            try
             {
-                ReceivingContent = receivingContent
-            };
-            PostStatusMessage(state);
+                var state = new VideoCodecBaseStateMessage
+                {
+                    ReceivingContent = receivingContent
+                };
+
+                PostStatusMessage(state);
+            } catch(Exception ex)
+            {
+                this.LogError(ex, "Error posting receiving content");
+            }
         }
 
         private void PostCameraSelfView()
         {
-            var status = new VideoCodecBaseStateMessage
+            try
             {
-                CameraSelfViewIsOn = Codec is IHasCodecSelfView
-                                     && (Codec as IHasCodecSelfView).SelfviewIsOnFeedback.BoolValue
-            };
+                var status = new VideoCodecBaseStateMessage
+                {
+                    CameraSelfViewIsOn = Codec is IHasCodecSelfView
+                                         && (Codec as IHasCodecSelfView).SelfviewIsOnFeedback.BoolValue
+                };
 
-            PostStatusMessage(status);
+                PostStatusMessage(status);
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error posting camera self view");
+            }
         }
 
         /// <summary>
@@ -756,34 +829,56 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         private void PostCameraMode()
         {
-            var status = new VideoCodecBaseStateMessage
+            try
             {
-                CameraMode = GetCameraMode()
-            };
+                var status = new VideoCodecBaseStateMessage
+                {
+                    CameraMode = GetCameraMode()
+                };
 
-            PostStatusMessage(status);
+                PostStatusMessage(status);
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error posting camera mode");
+            }
         }
 
         private void PostSelectedCamera()
         {
-            var camerasCodec = Codec as IHasCodecCameras;
-
-            var status = new VideoCodecBaseStateMessage
+            try
             {
-                Cameras = new VideoCodecBaseStateMessage.CameraStatus() { SelectedCamera = GetSelectedCamera(camerasCodec) },
-                Presets = GetCurrentPresets()
-            };
-            PostStatusMessage(status);
+                var camerasCodec = Codec as IHasCodecCameras;
+
+                var status = new VideoCodecBaseStateMessage
+                {
+                    Cameras = new CameraStatus() { SelectedCamera = GetSelectedCamera(camerasCodec) },
+                    Presets = GetCurrentPresets()
+                };
+
+                PostStatusMessage(status);
+            }
+            catch (Exception e)
+            {
+                this.LogError(e, "Error posting selected camera");
+            }
         }
 
         private void PostCameraPresets()
         {
-            var status = new VideoCodecBaseStateMessage
+            try
             {
-                Presets = GetCurrentPresets()
-            };
+                var status = new VideoCodecBaseStateMessage
+                {
+                    Presets = GetCurrentPresets()
+                };
 
-            PostStatusMessage(status);
+                PostStatusMessage(status);
+            }
+            catch (Exception e)
+            {
+                this.LogError(e, "Error posting camera presets");
+            }
         }
 
         private Camera GetSelectedCamera(IHasCodecCameras camerasCodec)
@@ -796,7 +891,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 camera.Name = camerasCodec.SelectedCamera.Name;
 
-                camera.Capabilities = new Camera.CameraCapabilities()
+                camera.Capabilities = new CameraCapabilities()
                 {
                     CanPan = camerasCodec.SelectedCamera.CanPan,
                     CanTilt = camerasCodec.SelectedCamera.CanTilt,
@@ -922,59 +1017,57 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         [JsonProperty("supportsAdHocMeeting", NullValueHandling = NullValueHandling.Ignore)]
         public bool? SupportsAdHocMeeting { get; set; }
+    }
 
-        public class CameraStatus
-        {
-            [JsonProperty("cameraManualSupported", NullValueHandling = NullValueHandling.Ignore)]
-            public bool? CameraManualIsSupported { get; set; }
+    public class CameraStatus
+    {
+        [JsonProperty("cameraManualSupported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CameraManualIsSupported { get; set; }
 
-            [JsonProperty("cameraAutoSupported", NullValueHandling = NullValueHandling.Ignore)]
-            public bool? CameraAutoIsSupported { get; set; }
+        [JsonProperty("cameraAutoSupported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CameraAutoIsSupported { get; set; }
 
-            [JsonProperty("cameraOffSupported", NullValueHandling = NullValueHandling.Ignore)]
-            public bool? CameraOffIsSupported { get; set; }
+        [JsonProperty("cameraOffSupported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CameraOffIsSupported { get; set; }
 
-            [JsonProperty("cameraMode", NullValueHandling = NullValueHandling.Ignore)]
-            public string CameraMode { get; set; }
+        [JsonProperty("cameraMode", NullValueHandling = NullValueHandling.Ignore)]
+        public string CameraMode { get; set; }
 
-            [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
-            public List<CameraBase> Cameras { get; set; }
+        [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
+        public List<CameraBase> Cameras { get; set; }
 
-            [JsonProperty("selectedCamera", NullValueHandling = NullValueHandling.Ignore)]
-            public Camera SelectedCamera { get; set; }
+        [JsonProperty("selectedCamera", NullValueHandling = NullValueHandling.Ignore)]
+        public Camera SelectedCamera { get; set; }        
+    }
 
-            public class Camera
-            {
-                [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
-                public string Key { get; set; }
+    public class Camera
+    {
+        [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
+        public string Key { get; set; }
 
-                [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
-                public string Name { get; set; }
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
 
-                [JsonProperty("isFarEnd", NullValueHandling = NullValueHandling.Ignore)]
-                public bool? IsFarEnd { get; set; }
+        [JsonProperty("isFarEnd", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsFarEnd { get; set; }
 
-                [JsonProperty("capabilities", NullValueHandling = NullValueHandling.Ignore)]
-                public CameraCapabilities Capabilities { get; set; }
+        [JsonProperty("capabilities", NullValueHandling = NullValueHandling.Ignore)]
+        public CameraCapabilities Capabilities { get; set; }
+    }
 
-                public class CameraCapabilities
-                {
-                    [JsonProperty("canPan", NullValueHandling = NullValueHandling.Ignore)]
-                    public bool? CanPan { get; set; }
+    public class CameraCapabilities
+    {
+        [JsonProperty("canPan", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CanPan { get; set; }
 
-                    [JsonProperty("canTilt", NullValueHandling = NullValueHandling.Ignore)]
-                    public bool? CanTilt { get; set; }
+        [JsonProperty("canTilt", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CanTilt { get; set; }
 
-                    [JsonProperty("canZoom", NullValueHandling = NullValueHandling.Ignore)]
-                    public bool? CanZoom { get; set; }
+        [JsonProperty("canZoom", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CanZoom { get; set; }
 
-                    [JsonProperty("canFocus", NullValueHandling = NullValueHandling.Ignore)]
-                    public bool? CanFocus { get; set; }
-
-                }
-            }
-
-        }
+        [JsonProperty("canFocus", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CanFocus { get; set; }
 
     }
 
