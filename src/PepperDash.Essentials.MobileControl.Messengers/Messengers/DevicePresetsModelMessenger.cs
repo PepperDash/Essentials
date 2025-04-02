@@ -43,7 +43,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         protected override void RegisterActions()
 
         {
-            AddAction("/presets/fullStatus", (id, content) =>
+            AddAction("/fullStatus", (id, content) =>
             {
                 this.LogInformation("getting full status for client {id}", id);
                 try
@@ -56,7 +56,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 }
             });
 
-            AddAction("/presets/recall", (id, content) =>
+            AddAction("/recall", (id, content) =>
             {
                 var p = content.ToObject<PresetChannelMessage>();
 
@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 RecallPreset(dev, p.Preset.Channel);
             });
 
-            AddAction("/presets/save", (id, content) =>
+            AddAction("/save", (id, content) =>
             {
                 var presets = content.ToObject<List<PresetChannel>>();
 

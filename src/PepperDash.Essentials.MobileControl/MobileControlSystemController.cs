@@ -1133,7 +1133,11 @@ namespace PepperDash.Essentials
 
             _messengers.Add(messenger.Key, messenger);
 
-            messenger.RegisterWithAppServer(this);
+            if (_initialized)
+            {
+                this.LogDebug("Registering messenger {messengerKey} AFTER initialization", messenger.Key);
+                messenger.RegisterWithAppServer(this);
+            }
         }
 
         private void AddDefaultDeviceMessenger(IMobileControlMessenger messenger)
@@ -2230,16 +2234,14 @@ Mobile Control Direct Server Infromation:
                         // /room/roomAB
 
                         // Can't do direct comparison because it will match /room/roomA with /room/roomA/xxx instead of /room/roomAB/xxx
-                        var handlersKv = _actionDictionary.FirstOrDefault(kv => message.Type.StartsWith(kv.Key + "/")); // adds trailing slash to ensure above case is handled
+                        var handlers = _actionDictionary.Where(kv => message.Type.StartsWith(kv.Key + "/")).SelectMany(kv => kv.Value).ToList(); // adds trailing slash to ensure above case is handled
 
 
-                        if (handlersKv.Key == null)
+                        if (handlers.Count == 0)
                         {
                             this.LogInformation("-- Warning: Incoming message has no registered handler {type}", message.Type);
                             break;
-                        }
-
-                        var handlers = handlersKv.Value;
+                        }                        
 
                         foreach (var handler in handlers)
                         {

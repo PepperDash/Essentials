@@ -2,7 +2,10 @@
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using System;
+using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -56,10 +59,32 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void SendFullStatus()
         {
-            var stateObject = new JObject();
-            stateObject[_propName] = JToken.FromObject(itemDevice, serializer);
-            PostStatusMessage(stateObject);
+            try
+            {
+                this.LogInformation("Sending full status");
+
+                var stateObject = new ISelectableItemsStateMessage<TKey>
+                {
+                    Items = itemDevice.Items,
+                    CurrentItem = itemDevice.CurrentItem
+                };
+
+                PostStatusMessage(stateObject);
+            }
+            catch (Exception e)
+            {
+                this.LogError("Error sending full status: {0}", e.Message);
+            }
         }
+    }
+
+    public class ISelectableItemsStateMessage<TKey> : DeviceStateMessageBase
+    {
+        [JsonProperty("items")]
+        public Dictionary<TKey, ISelectableItem> Items { get; set; }
+
+        [JsonProperty("currentItem")]
+        public TKey CurrentItem { get; set; }
     }
 
 }
