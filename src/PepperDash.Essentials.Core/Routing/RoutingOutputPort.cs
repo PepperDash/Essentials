@@ -1,14 +1,17 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 
 namespace PepperDash.Essentials.Core
 {
     public class RoutingOutputPort : RoutingPort
-	{
-		/// <summary>
-		/// The IRoutingOutputs object this port lives on
-		/// </summary>
-		public IRoutingOutputs ParentDevice { get; private set; }
+    {
+        /// <summary>
+        /// The IRoutingOutputs object this port lives on
+        /// </summary>
+        ///
+        [JsonIgnore]
+        public IRoutingOutputs ParentDevice { get; private set; }
 
 		public InUseTracking InUseTracker { get; private set; }
 

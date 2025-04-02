@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 
 namespace PepperDash.Essentials.Core
@@ -8,10 +9,11 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class RoutingInputPort : RoutingPort
 	{
-		/// <summary>
-		/// The IRoutingInputs object this lives on
-		/// </summary>
-		public IRoutingInputs ParentDevice { get; private set; }
+        /// <summary>
+        /// The IRoutingInputs object this lives on
+        /// </summary>
+        [JsonIgnore]
+        public IRoutingInputs ParentDevice { get; private set; }
 
 		/// <summary>
 		/// Constructor for a basic RoutingInputPort
