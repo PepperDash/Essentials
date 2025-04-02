@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using System;
@@ -152,11 +153,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 message.Name = _device.Name;
 
-                PostStatusMessage(JToken.FromObject(message), MessagePath, clientId);
+                var token = JToken.FromObject(message);                
+                
+                PostStatusMessage(token, MessagePath, clientId);
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Exception posting status message", this);
+                this.LogError(ex, "Exception posting status message for {messagePath} to {clientId}", MessagePath, clientId ?? "all clients");                
             }
         }
 
@@ -173,11 +176,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 deviceState.MessageBasePath = MessagePath;
 
-                PostStatusMessage(JToken.FromObject(deviceState), type, clientId);
+                var token = JToken.FromObject(deviceState);
+
+                PostStatusMessage(token, type, clientId);
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Exception posting status message", this);
+                this.LogError(ex, "Exception posting status message for {type} to {clientId}", type, clientId ?? "all clients");                
             }
         }
 

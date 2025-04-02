@@ -37,6 +37,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IRoutingOutputs Members
 
+        [JsonIgnore]
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; protected set; }
 
         #endregion
