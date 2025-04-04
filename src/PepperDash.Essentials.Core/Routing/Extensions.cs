@@ -278,7 +278,7 @@ namespace PepperDash.Essentials.Core
             if (destinationPort == null)
             {
                 destinationTieLines = TieLineCollection.Default.Where(t =>
-                    t.DestinationPort.ParentDevice.Key == destination.Key && (t.Type.HasFlag(signalType)));
+                    t.DestinationPort.ParentDevice.Key == destination.Key && (t.Type.HasFlag(signalType) || signalType == eRoutingSignalType.AudioVideo));
             }
             else
             {
