@@ -1,4 +1,5 @@
-﻿using PepperDash.Essentials.Core.Queues;
+﻿using Crestron.SimplSharpPro.Keypads;
+using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 using System;
@@ -88,9 +89,17 @@ namespace PepperDash.Essentials.Core
 
             Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key);
 
-            var audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
+            RouteDescriptor audioRouteDescriptor;
 
-            var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
+            if (signalType.HasFlag(eRoutingSignalType.SecondaryAudio))
+            {
+                audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.SecondaryAudio);
+            } else
+            {
+                audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
+            }
+
+            var audioSuccess = destination.GetRouteToSource(source, null, null, signalType.HasFlag(eRoutingSignalType.SecondaryAudio) ? eRoutingSignalType.SecondaryAudio : eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
 
             if (!audioSuccess)
                 Debug.LogMessage(LogEventLevel.Debug, "Cannot find audio route to {0}", destination, source.Key);
@@ -268,13 +277,12 @@ namespace PepperDash.Essentials.Core
 
             if (destinationPort == null)
             {
-
                 destinationTieLines = TieLineCollection.Default.Where(t =>
-                    t.DestinationPort.ParentDevice.Key == destination.Key && (t.Type == signalType || t.Type.HasFlag(eRoutingSignalType.AudioVideo)));
+                    t.DestinationPort.ParentDevice.Key == destination.Key && (t.Type.HasFlag(signalType)));
             }
             else
             {
-                destinationTieLines = TieLineCollection.Default.Where(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && (t.Type == signalType || t.Type.HasFlag(eRoutingSignalType.AudioVideo)));
+                destinationTieLines = TieLineCollection.Default.Where(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && (t.Type.HasFlag(signalType)));
             }
 
             // find the TieLine without a port
