@@ -7,6 +7,7 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -22,6 +23,10 @@ namespace PepperDash.Essentials.Core.Config
 		public string DestinationKey { get; set; }
 		public string DestinationCard { get; set; }
 		public string DestinationPort { get; set; }
+
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public eRoutingSignalType? OverrideType { get; set; }
 
 		/// <summary>
 		/// Returns the appropriate tie line for either a card-based device or 
@@ -65,7 +70,7 @@ namespace PepperDash.Essentials.Core.Config
 					return null;
 				}            
 
-			return new TieLine(sourceOutputPort, destinationInputPort);
+			return new TieLine(sourceOutputPort, destinationInputPort, OverrideType);
 		}
 
 		void LogError(string msg)

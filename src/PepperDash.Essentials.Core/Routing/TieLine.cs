@@ -61,6 +61,16 @@ namespace PepperDash.Essentials.Core
         /// Creates a tie line with an overriding Type.  See help for OverrideType property for info
         /// </summary>
         /// <param name="overrideType">The signal type to limit the link to. Overrides DestinationPort.Type</param>
+        public TieLine(RoutingOutputPort sourcePort, RoutingInputPort destinationPort, eRoutingSignalType? overrideType) :
+            this(sourcePort, destinationPort)
+        {
+            OverrideType = overrideType;
+        }
+
+        /// <summary>
+        /// Creates a tie line with an overriding Type.  See help for OverrideType property for info
+        /// </summary>
+        /// <param name="overrideType">The signal type to limit the link to. Overrides DestinationPort.Type</param>
         public TieLine(RoutingOutputPort sourcePort, RoutingInputPort destinationPort, eRoutingSignalType overrideType) :
             this(sourcePort, destinationPort)
         {

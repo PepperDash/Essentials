@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
+// using Crestron.SimplSharp.CrestronIO;
 using System.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Serilog.Events;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace PepperDash.Essentials
 {
@@ -283,11 +284,21 @@ namespace PepperDash.Essentials
         /// </summary>
         static void UnzipAndMoveCplzArchives()
         {
-            Debug.LogMessage(LogEventLevel.Information, "Looking for .cplz archives from plugins folder...");
-            var di = new DirectoryInfo(_pluginDirectory);
-            var zFiles = di.GetFiles("*.cplz");
+            Debug.LogMessage(LogEventLevel.Information, "Looking for .cplz archives from user folder...");
+            //var di = new DirectoryInfo(_pluginDirectory);
+            //var zFiles = di.GetFiles("*.cplz");
 
-            if (zFiles.Length > 0)
+            //// Find cplz files at the root of the user folder. Makes development/testing easier for VC-4, and helps with mistakes by end users
+
+            //var userDi = new DirectoryInfo(Global.FilePathPrefix);
+            //var userZFiles = userDi.GetFiles("*.cplz");
+
+            Debug.LogInformation("Checking {folder} for .cplz files", Global.FilePathPrefix);
+            var cplzFiles = Directory.GetFiles(Global.FilePathPrefix, "*.cplz", SearchOption.AllDirectories)
+                .Select(f => new FileInfo(f))
+                .ToArray();
+
+            if (cplzFiles.Length > 0)
             {
                 if (!Directory.Exists(_loadedPluginsDirectoryPath))
                 {
@@ -295,12 +306,12 @@ namespace PepperDash.Essentials
                 }
             }
 
-            foreach (var zfi in zFiles)
+            foreach (var zfi in cplzFiles)
             {
                 Directory.CreateDirectory(_tempDirectory);
                 var tempDi = new DirectoryInfo(_tempDirectory);
 
-                Debug.LogMessage(LogEventLevel.Information, "Found cplz: {0}. Unzipping into temp plugins directory", zfi.Name);
+                Debug.LogMessage(LogEventLevel.Information, "Found cplz: {0}. Unzipping into temp plugins directory", zfi.FullName);
                 var result = CrestronZIP.Unzip(zfi.FullName, tempDi.FullName);
                 Debug.LogMessage(LogEventLevel.Information, "UnZip Result: {0}", result.ToString());
 
