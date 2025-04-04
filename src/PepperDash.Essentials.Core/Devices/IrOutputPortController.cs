@@ -12,6 +12,8 @@ using PepperDash.Essentials.Core.Config;
 
 using PepperDash.Core;
 using Serilog.Events;
+using System.IO;
+using PepperDash.Core.Logging;
 
 namespace PepperDash.Essentials.Core
 {
@@ -69,7 +71,26 @@ namespace PepperDash.Essentials.Core
                     return;
                 }
                 
-                var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
+                // var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
+
+                var fileName = config.Properties["control"]["irFile"].Value<string>();
+
+                var files = Directory.GetFiles(Global.FilePathPrefix, fileName, SearchOption.AllDirectories);
+
+                if(files.Length == 0)
+                {
+                    this.LogError("IR file {fileName} not found in {path}", fileName, Global.FilePathPrefix);
+                    return;
+                }
+
+                if(files.Length > 1)
+                {
+                    this.LogError("IR file {fileName} found in multiple locations: {files}", fileName, files);
+                    return;
+                }
+
+                var filePath = files[0];
+
                 Debug.LogMessage(LogEventLevel.Debug, "*************Attempting to load IR file: {0}***************", filePath);
 
                 LoadDriver(filePath);
