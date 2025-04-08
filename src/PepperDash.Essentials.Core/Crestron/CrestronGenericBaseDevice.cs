@@ -104,7 +104,7 @@ namespace PepperDash.Essentials.Core
             Hardware.OnlineStatusChange += Hardware_OnlineStatusChange;
             CommunicationMonitor.Start();    
 
-			return true;
+			return base.CustomActivate();
 		}
 
 		/// <summary>
