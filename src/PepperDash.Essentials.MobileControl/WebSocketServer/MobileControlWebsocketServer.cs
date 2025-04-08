@@ -679,6 +679,14 @@ namespace PepperDash.Essentials.WebSocketServer
             }
 
             var values = s.Split(' ');
+
+            if(values.Length < 2)
+            {
+                CrestronConsole.ConsoleCommandResponse("Invalid number of arguments.  Please provide a room key and a grant code");
+                return;
+            }
+
+
             var roomKey = values[0];
             var grantCode = values[1];
 
