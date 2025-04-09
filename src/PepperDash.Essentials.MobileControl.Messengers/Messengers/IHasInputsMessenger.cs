@@ -7,23 +7,20 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
-    public class ISelectableItemsMessenger<TKey> : MessengerBase
+    public class IHasInputsMessenger<TKey> : MessengerBase
     {        
-        private readonly ISelectableItems<TKey> itemDevice;
+        private readonly IHasInputs<TKey> itemDevice;        
 
-        private readonly string _propName;
 
         /// <summary>
-        /// Constructs a messenger for a device that implements ISelectableItems<typeparamref name="TKey"/>
+        /// Constructs a messenger for a device that implements IHasInputs<typeparamref name="TKey"/>
         /// </summary>
         /// <param name="key"></param>
         /// <param name="messagePath"></param>
         /// <param name="device"></param>
-        /// <param name="propName"></param>
-        public ISelectableItemsMessenger(string key, string messagePath, ISelectableItems<TKey> device, string propName) : base(key, messagePath, device as IKeyName)
+        public IHasInputsMessenger(string key, string messagePath, IHasInputs<TKey> device) : base(key, messagePath, device)
         {
-            itemDevice = device;
-            _propName = propName;
+            itemDevice = device;            
         }
 
         protected override void RegisterActions()
@@ -35,17 +32,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 SendFullStatus();
             });
 
-            itemDevice.ItemsUpdated += (sender, args) =>
+            itemDevice.Inputs.ItemsUpdated += (sender, args) =>
             {
                 SendFullStatus();
             };
 
-            itemDevice.CurrentItemChanged += (sender, args) =>
+            itemDevice.Inputs.CurrentItemChanged += (sender, args) =>
             {
                 SendFullStatus();
             };
 
-            foreach (var input in itemDevice.Items)
+            foreach (var input in itemDevice.Inputs.Items)
             {
                 var key = input.Key;
                 var localItem = input.Value;
@@ -68,10 +65,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 this.LogInformation("Sending full status");
 
-                var stateObject = new ISelectableItemsStateMessage<TKey>
+                var stateObject = new IHasInputsStateMessage<TKey>
                 {
-                    Items = itemDevice.Items,
-                    CurrentItem = itemDevice.CurrentItem
+                    Inputs = new Inputs<TKey>
+                    {
+                        Items = itemDevice.Inputs.Items,
+                        CurrentItem = itemDevice.Inputs.CurrentItem
+                    }
                 };
 
                 PostStatusMessage(stateObject);
@@ -83,7 +83,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
-    public class ISelectableItemsStateMessage<TKey> : DeviceStateMessageBase
+    public class IHasInputsStateMessage<TKey> : DeviceStateMessageBase
+    {
+        [JsonProperty("inputs")]
+        public Inputs<TKey> Inputs { get; set; }
+    }
+
+    public class Inputs<TKey>
     {
         [JsonProperty("items")]
         public Dictionary<TKey, ISelectableItem> Items { get; set; }
