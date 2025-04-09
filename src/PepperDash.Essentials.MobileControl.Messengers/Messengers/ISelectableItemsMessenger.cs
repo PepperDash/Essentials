@@ -26,19 +26,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _propName = propName;
         }
 
-        /// <summary>
-        /// Constructs a messenger for a device that implements IHasInputs<typeparamref name="TKey"/>
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="messagePath"></param>
-        /// <param name="device"></param>
-        /// <param name="propName"></param>
-        public ISelectableItemsMessenger(string key, string messagePath, IHasInputs<TKey> device, string propName) : base(key, messagePath, device)
-        {
-            itemDevice = device.Inputs;
-            _propName = propName;
-        }
-
         protected override void RegisterActions()
         {
             base.RegisterActions();
