@@ -766,7 +766,7 @@ namespace PepperDash.Essentials
                         var messenger = new ISelectableItemsMessenger<string>(
                             $"{device.Key}-inputs-{Key}",
                             $"/device/{device.Key}",
-                            stringInputs.Inputs,
+                            stringInputs,
                             "inputs"
                         );
 
@@ -782,7 +782,7 @@ namespace PepperDash.Essentials
                         var messenger = new ISelectableItemsMessenger<byte>(
                             $"{device.Key}-inputs-{Key}",
                             $"/device/{device.Key}",
-                            byteInputs.Inputs,
+                            byteInputs,
                             "inputs"
                         );
 
@@ -798,7 +798,7 @@ namespace PepperDash.Essentials
                         var messenger = new ISelectableItemsMessenger<int>(
                             $"{device.Key}-inputs-{Key}",
                             $"/device/{device.Key}",
-                            intInputs.Inputs,
+                            intInputs,
                             "inputs"
                         );
 

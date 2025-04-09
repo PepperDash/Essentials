@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
@@ -10,14 +8,34 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     public class ISelectableItemsMessenger<TKey> : MessengerBase
-    {
-        private static readonly JsonSerializer serializer = new JsonSerializer { Converters = { new StringEnumConverter() } };
+    {        
         private readonly ISelectableItems<TKey> itemDevice;
 
         private readonly string _propName;
+
+        /// <summary>
+        /// Constructs a messenger for a device that implements ISelectableItems<typeparamref name="TKey"/>
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
+        /// <param name="propName"></param>
         public ISelectableItemsMessenger(string key, string messagePath, ISelectableItems<TKey> device, string propName) : base(key, messagePath, device as IKeyName)
         {
             itemDevice = device;
+            _propName = propName;
+        }
+
+        /// <summary>
+        /// Constructs a messenger for a device that implements IHasInputs<typeparamref name="TKey"/>
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
+        /// <param name="propName"></param>
+        public ISelectableItemsMessenger(string key, string messagePath, IHasInputs<TKey> device, string propName) : base(key, messagePath, device)
+        {
+            itemDevice = device.Inputs;
             _propName = propName;
         }
 
