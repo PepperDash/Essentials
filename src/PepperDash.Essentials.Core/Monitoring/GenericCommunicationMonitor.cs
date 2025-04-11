@@ -201,12 +201,15 @@ namespace PepperDash.Essentials.Core
 
         private void BeginPolling()
         {
-            if(PollTimer != null)
+            lock (_pollTimerLock)
             {
-                return;
-            }
+                if (PollTimer != null)
+                {
+                    return;
+                }
 
-            PollTimer = new Timer(o => Poll(), null, 0, PollTime);
+                PollTimer = new Timer(o => Poll(), null, 0, PollTime);
+            }
         }
 
         /// <summary>
