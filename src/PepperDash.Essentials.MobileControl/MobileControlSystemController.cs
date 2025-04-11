@@ -763,11 +763,10 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose("Adding InputsMessenger<string> for {deviceKey}", device.Key);
 
-                        var messenger = new ISelectableItemsMessenger<string>(
+                        var messenger = new IHasInputsMessenger<string>(
                             $"{device.Key}-inputs-{Key}",
                             $"/device/{device.Key}",
-                            stringInputs.Inputs,
-                            "inputs"
+                            stringInputs
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -779,11 +778,10 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose("Adding InputsMessenger for {deviceKey}", device.Key);
 
-                        var messenger = new ISelectableItemsMessenger<byte>(
+                        var messenger = new IHasInputsMessenger<byte>(
                             $"{device.Key}-inputs-{Key}",
                             $"/device/{device.Key}",
-                            byteInputs.Inputs,
-                            "inputs"
+                            byteInputs
                         );
 
                         AddDefaultDeviceMessenger(messenger);
@@ -795,11 +793,10 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose("Adding InputsMessenger for {deviceKey}", device.Key);
 
-                        var messenger = new ISelectableItemsMessenger<int>(
+                        var messenger = new IHasInputsMessenger<int>(
                             $"{device.Key}-inputs-{Key}",
                             $"/device/{device.Key}",
-                            intInputs.Inputs,
-                            "inputs"
+                            intInputs
                         );
 
                         AddDefaultDeviceMessenger(messenger);

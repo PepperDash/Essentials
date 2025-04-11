@@ -113,10 +113,7 @@ namespace PepperDash.Essentials
 
                 _server.SendMessageToAllClients(message);
 
-                _server.LogVerbose("Message TX To all clients: {message}", null, message);
-
-
-
+                _server.LogVerbose("Message TX To all clients: {message}", message);
             }
             catch (ThreadAbortException)
             {
@@ -126,8 +123,6 @@ namespace PepperDash.Essentials
             {
                 Debug.LogMessage(ex, "Caught an exception in the Transmit Processor");
             }
-
-
         }
         #endregion
     }
