@@ -30,6 +30,8 @@ namespace PepperDash.Essentials.Core
 
 		private Timer PollTimer;
 
+        private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
+
         /// <summary>
         /// GenericCommunicationMonitor constructor
         /// 
@@ -201,14 +203,21 @@ namespace PepperDash.Essentials.Core
 
         private void BeginPolling()
         {
-            lock (_pollTimerLock)
+            try
             {
-                if (PollTimer != null)
+                semaphore.Wait();
                 {
-                    return;
-                }
+                    if (PollTimer != null)
+                    {
+                        return;
+                    }
 
-                PollTimer = new Timer(o => Poll(), null, 0, PollTime);
+                    PollTimer = new Timer(o => Poll(), null, 0, PollTime);
+                }
+            }
+            finally
+            {
+                semaphore.Release();
             }
         }
 
