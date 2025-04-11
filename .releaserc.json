@@ -24,9 +24,7 @@
     ]
   ],  
   "branches": [
-    "main",
-    {"name": "development", "prerelease": "beta", "channel": "beta"},
-    {"name": "release", "prerelease": "rc", "channel": "rc"},
+    "maintenance-1x",    
     {
       "name": "replace-me-feature-branch",
       "prerelease": "replace-me-prerelease",
