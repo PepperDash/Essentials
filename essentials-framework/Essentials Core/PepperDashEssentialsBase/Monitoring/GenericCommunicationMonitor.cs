@@ -40,6 +40,7 @@ namespace PepperDash.Essentials.Core
 
 		long PollTime;
 		CTimer PollTimer;
+        CCriticalSection pollCriticalSection = new CCriticalSection();
 		string PollString;
         Action PollAction;
 		
@@ -176,15 +177,25 @@ namespace PepperDash.Essentials.Core
             {
                 // Start polling and set status to unknow and let poll result update the status to IsOk when a response is received
                 Status = MonitorStatus.StatusUnknown;
-                Start();
-                BeginPolling();
+                Start();                
             }
         }
 
         void BeginPolling()
-        {
-            Poll();
-            PollTimer = new CTimer(o => Poll(), null, PollTime, PollTime);
+        {            
+            try{
+                pollCriticalSection.Enter();
+
+                if (PollTimer != null)
+                {
+                    return;
+                }
+                
+                PollTimer = new CTimer(o => Poll(), null, 0, PollTime);
+            }
+            finally{
+                pollCriticalSection.Leave();
+            }
         }
 
 		public override void Stop()
