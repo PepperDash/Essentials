@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
-
-using System.ComponentModel;
-
 using PepperDash.Core;
-using Serilog.Events;
-
+using System.Threading;
+using PepperDash.Core.Logging;
 
 namespace PepperDash.Essentials.Core
 {
@@ -31,35 +22,32 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Return true if the Client is ISocketStatus
         /// </summary>
-        public bool IsSocket
-        {
-            get
-            {
-                return Client is ISocketStatus;
-            }
-        }
+        public bool IsSocket => Client is ISocketStatus;
 
-		long PollTime;
-		CTimer PollTimer;
-		string PollString;
-        Action PollAction;
-		
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="client"></param>
-		/// <param name="pollTime">in MS, >= 5000</param>
-		/// <param name="warningTime">in MS, >= 5000</param>
-		/// <param name="errorTime">in MS, >= 5000</param>
-		/// <param name="pollString">String to send to comm</param>
-		public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, long pollTime, 
+        private readonly string PollString;
+        private readonly Action PollAction;
+        private readonly long PollTime;
+
+		private Timer PollTimer;
+
+        /// <summary>
+        /// GenericCommunicationMonitor constructor
+        /// 
+        /// Note: If the client is a socket, the connection status will be monitored and the PollTimer will be started automatically when the client is connected
+        /// </summary>
+        /// <param name="parent">Parent device</param>
+        /// <param name="client">Communications Client</param>
+        /// <param name="pollTime">Time in MS for polling</param>
+        /// <param name="warningTime">Warning time in MS. If a message is not received before this elapsed time the status will be Warning</param>
+        /// <param name="errorTime">Error time in MS. If a message is not received before this elapsed time the status will be Error</param>
+        /// <param name="pollString">string to send for polling</param>
+        /// <exception cref="ArgumentException">Poll time must be less than warning and error time</exception>
+        public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, long pollTime, 
 			long warningTime, long errorTime, string pollString) :
 			base(parent, warningTime, errorTime)
 		{
 			if (pollTime > warningTime || pollTime > errorTime)
 				throw new ArgumentException("pollTime must be less than warning or errorTime");
-            //if (pollTime < 5000)
-            //    throw new ArgumentException("pollTime cannot be less than 5000 ms");
 
 			Client = client;
 			PollTime = pollTime;
@@ -67,26 +55,41 @@ namespace PepperDash.Essentials.Core
 
             if (IsSocket)
             {
-                (Client as ISocketStatus).ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
+                (Client as ISocketStatus).ConnectionChange += Socket_ConnectionChange;
             }
 		}
 
+        /// <summary>
+        /// GenericCommunicationMonitor constructor with a bool to specify whether to monitor BytesReceived
+        /// 
+        /// Note: If the client is a socket, the connection status will be monitored and the PollTimer will be started automatically when the client is connected
+        /// </summary>
+        /// <param name="parent">Parent device</param>
+        /// <param name="client">Communications Client</param>
+        /// <param name="pollTime">Time in MS for polling</param>
+        /// <param name="warningTime">Warning time in MS. If a message is not received before this elapsed time the status will be Warning</param>
+        /// <param name="errorTime">Error time in MS. If a message is not received before this elapsed time the status will be Error</param>
+        /// <param name="pollString">string to send for polling</param>
+        /// <param name="monitorBytesReceived">Use bytesReceived event instead of textReceived when true</param>
         public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, long pollTime,
             long warningTime, long errorTime, string pollString, bool monitorBytesReceived) :
             this(parent, client, pollTime, warningTime, errorTime, pollString)
         {
-            SetMonitorBytesReceived(monitorBytesReceived);
+            MonitorBytesReceived = monitorBytesReceived;
         }
 
         /// <summary>
-        /// Poll is a provided action instead of string
+        /// GenericCommunicationMonitor constructor with a poll action instead of a poll string
+        /// 
+        /// Note: If the client is a socket, the connection status will be monitored and the PollTimer will be started automatically when the client is connected
         /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="client"></param>
-        /// <param name="pollTime"></param>
-        /// <param name="warningTime"></param>
-        /// <param name="errorTime"></param>
-        /// <param name="pollBytes"></param>
+        /// <param name="parent">Parent device</param>
+        /// <param name="client">Communications Client</param>
+        /// <param name="pollTime">Time in MS for polling</param>
+        /// <param name="warningTime">Warning time in MS. If a message is not received before this elapsed time the status will be Warning</param>
+        /// <param name="errorTime">Error time in MS. If a message is not received before this elapsed time the status will be Error</param>
+        /// <param name="pollAction">Action to execute for polling</param>
+        /// <exception cref="ArgumentException">Poll time must be less than warning and error time</exception>
         public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, long pollTime,
             long warningTime, long errorTime, Action pollAction) :
             base(parent, warningTime, errorTime)
@@ -102,51 +105,67 @@ namespace PepperDash.Essentials.Core
 
             if (IsSocket)
             {
-                (Client as ISocketStatus).ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
+                (Client as ISocketStatus).ConnectionChange += Socket_ConnectionChange;
             }
 
         }
 
+        /// <summary>
+        /// GenericCommunicationMonitor constructor with a poll action instead of a poll string and a bool to specify whether to monitor BytesReceived
+        /// 
+        /// Note: If the client is a socket, the connection status will be monitored and the PollTimer will be started automatically when the client is connected
+        /// </summary>
+        /// <param name="parent">Parent device</param>
+        /// <param name="client">Communications Client</param>
+        /// <param name="pollTime">Time in MS for polling</param>
+        /// <param name="warningTime">Warning time in MS. If a message is not received before this elapsed time the status will be Warning</param>
+        /// <param name="errorTime">Error time in MS. If a message is not received before this elapsed time the status will be Error</param>
+        /// <param name="pollAction">Action to execute for polling</param>
+        /// <param name="monitorBytesReceived">Use bytesReceived event instead of textReceived when true</param>
         public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, long pollTime,
             long warningTime, long errorTime, Action pollAction, bool monitorBytesReceived) :
             this(parent, client, pollTime, warningTime, errorTime, pollAction)
         {
-            SetMonitorBytesReceived(monitorBytesReceived);
+            MonitorBytesReceived = monitorBytesReceived;
         }
 
 
-		/// <summary>
-		/// Build the monitor from a config object
-		/// </summary>
-		public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, 
+        /// <summary>
+        /// GenericCommunicationMonitor constructor with a config object
+        /// 
+        /// Note: If the client is a socket, the connection status will be monitored and the PollTimer will be started automatically when the client is connected
+        /// </summary>
+        /// <param name="parent">Parent Device</param>
+        /// <param name="client">Communications Client</param>
+        /// <param name="props"><see cref="CommunicationMonitorConfig">Communication Monitor Config</see> object</param>
+        public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, 
 			CommunicationMonitorConfig props) :
 			this(parent, client, props.PollInterval, props.TimeToWarning, props.TimeToError, props.PollString)
 		{
             if (IsSocket)
             {
-                (Client as ISocketStatus).ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
+                (Client as ISocketStatus).ConnectionChange += Socket_ConnectionChange;
             }
 		}
 
         /// <summary>
-        /// Builds the monitor from a config object and takes a bool to specify whether to monitor BytesReceived
-        /// Default is to monitor TextReceived
+        /// GenericCommunicationMonitor constructor with a config object and a bool to specify whether to monitor BytesReceived
+        /// 
+        /// Note: If the client is a socket, the connection status will be monitored and the PollTimer will be started automatically when the client is connected
         /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="client"></param>
-        /// <param name="props"></param>
-        /// <param name="monitorBytesReceived"></param>
+        /// <param name="parent">Parent Device</param>
+        /// <param name="client">Communications Client</param>
+        /// <param name="props"><see cref="CommunicationMonitorConfig">Communication Monitor Config</see> object</param>
+        /// <param name="monitorBytesReceived">Use bytesReceived event instead of textReceived when true</param>
         public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, CommunicationMonitorConfig props, bool monitorBytesReceived) :
             this(parent, client, props.PollInterval, props.TimeToWarning, props.TimeToError, props.PollString)
-        {
-            SetMonitorBytesReceived(monitorBytesReceived);
-        }
-
-        void SetMonitorBytesReceived(bool monitorBytesReceived)
         {
             MonitorBytesReceived = monitorBytesReceived;
         }
 
+        /// <summary>
+        /// Start the poll cycle
+        /// </summary>
 		public override void Start()
 		{
             if (MonitorBytesReceived) 
@@ -163,7 +182,7 @@ namespace PepperDash.Essentials.Core
             BeginPolling();
 		}
 
-        void  socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+        private void Socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
         {
             if (!e.Client.IsConnected)
             {
@@ -176,58 +195,65 @@ namespace PepperDash.Essentials.Core
             {
                 // Start polling and set status to unknow and let poll result update the status to IsOk when a response is received
                 Status = MonitorStatus.StatusUnknown;
-                Start();
-                BeginPolling();
+                Start();                
             }
         }
 
-        void BeginPolling()
+        private void BeginPolling()
         {
-            Poll();
-            PollTimer = new CTimer(o => Poll(), null, PollTime, PollTime);
+            lock (_pollTimerLock)
+            {
+                if (PollTimer != null)
+                {
+                    return;
+                }
+
+                PollTimer = new Timer(o => Poll(), null, 0, PollTime);
+            }
         }
 
+        /// <summary>
+        /// Stop the poll cycle
+        /// </summary>
 		public override void Stop()
 		{
             if(MonitorBytesReceived)
             {
-			    Client.BytesReceived -= this.Client_BytesReceived;
+			    Client.BytesReceived -= Client_BytesReceived;
             }
             else
             {
                 Client.TextReceived -= Client_TextReceived;
             }
 
-            if (PollTimer != null)
+            StopErrorTimers();
+
+            if (PollTimer == null)
             {
-                PollTimer.Stop();
-                PollTimer = null;
-                StopErrorTimers();
+                return;
             }
+            
+            PollTimer.Dispose();
+            PollTimer = null;
 		}
 
-        void  Client_TextReceived(object sender, GenericCommMethodReceiveTextArgs e)
+        private void Client_TextReceived(object sender, GenericCommMethodReceiveTextArgs e)
         {
             DataReceived();
         }
 
-		/// <summary>
-		/// Upon any receipt of data, set everything to ok!
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		void Client_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
+		private void Client_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
 		{
             DataReceived();
         }
 
-        void DataReceived()
+        private void DataReceived()
         {
             Status = MonitorStatus.IsOk;
             ResetErrorTimers();
         }
 
-		void Poll()
+		private void Poll()
 		{
 			StartErrorTimers();
 			if (Client.IsConnected)
@@ -240,12 +266,14 @@ namespace PepperDash.Essentials.Core
 			}
 			else
 			{
-				Debug.LogMessage(LogEventLevel.Verbose, this, "Comm not connected");
+				this.LogVerbose("Comm not connected");
 			}
 		}
 	}
 
-
+    /// <summary>
+    /// Communication Monitor Configuration from Essentials Configuration
+    /// </summary>
 	public class CommunicationMonitorConfig
 	{
 		public int PollInterval { get; set; }
@@ -253,6 +281,9 @@ namespace PepperDash.Essentials.Core
 		public int TimeToError { get; set; }
 		public string PollString { get; set; }
 
+        /// <summary>
+        /// Default constructor. Sets pollInterval to 30s, TimeToWarning to 120s, and TimeToError to 300s
+        /// </summary>
 		public CommunicationMonitorConfig()
 		{
 			PollInterval = 30000;
