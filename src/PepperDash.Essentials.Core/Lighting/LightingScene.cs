@@ -26,6 +26,9 @@ namespace PepperDash.Essentials.Core.Lighting
             }
         }
 
+        [JsonProperty("sortOrder", NullValueHandling = NullValueHandling.Ignore)]
+        public int SortOrder { get; set; }
+
         [JsonIgnore]
         public BoolFeedback IsActiveFeedback { get; set; }
 
