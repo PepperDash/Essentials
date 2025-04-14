@@ -8,15 +8,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 {
     public class ILightingScenesMessenger : MessengerBase
     {
-        protected ILightingScenes Device { get; private set; }
+        private ILightingScenes lightingScenesDevice;
 
         public ILightingScenesMessenger(string key, ILightingScenes device, string messagePath)
             : base(key, messagePath, device as IKeyName)
         {
-            Device = device ?? throw new ArgumentNullException("device");
-            Device.LightingSceneChange += new EventHandler<LightingSceneChangeEventArgs>(LightingDevice_LightingSceneChange);
+            lightingScenesDevice = device ?? throw new ArgumentNullException("device");
 
-
+            lightingScenesDevice.LightingSceneChange += new EventHandler<LightingSceneChangeEventArgs>(LightingDevice_LightingSceneChange);
         }
 
         private void LightingDevice_LightingSceneChange(object sender, LightingSceneChangeEventArgs e)
@@ -38,8 +37,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
             AddAction("/selectScene", (id, content) =>
             {
                 var s = content.ToObject<LightingScene>();
-                Device.SelectScene(s);
+                lightingScenesDevice.SelectScene(s);
             });
+
+            if(!(lightingScenesDevice is ILightingScenesDynamic lightingScenesDynamic))
+                return;
+
+            lightingScenesDynamic.LightingScenesUpdated += (s, e) => SendFullStatus();
         }
 
 
@@ -47,8 +51,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             var state = new LightingBaseStateMessage
             {
-                Scenes = Device.LightingScenes,
-                CurrentLightingScene = Device.CurrentLightingScene
+                Scenes = lightingScenesDevice.LightingScenes,
+                CurrentLightingScene = lightingScenesDevice.CurrentLightingScene
             };
 
             PostStatusMessage(state);
