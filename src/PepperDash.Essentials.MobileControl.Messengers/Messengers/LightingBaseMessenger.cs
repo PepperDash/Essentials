@@ -15,8 +15,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             Device = device ?? throw new ArgumentNullException("device");
             Device.LightingSceneChange += new EventHandler<LightingSceneChangeEventArgs>(LightingDevice_LightingSceneChange);
-
-
         }
 
         private void LightingDevice_LightingSceneChange(object sender, LightingSceneChangeEventArgs e)
@@ -40,6 +38,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 var s = content.ToObject<LightingScene>();
                 Device.SelectScene(s);
             });
+
+            if(!(Device is ILightingScenesDynamic lightingScenesDynamic))
+                return;
+
+            lightingScenesDynamic.LightingScenesUpdated += (s, e) => SendFullStatus();
         }
 
 
