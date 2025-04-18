@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Core.Lighting
 
     }
 
-    public interface ILightingScenesDynamic
+    public interface ILightingScenesDynamic : ILightingScenes
     {
         event EventHandler LightingScenesUpdated;
     }
