@@ -69,7 +69,8 @@ namespace PepperDash.Essentials.Core
         public static (RouteDescriptor, RouteDescriptor) GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort, RoutingOutputPort sourcePort)
         {
             // if it's a single signal type, find the route
-            if (!signalType.HasFlag(eRoutingSignalType.AudioVideo) && !signalType.HasFlag(eRoutingSignalType.Video | eRoutingSignalType.SecondaryAudio))
+            if (!signalType.HasFlag(eRoutingSignalType.AudioVideo) && 
+                !(signalType.HasFlag(eRoutingSignalType.Video) && signalType.HasFlag(eRoutingSignalType.SecondaryAudio)))
             {
                 var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, signalType);
                 Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
