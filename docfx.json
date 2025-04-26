@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "src",
+          "files": [
+            "**/*.csproj"
+          ]
+        }
+      ],
+      "properties": {
+        "TargetFramework": "net472"
+      },
+      "dest": "api",
+      "namespaceLayout": "nested"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "docs/**/*.{md,yml}",
+          "api/**/*.{md,yml}",
+          "index.md",
+          "toc.yml"
+        ],
+        "exclude": [
+          "_site/**",
+          ".github/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "docs/images/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "PepperDash Essentials",
+      "_appTitle": "PepperDash Essentials",
+      "_enableSearch": true,
+      "pdf": false
+    }
+  }
+}

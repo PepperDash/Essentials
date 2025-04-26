@@ -81,7 +81,7 @@ namespace PepperDash.Essentials.Core
         void StartShutdown(eShutdownType type);
     }
 
-    /// <summary""'""">
+    /// <summary>
     /// Describes a room with a tech password
     /// </summary>
     public interface ITechPassword
