@@ -9,8 +9,7 @@ In networked A/V systems, devices can use many different methods of communicatio
 * `PepperDash.Core.GenericSshClient`
 * `PepperDash.Core.GenericSecureTcpIpClient`
 * `PepperDash.Essentials.Core.ComPortController`
-* `PepperDash.Essentilas.Core.StatusMonitorBase`
-
+* `PepperDash.Essentials.Core.StatusMonitorBase`
 ## IBasicCommunication and ISocketStatus
 
 All common communication controllers will implement the `IBasicCommunication` interface, which is an extension of `ICommunicationReceiver`. This defines receive events, connection state properties, and send methods. Devices that need to use COM port, TCP, SSh or other similar communication will require an `IBasicCommunication` type object to be injected at construction time.
