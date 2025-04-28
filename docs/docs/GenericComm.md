@@ -191,7 +191,7 @@ These enumerations are not case sensitive.  Not all methods are valid for a ```g
 
 ##### ComParams
 
-A ```Com``` device requires a ```comParams``` object to set the propeties of the comport.  The values of all proeprties are case-insensitive.
+A ```Com``` device requires a ```comParams``` object to set the properties of the comport.  The values of all properties are case-insensitive.
 
 ```JSON
 {
