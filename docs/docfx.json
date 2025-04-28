@@ -4,9 +4,9 @@
     {
       "src": [
         {
-          "src": "src",
+          "src": "../",
           "files": [
-            "**/*.csproj"
+            "src/**/*.csproj"
           ]
         }
       ],
@@ -14,7 +14,8 @@
         "TargetFramework": "net472"
       },
       "dest": "api",
-      "namespaceLayout": "nested"
+      "namespaceLayout": "nested",
+      "outputFormat": "apiPage"
     }
   ],
   "build": {
@@ -48,6 +49,9 @@
       "_appName": "PepperDash Essentials",
       "_appTitle": "PepperDash Essentials",
       "_enableSearch": true,
+      "_appLogoPath": "docs/images/favicon-32x32.png",
+      "_appFaviconPath": "docs/images/favicon.ico",
+      "_disableToc": false,
       "pdf": false
     }
   }

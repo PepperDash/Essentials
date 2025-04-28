@@ -1,7 +1,3 @@
----
-_layout: landing
----
-
 # Welcome to PepperDash Essentials!
 
 PepperDash Essentials is an open-source framework for control systems, built on Crestron's Simpl# Pro framework. It can be configured as a standalone program capable of running a wide variety of system designs and can also be used to augment other Crestron programs.

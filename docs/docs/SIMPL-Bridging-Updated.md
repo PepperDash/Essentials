@@ -1,4 +1,4 @@
-# SIMPL Windows Bridging
+# Use with SIMPL Windows
 
 ***
 * [YouTube Video - SIMPL Windows in PepperDash Essentials](https://youtu.be/P2jNzsfpgJE)
