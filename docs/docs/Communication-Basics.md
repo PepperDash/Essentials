@@ -1,7 +1,6 @@
 # Unifying communication methods
 
-In networked A/V systems, devices can use many different methods of communication: COM ports, TCP/IP sockets, Telnet, SSh. Generally, the data protocol and commands that are sent and received using any of these methods are the same, and it is not necessary for a device to know the details of the communication method it is using. A Samsung MDC protocol display in room 1 using RS232 speaks the same language as another Samsung MDC does in the next room using TCP/IP. For these, and most cases where the device doesn't need to know its communication method, we introduce the `IBasicCommunication` interface.
-
+In networked A/V systems, devices can use many different methods of communication: COM ports, TCP/IP sockets, Telnet, SSH. Generally, the data protocol and commands that are sent and received using any of these methods are the same, and it is not necessary for a device to know the details of the communication method it is using. A Samsung MDC protocol display in room 1 using RS232 speaks the same language as another Samsung MDC does in the next room using TCP/IP. For these, and most cases where the device doesn't need to know its communication method, we introduce the `IBasicCommunication` interface.
 ## Classes Referenced
 
 * `PepperDash.Core.IBasicCommunication`
