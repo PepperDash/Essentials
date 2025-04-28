@@ -45,7 +45,7 @@ Consider the following example.
             {
                 "key": "DigitalInput-2",
                 "uid": 3,
-                "name": "Digital Inptut 2",
+                "name": "Digital Input 2",
                 "group": "api",
                 "type": "digitalInput",
                 "properties": {
