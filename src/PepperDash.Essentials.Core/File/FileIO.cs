@@ -73,12 +73,12 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		/// <summary>
-		/// Get the data with fileInfo object 
-		/// </summary>
-		/// <param name="fileName"></param>
-		/// <returns></returns>
-		public static string ReadDataFromFile(FileInfo file)
+        /// <summary>
+        /// Get the data with fileInfo object 
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public static string ReadDataFromFile(FileInfo file)
 		{
 			try
 			{
@@ -196,12 +196,7 @@ namespace PepperDash.Essentials.Core
 		/// 
 		/// </summary>
 		/// <param name="data"></param>
-		/// <param name="filePath"></param>
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="data"></param>
-		/// <param name="filePath"></param>
+		/// <param name="filePath"></param>		
 		public static void WriteDataToFile(string data, string filePath)
 		{
 			Thread _WriteFileThread;
