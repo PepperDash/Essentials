@@ -121,7 +121,7 @@ public class MyClass
         ...
 
         // changes to VolumeLevelFeedback will automatically propagate to UShortInputSig 123
-        // changes to HdcpActiveFeedback will propogate to BoolInputSig 456
+        // changes to HdcpActiveFeedback will propagate to BoolInputSig 456
         // and these two panel Sigs are updated immediately as well.
         Display.VolumeLevelFeedback.LinkInputSig(MyTp.UshortInput[123]);
         MyHdcpDevice.HdcpActiveFeedback.LinkInputSig(MyTp.BoolInput[456]);
