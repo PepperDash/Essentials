@@ -9,6 +9,7 @@ using Newtonsoft.Json.Converters;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
+
     public interface IHasCallHistory
     {
         CodecCallHistory CallHistory { get; }
@@ -110,7 +111,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// <summary>
         /// Takes the Cisco occurence type and converts it to the matching enum
         /// </summary>
-        /// <param name="s"></para
+        /// <param name="s"></param>
         public eCodecOccurrenceType ConvertToOccurenceTypeEnum(string s)
         {
             switch (s)
