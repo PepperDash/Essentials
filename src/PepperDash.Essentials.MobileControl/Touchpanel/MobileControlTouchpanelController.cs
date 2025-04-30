@@ -136,7 +136,7 @@ namespace PepperDash.Essentials.Touchpanel
                 AppOpenFeedback, _zoomInCallFeedback, _zoomIncomingCallFeedback
             };
 
-            
+            RegisterForExtenders();
         }
 
         public void UpdateTheme(string theme)
@@ -164,16 +164,7 @@ namespace PepperDash.Essentials.Touchpanel
 
                     UpdateZoomFeedbacks();
 
-                    if (!x70Panel.ExtenderApplicationControlReservedSigs.HideOpenedApplicationFeedback.BoolValue)
-                    {
-                        x70Panel.ExtenderButtonToolbarReservedSigs.ShowButtonToolbar();
-                        x70Panel.ExtenderButtonToolbarReservedSigs.Button2On();
-                    }
-                    else
-                    {
-                        x70Panel.ExtenderButtonToolbarReservedSigs.HideButtonToolbar();
-                        x70Panel.ExtenderButtonToolbarReservedSigs.Button2Off();
-                    }
+                    
                 };
 
 
@@ -209,16 +200,7 @@ namespace PepperDash.Essentials.Touchpanel
                     handler(this, new DeviceInfoEventArgs(DeviceInfo));
                 };
 
-                x70Panel.ExtenderApplicationControlReservedSigs.Use();
-                x70Panel.ExtenderZoomRoomAppReservedSigs.Use();
-                x70Panel.ExtenderEthernetReservedSigs.Use();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Use();
-
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button1Off();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button3Off();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button4Off();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button5Off();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button6Off();
+                
 
                 return;
             }
@@ -268,6 +250,34 @@ namespace PepperDash.Essentials.Touchpanel
                 x60withZoomApp.ExtenderZoomRoomAppReservedSigs.Use();
                 x60withZoomApp.ExtenderApplicationControlReservedSigs.Use();
                 x60withZoomApp.ExtenderEthernetReservedSigs.Use();
+            }
+        }
+
+        private void UpdatePanelHardButtons()
+        {
+            if (Panel is TswXX70Base x70Panel)
+            {
+                x70Panel.ExtenderApplicationControlReservedSigs.Use();
+                x70Panel.ExtenderZoomRoomAppReservedSigs.Use();
+                x70Panel.ExtenderEthernetReservedSigs.Use();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Use();
+
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button1Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button3Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button4Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button5Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button6Off();
+
+                if (!x70Panel.ExtenderApplicationControlReservedSigs.HideOpenedApplicationFeedback.BoolValue)
+                {
+                    x70Panel.ExtenderButtonToolbarReservedSigs.ShowButtonToolbar();
+                    x70Panel.ExtenderButtonToolbarReservedSigs.Button2On();
+                }
+                else
+                {
+                    x70Panel.ExtenderButtonToolbarReservedSigs.HideButtonToolbar();
+                    x70Panel.ExtenderButtonToolbarReservedSigs.Button2Off();
+                }
             }
         }
 
@@ -324,13 +334,10 @@ namespace PepperDash.Essentials.Touchpanel
                 Panel.StringInput[3].StringValue = McServerUrlFeedback.StringValue;
                 Panel.StringInput[4].StringValue = UserCodeFeedback.StringValue;
 
+                this.LogInformation("Updating button feedbacks from Panel online status change");
 
-                if (args.DeviceOnLine)
-                {
-                    this.LogInformation($"Panel is online, calling RegisterForExtenders method");
+                UpdatePanelHardButtons();
 
-                    RegisterForExtenders();
-                }
 
             };
         }
