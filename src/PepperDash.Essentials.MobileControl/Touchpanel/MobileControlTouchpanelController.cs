@@ -164,7 +164,18 @@ namespace PepperDash.Essentials.Touchpanel
 
                     UpdateZoomFeedbacks();
 
-                    
+                    if (!x70Panel.ExtenderApplicationControlReservedSigs.HideOpenedApplicationFeedback.BoolValue)
+                    {
+                        x70Panel.ExtenderButtonToolbarReservedSigs.ShowButtonToolbar();
+                        x70Panel.ExtenderButtonToolbarReservedSigs.Button2On();
+                    }
+                    else
+                    {
+                        x70Panel.ExtenderButtonToolbarReservedSigs.HideButtonToolbar();
+                        x70Panel.ExtenderButtonToolbarReservedSigs.Button2Off();
+                    }
+
+
                 };
 
 
@@ -200,7 +211,16 @@ namespace PepperDash.Essentials.Touchpanel
                     handler(this, new DeviceInfoEventArgs(DeviceInfo));
                 };
 
-                
+                x70Panel.ExtenderApplicationControlReservedSigs.Use();
+                x70Panel.ExtenderZoomRoomAppReservedSigs.Use();
+                x70Panel.ExtenderEthernetReservedSigs.Use();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Use();
+
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button1Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button3Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button4Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button5Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button6Off();
 
                 return;
             }
@@ -255,13 +275,9 @@ namespace PepperDash.Essentials.Touchpanel
 
         private void UpdatePanelHardButtons()
         {
-            if (Panel is TswXX70Base x70Panel)
-            {
-                x70Panel.ExtenderApplicationControlReservedSigs.Use();
-                x70Panel.ExtenderZoomRoomAppReservedSigs.Use();
-                x70Panel.ExtenderEthernetReservedSigs.Use();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Use();
 
+            if(Panel is TswX70Base x70Panel)
+            {
                 x70Panel.ExtenderButtonToolbarReservedSigs.Button1Off();
                 x70Panel.ExtenderButtonToolbarReservedSigs.Button3Off();
                 x70Panel.ExtenderButtonToolbarReservedSigs.Button4Off();
@@ -280,6 +296,7 @@ namespace PepperDash.Essentials.Touchpanel
                 }
             }
         }
+        
 
         public override bool CustomActivate()
         {
