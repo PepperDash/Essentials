@@ -136,7 +136,7 @@ namespace PepperDash.Essentials.Touchpanel
                 AppOpenFeedback, _zoomInCallFeedback, _zoomIncomingCallFeedback
             };
 
-            RegisterForExtenders();
+            
         }
 
         public void UpdateTheme(string theme)
@@ -323,6 +323,15 @@ namespace PepperDash.Essentials.Touchpanel
                 Panel.StringInput[2].StringValue = QrCodeUrlFeedback.StringValue;
                 Panel.StringInput[3].StringValue = McServerUrlFeedback.StringValue;
                 Panel.StringInput[4].StringValue = UserCodeFeedback.StringValue;
+
+
+                if (args.DeviceOnLine)
+                {
+                    this.LogInformation($"Panel is online, calling RegisterForExtenders method");
+
+                    RegisterForExtenders();
+                }
+
             };
         }
 
