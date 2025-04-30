@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configurations>Debug;Release;Debug 4.7.2</Configurations>
+    <DefineConstants>$(DefineConstants);ESSENTIALS_VERSION=$(Version)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
