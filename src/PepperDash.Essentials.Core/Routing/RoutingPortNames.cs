@@ -7,7 +7,8 @@ using Crestron.SimplSharp;
 namespace PepperDash.Essentials.Core
 {
 	/// <summary>
-	/// These should correspond directly with the portNames var in the config tool.
+	/// Defines constant string values for common routing port keys.
+    /// These should correspond directly with the portNames var in the config tool.
 	/// </summary>
 	public class RoutingPortNames
 	{

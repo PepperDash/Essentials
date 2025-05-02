@@ -18,8 +18,15 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public static class Extensions
     {
+        /// <summary>
+        /// Stores pending route requests, keyed by the destination device key.
+        /// Used primarily to handle routing requests while a device is cooling down.
+        /// </summary>
         private static readonly Dictionary<string, RouteRequest> RouteRequests = new Dictionary<string, RouteRequest>();
 
+        /// <summary>
+        /// A queue to process route requests and releases sequentially.
+        /// </summary>
         private static readonly GenericQueue routeRequestQueue = new GenericQueue("routingQueue");
 
         /// <summary>
@@ -38,16 +45,49 @@ namespace PepperDash.Essentials.Core
 
             ReleaseAndMakeRoute(destination, source, signalType, inputPort, outputPort);
         }
+
+        /// <summary>
+        /// Will release the existing route to the destination, if a route is found. This does not CLEAR the route, only stop counting usage time on any output ports that have a usage tracker set
+        /// </summary>
+        /// <param name="destination">destination to clear</param>
         public static void ReleaseRoute(this IRoutingInputs destination)
         {
-            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, string.Empty));
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, string.Empty, false));
         }
 
+        /// <summary>
+        /// Will release the existing route to the destination, if a route is found. This does not CLEAR the route, only stop counting usage time on any output ports that have a usage tracker set
+        /// </summary>
+        /// <param name="destination">destination to clear</param>
+        /// <param name="inputPortKey">Input to use to find existing route</param>
         public static void ReleaseRoute(this IRoutingInputs destination, string inputPortKey)
         {
-            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, inputPortKey));
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, inputPortKey, false));
         }
 
+        /// <summary>
+        /// Clears the route on the destination.  This will remove any routes that are currently in use
+        /// </summary>
+        /// <param name="destination">Destination</param>
+        public static void ClearRoute(this IRoutingInputs destination)
+        {
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, string.Empty, true));
+        }
+
+        /// <summary>
+        /// Clears the route on the destination.  This will remove any routes that are currently in use
+        /// </summary>
+        /// <param name="destination">destination</param>
+        /// <param name="inputPortKey">input to use to find existing route</param>
+        public static void ClearRoute(this IRoutingInputs destination, string inputPortKey)
+        {
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, inputPortKey, true));
+        }
+
+        /// <summary>
+        /// Removes the route request for the destination.  This will remove any routes that are currently in use
+        /// </summary>
+        /// <param name="destinationKey">destination device key</param>
         public static void RemoveRouteRequestForDestination(string destinationKey)
         {
             Debug.LogMessage(LogEventLevel.Information, "Removing route request for {destination}", null, destinationKey);
@@ -130,6 +170,15 @@ namespace PepperDash.Essentials.Core
             return (audioRouteDescriptor, videoRouteDescriptor);
         }
 
+        /// <summary>
+        /// Internal method to handle the logic for releasing an existing route and making a new one.
+        /// Handles devices with cooling states by queueing the request.
+        /// </summary>
+        /// <param name="destination">The destination device.</param>
+        /// <param name="source">The source device.</param>
+        /// <param name="signalType">The type of signal to route.</param>
+        /// <param name="destinationPort">The specific destination input port (optional).</param>
+        /// <param name="sourcePort">The specific source output port (optional).</param>
         private static void ReleaseAndMakeRoute(IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort = null, RoutingOutputPort sourcePort = null)
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
@@ -184,11 +233,16 @@ namespace PepperDash.Essentials.Core
                 Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
             }
 
-            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination,destinationPort?.Key ?? string.Empty));
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination,destinationPort?.Key ?? string.Empty, false));
 
             routeRequestQueue.Enqueue(new RouteRequestQueueItem(RunRouteRequest, routeRequest));            
         }
 
+        /// <summary>
+        /// Executes the actual routing based on a <see cref="RouteRequest"/>.
+        /// Finds the route path, adds it to the collection, and executes the switches.
+        /// </summary>
+        /// <param name="request">The route request details.</param>
         private static void RunRouteRequest(RouteRequest request)
         {
             try
@@ -216,14 +270,15 @@ namespace PepperDash.Essentials.Core
             {
                 Debug.LogMessage(ex, "Exception Running Route Request {request}", null, request);
             }
-        }        
+        }
 
         /// <summary>
-        /// Will release the existing route on the destination, if it is found in 
-        /// RouteDescriptorCollection.DefaultCollection
+        /// Will release the existing route on the destination, if it is found in RouteDescriptorCollection.DefaultCollection
         /// </summary>
-        /// <param name="destination"></param>       
-        private static void ReleaseRouteInternal(IRoutingInputs destination, string inputPortKey)
+        /// <param name="destination"></param>     
+        /// <param name="inputPortKey"> The input port key to use to find the route.  If empty, will use the first available input port</param>
+        /// <param name="clearRoute"> If true, will clear the route on the destination.  This will remove any routes that are currently in use</param>
+        private static void ReleaseRouteInternal(IRoutingInputs destination, string inputPortKey, bool clearRoute)
         {
             try
             {
@@ -242,7 +297,7 @@ namespace PepperDash.Essentials.Core
                 if (current != null)
                 {
                     Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
-                    current.ReleaseRoutes();
+                    current.ReleaseRoutes(clearRoute);
                 }
             } catch (Exception ex)
             {

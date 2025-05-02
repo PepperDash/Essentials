@@ -5,8 +5,17 @@ using System.Linq;
 
 namespace PepperDash.Essentials.Core.Routing
 {
+    /// <summary>
+    /// Manages routing feedback by subscribing to route changes on midpoint and sink devices,
+    /// tracing the route back to the original source, and updating the CurrentSourceInfo on sink devices.
+    /// </summary>
     public class RoutingFeedbackManager:EssentialsDevice
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RoutingFeedbackManager"/> class.
+        /// </summary>
+        /// <param name="key">The unique key for this manager device.</param>
+        /// <param name="name">The name of this manager device.</param>
         public RoutingFeedbackManager(string key, string name): base(key, name)
         {            
             AddPreActivationAction(SubscribeForMidpointFeedback);
@@ -14,6 +23,9 @@ namespace PepperDash.Essentials.Core.Routing
         }
 
 
+        /// <summary>
+        /// Subscribes to the RouteChanged event on all devices implementing <see cref="IRoutingWithFeedback"/>.
+        /// </summary>
         private void SubscribeForMidpointFeedback()
         {
             var midpointDevices = DeviceManager.AllDevices.OfType<IRoutingWithFeedback>();
@@ -24,6 +36,9 @@ namespace PepperDash.Essentials.Core.Routing
             }
         }
 
+        /// <summary>
+        /// Subscribes to the InputChanged event on all devices implementing <see cref="IRoutingSinkWithSwitchingWithInputPort"/>.
+        /// </summary>
         private void SubscribeForSinkFeedback()
         {
                 var sinkDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitchingWithInputPort>();
@@ -34,6 +49,12 @@ namespace PepperDash.Essentials.Core.Routing
                 }   
         }
 
+        /// <summary>
+        /// Handles the RouteChanged event from a midpoint device.
+        /// Triggers an update for all sink devices.
+        /// </summary>
+        /// <param name="midpoint">The midpoint device that reported a route change.</param>
+        /// <param name="newRoute">The descriptor of the new route.</param>
         private void HandleMidpointUpdate(IRoutingWithFeedback midpoint, RouteSwitchDescriptor newRoute)
         {
             try
@@ -51,6 +72,12 @@ namespace PepperDash.Essentials.Core.Routing
             }
         }
 
+        /// <summary>
+        /// Handles the InputChanged event from a sink device.
+        /// Triggers an update for the specific sink device.
+        /// </summary>
+        /// <param name="sender">The sink device that reported an input change.</param>
+        /// <param name="currentInputPort">The new input port selected on the sink device.</param>
         private void HandleSinkUpdate(IRoutingSinkWithSwitching sender, RoutingInputPort currentInputPort)
         {
             try
@@ -63,6 +90,12 @@ namespace PepperDash.Essentials.Core.Routing
             }
         }
 
+        /// <summary>
+        /// Updates the CurrentSourceInfo and CurrentSourceInfoKey properties on a destination (sink) device
+        /// based on its currently selected input port by tracing the route back through tie lines.
+        /// </summary>
+        /// <param name="destination">The destination sink device to update.</param>
+        /// <param name="inputPort">The currently selected input port on the destination device.</param>
         private void UpdateDestination(IRoutingSinkWithSwitching destination, RoutingInputPort inputPort)
         {            
             // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating destination {destination} with inputPort {inputPort}", this,destination?.Key, inputPort?.Key);
@@ -199,6 +232,12 @@ namespace PepperDash.Essentials.Core.Routing
             
         }
 
+        /// <summary>
+        /// Recursively traces a route back from a given tie line to find the root source tie line.
+        /// It navigates through midpoint devices (<see cref="IRoutingWithFeedback"/>) by checking their current routes.
+        /// </summary>
+        /// <param name="tieLine">The starting tie line (typically connected to a sink or midpoint).</param>
+        /// <returns>The <see cref="TieLine"/> connected to the original source device, or null if the source cannot be determined.</returns>
         private TieLine GetRootTieLine(TieLine tieLine)
         {
             TieLine nextTieLine = null;
