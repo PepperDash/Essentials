@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro;
 
@@ -66,12 +67,25 @@ namespace PepperDash.Essentials.Core
         /// Releases all routes in this collection. Typically called via
         /// extension method IRoutingInputs.ReleaseAndMakeRoute()
         /// </summary>
-        public void ReleaseRoutes()
+        /// <param name="clearRoute">True to clear the route. Clearing sends `null` as the input selector to the ExecuteSwitch method</param>
+        public void ReleaseRoutes(bool clearRoute = false)
         {
             foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
             {
                 if (route.SwitchingDevice is IRouting switchingDevice)
                 {
+                    if(clearRoute)
+                    {
+                        try
+                        {
+                            switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError("Error executing switch: {exception}", e.Message);
+                        }
+                    }
+
                     if (route.OutputPort == null)
                     {
                         continue;

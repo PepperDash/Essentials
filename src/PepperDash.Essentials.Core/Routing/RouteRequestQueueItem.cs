@@ -25,21 +25,23 @@ namespace PepperDash.Essentials.Core.Routing
 
     public class ReleaseRouteQueueItem : IQueueMessage
     {
-        private readonly Action<IRoutingInputs, string> action;
+        private readonly Action<IRoutingInputs, string, bool> action;
         private readonly IRoutingInputs destination;
         private readonly string inputPortKey;
+        private readonly bool clearRoute;
 
-        public ReleaseRouteQueueItem(Action<IRoutingInputs, string> action, IRoutingInputs destination, string inputPortKey)
+        public ReleaseRouteQueueItem(Action<IRoutingInputs, string, bool> action, IRoutingInputs destination, string inputPortKey, bool clearRoute)
         {
             this.action = action;
             this.destination = destination;
             this.inputPortKey = inputPortKey;
+            this.clearRoute = clearRoute;
         }
 
         public void Dispatch()
         {
             Debug.LogMessage(LogEventLevel.Information, "Dispatching release route request for {destination}:{inputPortKey}", null, destination?.Key ?? "no destination", string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
-            action(destination, inputPortKey);
+            action(destination, inputPortKey, clearRoute);
         }
     }
 }
