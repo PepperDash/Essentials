@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro;
 
@@ -9,35 +10,63 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Represents an collection of individual route steps between Source and Destination
+    /// Represents a collection of individual route steps between a Source and a Destination device for a specific signal type.
     /// </summary>
     public class RouteDescriptor
     {
+        /// <summary>
+        /// The destination device (sink or midpoint) for the route.
+        /// </summary>
         public IRoutingInputs Destination { get; private set; }
 
+        /// <summary>
+        /// The specific input port on the destination device used for this route. Can be null if not specified or applicable.
+        /// </summary>
         public RoutingInputPort InputPort { get; private set; }
 
+        /// <summary>
+        /// The source device for the route.
+        /// </summary>
         public IRoutingOutputs Source { get; private set; }
+
+        /// <summary>
+        /// The type of signal being routed (e.g., Audio, Video). This descriptor represents a single signal type.
+        /// </summary>
         public eRoutingSignalType SignalType { get; private set; }
+
+        /// <summary>
+        /// A list of individual switching steps required to establish the route.
+        /// </summary>
         public List<RouteSwitchDescriptor> Routes { get; private set; }
 
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route without a specific destination input port.
+        /// </summary>
+        /// <param name="source">The source device.</param>
+        /// <param name="destination">The destination device.</param>
+        /// <param name="signalType">The type of signal being routed.</param>
         public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, eRoutingSignalType signalType) : this(source, destination, null, signalType)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route with a specific destination input port.
+        /// </summary>
+        /// <param name="source">The source device.</param>
+        /// <param name="destination">The destination device.</param>
+        /// <param name="inputPort">The destination input port (optional).</param>
+        /// <param name="signalType">The signal type for this route.</param>
         public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, eRoutingSignalType signalType)
         {
             Destination = destination;
+            InputPort = inputPort;
             Source = source;
             SignalType = signalType;
-            InputPort = inputPort;
             Routes = new List<RouteSwitchDescriptor>();
         }
 
         /// <summary>
-        /// Executes all routes described in this collection.  Typically called via
-        /// extension method IRoutingInputs.ReleaseAndMakeRoute()
+        /// Executes all the switching steps defined in the <see cref="Routes"/> list.
         /// </summary>
         public void ExecuteRoutes()
         {
@@ -63,15 +92,27 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Releases all routes in this collection. Typically called via
-        /// extension method IRoutingInputs.ReleaseAndMakeRoute()
+        /// Releases the usage tracking for the route and optionally clears the route on the switching devices.
         /// </summary>
-        public void ReleaseRoutes()
+        /// <param name="clearRoute">If true, attempts to clear the route on the switching devices (e.g., set input to null/0).</param>
+        public void ReleaseRoutes(bool clearRoute = false)
         {
             foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
             {
                 if (route.SwitchingDevice is IRouting switchingDevice)
                 {
+                    if(clearRoute)
+                    {
+                        try
+                        {
+                            switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError("Error executing switch: {exception}", e.Message);
+                        }
+                    }
+
                     if (route.OutputPort == null)
                     {
                         continue;
@@ -90,6 +131,10 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// Returns a string representation of the route descriptor, including source, destination, and individual route steps.
+        /// </summary>
+        /// <returns>A string describing the route.</returns>
         public override string ToString()
         {
             var routesText = Routes.Select(r => r.ToString()).ToArray();
