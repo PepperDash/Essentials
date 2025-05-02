@@ -18,8 +18,15 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public static class Extensions
     {
+        /// <summary>
+        /// Stores pending route requests, keyed by the destination device key.
+        /// Used primarily to handle routing requests while a device is cooling down.
+        /// </summary>
         private static readonly Dictionary<string, RouteRequest> RouteRequests = new Dictionary<string, RouteRequest>();
 
+        /// <summary>
+        /// A queue to process route requests and releases sequentially.
+        /// </summary>
         private static readonly GenericQueue routeRequestQueue = new GenericQueue("routingQueue");
 
         /// <summary>
@@ -163,6 +170,15 @@ namespace PepperDash.Essentials.Core
             return (audioRouteDescriptor, videoRouteDescriptor);
         }
 
+        /// <summary>
+        /// Internal method to handle the logic for releasing an existing route and making a new one.
+        /// Handles devices with cooling states by queueing the request.
+        /// </summary>
+        /// <param name="destination">The destination device.</param>
+        /// <param name="source">The source device.</param>
+        /// <param name="signalType">The type of signal to route.</param>
+        /// <param name="destinationPort">The specific destination input port (optional).</param>
+        /// <param name="sourcePort">The specific source output port (optional).</param>
         private static void ReleaseAndMakeRoute(IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort = null, RoutingOutputPort sourcePort = null)
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
@@ -222,6 +238,11 @@ namespace PepperDash.Essentials.Core
             routeRequestQueue.Enqueue(new RouteRequestQueueItem(RunRouteRequest, routeRequest));            
         }
 
+        /// <summary>
+        /// Executes the actual routing based on a <see cref="RouteRequest"/>.
+        /// Finds the route path, adds it to the collection, and executes the switches.
+        /// </summary>
+        /// <param name="request">The route request details.</param>
         private static void RunRouteRequest(RouteRequest request)
         {
             try

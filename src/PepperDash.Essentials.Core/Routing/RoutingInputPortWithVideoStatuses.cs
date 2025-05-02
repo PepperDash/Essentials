@@ -1,24 +1,25 @@
 ﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// A RoutingInputPort for devices like DM-TX and DM input cards. 
-    /// Will provide video statistics on connected signals
+    /// Represents a routing input port that provides video status feedback (e.g., sync, resolution).
+    /// Suitable for devices like DM transmitters or DM input cards.
     /// </summary>
     public class RoutingInputPortWithVideoStatuses : RoutingInputPort
 	{
 		/// <summary>
-		/// Video statuses attached to this port
+		/// Provides feedback outputs for video statuses associated with this port.
 		/// </summary>
 		public VideoStatusOutputs VideoStatus { get; private set; }
 
 		/// <summary>
-		/// Constructor 
+		/// Initializes a new instance of the <see cref="RoutingInputPortWithVideoStatuses"/> class.
 		/// </summary>
-		/// <param name="selector">An object used to refer to this port in the IRouting device's ExecuteSwitch method.
-		/// May be string, number, whatever</param>
-		/// <param name="parent">The IRoutingInputs object this lives on</param>
-		/// <param name="funcs">A VideoStatusFuncsWrapper used to assign the callback funcs that will get 
-		/// the values for the various stats</param>
+		/// <param name="key">The unique key for this port.</param>
+		/// <param name="type">The signal type supported by this port.</param>
+		/// <param name="connType">The physical connection type of this port.</param>
+		/// <param name="selector">An object used to refer to this port in the parent device's ExecuteSwitch method.</param>
+		/// <param name="parent">The <see cref="IRoutingInputs"/> device this port belongs to.</param>
+		/// <param name="funcs">A <see cref="VideoStatusFuncsWrapper"/> containing delegates to retrieve video status values.</param>
 		public RoutingInputPortWithVideoStatuses(string key, 
 			eRoutingSignalType type, eRoutingPortConnectionType connType, object selector, 
 			IRoutingInputs parent, VideoStatusFuncsWrapper funcs) :

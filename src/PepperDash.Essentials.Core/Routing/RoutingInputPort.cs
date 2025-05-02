@@ -5,7 +5,7 @@ using System;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Basic RoutingInput with no statuses.
+    /// Represents a basic routing input port on a device.
     /// </summary>
     public class RoutingInputPort : RoutingPort
 	{
@@ -41,6 +41,10 @@ namespace PepperDash.Essentials.Core
 			ParentDevice = parent;
 		}
 
+        /// <summary>
+        /// Returns a string representation of the input port.
+        /// </summary>
+        /// <returns>A string in the format "ParentDeviceKey|PortKey|SignalType|ConnectionType".</returns>
         public override string ToString()
         {
             return $"{ParentDevice.Key}|{Key}|{Type}|{ConnectionType}";
