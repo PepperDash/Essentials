@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Devices.Common.Generic
 {
-    public class GenericSink : EssentialsDevice, IRoutingSink
+    public class GenericSink : EssentialsDevice, IRoutingSinkWithInputPort
     {
         public GenericSink(string key, string name) : base(key, name)
         {
