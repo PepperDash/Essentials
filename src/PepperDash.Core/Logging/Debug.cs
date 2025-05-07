@@ -3,6 +3,7 @@ using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronLogger;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Crypto.Prng;
 using PepperDash.Core.Logging;
 using Serilog;
 using Serilog.Context;
@@ -13,7 +14,9 @@ using Serilog.Formatting.Json;
 using Serilog.Templates;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 
 namespace PepperDash.Core
@@ -25,8 +28,9 @@ namespace PepperDash.Core
     {
         private static readonly string LevelStoreKey = "ConsoleDebugLevel";
         private static readonly string WebSocketLevelStoreKey = "WebsocketDebugLevel";
-        private static readonly string ErrorLogLevelStoreKey = "ErrorLogDebugLevel";
+        private static readonly string Error_logLevelstoreKey = "ErrorLogDebugLevel";
         private static readonly string FileLevelStoreKey = "FileDebugLevel";
+        private static readonly string DeviceKeysStoreKey = "DeviceKeys";
 
         private static readonly Dictionary<uint, LogEventLevel> _logLevels = new Dictionary<uint, LogEventLevel>()
         {
@@ -44,9 +48,11 @@ namespace PepperDash.Core
 
         private static readonly LoggingLevelSwitch _websocketLoggingLevelSwitch;
 
-        private static readonly LoggingLevelSwitch _errorLogLevelSwitch;
+        private static readonly LoggingLevelSwitch _error_logLevelswitch;
 
         private static readonly LoggingLevelSwitch _fileLevelSwitch;
+
+        private static List<string> deviceKeysFilterList = new List<string>();
 
         public static LogEventLevel WebsocketMinimumLogLevel
         {
@@ -124,19 +130,21 @@ namespace PepperDash.Core
 
             var defaultWebsocketLevel = GetStoredLogEventLevel(WebSocketLevelStoreKey);
 
-            var defaultErrorLogLevel = GetStoredLogEventLevel(ErrorLogLevelStoreKey);
+            var defaultErrorLogLevel = GetStoredLogEventLevel(Error_logLevelstoreKey);
 
             var defaultFileLogLevel = GetStoredLogEventLevel(FileLevelStoreKey);
+
+            deviceKeysFilterList = GetStoredDeviceKeys();
 
             _consoleLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultConsoleLevel);            
 
             _websocketLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultWebsocketLevel);
 
-            _errorLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultErrorLogLevel);
+            _error_logLevelswitch = new LoggingLevelSwitch(initialMinimumLevel: defaultErrorLogLevel);
 
             _fileLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultFileLogLevel);
 
-            _websocketSink = new DebugWebsocketSink(new JsonFormatter(renderMessage: true));
+            _websocketSink = new DebugWebsocketSink(new JsonFormatter(renderMessage: true));            
 
             var logFilePath = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ?
                 $@"{Directory.GetApplicationRootDirectory()}{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}debug{Path.DirectorySeparatorChar}app{InitialParametersClass.ApplicationNumber}{Path.DirectorySeparatorChar}global-log.log" :
@@ -152,9 +160,9 @@ namespace PepperDash.Core
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
                 .Enrich.With(new CrestronEnricher())
-                .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: _consoleLoggingLevelSwitch)
+                .WriteTo.Conditional(ConsoleFilter,c => c.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: _consoleLoggingLevelSwitch)
                 .WriteTo.Sink(_websocketSink, levelSwitch: _websocketLoggingLevelSwitch)
-                .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: _errorLogLevelSwitch)
+                .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: _error_logLevelswitch))
                 .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,                                    
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
@@ -206,12 +214,15 @@ namespace PepperDash.Core
                 CrestronConsole.AddNewConsoleCommand(SetDebugFromConsole, "appdebug",
                     "appdebug:P [0-5]: Sets the application's console debug message level",
                     ConsoleAccessLevelEnum.AccessOperator);
+
                 CrestronConsole.AddNewConsoleCommand(ShowDebugLog, "appdebuglog",
                     "appdebuglog:P [all] Use \"all\" for full log.", 
                     ConsoleAccessLevelEnum.AccessOperator);
+
                 CrestronConsole.AddNewConsoleCommand(s => CrestronLogger.Clear(false), "appdebugclear",
                     "appdebugclear:P Clears the current custom log", 
                     ConsoleAccessLevelEnum.AccessOperator);
+
 				CrestronConsole.AddNewConsoleCommand(SetDebugFilterFromConsole, "appdebugfilter",
 					"appdebugfilter [params]", ConsoleAccessLevelEnum.AccessOperator);
             }
@@ -231,6 +242,23 @@ namespace PepperDash.Core
             {
                 LogMessage(LogEventLevel.Information, "Console debug level set to {minimumLevel}", _consoleLoggingLevelSwitch.MinimumLevel);
             };
+        }
+
+        private static bool ConsoleFilter(LogEvent evt)
+        {    
+            // print error and fatal messages no matter what
+            if(evt.Level >= LogEventLevel.Error)
+            {
+                return true;
+            }            
+
+            // message is a keyed message
+            if(evt.Properties.TryGetValue("Key", out var value) && value is ScalarValue sv && sv.Value is string rawValue)
+            {
+                return deviceKeysFilterList.Count == 0 || deviceKeysFilterList.Contains(rawValue);
+            }
+
+            return true;
         }
 
         public static void UpdateLoggerConfiguration(LoggerConfiguration config)
@@ -270,6 +298,39 @@ namespace PepperDash.Core
             {
                 CrestronConsole.PrintLine($"Exception retrieving log level for {levelStoreKey}: {ex.Message}");
                 return LogEventLevel.Information;
+            }
+        }
+
+        private static List<string> GetStoredDeviceKeys()
+        {
+            try
+            {
+                var result = CrestronDataStoreStatic.GetLocalStringValue(DeviceKeysStoreKey, out string devicesString);
+
+                if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+                {
+                    CrestronConsole.Print($"Unable to retrieve stored log level for DEVICE_KEYS.\r\nError: {result}.\r\nShowing Log statements from all devices\r\n");
+                    return new List<string>();
+                }
+
+                var devices = devicesString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(d => d.Trim())
+                    .ToList();
+
+                if (devices.Count == 0)
+                {
+                    CrestronConsole.PrintLine($"Showing log statements from all devices");
+                    return devices;
+                }
+
+                CrestronConsole.PrintLine($"Showing log statements from devices: {string.Join(", ", devices)}");
+
+                return devices;
+            }
+            catch (Exception ex)
+            {
+                CrestronConsole.PrintLine($"Exception retrieving log level for DEVICE_KEYS: {ex.Message}");
+                return new List<string>();
             }
         }
 
@@ -342,29 +403,58 @@ namespace PepperDash.Core
                     return;
                 }
 
-                if(int.TryParse(levelString, out var levelInt))
+                if (int.TryParse(levelString, out var levelInt))
                 {
-                    if(levelInt < 0 || levelInt > 5)
+                    if (levelInt < 0 || levelInt > 5)
                     {
                         CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level. If using a number, value must be between 0-5");
                         return;
                     }
-                    SetDebugLevel((uint) levelInt);
+                    SetDebugLevel((uint)levelInt);
                     return;
                 }
 
-                if(Enum.TryParse<LogEventLevel>(levelString, out var levelEnum))
+                if (Enum.TryParse<LogEventLevel>(levelString, out var levelEnum))
                 {
                     SetDebugLevel(levelEnum);
                     return;
                 }
 
                 CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level");
-            }          
+            }
             catch
             {
                 CrestronConsole.ConsoleCommandResponse("Usage: appdebug:P [0-5]");
+            }        
+        }
+
+        /// <summary>
+        /// Sets the device filter for the debug messages
+        /// </summary>
+        /// <param name="deviceKeys">Array of keys to filter. Empty array is all devices</param>
+        public static void SetDeviceFilter(string[] deviceKeys)
+        {
+            var newKeys = deviceKeys.ToList();
+
+            if (newKeys.Count == 0)
+            {
+                deviceKeysFilterList.Clear();
             }
+            else
+            {
+                deviceKeysFilterList = deviceKeysFilterList.Union(newKeys).ToList();
+            }
+
+            var joinedList = string.Join(", ", deviceKeysFilterList);
+
+            CrestronConsole.ConsoleCommandResponse($"[Application {InitialParametersClass.ApplicationNumber}], Device filter set to {(deviceKeysFilterList.Count > 0 ? joinedList : "all devices")}\r\n");
+
+            var err = CrestronDataStoreStatic.SetLocalStringValue(DeviceKeysStoreKey, joinedList);
+
+            CrestronConsole.ConsoleCommandResponse($"Store result: {err}");
+
+            if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+                CrestronConsole.PrintLine($"Error saving console debug level setting: {err}");
         }
 
         /// <summary>
@@ -380,6 +470,8 @@ namespace PepperDash.Core
                 CrestronConsole.ConsoleCommandResponse($"{level} not valid. Setting level to {logLevel}");
 
                 SetDebugLevel(logLevel);
+
+                return;
             }
 
             SetDebugLevel(logLevel);
@@ -416,9 +508,9 @@ namespace PepperDash.Core
 
         public static void SetErrorLogMinimumDebugLevel(LogEventLevel level)
         {
-            _errorLogLevelSwitch.MinimumLevel = level;
+            _error_logLevelswitch.MinimumLevel = level;
 
-            var err = CrestronDataStoreStatic.SetLocalUintValue(ErrorLogLevelStoreKey, (uint)level);
+            var err = CrestronDataStoreStatic.SetLocalUintValue(Error_logLevelstoreKey, (uint)level);
 
             if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 LogMessage(LogEventLevel.Information, "Error saving Error Log debug level setting: {error}", err);
@@ -428,9 +520,9 @@ namespace PepperDash.Core
 
         public static void SetFileMinimumDebugLevel(LogEventLevel level)
         {
-            _errorLogLevelSwitch.MinimumLevel = level;
+            _error_logLevelswitch.MinimumLevel = level;
 
-            var err = CrestronDataStoreStatic.SetLocalUintValue(ErrorLogLevelStoreKey, (uint)level);
+            var err = CrestronDataStoreStatic.SetLocalUintValue(Error_logLevelstoreKey, (uint)level);
 
             if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 LogMessage(LogEventLevel.Information, "Error saving File debug level setting: {error}", err);
@@ -466,78 +558,34 @@ namespace PepperDash.Core
         /// <param name="items"></param>
 		public static void SetDebugFilterFromConsole(string items)
 		{
-			var str = items.Trim();
-			if (str == "?")
-			{
-				CrestronConsole.ConsoleCommandResponse("Usage:\r APPDEBUGFILTER key1 key2 key3....\r " +
-					"+all: at beginning puts filter into 'default include' mode\r" +
-					"      All keys that follow will be excluded from output.\r" +
-					"-all: at beginning puts filter into 'default exclude all' mode.\r" +
-					"      All keys that follow will be the only keys that are shown\r" +
-					"+nokey: Enables messages with no key (default)\r" +
-					"-nokey: Disables messages with no key.\r" +
-					"(nokey settings are independent of all other settings)");
+			var arguments = items.Trim();
+            if (arguments == "?")
+            {
+                CrestronConsole.ConsoleCommandResponse("Usage:\r\n APPDEBUGFILTER [all] [key1 key2 key3...]\r\n " +
+                    "all: clears filters and shows all device messages\r\n" +                    
+                    "key1 key2 key3...: adds keys to the filter list\r\n" +
+                    "non-keyed messages will ALWAYS be shown based on their level\r\n"
+                    );
 				return;
 			}
-			var keys = Regex.Split(str, @"\s*");
-			foreach (var keyToken in keys)
-			{
-				var lkey = keyToken.ToLower();
-				if (lkey == "+all")
-				{
-					IncludedExcludedKeys.Clear();
-					_excludeAllMode = false;
-				}
-				else if (lkey == "-all")
-				{
-					IncludedExcludedKeys.Clear();
-					_excludeAllMode = true;
-				}
-				//else if (lkey == "+nokey")
-				//{
-				//    ExcludeNoKeyMessages = false;
-				//}
-				//else if (lkey == "-nokey")
-				//{
-				//    ExcludeNoKeyMessages = true;
-				//}
-				else
-				{
-					string key;
-					if (lkey.StartsWith("-"))
-					{
-						key = lkey.Substring(1);
-						// if in exclude all mode, we need to remove this from the inclusions
-						if (_excludeAllMode)
-						{
-							if (IncludedExcludedKeys.ContainsKey(key))
-								IncludedExcludedKeys.Remove(key);
-						}
-						// otherwise include all mode, add to the exclusions
-						else
-						{
-							IncludedExcludedKeys[key] = new object();
-						}
-					}
-					else if (lkey.StartsWith("+"))
-					{
-						key = lkey.Substring(1);
-						// if in exclude all mode, we need to add this as inclusion
-						if (_excludeAllMode)
-						{
+            if (string.IsNullOrEmpty(arguments))
+            {
+                CrestronConsole.ConsoleCommandResponse("APPDEBUGFILTER: No arguments provided");
+                return;
+            }
 
-							IncludedExcludedKeys[key] = new object();
-						}
-						// otherwise include all mode, remove this from exclusions
-						else
-						{
-							if (IncludedExcludedKeys.ContainsKey(key))
-								IncludedExcludedKeys.Remove(key);
-						}
-					}
-				}
-			}
-		}
+            var keys = arguments.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (keys[0].ToLower() == "all")
+            {
+                CrestronConsole.ConsoleCommandResponse("Clearing all filters");
+
+                SetDeviceFilter(new string[] { });
+                return;
+            }
+
+            SetDeviceFilter(keys);
+        }
 
 
 
