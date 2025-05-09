@@ -491,7 +491,7 @@ namespace PepperDash.Essentials.Touchpanel
     {
         public MobileControlTouchpanelControllerFactory()
         {
-            TypeNames = new List<string>() { "mccrestronapp", "mctsw550", "mctsw750", "mctsw1050", "mctsw560", "mctsw760", "mctsw1060", "mctsw570", "mctsw770", "mcts770", "mctsw1070", "mcts1070", "mcxpanel" };
+            TypeNames = new List<string>() { "mccrestronapp", "mctsw550", "mctsw750", "mctsw1050", "mctsw560", "mctsw760", "mctsw1060", "mctsw570", "mctsw770", "mcts770", "mctsw1070", "mcts1070", "mcxpanel", "mcdge1000" };
             MinimumEssentialsFrameworkVersion = "2.0.0";
         }
 
@@ -555,7 +555,10 @@ namespace PepperDash.Essentials.Touchpanel
                     return new Tsw1070(id, Global.ControlSystem);
                 else if (type == "ts1070")
                     return new Ts1070(id, Global.ControlSystem);
-                else
+                else if (type == "dge1000")
+                    return new Dge1000(id, Global.ControlSystem);
+                else 
+
                 {
                     Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "WARNING: Cannot create TSW controller with type '{0}'", type);
                     return null;
