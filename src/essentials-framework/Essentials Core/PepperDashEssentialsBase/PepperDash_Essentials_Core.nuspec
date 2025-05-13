@@ -14,11 +14,10 @@
     <tags>crestron 3series 4series</tags>
     <repository type="git" url="https://github.com/PepperDash/Essentials"/>
     <dependencies>
-      <dependency id="PepperDashCore" version="[1.0.45, 2.0.0)"/>
+      <dependency id="PepperDashCore" version="[1.4.0, 2.0.0)"/>
     </dependencies>
   </metadata>
   <files>
-    <file src="**" target="lib\net35"/>
-    <file src="**" target="lib\net47"/>
+    <file src=".\output\**" target="lib\net35"/>
   </files>
 </package>
