@@ -18,9 +18,13 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
         public Dictionary<string, DspControlPoint> SwitcherControlPoints { get; private set; }
 
-	    public DspBase(string key, string name) :
-	        base(key, name)
-	    {
+		public DspBase(string key, string name) :
+				base(key, name)
+		{
+
+			LevelControlPoints = new Dictionary<string, IBasicVolumeWithFeedback>();
+			DialerControlPoints = new Dictionary<string, DspControlPoint>();
+			SwitcherControlPoints = new Dictionary<string, DspControlPoint>();
 	    }
 
 
