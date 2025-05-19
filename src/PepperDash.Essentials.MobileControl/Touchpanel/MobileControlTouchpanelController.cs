@@ -174,6 +174,8 @@ namespace PepperDash.Essentials.Touchpanel
                         x70Panel.ExtenderButtonToolbarReservedSigs.HideButtonToolbar();
                         x70Panel.ExtenderButtonToolbarReservedSigs.Button2Off();
                     }
+
+
                 };
 
 
@@ -271,6 +273,31 @@ namespace PepperDash.Essentials.Touchpanel
             }
         }
 
+        private void UpdatePanelHardButtons()
+        {
+
+            if(Panel is TswX70Base x70Panel)
+            {
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button1Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button3Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button4Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button5Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button6Off();
+
+                if (!x70Panel.ExtenderApplicationControlReservedSigs.HideOpenedApplicationFeedback.BoolValue)
+                {
+                    x70Panel.ExtenderButtonToolbarReservedSigs.ShowButtonToolbar();
+                    x70Panel.ExtenderButtonToolbarReservedSigs.Button2On();
+                }
+                else
+                {
+                    x70Panel.ExtenderButtonToolbarReservedSigs.HideButtonToolbar();
+                    x70Panel.ExtenderButtonToolbarReservedSigs.Button2Off();
+                }
+            }
+        }
+        
+
         public override bool CustomActivate()
         {
             var appMessenger = new ITswAppControlMessenger($"appControlMessenger-{Key}", $"/device/{Key}", this);
@@ -323,6 +350,12 @@ namespace PepperDash.Essentials.Touchpanel
                 Panel.StringInput[2].StringValue = QrCodeUrlFeedback.StringValue;
                 Panel.StringInput[3].StringValue = McServerUrlFeedback.StringValue;
                 Panel.StringInput[4].StringValue = UserCodeFeedback.StringValue;
+
+                this.LogInformation("Updating button feedbacks from Panel online status change");
+
+                UpdatePanelHardButtons();
+
+
             };
         }
 
