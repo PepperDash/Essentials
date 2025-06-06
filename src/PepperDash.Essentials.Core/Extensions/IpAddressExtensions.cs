@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Exnsions for IPAddress to provide additional functionality such as getting broadcast address, network address, and checking if two addresses are in the same subnet.
+    /// Extensions for IPAddress to provide additional functionality such as getting broadcast address, network address, and checking if two addresses are in the same subnet.
     /// </summary>
     public static class IPAddressExtensions
     {
