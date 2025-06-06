@@ -1,10 +1,8 @@
 ﻿using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
-using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Web;
@@ -17,145 +15,13 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
 using WebSocketSharp;
 using WebSocketSharp.Net;
 using WebSocketSharp.Server;
-using ErrorEventArgs = WebSocketSharp.ErrorEventArgs;
 
 
 namespace PepperDash.Essentials.WebSocketServer
 {
-    /// <summary>
-    /// Represents the behaviour to associate with a UiClient for WebSocket communication
-    /// </summary>
-    public class UiClient : WebSocketBehavior
-    {
-        public MobileControlSystemController Controller { get; set; }
-
-        public string RoomKey { get; set; }
-
-        private string _clientId;
-
-        private DateTime _connectionTime;
-
-        public TimeSpan ConnectedDuration
-        {
-            get
-            {
-                if (Context.WebSocket.IsAlive)
-                {
-                    return DateTime.Now - _connectionTime;
-                }
-                else
-                {
-                    return new TimeSpan(0);
-                }
-            }
-        }
-
-        public UiClient()
-        {
-
-        }
-
-        protected override void OnOpen()
-        {
-            base.OnOpen();
-
-            var url = Context.WebSocket.Url;
-            Debug.LogMessage(LogEventLevel.Verbose, "New WebSocket Connection from: {0}", null, url);
-
-            var match = Regex.Match(url.AbsoluteUri, "(?:ws|wss):\\/\\/.*(?:\\/mc\\/api\\/ui\\/join\\/)(.*)");
-
-            if (!match.Success)
-            {
-                _connectionTime = DateTime.Now;
-                return;
-            }
-
-            var clientId = match.Groups[1].Value;
-            _clientId = clientId;
-
-            if (Controller == null)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Controller is null");
-                _connectionTime = DateTime.Now;
-            }
-
-            var clientJoinedMessage = new MobileControlMessage
-            {
-                Type = "/system/clientJoined",
-                Content = JToken.FromObject(new
-                {
-                    clientId,
-                    roomKey = RoomKey,
-                })
-            };
-
-            Controller.HandleClientMessage(JsonConvert.SerializeObject(clientJoinedMessage));
-
-            var bridge = Controller.GetRoomBridge(RoomKey);
-
-            if (bridge == null) return;
-
-            SendUserCodeToClient(bridge, clientId);
-
-            bridge.UserCodeChanged -= Bridge_UserCodeChanged;
-            bridge.UserCodeChanged += Bridge_UserCodeChanged;
-
-            // TODO: Future: Check token to see if there's already an open session using that token and reject/close the session 
-        }
-
-        private void Bridge_UserCodeChanged(object sender, EventArgs e)
-        {
-            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, _clientId);
-        }
-
-        private void SendUserCodeToClient(MobileControlBridgeBase bridge, string clientId)
-        {
-            var content = new
-            {
-                userCode = bridge.UserCode,
-                qrUrl = bridge.QrCodeUrl,
-            };
-
-            var message = new MobileControlMessage
-            {
-                Type = "/system/userCodeChanged",
-                ClientId = clientId,
-                Content = JToken.FromObject(content)
-            };
-
-            Controller.SendMessageObjectToDirectClient(message);
-        }
-
-        protected override void OnMessage(MessageEventArgs e)
-        {
-            base.OnMessage(e);
-
-            if (e.IsText && e.Data.Length > 0 && Controller != null)
-            {
-                // Forward the message to the controller to be put on the receive queue
-                Controller.HandleClientMessage(e.Data);
-            }
-        }
-
-        protected override void OnClose(CloseEventArgs e)
-        {
-            base.OnClose(e);
-
-            Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Closing: {0} reason: {1}", null, e.Code, e.Reason);
-        }
-
-        protected override void OnError(ErrorEventArgs e)
-        {
-            base.OnError(e);
-
-            Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Error: {exception} message: {message}", e.Exception, e.Message);
-        }
-    }
-
     public class MobileControlWebsocketServer : EssentialsDevice
     {
         private readonly string userAppPath = Global.FilePathPrefix + "mcUserApp" + Global.DirectorySeparator;
@@ -163,6 +29,7 @@ namespace PepperDash.Essentials.WebSocketServer
         private readonly string localConfigFolderName = "_local-config";
 
         private readonly string appConfigFileName = "_config.local.json";
+        private readonly string appConfigCsFileName = "_config.cs.json";
 
         /// <summary>
         /// Where the key is the join token and the value is the room key
@@ -191,6 +58,12 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
+        private string lanIpAddress => CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter));
+
+        private System.Net.IPAddress csIpAddress;     
+
+        private System.Net.IPAddress csSubnetMask;
+
         /// <summary>
         /// The path for the WebSocket messaging
         /// </summary>
@@ -209,7 +82,7 @@ namespace PepperDash.Essentials.WebSocketServer
         private string _userAppBaseHref = "/mc/app";
 
         /// <summary>
-        /// The prot the server will run on
+        /// The port the server will run on
         /// </summary>
         public int Port { get; private set; }
 
@@ -249,7 +122,7 @@ namespace PepperDash.Essentials.WebSocketServer
             _parent = parent;
 
             // Set the default port to be 50000 plus the slot number of the program
-            Port = 50000 + (int)Global.ControlSystem.ProgramNumber;
+            Port = 50000 + (int)Global.ControlSystem.ProgramNumber;            
 
             if (customPort != 0)
             {
@@ -260,9 +133,6 @@ namespace PepperDash.Essentials.WebSocketServer
             {
                 try
                 {
-                    CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
-
-
                     Debug.LogMessage(LogEventLevel.Information, "Automatically forwarding port {0} to CS LAN", Port);
 
                     var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
@@ -282,6 +152,23 @@ namespace PepperDash.Essentials.WebSocketServer
                 catch (Exception ex)
                 {
                     Debug.LogMessage(ex, "Error automatically forwarding port to CS LAN");
+                }
+            }
+
+            try
+            {                
+                var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
+                var csSubnetMask = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, csAdapterId); 
+                var csIpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
+                this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
+                this.csIpAddress = System.Net.IPAddress.Parse(csIpAddress);
+            }
+            catch (ArgumentException)
+            {
+                if (parent.Config.DirectServer.AutomaticallyForwardPortToCSLAN == false)
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "This processor does not have a CS LAN", this);
                 }
             }
 
@@ -462,11 +349,49 @@ namespace PepperDash.Essentials.WebSocketServer
             if (!Directory.Exists($"{userAppPath}{localConfigFolderName}"))
             {
                 Directory.CreateDirectory($"{userAppPath}{localConfigFolderName}");
-            }
+            }            
 
             using (var sw = new StreamWriter(File.Open($"{userAppPath}{localConfigFolderName}{Global.DirectorySeparator}{appConfigFileName}", FileMode.Create, FileAccess.ReadWrite)))
             {
-                var config = GetApplicationConfig();
+                // Write the LAN application configuration file. Used when a request comes in for the application config from the LAN 
+                var lanAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter);
+
+                this.LogDebug("LAN Adapter ID: {lanAdapterId}", lanAdapterId);
+
+                var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);                
+
+                var config = GetApplicationConfig(processorIp);
+
+                var contents = JsonConvert.SerializeObject(config, Formatting.Indented);
+
+                sw.Write(contents);
+            }
+
+            short csAdapterId;
+            try
+            {
+                csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
+            }
+            catch (ArgumentException)
+            {
+                this.LogDebug("This processor does not have a CS LAN");
+                return;
+            }
+
+            if(csAdapterId == -1)
+            {
+                this.LogDebug("CS LAN Adapter not found");
+                return;
+            }
+
+            this.LogDebug("CS LAN Adapter ID: {csAdapterId}. Adding CS Config", csAdapterId);
+
+            using (var sw = new StreamWriter(File.Open($"{userAppPath}{localConfigFolderName}{Global.DirectorySeparator}{appConfigCsFileName}", FileMode.Create, FileAccess.ReadWrite)))
+            {
+                // Write the CS application configuration file. Used when a request comes in for the application config from the CS
+                var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);             
+               
+                var config = GetApplicationConfig(processorIp);
 
                 var contents = JsonConvert.SerializeObject(config, Formatting.Indented);
 
@@ -474,74 +399,41 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
-        private MobileControlApplicationConfig GetApplicationConfig()
-        {
-            MobileControlApplicationConfig config = null;
-
-            var lanAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter);
-
-            var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);
-
+        private MobileControlApplicationConfig GetApplicationConfig(string processorIp)
+        {      
             try
             {
-                if (_parent.Config.ApplicationConfig == null)
+                var config = new MobileControlApplicationConfig
                 {
-                    config = new MobileControlApplicationConfig
+                    ApiPath = string.Format("http://{0}:{1}/mc/api", processorIp, _parent.Config.DirectServer.Port),
+                    GatewayAppPath = "",
+                    LogoPath = _parent.Config.ApplicationConfig?.LogoPath ?? "logo/logo.png",
+                    EnableDev = _parent.Config.ApplicationConfig?.EnableDev ?? false,
+                    IconSet = _parent.Config.ApplicationConfig?.IconSet ?? MCIconSet.GOOGLE,
+                    LoginMode = _parent.Config.ApplicationConfig?.LoginMode ?? "room-list",
+                    Modes = _parent.Config.ApplicationConfig?.Modes ?? new Dictionary<string, McMode>
                     {
-                        ApiPath = string.Format("http://{0}:{1}/mc/api", processorIp, _parent.Config.DirectServer.Port),
-                        GatewayAppPath = "",
-                        LogoPath = "logo/logo.png",
-                        EnableDev = false,
-                        IconSet = MCIconSet.GOOGLE,
-                        LoginMode = "room-list",
-                        Modes = new Dictionary<string, McMode>
                         {
-                            {
-                                "room-list",
-                                new McMode{
-                                    ListPageText= "Please select your room",
-                                    LoginHelpText = "Please select your room from the list, then enter the code shown on the display.",
-                                    PasscodePageText = "Please enter the code shown on this room's display"
-                                }
+                            "room-list",
+                            new McMode {
+                                ListPageText = "Please select your room",
+                                LoginHelpText = "Please select your room from the list, then enter the code shown on the display.",
+                                PasscodePageText = "Please enter the code shown on this room's display"
                             }
-                        },
-                        Logging = _parent.Config.DirectServer.Logging.EnableRemoteLogging,
-                    };
-                }
-                else
-                {
-                    config = new MobileControlApplicationConfig
-                    {
-                        ApiPath = string.Format("http://{0}:{1}/mc/api", processorIp, _parent.Config.DirectServer.Port),
-                        GatewayAppPath = "",
-                        LogoPath = _parent.Config.ApplicationConfig.LogoPath ?? "logo/logo.png",
-                        EnableDev = _parent.Config.ApplicationConfig.EnableDev ?? false,
-                        IconSet = _parent.Config.ApplicationConfig.IconSet ?? MCIconSet.GOOGLE,
-                        LoginMode = _parent.Config.ApplicationConfig.LoginMode ?? "room-list",
-                        Modes = _parent.Config.ApplicationConfig.Modes ?? new Dictionary<string, McMode>
-                        {
-                            {
-                                "room-list",
-                                new McMode {
-                                    ListPageText = "Please select your room",
-                                    LoginHelpText = "Please select your room from the list, then enter the code shown on the display.",
-                                    PasscodePageText = "Please enter the code shown on this room's display"
-                                }
-                            }
-                        },
-                        Logging = _parent.Config.ApplicationConfig.Logging,
-                        PartnerMetadata = _parent.Config.ApplicationConfig.PartnerMetadata ?? new List<MobileControlPartnerMetadata>()
-                    };
-                }
+                        }
+                    },
+                    Logging = _parent.Config.ApplicationConfig?.Logging ?? false,
+                    PartnerMetadata = _parent.Config.ApplicationConfig?.PartnerMetadata ?? new List<MobileControlPartnerMetadata>()
+                };
+
+                return config;
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error getting application configuration", this);
+                this.LogError(ex, "Error getting application configuration");                
 
-                Debug.LogMessage(LogEventLevel.Verbose, "Config Object: {config} from {parentConfig}", this, config, _parent.Config);
-            }
-
-            return config;
+                return null;
+            }            
         }
 
         /// <summary>
@@ -1206,6 +1098,14 @@ namespace PepperDash.Essentials.WebSocketServer
             }
 
             this.LogVerbose("Attempting to serve file: {filePath}", filePath);
+
+            var remoteIp = req.RemoteEndPoint.Address;
+
+            // Check if the request is coming from the CS LAN and if so, send the CS config instead of the LAN config
+            if (csSubnetMask != null && csIpAddress != null && remoteIp.IsInSameSubnet(csIpAddress, csSubnetMask) && filePath.Contains(appConfigFileName))
+            {
+                filePath = filePath.Replace(appConfigFileName, appConfigCsFileName);
+            }
 
             byte[] contents;
             if (File.Exists(filePath))
