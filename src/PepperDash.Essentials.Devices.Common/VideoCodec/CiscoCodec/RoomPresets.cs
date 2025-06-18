@@ -38,7 +38,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         /// <param name="preset"></param>
         /// <param name="description"></param>
-        void CodecRoomPresetStore(int preset, string description);
+        void CodecRoomPresetStore(int preset, string description);  
 
         /// <summary>
         /// Selects a far end preset by its ID. This is typically used to recall a preset that has been defined on the far end codec.
