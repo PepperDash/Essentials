@@ -56,7 +56,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     public class LayoutInfo
     {
         /// <summary>
-        /// The display name for the layout
+        /// The name of the layout.
         /// </summary>
         [JsonProperty("layoutName")]
         public string LayoutName { get; set; }
@@ -66,5 +66,35 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         /// </summary>
         [JsonProperty("layoutIndex")]
         public int LayoutIndex { get; set; }
+
+        /// <summary>
+        /// The type of the layout, which can be "single", "double", "triple", or "quad".
+        /// </summary>
+        [JsonProperty("layoutType")]
+        public string LayoutType { get; set; }
+
+        /// <summary>
+        /// A dictionary of window configurations for the layout, keyed by window ID.
+        /// </summary>
+        [JsonProperty("windows")]
+        public Dictionary<uint, WindowConfig> Windows { get; set; }
+    }
+
+    /// <summary>
+    /// Represents the configuration of a window within a layout on a screen.
+    /// </summary>
+    public class WindowConfig
+    {
+        /// <summary>
+        /// The display label for the window
+        /// </summary>
+        [JsonProperty("label")]
+        public string Label { get; set; }
+
+        /// <summary>
+        /// The input for the window
+        /// </summary>
+        [JsonProperty("input")]
+        public string Input { get; set; }
     }
 }
