@@ -13,20 +13,59 @@ namespace PepperDash.Essentials.Devices.Common.Codec.Cisco
     /// </summary>
     public interface IPresenterTrack : IKeyed
     {
+        /// <summary>
+        /// 
+        /// </summary>
         bool PresenterTrackAvailability { get; }
 
+        /// <summary>
+        /// Feedback indicating whether Presenter Track is available.
+        /// </summary>
         BoolFeedback PresenterTrackAvailableFeedback { get; }
 
+        /// <summary>
+        /// Feedback indicateing the current status of Presenter Track is off
+        /// </summary>
         BoolFeedback PresenterTrackStatusOffFeedback { get; }
+
+        /// <summary>
+        /// Feedback indicating the current status of Presenter Track is follow
+        /// </summary>
         BoolFeedback PresenterTrackStatusFollowFeedback { get; }
+
+        /// <summary>
+        /// Feedback indicating the current status of Presenter Track is background
+        /// </summary>
         BoolFeedback PresenterTrackStatusBackgroundFeedback { get; }
+
+        /// <summary>
+        /// Feedback indicating the current status of Presenter Track is persistent
+        /// </summary>
         BoolFeedback PresenterTrackStatusPersistentFeedback { get; }
 
+        /// <summary>
+        /// Indicates the current status of Presenter Track.
+        /// </summary>
         bool PresenterTrackStatus { get; }
 
+        /// <summary>
+        /// Turns off Presenter Track.
+        /// </summary>
         void PresenterTrackOff();
+
+        /// <summary>
+        /// Turns on Presenter Track in follow mode.
+        /// </summary>
         void PresenterTrackFollow();
+
+        /// <summary>
+        /// Turns on Presenter Track in background mode.
+        /// </summary>
         void PresenterTrackBackground();
+
+        /// <summary>
+        /// Turns on Presenter Track in persistent mode.
+        /// </summary>
         void PresenterTrackPersistent();
     }
 }
