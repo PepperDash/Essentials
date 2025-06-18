@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec.Cisco
     /// <summary>
     /// Describes the available tracking modes for a Cisco codec's Presenter Track feature.
     /// </summary>
-    public enum PresenterTrackMode
+    public enum ePresenterTrackMode
     {
         /// <summary>
         /// Presenter Track is turned off.
