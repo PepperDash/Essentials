@@ -9,6 +9,30 @@ using System.Threading.Tasks;
 namespace PepperDash.Essentials.Devices.Common.Codec.Cisco
 {
     /// <summary>
+    /// Describes the available tracking modes for a Cisco codec's Presenter Track feature.
+    /// </summary>
+    public enum PresenterTrackMode
+    {
+        /// <summary>
+        /// Presenter Track is turned off.
+        /// </summary>
+        Off,
+        /// <summary>
+        /// Presenter Track follows the speaker's movements.
+        /// </summary>
+        Follow,
+        /// <summary>
+        /// Presenter Track is set to background mode, where it tracks the speaker but does not actively follow.
+        /// </summary>
+        Background,
+        /// <summary>
+        /// Presenter Track is set to persistent mode, where it maintains a fixed position or focus on the speaker.
+        /// </summary>
+        Persistent
+    }
+
+
+    /// <summary>
     /// Describes the Presenter Track controls for a Cisco codec.
     /// </summary>
     public interface IPresenterTrack : IKeyed
