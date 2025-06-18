@@ -48,7 +48,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec.Cisco
         BoolFeedback PresenterTrackAvailableFeedback { get; }
 
         /// <summary>
-        /// Feedback indicateing the current status of Presenter Track is off
+        /// Feedback indicating the current status of Presenter Track is off
         /// </summary>
         BoolFeedback PresenterTrackStatusOffFeedback { get; }
 
