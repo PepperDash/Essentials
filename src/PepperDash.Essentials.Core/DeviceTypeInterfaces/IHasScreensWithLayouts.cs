@@ -17,6 +17,13 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         /// A dictionary of screens, keyed by screen ID, that contains information about each screen and its layouts.
         /// </summary>
         Dictionary<uint, ScreenInfo> Screens { get; }
+
+        /// <summary>
+        /// Applies a specific layout to a screen based on the provided screen ID and layout index.
+        /// </summary>
+        /// <param name="screenId"></param>
+        /// <param name="layoutIndex"></param>
+        void ApplyLayout(uint screenId, uint layoutIndex);
     }
 
     /// <summary>
