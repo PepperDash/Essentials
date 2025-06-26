@@ -9,10 +9,15 @@ using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a level control item in a list, which can be used to control volume or mute functionality.
+    /// </summary>
     public class LevelControlListItem : AudioControlListItemBase
     {
 
-
+        /// <summary>
+        /// A reference to the IBasicVolumeWithFeedback device for control.
+        /// </summary>
         [JsonIgnore]
         public IBasicVolumeWithFeedback LevelControl
         {
@@ -55,7 +60,7 @@ namespace PepperDash.Essentials.Core
         {
             get
             {
-                if(string.IsNullOrEmpty(ItemKey)) return ParentDeviceKey;
+                if (string.IsNullOrEmpty(ItemKey)) return ParentDeviceKey;
                 else
                 {
                     return DeviceManager.AllDevices.
@@ -70,13 +75,39 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("type")]
         [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public eLevelControlType Type { get; set; }
+
+
+        /// <summary>
+        /// Indicates if the item is a mic or not.
+        /// </summary>
+        [JsonProperty("isMic", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsMic { get; set; }
+
+        /// <summary>
+        /// Indicates if the item should show the raw level in the UI.
+        /// </summary>
+        [JsonProperty("showRawLevel", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? ShowRawLevel { get; set; }
     }
 
+    /// <summary>
+    /// Indicates the type of level control item.
+    /// </summary>
     [Flags]
     public enum eLevelControlType
     {
+        /// <summary>
+        /// Indicates that the item is a level control only
+        /// </summary>
         Level = 1,
+        /// <summary>
+        /// Indicates that the item is a mute control only
+        /// </summary>
         Mute = 2,
+        /// <summary>
+        /// Indicates that the item is both a level and mute control
+        /// </summary>
         LevelAndMute = Level | Mute,
     }
+
 }
