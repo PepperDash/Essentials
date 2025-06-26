@@ -248,7 +248,7 @@ namespace PepperDash.Essentials.Core
 
             foreach (var dev in Devices.Values.OfType<ICommunicationMonitor>())
             {
-                CrestronConsole.ConsoleCommandResponse($"{dev}: {dev.CommunicationMonitor.Status}{Environment.NewLine}");
+                CrestronConsole.ConsoleCommandResponse($"{dev}: {dev.CommunicationMonitor.Status}\r\n");
             }
         }
 
