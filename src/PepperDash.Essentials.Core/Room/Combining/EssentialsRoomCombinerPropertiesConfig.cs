@@ -1,10 +1,4 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
 
 using PepperDash.Core;
 
@@ -17,6 +11,13 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class EssentialsRoomCombinerPropertiesConfig
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the system operates in automatic mode.
+        /// <remarks>Some systems don't have partitions sensors, and show shouldn't allow auto mode to be turned on. When this is true in the configuration, 
+        /// auto mode won't be allowed to be turned on.</remarks>
+        /// </summary>
+        public bool DisableAutoMode { get; set; }
+
         /// <summary>
         /// The list of partitions that device the rooms
         /// </summary>
@@ -47,6 +48,9 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("defaultScenarioKey")]
         public string defaultScenarioKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets the debounce time, in seconds, for scenario changes.
+        /// </summary>
         [JsonProperty("scenarioChangeDebounceTimeSeconds")]
         public int ScenarioChangeDebounceTimeSeconds { get; set; }
     }
@@ -56,9 +60,15 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class PartitionConfig : IKeyName
     {
+        /// <summary>
+        /// Gets or sets the unique key associated with the object.
+        /// </summary>
         [JsonProperty("key")]
         public string Key { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name associated with the object.
+        /// </summary>
         [JsonProperty("name")]
         public string Name { get; set; }
 
@@ -80,12 +90,21 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class RoomCombinationScenarioConfig : IKeyName
     {
+        /// <summary>
+        /// Gets or sets the key associated with the object.
+        /// </summary>
         [JsonProperty("key")]
         public string Key { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name associated with the object.
+        /// </summary>
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the collection of partition states.
+        /// </summary>
         [JsonProperty("partitionStates")]
         public List<PartitionState> PartitionStates { get; set; }
 
@@ -95,9 +114,15 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("uiMap")]
         public Dictionary<string, string> UiMap { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list of actions to be performed during device activation.
+        /// </summary>
         [JsonProperty("activationActions")]
         public List<DeviceActionWrapper> ActivationActions { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list of actions to be performed when a device is deactivated.
+        /// </summary>
         [JsonProperty("deactivationActions")]
         public List<DeviceActionWrapper> DeactivationActions { get; set; }    
     }
@@ -107,9 +132,15 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class PartitionState
     {
+        /// <summary>
+        /// Gets or sets the partition key used to group and organize data within a storage system.
+        /// </summary>
         [JsonProperty("partitionKey")]
         public string PartitionKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether a partition is currently present.
+        /// </summary>
         [JsonProperty("partitionSensedState")]
         public bool PartitionPresent { get; set; }
     }
