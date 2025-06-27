@@ -62,6 +62,17 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether automatic mode is disabled.
+        /// </summary>
+        public bool DisableAutoMode
+        {
+            get
+            {
+                return _propertiesConfig.DisableAutoMode;
+            }
+        }
+
         private CTimer _scenarioChangeDebounceTimer;
 
         private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
