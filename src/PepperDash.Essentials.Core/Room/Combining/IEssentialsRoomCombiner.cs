@@ -28,9 +28,20 @@ namespace PepperDash.Essentials.Core
         [JsonIgnore]
         BoolFeedback IsInAutoModeFeedback {get;}
 
+        /// <summary>
+        /// Gets a value indicating whether the automatic mode is disabled.
+        /// </summary>
+        [JsonProperty("disableAutoMode")]
+        bool DisableAutoMode { get; }
+        /// <summary>
+        /// Gets a value indicating whether the system is operating in automatic mode.
+        /// </summary>
         [JsonProperty("isInAutoMode")]
         bool IsInAutoMode { get; }
 
+        /// <summary>
+        /// Gets the collection of rooms associated with the current object.
+        /// </summary>
         [JsonProperty("rooms")]
         List<IKeyName> Rooms { get; }
 
@@ -74,6 +85,13 @@ namespace PepperDash.Essentials.Core
         void SetRoomCombinationScenario(string scenarioKey);
     }
 
+    /// <summary>
+    /// Represents a scenario for combining rooms, including activation, deactivation, and associated state.
+    /// </summary>
+    /// <remarks>This interface defines the behavior for managing room combination scenarios, including
+    /// activation and deactivation, tracking the active state, and managing related partition states and UI mappings.
+    /// Implementations of this interface are expected to handle the logic for room combinations based on the provided
+    /// partition states and UI mappings.</remarks>
     public interface IRoomCombinationScenario : IKeyName
     {
         /// <summary>
@@ -82,6 +100,9 @@ namespace PepperDash.Essentials.Core
         [JsonIgnore]
         BoolFeedback IsActiveFeedback { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether the entity is active.
+        /// </summary>
         [JsonProperty("isActive")]
         bool IsActive { get; }
 
