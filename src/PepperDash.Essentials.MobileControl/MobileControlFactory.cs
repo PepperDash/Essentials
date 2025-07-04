@@ -4,36 +4,54 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials;
+
+public class MobileControlFactory
 {
-    public class MobileControlFactory
+    public MobileControlFactory()
     {
-        public MobileControlFactory()
+        var assembly = Assembly.GetExecutingAssembly();
+
+        PluginLoader.AddLoadedAssembly(assembly.GetName().Name, assembly);
+
+        var types = assembly.GetTypes().Where(t => typeof(IDeviceFactory).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+        if (types == null)
         {
-            var assembly = Assembly.GetExecutingAssembly();
+            return;
+        }
 
-            PluginLoader.SetEssentialsAssembly(assembly.GetName().Name, assembly);
-
-            var types = assembly.GetTypes().Where(t => typeof(IDeviceFactory).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
-
-            if (types == null)
+        foreach (var type in types)
+        {
+            try
             {
-                return;
-            }
+                var factory = (IDeviceFactory)Activator.CreateInstance(type);
 
-            foreach (var type in types)
+                LoadDeviceFactories(factory);
+            }
+            catch (Exception ex)
             {
-                try
-                {
-                    var factory = (IDeviceFactory)Activator.CreateInstance(type);
-
-                    factory.LoadTypeFactories();
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogMessage(ex, "Unable to load type '{type}' DeviceFactory: {factory}", null, type.Name);
-                }
+                Debug.LogMessage(ex, "Unable to load type '{type}' DeviceFactory: {factory}", null, type.Name);
             }
+        }
+    }
+
+    /// <summary>
+    /// Loads device factories from the specified plugin device factory and registers them for use.
+    /// </summary>
+    /// <remarks>This method retrieves metadata from the provided <paramref name="deviceFactory"/>, including
+    /// type names, descriptions, and configuration snippets, and registers the factory for each device type. The type
+    /// names are converted to lowercase for registration.</remarks>
+    /// <param name="deviceFactory">The plugin device factory that provides the device types, descriptions, and factory methods to be registered.</param>
+    private static void LoadDeviceFactories(IDeviceFactory deviceFactory)
+    {
+        foreach (var typeName in deviceFactory.TypeNames)
+        {
+            //Debug.LogMessage(LogEventLevel.Verbose, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
+            var descriptionAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
+            string description = descriptionAttribute[0].Description;
+            var snippetAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
+            Core.DeviceFactory.AddFactoryForType(typeName.ToLower(), description, deviceFactory.FactoryType, deviceFactory.BuildDevice);
         }
     }
 }
