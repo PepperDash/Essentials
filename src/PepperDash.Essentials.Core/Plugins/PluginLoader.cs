@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-// using Crestron.SimplSharp.CrestronIO;
 using System.Reflection;
 using System.IO;
 using System.Reflection.PortableExecutable;
@@ -12,7 +11,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Serilog.Events;
 using Newtonsoft.Json;
-using System.IO;
+
 
 namespace PepperDash.Essentials
 {
@@ -86,7 +85,7 @@ namespace PepperDash.Essentials
         {
             Debug.LogMessage(LogEventLevel.Verbose, "Getting Assemblies loaded with Essentials");
             // Get the loaded assembly filenames
-            var appDi = new SystemIO.DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
+            var appDi = new DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
             var assemblyFiles = appDi.GetFiles("*.dll");
 
             Debug.LogMessage(LogEventLevel.Verbose, "Found {0} Assemblies", assemblyFiles.Length);
@@ -159,8 +158,8 @@ namespace PepperDash.Essentials
             {
                 List<string> referencedAssemblies = new List<string>();
                 
-                using (SystemIO.FileStream fs = new SystemIO.FileStream(filePath, SystemIO.FileMode.Open, 
-                    SystemIO.FileAccess.Read, SystemIO.FileShare.ReadWrite))
+                using (FileStream fs = new FileStream(filePath, FileMode.Open, 
+                        FileAccess.Read, FileShare.ReadWrite))
                 using (PEReader peReader = new PEReader(fs))
                 {
                     if (!peReader.HasMetadata)
@@ -239,7 +238,7 @@ namespace PepperDash.Essentials
                 var (isCompatible, reason, references) = IsPluginCompatibleWithNet8(filePath);
                 if (!isCompatible)
                 {
-                    string fileName = CrestronIO.Path.GetFileName(filePath);
+                    string fileName = Path.GetFileName(filePath);
                     Debug.LogMessage(LogEventLevel.Warning, "Assembly '{0}' is not compatible with .NET 8: {1}", fileName, reason);
                     
                     var incompatiblePlugin = new IncompatiblePlugin(fileName, reason, requestedBy);
@@ -262,10 +261,10 @@ namespace PepperDash.Essentials
                 }
                 return null;
             }
-            catch(SystemIO.FileLoadException ex) when (ex.Message.Contains("Assembly with same name is already loaded"))
+            catch(FileLoadException ex) when (ex.Message.Contains("Assembly with same name is already loaded"))
             {
                 // Get the assembly name from the file path
-                string assemblyName = CrestronIO.Path.GetFileNameWithoutExtension(filePath);
+                string assemblyName = Path.GetFileNameWithoutExtension(filePath);
                 
                 // Try to find the already loaded assembly
                 var existingAssembly = AppDomain.CurrentDomain.GetAssemblies()
@@ -285,7 +284,7 @@ namespace PepperDash.Essentials
             }
             catch(Exception ex)
             {
-                string fileName = CrestronIO.Path.GetFileName(filePath);
+                string fileName = Path.GetFileName(filePath);
                 
                 // Check if this might be a .NET Framework compatibility issue
                 if (ex.Message.Contains("Could not load type") || 
@@ -388,14 +387,14 @@ namespace PepperDash.Essentials
         {
             Debug.LogMessage(LogEventLevel.Information, "Looking for .dll assemblies from plugins folder...");
 
-            var pluginDi = new SystemIO.DirectoryInfo(_pluginDirectory);
+            var pluginDi = new DirectoryInfo(_pluginDirectory);
             var pluginFiles = pluginDi.GetFiles("*.dll");
 
             if (pluginFiles.Length > 0)
             {
-                if (!SystemIO.Directory.Exists(_loadedPluginsDirectoryPath))
+                if (!Directory.Exists(_loadedPluginsDirectoryPath))
                 {
-                    SystemIO.Directory.CreateDirectory(_loadedPluginsDirectoryPath);
+                    Directory.CreateDirectory(_loadedPluginsDirectoryPath);
                 }
             }
 
@@ -412,14 +411,14 @@ namespace PepperDash.Essentials
                         filePath = _loadedPluginsDirectoryPath + Global.DirectorySeparator + pluginFile.Name;
 
                         // Check if there is a previous file in the loadedPlugins directory and delete
-                        if (SystemIO.File.Exists(filePath))
+                        if (File.Exists(filePath))
                         {
                             Debug.LogMessage(LogEventLevel.Information, "Found existing file in loadedPlugins: {0} Deleting and moving new file to replace it", filePath);
-                            SystemIO.File.Delete(filePath);
+                            File.Delete(filePath);
                         }
 
                         // Move the file
-                        SystemIO.File.Move(pluginFile.FullName, filePath);
+                        File.Move(pluginFile.FullName, filePath);
                         Debug.LogMessage(LogEventLevel.Verbose, "Moved {0} to {1}", pluginFile.FullName, filePath);
                     }
                     else
@@ -443,7 +442,7 @@ namespace PepperDash.Essentials
         static void UnzipAndMoveCplzArchives()
         {
             Debug.LogMessage(LogEventLevel.Information, "Looking for .cplz archives from plugins folder...");
-            var di = new SystemIO.DirectoryInfo(_pluginDirectory);
+            var di = new DirectoryInfo(_pluginDirectory);
             var zFiles = di.GetFiles("*.cplz");
 
             //// Find cplz files at the root of the user folder. Makes development/testing easier for VC-4, and helps with mistakes by end users
@@ -458,16 +457,16 @@ namespace PepperDash.Essentials
 
             if (cplzFiles.Length > 0)
             {
-                if (!SystemIO.Directory.Exists(_loadedPluginsDirectoryPath))
+                if (!Directory.Exists(_loadedPluginsDirectoryPath))
                 {
-                    SystemIO.Directory.CreateDirectory(_loadedPluginsDirectoryPath);
+                    Directory.CreateDirectory(_loadedPluginsDirectoryPath);
                 }
             }
 
             foreach (var zfi in cplzFiles)
             {
-                SystemIO.Directory.CreateDirectory(_tempDirectory);
-                var tempDi = new SystemIO.DirectoryInfo(_tempDirectory);
+                Directory.CreateDirectory(_tempDirectory);
+                var tempDi = new DirectoryInfo(_tempDirectory);
 
                 Debug.LogMessage(LogEventLevel.Information, "Found cplz: {0}. Unzipping into temp plugins directory", zfi.FullName);
                 var result = CrestronZIP.Unzip(zfi.FullName, tempDi.FullName);
@@ -485,14 +484,14 @@ namespace PepperDash.Essentials
                             filePath = _loadedPluginsDirectoryPath + Global.DirectorySeparator + tempFile.Name;
 
                             // Check if there is a previous file in the loadedPlugins directory and delete
-                            if (SystemIO.File.Exists(filePath))
+                            if (File.Exists(filePath))
                             {
                                 Debug.LogMessage(LogEventLevel.Information, "Found existing file in loadedPlugins: {0} Deleting and moving new file to replace it", filePath);
-                                SystemIO.File.Delete(filePath);
+                                File.Delete(filePath);
                             }
 
                             // Move the file
-                            SystemIO.File.Move(tempFile.FullName, filePath);
+                            File.Move(tempFile.FullName, filePath);
                             Debug.LogMessage(LogEventLevel.Verbose, "Moved {0} to {1}", tempFile.FullName, filePath);
                         }
                         else
@@ -508,7 +507,7 @@ namespace PepperDash.Essentials
                 }
 
                 // Delete the .cplz and the temp directory
-                SystemIO.Directory.Delete(_tempDirectory, true);
+                Directory.Delete(_tempDirectory, true);
                 zfi.Delete();
             }
 
@@ -521,7 +520,7 @@ namespace PepperDash.Essentials
         static void LoadPluginAssemblies()
         {
             Debug.LogMessage(LogEventLevel.Information, "Loading assemblies from loadedPlugins folder...");
-            var pluginDi = new CrestronIO.DirectoryInfo(_loadedPluginsDirectoryPath);
+            var pluginDi = new DirectoryInfo(_loadedPluginsDirectoryPath);
             var pluginFiles = pluginDi.GetFiles("*.dll");
 
             Debug.LogMessage(LogEventLevel.Verbose, "Found {0} plugin assemblies to load", pluginFiles.Length);
@@ -591,7 +590,7 @@ namespace PepperDash.Essentials
                         // Check if any of the loader exceptions are due to missing assemblies
                         foreach (var loaderEx in e.LoaderExceptions)
                         {
-                            if (loaderEx is SystemIO.FileNotFoundException fileNotFoundEx)
+                            if (loaderEx is FileNotFoundException fileNotFoundEx)
                             {
                                 string missingAssembly = fileNotFoundEx.FileName;
                                 if (!string.IsNullOrEmpty(missingAssembly))
@@ -601,7 +600,7 @@ namespace PepperDash.Essentials
                                     
                                     // Add to incompatible plugins with dependency information
                                     IncompatiblePlugins.Add(new IncompatiblePlugin(
-                                        CrestronIO.Path.GetFileName(missingAssembly), 
+                                        Path.GetFileName(missingAssembly), 
                                         $"Missing dependency required by {loadedAssembly.Name}", 
                                         loadedAssembly.Name));
                                 }
@@ -795,7 +794,7 @@ namespace PepperDash.Essentials
         {
             Debug.LogMessage(LogEventLevel.Information, "Attempting to Load Plugins from {_pluginDirectory}", _pluginDirectory);
 
-            if (SystemIO.Directory.Exists(_pluginDirectory))
+            if (Directory.Exists(_pluginDirectory))
             {
                 Debug.LogMessage(LogEventLevel.Information, "Plugins directory found, checking for plugins");
 
@@ -805,7 +804,7 @@ namespace PepperDash.Essentials
                 // Deal with any .cplz files
                 UnzipAndMoveCplzArchives();
 
-                if (SystemIO.Directory.Exists(_loadedPluginsDirectoryPath))
+                if (Directory.Exists(_loadedPluginsDirectoryPath))
                 {
                     // Load the assemblies from the loadedPlugins folder into the AppDomain
                     LoadPluginAssemblies();
