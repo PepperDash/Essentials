@@ -11,11 +11,18 @@ namespace PepperDash.Essentials.Room.MobileControl
     {
         private readonly IChannel channelDevice;
 
+        /// <summary>
+        /// Create an instance of the <see cref="IChannelMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
         public IChannelMessenger(string key, string messagePath, IChannel device) : base(key, messagePath, device as IKeyName)
         {
             channelDevice = device;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

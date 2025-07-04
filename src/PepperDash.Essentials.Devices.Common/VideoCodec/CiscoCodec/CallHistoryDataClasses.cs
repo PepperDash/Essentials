@@ -1,220 +1,220 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Devices.Common.VideoCodec
+namespace PepperDash.Essentials.Devices.Common.VideoCodec;
+
+
+/// <summary>
+/// Represents a CiscoCallHistory
+/// </summary>
+public class CiscoCallHistory
 {
     /// <summary>
-    /// Represents a CiscoCallHistory
+    /// Represents a CallbackNumber
     /// </summary>
-    public class CiscoCallHistory
+    public class CallbackNumber
     {
         /// <summary>
-        /// Represents a CallbackNumber
+        /// Gets or sets the Value
         /// </summary>
-        public class CallbackNumber
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a DisplayName
+    /// </summary>
+    public class DisplayName
+    {
         /// <summary>
-        /// Represents a DisplayName
+        /// Gets or sets the Value
         /// </summary>
-        public class DisplayName
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a LastOccurrenceStartTime
+    /// </summary>
+    public class LastOccurrenceStartTime
+    {
         /// <summary>
-        /// Represents a LastOccurrenceStartTime
+        /// Gets or sets the Value
         /// </summary>
-        public class LastOccurrenceStartTime
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public DateTime Value { get; set; }
-        }
+        public DateTime Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a LastOccurrenceDaysAgo
+    /// </summary>
+    public class LastOccurrenceDaysAgo
+    {
         /// <summary>
-        /// Represents a LastOccurrenceDaysAgo
+        /// Gets or sets the Value
         /// </summary>
-        public class LastOccurrenceDaysAgo
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a LastOccurrenceHistoryId
+    /// </summary>
+    public class LastOccurrenceHistoryId
+    {
         /// <summary>
-        /// Represents a LastOccurrenceHistoryId
+        /// Gets or sets the Value
         /// </summary>
-        public class LastOccurrenceHistoryId
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a OccurrenceType
+    /// </summary>
+    public class OccurrenceType
+    {
         /// <summary>
-        /// Represents a OccurrenceType
+        /// Gets or sets the Value
         /// </summary>
-        public class OccurrenceType
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a IsAcknowledged
+    /// </summary>
+    public class IsAcknowledged
+    {
         /// <summary>
-        /// Represents a IsAcknowledged
+        /// Gets or sets the Value
         /// </summary>
-        public class IsAcknowledged
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a OccurrenceCount
+    /// </summary>
+    public class OccurrenceCount
+    {
         /// <summary>
-        /// Represents a OccurrenceCount
+        /// Gets or sets the Value
         /// </summary>
-        public class OccurrenceCount
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a Entry
+    /// </summary>
+    public class Entry
+    {
         /// <summary>
-        /// Represents a Entry
+        /// Gets or sets the id
         /// </summary>
-        public class Entry
-        {
-            /// <summary>
-            /// Gets or sets the id
-            /// </summary>
-            public string id { get; set; }
-            /// <summary>
-            /// Gets or sets the CallbackNumber
-            /// </summary>
-            public CallbackNumber CallbackNumber { get; set; }
-            /// <summary>
-            /// Gets or sets the DisplayName
-            /// </summary>
-            public DisplayName DisplayName { get; set; }
-            /// <summary>
-            /// Gets or sets the LastOccurrenceStartTime
-            /// </summary>
-            public LastOccurrenceStartTime LastOccurrenceStartTime { get; set; }
-            /// <summary>
-            /// Gets or sets the LastOccurrenceDaysAgo
-            /// </summary>
-            public LastOccurrenceDaysAgo LastOccurrenceDaysAgo { get; set; }
-            /// <summary>
-            /// Gets or sets the LastOccurrenceHistoryId
-            /// </summary>
-            public LastOccurrenceHistoryId LastOccurrenceHistoryId { get; set; }
-            /// <summary>
-            /// Gets or sets the OccurrenceType
-            /// </summary>
-            public OccurrenceType OccurrenceType { get; set; }
-            /// <summary>
-            /// Gets or sets the IsAcknowledged
-            /// </summary>
-            public IsAcknowledged IsAcknowledged { get; set; }
-            /// <summary>
-            /// Gets or sets the OccurrenceCount
-            /// </summary>
-            public OccurrenceCount OccurrenceCount { get; set; }
-        }
+        public string id { get; set; }
+        /// <summary>
+        /// Gets or sets the CallbackNumber
+        /// </summary>
+        public CallbackNumber CallbackNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the DisplayName
+        /// </summary>
+        public DisplayName DisplayName { get; set; }
+        /// <summary>
+        /// Gets or sets the LastOccurrenceStartTime
+        /// </summary>
+        public LastOccurrenceStartTime LastOccurrenceStartTime { get; set; }
+        /// <summary>
+        /// Gets or sets the LastOccurrenceDaysAgo
+        /// </summary>
+        public LastOccurrenceDaysAgo LastOccurrenceDaysAgo { get; set; }
+        /// <summary>
+        /// Gets or sets the LastOccurrenceHistoryId
+        /// </summary>
+        public LastOccurrenceHistoryId LastOccurrenceHistoryId { get; set; }
+        /// <summary>
+        /// Gets or sets the OccurrenceType
+        /// </summary>
+        public OccurrenceType OccurrenceType { get; set; }
+        /// <summary>
+        /// Gets or sets the IsAcknowledged
+        /// </summary>
+        public IsAcknowledged IsAcknowledged { get; set; }
+        /// <summary>
+        /// Gets or sets the OccurrenceCount
+        /// </summary>
+        public OccurrenceCount OccurrenceCount { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a Offset
+    /// </summary>
+    public class Offset
+    {
         /// <summary>
-        /// Represents a Offset
+        /// Gets or sets the Value
         /// </summary>
-        public class Offset
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a Limit
+    /// </summary>
+    public class Limit
+    {
         /// <summary>
-        /// Represents a Limit
+        /// Gets or sets the Value
         /// </summary>
-        public class Limit
-        {
-            /// <summary>
-            /// Gets or sets the Value
-            /// </summary>
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a ResultInfo
+    /// </summary>
+    public class ResultInfo
+    {
         /// <summary>
-        /// Represents a ResultInfo
+        /// Gets or sets the Offset
         /// </summary>
-        public class ResultInfo
-        {
-            /// <summary>
-            /// Gets or sets the Offset
-            /// </summary>
-            public Offset Offset { get; set; }
-            /// <summary>
-            /// Gets or sets the Limit
-            /// </summary>
-            public Limit Limit { get; set; }
-        }
+        public Offset Offset { get; set; }
+        /// <summary>
+        /// Gets or sets the Limit
+        /// </summary>
+        public Limit Limit { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a CallHistoryRecentsResult
+    /// </summary>
+    public class CallHistoryRecentsResult
+    {
         /// <summary>
-        /// Represents a CallHistoryRecentsResult
+        /// Gets or sets the status
         /// </summary>
-        public class CallHistoryRecentsResult
-        {
-            /// <summary>
-            /// Gets or sets the status
-            /// </summary>
-            public string status { get; set; }
-            /// <summary>
-            /// Gets or sets the Entry
-            /// </summary>
-            public List<Entry> Entry { get; set; }
-            /// <summary>
-            /// Gets or sets the ResultInfo
-            /// </summary>
-            public ResultInfo ResultInfo { get; set; }
-        }
+        public string status { get; set; }
+        /// <summary>
+        /// Gets or sets the Entry
+        /// </summary>
+        public List<Entry> Entry { get; set; }
+        /// <summary>
+        /// Gets or sets the ResultInfo
+        /// </summary>
+        public ResultInfo ResultInfo { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a CommandResponse
+    /// </summary>
+    public class CommandResponse
+    {
         /// <summary>
-        /// Represents a CommandResponse
+        /// Gets or sets the CallHistoryRecentsResult
         /// </summary>
-        public class CommandResponse
-        {
-            /// <summary>
-            /// Gets or sets the CallHistoryRecentsResult
-            /// </summary>
-            public CallHistoryRecentsResult CallHistoryRecentsResult { get; set; }
-        }
+        public CallHistoryRecentsResult CallHistoryRecentsResult { get; set; }
+    }
 
+    /// <summary>
+    /// Represents a RootObject
+    /// </summary>
+    public class RootObject
+    {
         /// <summary>
-        /// Represents a RootObject
+        /// Gets or sets the CommandResponse
         /// </summary>
-        public class RootObject
-        {
-            /// <summary>
-            /// Gets or sets the CommandResponse
-            /// </summary>
-            public CommandResponse CommandResponse { get; set; }
-        }
+        public CommandResponse CommandResponse { get; set; }
     }
 }

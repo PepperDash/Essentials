@@ -6,37 +6,36 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.CrestronIO
+namespace PepperDash.Essentials.Core.CrestronIO;
+
+/// <summary>
+/// Describes an output capable of switching on and off
+/// </summary>
+public interface ISwitchedOutput
 {
     /// <summary>
-    /// Describes an output capable of switching on and off
+    /// Feedback to indicate the state of the output
     /// </summary>
-    public interface ISwitchedOutput
-    {
-        /// <summary>
-        /// Feedback to indicate whether the output is on
-        /// </summary>
-        BoolFeedback OutputIsOnFeedback {get;}
-
-        /// <summary>
-        /// Turns the output on
-        /// </summary>
-        void On();
-
-        /// <summary>
-        /// Turns the output off
-        /// </summary>
-        void Off();
-    }
+    BoolFeedback OutputIsOnFeedback {get;}
 
     /// <summary>
-    /// Describes a collection of switched outputs
+    /// Turns the output on
     /// </summary>
-    public interface ISwitchedOutputCollection
-    {
-        /// <summary>
-        /// Dictionary of switched outputs by their port number
-        /// </summary>
-        Dictionary<uint, ISwitchedOutput> SwitchedOutputs { get; }
-    }
+    void On();
+
+    /// <summary>
+    /// Turns the output off
+    /// </summary>
+    void Off();
+}
+
+/// <summary>
+/// Defines the contract for a class that has a collection of switched outputs
+/// </summary>
+public interface ISwitchedOutputCollection
+{
+    /// <summary>
+    /// Collection of switched outputs, indexed by their output number
+    /// </summary>
+    Dictionary<uint, ISwitchedOutput> SwitchedOutputs { get; }
 }

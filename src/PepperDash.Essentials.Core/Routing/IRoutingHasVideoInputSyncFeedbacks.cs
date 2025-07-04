@@ -9,8 +9,8 @@ using Crestron.SimplSharpPro.DM;
 using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 
  /// <summary>
  /// Defines the contract for IRoutingHasVideoInputSyncFeedbacks
@@ -22,4 +22,3 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		FeedbackCollection<BoolFeedback> VideoInputSyncFeedbacks { get; }
 	}	
-}

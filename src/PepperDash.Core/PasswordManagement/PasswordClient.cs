@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace PepperDash.Core.PasswordManagement
-{
- /// <summary>
- /// Represents a PasswordClient
- /// </summary>
+namespace PepperDash.Core.PasswordManagement;
+
+/// <summary>
+/// A class to allow user interaction with the PasswordManager
+/// </summary>
 	public class PasswordClient
 	{
 		/// <summary>
@@ -193,4 +193,3 @@ namespace PepperDash.Core.PasswordManagement
 			}
 		}
 	}
-}

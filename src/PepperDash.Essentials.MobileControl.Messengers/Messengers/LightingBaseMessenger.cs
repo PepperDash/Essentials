@@ -13,6 +13,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private ILightingScenes lightingScenesDevice;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ILightingScenesMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="device"></param>
+        /// <param name="messagePath"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public ILightingScenesMessenger(string key, ILightingScenes device, string messagePath)
             : base(key, messagePath, device as IKeyName)
         {
@@ -31,6 +38,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostStatusMessage(state);
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

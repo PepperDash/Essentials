@@ -8,16 +8,16 @@ namespace PepperDash.Essentials.AppServer
     /// </summary>
     public class SourceSelectMessageContent
     {
-
-        [JsonProperty("sourceListItemKey")]
         /// <summary>
         /// Gets or sets the SourceListItemKey
         /// </summary>
+        [JsonProperty("sourceListItemKey")]
         public string SourceListItemKey { get; set; }
-        [JsonProperty("sourceListKey")]
         /// <summary>
         /// Gets or sets the SourceListKey
         /// </summary>
+        [JsonProperty("sourceListKey")]
+
         public string SourceListKey { get; set; }
     }
 
@@ -27,20 +27,20 @@ namespace PepperDash.Essentials.AppServer
     public class DirectRoute
     {
 
-        [JsonProperty("sourceKey")]
         /// <summary>
         /// Gets or sets the SourceKey
         /// </summary>
+        [JsonProperty("sourceKey")]
         public string SourceKey { get; set; }
-        [JsonProperty("destinationKey")]
         /// <summary>
         /// Gets or sets the DestinationKey
         /// </summary>
+        [JsonProperty("destinationKey")]
         public string DestinationKey { get; set; }
-        [JsonProperty("signalType")]
         /// <summary>
         /// Gets or sets the SignalType
         /// </summary>
+        [JsonProperty("signalType")]
         public eRoutingSignalType SignalType { get; set; }
     }
 

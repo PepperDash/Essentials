@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Crestron.SimplSharp.WebScripting;
 
-namespace PepperDash.Core.Web.RequestHandlers
-{
+namespace PepperDash.Core.Web.RequestHandlers;
+
 	/// <summary>
 	/// CWS Base Handler, implements IHttpCwsHandler
 	/// </summary>
@@ -165,4 +165,3 @@ namespace PepperDash.Core.Web.RequestHandlers
 			handler(context);
 		}
 	}
-}

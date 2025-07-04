@@ -1,10 +1,7 @@
 ﻿using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.Bridges.JoinMaps
-{
-		/// <summary>
-		/// Represents a GenericIrControllerJoinMap
-		/// </summary>
+namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
+
 		public sealed class GenericIrControllerJoinMap : JoinMapBaseAdvanced
 		{
 			/// <summary>
@@ -996,4 +993,3 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			{
 			}
 	}
-}

@@ -1,36 +1,30 @@
 ﻿using System;
 
-namespace PepperDash.Essentials.Core.Bridges
+namespace PepperDash.Essentials.Core.Bridges;
+
+public class IDigitalOutputJoinMap : JoinMapBaseAdvanced
 {
+
+    [JoinName("OutputState")]
+    public JoinDataComplete OutputState = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
+        new JoinMetadata { Description = "Get / Set state of Digital Input", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
     /// <summary>
-    /// Represents a IDigitalOutputJoinMap
+    /// Constructor to use when instantiating this Join Map without inheriting from it
     /// </summary>
-    public class IDigitalOutputJoinMap : JoinMapBaseAdvanced
+    /// <param name="joinStart">Join this join map will start at</param>
+    public IDigitalOutputJoinMap(uint joinStart)
+        : this(joinStart, typeof(IDigitalOutputJoinMap))
     {
-        /// <summary>
-        /// Output State
-        /// </summary>
-        [JoinName("OutputState")]
-        public JoinDataComplete OutputState = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata { Description = "Get / Set state of Digital Input", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+    }
 
-        /// <summary>
-        /// Constructor to use when instantiating this Join Map without inheriting from it
-        /// </summary>
-        /// <param name="joinStart">Join this join map will start at</param>
-        public IDigitalOutputJoinMap(uint joinStart)
-            : this(joinStart, typeof(IDigitalOutputJoinMap))
-        {
-        }
-
-        /// <summary>
-        /// Constructor to use when extending this Join map
-        /// </summary>
-        /// <param name="joinStart">Join this join map will start at</param>
-        /// <param name="type">Type of the child join map</param>
-        protected IDigitalOutputJoinMap(uint joinStart, Type type)
-            : base(joinStart, type)
-        {
-        }
+    /// <summary>
+    /// Constructor to use when extending this Join map
+    /// </summary>
+    /// <param name="joinStart">Join this join map will start at</param>
+    /// <param name="type">Type of the child join map</param>
+    protected IDigitalOutputJoinMap(uint joinStart, Type type)
+        : base(joinStart, type)
+    {
     }
 }

@@ -34,43 +34,42 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
-        /// <summary>
-        /// GetFiles method
-        /// </summary>
-        public static FileInfo[] GetFiles(string fileName)
-        {
-            string fullFilePath = Global.FilePathPrefix + fileName;
-            DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
-            var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
-            Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
-            if (files.Count() > 0)
-            {
-                return files;
-            }
-            else
-            {
-                return null;
-            }
-        }
+		public static FileInfo[] GetFiles(string fileName)
+		{
+			string fullFilePath = Global.FilePathPrefix + fileName;
+			DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
+			var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
+			Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
+			if (files.Count() > 0)
+			{
+				return files;
+			}
+			else
+			{
+				return null;
+			}
+		}
 
-        /// <summary>
-        /// GetFile method
-        /// </summary>
-        public static FileInfo GetFile(string fileName)
-        {
-            string fullFilePath = Global.FilePathPrefix + fileName;
-            DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
-            var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
-            Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
-            if (files.Count() > 0)
-            {
-                return files.FirstOrDefault();
-            }
-            else
-            {
-                return null;
-            }
-        }
+		/// <summary>
+		/// Get the full file info from a path/filename, can include wildcards.
+		/// </summary>
+		/// <param name="fileName"></param>
+		/// <returns></returns>
+		public static FileInfo GetFile(string fileName)
+		{
+			string fullFilePath = Global.FilePathPrefix + fileName;
+			DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
+			var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
+			Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
+			if (files.Count() > 0)
+			{
+				return files.FirstOrDefault();
+			}
+			else
+			{
+				return null;
+			}
+		}
 
 
 		/// <summary>
@@ -78,9 +77,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
-  /// <summary>
-  /// ReadDataFromFile method
-  /// </summary>
+		/// <summary>
+		/// ReadDataFromFile method
+		/// </summary>
 		public static string ReadDataFromFile(string fileName)
 		{
 			try
@@ -94,15 +93,15 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-        /// <summary>
-        /// Get the data with fileInfo object 
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        /// <summary>
-        /// ReadDataFromFile method
-        /// </summary>
-        public static string ReadDataFromFile(FileInfo file)
+		/// <summary>
+		/// Get the data with fileInfo object 
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		/// <summary>
+		/// ReadDataFromFile method
+		/// </summary>
+		public static string ReadDataFromFile(FileInfo file)
 		{
 			try
 			{
@@ -129,7 +128,7 @@ namespace PepperDash.Essentials.Core
 					Debug.LogMessage(LogEventLevel.Information, "FileIO Unable to enter FileLock");
 					return "";
 				}
-				
+
 			}
 			catch (Exception e)
 			{
@@ -145,9 +144,9 @@ namespace PepperDash.Essentials.Core
 		}
 
 
-  /// <summary>
-  /// ReadDataFromFileASync method
-  /// </summary>
+		/// <summary>
+		/// ReadDataFromFileASync method
+		/// </summary>
 		public static void ReadDataFromFileASync(string fileName)
 		{
 			try
@@ -160,9 +159,9 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-  /// <summary>
-  /// ReadDataFromFileASync method
-  /// </summary>
+		/// <summary>
+		/// ReadDataFromFileASync method
+		/// </summary>
 		public static void ReadDataFromFileASync(FileInfo file)
 		{
 			try
@@ -230,7 +229,7 @@ namespace PepperDash.Essentials.Core
 		public static void WriteDataToFile(string data, string filePath)
 		{
 			Thread _WriteFileThread;
-            _WriteFileThread = new Thread((O) => _WriteFileMethod(data, Global.FilePathPrefix + "/" + filePath), null, Thread.eThreadStartOptions.CreateSuspended);
+			_WriteFileThread = new Thread((O) => _WriteFileMethod(data, Global.FilePathPrefix + "/" + filePath), null, Thread.eThreadStartOptions.CreateSuspended);
 			_WriteFileThread.Priority = Thread.eThreadPriority.LowestPriority;
 			_WriteFileThread.Start();
 			Debug.LogMessage(LogEventLevel.Information, "New WriteFile Thread");
@@ -246,7 +245,7 @@ namespace PepperDash.Essentials.Core
 				if (fileLock.TryEnter())
 				{
 
-                    using (StreamWriter sw = new StreamWriter(filePath))
+					using (StreamWriter sw = new StreamWriter(filePath))
 					{
 						sw.Write(data);
 						sw.Flush();
@@ -277,16 +276,16 @@ namespace PepperDash.Essentials.Core
 		/// 
 		/// </summary>
 		/// <returns></returns>
-  /// <summary>
-  /// FileIoUnitTest method
-  /// </summary>
+		/// <summary>
+		/// FileIoUnitTest method
+		/// </summary>
 		public static bool FileIoUnitTest()
 		{
 			var testData = "Testing FileIO";
 			FileIO.WriteDataToFile(testData, "\\user\\FileIOTest.pdt");
 
 			var file = FileIO.GetFile("\\user\\*FileIOTest*");
-			
+
 			var readData = FileIO.ReadDataFromFile(file);
 			Debug.LogMessage(LogEventLevel.Information, "Returned {0}", readData);
 			File.Delete(file.FullName);
@@ -301,9 +300,9 @@ namespace PepperDash.Essentials.Core
 		}
 
 	}
- /// <summary>
- /// Represents a FileEventArgs
- /// </summary>
+	/// <summary>
+	/// Represents a FileEventArgs
+	/// </summary>
 	public class FileEventArgs
 	{
 		/// <summary>
@@ -311,9 +310,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="data"></param>
 		public FileEventArgs(string data) { Data = data; }
-  /// <summary>
-  /// Gets or sets the Data
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the Data
+		/// </summary>
 		public string Data { get; private set; } // readonly
 
 	}

@@ -1,15 +1,14 @@
 ﻿using PepperDash.Essentials.Core.Presets;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+/// <summary>
+/// Defines the contract for ITvPresetsProvider
+/// </summary>
+public interface ITvPresetsProvider
 {
     /// <summary>
-    /// Defines the contract for ITvPresetsProvider
+    /// The TV presets model
     /// </summary>
-    public interface ITvPresetsProvider
-    {
-        /// <summary>
-        /// The TV presets model
-        /// </summary>
-        DevicePresetsModel TvPresets { get; }
-    }
+    DevicePresetsModel TvPresets { get; }
 }

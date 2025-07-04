@@ -12,6 +12,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly TwoWayDisplayBase _display;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TwoWayDisplayBaseMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="display"></param>
         public TwoWayDisplayBaseMessenger(string key, string messagePath, TwoWayDisplayBase display)
             : base(key, messagePath, display)
         {
@@ -34,6 +40,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostStatusMessage(messageObj, id);
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

@@ -1,15 +1,4 @@
-﻿/* Unmerged change from project 'PepperDash.Essentials.Core (net6)'
-Before:
-namespace PepperDash.Essentials.Core.Routing.Interfaces
-After:
-using PepperDash;
-using PepperDash.Essentials;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Routing;
-using PepperDash.Essentials.Core.Routing;
-using PepperDash.Essentials.Core.Routing.Interfaces
-*/
-using System;
+﻿using System;
 
 namespace PepperDash.Essentials.Core
 {

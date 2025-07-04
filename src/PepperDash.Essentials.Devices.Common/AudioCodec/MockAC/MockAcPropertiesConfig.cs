@@ -1,16 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Devices.Common.AudioCodec
+namespace PepperDash.Essentials.Devices.Common.AudioCodec;
+
+public class MockAcPropertiesConfig
 {
-    /// <summary>
-    /// Represents a MockAcPropertiesConfig
-    /// </summary>
-    public class MockAcPropertiesConfig
-    {
-        /// <summary>
-        /// Gets or sets the PhoneNumber
-        /// </summary>
-        [JsonProperty("phoneNumber")]
-        public string PhoneNumber { get; set; }
-    }
+    [JsonProperty("phoneNumber")]
+    public string PhoneNumber { get; set; }
 }

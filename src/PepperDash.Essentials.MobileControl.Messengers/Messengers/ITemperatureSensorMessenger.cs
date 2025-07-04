@@ -12,12 +12,20 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly ITemperatureSensor device;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ITemperatureSensorMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="device"></param>
+        /// <param name="messagePath"></param>
         public ITemperatureSensorMessenger(string key, ITemperatureSensor device, string messagePath)
             : base(key, messagePath, device as IKeyName)
         {
             this.device = device;
         }
 
+
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

@@ -10,8 +10,8 @@ using JsonConvert = NewtonsoftJson::Newtonsoft.Json.JsonConvert;
 using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using PepperDash.Core.Web.RequestHandlers;
 
-namespace PepperDash.Core.Web
-{
+namespace PepperDash.Core.Web;
+
 	/// <summary>
 	/// Web API server
 	/// </summary>
@@ -287,4 +287,3 @@ namespace PepperDash.Core.Web
 			}
 		}
 	}
-}

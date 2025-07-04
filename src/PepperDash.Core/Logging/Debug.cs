@@ -20,8 +20,8 @@ using Serilog.Formatting.Compact;
 using Serilog.Formatting.Json;
 using Serilog.Templates;
 
-namespace PepperDash.Core
-{
+namespace PepperDash.Core;
+
     /// <summary>
     /// </summary>
     public static class Debug
@@ -1238,6 +1238,5 @@ namespace PepperDash.Core
             /// None
             /// </summary>
             None,
-        }
     }
 }

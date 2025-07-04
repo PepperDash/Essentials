@@ -13,8 +13,8 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// 
 	/// </summary>
@@ -25,4 +25,3 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		IComPorts Device { get; }
 	}
-}

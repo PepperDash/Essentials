@@ -9,11 +9,8 @@ using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core
-{
- /// <summary>
- /// Represents a ConsoleCommMockDevice
- /// </summary>
+namespace PepperDash.Essentials.Core;
+
 	public class ConsoleCommMockDevice : EssentialsDevice, ICommunicationMonitor
 	{
   /// <summary>
@@ -103,31 +100,19 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-    /// <summary>
-    /// Represents a ConsoleCommMockDeviceFactory
-    /// </summary>
-    public class ConsoleCommMockDeviceFactory : EssentialsDeviceFactory<ConsoleCommMockDevice>
+public class ConsoleCommMockDeviceFactory : EssentialsDeviceFactory<ConsoleCommMockDevice>
+{
+    public ConsoleCommMockDeviceFactory()
     {
-        /// <summary>
-        /// Initializes a new instance of the ConsoleCommMockDeviceFactory class.
-        /// </summary>
-        public ConsoleCommMockDeviceFactory()
-        {
-            TypeNames = new List<string>() { "commmock" };
-        }
-
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
-        /// <inheritdoc />
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Comm Mock Device");
-            var comm = CommFactory.CreateCommForDevice(dc);
-            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<ConsoleCommMockDevicePropertiesConfig>(
-                dc.Properties.ToString());
-            return new ConsoleCommMockDevice(dc.Key, dc.Name, props, comm);
-        }
+        TypeNames = new List<string>() { "commmock" };
     }
 
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Comm Mock Device");
+        var comm = CommFactory.CreateCommForDevice(dc);
+        var props = Newtonsoft.Json.JsonConvert.DeserializeObject<ConsoleCommMockDevicePropertiesConfig>(
+            dc.Properties.ToString());
+        return new ConsoleCommMockDevice(dc.Key, dc.Name, props, comm);
+    }
 }

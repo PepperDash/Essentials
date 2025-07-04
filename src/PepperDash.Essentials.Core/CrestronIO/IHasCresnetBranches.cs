@@ -6,7 +6,12 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+/// <summary>
+/// Defines the contract for a class that has Cresnet branches
+/// </summary>
+public interface IHasCresnetBranches
 {
     /// <summary>
     /// Defines the contract for IHasCresnetBranches

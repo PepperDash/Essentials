@@ -10,12 +10,19 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class IDPadMessenger : MessengerBase
     {
         private readonly IDPad dpadDevice;
+
+        /// <summary>
+        /// Create an instance of the <see cref="IDPadMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
         public IDPadMessenger(string key, string messagePath, IDPad device) : base(key, messagePath, device as IKeyName)
         {
             dpadDevice = device;
         }
 
-
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

@@ -26,6 +26,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             itemDevice = device;
         }
 
+
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();
@@ -90,10 +92,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class IHasInputsStateMessage<TKey> : DeviceStateMessageBase
     {
-        [JsonProperty("inputs")]
         /// <summary>
         /// Gets or sets the Inputs
         /// </summary>
+        [JsonProperty("inputs")]
         public Inputs<TKey> Inputs { get; set; }
     }
 
@@ -102,13 +104,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class Inputs<TKey>
     {
+        /// <summary>
+        /// Gets or sets the Items
+        /// The key is the input key, and the value is the input name
+        /// </summary>
         [JsonProperty("items")]
         public Dictionary<TKey, ISelectableItem> Items { get; set; }
 
-        [JsonProperty("currentItem")]
         /// <summary>
         /// Gets or sets the CurrentItem
         /// </summary>
+        [JsonProperty("currentItem")]
         public TKey CurrentItem { get; set; }
     }
 

@@ -4,11 +4,11 @@ using Crestron.SimplSharp;
 using JsonProperty = NewtonsoftJson::Newtonsoft.Json.JsonPropertyAttribute;
 using Serilog.Events;
 
-namespace PepperDash.Core
-{
- /// <summary>
- /// Represents a EthernetHelper
- /// </summary>
+namespace PepperDash.Core;
+
+/// <summary>
+/// Represents an EthernetHelper.
+/// </summary>
 	public class EthernetHelper
 	{
 		/// <summary>
@@ -116,4 +116,3 @@ namespace PepperDash.Core
 			}
 		}
 	}
-}

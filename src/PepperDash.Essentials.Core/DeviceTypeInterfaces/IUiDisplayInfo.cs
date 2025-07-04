@@ -1,7 +1,7 @@
 ﻿using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// Defines the contract for IUiDisplayInfo
 	/// </summary>
@@ -12,4 +12,3 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		uint DisplayUiType { get; }
 	}
-}

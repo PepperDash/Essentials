@@ -6,16 +6,16 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+
+/// <summary>
+/// Defines the contract for IOccupancyStatusProvider
+/// </summary>
+public interface IOccupancyStatusProvider
 {
     /// <summary>
-    /// Defines the contract for IOccupancyStatusProvider
+    /// Gets the RoomIsOccupiedFeedback
     /// </summary>
-    public interface IOccupancyStatusProvider
-    {
-        /// <summary>
-        /// Gets the RoomIsOccupiedFeedback
-        /// </summary>
-        BoolFeedback RoomIsOccupiedFeedback { get; }
-    }
+    BoolFeedback RoomIsOccupiedFeedback { get; }
 }

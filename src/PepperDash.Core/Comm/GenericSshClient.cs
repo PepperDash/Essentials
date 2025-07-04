@@ -9,658 +9,562 @@ using PepperDash.Core.Logging;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 
-namespace PepperDash.Core
+namespace PepperDash.Core;
+
+/// <summary>
+/// 
+/// </summary>
+public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoReconnect
 {
+    private const string SPlusKey = "Uninitialized SshClient";
+    /// <summary>
+    /// Object to enable stream debugging
+    /// </summary>
+    public CommunicationStreamDebugging StreamDebugging { get; private set; }
+
+    /// <summary>
+    /// Event that fires when data is received.  Delivers args with byte array
+    /// </summary>
+    public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
+
+    /// <summary>
+    /// Event that fires when data is received.  Delivered as text.
+    /// </summary>
+    public event EventHandler<GenericCommMethodReceiveTextArgs> TextReceived;
+
+    /// <summary>
+    /// Event when the connection status changes.
+    /// </summary>
+    public event EventHandler<GenericSocketStatusChageEventArgs> ConnectionChange;
+
+    ///// <summary>
+    ///// 
+    ///// </summary>
+    //public event GenericSocketStatusChangeEventDelegate SocketStatusChange;
+
+    /// <summary>
+    /// Address of server
+    /// </summary>
+    public string Hostname { get; set; }
+
+    /// <summary>
+    /// Port on server
+    /// </summary>
+    public int Port { get; set; }
+
+    /// <summary>
+    /// Username for server
+    /// </summary>
+    public string Username { get; set; }
+
+    /// <summary>
+    /// And... Password for server.  That was worth documenting!
+    /// </summary>
+    public string Password { get; set; }
+
+    /// <summary>
+    /// True when the server is connected - when status == 2.
+    /// </summary>
+    public bool IsConnected
+    {
+        // returns false if no client or not connected
+        get { return Client != null && ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED; }
+    }
+
+    /// <summary>
+    /// S+ helper for IsConnected
+    /// </summary>
+    public ushort UIsConnected
+    {
+        get { return (ushort)(IsConnected ? 1 : 0); }
+    }
+
     /// <summary>
     /// SSH Client
     /// </summary>
-    public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoReconnect
+    public SocketStatus ClientStatus
     {
-        private const string SPlusKey = "Uninitialized SshClient";
-
-        /// <summary>
-        /// Object to enable stream debugging
-        /// </summary>
-        public CommunicationStreamDebugging StreamDebugging { get; private set; }
-
-        /// <summary>
-        /// Event that fires when data is received.  Delivers args with byte array
-        /// </summary>
-        public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
-
-        /// <summary>
-        /// Event that fires when data is received.  Delivered as text.
-        /// </summary>
-        public event EventHandler<GenericCommMethodReceiveTextArgs> TextReceived;
-
-        /// <summary>
-        /// Event when the connection status changes.
-        /// </summary>
-        public event EventHandler<GenericSocketStatusChageEventArgs> ConnectionChange;
-
-        /// <summary>
-        /// Gets or sets the Hostname
-        /// </summary>
-        public string Hostname { get; set; }
-
-        /// <summary>
-        /// Port on server
-        /// </summary>
-        public int Port { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Username
-        /// </summary>
-        public string Username { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Password
-        /// </summary>
-        public string Password { get; set; }
-
-        /// <summary>
-        /// True when the server is connected - when status == 2.
-        /// </summary>
-        public bool IsConnected
+        get { return _ClientStatus; }
+        private set
         {
-            // returns false if no client or not connected
-            get { return client != null && ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED; }
+            if (_ClientStatus == value)
+                return;
+            _ClientStatus = value;
+            OnConnectionChange();
         }
+    }
+    SocketStatus _ClientStatus;
 
-        /// <summary>
-        /// S+ helper for IsConnected
-        /// </summary>
-        public ushort UIsConnected
-        {
-            get { return (ushort)(IsConnected ? 1 : 0); }
-        }
+    /// <summary>
+    /// Contains the familiar Simpl analog status values. This drives the ConnectionChange event
+    /// and IsConnected with be true when this == 2.
+    /// </summary>
+    public ushort UStatus
+    {
+        get { return (ushort)_ClientStatus; }
+    }
 
-        /// <summary>
-        /// Socket status change event
-        /// </summary>
-        public SocketStatus ClientStatus
-        {
-            get { lock (_stateLock) { return _ClientStatus; } }
-            private set
-            {
-                bool shouldFireEvent = false;
-                lock (_stateLock)
+    /// <summary>
+    /// Determines whether client will attempt reconnection on failure. Default is true
+    /// </summary>
+    public bool AutoReconnect { get; set; }
+
+    /// <summary>
+    /// Will be set and unset by connect and disconnect only
+    /// </summary>
+    public bool ConnectEnabled { get; private set; }
+
+    /// <summary>
+    /// S+ helper for AutoReconnect
+    /// </summary>
+    public ushort UAutoReconnect
+    {
+        get { return (ushort)(AutoReconnect ? 1 : 0); }
+        set { AutoReconnect = value == 1; }
+    }
+
+    /// <summary>
+    /// Millisecond value, determines the timeout period in between reconnect attempts.
+    /// Set to 5000 by default
+    /// </summary>
+    public int AutoReconnectIntervalMs { get; set; }
+
+    SshClient Client;
+
+    ShellStream TheStream;
+
+    CTimer ReconnectTimer;
+
+    //Lock object to prevent simulatneous connect/disconnect operations
+    //private CCriticalSection connectLock = new CCriticalSection();
+    private SemaphoreSlim connectLock = new SemaphoreSlim(1);
+
+    private bool DisconnectLogged = false;
+
+    /// <summary>
+    /// Typical constructor.
+    /// </summary>
+    public GenericSshClient(string key, string hostname, int port, string username, string password) :
+        base(key)
+    {
+        StreamDebugging = new CommunicationStreamDebugging(key);
+        CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+        Key = key;
+        Hostname = hostname;
+        Port = port;
+        Username = username;
+        Password = password;
+        AutoReconnectIntervalMs = 5000;
+
+        ReconnectTimer = new CTimer(o =>
                 {
-                    if (_ClientStatus != value)
-                    {
-                        _ClientStatus = value;
-                        shouldFireEvent = true;
-                    }
-                }
-                // Fire event outside lock to avoid deadlock
-                if (shouldFireEvent)
-                    OnConnectionChange();
-            }
-        }
-
-        private SocketStatus _ClientStatus;
-        private bool _ConnectEnabled;
-
-        /// <summary>
-        /// Contains the familiar Simpl analog status values. This drives the ConnectionChange event
-        /// and IsConnected with be true when this == 2.
-        /// </summary>
-        public ushort UStatus
-        {
-            get { lock (_stateLock) { return (ushort)_ClientStatus; } }
-        }
-
-        /// <summary>
-        /// Determines whether client will attempt reconnection on failure. Default is true
-        /// </summary>
-        public bool AutoReconnect { get; set; }
-
-        /// <summary>
-        /// Will be set and unset by connect and disconnect only
-        /// </summary>
-        public bool ConnectEnabled
-        {
-            get { lock (_stateLock) { return _ConnectEnabled; } }
-            private set { lock (_stateLock) { _ConnectEnabled = value; } }
-        }
-
-        /// <summary>
-        /// S+ helper for AutoReconnect
-        /// </summary>
-        public ushort UAutoReconnect
-        {
-            get { return (ushort)(AutoReconnect ? 1 : 0); }
-            set { AutoReconnect = value == 1; }
-        }
-
-        /// <summary>
-        /// Gets or sets the AutoReconnectIntervalMs
-        /// </summary>
-        public int AutoReconnectIntervalMs { get; set; }
-
-        private SshClient client;
-
-        private ShellStream shellStream;
-
-        private readonly Timer reconnectTimer;
-
-        //Lock object to prevent simulatneous connect/disconnect operations
-        //private CCriticalSection connectLock = new CCriticalSection();
-        private readonly SemaphoreSlim connectLock = new SemaphoreSlim(1);
-
-        // Thread-safety lock for state changes
-        private readonly object _stateLock = new object();
-
-        private bool disconnectLogged = false;
-
-        /// <summary>
-        /// When true, turns off echo for the SSH session
-        /// </summary>
-        public bool DisableEcho { get; set; }
-
-        /// <summary>
-        /// Typical constructor.
-        /// </summary>
-        public GenericSshClient(string key, string hostname, int port, string username, string password) :
-            base(key)
-        {
-            StreamDebugging = new CommunicationStreamDebugging(key);
-            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
-            Key = key;
-            Hostname = hostname;
-            Port = port;
-            Username = username;
-            Password = password;
-            AutoReconnectIntervalMs = 5000;
-
-            reconnectTimer = new Timer(o =>
-                {
-                    if (ConnectEnabled) // Now thread-safe property access
+                    if (ConnectEnabled)
                     {
                         Connect();
                     }
-                }, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                }, System.Threading.Timeout.Infinite);
+    }
+
+    /// <summary>
+    /// S+ Constructor - Must set all properties before calling Connect
+    /// </summary>
+    public GenericSshClient()
+        : base(SPlusKey)
+    {
+        CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+        AutoReconnectIntervalMs = 5000;
+
+        ReconnectTimer = new CTimer(o =>
+        {
+            if (ConnectEnabled)
+            {
+                Connect();
+            }
+        }, System.Threading.Timeout.Infinite);
+    }
+
+    /// <summary>
+    /// Handles closing this up when the program shuts down
+    /// </summary>
+    void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+    {
+        if (programEventType == eProgramStatusEventType.Stopping)
+        {
+            if (Client != null)
+            {
+                this.LogDebug("Program stopping. Closing connection");
+                Disconnect();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Connect to the server, using the provided properties.
+    /// </summary>
+    public void Connect()
+    {
+        // Don't go unless everything is here
+        if (string.IsNullOrEmpty(Hostname) || Port < 1 || Port > 65535
+            || Username == null || Password == null)
+        {
+            this.LogError("Connect failed.  Check hostname, port, username and password are set or not null");
+            return;
         }
 
-        /// <summary>
-        /// S+ Constructor - Must set all properties before calling Connect
-        /// </summary>
-        public GenericSshClient()
-            : base(SPlusKey)
-        {
-            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
-            AutoReconnectIntervalMs = 5000;
+        ConnectEnabled = true;
 
-            reconnectTimer = new Timer(o =>
+        try
+        {
+            connectLock.Wait();
+            if (IsConnected)
             {
-                if (ConnectEnabled) // Now thread-safe property access
+                this.LogDebug("Connection already connected.  Exiting Connect");
+            }
+            else
+            {
+                this.LogDebug("Attempting connect");
+
+                // Cancel reconnect if running.
+                if (ReconnectTimer != null)
                 {
-                    Connect();
+                    ReconnectTimer.Stop();
                 }
-            }, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-        }
 
-        /// <summary>
-        /// Handles closing this up when the program shuts down
-        /// </summary>
-        private void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
-        {
-            if (programEventType == eProgramStatusEventType.Stopping)
-            {
-                if (client != null)
+                // Cleanup the old client if it already exists
+                if (Client != null)
                 {
-                    this.LogDebug("Program stopping. Closing connection");
-                    Disconnect();
+                    this.LogDebug("Cleaning up disconnected client");
+                    KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
+                }
+
+                // This handles both password and keyboard-interactive (like on OS-X, 'nixes)
+                KeyboardInteractiveAuthenticationMethod kauth = new KeyboardInteractiveAuthenticationMethod(Username);
+                kauth.AuthenticationPrompt += new EventHandler<AuthenticationPromptEventArgs>(kauth_AuthenticationPrompt);
+                PasswordAuthenticationMethod pauth = new PasswordAuthenticationMethod(Username, Password);
+
+                this.LogDebug("Creating new SshClient");
+                ConnectionInfo connectionInfo = new ConnectionInfo(Hostname, Port, Username, pauth, kauth);
+                Client = new SshClient(connectionInfo);
+                Client.ErrorOccurred += Client_ErrorOccurred;
+
+                //Attempt to connect
+                ClientStatus = SocketStatus.SOCKET_STATUS_WAITING;
+                try
+                {
+                    Client.Connect();
+                    TheStream = Client.CreateShellStream("PDTShell", 0, 0, 0, 0, 65534);
+                    if (TheStream.DataAvailable)
+                    {
+                        // empty the buffer if there is data
+                        string str = TheStream.Read();
+                    }
+                    TheStream.DataReceived += Stream_DataReceived;
+                    this.LogInformation("Connected");
+                    ClientStatus = SocketStatus.SOCKET_STATUS_CONNECTED;
+                    DisconnectLogged = false;
+                }
+                catch (SshConnectionException e)
+                {
+                    var ie = e.InnerException; // The details are inside!!
+                    var errorLogLevel = DisconnectLogged == true ? Debug.ErrorLogLevel.None : Debug.ErrorLogLevel.Error;
+
+                    if (ie is SocketException)
+                    {
+                        this.LogException(ie, "CONNECTION failure: Cannot reach host");
+                    }
+
+                    if (ie is System.Net.Sockets.SocketException socketException)
+                    {
+                        this.LogException(ie, "Connection failure: Cannot reach {host} on {port}",
+                            Hostname, Port);
+                    }
+                    if (ie is SshAuthenticationException)
+                    {
+                        this.LogException(ie, "Authentication failure for username {userName}", Username);
+                    }
+                    else
+                        this.LogException(ie, "Error on connect");
+
+                    DisconnectLogged = true;
+                    KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
+                    if (AutoReconnect)
+                    {
+                        this.LogDebug("Checking autoreconnect: {autoReconnect}, {autoReconnectInterval}ms", AutoReconnect, AutoReconnectIntervalMs);
+                        ReconnectTimer.Reset(AutoReconnectIntervalMs);
+                    }
+                }
+                catch (SshOperationTimeoutException ex)
+                {
+                    this.LogWarning("Connection attempt timed out: {message}", ex.Message);
+
+                    DisconnectLogged = true;
+                    KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
+                    if (AutoReconnect)
+                    {
+                        this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
+                        ReconnectTimer.Reset(AutoReconnectIntervalMs);
+                    }
+                }
+                catch (Exception e)
+                {
+                    var errorLogLevel = DisconnectLogged == true ? Debug.ErrorLogLevel.None : Debug.ErrorLogLevel.Error;
+                    this.LogException(e, "Unhandled exception on connect");
+                    DisconnectLogged = true;
+                    KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
+                    if (AutoReconnect)
+                    {
+                        this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
+                        ReconnectTimer.Reset(AutoReconnectIntervalMs);
+                    }
                 }
             }
         }
-
-        /// <summary>
-        /// Connect method
-        /// </summary>
-        public void Connect()
+        finally
         {
-            // Don't go unless everything is here
-            if (string.IsNullOrEmpty(Hostname) || Port < 1 || Port > 65535
-                || Username == null || Password == null)
+            connectLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Disconnect method
+    /// </summary>
+    public void Disconnect()
+    {
+        ConnectEnabled = false;
+        // Stop trying reconnects, if we are
+        ReconnectTimer.Stop();
+
+        KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
+    }
+
+    /// <summary>
+    /// Kills the stream, cleans up the client and sets it to null
+    /// </summary>
+    private void KillClient(SocketStatus status)
+    {
+        KillStream();
+
+        try
+        {
+            if (Client != null)
             {
-                this.LogError("Connect failed.  Check hostname, port, username and password are set or not null");
-                return;
+                Client.ErrorOccurred -= Client_ErrorOccurred;
+                Client.Disconnect();
+                Client.Dispose();
+                Client = null;
+                ClientStatus = status;
+                this.LogDebug("Disconnected");
             }
+        }
+        catch (Exception ex)
+        {
+            this.LogException(ex, "Exception in Kill Client");
+        }
+    }
 
-            ConnectEnabled = true;
+    /// <summary>
+    /// Kills the stream
+    /// </summary>
+    void KillStream()
+    {
+        try
+        {
+            if (TheStream != null)
+            {
+                TheStream.DataReceived -= Stream_DataReceived;
+                TheStream.Close();
+                TheStream.Dispose();
+                TheStream = null;
+                this.LogDebug("Disconnected stream");
+            }
+        }
+        catch (Exception ex)
+        {
+            this.LogException(ex, "Exception in Kill Stream:{0}");
+        }
+    }
 
+    /// <summary>
+    /// Handles the keyboard interactive authentication, should it be required.
+    /// </summary>
+    void kauth_AuthenticationPrompt(object sender, AuthenticationPromptEventArgs e)
+    {
+        foreach (AuthenticationPrompt prompt in e.Prompts)
+            if (prompt.Request.IndexOf("Password:", StringComparison.InvariantCultureIgnoreCase) != -1)
+                prompt.Response = Password;
+    }
+
+    /// <summary>
+    /// Handler for data receive on ShellStream.  Passes data across to queue for line parsing.
+    /// </summary>
+    void Stream_DataReceived(object sender, ShellDataEventArgs e)
+    {
+        if (((ShellStream)sender).Length <= 0L)
+        {
+            return;
+        }
+        var response = ((ShellStream)sender).Read();
+
+        var bytesHandler = BytesReceived;
+
+        if (bytesHandler != null)
+        {
+            var bytes = Encoding.UTF8.GetBytes(response);
+            if (StreamDebugging.RxStreamDebuggingIsEnabled)
+            {
+                this.LogInformation("Received {1} bytes: '{0}'", ComTextHelper.GetEscapedText(bytes), bytes.Length);
+            }
+            bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
+        }
+
+        var textHandler = TextReceived;
+        if (textHandler != null)
+        {
+            if (StreamDebugging.RxStreamDebuggingIsEnabled)
+                this.LogInformation("Received: '{0}'", ComTextHelper.GetDebugText(response));
+
+            textHandler(this, new GenericCommMethodReceiveTextArgs(response));
+        }
+
+    }
+
+
+    /// <summary>
+    /// Error event handler for client events - disconnect, etc.  Will forward those events via ConnectionChange
+    /// event
+    /// </summary>
+    void Client_ErrorOccurred(object sender, ExceptionEventArgs e)
+    {
+        CrestronInvoke.BeginInvoke(o =>
+        {
+            if (e.Exception is SshConnectionException || e.Exception is System.Net.Sockets.SocketException)
+                this.LogError("Disconnected by remote");
+            else
+                this.LogException(e.Exception, "Unhandled SSH client error");
             try
             {
                 connectLock.Wait();
-                if (IsConnected)
-                {
-                    this.LogDebug("Connection already connected.  Exiting Connect");
-                }
-                else
-                {
-                    this.LogDebug("Attempting connect");
-
-                    // Cancel reconnect if running.
-                    StopReconnectTimer();
-
-                    // Cleanup the old client if it already exists
-                    if (client != null)
-                    {
-                        this.LogDebug("Cleaning up disconnected client");
-                        KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
-                    }
-
-                    // This handles both password and keyboard-interactive (like on OS-X, 'nixes)
-                    KeyboardInteractiveAuthenticationMethod kauth = new KeyboardInteractiveAuthenticationMethod(Username);
-                    kauth.AuthenticationPrompt += new EventHandler<AuthenticationPromptEventArgs>(kauth_AuthenticationPrompt);
-                    PasswordAuthenticationMethod pauth = new PasswordAuthenticationMethod(Username, Password);
-
-                    this.LogDebug("Creating new SshClient");
-                    ConnectionInfo connectionInfo = new ConnectionInfo(Hostname, Port, Username, pauth, kauth);
-                    client = new SshClient(connectionInfo);
-                    client.ErrorOccurred += Client_ErrorOccurred;
-
-                    //Attempt to connect
-                    ClientStatus = SocketStatus.SOCKET_STATUS_WAITING;
-                    try
-                    {
-                        client.Connect();
-
-                        var modes = new Dictionary<TerminalModes, uint>();
-
-                        if (DisableEcho)
-                        {
-                            modes.Add(TerminalModes.ECHO, 0);
-                        }
-
-                        shellStream = client.CreateShellStream("PDTShell", 0, 0, 0, 0, 65534, modes);
-                        if (shellStream.DataAvailable)
-                        {
-                            // empty the buffer if there is data
-                            shellStream.Read();
-                        }
-                        shellStream.DataReceived += Stream_DataReceived;
-                        this.LogInformation("Connected");
-                        ClientStatus = SocketStatus.SOCKET_STATUS_CONNECTED;
-                        disconnectLogged = false;
-                    }
-                    catch (SshConnectionException e)
-                    {
-                        var ie = e.InnerException; // The details are inside!!
-
-                        if (ie is SocketException)
-                        {
-                            this.LogError("CONNECTION failure: Cannot reach host");
-                            this.LogVerbose(ie, "Exception details: ");
-                        }
-
-                        if (ie is System.Net.Sockets.SocketException socketException)
-                        {
-                            this.LogError("Connection failure: Cannot reach {host} on {port}",
-                                Hostname, Port);
-                            this.LogVerbose(socketException, "SocketException details: ");
-                        }
-                        if (ie is SshAuthenticationException)
-                        {
-                            this.LogError("Authentication failure for username {userName}", Username);
-                            this.LogVerbose(ie, "AuthenticationException details: ");
-                        }
-                        else
-                        {
-                            this.LogError("Error on connect: {error}", ie.Message);
-                            this.LogVerbose(ie, "Exception details: ");
-                        }
-
-                        disconnectLogged = true;
-                        KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                        if (AutoReconnect)
-                        {
-                            this.LogDebug("Checking autoreconnect: {autoReconnect}, {autoReconnectInterval}ms", AutoReconnect, AutoReconnectIntervalMs);
-                            StartReconnectTimer();
-                        }
-                    }
-                    catch (SshOperationTimeoutException ex)
-                    {
-                        this.LogWarning("Connection attempt timed out: {message}", ex.Message);
-
-                        disconnectLogged = true;
-                        KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                        if (AutoReconnect)
-                        {
-                            this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
-                            StartReconnectTimer();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        this.LogError("Unhandled exception on connect: {error}", e.Message);
-                        this.LogVerbose(e, "Exception details: ");
-                        disconnectLogged = true;
-                        KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                        if (AutoReconnect)
-                        {
-                            this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
-                            StartReconnectTimer();
-                        }
-                    }
-                }
+                KillClient(SocketStatus.SOCKET_STATUS_BROKEN_REMOTELY);
             }
             finally
             {
                 connectLock.Release();
             }
-        }
-
-        /// <summary>
-        /// Disconnect method
-        /// </summary>
-        public void Disconnect()
-        {
-            ConnectEnabled = false;
-            // Stop trying reconnects, if we are
-            StopReconnectTimer();
-
-            KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
-        }
-
-        /// <summary>
-        /// Kills the stream, cleans up the client and sets it to null
-        /// </summary>
-        private void KillClient(SocketStatus status)
-        {
-            KillStream();
-
-            try
+            if (AutoReconnect && ConnectEnabled)
             {
-                if (client != null)
-                {
-                    client.ErrorOccurred -= Client_ErrorOccurred;
-                    client.Disconnect();
-                    client.Dispose();
-                    client = null;
-                    ClientStatus = status;
-                    this.LogDebug("Disconnected");
-                }
+                this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
+                ReconnectTimer.Reset(AutoReconnectIntervalMs);
             }
-            catch (Exception ex)
-            {
-                this.LogException(ex, "Exception in Kill Client");
-            }
-        }
-
-        /// <summary>
-        /// Kills the stream
-        /// </summary>
-        private void KillStream()
-        {
-            try
-            {
-                if (shellStream != null)
-                {
-                    shellStream.DataReceived -= Stream_DataReceived;
-                    shellStream.Close();
-                    shellStream.Dispose();
-                    shellStream = null;
-                    this.LogDebug("Disconnected stream");
-                }
-            }
-            catch (Exception ex)
-            {
-                this.LogException(ex, "Exception in Kill Stream:{0}");
-            }
-        }
-
-        /// <summary>
-        /// Handles the keyboard interactive authentication, should it be required.
-        /// </summary>
-        private void kauth_AuthenticationPrompt(object sender, AuthenticationPromptEventArgs e)
-        {
-            foreach (AuthenticationPrompt prompt in e.Prompts)
-                if (prompt.Request.IndexOf("Password:", StringComparison.InvariantCultureIgnoreCase) != -1)
-                    prompt.Response = Password;
-        }
-
-        /// <summary>
-        /// Handler for data receive on ShellStream.  Passes data across to queue for line parsing.
-        /// </summary>
-        private void Stream_DataReceived(object sender, ShellDataEventArgs e)
-        {
-            if (((ShellStream)sender).Length <= 0L)
-            {
-                return;
-            }
-            var response = ((ShellStream)sender).Read();
-
-            var bytesHandler = BytesReceived;
-
-            if (bytesHandler != null)
-            {
-                var bytes = Encoding.UTF8.GetBytes(response);
-                this.PrintReceivedBytes(bytes);
-                bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
-            }
-
-            var textHandler = TextReceived;
-            if (textHandler != null)
-            {
-                this.PrintReceivedText(response);
-
-                textHandler(this, new GenericCommMethodReceiveTextArgs(response));
-            }
-
-        }
-
-
-        /// <summary>
-        /// Error event handler for client events - disconnect, etc.  Will forward those events via ConnectionChange
-        /// event
-        /// </summary>
-        private void Client_ErrorOccurred(object sender, ExceptionEventArgs e)
-        {
-            CrestronInvoke.BeginInvoke(o =>
-            {
-                if (e.Exception is SshConnectionException || e.Exception is System.Net.Sockets.SocketException)
-                    this.LogError("Disconnected by remote");
-                else
-                    this.LogException(e.Exception, "Unhandled SSH client error");
-                try
-                {
-                    connectLock.Wait();
-                    KillClient(SocketStatus.SOCKET_STATUS_BROKEN_REMOTELY);
-                }
-                finally
-                {
-                    connectLock.Release();
-                }
-                if (AutoReconnect && ConnectEnabled)
-                {
-                    this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
-                    StartReconnectTimer();
-                }
-            });
-        }
-
-        /// <summary>
-        /// Helper for ConnectionChange event
-        /// </summary>
-        private void OnConnectionChange()
-        {
-            ConnectionChange?.Invoke(this, new GenericSocketStatusChageEventArgs(this));
-        }
-
-        #region IBasicCommunication Members
-
-        /// <summary>
-        /// Sends text to the server
-        /// </summary>
-        /// <param name="text">The text to send</param>
-        public void SendText(string text)
-        {
-            try
-            {
-                if (client != null && shellStream != null && IsConnected)
-                {
-                    this.PrintSentText(text);
-
-                    shellStream.Write(text);
-                    shellStream.Flush();
-                }
-                else
-                {
-                    this.LogDebug("Client is null or disconnected.  Cannot Send Text");
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                this.LogError("ObjectDisposedException sending '{message}'. Restarting connection...", text.Trim());
-
-                KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                StartReconnectTimer();
-            }
-            catch (Exception ex)
-            {
-                this.LogException(ex, "Exception sending text: '{message}'", text);
-            }
-        }
-
-        /// <summary>
-        /// Sends Bytes to the server
-        /// </summary>
-        /// <param name="bytes">The bytes to send</param>
-        public void SendBytes(byte[] bytes)
-        {
-            try
-            {
-                if (client != null && shellStream != null && IsConnected)
-                {
-                    this.PrintSentBytes(bytes);
-
-                    shellStream.Write(bytes, 0, bytes.Length);
-                    shellStream.Flush();
-                }
-                else
-                {
-                    this.LogDebug("Client is null or disconnected.  Cannot Send Bytes");
-                }
-            }
-            catch (ObjectDisposedException ex)
-            {
-                this.LogException(ex, "ObjectDisposedException sending {message}", ComTextHelper.GetEscapedText(bytes));
-
-                KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                StartReconnectTimer();
-            }
-            catch (Exception ex)
-            {
-                this.LogException(ex, "Exception sending {message}", ComTextHelper.GetEscapedText(bytes));
-            }
-        }
-        #endregion
-
-        /// <summary>
-        /// Safely starts the reconnect timer with exception handling
-        /// </summary>
-        private void StartReconnectTimer()
-        {
-            try
-            {
-                reconnectTimer?.Change(AutoReconnectIntervalMs, System.Threading.Timeout.Infinite);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Timer was disposed, ignore
-                this.LogDebug("Attempted to start timer but it was already disposed");
-            }
-        }
-
-        /// <summary>
-        /// Safely stops the reconnect timer with exception handling
-        /// </summary>
-        private void StopReconnectTimer()
-        {
-            try
-            {
-                reconnectTimer?.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Timer was disposed, ignore
-                this.LogDebug("Attempted to stop timer but it was already disposed");
-            }
-        }
-
-        /// <summary>
-        /// Deactivate method - properly dispose of resources
-        /// </summary>
-        public override bool Deactivate()
-        {
-            try
-            {
-                this.LogDebug("Deactivating SSH client - disposing resources");
-
-                // Stop trying reconnects
-                ConnectEnabled = false;
-                StopReconnectTimer();
-
-                // Disconnect and cleanup client
-                KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
-
-                // Dispose timer
-                try
-                {
-                    reconnectTimer?.Dispose();
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Already disposed, ignore
-                }
-
-                // Dispose semaphore
-                try
-                {
-                    connectLock?.Dispose();
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Already disposed, ignore
-                }
-
-                return base.Deactivate();
-            }
-            catch (Exception ex)
-            {
-                this.LogException(ex, "Error during SSH client deactivation");
-                return false;
-            }
-        }
-
+        });
     }
+
+    /// <summary>
+    /// Helper for ConnectionChange event
+    /// </summary>
+    void OnConnectionChange()
+    {
+        if (ConnectionChange != null)
+            ConnectionChange(this, new GenericSocketStatusChageEventArgs(this));
+    }
+
+    #region IBasicCommunication Members
+
+    /// <summary>
+    /// Sends text to the server
+    /// </summary>
+    /// <param name="text"></param>
+    public void SendText(string text)
+    {
+        try
+        {
+            if (Client != null && TheStream != null && IsConnected)
+            {
+                if (StreamDebugging.TxStreamDebuggingIsEnabled)
+                    this.LogInformation(
+                                  "Sending {length} characters of text: '{text}'",
+                                  text.Length,
+                                  ComTextHelper.GetDebugText(text));
+
+                TheStream.Write(text);
+                TheStream.Flush();
+            }
+            else
+            {
+                this.LogDebug("Client is null or disconnected.  Cannot Send Text");
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            this.LogError("ObjectDisposedException sending '{message}'. Restarting connection...", text.Trim());
+
+            KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
+            ReconnectTimer.Reset();
+        }
+        catch (Exception ex)
+        {
+            this.LogException(ex, "Exception sending text: '{message}'", text);
+        }
+    }
+
+    /// <summary>
+    /// Sends Bytes to the server
+    /// </summary>
+    /// <param name="bytes"></param>
+    public void SendBytes(byte[] bytes)
+    {
+        try
+        {
+            if (Client != null && TheStream != null && IsConnected)
+            {
+                if (StreamDebugging.TxStreamDebuggingIsEnabled)
+                    this.LogInformation("Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+
+                TheStream.Write(bytes, 0, bytes.Length);
+                TheStream.Flush();
+            }
+            else
+            {
+                this.LogDebug("Client is null or disconnected.  Cannot Send Bytes");
+            }
+        }
+        catch (ObjectDisposedException ex)
+        {
+            this.LogException(ex, "ObjectDisposedException sending {message}", ComTextHelper.GetEscapedText(bytes));
+
+            KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
+            ReconnectTimer.Reset();
+        }
+        catch (Exception ex)
+        {
+            this.LogException(ex, "Exception sending {message}", ComTextHelper.GetEscapedText(bytes));
+        }
+    }
+    #endregion
 
     //*****************************************************************************************************
     //*****************************************************************************************************
     /// <summary>
-    /// Represents a SshConnectionChangeEventArgs
+    /// Fired when connection changes
     /// </summary>
     public class SshConnectionChangeEventArgs : EventArgs
     {
         /// <summary>
         /// Connection State
         /// </summary>
-		public bool IsConnected { get; private set; }
+        public bool IsConnected { get; private set; }
 
         /// <summary>
-        /// Gets or sets the UIsConnected
+        /// Connection Status represented as a ushort
         /// </summary>
         public ushort UIsConnected { get { return (ushort)(Client.IsConnected ? 1 : 0); } }
 
         /// <summary>
-        /// Gets or sets the Client
+        /// The client
         /// </summary>
         public GenericSshClient Client { get; private set; }
 
         /// <summary>
-        /// Gets or sets the Status
+        /// Socket Status as represented by
         /// </summary>
         public ushort Status { get { return Client.UStatus; } }
 
@@ -674,7 +578,7 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="isConnected">Connection State</param>
         /// <param name="client">The Client</param>
-		public SshConnectionChangeEventArgs(bool isConnected, GenericSshClient client)
+        public SshConnectionChangeEventArgs(bool isConnected, GenericSshClient client)
         {
             IsConnected = isConnected;
             Client = client;

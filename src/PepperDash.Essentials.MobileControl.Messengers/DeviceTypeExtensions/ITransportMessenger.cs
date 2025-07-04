@@ -1,3 +1,4 @@
+﻿
 ﻿using PepperDash.Core;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
@@ -10,11 +11,19 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class ITransportMessenger : MessengerBase
     {
         private readonly ITransport transportDevice;
+
+        /// <summary>
+        /// Create an instance of the <see cref="ITransportMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
         public ITransportMessenger(string key, string messagePath, ITransport device) : base(key, messagePath, device as IKeyName)
         {
             transportDevice = device;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

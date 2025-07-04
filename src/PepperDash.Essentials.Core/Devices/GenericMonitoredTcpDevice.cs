@@ -8,10 +8,10 @@ using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core.Devices
-{
+namespace PepperDash.Essentials.Core.Devices;
+
 	/// <summary>
-	/// Represents a GenericCommunicationMonitoredDevice
+	/// A device that monitors the communication status of a communication client. Useful for monitoring TCP, serial, or telnet clients.
 	/// </summary>
 	public class GenericCommunicationMonitoredDevice : Device, ICommunicationMonitor
 	{
@@ -78,4 +78,3 @@ namespace PepperDash.Essentials.Core.Devices
 			return true;
 		}
 	}
-}

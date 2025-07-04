@@ -5,7 +5,9 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.CrestronIO
+namespace PepperDash.Essentials.Core.CrestronIO;
+
+public interface IAnalogInput
 {
     /// <summary>
     /// Defines the contract for IAnalogInput

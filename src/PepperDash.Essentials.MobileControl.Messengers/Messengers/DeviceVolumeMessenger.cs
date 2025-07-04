@@ -169,10 +169,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class VolumeStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("volume", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the Volume
         /// </summary>
+        [JsonProperty("volume", NullValueHandling = NullValueHandling.Ignore)]
         public Volume Volume { get; set; }
     }
 
@@ -181,27 +181,42 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class Volume
     {
+        /// <summary>
+        /// Gets or sets the Level
+        /// </summary>
         [JsonProperty("level", NullValueHandling = NullValueHandling.Ignore)]
         public int? Level { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the HasMute
+        /// </summary>
         [JsonProperty("hasMute", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasMute { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the Muted
+        /// </summary>
         [JsonProperty("muted", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Muted { get; set; }
 
-        [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Label
         /// </summary>
+        [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
         public string Label { get; set; }
 
-        [JsonProperty("rawValue", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the RawValue
         /// </summary>
+        [JsonProperty("rawValue", NullValueHandling = NullValueHandling.Ignore)]
         public string RawValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Units
+        /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("units", NullValueHandling = NullValueHandling.Ignore)]
         public eVolumeLevelUnits? Units { get; set; }

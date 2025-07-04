@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Core.PasswordManagement
-{
+namespace PepperDash.Core.PasswordManagement;
+
 	/// <summary>
 	/// Constants
 	/// </summary>
@@ -54,4 +54,3 @@ namespace PepperDash.Core.PasswordManagement
 		/// </summary>
 		public const ushort StringValueChange = 201;		
 	}
-}

@@ -7,8 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 
     /// <summary>
     /// Represents a ProcessorExtensionDeviceFactory
@@ -164,8 +164,6 @@ namespace PepperDash.Essentials.Core
                 Debug.LogMessage(LogEventLevel.Verbose, "{0}", ex.InnerException.StackTrace);
                 return null;
             }
-        }
-
     }
 
 }

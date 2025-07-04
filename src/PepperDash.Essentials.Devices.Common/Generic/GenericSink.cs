@@ -7,152 +7,154 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Devices.Common.Generic
+namespace PepperDash.Essentials.Devices.Common.Generic;
+
+/// <summary>
+/// Represents a GenericSink
+/// </summary>
+public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputPort, ICurrentSources
 {
+    /// <inheritdoc/> 
+    public Dictionary<eRoutingSignalType, SourceListItem> CurrentSources { get; private set; }
+
+    /// <inheritdoc/>
+    public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; }
+
+    /// <inheritdoc />
+    public event EventHandler CurrentSourcesChanged;
+
     /// <summary>
-    /// Represents a GenericSink
+    /// Initializes a new instance of the GenericSink class
     /// </summary>
-    public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputPort, ICurrentSources
+    /// <param name="key">The device key</param>
+    /// <param name="name">The device name</param>
+    public GenericSink(string key, string name) : base(key, name)
     {
-        /// <inheritdoc/> 
-		public Dictionary<eRoutingSignalType, SourceListItem> CurrentSources { get; private set; }
+        InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-        /// <inheritdoc/>
-        public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; }
+        var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio, eRoutingPortConnectionType.Hdmi, null, this);
 
-        /// <inheritdoc />
-        public event EventHandler CurrentSourcesChanged;
+        InputPorts.Add(inputPort);
 
-        /// <summary>
-        /// Initializes a new instance of the GenericSink class
-        /// </summary>
-        /// <param name="key">The device key</param>
-        /// <param name="name">The device name</param>
-        public GenericSink(string key, string name) : base(key, name)
-        {
-            InputPorts = new RoutingPortCollection<RoutingInputPort>();
-
-            var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio, eRoutingPortConnectionType.Hdmi, null, this);
-
-            InputPorts.Add(inputPort);
-
-            CurrentSources = new Dictionary<eRoutingSignalType, SourceListItem>
+        CurrentSources = new Dictionary<eRoutingSignalType, SourceListItem>
             {
                 { eRoutingSignalType.Audio, null },
                 { eRoutingSignalType.Video, null },
             };
 
-            CurrentSourceKeys = new Dictionary<eRoutingSignalType, string>
+        CurrentSourceKeys = new Dictionary<eRoutingSignalType, string>
             {
                 { eRoutingSignalType.Audio, string.Empty },
                 { eRoutingSignalType.Video, string.Empty },
             };
-        }
+    }
 
-        /// <inheritdoc />
-		public void SetCurrentSource(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
+    /// <inheritdoc />
+    public void SetCurrentSource(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
+    {
+        foreach (eRoutingSignalType type in Enum.GetValues(typeof(eRoutingSignalType)))
         {
-            foreach (eRoutingSignalType type in Enum.GetValues(typeof(eRoutingSignalType)))
+            var flagValue = Convert.ToInt32(type);
+            // Skip if flagValue is 0 or not a power of two (i.e., not a single-bit flag).
+            // (flagValue & (flagValue - 1)) != 0 checks if more than one bit is set.
+            if (flagValue == 0 || (flagValue & (flagValue - 1)) != 0)
             {
-                var flagValue = Convert.ToInt32(type);
-                // Skip if flagValue is 0 or not a power of two (i.e., not a single-bit flag).
-                // (flagValue & (flagValue - 1)) != 0 checks if more than one bit is set.
-                if (flagValue == 0 || (flagValue & (flagValue - 1)) != 0)
-                {
-                    this.LogDebug("Skipping {type}", type);
-                    continue;
-                }
-
-                this.LogDebug("setting {type}", type);
-
-                if (signalType.HasFlag(type))
-                {
-                    UpdateCurrentSources(type, sourceListKey, sourceListItem);
-                }
+                this.LogDebug("Skipping {type}", type);
+                continue;
             }
-            // Raise the CurrentSourcesChanged event
-            CurrentSourcesChanged?.Invoke(this, EventArgs.Empty);
-        }
 
-        private void UpdateCurrentSources(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
-        {
-            CurrentSources[signalType] = sourceListItem;
-            CurrentSourceKeys[signalType] = sourceListKey;
-        }
+            this.LogDebug("setting {type}", type);
 
-        /// <summary>
-        /// Gets or sets the InputPorts
-        /// </summary>
-        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the CurrentSourceInfoKey
-        /// </summary>
-        public string CurrentSourceInfoKey { get; set; }
-
-        private SourceListItem _currentSource;
-        /// <summary>
-        /// Gets or sets the CurrentSourceInfo
-        /// </summary>
-        public SourceListItem CurrentSourceInfo
-        {
-            get => _currentSource;
-            set
+            if (signalType.HasFlag(type))
             {
-                if (value == _currentSource)
-                {
-                    return;
-                }
-
-                CurrentSourceChange?.Invoke(_currentSource, ChangeType.WillChange);
-
-                _currentSource = value;
-
-                CurrentSourceChange?.Invoke(_currentSource, ChangeType.DidChange);
+                UpdateCurrentSources(type, sourceListKey, sourceListItem);
             }
         }
+        // Raise the CurrentSourcesChanged event
+        CurrentSourcesChanged?.Invoke(this, EventArgs.Empty);
+    }
 
-        /// <summary>
-        /// Gets the current input port
-        /// </summary>
-        public RoutingInputPort CurrentInputPort => InputPorts[0];
+    private void UpdateCurrentSources(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
+    {
+        CurrentSources[signalType] = sourceListItem;
+        CurrentSourceKeys[signalType] = sourceListKey;
+    }
 
-        /// <summary>
-        /// Event fired when the current source changes
-        /// </summary>
-        public event SourceInfoChangeHandler CurrentSourceChange;
+    /// <summary>
+    /// Gets or sets the InputPorts
+    /// </summary>
+    public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
-        /// <inheritdoc />
-        public event InputChangedEventHandler InputChanged;
+    /// <summary>
+    /// Gets or sets the CurrentSourceInfoKey
+    /// </summary>
+    public string CurrentSourceInfoKey { get; set; }
 
-        /// <inheritdoc />
-        public void ExecuteSwitch(object inputSelector)
+    private SourceListItem _currentSource;
+    /// <summary>
+    /// Gets or sets the CurrentSourceInfo
+    /// </summary>
+    public SourceListItem CurrentSourceInfo
+    {
+        get => _currentSource;
+        set
         {
-            this.LogDebug("GenericSink Executing Switch to: {inputSelector}", inputSelector);
+            if (value == _currentSource)
+            {
+                return;
+            }
+
+            CurrentSourceChange?.Invoke(_currentSource, ChangeType.WillChange);
+
+            _currentSource = value;
+
+            CurrentSourceChange?.Invoke(_currentSource, ChangeType.DidChange);
         }
     }
 
     /// <summary>
-    /// Represents a GenericSinkFactory
+    /// Gets the current input port
     /// </summary>
-    public class GenericSinkFactory : EssentialsDeviceFactory<GenericSink>
-    {
-        /// <summary>
-        /// Initializes a new instance of the GenericSinkFactory class
-        /// </summary>
-        public GenericSinkFactory()
-        {
-            TypeNames = new List<string>() { "genericsink", "genericdestination" };
-        }
+    public RoutingInputPort CurrentInputPort => InputPorts[0];
 
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
-        /// <inheritdoc />
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Sink Device");
-            return new GenericSink(dc.Key, dc.Name);
-        }
+    /// <summary>
+    /// Event fired when the current source changes
+    /// </summary>
+    public event SourceInfoChangeHandler CurrentSourceChange;
+
+    /// <inheritdoc />
+    public event InputChangedEventHandler InputChanged;
+
+    /// <inheritdoc />
+    public void ExecuteSwitch(object inputSelector)
+    {
+        this.LogDebug("GenericSink Executing Switch to: {inputSelector}", inputSelector);
     }
 }
+
+/// <summary>
+/// Represents a GenericSinkFactory
+/// </summary>
+public class GenericSinkFactory : EssentialsDeviceFactory<GenericSink>
+{
+    /// <summary>
+    /// Initializes a new instance of the GenericSinkFactory class
+    /// </summary>
+    public GenericSinkFactory()
+    {
+        TypeNames = new List<string>() { "genericsink", "genericdestination" };
+    }
+
+    /// <summary>
+    /// BuildDevice method
+    /// </summary>
+    /// <inheritdoc />
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Sink Device");
+        return new GenericSink(dc.Key, dc.Name);
+    }
+}
+
+
+

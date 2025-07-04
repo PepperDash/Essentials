@@ -8,8 +8,8 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// 
 	/// </summary>
@@ -59,43 +59,35 @@ namespace PepperDash.Essentials.Core
 					case eControlMethod.Com:
 						comm = new ComPortController(deviceConfig.Key + "-com", GetComPort, controlConfig.ComParams.Value, controlConfig);
 						break;
-					case eControlMethod.ComBridge:
-						comm = new CommBridge(deviceConfig.Key + "-simpl", deviceConfig.Name + " Simpl");
-						break;
-					case eControlMethod.Cec:
-						comm = new CecPortController(deviceConfig.Key + "-cec", GetCecPort, controlConfig);
-						break;
+                case eControlMethod.Cec:
+                    comm = new CecPortController(deviceConfig.Key + "-cec", GetCecPort, controlConfig);
+                    break;
 					case eControlMethod.IR:
 						break;
-					case eControlMethod.Ssh:
-						{
-							var ssh = new GenericSshClient(deviceConfig.Key + "-ssh", c.Address, c.Port, c.Username, c.Password)
-							{
-								AutoReconnect = c.AutoReconnect,
-								DisableEcho = c.DisableSshEcho
-							};
-							if (ssh.AutoReconnect)
-								ssh.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
-							comm = ssh;
-							break;
-						}
-					case eControlMethod.Tcpip:
-						{
-							var tcp = new GenericTcpIpClient(deviceConfig.Key + "-tcp", c.Address, c.Port, c.BufferSize)
-							{
-								AutoReconnect = c.AutoReconnect
-							};
-							if (tcp.AutoReconnect)
-								tcp.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
-							comm = tcp;
-							break;
-						}
-					case eControlMethod.Udp:
-						{
-							var udp = new GenericUdpServer(deviceConfig.Key + "-udp", c.Address, c.Port, c.BufferSize);
-							comm = udp;
-							break;
-						}
+                case eControlMethod.Ssh:
+                    {
+                        var ssh = new GenericSshClient(deviceConfig.Key + "-ssh", c.Address, c.Port, c.Username, c.Password);
+                        ssh.AutoReconnect = c.AutoReconnect;
+                        if(ssh.AutoReconnect)
+                            ssh.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
+                        comm = ssh;
+                        break;
+                    }
+                case eControlMethod.Tcpip:
+                    {
+                        var tcp = new GenericTcpIpClient(deviceConfig.Key + "-tcp", c.Address, c.Port, c.BufferSize);
+                        tcp.AutoReconnect = c.AutoReconnect;
+                        if (tcp.AutoReconnect)
+                            tcp.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
+                        comm = tcp;
+                        break;
+                    }
+                case eControlMethod.Udp:
+                    {
+                        var udp = new GenericUdpServer(deviceConfig.Key + "-udp", c.Address, c.Port, c.BufferSize);
+                        comm = udp;
+                        break;
+                    }
 					case eControlMethod.Telnet:
 						break;
 					case eControlMethod.SecureTcpIp:
@@ -138,19 +130,16 @@ namespace PepperDash.Essentials.Core
 			return null;
 		}
 
-		/// <summary>
-		///  Gets an ICec port from a RoutingInput or RoutingOutput on a device
-		/// </summary>
-		/// <param name="config"></param>
-		/// <returns></returns>
-		/// <summary>
-		/// GetCecPort method
-		/// </summary>
-		public static ICec GetCecPort(ControlPropertiesConfig config)
-		{
-			try
-			{
-				var dev = DeviceManager.GetDeviceForKey(config.ControlPortDevKey);
+    /// <summary>
+    ///  Gets an ICec port from a RoutingInput or RoutingOutput on a device
+    /// </summary>
+    /// <param name="config"></param>
+    /// <returns></returns>
+    public static ICec GetCecPort(ControlPropertiesConfig config)
+    {
+	        try
+	        {
+		        var dev = DeviceManager.GetDeviceForKey(config.ControlPortDevKey);
 
 				Debug.LogMessage(LogEventLevel.Information, "GetCecPort: device '{0}' {1}", config.ControlPortDevKey, dev == null
 					? "is not valid, failed to get cec port"
@@ -196,7 +185,7 @@ namespace PepperDash.Essentials.Core
 					config.ControlPortDevKey, config.ControlPortName);
 
 			return null;
-		}
+    }
 
 		/// <summary>
 		/// Helper to grab the IComPorts device for this PortDeviceKey. Key "controlSystem" will
@@ -222,86 +211,65 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-	/// <summary>
-	/// Represents a EssentialsControlPropertiesConfig
-	/// </summary>
-	public class EssentialsControlPropertiesConfig :
-			ControlPropertiesConfig
-	{
-		/// <summary>
-		/// Gets or sets the ComParams
-		/// </summary>
-		[JsonProperty("comParams", NullValueHandling = NullValueHandling.Ignore)]
-		[JsonConverter(typeof(ComSpecJsonConverter))]
-		public ComPort.ComPortSpec? ComParams { get; set; }
+/// <summary>
+/// 
+/// </summary>
+public class EssentialsControlPropertiesConfig :
+    ControlPropertiesConfig
+{
 
-		/// <summary>
-		/// Gets or sets the CresnetId
-		/// </summary>
-		[JsonProperty("cresnetId", NullValueHandling = NullValueHandling.Ignore)]
-		public string CresnetId { get; set; }
+    [JsonProperty("comParams", NullValueHandling = NullValueHandling.Ignore)]
+    [JsonConverter(typeof(ComSpecJsonConverter))]
+    public ComPort.ComPortSpec? ComParams { get; set; }
 
-		/// <summary>
-		/// Attempts to provide uint conversion of string CresnetId
-		/// </summary>
-		[JsonIgnore]
-		public uint CresnetIdInt
-		{
-			get
-			{
-				try
-				{
-					return Convert.ToUInt32(CresnetId, 16);
-				}
-				catch (Exception)
-				{
-					throw new FormatException(string.Format("ERROR:Unable to convert Cresnet ID: {0} to hex.  Error:\n{1}", CresnetId));
-				}
-			}
-		}
+    [JsonProperty("cresnetId", NullValueHandling = NullValueHandling.Ignore)]
+    public string CresnetId { get; set; }
 
-		/// <summary>
-		/// Gets or sets the InfinetId
-		/// </summary>
-		[JsonProperty("infinetId", NullValueHandling = NullValueHandling.Ignore)]
-		public string InfinetId { get; set; }
+    /// <summary>
+    /// Attempts to provide uint conversion of string CresnetId
+    /// </summary>
+    [JsonIgnore]
+    public uint CresnetIdInt
+    {
+        get
+        {
+            try
+            {
+                return Convert.ToUInt32(CresnetId, 16);
+            }
+            catch (Exception)
+            {
+                throw new FormatException(string.Format("ERROR:Unable to convert Cresnet ID: {0} to hex.  Error:\n{1}", CresnetId));
+            }
+        }
+    }
 
-		/// <summary>
-		/// Attepmts to provide uiont conversion of string InifinetId
-		/// </summary>
-		[JsonIgnore]
-		public uint InfinetIdInt
-		{
-			get
-			{
-				try
-				{
-					return Convert.ToUInt32(InfinetId, 16);
-				}
-				catch (Exception)
-				{
-					throw new FormatException(string.Format("ERROR:Unable to conver Infinet ID: {0} to hex.  Error:\n{1}", InfinetId));
-				}
-			}
-		}
-	}
+    [JsonProperty("infinetId", NullValueHandling = NullValueHandling.Ignore)]
+    public string InfinetId { get; set; }
 
-	/// <summary>
-	/// Represents a IrControlSpec
-	/// </summary>
-	public class IrControlSpec
-	{
-		/// <summary>
-		/// Gets or sets the PortDeviceKey
-		/// </summary>
-		public string PortDeviceKey { get; set; }
-		/// <summary>
-		/// Gets or sets the PortNumber
-		/// </summary>
-		public uint PortNumber { get; set; }
-		/// <summary>
-		/// Gets or sets the File
-		/// </summary>
-		public string File { get; set; }
-	}
+    /// <summary>
+    /// Attepmts to provide uiont conversion of string InifinetId
+    /// </summary>
+    [JsonIgnore]
+    public uint InfinetIdInt
+    {
+        get
+        {
+            try
+            {
+                return Convert.ToUInt32(InfinetId, 16);
+            }
+            catch (Exception)
+            {
+                throw new FormatException(string.Format("ERROR:Unable to conver Infinet ID: {0} to hex.  Error:\n{1}", InfinetId));
+            }
+        }
+    }
+}
+
+public class IrControlSpec
+{
+    public string PortDeviceKey { get; set; }
+    public uint PortNumber { get; set; }
+    public string File { get; set; }
 }

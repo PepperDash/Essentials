@@ -1,11 +1,7 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
-using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.PageManagers
-{
- /// <summary>
- /// Represents a DiscPlayerMediumPageManager
- /// </summary>
+namespace PepperDash.Essentials.Core.PageManagers;
+
 	public class DiscPlayerMediumPageManager : MediumLeftSwitchablePageManager
 	{
 		IDiscPlayerControls Player;
@@ -55,4 +51,3 @@ namespace PepperDash.Essentials.Core.PageManagers
 			TriList.BooleanInput[LeftSubpageJoin].BoolValue = false;
 		}
 	}
-}

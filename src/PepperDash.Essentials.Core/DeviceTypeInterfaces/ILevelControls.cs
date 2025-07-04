@@ -4,16 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+
+/// <summary>
+/// Defines the contract for ILevelControls
+/// </summary>
+public interface ILevelControls
 {
     /// <summary>
-    /// Defines the contract for ILevelControls
+    /// The level control points
     /// </summary>
-    public interface ILevelControls
-    {
-        /// <summary>
-        /// The level control points
-        /// </summary>
-        Dictionary<string, IBasicVolumeWithFeedback> LevelControlPoints { get; }
-    }
+    Dictionary<string, IBasicVolumeWithFeedback> LevelControlPoints { get; }
 }
+

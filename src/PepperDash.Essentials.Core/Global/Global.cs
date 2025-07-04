@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using Crestron.SimplSharp;
 using System.Collections.Generic;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
@@ -12,9 +11,6 @@ using Crestron.SimplSharpPro.DM;
 using PepperDash.Core;
 using PepperDash.Essentials.License;
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
 using Serilog.Events;
 
 
@@ -57,126 +53,126 @@ namespace PepperDash.Essentials.Core
         public static IFormatProvider Culture = CultureInfo.InvariantCulture;
 
 
-        /// <summary>
-        /// True when the processor type is a DMPS variant
-        /// </summary>
-        public static bool ControlSystemIsDmpsType
+    /// <summary>
+    /// True when the processor type is a DMPS variant
+    /// </summary>
+    public static bool ControlSystemIsDmpsType
+    {
+        get
         {
-            get
+            if(ControlSystem.SystemControl != null)
             {
-                if(ControlSystem.SystemControl != null)
+                if(ControlSystem.SystemControl.SystemControlType > 0)
                 {
-                    if(ControlSystem.SystemControl.SystemControlType > 0)
-                    {
-                        return true;
-                    }         
-                }
-                return false;
+                    return true;
+                }         
             }
+            return false;
         }
+    }
 
-        /// <summary>
-        /// True when the processor type is a DMPS 4K variant
-        /// </summary>
-        public static bool ControlSystemIsDmps4kType
+    /// <summary>
+    /// True when the processor type is a DMPS 4K variant
+    /// </summary>
+    public static bool ControlSystemIsDmps4kType
+    {
+        get
         {
-            get
+            if(ControlSystem.SystemControl != null)
             {
-                if(ControlSystem.SystemControl != null)
+                if(ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K150CSystemControl ||
+                   ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K200CSystemControl ||
+                   ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K250CSystemControl ||
+                   ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K300CSystemControl ||
+                   ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K350CSystemControl)
                 {
-                    if(ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K150CSystemControl ||
-                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K200CSystemControl ||
-                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K250CSystemControl ||
-                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K300CSystemControl ||
-                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K350CSystemControl)
-                    {
-                        return true;
-                    }         
-                }
-                return false;
+                    return true;
+                }         
             }
+            return false;
         }
+    }
 
-                /// <summary>
-        /// True when the processor type is a DMPS 4K 200/300/250/350 variant
-        /// </summary>
-        public static bool ControlSystemIsDmps4k3xxType
+            /// <summary>
+    /// True when the processor type is a DMPS 4K 200/300/250/350 variant
+    /// </summary>
+    public static bool ControlSystemIsDmps4k3xxType
+    {
+        get
         {
-            get
+            if(ControlSystem.SystemControl != null)
             {
-                if(ControlSystem.SystemControl != null)
+                if(ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K200CSystemControl ||
+                   ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K250CSystemControl ||
+                   ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K300CSystemControl ||
+                   ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K350CSystemControl)
                 {
-                    if(ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K200CSystemControl ||
-                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K250CSystemControl ||
-                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K300CSystemControl ||
-                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K350CSystemControl)
-                    {
-                        return true;
-                    }         
-                }
-                return false;
+                    return true;
+                }         
             }
+            return false;
         }
+    }
 
         /// <summary>
         /// Gets or sets the FilePathPrefix
         /// </summary>
         public static string FilePathPrefix { get; private set; }
 
-        /// <summary>
-        /// The file path prefix to the applciation directory
-        /// </summary>
-        public static string ApplicationDirectoryPathPrefix 
+    /// <summary>
+    /// The file path prefix to the applciation directory
+    /// </summary>
+    public static string ApplicationDirectoryPathPrefix 
+    {
+        get
         {
-            get
-            {
-                return Crestron.SimplSharp.CrestronIO.Directory.GetApplicationDirectory();
-            }
+            return Crestron.SimplSharp.CrestronIO.Directory.GetApplicationDirectory();
         }
+    }
 
-        /// <summary>
-        /// Returns the directory separator character based on the running OS
-        /// </summary>
-        public static char DirectorySeparator
+    /// <summary>
+    /// Returns the directory separator character based on the running OS
+    /// </summary>
+    public static char DirectorySeparator
+    {
+        get
         {
-            get
-            {
-                return System.IO.Path.DirectorySeparatorChar;
-            }
+            return System.IO.Path.DirectorySeparatorChar;
         }
+    }
 
-        /// <summary>
-        /// Wildcarded config file name for global reference
-        /// </summary>
-        public const string ConfigFileName = "*configurationFile*.json";
+    /// <summary>
+    /// Wildcarded config file name for global reference
+    /// </summary>
+    public const string ConfigFileName = "*configurationFile*.json";
 
-        /// <summary>
-        /// Sets the file path prefix
-        /// </summary>
-        /// <param name="prefix"></param>
-        public static void SetFilePathPrefix(string prefix)
+    /// <summary>
+    /// Sets the file path prefix
+    /// </summary>
+    /// <param name="prefix"></param>
+    public static void SetFilePathPrefix(string prefix)
+    {
+        FilePathPrefix = prefix;
+        Debug.LogMessage(LogEventLevel.Information, "File Path Prefix set to '{0}'", FilePathPrefix);
+    }
+
+    static string _AssemblyVersion;
+
+    /// <summary>
+    /// Gets the Assembly Version of Essentials
+    /// </summary>
+    /// <returns>The Assembly Version at Runtime</returns>
+    public static string AssemblyVersion
+    {
+        get
         {
-            FilePathPrefix = prefix;
-            Debug.LogMessage(LogEventLevel.Information, "File Path Prefix set to '{0}'", FilePathPrefix);
+            return _AssemblyVersion;
         }
-
-        static string _AssemblyVersion;
-
-        /// <summary>
-        /// Gets the Assembly Version of Essentials
-        /// </summary>
-        /// <returns>The Assembly Version at Runtime</returns>
-        public static string AssemblyVersion
+        private set
         {
-            get
-            {
-                return _AssemblyVersion;
-            }
-            private set
-            {
-                _AssemblyVersion = value;
-            }
+            _AssemblyVersion = value;
         }
+    }
 
         /// <summary>
         /// Sets the Assembly version to the version of the Essentials Library
@@ -201,18 +197,18 @@ namespace PepperDash.Essentials.Core
 	    {
 	        if (Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*").Groups[1].Value == "0")
 	        {
-                Debug.LogMessage(LogEventLevel.Verbose, "Running Local Build.  Bypassing Dependency Check.");
-                return true;
+            Debug.LogMessage(LogEventLevel.Verbose, "Running Local Build.  Bypassing Dependency Check.");
+            return true;
 	        }
 
 	        if (developmentVersions == null)
 	        {
 	            Debug.LogMessage(LogEventLevel.Information, 
-                    "Development Plugin does not specify a list of versions.  Loading plugin may not work as expected.  Checking Minumum version");
-                return IsRunningMinimumVersionOrHigher(minimumVersion);
+                "Development Plugin does not specify a list of versions.  Loading plugin may not work as expected.  Checking Minumum version");
+            return IsRunningMinimumVersionOrHigher(minimumVersion);
 	        }
 
-            Debug.LogMessage(LogEventLevel.Verbose, "Comparing running version '{0}' to minimum versions '{1}'", AssemblyVersion, developmentVersions);
+        Debug.LogMessage(LogEventLevel.Verbose, "Comparing running version '{0}' to minimum versions '{1}'", AssemblyVersion, developmentVersions);
 
 	        var versionMatch = developmentVersions.FirstOrDefault(x => x == AssemblyVersion);
 
@@ -222,83 +218,83 @@ namespace PepperDash.Essentials.Core
 	            return false;
 	        }
 
-            Debug.LogMessage(LogEventLevel.Verbose, "Essentials Build {0} matches list of development builds", AssemblyVersion);
+        Debug.LogMessage(LogEventLevel.Verbose, "Essentials Build {0} matches list of development builds", AssemblyVersion);
 	        return IsRunningMinimumVersionOrHigher(minimumVersion);
 
 
 
 	    }
 
-        /// <summary>
-        /// Checks to see if the running version meets or exceed the minimum specified version.  For beta versions (0.xx.yy), will always return true.
-        /// </summary>
-        /// <param name="minimumVersion">Minimum specified version in format of xx.yy.zz</param>
-        /// <returns>Returns true if the running version meets or exceeds the minimum specified version</returns>
-        public static bool IsRunningMinimumVersionOrHigher(string minimumVersion)
+    /// <summary>
+    /// Checks to see if the running version meets or exceed the minimum specified version.  For beta versions (0.xx.yy), will always return true.
+    /// </summary>
+    /// <param name="minimumVersion">Minimum specified version in format of xx.yy.zz</param>
+    /// <returns>Returns true if the running version meets or exceeds the minimum specified version</returns>
+    public static bool IsRunningMinimumVersionOrHigher(string minimumVersion)
+    {
+        Debug.LogMessage(LogEventLevel.Verbose, "Comparing running version '{0}' to minimum version '{1}'", AssemblyVersion, minimumVersion);
+
+        if (String.IsNullOrEmpty(minimumVersion))
         {
-            Debug.LogMessage(LogEventLevel.Verbose, "Comparing running version '{0}' to minimum version '{1}'", AssemblyVersion, minimumVersion);
-
-            if (String.IsNullOrEmpty(minimumVersion))
-            {
-                Debug.LogMessage(LogEventLevel.Information,"Plugin does not specify a minimum version. Loading plugin may not work as expected. Proceeding with loading plugin");
-                return true;
-            }
-            
-            var runtimeVersion = Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*");
-
-            var runtimeVersionMajor = Int16.Parse(runtimeVersion.Groups[1].Value);
-            var runtimeVersionMinor = Int16.Parse(runtimeVersion.Groups[2].Value);
-            var runtimeVersionBuild = Int16.Parse(runtimeVersion.Groups[3].Value);
-
-            var runtimeVer = new Version(runtimeVersionMajor, runtimeVersionMinor, runtimeVersionBuild);
-
-            Version minimumVer;
-            try
-            {
-                minimumVer = new Version(minimumVersion);
-            }
-            catch
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, "unable to parse minimum version {0}. Bypassing plugin load.", minimumVersion);
-                return false;
-            }
-
-
-            // Check for beta build version
-            if (runtimeVer.Major != 0)
-            {
-                return runtimeVer.CompareTo(minimumVer) >= 0;
-            }
-
-            Debug.LogMessage(LogEventLevel.Verbose, "Running Local Build.  Bypassing Dependency Check.");
+            Debug.LogMessage(LogEventLevel.Information,"Plugin does not specify a minimum version. Loading plugin may not work as expected. Proceeding with loading plugin");
             return true;
-
-            /*
-            var minVersion = Regex.Match(minimumVersion, @"^(\d*).(\d*).(\d*)$");
-
-            if(!minVersion.Success)
-            {
-                
-            }
-
-            var minVersionMajor = Int16.Parse(minVersion.Groups[1].Value);
-            var minVersionMinor = Int16.Parse(minVersion.Groups[2].Value);
-            var minVersionBuild = Int16.Parse(minVersion.Groups[3].Value);
-
-
-
-            if (minVersionMajor > runtimeVersionMajor)
-                return false;
-
-            if (minVersionMinor > runtimeVersionMinor)
-                return false;
-
-            if (minVersionBuild > runtimeVersionBuild)
-                return false;
-
-            return true;
-             */
         }
+        
+        var runtimeVersion = Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*");
+
+        var runtimeVersionMajor = Int16.Parse(runtimeVersion.Groups[1].Value);
+        var runtimeVersionMinor = Int16.Parse(runtimeVersion.Groups[2].Value);
+        var runtimeVersionBuild = Int16.Parse(runtimeVersion.Groups[3].Value);
+
+        var runtimeVer = new Version(runtimeVersionMajor, runtimeVersionMinor, runtimeVersionBuild);
+
+        Version minimumVer;
+        try
+        {
+            minimumVer = new Version(minimumVersion);
+        }
+        catch
+        {
+            Debug.LogMessage(LogEventLevel.Verbose, "unable to parse minimum version {0}. Bypassing plugin load.", minimumVersion);
+            return false;
+        }
+
+
+        // Check for beta build version
+        if (runtimeVer.Major != 0)
+        {
+            return runtimeVer.CompareTo(minimumVer) >= 0;
+        }
+
+        Debug.LogMessage(LogEventLevel.Verbose, "Running Local Build.  Bypassing Dependency Check.");
+        return true;
+
+        /*
+        var minVersion = Regex.Match(minimumVersion, @"^(\d*).(\d*).(\d*)$");
+
+        if(!minVersion.Success)
+        {
+            
+        }
+
+        var minVersionMajor = Int16.Parse(minVersion.Groups[1].Value);
+        var minVersionMinor = Int16.Parse(minVersion.Groups[2].Value);
+        var minVersionBuild = Int16.Parse(minVersion.Groups[3].Value);
+
+
+
+        if (minVersionMajor > runtimeVersionMajor)
+            return false;
+
+        if (minVersionMinor > runtimeVersionMinor)
+            return false;
+
+        if (minVersionBuild > runtimeVersionBuild)
+            return false;
+
+        return true;
+         */
+    }
 
 		static Global()
 		{
@@ -310,17 +306,17 @@ namespace PepperDash.Essentials.Core
 				return;
 			}
 
-            try
-            {
-                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en");
-                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CreateSpecificCulture("en");
-            }
-            catch (CultureNotFoundException)
-            {
-                // If specific culture fails, fall back to invariant
-                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-            }
+        try
+        {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en");
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CreateSpecificCulture("en");
+        }
+        catch (CultureNotFoundException)
+        {
+            // If specific culture fails, fall back to invariant
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+        }
 		}
 
 	}

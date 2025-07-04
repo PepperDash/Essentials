@@ -82,6 +82,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             ));
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             AddAction("/fullStatus", (id, content) => SendFullStatusMessage(id));

@@ -16,236 +16,237 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 
 
-namespace PepperDash.Core
+namespace PepperDash.Core;
+
+/// <summary>
+/// Delegate for notifying of socket status changes
+/// </summary>
+/// <param name="client"></param>
+public delegate void GenericSocketStatusChangeEventDelegate(ISocketStatus client);
+
+/// <summary>
+/// EventArgs class for socket status changes
+/// </summary>
+public class GenericSocketStatusChageEventArgs : EventArgs
 {
     /// <summary>
-    /// Delegate for notifying of socket status changes
+    /// Gets or sets the Client
+    /// </summary>
+    public ISocketStatus Client { get; private set; }
+
+    /// <summary>
+    /// Constructor 
     /// </summary>
     /// <param name="client"></param>
-    public delegate void GenericSocketStatusChangeEventDelegate(ISocketStatus client);
-
-    /// <summary>
-    /// EventArgs class for socket status changes
-    /// </summary>
-	public class GenericSocketStatusChageEventArgs : EventArgs
-	{
-  /// <summary>
-  /// Gets or sets the Client
-  /// </summary>
-		public ISocketStatus Client { get; private set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="client"></param>
-		public GenericSocketStatusChageEventArgs(ISocketStatus client)
-		{
-			Client = client;
-		}
-		/// <summary>
-		/// S+ Constructor
-		/// </summary>
-		public GenericSocketStatusChageEventArgs() { }
+    public GenericSocketStatusChageEventArgs(ISocketStatus client)
+    {
+        Client = client;
     }
+    /// <summary>
+    /// S+ Constructor
+    /// </summary>
+    public GenericSocketStatusChageEventArgs() { }
+}
+
+/// <summary>
+/// Delegate for notifying of TCP Server state changes
+/// </summary>
+/// <param name="state"></param>
+public delegate void GenericTcpServerStateChangedEventDelegate(ServerState state);
+
+/// <summary>
+/// EventArgs class for TCP Server state changes
+/// </summary>
+public class GenericTcpServerStateChangedEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets or sets the State 
+    /// </summary>
+    public ServerState State { get; private set; }
 
     /// <summary>
-    /// Delegate for notifying of TCP Server state changes
+    /// Constructor 
     /// </summary>
     /// <param name="state"></param>
-    public delegate void GenericTcpServerStateChangedEventDelegate(ServerState state);
+    public GenericTcpServerStateChangedEventArgs(ServerState state)
+    {
+        State = state;
+    }
+    /// <summary>
+    /// S+ Constructor
+    /// </summary>
+    public GenericTcpServerStateChangedEventArgs() { }
+}
+
+/// <summary>
+/// Delegate for TCP Server socket status changes
+/// </summary>
+/// <param name="socket"></param>
+/// <param name="clientIndex"></param>
+/// <param name="clientStatus"></param>
+public delegate void GenericTcpServerSocketStatusChangeEventDelegate(object socket, uint clientIndex, SocketStatus clientStatus);
+/// <summary>
+/// EventArgs for TCP server socket status changes
+/// </summary>
+public class GenericTcpServerSocketStatusChangeEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets or sets the Socket 
+    /// </summary>
+    public object Socket { get; private set; }
 
     /// <summary>
-    /// EventArgs class for TCP Server state changes
+    /// Gets or sets the index of the client from which the status change was received 
     /// </summary>
-    public class GenericTcpServerStateChangedEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets or sets the State
-        /// </summary>
-        public ServerState State { get; private set; }
+    public uint ReceivedFromClientIndex { get; private set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="state"></param>
-        public GenericTcpServerStateChangedEventArgs(ServerState state)
-        {
-            State = state;
-        }
-		/// <summary>
-		/// S+ Constructor
-		/// </summary>
-		public GenericTcpServerStateChangedEventArgs() { }
+    /// <summary>
+    /// Gets or sets the ClientStatus 
+    /// </summary>
+    public SocketStatus ClientStatus { get; set; }
+
+    /// <summary>
+    /// Constructor 
+    /// </summary>
+    /// <param name="socket"></param>
+    /// <param name="clientStatus"></param>
+    public GenericTcpServerSocketStatusChangeEventArgs(object socket, SocketStatus clientStatus)
+    {
+        Socket = socket;
+        ClientStatus = clientStatus;
     }
 
     /// <summary>
-    /// Delegate for TCP Server socket status changes
+    /// Constructor 
     /// </summary>
     /// <param name="socket"></param>
     /// <param name="clientIndex"></param>
     /// <param name="clientStatus"></param>
-    public delegate void GenericTcpServerSocketStatusChangeEventDelegate(object socket, uint clientIndex, SocketStatus clientStatus);
-    /// <summary>
-    /// EventArgs for TCP server socket status changes
-    /// </summary>
-    public class GenericTcpServerSocketStatusChangeEventArgs : EventArgs
+    public GenericTcpServerSocketStatusChangeEventArgs(object socket, uint clientIndex, SocketStatus clientStatus)
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public object Socket { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public uint ReceivedFromClientIndex { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public SocketStatus ClientStatus { get; set; }
+        Socket = socket;
+        ReceivedFromClientIndex = clientIndex;
+        ClientStatus = clientStatus;
+    }
+    /// <summary>
+    /// S+ Constructor
+    /// </summary>
+    public GenericTcpServerSocketStatusChangeEventArgs() { }
+}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="clientStatus"></param>
-        public GenericTcpServerSocketStatusChangeEventArgs(object socket, SocketStatus clientStatus)
-        {
-            Socket = socket;
-            ClientStatus = clientStatus;
-        }
+/// <summary>
+/// EventArgs for TCP server com method receive text
+/// </summary>
+public class GenericTcpServerCommMethodReceiveTextArgs : EventArgs
+{
+    /// <summary>
+    /// Gets or sets the index of the client from which the text was received
+    /// </summary>
+    public uint ReceivedFromClientIndex { get; private set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="clientIndex"></param>
-        /// <param name="clientStatus"></param>
-        public GenericTcpServerSocketStatusChangeEventArgs(object socket, uint clientIndex, SocketStatus clientStatus)
+    /// <summary>
+    /// Gets the index of the client from which the text was received as a ushort
+    /// </summary>
+    public ushort ReceivedFromClientIndexShort
+    {
+        get
         {
-            Socket = socket;
-            ReceivedFromClientIndex = clientIndex;
-            ClientStatus = clientStatus;
+            return (ushort)ReceivedFromClientIndex;
         }
-		/// <summary>
-		/// S+ Constructor
-		/// </summary>
-		public GenericTcpServerSocketStatusChangeEventArgs() { }
     }
 
     /// <summary>
-    /// EventArgs for TCP server com method receive text
+    /// Gets or sets the Text
     /// </summary>
-    public class GenericTcpServerCommMethodReceiveTextArgs : EventArgs
+    public string Text { get; private set; }
+
+    /// <summary>
+    /// Constructor 
+    /// </summary>
+    /// <param name="text"></param>
+    public GenericTcpServerCommMethodReceiveTextArgs(string text)
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public uint ReceivedFromClientIndex { get; private set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-		public ushort ReceivedFromClientIndexShort
-		{
-			get
-			{
-				return (ushort)ReceivedFromClientIndex;
-			}
-		}
-
-        /// <summary>
-        /// Gets or sets the Text
-        /// </summary>
-        public string Text { get; private set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="text"></param>
-        public GenericTcpServerCommMethodReceiveTextArgs(string text)
-        {
-            Text = text;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="text"></param>
-        /// <param name="clientIndex"></param>
-        public GenericTcpServerCommMethodReceiveTextArgs(string text, uint clientIndex)
-        {
-            Text = text;
-            ReceivedFromClientIndex = clientIndex;
-        }
-		/// <summary>
-		/// S+ Constructor
-		/// </summary>
-		public GenericTcpServerCommMethodReceiveTextArgs() { }
+        Text = text;
     }
 
     /// <summary>
-    /// EventArgs for TCP server client ready for communication
+    /// Constructor 
     /// </summary>
-    public class GenericTcpServerClientReadyForcommunicationsEventArgs : EventArgs
+    /// <param name="text"></param>
+    /// <param name="clientIndex"></param>
+    public GenericTcpServerCommMethodReceiveTextArgs(string text, uint clientIndex)
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool IsReady;
+        Text = text;
+        ReceivedFromClientIndex = clientIndex;
+    }
+    /// <summary>
+    /// S+ Constructor
+    /// </summary>
+    public GenericTcpServerCommMethodReceiveTextArgs() { }
+}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="isReady"></param>
-        public GenericTcpServerClientReadyForcommunicationsEventArgs(bool isReady)
-        {
-            IsReady = isReady;
-        }
-		/// <summary>
-		/// S+ Constructor
-		/// </summary>
-		public GenericTcpServerClientReadyForcommunicationsEventArgs() { }
+/// <summary>
+/// EventArgs for TCP server client ready for communication
+/// </summary>
+public class GenericTcpServerClientReadyForcommunicationsEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets or sets IsReady 
+    /// </summary>
+    public bool IsReady;
+
+    /// <summary>
+    /// Constructor 
+    /// </summary>
+    /// <param name="isReady"></param>
+    public GenericTcpServerClientReadyForcommunicationsEventArgs(bool isReady)
+    {
+        IsReady = isReady;
     }
 
     /// <summary>
-    /// EventArgs for UDP connected
+    /// S+ Constructor
     /// </summary>
-    public class GenericUdpConnectedEventArgs : EventArgs
+    public GenericTcpServerClientReadyForcommunicationsEventArgs() { }
+}
+
+/// <summary>
+/// EventArgs for UDP connected
+/// </summary>
+public class GenericUdpConnectedEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets or sets the UConnected 
+    /// </summary>
+    public ushort UConnected;
+
+    /// <summary>
+    /// Gets or sets the Connected status 
+    /// </summary>
+    public bool Connected;
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    public GenericUdpConnectedEventArgs() { }
+
+    /// <summary>
+    /// Constructor 
+    /// </summary>
+    /// <param name="uconnected"></param>
+    public GenericUdpConnectedEventArgs(ushort uconnected)
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public ushort UConnected;
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool Connected;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public GenericUdpConnectedEventArgs() { }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="uconnected"></param>
-        public GenericUdpConnectedEventArgs(ushort uconnected)
-        {
-            UConnected = uconnected;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="connected"></param>
-        public GenericUdpConnectedEventArgs(bool connected)
-        {
-            Connected = connected;
-        }
-
+        UConnected = uconnected;
     }
 
-   
+    /// <summary>
+    /// Constructor 
+    /// </summary>
+    /// <param name="connected"></param>
+    public GenericUdpConnectedEventArgs(bool connected)
+    {
+        Connected = connected;
+    }
 
 }
+

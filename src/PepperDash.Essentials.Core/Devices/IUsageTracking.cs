@@ -6,143 +6,99 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+public interface IUsageTracking
 {
-    /// <summary>
-    /// Defines the contract for IUsageTracking
-    /// </summary>
-    public interface IUsageTracking
+    UsageTracking UsageTracker { get; set; }
+}
+
+//public static class IUsageTrackingExtensions
+//{
+//    public static void EnableUsageTracker(this IUsageTracking device)
+//    {
+//        device.UsageTracker = new UsageTracking();
+//    }
+//}
+
+public class UsageTracking
+{
+    public event EventHandler<DeviceUsageEventArgs> DeviceUsageEnded;
+
+    public InUseTracking InUseTracker { get; protected set; }
+
+    public bool UsageIsTracked { get; set; }
+
+    public bool UsageTrackingStarted { get; protected set; }
+    public DateTime UsageStartTime { get; protected set; }
+    public DateTime UsageEndTime { get; protected set; }
+
+    public Device Parent { get; private set; }
+
+    public UsageTracking(Device parent)
     {
-        /// <summary>
-        /// Gets or sets the UsageTracker
-        /// </summary>
-        UsageTracking UsageTracker { get; set; }
+        Parent = parent;
+
+        InUseTracker = new InUseTracking();
+
+        InUseTracker.InUseFeedback.OutputChange += InUseFeedback_OutputChange; //new EventHandler<EventArgs>();
     }
 
-    //public static class IUsageTrackingExtensions
-    //{
-    //    public static void EnableUsageTracker(this IUsageTracking device)
-    //    {
-    //        device.UsageTracker = new UsageTracking();
-    //    }
-    //}
+    void  InUseFeedback_OutputChange(object sender, EventArgs e)
+    {
+	        if(InUseTracker.InUseFeedback.BoolValue)
+        {
+            StartDeviceUsage();
+        }
+        else
+        {
+            EndDeviceUsage();
+        }
+    }
+
 
     /// <summary>
-    /// Represents a UsageTracking
+    /// Stores the usage start time
     /// </summary>
-    public class UsageTracking
+    public void StartDeviceUsage()
     {
-        /// <summary>
-        /// Event fired when device usage ends
-        /// </summary>
-        public event EventHandler<DeviceUsageEventArgs> DeviceUsageEnded;
+        UsageTrackingStarted = true;
+        UsageStartTime = DateTime.Now;
+    }
 
-        /// <summary>
-        /// Gets or sets the InUseTracker
-        /// </summary>
-        public InUseTracking InUseTracker { get; protected set; }
-
-        /// <summary>
-        /// Gets or sets the UsageIsTracked
-        /// </summary>
-        public bool UsageIsTracked { get; set; }
-
-        /// <summary>
-        /// Gets or sets the UsageTrackingStarted
-        /// </summary>
-        public bool UsageTrackingStarted { get; protected set; }
-        /// <summary>
-        /// Gets or sets the UsageStartTime
-        /// </summary>
-        public DateTime UsageStartTime { get; protected set; }
-        /// <summary>
-        /// Gets or sets the UsageEndTime
-        /// </summary>
-        public DateTime UsageEndTime { get; protected set; }
-
-        /// <summary>
-        /// Gets or sets the Parent
-        /// </summary>
-        public Device Parent { get; private set; }
-
-        /// <summary>
-        /// Constructor for UsageTracking class
-        /// </summary>
-        /// <param name="parent">The parent device</param>
-        public UsageTracking(Device parent)
+    /// <summary>
+    /// Calculates the difference between the usage start and end times, gets the total minutes used and fires an event to pass that info to a consumer
+    /// </summary>
+    public void EndDeviceUsage()
+    {
+        try
         {
-            Parent = parent;
-   
-            InUseTracker = new InUseTracking();
+            UsageTrackingStarted = false;
 
-            InUseTracker.InUseFeedback.OutputChange += InUseFeedback_OutputChange; //new EventHandler<EventArgs>();
-        }
+            UsageEndTime = DateTime.Now;
 
-        void  InUseFeedback_OutputChange(object sender, EventArgs e)
-        {
- 	        if(InUseTracker.InUseFeedback.BoolValue)
+            if (UsageStartTime != null)
             {
-                StartDeviceUsage();
-            }
-            else
-            {
-                EndDeviceUsage();
-            }
-        }
+                var timeUsed = UsageEndTime - UsageStartTime;
 
+                var handler = DeviceUsageEnded;
 
-        /// <summary>
-        /// StartDeviceUsage method
-        /// </summary>
-        public void StartDeviceUsage()
-        {
-            UsageTrackingStarted = true;
-            UsageStartTime = DateTime.Now;
-        }
-
-        /// <summary>
-        /// Calculates the difference between the usage start and end times, gets the total minutes used and fires an event to pass that info to a consumer
-        /// </summary>
-        public void EndDeviceUsage()
-        {
-            try
-            {
-                UsageTrackingStarted = false;
-
-                UsageEndTime = DateTime.Now;
-
-                if (UsageStartTime != null)
+                if (handler != null)
                 {
-                    var timeUsed = UsageEndTime - UsageStartTime;
-
-                    var handler = DeviceUsageEnded;
-
-                    if (handler != null)
-                    {
-                        Debug.LogMessage(LogEventLevel.Debug, "Device Usage Ended for: {0} at {1}.  In use for {2} minutes.", Parent.Name, UsageEndTime, timeUsed.Minutes);
-                        handler(this, new DeviceUsageEventArgs() { UsageEndTime = UsageEndTime, MinutesUsed = timeUsed.Minutes });
-                    }
+                    Debug.LogMessage(LogEventLevel.Debug, "Device Usage Ended for: {0} at {1}.  In use for {2} minutes.", Parent.Name, UsageEndTime, timeUsed.Minutes);
+                    handler(this, new DeviceUsageEventArgs() { UsageEndTime = UsageEndTime, MinutesUsed = timeUsed.Minutes });
                 }
             }
-            catch (Exception e)
-            {
-                Debug.LogMessage(LogEventLevel.Debug, "Error ending device usage: {0}", e);
-            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, "Error ending device usage: {0}", e);
         }
     }
+}
 
-    /// <summary>
-    /// Represents a DeviceUsageEventArgs
-    /// </summary>
-    public class DeviceUsageEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets or sets the UsageEndTime
-        /// </summary>
-        public DateTime UsageEndTime { get; set; }
-        /// <summary>
-        /// Gets or sets the MinutesUsed
-        /// </summary>
-        public int MinutesUsed { get; set; }
-    }
+public class DeviceUsageEventArgs : EventArgs
+{
+    public DateTime UsageEndTime { get; set; }
+    public int MinutesUsed { get; set; }
 }

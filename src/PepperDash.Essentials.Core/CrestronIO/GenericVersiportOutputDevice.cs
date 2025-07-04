@@ -11,173 +11,176 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.CrestronIO
+namespace PepperDash.Essentials.Core.CrestronIO;
+
+/// <summary>
+/// Represents a generic digital input deviced tied to a versiport
+/// </summary>
+public class GenericVersiportDigitalOutputDevice : EssentialsBridgeableDevice, IDigitalOutput
 {
-    /// <summary>
-    /// Represents a generic digital input deviced tied to a versiport
-    /// </summary>
-    public class GenericVersiportDigitalOutputDevice : EssentialsBridgeableDevice, IDigitalOutput, IHasFeedback
+    public Versiport OutputPort { get; private set; }
+
+    public BoolFeedback OutputStateFeedback { get; private set; }
+
+    Func<bool> OutputStateFeedbackFunc
     {
-        private Versiport outputPort;
-
-        /// <summary>
-        /// Gets or sets the OutputStateFeedback
-        /// </summary>
-        public BoolFeedback OutputStateFeedback { get; private set; }
-
-        /// <inheritdoc />
-        public FeedbackCollection<Feedback> Feedbacks { get; private set; } = new FeedbackCollection<Feedback>();
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GenericVersiportDigitalOutputDevice"/> class.
-        /// </summary>
-        public GenericVersiportDigitalOutputDevice(string key, string name, Func<IOPortConfig, Versiport> postActivationFunc, IOPortConfig config) :
-            base(key, name)
+        get
         {
-            OutputStateFeedback = new BoolFeedback("outputState", () => outputPort.DigitalOut);
-
-            AddPostActivationAction(() =>
-            {
-                outputPort = postActivationFunc(config);
-
-                outputPort.Register();
-
-
-                if (!outputPort.SupportsDigitalOutput)
-                {
-                    this.LogError("Device does not support configuration as a Digital Output");
-                    return;
-                }
-
-                outputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalOutput);
-
-
-                outputPort.VersiportChange += OutputPort_VersiportChange;
-
-            });
+            return () => OutputPort.DigitalOut;
         }
+    }
 
-        void OutputPort_VersiportChange(Versiport port, VersiportEventArgs args)
+    public GenericVersiportDigitalOutputDevice(string key, string name, Func<IOPortConfig, Versiport> postActivationFunc, IOPortConfig config) :
+        base(key, name)
+    {
+        OutputStateFeedback = new BoolFeedback(OutputStateFeedbackFunc);
+
+        AddPostActivationAction(() =>
         {
-            this.LogDebug("Versiport change: {event}", args.Event);
+            OutputPort = postActivationFunc(config);
 
-            if (args.Event == eVersiportEvent.DigitalOutChange)
-                OutputStateFeedback.FireUpdate();
-        }
+            OutputPort.Register();
 
-        /// <summary>
-        /// Set value of the versiport digital output
-        /// </summary>
-        /// <param name="state">value to set the output to</param>        
-        public void SetOutput(bool state)
-        {
-            if (!outputPort.SupportsDigitalOutput)
+
+            if (!OutputPort.SupportsDigitalOutput)
             {
-                this.LogError("Versiport does not support Digital Output Mode");
+                Debug.LogMessage(LogEventLevel.Information, this, "Device does not support configuration as a Digital Output");
                 return;
             }
 
-            outputPort.DigitalOut = state;
-        }
+            OutputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalOutput);
 
-        #region Bridge Linking
 
-        /// <summary>
-        /// LinkToApi method
-        /// </summary>
-        /// <inheritdoc />
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
-        {
-            var joinMap = new IDigitalOutputJoinMap(joinStart);
+            OutputPort.VersiportChange += OutputPort_VersiportChange;
 
-            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+        });
 
-            if (!string.IsNullOrEmpty(joinMapSerialized))
-                joinMap = JsonConvert.DeserializeObject<IDigitalOutputJoinMap>(joinMapSerialized);
+    }
 
-            if (bridge != null)
+    void OutputPort_VersiportChange(Versiport port, VersiportEventArgs args)
+    {
+			Debug.LogMessage(LogEventLevel.Debug, this, "Versiport change: {0}", args.Event);
+
+        if(args.Event == eVersiportEvent.DigitalOutChange)
+            OutputStateFeedback.FireUpdate();
+    }
+
+    /// <summary>
+    /// Set value of the versiport digital output
+    /// </summary>
+    /// <param name="state">value to set the output to</param>
+    public void SetOutput(bool state)
+    {
+            if (OutputPort.SupportsDigitalOutput)
             {
-                bridge.AddJoinMap(Key, joinMap);
+                Debug.LogMessage(LogEventLevel.Information, this, "Passed the Check");
+
+                OutputPort.DigitalOut = state;
+
             }
             else
             {
-                this.LogWarning("Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogMessage(LogEventLevel.Information, this, "Versiport does not support Digital Output Mode");
             }
 
-            try
-            {
-                this.LogDebug("Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+    }
 
-                // Link feedback for input state
-                OutputStateFeedback.LinkInputSig(trilist.BooleanInput[joinMap.OutputState.JoinNumber]);
-                trilist.SetBoolSigAction(joinMap.OutputState.JoinNumber, SetOutput);
-            }
-            catch (Exception e)
-            {
-                this.LogError("Unable to link device: {message}", e.Message);
-                this.LogDebug(e, "Stack Trace: ");
-            }
+    #region Bridge Linking
+
+    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+    {
+        var joinMap = new IDigitalOutputJoinMap(joinStart);
+
+        var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+        if (!string.IsNullOrEmpty(joinMapSerialized))
+            joinMap = JsonConvert.DeserializeObject<IDigitalOutputJoinMap>(joinMapSerialized);
+
+        if (bridge != null)
+        {
+            bridge.AddJoinMap(Key, joinMap);
+        }
+        else
+        {
+            Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
         }
 
-        #endregion
-
-
-        /// <summary>
-        /// GetVersiportDigitalOutput method
-        /// </summary>
-        public static Versiport GetVersiportDigitalOutput(IOPortConfig dc)
+        try
         {
+            Debug.LogMessage(LogEventLevel.Debug, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+            // Link feedback for input state
+            OutputStateFeedback.LinkInputSig(trilist.BooleanInput[joinMap.OutputState.JoinNumber]);
+            trilist.SetBoolSigAction(joinMap.OutputState.JoinNumber, SetOutput);
+        }
+        catch (Exception e)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, this, "Unable to link device '{0}'.  Input is null", Key);
+            Debug.LogMessage(LogEventLevel.Debug, this, "Error: {0}", e);
+        }
+    }
+
+    #endregion
+
+
+    public static Versiport GetVersiportDigitalOutput(IOPortConfig dc)
+    {
+
+            IIOPorts ioPortDevice;
+
             if (dc.PortDeviceKey.Equals("processor"))
             {
                 if (!Global.ControlSystem.SupportsVersiport)
                 {
-                    Debug.LogError("GetVersiportDigitalOutput: Processor does not support Versiports");
+                    Debug.LogMessage(LogEventLevel.Information, "GetVersiportDigitalOuptut: Processor does not support Versiports");
                     return null;
                 }
-                return Global.ControlSystem.VersiPorts[dc.PortNumber];
+                ioPortDevice = Global.ControlSystem;
             }
-
-            if (!(DeviceManager.GetDeviceForKey(dc.PortDeviceKey) is IIOPorts ioPortDevice))
+            else
             {
-                Debug.LogError("GetVersiportDigitalOutput: Device {key} is not a valid device", dc.PortDeviceKey);
+                var ioPortDev = DeviceManager.GetDeviceForKey(dc.PortDeviceKey) as IIOPorts;
+                if (ioPortDev == null)
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "GetVersiportDigitalOuptut: Device {0} is not a valid device", dc.PortDeviceKey);
+                    return null;
+                }
+                ioPortDevice = ioPortDev;
+            }
+            if (ioPortDevice == null)
+            {
+                Debug.LogMessage(LogEventLevel.Information, "GetVersiportDigitalOuptut: Device '0' is not a valid IOPorts Device", dc.PortDeviceKey);
                 return null;
             }
 
             if (dc.PortNumber > ioPortDevice.NumberOfVersiPorts)
             {
-                Debug.LogMessage(LogEventLevel.Information, "GetVersiportDigitalOutput: Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
-                return null;
+                Debug.LogMessage(LogEventLevel.Information, "GetVersiportDigitalOuptut: Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
             }
-            return ioPortDevice.VersiPorts[dc.PortNumber];
-        }
+            var port = ioPortDevice.VersiPorts[dc.PortNumber];
+            return port;
+
+    }
+}
+
+
+public class GenericVersiportDigitalOutputDeviceFactory : EssentialsDeviceFactory<GenericVersiportDigitalInputDevice>
+{
+    public GenericVersiportDigitalOutputDeviceFactory()
+    {
+        TypeNames = new List<string>() { "versiportoutput" };
     }
 
-
-    /// <summary>
-    /// Represents a GenericVersiportDigitalOutputDeviceFactory
-    /// </summary>
-    public class GenericVersiportDigitalOutputDeviceFactory : EssentialsDeviceFactory<GenericVersiportDigitalInputDevice>
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
     {
-        /// <summary>
-        /// Initialize a new instance of the <see cref="GenericVersiportDigitalOutputDeviceFactory"/> class.
-        /// </summary>
-        public GenericVersiportDigitalOutputDeviceFactory()
-        {
-            TypeNames = new List<string>() { "versiportoutput" };
-        }
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Versiport Device");
 
-        /// <inheritdoc />
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogDebug("Factory Attempting to create new Generic Versiport Device");
+        var props = JsonConvert.DeserializeObject<IOPortConfig>(dc.Properties.ToString());
 
-            var props = JsonConvert.DeserializeObject<IOPortConfig>(dc.Properties.ToString());
+        if (props == null) return null;
 
-            if (props == null) return null;
+        var portDevice = new GenericVersiportDigitalOutputDevice(dc.Key, dc.Name, GenericVersiportDigitalOutputDevice.GetVersiportDigitalOutput, props);
 
-            var portDevice = new GenericVersiportDigitalOutputDevice(dc.Key, dc.Name, GenericVersiportDigitalOutputDevice.GetVersiportDigitalOutput, props);
-
-            return portDevice;
-        }
+        return portDevice;
     }
 }

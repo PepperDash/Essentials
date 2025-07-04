@@ -12,12 +12,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly IHumiditySensor device;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IHumiditySensorMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="device"></param>
+        /// <param name="messagePath"></param>
         public IHumiditySensorMessenger(string key, IHumiditySensor device, string messagePath)
             : base(key, messagePath, device as IKeyName)
         {
             this.device = device;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

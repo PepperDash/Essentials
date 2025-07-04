@@ -11,12 +11,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly ITechPassword _room;
 
+        /// <summary>
+        /// Constructor for ITechPasswordMessenger
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="room"></param>
         public ITechPasswordMessenger(string key, string messagePath, ITechPassword room)
             : base(key, messagePath, room as IKeyName)
         {
             _room = room;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
 
@@ -71,6 +78,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class ITechPasswordStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the TechPasswordLength
+        /// </summary>
         [JsonProperty("techPasswordLength", NullValueHandling = NullValueHandling.Ignore)]
         public int? TechPasswordLength { get; set; }
     }
@@ -80,22 +90,25 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class ITechPasswordEventMessage : DeviceEventMessageBase
     {
+        /// <summary>
+        /// Gets or sets the IsValid
+        /// </summary>
         [JsonProperty("isValid", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsValid { get; set; }
     }
 
     internal class SetTechPasswordContent
     {
-        [JsonProperty("oldPassword")]
         /// <summary>
         /// Gets or sets the OldPassword
         /// </summary>
+        [JsonProperty("oldPassword")]
         public string OldPassword { get; set; }
 
-        [JsonProperty("newPassword")]
         /// <summary>
         /// Gets or sets the NewPassword
         /// </summary>
+        [JsonProperty("newPassword")]
         public string NewPassword { get; set; }
     }
 

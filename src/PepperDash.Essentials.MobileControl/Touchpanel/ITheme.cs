@@ -1,21 +1,21 @@
 ﻿using PepperDash.Core;
 
-namespace PepperDash.Essentials.Touchpanel
+namespace PepperDash.Essentials.Touchpanel;
+
+/// <summary>
+/// Defines the contract for ITheme
+/// </summary>
+public interface ITheme : IKeyed
 {
     /// <summary>
-    /// Defines the contract for ITheme
+    /// Current theme
     /// </summary>
-    public interface ITheme : IKeyed
-    {
-        /// <summary>
-        /// Current theme
-        /// </summary>
-        string Theme { get; }
+    string Theme { get; }
 
-        /// <summary>
-        /// Set the theme with the given value
-        /// </summary>
-        /// <param name="theme">The theme to set</param>
-        void UpdateTheme(string theme);
-    }
+    /// <summary>
+    /// Set the theme with the given value
+    /// </summary>
+    /// <param name="theme">The theme to set</param>
+    void UpdateTheme(string theme);
 }
+

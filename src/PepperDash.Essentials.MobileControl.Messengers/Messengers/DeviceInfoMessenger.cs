@@ -94,6 +94,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class DeviceInfoStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the device information associated with this message. This property contains detailed information
+        /// </summary>
         [JsonProperty("deviceInfo")]
         public DeviceInfo DeviceInfo { get; set; }
     }

@@ -4,22 +4,21 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+/// <summary>
+/// Basically a List , with an indexer to find feedbacks by key name
+/// </summary>
+public class FeedbackCollection<T> : List<T> where T : Feedback
 {
     /// <summary>
-    /// Basically a List , with an indexer to find feedbacks by key name
+    /// Case-insensitive port lookup linked to feedbacks' keys
     /// </summary>
-    public class FeedbackCollection<T> : List<T> where T : Feedback
+    public T this[string key]
     {
-        /// <summary>
-        /// Case-insensitive port lookup linked to feedbacks' keys
-        /// </summary>
-        public T this[string key]
+        get
         {
-            get
-            {
-                return this.FirstOrDefault(i => i.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
-            }
+            return this.FirstOrDefault(i => i.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

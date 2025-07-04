@@ -12,12 +12,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly IShadesOpenCloseStop device;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IShadesOpenCloseStopMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="shades"></param>
+        /// <param name="messagePath"></param>
         public IShadesOpenCloseStopMessenger(string key, IShadesOpenCloseStop shades, string messagePath)
             : base(key, messagePath, shades as IKeyName)
         {
             device = shades;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();
@@ -102,9 +109,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
         [JsonProperty("middleButtonLabel", NullValueHandling = NullValueHandling.Ignore)]
         public string MiddleButtonLabel { get; set; }
 
+        /// <summary>
+        /// Gets or sets the IsOpen
+        /// </summary>
         [JsonProperty("isOpen", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsOpen { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the IsClosed
+        /// </summary>
         [JsonProperty("isClosed", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsClosed { get; set; }
     }

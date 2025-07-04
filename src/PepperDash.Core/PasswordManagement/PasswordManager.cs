@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Core.PasswordManagement
-{
- /// <summary>
- /// Represents a PasswordManager
- /// </summary>
+namespace PepperDash.Core.PasswordManagement;
+
+/// <summary>
+/// Allows passwords to be stored and managed
+/// </summary>
 	public class PasswordManager
 	{
 		/// <summary>
@@ -196,7 +196,7 @@ namespace PepperDash.Core.PasswordManagement
 		/// <summary>
 		/// Protected ushort change event handler
 		/// </summary>
-        /// <param name="value"></param>
+    /// <param name="value"></param>
 		/// <param name="index"></param>
 		/// <param name="type"></param>
 		protected void OnUshrtChange(ushort value, ushort index, ushort type)
@@ -244,4 +244,3 @@ namespace PepperDash.Core.PasswordManagement
 			}
 		}
 	}
-}

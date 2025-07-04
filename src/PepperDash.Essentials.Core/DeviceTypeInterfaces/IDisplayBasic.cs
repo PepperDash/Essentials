@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
 namespace PepperDash.Essentials.Core.Devices.DeviceTypeInterfaces
 {
  /// <summary>
  /// Defines the contract for IDisplayBasic
  /// </summary>
+ [Obsolete("This interface is no longer used and will be removed in a future version. Please use IDisplay instead.")]
 	public interface IDisplayBasic
 	{
 		/// <summary>

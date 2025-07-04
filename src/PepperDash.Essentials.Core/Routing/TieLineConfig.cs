@@ -11,8 +11,8 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Config
-{
+namespace PepperDash.Essentials.Core.Config;
+
 	/// <summary>
 	/// Represents the configuration data for a single tie line between two routing ports.
 	/// </summary>
@@ -117,4 +117,3 @@ namespace PepperDash.Essentials.Core.Config
 			return $"{SourceKey}.{SourceCard}.{SourcePort} --> {DestinationKey}.{DestinationCard}.{DestinationPort}";
 		}
 	}
-}

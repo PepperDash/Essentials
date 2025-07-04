@@ -10,11 +10,20 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class INumericKeypadMessenger : MessengerBase
     {
         private readonly INumericKeypad keypadDevice;
+
+        /// <summary>
+        /// Create an instance of the <see cref="INumericKeypadMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
         public INumericKeypadMessenger(string key, string messagePath, INumericKeypad device) : base(key, messagePath, device as IKeyName)
         {
             keypadDevice = device;
         }
 
+
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

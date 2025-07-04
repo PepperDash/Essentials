@@ -1,25 +1,25 @@
 ﻿using PepperDash.Essentials.Devices.Common.VideoCodec;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+
+/// <summary>
+/// Defines the contract for IHasSelfviewPosition
+/// </summary>
+public interface IHasSelfviewPosition
 {
     /// <summary>
-    /// Defines the contract for IHasSelfviewPosition
+    /// Gets the SelfviewPipPositionFeedback
     /// </summary>
-    public interface IHasSelfviewPosition
-    {
-        /// <summary>
-        /// Gets the SelfviewPipPositionFeedback
-        /// </summary>
-        StringFeedback SelfviewPipPositionFeedback { get; }
+    StringFeedback SelfviewPipPositionFeedback { get; }
 
-        /// <summary>
-        /// Sets the selfview position
-        /// </summary>
-        void SelfviewPipPositionSet(CodecCommandWithLabel position);
+    /// <summary>
+    /// Sets the selfview position
+    /// </summary>
+    void SelfviewPipPositionSet(CodecCommandWithLabel position);
 
-        /// <summary>
-        /// Toggles the selfview position
-        /// </summary>
-        void SelfviewPipPositionToggle();
-    }
+    /// <summary>
+    /// Toggles the selfview position
+    /// </summary>
+    void SelfviewPipPositionToggle();
 }

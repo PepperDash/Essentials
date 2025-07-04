@@ -1,29 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
+﻿using Crestron.SimplSharp;
 namespace PepperDash.Essentials.Core
 {
- /// <summary>
- /// Represents a BoolFeedbackPulse
- /// </summary>
+	/// <summary>
+	/// Represents a BoolFeedbackPulse
+	/// </summary>
 	public class BoolFeedbackPulse
 	{
-  /// <summary>
-  /// Gets or sets the TimeoutMs
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the TimeoutMs
+		/// </summary>
 		public uint TimeoutMs { get; set; }
 
-  /// <summary>
-  /// Gets or sets the CanRetrigger
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the CanRetrigger
+		/// </summary>
 		public bool CanRetrigger { get; set; }
 
-  /// <summary>
-  /// Gets or sets the Feedback
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the Feedback
+		/// </summary>
 		public BoolFeedback Feedback { get; private set; }
 		CTimer Timer;
 
@@ -68,12 +63,12 @@ namespace PepperDash.Essentials.Core
 				Timer.Reset(TimeoutMs);
 		}
 
-  /// <summary>
-  /// Cancel method
-  /// </summary>
+		/// <summary>
+		/// Cancel method
+		/// </summary>
 		public void Cancel()
 		{
-			if(Timer != null)
+			if (Timer != null)
 				Timer.Reset(0);
 		}
 	}

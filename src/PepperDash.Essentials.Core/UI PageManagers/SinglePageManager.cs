@@ -2,8 +2,8 @@
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.PageManagers
-{
+namespace PepperDash.Essentials.Core.PageManagers;
+
 	/// <summary>
 	/// Represents a SinglePageManager
 	/// </summary>
@@ -40,4 +40,3 @@ namespace PepperDash.Essentials.Core.PageManagers
 			TriList.BooleanInput[BackingPageJoin].BoolValue = false;
 		}
 	}
-}

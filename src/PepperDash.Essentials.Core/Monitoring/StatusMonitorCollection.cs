@@ -11,8 +11,8 @@ using System.ComponentModel;
 using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// Collection class for multiple status monitors
 	/// </summary>
@@ -167,4 +167,3 @@ namespace PepperDash.Essentials.Core
 				handler(this, new MonitorStatusChangeEventArgs(status, message));
 		}
 	}
-}

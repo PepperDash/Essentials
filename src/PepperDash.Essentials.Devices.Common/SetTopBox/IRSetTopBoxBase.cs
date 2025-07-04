@@ -656,5 +656,5 @@ namespace PepperDash.Essentials.Devices.Common
             }
         }
     }
-
 }
+

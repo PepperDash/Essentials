@@ -12,12 +12,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly IShutdownPromptTimer _room;
 
+        /// <summary>
+        /// Create an instance of the <see cref="IShutdownPromptTimerMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="room"></param>
         public IShutdownPromptTimerMessenger(string key, string messagePath, IShutdownPromptTimer room)
             : base(key, messagePath, room as IKeyName)
         {
             _room = room;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             AddAction("/status", (id, content) => SendFullStatus(id));

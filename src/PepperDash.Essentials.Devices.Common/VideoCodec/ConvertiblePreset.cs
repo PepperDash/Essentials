@@ -1,16 +1,16 @@
 ﻿using PepperDash.Essentials.Core.Presets;
 
-namespace PepperDash.Essentials.Devices.Common.VideoCodec
+namespace PepperDash.Essentials.Devices.Common.VideoCodec;
+
+
+/// <summary>
+/// Base class for presets that can be converted to PresetBase
+/// </summary>
+public abstract class ConvertiblePreset
 {
     /// <summary>
-    /// Base class for presets that can be converted to PresetBase
+    /// Converts the preset to a PresetBase
     /// </summary>
-    public abstract class ConvertiblePreset
-    {
-        /// <summary>
-        /// Converts the preset to a PresetBase
-        /// </summary>
-        /// <returns><see cref="PresetBase"/></returns>
-        public abstract PresetBase ConvertCodecPreset();
-    }
+    /// <returns><see cref="PresetBase"/></returns>
+    public abstract PresetBase ConvertCodecPreset();
 }

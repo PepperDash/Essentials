@@ -15,11 +15,18 @@ namespace PepperDash.Essentials.Room.MobileControl
     {
         private readonly DisplayBase display;
 
+        /// <summary>
+        /// Create an instance of the <see cref="DisplayBaseMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
         public DisplayBaseMessenger(string key, string messagePath, DisplayBase device) : base(key, messagePath, device)
         {
             display = device;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

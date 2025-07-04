@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+using System.Timers;
 
 namespace PepperDash.Essentials.Core
 {
@@ -11,7 +10,7 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public static class JobTimer
 	{
-		static CTimer MinuteTimer;
+		static Timer MinuteTimer;
 
 		static List<JobTimerItem> Items = new List<JobTimerItem>();
 
@@ -42,7 +41,9 @@ namespace PepperDash.Essentials.Core
 		{
 			if (Items.Count > 0 && MinuteTimer == null)
 			{
-				MinuteTimer = new CTimer(o => MinuteTimerCallback(), null, 60000, 60000);
+				MinuteTimer = new Timer(60000);
+				MinuteTimer.Elapsed += (sender, e) => MinuteTimerCallback();
+				MinuteTimer.Start();
 			}
 		}
 

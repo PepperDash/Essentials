@@ -23,15 +23,15 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public event EventHandler<MonitorStatusChangeEventArgs> StatusChange;
 
-        /// <summary>
-        /// Gets or sets the Key
-        /// </summary>
-        public string Key { get { return Parent.Key + "-comMonitor"; } }
+		/// <summary>
+		/// Gets or sets the Key
+		/// </summary>
+		public string Key { get { return Parent.Key + "-comMonitor"; } }
 
-        /// <summary>
-        /// Gets or sets the Name
-        /// </summary>
-        public string Name { get { return "Comm. monitor"; } }
+		/// <summary>
+		/// Gets or sets the Name
+		/// </summary>
+		public string Name { get { return "Comm. monitor"; } }
 
 		/// <summary>
 		/// Gets or sets the Parent
@@ -59,7 +59,7 @@ namespace PepperDash.Essentials.Core
 				if (value != _Status)
 				{
 					_Status = value;
-					
+
 					OnStatusChange(value);
 				}
 			}
@@ -72,12 +72,12 @@ namespace PepperDash.Essentials.Core
 		public string Message
 		{
 			get { return _Message; }
-			set 
+			set
 			{
 				if (value == _Message) return;
 				_Message = value;
 				OnStatusChange(Status, value);
-					
+
 			}
 		}
 		string _Message;
@@ -173,13 +173,13 @@ namespace PepperDash.Essentials.Core
 		/// <summary>
 		/// Resets the error timers
 		/// </summary>
-        protected void ResetErrorTimers()
-        {
-            if(WarningTimer != null)
-                WarningTimer.Reset(WarningTime, WarningTime);
-            if(ErrorTimer != null)
-                ErrorTimer.Reset(ErrorTime, ErrorTime);
+		protected void ResetErrorTimers()
+		{
+			if (WarningTimer != null)
+				WarningTimer.Reset(WarningTime, WarningTime);
+			if (ErrorTimer != null)
+				ErrorTimer.Reset(ErrorTime, ErrorTime);
 
-        }
+		}
 	}
 }

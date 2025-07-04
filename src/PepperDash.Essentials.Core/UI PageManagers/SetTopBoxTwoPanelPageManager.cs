@@ -2,8 +2,8 @@
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Presets;
 
-namespace PepperDash.Essentials.Core.PageManagers
-{
+namespace PepperDash.Essentials.Core.PageManagers;
+
 	/// <summary>
 	/// Represents a SetTopBoxMediumPageManager
 	/// </summary>
@@ -69,4 +69,3 @@ namespace PepperDash.Essentials.Core.PageManagers
 			TriList.BooleanInput[LeftSubpageJoin].BoolValue = false;
 		}
 	}
-}

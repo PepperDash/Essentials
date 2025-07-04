@@ -13,12 +13,20 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private readonly ISwitchedOutput device;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ISwitchedOutputMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="device"></param>
+        /// <param name="messagePath"></param>
         public ISwitchedOutputMessenger(string key, ISwitchedOutput device, string messagePath)
             : base(key, messagePath, device as IKeyName)
         {
             this.device = device;
         }
 
+
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

@@ -10,11 +10,20 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class IHasPowerMessenger : MessengerBase
     {
         private readonly IHasPowerControl powerDevice;
+
+        /// <summary>
+        /// Create an instance of the <see cref="IHasPowerMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
         public IHasPowerMessenger(string key, string messagePath, IHasPowerControl device) : base(key, messagePath, device as IKeyName)
         {
             powerDevice = device;
         }
 
+
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

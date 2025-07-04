@@ -434,7 +434,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     /// <summary>
     /// Factory for ScreenLiftController devices
     /// </summary>
-    public class ScreenLiftControllerFactory : EssentialsDeviceFactory<RelayControlledShade>
+    public class ScreenLiftControllerFactory : EssentialsDeviceFactory<ScreenLiftController>
     {
         /// <summary>
         /// Constructor for ScreenLiftControllerFactory

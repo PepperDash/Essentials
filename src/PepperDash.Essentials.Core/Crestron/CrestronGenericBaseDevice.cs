@@ -7,11 +7,8 @@ using PepperDash.Core.JsonStandardObjects;
 using PepperDash.Essentials.Core.Bridges;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
-{
-    /// <summary>
-    /// Abstract base class for Crestron GenericBase devices
-    /// </summary>
+namespace PepperDash.Essentials.Core;
+
 	public abstract class CrestronGenericBaseDevice : EssentialsDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
 	{
         /// <summary>
@@ -19,10 +16,10 @@ namespace PepperDash.Essentials.Core
         /// </summary>
 	    protected GenericBase Hardware;
 
-        /// <summary>
-        /// Gets or sets the Feedbacks
-        /// </summary>
-        public FeedbackCollection<Feedback> Feedbacks { get; private set; }
+    /// <summary>
+    /// Returns a list containing the Outputs that we want to expose.
+    /// </summary>
+    public FeedbackCollection<Feedback> Feedbacks { get; private set; }
 
         /// <summary>
         /// Gets or sets the IsOnline
@@ -51,30 +48,25 @@ namespace PepperDash.Essentials.Core
         /// <param name="name">name of the device</param>
         /// <param name="hardware">hardware instance</param>
 	    protected CrestronGenericBaseDevice(string key, string name, GenericBase hardware)
-            : base(key, name)
-        {
-            Feedbacks = new FeedbackCollection<Feedback>();
+        : base(key, name)
+    {
+        Feedbacks = new FeedbackCollection<Feedback>();
 
-            Hardware = hardware;
-            IsOnline = new BoolFeedback("IsOnlineFeedback", () => Hardware.IsOnline);
-            IsRegistered = new BoolFeedback("IsRegistered", () => Hardware.Registered);
-            IpConnectionsText = new StringFeedback("IpConnectionsText", () => Hardware.ConnectedIpList != null ? string.Join(",", Hardware.ConnectedIpList.Select(cip => cip.DeviceIpAddress).ToArray()) : string.Empty);
-            AddToFeedbackList(IsOnline, IpConnectionsText);
+        Hardware = hardware;
+        IsOnline = new BoolFeedback("IsOnlineFeedback", () => Hardware.IsOnline);
+        IsRegistered = new BoolFeedback("IsRegistered", () => Hardware.Registered);
+        IpConnectionsText = new StringFeedback("IpConnectionsText", () => Hardware.ConnectedIpList != null ? string.Join(",", Hardware.ConnectedIpList.Select(cip => cip.DeviceIpAddress).ToArray()) : string.Empty);
+        AddToFeedbackList(IsOnline, IpConnectionsText);
 
-            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
-        }
+        CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
+    }
 
-        /// <summary>
-        /// Constructor without hardware instance
-        /// </summary>
-        /// <param name="key">key of the device</param>
-        /// <param name="name">name of the device</param>
-        protected CrestronGenericBaseDevice(string key, string name)
-            : base(key, name)
-        {
-            Feedbacks = new FeedbackCollection<Feedback>();
+    protected CrestronGenericBaseDevice(string key, string name)
+        : base(key, name)
+    {
+        Feedbacks = new FeedbackCollection<Feedback>();
 
-        }
+    }
 
         /// <summary>
         /// Registers the Crestron GenericBase hardware instance
@@ -82,13 +74,13 @@ namespace PepperDash.Essentials.Core
         /// <param name="hardware">hardware instance</param>
 	    protected void RegisterCrestronGenericBase(GenericBase hardware)
 	    {
-            Hardware = hardware;
-            IsOnline = new BoolFeedback("IsOnlineFeedback", () => Hardware.IsOnline);
-            IsRegistered = new BoolFeedback("IsRegistered", () => Hardware.Registered);
-            IpConnectionsText = new StringFeedback("IpConnectionsText", () => Hardware.ConnectedIpList != null ? string.Join(",", Hardware.ConnectedIpList.Select(cip => cip.DeviceIpAddress).ToArray()) : string.Empty);
-            AddToFeedbackList(IsOnline, IpConnectionsText);
+        Hardware = hardware;
+        IsOnline = new BoolFeedback("IsOnlineFeedback", () => Hardware.IsOnline);
+        IsRegistered = new BoolFeedback("IsRegistered", () => Hardware.Registered);
+        IpConnectionsText = new StringFeedback("IpConnectionsText", () => Hardware.ConnectedIpList != null ? string.Join(",", Hardware.ConnectedIpList.Select(cip => cip.DeviceIpAddress).ToArray()) : string.Empty);
+        AddToFeedbackList(IsOnline, IpConnectionsText);
 
-            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
+        CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
 	    }
 
         /// <summary>
@@ -97,43 +89,43 @@ namespace PepperDash.Essentials.Core
         /// <inheritdoc />
 		public override bool CustomActivate()
 		{
-            Debug.LogMessage(LogEventLevel.Information, this, "Activating");
-            if (!PreventRegistration)
-            {
-                //Debug.LogMessage(LogEventLevel.Debug, this, "  Does not require registration. Skipping");
+        Debug.LogMessage(LogEventLevel.Information, this, "Activating");
+        if (!PreventRegistration)
+        {
+            //Debug.LogMessage(LogEventLevel.Debug, this, "  Does not require registration. Skipping");
 
-                if (Hardware.Registerable && !Hardware.Registered)
+            if (Hardware.Registerable && !Hardware.Registered)
+            {
+                var response = Hardware.RegisterWithLogging(Key);
+                if (response != eDeviceRegistrationUnRegistrationResponse.Success)
                 {
-                    var response = Hardware.RegisterWithLogging(Key);
-                    if (response != eDeviceRegistrationUnRegistrationResponse.Success)
-                    {
-                        //Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Crestron device: {0}", response);
-                        return false;
-                    }
+                    //Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Crestron device: {0}", response);
+                    return false;
                 }
-
-                IsRegistered.FireUpdate();
             }
-            else
-            {
-                AddPostActivationAction(() =>
+
+            IsRegistered.FireUpdate();
+        }
+        else
+        {
+            AddPostActivationAction(() =>
+                {
+                    if (Hardware.Registerable && !Hardware.Registered)
                     {
-                        if (Hardware.Registerable && !Hardware.Registered)
-                        {
-                            var response = Hardware.RegisterWithLogging(Key);
-                        }
+                        var response = Hardware.RegisterWithLogging(Key);
+                    }
 
-                        IsRegistered.FireUpdate();
-                    });
-            }
+                    IsRegistered.FireUpdate();
+                });
+        }
 
-            foreach (var f in Feedbacks)
-            {
-                f.FireUpdate();
-            }
+        foreach (var f in Feedbacks)
+        {
+            f.FireUpdate();
+        }
 
-            Hardware.OnlineStatusChange += Hardware_OnlineStatusChange;
-            CommunicationMonitor.Start();    
+        Hardware.OnlineStatusChange += Hardware_OnlineStatusChange;
+        CommunicationMonitor.Start();    
 
 			return base.CustomActivate();
 		}
@@ -149,42 +141,42 @@ namespace PepperDash.Essentials.Core
 
 			var success = Hardware.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
 
-            IsRegistered.FireUpdate();
+        IsRegistered.FireUpdate();
 
-            return success;
+        return success;
 		}
 
 	    /// <summary>
-        /// Adds feedback(s) to the list
-        /// </summary>
-        /// <param name="newFbs">feedback(s) to be added to the list</param>
-        public void AddToFeedbackList(params Feedback[] newFbs)
+    /// Adds feedback(s) to the list
+    /// </summary>
+    /// <param name="newFbs"></param>
+    public void AddToFeedbackList(params Feedback[] newFbs)
+    {
+        foreach (var f in newFbs)
         {
-            foreach (var f in newFbs)
-            {
-                if (f == null) continue;
+            if (f == null) continue;
 
-                if (!Feedbacks.Contains(f))
-                {
-                    Feedbacks.Add(f);
-                }
+            if (!Feedbacks.Contains(f))
+            {
+                Feedbacks.Add(f);
             }
         }
+    }
 
 		void Hardware_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
 		{
-            Debug.LogMessage(LogEventLevel.Verbose, this, "OnlineStatusChange Event.  Online = {0}", args.DeviceOnLine);
+        Debug.LogMessage(LogEventLevel.Verbose, this, "OnlineStatusChange Event.  Online = {0}", args.DeviceOnLine);
 
-            if (!Hardware.Registered)
-            {
-                return;  // protects in cases where device has been unregistered and feedbacks would attempt to access null sigs.
-            }
+        if (!Hardware.Registered)
+        {
+            return;  // protects in cases where device has been unregistered and feedbacks would attempt to access null sigs.
+        }
 
-            foreach (var feedback in Feedbacks)
-            {
-                if (feedback != null)
-                    feedback.FireUpdate();
-            }         
+        foreach (var feedback in Feedbacks)
+        {
+            if (feedback != null)
+                feedback.FireUpdate();
+        }         
 		}
 
 		#region IStatusMonitor Members
@@ -195,51 +187,27 @@ namespace PepperDash.Essentials.Core
 		public StatusMonitorBase CommunicationMonitor { get; private set; }
 		#endregion
 
-        #region IUsageTracking Members
+    #region IUsageTracking Members
 
-        /// <summary>
-        /// Gets or sets the UsageTracker
-        /// </summary>
-        public UsageTracking UsageTracker { get; set; }
+    public UsageTracking UsageTracker { get; set; }
 
-        #endregion
+    #endregion
 	}
 
-    /// <summary>
-    /// Abstract base class for Crestron GenericBase devices that are bridgeable
-    /// </summary>
-    public abstract class CrestronGenericBridgeableBaseDevice : CrestronGenericBaseDevice, IBridgeAdvanced
+public abstract class CrestronGenericBridgeableBaseDevice : CrestronGenericBaseDevice, IBridgeAdvanced
+{
+    protected CrestronGenericBridgeableBaseDevice(string key, string name, GenericBase hardware) : base(key, name, hardware)
     {
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="key">key of the device</param>
-        /// <param name="name">name of the device</param>
-        /// <param name="hardware">hardware instance</param>
-        protected CrestronGenericBridgeableBaseDevice(string key, string name, GenericBase hardware) : base(key, name, hardware)
-        {
-        }
-
-        /// <summary>
-        /// Constructor without hardware instance
-        /// </summary>
-        /// <param name="key">key of the device</param>
-        /// <param name="name">name of the device</param>
-        protected CrestronGenericBridgeableBaseDevice(string key, string name)
-            : base(key, name)
-        {
-        }
-
-        /// <summary>
-        /// Links to API
-        /// </summary>
-        /// <param name="trilist">the trilist</param>
-        /// <param name="joinStart">the starting join number</param>
-        /// <param name="joinMapKey">the join map key</param>
-        /// <param name="bridge">the bridge instance</param>
-        public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
     }
+
+    protected CrestronGenericBridgeableBaseDevice(string key, string name)
+        : base(key, name)
+    {
+    }
+
+
+    public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
+}
 
 
 	//***********************************************************************************
@@ -282,4 +250,3 @@ namespace PepperDash.Essentials.Core
 		}
 
 	}
-}

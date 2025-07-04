@@ -10,11 +10,19 @@ namespace PepperDash.Essentials.Room.MobileControl
     public class IColorMessenger : MessengerBase
     {
         private readonly IColor colorDevice;
+
+        /// <summary>
+        /// Create an instance of the <see cref="IColorMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
         public IColorMessenger(string key, string messagePath, IColor device) : base(key, messagePath, device as IKeyName)
         {
             colorDevice = device as IColor;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

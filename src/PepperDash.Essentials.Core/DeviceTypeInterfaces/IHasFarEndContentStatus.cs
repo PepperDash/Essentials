@@ -1,13 +1,13 @@
-﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+
+/// <summary>
+/// Defines the contract for IHasFarEndContentStatus
+/// </summary>
+public interface IHasFarEndContentStatus
 {
     /// <summary>
-    /// Defines the contract for IHasFarEndContentStatus
+    /// Gets whether far end content is being received
     /// </summary>
-    public interface IHasFarEndContentStatus
-    {
-        /// <summary>
-        /// Gets whether far end content is being received
-        /// </summary>
-         BoolFeedback ReceivingContent { get; }
-    }
+    BoolFeedback ReceivingContent { get; }
 }

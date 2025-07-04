@@ -14,11 +14,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private ILevelControls levelControlsDevice;
 
+        /// <summary>
+        /// Create an instance of the <see cref="ILevelControlsMessenger"/> class.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
         public ILevelControlsMessenger(string key, string messagePath, ILevelControls device) : base(key, messagePath, device as IKeyName)
         {
             levelControlsDevice = device;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();
@@ -87,6 +94,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class LevelControlStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the Levels
+        /// </summary>
         [JsonProperty("levelControls")]
         public Dictionary<string, Volume> Levels { get; set; }
     }
@@ -96,12 +106,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class LevelControlRequestMessage
     {
-        [JsonProperty("key")]
         /// <summary>
         /// Gets or sets the Key
         /// </summary>
+        [JsonProperty("key")]
         public string Key { get; set; }
 
+        /// <summary>
+        /// Represents a Volume
+        /// </summary>
         [JsonProperty("level", NullValueHandling = NullValueHandling.Ignore)]
         public ushort? Level { get; set; }
     }
