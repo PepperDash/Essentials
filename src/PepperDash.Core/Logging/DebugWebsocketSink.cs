@@ -1,32 +1,36 @@
-﻿extern alias NewtonsoftJson;
+﻿﻿extern alias NewtonsoftJson;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+﻿using Crestron.SimplSharp;
+using Org.BouncyCastle.Asn1.X509;
 using Serilog;
+using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Configuration;
-using WebSocketSharp.Server;
-using Crestron.SimplSharp;
-using WebSocketSharp;
-using System.Security.Authentication;
-using WebSocketSharp.Net;
-using X509Certificate2 = System.Security.Cryptography.X509Certificates.X509Certificate2;
-using System.IO;
-using Org.BouncyCastle.Asn1.X509;
 using Serilog.Formatting;
 using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using Serilog.Formatting.Json;
+using System.IO;
+using System.Security.Authentication;
+using WebSocketSharp;
+using WebSocketSharp.Server;
+using X509Certificate2 = System.Security.Cryptography.X509Certificates.X509Certificate2;
+using WebSocketSharp.Net;
 
 namespace PepperDash.Core
 {
     /// <summary>
-    /// Represents a DebugWebsocketSink
+    /// Provides a WebSocket-based logging sink for debugging purposes, allowing log events to be broadcast to connected
+    /// WebSocket clients.
     /// </summary>
-    public class DebugWebsocketSink : ILogEventSink
+    /// <remarks>This class implements the <see cref="ILogEventSink"/> interface and is designed to send
+    /// formatted log events to WebSocket clients connected to a secure WebSocket server. The server is hosted locally
+    /// and uses a self-signed certificate for SSL/TLS encryption.</remarks>
+    public class DebugWebsocketSink : ILogEventSink, IKeyed
     {
         private WebSocketServer _wsServer;
         
@@ -34,6 +38,9 @@ namespace PepperDash.Core
         private const string _certificateName = "selfCres";
         private const string _certificatePassword = "cres12345";
 
+        /// <summary>
+        /// Gets the port number on which the HTTPS server is currently running.
+        /// </summary>
         public int Port 
         { get 
             { 
@@ -43,6 +50,11 @@ namespace PepperDash.Core
             } 
         }
 
+        /// <summary>
+        /// Gets the WebSocket URL for the current server instance.
+        /// </summary>
+        /// <remarks>The URL is dynamically constructed based on the server's current IP address, port,
+        /// and WebSocket path.</remarks>
         public string Url
         {
             get
@@ -53,20 +65,30 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Gets or sets the IsRunning
+        /// Gets a value indicating whether the WebSocket server is currently listening for incoming connections.
         /// </summary>
-        public bool IsRunning { get => _wsServer?.IsListening ?? false; }
-        
+        public bool IsRunning { get => _wsServer?.IsListening ?? false; }        
+
+        /// <inheritdoc/>
+        public string Key => "DebugWebsocketSink";
 
         private readonly ITextFormatter _textFormatter;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DebugWebsocketSink"/> class with the specified text formatter.
+        /// </summary>
+        /// <remarks>This constructor initializes the WebSocket sink and ensures that a certificate is
+        /// available for secure communication. If the required certificate does not exist, it will be created
+        /// automatically. Additionally, the sink is configured to stop the server when the program is
+        /// stopping.</remarks>
+        /// <param name="formatProvider">The text formatter used to format log messages. If null, a default JSON formatter is used.</param>
         public DebugWebsocketSink(ITextFormatter formatProvider)
         {
 
             _textFormatter = formatProvider ?? new JsonFormatter();
 
             if (!File.Exists($"\\user\\{_certificateName}.pfx"))
-                CreateCert(null);
+                CreateCert();
 
             CrestronEnvironment.ProgramStatusEventHandler += type =>
             {
@@ -77,7 +99,7 @@ namespace PepperDash.Core
             };
         }
 
-        private void CreateCert(string[] args)
+        private static void CreateCert()
         {
             try
             {
@@ -109,13 +131,17 @@ namespace PepperDash.Core
             catch (Exception ex)
             {
                 //Debug.Console(0, "WSS CreateCert Failed\r\n{0}\r\n{1}", ex.Message, ex.StackTrace);
-                CrestronConsole.PrintLine(string.Format("WSS CreateCert Failed\r\n{0}\r\n{1}", ex.Message, ex.StackTrace));
+                Debug.LogError("WSS CreateCert Failed\r\n{0}\r\n{1}", ex.Message, ex.StackTrace);
             }
         }
 
         /// <summary>
-        /// Emit method
+        /// Sends a log event to all connected WebSocket clients.
         /// </summary>
+        /// <remarks>The log event is formatted using the configured text formatter and then broadcasted  
+        /// to all clients connected to the WebSocket server. If the WebSocket server is not          initialized or not
+        /// listening, the method exits without performing any action.</remarks>
+        /// <param name="logEvent">The log event to be formatted and broadcasted. Cannot be null.</param>
         public void Emit(LogEvent logEvent)
         {
             if (_wsServer == null || !_wsServer.IsListening) return;
@@ -123,16 +149,19 @@ namespace PepperDash.Core
             var sw = new StringWriter();
             _textFormatter.Format(logEvent, sw);
 
-            _wsServer.WebSocketServices.Broadcast(sw.ToString());
-
+            _wsServer.WebSocketServices[_path].Sessions.Broadcast(sw.ToString());           
         }
 
         /// <summary>
-        /// StartServerAndSetPort method
+        /// Starts the WebSocket server on the specified port and configures it with the appropriate certificate.
         /// </summary>
+        /// <remarks>This method initializes the WebSocket server and binds it to the specified port.  It
+        /// also applies the server's certificate for secure communication. Ensure that the port is not already in use
+        /// and that the certificate file is accessible.</remarks>
+        /// <param name="port">The port number on which the WebSocket server will listen. Must be a valid, non-negative port number.</param>
         public void StartServerAndSetPort(int port)
         {
-            Debug.Console(0, "Starting Websocket Server on port: {0}", port);
+            Debug.LogInformation("Starting Websocket Server on port: {0}", port);
 
 
             Start(port, $"\\user\\{_certificateName}.pfx", _certificatePassword);
@@ -146,7 +175,7 @@ namespace PepperDash.Core
 
                 if (!string.IsNullOrWhiteSpace(certPath))
                 {
-                    Debug.Console(0, "Assigning SSL Configuration");
+                    Debug.LogInformation("Assigning SSL Configuration");
                     sslConfig = new ServerSslConfiguration(new X509Certificate2(certPath, certPassword))
                     {
                         ClientCertificateRequired = false,
@@ -155,7 +184,7 @@ namespace PepperDash.Core
                         //this is just to test, you might want to actually validate
                         ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                         {
-                            Debug.Console(0, "HTTPS ClientCerticateValidation Callback triggered");
+                            Debug.LogInformation("HTTPS ClientCerticateValidation Callback triggered");
                             return true;
                         }
                     };
@@ -167,9 +196,9 @@ namespace PepperDash.Core
                     _wsServer.SslConfiguration.ServerCertificate = sslConfig.ServerCertificate;
                 }
                 
-                Debug.Console(0, "Adding Debug Client Service");
+                Debug.LogInformation("Adding Debug Client Service");
                 _wsServer.AddWebSocketService<DebugClient>(_path);
-                Debug.Console(0, "Assigning Log Info");
+                Debug.LogInformation("Assigning Log Info");
                 _wsServer.Log.Level = LogLevel.Trace;
                 _wsServer.Log.Output = (d, s) =>
                 {
@@ -200,36 +229,48 @@ namespace PepperDash.Core
                             break;
                     }
                     
-                    Debug.Console(level, "{1} {0}\rCaller:{2}\rMessage:{3}\rs:{4}", d.Level.ToString(), d.Date.ToString(), d.Caller.ToString(), d.Message, s);
+                    Debug.LogInformation("{1} {0}\rCaller:{2}\rMessage:{3}\rs:{4}", d.Level.ToString(), d.Date.ToString(), d.Caller.ToString(), d.Message, s);
                 };
-                Debug.Console(0, "Starting");
+                Debug.LogInformation("Starting");
 
                 _wsServer.Start();
-                Debug.Console(0, "Ready");
+                Debug.LogInformation("Ready");
             }
             catch (Exception ex)
             {
-                Debug.Console(0, "WebSocket Failed to start {0}", ex.Message);
+                Debug.LogError("WebSocket Failed to start {0}", ex.Message);
             }
         }
 
         /// <summary>
-        /// StopServer method
+        /// Stops the WebSocket server if it is currently running.
         /// </summary>
+        /// <remarks>This method halts the WebSocket server and releases any associated resources.  After
+        /// calling this method, the server will no longer accept or process incoming connections.</remarks>
         public void StopServer()
         {
-            Debug.Console(0, "Stopping Websocket Server");
+            Debug.LogInformation("Stopping Websocket Server");
             _wsServer?.Stop();
 
             _wsServer = null;
         }
     }
 
+    /// <summary>
+    /// Configures the logger to write log events to a debug WebSocket sink.
+    /// </summary>
+    /// <remarks>This extension method allows you to direct log events to a WebSocket sink for debugging
+    /// purposes.</remarks>
     public static class DebugWebsocketSinkExtensions
     {
         /// <summary>
-        /// DebugWebsocketSink method
+        /// Configures a logger to write log events to a debug WebSocket sink.
         /// </summary>
+        /// <remarks>This method adds a sink that writes log events to a WebSocket for debugging purposes.
+        /// It is typically used during development to stream log events in real-time.</remarks>
+        /// <param name="loggerConfiguration">The logger sink configuration to apply the WebSocket sink to.</param>
+        /// <param name="formatProvider">An optional text formatter to format the log events. If not provided, a default formatter will be used.</param>
+        /// <returns>A <see cref="LoggerConfiguration"/> object that can be used to further configure the logger.</returns>
         public static LoggerConfiguration DebugWebsocketSink(
                              this LoggerSinkConfiguration loggerConfiguration,
                                               ITextFormatter formatProvider = null)
@@ -239,12 +280,19 @@ namespace PepperDash.Core
     }
 
     /// <summary>
-    /// Represents a DebugClient
+    /// Represents a WebSocket client for debugging purposes, providing connection lifecycle management and message
+    /// handling functionality.
     /// </summary>
+    /// <remarks>The <see cref="DebugClient"/> class extends <see cref="WebSocketBehavior"/> to handle
+    /// WebSocket connections, including events for opening, closing, receiving messages, and errors. It tracks the
+    /// duration of the connection and logs relevant events for debugging.</remarks>
     public class DebugClient : WebSocketBehavior
     {
         private DateTime _connectionTime;
 
+        /// <summary>
+        /// Gets the duration of time the WebSocket connection has been active.
+        /// </summary>
         public TimeSpan ConnectedDuration
         {
             get
@@ -260,41 +308,49 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DebugClient"/> class.
+        /// </summary>
+        /// <remarks>This constructor creates a new <see cref="DebugClient"/> instance and logs its creation.</remarks>
         public DebugClient()
         {
-            Debug.Console(0, "DebugClient Created");
+            Debug.LogInformation("DebugClient Created");
         }
 
+        /// <inheritdoc/>
         protected override void OnOpen()
         {
             base.OnOpen();
 
             var url = Context.WebSocket.Url;
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "New WebSocket Connection from: {0}", url);
+            Debug.LogInformation("New WebSocket Connection from: {0}", url);
 
             _connectionTime = DateTime.Now;
         }
 
+        /// <inheritdoc/>
         protected override void OnMessage(MessageEventArgs e)
         {
             base.OnMessage(e);
 
-            Debug.Console(0, "WebSocket UiClient Message: {0}", e.Data);
+            Debug.LogInformation("WebSocket UiClient Message: {0}", e.Data);
         }
 
+        /// <inheritdoc/>
         protected override void OnClose(CloseEventArgs e)
         {
             base.OnClose(e);
 
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "WebSocket UiClient Closing: {0} reason: {1}", e.Code, e.Reason);
+            Debug.LogInformation("WebSocket UiClient Closing: {0} reason: {1}", e.Code, e.Reason);
 
         }
 
+        /// <inheritdoc/>
         protected override void OnError(WebSocketSharp.ErrorEventArgs e)
         {
             base.OnError(e);
 
-            Debug.Console(2, Debug.ErrorLogLevel.Notice, "WebSocket UiClient Error: {0} message: {1}", e.Exception, e.Message);
+            Debug.LogError("WebSocket UiClient Error: {0} message: {1}", e.Exception, e.Message);
         }
     }
 }
