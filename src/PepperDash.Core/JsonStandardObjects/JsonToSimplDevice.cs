@@ -4,8 +4,8 @@ using Crestron.SimplSharp;
 using PepperDash.Core.JsonToSimpl;
 using Serilog.Events;
 
-namespace PepperDash.Core.JsonStandardObjects
-{
+namespace PepperDash.Core.JsonStandardObjects;
+
 	/// <summary>
 	/// Device class
 	/// </summary>
@@ -180,4 +180,3 @@ namespace PepperDash.Core.JsonStandardObjects
 
 		#endregion EventHandler Helpers
 	}
-}

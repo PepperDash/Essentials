@@ -6,96 +6,95 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.Devices.Common.Displays
+namespace PepperDash.Essentials.Devices.Common.Displays;
+
+public class MockDisplayInputs : ISelectableItems<string>
 {
-    public class MockDisplayInputs : ISelectableItems<string>
+    private Dictionary<string, ISelectableItem> _items;
+
+    public Dictionary<string, ISelectableItem> Items
     {
-        private Dictionary<string, ISelectableItem> _items;
-
-        public Dictionary<string, ISelectableItem> Items
+        get
         {
-            get
-            {
-                return _items;
-            }
-            set
-            {
-                if (_items == value)
-                    return;
-
-                _items = value;
-
-                ItemsUpdated?.Invoke(this, null);
-            }
+            return _items;
         }
+        set
+        {
+            if (_items == value)
+                return;
 
-        private string _currentItem;
+            _items = value;
 
-        public string CurrentItem
-        { 
-            get
-            {
-                return _currentItem;
-            }
-            set
-            {
-                if (_currentItem == value)
-                    return;
-
-                _currentItem = value;
-
-                CurrentItemChanged?.Invoke(this, null);
-            }
+            ItemsUpdated?.Invoke(this, null);
         }
-
-        public event EventHandler ItemsUpdated;
-        public event EventHandler CurrentItemChanged;
     }
 
-    public class MockDisplayInput : ISelectableItem
+    private string _currentItem;
+
+    public string CurrentItem
+    { 
+        get
+        {
+            return _currentItem;
+        }
+        set
+        {
+            if (_currentItem == value)
+                return;
+
+            _currentItem = value;
+
+            CurrentItemChanged?.Invoke(this, null);
+        }
+    }
+
+    public event EventHandler ItemsUpdated;
+    public event EventHandler CurrentItemChanged;
+}
+
+public class MockDisplayInput : ISelectableItem
+{
+    private MockDisplay _parent;
+
+    private bool _isSelected;
+    
+    public bool IsSelected
     {
-        private MockDisplay _parent;
-
-        private bool _isSelected;
-        
-        public bool IsSelected
+        get
         {
-            get
-            {
-                return _isSelected;
-            }
-            set
-            {
-                if (_isSelected == value)
-                    return;
-
-                _isSelected = value;
-
-                ItemUpdated?.Invoke(this, null);
-            }
+            return _isSelected;
         }
-
-        public string Name { get; set; }
-
-        public string Key { get; set; }
-
-        public event EventHandler ItemUpdated;
-
-        public MockDisplayInput(string key, string name, MockDisplay parent)
+        set
         {
-            Key = key;
-            Name = name;
-            _parent = parent;
+            if (_isSelected == value)
+                return;
+
+            _isSelected = value;
+
+            ItemUpdated?.Invoke(this, null);
         }
+    }
 
-        public void Select()
+    public string Name { get; set; }
+
+    public string Key { get; set; }
+
+    public event EventHandler ItemUpdated;
+
+    public MockDisplayInput(string key, string name, MockDisplay parent)
+    {
+        Key = key;
+        Name = name;
+        _parent = parent;
+    }
+
+    public void Select()
+    {
+        if (!_parent.PowerIsOnFeedback.BoolValue) _parent.PowerOn();
+
+        foreach(var input in _parent.Inputs.Items)
         {
-            if (!_parent.PowerIsOnFeedback.BoolValue) _parent.PowerOn();
-
-            foreach(var input in _parent.Inputs.Items)
-            {
-                input.Value.IsSelected = input.Key == this.Key;
-            }
+            input.Value.IsSelected = input.Key == this.Key;
         }
     }
 }

@@ -6,8 +6,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-namespace PepperDash.Essentials.Core.SmartObjects
-{
+namespace PepperDash.Essentials.Core.SmartObjects;
+
 	public class SmartObjectDPad : SmartObjectHelperBase
 	{
 		public BoolOutputSig SigUp { get { return GetBoolOutputNamed("Up"); } }
@@ -21,4 +21,3 @@ namespace PepperDash.Essentials.Core.SmartObjects
 		{
 		}
 	}
-}

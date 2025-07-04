@@ -4,27 +4,26 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
+namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
+
+/// <summary>
+/// Describes the ability to start an ad-hoc meeting
+/// </summary>
+public interface IHasStartMeeting
 {
     /// <summary>
-    /// Describes the ability to start an ad-hoc meeting
+    /// The default meeting duration in minutes
     /// </summary>
-    public interface IHasStartMeeting
-    {
-        /// <summary>
-        /// The default meeting duration in minutes
-        /// </summary>
-        uint DefaultMeetingDurationMin { get; }
+    uint DefaultMeetingDurationMin { get; }
 
-        /// <summary>
-        /// Start an ad-hoc meeting for the specified duration
-        /// </summary>
-        /// <param name="duration"></param>
-        void StartMeeting(uint duration);
+    /// <summary>
+    /// Start an ad-hoc meeting for the specified duration
+    /// </summary>
+    /// <param name="duration"></param>
+    void StartMeeting(uint duration);
 
-        /// <summary>
-        /// Leaves a meeting without ending it
-        /// </summary>
-        void LeaveMeeting();
-    }
+    /// <summary>
+    /// Leaves a meeting without ending it
+    /// </summary>
+    void LeaveMeeting();
 }

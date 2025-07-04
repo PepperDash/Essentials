@@ -14,233 +14,233 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
-namespace PepperDash.Essentials.Devices.Common.Codec
-{
+namespace PepperDash.Essentials.Devices.Common.Codec;
+
 	/// <summary>
 	/// Defines the API for codecs with a directory
 	/// </summary>
-    public interface IHasDirectory
-    {
-        event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
+public interface IHasDirectory
+{
+    event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
-        CodecDirectory DirectoryRoot { get; }
+    CodecDirectory DirectoryRoot { get; }
 
-        CodecDirectory CurrentDirectoryResult { get; }
+    CodecDirectory CurrentDirectoryResult { get; }
 
-        CodecPhonebookSyncState PhonebookSyncState { get; }
+    CodecPhonebookSyncState PhonebookSyncState { get; }
 
-        void SearchDirectory(string searchString);
+    void SearchDirectory(string searchString);
 
-        void GetDirectoryFolderContents(string folderId);
+    void GetDirectoryFolderContents(string folderId);
 
-        void SetCurrentDirectoryToRoot();
+    void SetCurrentDirectoryToRoot();
 
-        void GetDirectoryParentFolderContents();
+    void GetDirectoryParentFolderContents();
 
-        BoolFeedback CurrentDirectoryResultIsNotDirectoryRoot { get; }
-    }
+    BoolFeedback CurrentDirectoryResultIsNotDirectoryRoot { get; }
+}
 
-    public interface IHasDirectoryHistoryStack : IHasDirectory
-    {
-        Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; } 
-    }
+public interface IHasDirectoryHistoryStack : IHasDirectory
+{
+    Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; } 
+}
 
 
 	/// <summary>
 	/// 
 	/// </summary>
-    public class DirectoryEventArgs : EventArgs
-    {
-        public CodecDirectory Directory { get; set; }
-        public bool DirectoryIsOnRoot { get; set; }
-    }
+public class DirectoryEventArgs : EventArgs
+{
+    public CodecDirectory Directory { get; set; }
+    public bool DirectoryIsOnRoot { get; set; }
+}
 
 	/// <summary>
 	/// Represents a codec directory
 	/// </summary>
-    public class CodecDirectory
-    {
-        /// <summary>
-        /// Represents the contents of the directory
-        /// We don't want to serialize this for messages to MobileControl.  MC can combine Contacts and Folders to get the same data
-        /// </summary>
+public class CodecDirectory
+{
+    /// <summary>
+    /// Represents the contents of the directory
+    /// We don't want to serialize this for messages to MobileControl.  MC can combine Contacts and Folders to get the same data
+    /// </summary>
 		[JsonIgnore]
-        public List<DirectoryItem> CurrentDirectoryResults { get; private set; }
+    public List<DirectoryItem> CurrentDirectoryResults { get; private set; }
 
-        [JsonProperty("contacts")]
-        public List<DirectoryItem> Contacts
+    [JsonProperty("contacts")]
+    public List<DirectoryItem> Contacts
+    {
+        get
         {
-            get
-            {
-                return CurrentDirectoryResults.OfType<DirectoryContact>().Cast<DirectoryItem>().ToList();
-            }
+            return CurrentDirectoryResults.OfType<DirectoryContact>().Cast<DirectoryItem>().ToList();
         }
+    }
 
-        [JsonProperty("folders")]
-        public List<DirectoryItem> Folders
+    [JsonProperty("folders")]
+    public List<DirectoryItem> Folders
+    {
+        get
         {
-            get
-            {
-                return CurrentDirectoryResults.OfType<DirectoryFolder>().Cast<DirectoryItem>().ToList();
-            }
+            return CurrentDirectoryResults.OfType<DirectoryFolder>().Cast<DirectoryItem>().ToList();
         }
-
-        /// <summary>
-        /// Used to store the ID of the current folder for CurrentDirectoryResults
-        /// </summary>
-		[JsonProperty("resultsFolderId")]
-        public string ResultsFolderId { get; set; }
-
-        public CodecDirectory()
-        {
-            CurrentDirectoryResults = new List<DirectoryItem>();
-        }
-
-        /// <summary>
-        /// Adds folders to the directory
-        /// </summary>
-        /// <param name="folders"></param>
-        public void AddFoldersToDirectory(List<DirectoryItem> folders)
-        {
-            if(folders != null)
-                CurrentDirectoryResults.AddRange(folders);
-
-            SortDirectory();
-        }
-
-        /// <summary>
-        /// Adds contacts to the directory
-        /// </summary>
-        /// <param name="contacts"></param>
-        public void AddContactsToDirectory(List<DirectoryItem> contacts)
-        {
-            if(contacts != null)
-                CurrentDirectoryResults.AddRange(contacts);
-
-            SortDirectory();
-        }
-
-        /// <summary>
-        /// Filters the CurrentDirectoryResults by the predicate
-        /// </summary>
-        /// <param name="predicate"></param>
-        public void FilterContacts(Func<DirectoryItem, bool> predicate)
-        {
-            CurrentDirectoryResults = CurrentDirectoryResults.Where(predicate).ToList();
-        }
-
-        /// <summary>
-        /// Sorts the DirectoryResults list to display all folders alphabetically, then all contacts alphabetically
-        /// </summary>
-        private void SortDirectory()
-        {
-            var sortedFolders = new List<DirectoryItem>();
-
-            sortedFolders.AddRange(CurrentDirectoryResults.Where(f => f is DirectoryFolder));
-
-            sortedFolders.OrderBy(f => f.Name);
-
-            var sortedContacts = new List<DirectoryItem>();
-
-            sortedContacts.AddRange(CurrentDirectoryResults.Where(c => c is DirectoryContact));
-
-            sortedFolders.OrderBy(c => c.Name);
-
-            CurrentDirectoryResults.Clear();
-
-            CurrentDirectoryResults.AddRange(sortedFolders);
-
-            CurrentDirectoryResults.AddRange(sortedContacts);
-        }
-
     }
 
     /// <summary>
-    /// Used to decorate a contact to indicate it can be invided to a meeting
+    /// Used to store the ID of the current folder for CurrentDirectoryResults
     /// </summary>
-    public interface IInvitableContact
+		[JsonProperty("resultsFolderId")]
+    public string ResultsFolderId { get; set; }
+
+    public CodecDirectory()
     {
-        bool IsInvitableContact { get; }
+        CurrentDirectoryResults = new List<DirectoryItem>();
     }
 
-    public class InvitableDirectoryContact : DirectoryContact, IInvitableContact
+    /// <summary>
+    /// Adds folders to the directory
+    /// </summary>
+    /// <param name="folders"></param>
+    public void AddFoldersToDirectory(List<DirectoryItem> folders)
     {
-        [JsonProperty("isInvitableContact")]
-        public bool IsInvitableContact
+        if(folders != null)
+            CurrentDirectoryResults.AddRange(folders);
+
+        SortDirectory();
+    }
+
+    /// <summary>
+    /// Adds contacts to the directory
+    /// </summary>
+    /// <param name="contacts"></param>
+    public void AddContactsToDirectory(List<DirectoryItem> contacts)
+    {
+        if(contacts != null)
+            CurrentDirectoryResults.AddRange(contacts);
+
+        SortDirectory();
+    }
+
+    /// <summary>
+    /// Filters the CurrentDirectoryResults by the predicate
+    /// </summary>
+    /// <param name="predicate"></param>
+    public void FilterContacts(Func<DirectoryItem, bool> predicate)
+    {
+        CurrentDirectoryResults = CurrentDirectoryResults.Where(predicate).ToList();
+    }
+
+    /// <summary>
+    /// Sorts the DirectoryResults list to display all folders alphabetically, then all contacts alphabetically
+    /// </summary>
+    private void SortDirectory()
+    {
+        var sortedFolders = new List<DirectoryItem>();
+
+        sortedFolders.AddRange(CurrentDirectoryResults.Where(f => f is DirectoryFolder));
+
+        sortedFolders.OrderBy(f => f.Name);
+
+        var sortedContacts = new List<DirectoryItem>();
+
+        sortedContacts.AddRange(CurrentDirectoryResults.Where(c => c is DirectoryContact));
+
+        sortedFolders.OrderBy(c => c.Name);
+
+        CurrentDirectoryResults.Clear();
+
+        CurrentDirectoryResults.AddRange(sortedFolders);
+
+        CurrentDirectoryResults.AddRange(sortedContacts);
+    }
+
+}
+
+/// <summary>
+/// Used to decorate a contact to indicate it can be invided to a meeting
+/// </summary>
+public interface IInvitableContact
+{
+    bool IsInvitableContact { get; }
+}
+
+public class InvitableDirectoryContact : DirectoryContact, IInvitableContact
+{
+    [JsonProperty("isInvitableContact")]
+    public bool IsInvitableContact
+    {
+        get
         {
-            get
-            {
-                return this is IInvitableContact;
-            }
+            return this is IInvitableContact;
         }
     }
+}
 
 	/// <summary>
 	/// Represents an item in the directory
 	/// </summary>
-    public class DirectoryItem : ICloneable
+public class DirectoryItem : ICloneable
+{
+    public object Clone()
     {
-        public object Clone()
-        {
-            return this.MemberwiseClone();
-        }
+        return this.MemberwiseClone();
+    }
 
-        [JsonProperty("folderId")]
-        public string FolderId { get; set; }
+    [JsonProperty("folderId")]
+    public string FolderId { get; set; }
 
 		[JsonProperty("name")]	
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        [JsonProperty("parentFolderId")]
-        public string ParentFolderId { get; set; }
-    }
+    [JsonProperty("parentFolderId")]
+    public string ParentFolderId { get; set; }
+}
 
 	/// <summary>
 	/// Represents a folder type DirectoryItem
 	/// </summary>
-    public class DirectoryFolder : DirectoryItem
-    {
+public class DirectoryFolder : DirectoryItem
+{
 		[JsonProperty("contacts")]
-        public List<DirectoryContact> Contacts { get; set; }
+    public List<DirectoryContact> Contacts { get; set; }
 
 
-        public DirectoryFolder()
-        {
-            Contacts = new List<DirectoryContact>();
-        }
+    public DirectoryFolder()
+    {
+        Contacts = new List<DirectoryContact>();
     }
+}
 
 	/// <summary>
 	/// Represents a contact type DirectoryItem
 	/// </summary>
-    public class DirectoryContact : DirectoryItem
-    {
+public class DirectoryContact : DirectoryItem
+{
 		[JsonProperty("contactId")]
-        public string ContactId { get; set; } 
+    public string ContactId { get; set; } 
 
 		[JsonProperty("title")]
-        public string Title { get; set; }
+    public string Title { get; set; }
 
 		[JsonProperty("contactMethods")]
-        public List<ContactMethod> ContactMethods { get; set; }
+    public List<ContactMethod> ContactMethods { get; set; }
 
-        public DirectoryContact()
-        {
-            ContactMethods = new List<ContactMethod>();
-        }
+    public DirectoryContact()
+    {
+        ContactMethods = new List<ContactMethod>();
     }
+}
 
 	/// <summary>
 	/// Represents a method of contact for a contact
 	/// </summary>
-    public class ContactMethod
-    {
+public class ContactMethod
+{
 		[JsonProperty("contactMethodId")]
-        public string ContactMethodId { get; set; }
+    public string ContactMethodId { get; set; }
 
 		[JsonProperty("number")]
-        public string Number { get; set; }
-        
+    public string Number { get; set; }
+    
 		[JsonProperty("device")]
 		[JsonConverter(typeof(StringEnumConverter))]
 		public eContactMethodDevice Device { get; set; }
@@ -248,27 +248,26 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 		[JsonProperty("callType")]
 		[JsonConverter(typeof(StringEnumConverter))]
 		public eContactMethodCallType CallType { get; set; }
-    }
+}
 
 	/// <summary>
 	/// 
 	/// </summary>
-    public enum eContactMethodDevice
-    {
-        Unknown = 0,
-        Mobile,
-        Other,
-        Telephone,
-        Video
-    }
+public enum eContactMethodDevice
+{
+    Unknown = 0,
+    Mobile,
+    Other,
+    Telephone,
+    Video
+}
 	
 	/// <summary>
 	/// 
 	/// </summary>
-    public enum eContactMethodCallType
-    {
-        Unknown = 0,
-        Audio,
-        Video
-    }
+public enum eContactMethodCallType
+{
+    Unknown = 0,
+    Audio,
+    Video
 }

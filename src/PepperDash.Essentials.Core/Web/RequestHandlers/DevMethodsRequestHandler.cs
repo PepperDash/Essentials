@@ -4,8 +4,8 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class DevMethodsRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -25,18 +25,18 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-            var routeData = context.Request.RouteData;
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Getting DevMethods: {@routeData}", routeData);
-            if (routeData == null)
-            {
-                context.Response.StatusCode = 400;
-                context.Response.StatusDescription = "Bad Request";
-                context.Response.End();
+        var routeData = context.Request.RouteData;
+        Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Getting DevMethods: {@routeData}", routeData);
+        if (routeData == null)
+        {
+            context.Response.StatusCode = 400;
+            context.Response.StatusDescription = "Bad Request";
+            context.Response.End();
 
-                return;
-            }
+            return;
+        }
 
-            object deviceObj;
+        object deviceObj;
 			if (!routeData.Values.TryGetValue("deviceKey", out deviceObj))
 			{
 				context.Response.StatusCode = 400;
@@ -51,13 +51,13 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			if (device == null)
 			{
 				context.Response.StatusCode = 404;
-                context.Response.StatusDescription = "Device Not Found";
-                context.Response.End();
+            context.Response.StatusDescription = "Device Not Found";
+            context.Response.End();
 
-                return;
+            return;
 			}
 
-            var deviceMethods = DeviceJsonApi.GetMethods(device.Key);
+        var deviceMethods = DeviceJsonApi.GetMethods(device.Key);
 			if (deviceMethods == null || deviceMethods.ToLower().Contains("no device"))
 			{
 				context.Response.StatusCode = 404;
@@ -75,4 +75,3 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			context.Response.End();
 		}
 	}
-}

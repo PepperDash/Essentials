@@ -15,14 +15,14 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Devices.Common
-{
-    [Description("Wrapper class for an IR-Controlled AppleTV")]
+namespace PepperDash.Essentials.Devices.Common;
+
+[Description("Wrapper class for an IR-Controlled AppleTV")]
 	public class AppleTV : EssentialsBridgeableDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingSource, IRoutingOutputs
 
-    {
+{
 		public IrOutputPortController IrPort { get; private set; }
-        public const string StandardDriverName = "Apple_AppleTV_4th_Gen_Essentials.ir";
+    public const string StandardDriverName = "Apple_AppleTV_4th_Gen_Essentials.ir";
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeAppleTv; } }
 
 		public AppleTV(string key, string name, IrOutputPortController portCont)
@@ -37,20 +37,20 @@ namespace PepperDash.Essentials.Devices.Common
 				eRoutingPortConnectionType.DigitalAudio, null, this);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { HdmiOut, AnyAudioOut };
 
-            PrintExpectedIrCommands();
+        PrintExpectedIrCommands();
 		}
 
-        public void PrintExpectedIrCommands()
+    public void PrintExpectedIrCommands()
+    {
+        var cmds = typeof (AppleTvIrCommands).GetFields(BindingFlags.Public | BindingFlags.Static);
+
+        foreach (var value in cmds.Select(cmd => cmd.GetValue(null)).OfType<string>())
         {
-            var cmds = typeof (AppleTvIrCommands).GetFields(BindingFlags.Public | BindingFlags.Static);
-
-            foreach (var value in cmds.Select(cmd => cmd.GetValue(null)).OfType<string>())
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, this, "Expected IR Function Name: {0}", value);
-            }
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Expected IR Function Name: {0}", value);
         }
+    }
 
-        #region IDPad Members
+    #region IDPad Members
 
 		public void Up(bool pressRelease)
 		{
@@ -98,7 +98,7 @@ namespace PepperDash.Essentials.Devices.Common
 
 		public void Pause(bool pressRelease)
 		{
-            IrPort.PressRelease(AppleTvIrCommands.PlayPause, pressRelease);
+        IrPort.PressRelease(AppleTvIrCommands.PlayPause, pressRelease);
 		}
 
 		/// <summary>
@@ -161,61 +161,60 @@ namespace PepperDash.Essentials.Devices.Common
 
 	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
-            var joinMap = new AppleTvJoinMap(joinStart);
+        var joinMap = new AppleTvJoinMap(joinStart);
 
-            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+        var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
-            if (!string.IsNullOrEmpty(joinMapSerialized))
-                joinMap = JsonConvert.DeserializeObject<AppleTvJoinMap>(joinMapSerialized);
+        if (!string.IsNullOrEmpty(joinMapSerialized))
+            joinMap = JsonConvert.DeserializeObject<AppleTvJoinMap>(joinMapSerialized);
 
-            if (bridge != null)
-            {
-                bridge.AddJoinMap(Key, joinMap);
-            }
-            else
-            {
-                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
-            }
+        if (bridge != null)
+        {
+            bridge.AddJoinMap(Key, joinMap);
+        }
+        else
+        {
+            Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+        }
 
-            Debug.LogMessage(LogEventLevel.Debug, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.LogMessage(LogEventLevel.Information, "Linking to Bridge Type {0}", GetType().Name);
+        Debug.LogMessage(LogEventLevel.Debug, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+        Debug.LogMessage(LogEventLevel.Information, "Linking to Bridge Type {0}", GetType().Name);
 
-            trilist.SetBoolSigAction(joinMap.UpArrow.JoinNumber, Up);
-            trilist.SetBoolSigAction(joinMap.DnArrow.JoinNumber, Down);
-            trilist.SetBoolSigAction(joinMap.LeftArrow.JoinNumber, Left);
-            trilist.SetBoolSigAction(joinMap.RightArrow.JoinNumber, Right);
-            trilist.SetBoolSigAction(joinMap.Select.JoinNumber, Select);
-            trilist.SetBoolSigAction(joinMap.Menu.JoinNumber, Menu);
-            trilist.SetBoolSigAction(joinMap.PlayPause.JoinNumber, Play);
+        trilist.SetBoolSigAction(joinMap.UpArrow.JoinNumber, Up);
+        trilist.SetBoolSigAction(joinMap.DnArrow.JoinNumber, Down);
+        trilist.SetBoolSigAction(joinMap.LeftArrow.JoinNumber, Left);
+        trilist.SetBoolSigAction(joinMap.RightArrow.JoinNumber, Right);
+        trilist.SetBoolSigAction(joinMap.Select.JoinNumber, Select);
+        trilist.SetBoolSigAction(joinMap.Menu.JoinNumber, Menu);
+        trilist.SetBoolSigAction(joinMap.PlayPause.JoinNumber, Play);
 	    }
 	}
 
-    public class AppleTVFactory : EssentialsDeviceFactory<AppleTV>
+public class AppleTVFactory : EssentialsDeviceFactory<AppleTV>
+{
+    public AppleTVFactory()
     {
-        public AppleTVFactory()
-        {
-            TypeNames = new List<string>() { "appletv" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new AppleTV Device");
-            var irCont = IRPortHelper.GetIrOutputPortController(dc);
-            return new AppleTV(dc.Key, dc.Name, irCont);
-        }
+        TypeNames = new List<string>() { "appletv" };
     }
 
-    public static class AppleTvIrCommands
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
     {
-        
-        public static string Up = "+";
-        public static string Down = "-";
-        public static string Left = IROutputStandardCommands.IROut_TRACK_MINUS;
-        public static string Right = IROutputStandardCommands.IROut_TRACK_PLUS;
-        public static string Enter = IROutputStandardCommands.IROut_ENTER;
-        public static string PlayPause = "PLAY/PAUSE";
-        public static string Rewind = "REWIND";
-        public static string Menu = "Menu";
-        public static string FastForward = "FASTFORWARD";
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new AppleTV Device");
+        var irCont = IRPortHelper.GetIrOutputPortController(dc);
+        return new AppleTV(dc.Key, dc.Name, irCont);
     }
+}
+
+public static class AppleTvIrCommands
+{
+    
+    public static string Up = "+";
+    public static string Down = "-";
+    public static string Left = IROutputStandardCommands.IROut_TRACK_MINUS;
+    public static string Right = IROutputStandardCommands.IROut_TRACK_PLUS;
+    public static string Enter = IROutputStandardCommands.IROut_ENTER;
+    public static string PlayPause = "PLAY/PAUSE";
+    public static string Rewind = "REWIND";
+    public static string Menu = "Menu";
+    public static string FastForward = "FASTFORWARD";
 }

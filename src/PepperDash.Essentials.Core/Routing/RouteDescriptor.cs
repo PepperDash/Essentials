@@ -7,209 +7,208 @@ using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+/// <summary>
+/// Represents a collection of individual route steps between a Source and a Destination device for a specific signal type.
+/// </summary>
+public class RouteDescriptor
 {
     /// <summary>
-    /// Represents a collection of individual route steps between a Source and a Destination device for a specific signal type.
+    /// The destination device (sink or midpoint) for the route.
     /// </summary>
-    public class RouteDescriptor
+    public IRoutingInputs Destination { get; private set; }
+
+    /// <summary>
+    /// The specific input port on the destination device used for this route. Can be null if not specified or applicable.
+    /// </summary>
+    public RoutingInputPort InputPort { get; private set; }
+
+    /// <summary>
+    /// The source device for the route.
+    /// </summary>
+    public IRoutingOutputs Source { get; private set; }
+
+    /// <summary>
+    /// The type of signal being routed (e.g., Audio, Video). This descriptor represents a single signal type.
+    /// </summary>
+    public eRoutingSignalType SignalType { get; private set; }
+
+    /// <summary>
+    /// A list of individual switching steps required to establish the route.
+    /// </summary>
+    public List<RouteSwitchDescriptor> Routes { get; private set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route without a specific destination input port.
+    /// </summary>
+    /// <param name="source">The source device.</param>
+    /// <param name="destination">The destination device.</param>
+    /// <param name="signalType">The type of signal being routed.</param>
+    public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, eRoutingSignalType signalType) : this(source, destination, null, signalType)
     {
-        /// <summary>
-        /// The destination device (sink or midpoint) for the route.
-        /// </summary>
-        public IRoutingInputs Destination { get; private set; }
+    }
 
-        /// <summary>
-        /// The specific input port on the destination device used for this route. Can be null if not specified or applicable.
-        /// </summary>
-        public RoutingInputPort InputPort { get; private set; }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route with a specific destination input port.
+    /// </summary>
+    /// <param name="source">The source device.</param>
+    /// <param name="destination">The destination device.</param>
+    /// <param name="inputPort">The destination input port (optional).</param>
+    /// <param name="signalType">The signal type for this route.</param>
+    public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, eRoutingSignalType signalType)
+    {
+        Destination = destination;
+        InputPort = inputPort;
+        Source = source;
+        SignalType = signalType;
+        Routes = new List<RouteSwitchDescriptor>();
+    }
 
-        /// <summary>
-        /// The source device for the route.
-        /// </summary>
-        public IRoutingOutputs Source { get; private set; }
-
-        /// <summary>
-        /// The type of signal being routed (e.g., Audio, Video). This descriptor represents a single signal type.
-        /// </summary>
-        public eRoutingSignalType SignalType { get; private set; }
-
-        /// <summary>
-        /// A list of individual switching steps required to establish the route.
-        /// </summary>
-        public List<RouteSwitchDescriptor> Routes { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route without a specific destination input port.
-        /// </summary>
-        /// <param name="source">The source device.</param>
-        /// <param name="destination">The destination device.</param>
-        /// <param name="signalType">The type of signal being routed.</param>
-        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, eRoutingSignalType signalType) : this(source, destination, null, signalType)
+    /// <summary>
+    /// Executes all the switching steps defined in the <see cref="Routes"/> list.
+    /// </summary>
+    public void ExecuteRoutes()
+    {
+        foreach (var route in Routes)
         {
-        }
+            Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", null, route.ToString());
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route with a specific destination input port.
-        /// </summary>
-        /// <param name="source">The source device.</param>
-        /// <param name="destination">The destination device.</param>
-        /// <param name="inputPort">The destination input port (optional).</param>
-        /// <param name="signalType">The signal type for this route.</param>
-        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, eRoutingSignalType signalType)
-        {
-            Destination = destination;
-            InputPort = inputPort;
-            Source = source;
-            SignalType = signalType;
-            Routes = new List<RouteSwitchDescriptor>();
-        }
-
-        /// <summary>
-        /// Executes all the switching steps defined in the <see cref="Routes"/> list.
-        /// </summary>
-        public void ExecuteRoutes()
-        {
-            foreach (var route in Routes)
+            if (route.SwitchingDevice is IRoutingSinkWithSwitching sink)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", null, route.ToString());
-
-                if (route.SwitchingDevice is IRoutingSinkWithSwitching sink)
-                {
-                    sink.ExecuteSwitch(route.InputPort.Selector);
-                    continue;
-                }
-
-                if (route.SwitchingDevice is IRouting switchingDevice)
-                {
-                    switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
-
-                    route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
-
-                    Debug.LogMessage(LogEventLevel.Verbose, "Output port {0} routing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
-                }
+                sink.ExecuteSwitch(route.InputPort.Selector);
+                continue;
             }
-        }
 
-        /// <summary>
-        /// Releases the usage tracking for the route and optionally clears the route on the switching devices.
-        /// </summary>
-        /// <param name="clearRoute">If true, attempts to clear the route on the switching devices (e.g., set input to null/0).</param>
-        public void ReleaseRoutes(bool clearRoute = false)
-        {
-            foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
+            if (route.SwitchingDevice is IRouting switchingDevice)
             {
-                if (route.SwitchingDevice is IRouting switchingDevice)
-                {
-                    if(clearRoute)
-                    {
-                        try
-                        {
-                            switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogError("Error executing switch: {exception}", e.Message);
-                        }
-                    }
+                switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
 
-                    if (route.OutputPort == null)
-                    {
-                        continue;
-                    }
+                route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
 
-                    if (route.OutputPort.InUseTracker != null)
-                    {
-                        route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
-                        Debug.LogMessage(LogEventLevel.Verbose, "Port {0} releasing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
-                    }
-                    else
-                    {
-                        Debug.LogMessage(LogEventLevel.Error, "InUseTracker is null for OutputPort {0}", null, route.OutputPort.Key);
-                    }
-                }
+                Debug.LogMessage(LogEventLevel.Verbose, "Output port {0} routing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
             }
-        }
-
-        /// <summary>
-        /// Returns a string representation of the route descriptor, including source, destination, and individual route steps.
-        /// </summary>
-        /// <returns>A string describing the route.</returns>
-        public override string ToString()
-        {
-            var routesText = Routes.Select(r => r.ToString()).ToArray();
-            return string.Format("Route table from {0} to {1}:\r{2}", Source.Key, Destination.Key, string.Join("\r", routesText));
         }
     }
 
-    /*/// <summary>
-    /// Represents an collection of individual route steps between Source and Destination
+    /// <summary>
+    /// Releases the usage tracking for the route and optionally clears the route on the switching devices.
     /// </summary>
-    public class RouteDescriptor<TInputSelector, TOutputSelector>
+    /// <param name="clearRoute">If true, attempts to clear the route on the switching devices (e.g., set input to null/0).</param>
+    public void ReleaseRoutes(bool clearRoute = false)
     {
-        public IRoutingInputs<TInputSelector> Destination { get; private set; }
-        public IRoutingOutputs<TOutputSelector> Source { get; private set; }
-        public eRoutingSignalType SignalType { get; private set; }
-        public List<RouteSwitchDescriptor<TInputSelector, TOutputSelector>> Routes { get; private set; }
-
-
-        public RouteDescriptor(IRoutingOutputs<TOutputSelector> source, IRoutingInputs<TInputSelector> destination, eRoutingSignalType signalType)
+        foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
         {
-            Destination = destination;
-            Source = source;
-            SignalType = signalType;
-            Routes = new List<RouteSwitchDescriptor<TInputSelector, TOutputSelector>>();
-        }
-
-        /// <summary>
-        /// Executes all routes described in this collection.  Typically called via
-        /// extension method IRoutingInputs.ReleaseAndMakeRoute()
-        /// </summary>
-        public void ExecuteRoutes()
-        {
-            foreach (var route in Routes)
+            if (route.SwitchingDevice is IRouting switchingDevice)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", null, route.ToString());
-
-                if (route.SwitchingDevice is IRoutingSinkWithSwitching<TInputSelector> sink)
+                if(clearRoute)
                 {
-                    sink.ExecuteSwitch(route.InputPort.Selector);
+                    try
+                    {
+                        switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError("Error executing switch: {exception}", e.Message);
+                    }
+                }
+
+                if (route.OutputPort == null)
+                {
                     continue;
                 }
 
-                if (route.SwitchingDevice is IRouting switchingDevice)
+                if (route.OutputPort.InUseTracker != null)
                 {
-                    switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
-
-                    route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
-
-                    Debug.LogMessage(LogEventLevel.Verbose, "Output port {0} routing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Releases all routes in this collection. Typically called via
-        /// extension method IRoutingInputs.ReleaseAndMakeRoute()
-        /// </summary>
-        public void ReleaseRoutes()
-        {
-            foreach (var route in Routes)
-            {
-                if (route.SwitchingDevice is IRouting<TInputSelector, TOutputSelector>)
-                {
-                    // Pull the route from the port.  Whatever is watching the output's in use tracker is
-                    // responsible for responding appropriately.
                     route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
                     Debug.LogMessage(LogEventLevel.Verbose, "Port {0} releasing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
                 }
+                else
+                {
+                    Debug.LogMessage(LogEventLevel.Error, "InUseTracker is null for OutputPort {0}", null, route.OutputPort.Key);
+                }
             }
         }
+    }
 
-        public override string ToString()
-        {
-            var routesText = Routes.Select(r => r.ToString()).ToArray();
-            return string.Format("Route table from {0} to {1}:\r{2}", Source.Key, Destination.Key, string.Join("\r", routesText));
-        }
-    }*/
+    /// <summary>
+    /// Returns a string representation of the route descriptor, including source, destination, and individual route steps.
+    /// </summary>
+    /// <returns>A string describing the route.</returns>
+    public override string ToString()
+    {
+        var routesText = Routes.Select(r => r.ToString()).ToArray();
+        return string.Format("Route table from {0} to {1}:\r{2}", Source.Key, Destination.Key, string.Join("\r", routesText));
+    }
 }
+
+/*/// <summary>
+/// Represents an collection of individual route steps between Source and Destination
+/// </summary>
+public class RouteDescriptor<TInputSelector, TOutputSelector>
+{
+    public IRoutingInputs<TInputSelector> Destination { get; private set; }
+    public IRoutingOutputs<TOutputSelector> Source { get; private set; }
+    public eRoutingSignalType SignalType { get; private set; }
+    public List<RouteSwitchDescriptor<TInputSelector, TOutputSelector>> Routes { get; private set; }
+
+
+    public RouteDescriptor(IRoutingOutputs<TOutputSelector> source, IRoutingInputs<TInputSelector> destination, eRoutingSignalType signalType)
+    {
+        Destination = destination;
+        Source = source;
+        SignalType = signalType;
+        Routes = new List<RouteSwitchDescriptor<TInputSelector, TOutputSelector>>();
+    }
+
+    /// <summary>
+    /// Executes all routes described in this collection.  Typically called via
+    /// extension method IRoutingInputs.ReleaseAndMakeRoute()
+    /// </summary>
+    public void ExecuteRoutes()
+    {
+        foreach (var route in Routes)
+        {
+            Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", null, route.ToString());
+
+            if (route.SwitchingDevice is IRoutingSinkWithSwitching<TInputSelector> sink)
+            {
+                sink.ExecuteSwitch(route.InputPort.Selector);
+                continue;
+            }
+
+            if (route.SwitchingDevice is IRouting switchingDevice)
+            {
+                switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
+
+                route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
+
+                Debug.LogMessage(LogEventLevel.Verbose, "Output port {0} routing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Releases all routes in this collection. Typically called via
+    /// extension method IRoutingInputs.ReleaseAndMakeRoute()
+    /// </summary>
+    public void ReleaseRoutes()
+    {
+        foreach (var route in Routes)
+        {
+            if (route.SwitchingDevice is IRouting<TInputSelector, TOutputSelector>)
+            {
+                // Pull the route from the port.  Whatever is watching the output's in use tracker is
+                // responsible for responding appropriately.
+                route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
+                Debug.LogMessage(LogEventLevel.Verbose, "Port {0} releasing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+            }
+        }
+    }
+
+    public override string ToString()
+    {
+        var routesText = Routes.Select(r => r.ToString()).ToArray();
+        return string.Format("Route table from {0} to {1}:\r{2}", Source.Key, Destination.Key, string.Join("\r", routesText));
+    }
+}*/

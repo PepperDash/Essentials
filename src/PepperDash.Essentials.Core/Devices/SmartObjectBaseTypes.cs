@@ -1,6 +1,6 @@
 ﻿
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public class SmartObjectJoinOffsets
 	{
 		public const ushort Dpad = 1;
@@ -8,4 +8,3 @@ namespace PepperDash.Essentials.Core
 
 		public const ushort PresetList = 6;
 	}
-}

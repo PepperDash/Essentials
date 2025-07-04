@@ -4,113 +4,112 @@ using PepperDash.Essentials.Devices.Common.Codec;
 using System;
 using System.Linq;
 
-namespace PepperDash.Essentials.AppServer.Messengers
+namespace PepperDash.Essentials.AppServer.Messengers;
+
+/// <summary>
+/// Provides a messaging bridge for an AudioCodecBase device
+/// </summary>
+public class AudioCodecBaseMessenger : MessengerBase
 {
     /// <summary>
-    /// Provides a messaging bridge for an AudioCodecBase device
+    /// Device being bridged
     /// </summary>
-    public class AudioCodecBaseMessenger : MessengerBase
+    public AudioCodecBase Codec { get; private set; }
+
+    /// <summary>
+    /// Constuctor
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="codec"></param>
+    /// <param name="messagePath"></param>
+    public AudioCodecBaseMessenger(string key, AudioCodecBase codec, string messagePath)
+        : base(key, messagePath, codec)
     {
-        /// <summary>
-        /// Device being bridged
-        /// </summary>
-        public AudioCodecBase Codec { get; private set; }
+        Codec = codec ?? throw new ArgumentNullException("codec");
+        codec.CallStatusChange += Codec_CallStatusChange;
+    }
 
-        /// <summary>
-        /// Constuctor
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="codec"></param>
-        /// <param name="messagePath"></param>
-        public AudioCodecBaseMessenger(string key, AudioCodecBase codec, string messagePath)
-            : base(key, messagePath, codec)
+    protected override void RegisterActions()
+
+    {
+        base.RegisterActions();
+
+        AddAction("/fullStatus", (id, content) => SendAtcFullMessageObject());
+        AddAction("/dial", (id, content) =>
         {
-            Codec = codec ?? throw new ArgumentNullException("codec");
-            codec.CallStatusChange += Codec_CallStatusChange;
-        }
+            var msg = content.ToObject<MobileControlSimpleContent<string>>();
 
-        protected override void RegisterActions()
+            Codec.Dial(msg.Value);
+        });
 
+        AddAction("/endCallById", (id, content) =>
         {
-            base.RegisterActions();
+            var msg = content.ToObject<MobileControlSimpleContent<string>>();
 
-            AddAction("/fullStatus", (id, content) => SendAtcFullMessageObject());
-            AddAction("/dial", (id, content) =>
-            {
-                var msg = content.ToObject<MobileControlSimpleContent<string>>();
+            var call = GetCallWithId(msg.Value);
+            if (call != null)
+                Codec.EndCall(call);
+        });
 
-                Codec.Dial(msg.Value);
-            });
-
-            AddAction("/endCallById", (id, content) =>
-            {
-                var msg = content.ToObject<MobileControlSimpleContent<string>>();
-
-                var call = GetCallWithId(msg.Value);
-                if (call != null)
-                    Codec.EndCall(call);
-            });
-
-            AddAction("/endAllCalls", (id, content) => Codec.EndAllCalls());
-            AddAction("/dtmf", (id, content) =>
-            {
-                var msg = content.ToObject<MobileControlSimpleContent<string>>();
-
-                Codec.SendDtmf(msg.Value);
-            });
-
-            AddAction("/rejectById", (id, content) =>
-            {
-                var msg = content.ToObject<MobileControlSimpleContent<string>>();
-
-                var call = GetCallWithId(msg.Value);
-
-                if (call != null)
-                    Codec.RejectCall(call);
-            });
-
-            AddAction("/acceptById", (id, content) =>
-            {
-                var msg = content.ToObject<MobileControlSimpleContent<string>>();
-                var call = GetCallWithId(msg.Value);
-                if (call != null)
-                    Codec.AcceptCall(call);
-            });
-        }
-
-        /// <summary>
-        /// Helper to grab a call with string ID
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        private CodecActiveCallItem GetCallWithId(string id)
+        AddAction("/endAllCalls", (id, content) => Codec.EndAllCalls());
+        AddAction("/dtmf", (id, content) =>
         {
-            return Codec.ActiveCalls.FirstOrDefault(c => c.Id == id);
-        }
+            var msg = content.ToObject<MobileControlSimpleContent<string>>();
 
-        private void Codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
+            Codec.SendDtmf(msg.Value);
+        });
+
+        AddAction("/rejectById", (id, content) =>
         {
-            SendAtcFullMessageObject();
-        }
+            var msg = content.ToObject<MobileControlSimpleContent<string>>();
 
-        /// <summary>
-        /// Helper method to build call status for vtc
-        /// </summary>
-        /// <returns></returns>
-        private void SendAtcFullMessageObject()
+            var call = GetCallWithId(msg.Value);
+
+            if (call != null)
+                Codec.RejectCall(call);
+        });
+
+        AddAction("/acceptById", (id, content) =>
         {
-            var info = Codec.CodecInfo;
+            var msg = content.ToObject<MobileControlSimpleContent<string>>();
+            var call = GetCallWithId(msg.Value);
+            if (call != null)
+                Codec.AcceptCall(call);
+        });
+    }
 
-            PostStatusMessage(JToken.FromObject(new
+    /// <summary>
+    /// Helper to grab a call with string ID
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    private CodecActiveCallItem GetCallWithId(string id)
+    {
+        return Codec.ActiveCalls.FirstOrDefault(c => c.Id == id);
+    }
+
+    private void Codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
+    {
+        SendAtcFullMessageObject();
+    }
+
+    /// <summary>
+    /// Helper method to build call status for vtc
+    /// </summary>
+    /// <returns></returns>
+    private void SendAtcFullMessageObject()
+    {
+        var info = Codec.CodecInfo;
+
+        PostStatusMessage(JToken.FromObject(new
+        {
+            isInCall = Codec.IsInCall,
+            calls = Codec.ActiveCalls,
+            info = new
             {
-                isInCall = Codec.IsInCall,
-                calls = Codec.ActiveCalls,
-                info = new
-                {
-                    phoneNumber = info.PhoneNumber
-                }
-            })
-            );
-        }
+                phoneNumber = info.PhoneNumber
+            }
+        })
+        );
     }
 }

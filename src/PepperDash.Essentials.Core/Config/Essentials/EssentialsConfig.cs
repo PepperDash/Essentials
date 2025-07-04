@@ -9,25 +9,25 @@ using Newtonsoft.Json;
 
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core.Config
-{
+namespace PepperDash.Essentials.Core.Config;
+
 	/// <summary>
 	/// Loads the ConfigObject from the file
 	/// </summary>
 	public class EssentialsConfig : BasicConfig
 	{
 		[JsonProperty("system_url")]
-        public string SystemUrl { get; set; }
+    public string SystemUrl { get; set; }
 
 		[JsonProperty("template_url")]
-        public string TemplateUrl { get; set; }
+    public string TemplateUrl { get; set; }
 
 
 		[JsonProperty("systemUuid")]
 		public string SystemUuid
+    {
+        get
         {
-            get
-            {
 				if (string.IsNullOrEmpty(SystemUrl))
 					return "missing url";
 
@@ -38,18 +38,18 @@ namespace PepperDash.Essentials.Core.Config
 					return uuid;
 				} else
 				{
-                    var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/.*");
-                    string uuid = result.Groups[1].Value;
-                    return uuid;
-                }
+                var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/.*");
+                string uuid = result.Groups[1].Value;
+                return uuid;
             }
         }
+    }
 
 		[JsonProperty("templateUuid")]
 		public string TemplateUuid
+    {
+        get
         {
-            get
-            {
 				if (string.IsNullOrEmpty(TemplateUrl))
 					return "missing template url";
 
@@ -60,22 +60,22 @@ namespace PepperDash.Essentials.Core.Config
 					return uuid;
 				} else
 				{
-                    var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/system-templates\/(.*)\/system-template-versions\/(.*)\/.*");
-                    string uuid = result.Groups[2].Value;
-                    return uuid;
-                }
+                var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/system-templates\/(.*)\/system-template-versions\/(.*)\/.*");
+                string uuid = result.Groups[2].Value;
+                return uuid;
             }
         }
+    }
 
 		[JsonProperty("rooms")]
-        public List<DeviceConfig> Rooms { get; set; }
+    public List<DeviceConfig> Rooms { get; set; }
 
 
-        public EssentialsConfig()
-            : base()
-        {
-            Rooms = new List<DeviceConfig>();
-        }
+    public EssentialsConfig()
+        : base()
+    {
+        Rooms = new List<DeviceConfig>();
+    }
 	}
 		
 	/// <summary>
@@ -87,4 +87,3 @@ namespace PepperDash.Essentials.Core.Config
 
 		public EssentialsConfig Template { get; set; }
 	}
-}

@@ -4,8 +4,8 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class RestartProgramRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -29,10 +29,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			if(CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
 				CrestronConsole.SendControlSystemCommand($"progres -p:{InitialParametersClass.ApplicationNumber}", ref message);
 			
-            context.Response.StatusCode = 200;
-            context.Response.StatusDescription = "OK";
+        context.Response.StatusCode = 200;
+        context.Response.StatusDescription = "OK";
 			context.Response.Write(message, false);
-            context.Response.End();
-        }
+        context.Response.End();
+    }
 	}
-}

@@ -7,11 +7,11 @@ using Serilog.Events;
 
 //using PepperDash.Core;
 
-namespace PepperDash.Core.JsonToSimpl
-{
-    /// <summary>
-    /// The global class to manage all the instances of JsonToSimplMaster 
-    /// </summary>
+namespace PepperDash.Core.JsonToSimpl;
+
+/// <summary>
+/// The global class to manage all the instances of JsonToSimplMaster 
+/// </summary>
 	public class J2SGlobal
 	{
 		static List<JsonToSimplMaster> Masters = new List<JsonToSimplMaster>();
@@ -22,7 +22,7 @@ namespace PepperDash.Core.JsonToSimpl
 		/// master, this will fail
 		/// </summary>
 		/// <param name="master">New master to add</param>
-        /// 
+    /// 
 		public static void AddMaster(JsonToSimplMaster master)
 		{
 			if (master == null)
@@ -57,4 +57,3 @@ namespace PepperDash.Core.JsonToSimpl
 			return Masters.FirstOrDefault(m => m.UniqueID.Equals(file, StringComparison.OrdinalIgnoreCase));
 		}
 	}
-}

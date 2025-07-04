@@ -11,245 +11,243 @@ using PepperDash.Essentials.Core.CrestronIO;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core.Privacy
+namespace PepperDash.Essentials.Core.Privacy;
+
+/// <summary>
+/// Used for applications where one or more microphones with momentary contact closure outputs are used to
+/// toggle the privacy state of the room.  Privacy state feedback is represented 
+/// </summary>
+public class MicrophonePrivacyController : EssentialsDevice
 {
-    /// <summary>
-    /// Used for applications where one or more microphones with momentary contact closure outputs are used to
-    /// toggle the privacy state of the room.  Privacy state feedback is represented 
-    /// </summary>
-    public class MicrophonePrivacyController : EssentialsDevice
+    MicrophonePrivacyControllerConfig Config;
+
+    bool initialized;
+
+    public bool EnableLeds
     {
-        MicrophonePrivacyControllerConfig Config;
-
-        bool initialized;
-
-        public bool EnableLeds
+        get
         {
-            get
-            {
-                return _enableLeds;
-            }
-            set
-            {
-                _enableLeds = value;
+            return _enableLeds;
+        }
+        set
+        {
+            _enableLeds = value;
 
-                if (initialized)
+            if (initialized)
+            {
+                if (value)
                 {
-                    if (value)
-                    {
-                        CheckPrivacyMode();
-                        SetLedStates();
-                    }
-                    else
-                        TurnOffAllLeds();
+                    CheckPrivacyMode();
+                    SetLedStates();
                 }
-            }
-        }
-        bool _enableLeds;
-
-        public List<IDigitalInput> Inputs { get; private set; }
-
-        public GenericRelayDevice RedLedRelay { get; private set; }
-        bool _redLedRelayState;
-
-        public GenericRelayDevice GreenLedRelay { get; private set; }
-        bool _greenLedRelayState;
-
-        public IPrivacy PrivacyDevice { get; private set; }
-
-        public MicrophonePrivacyController(string key, MicrophonePrivacyControllerConfig config) :
-            base(key)
-        {
-            Config = config;
-
-            Inputs = new List<IDigitalInput>();
-        }
-
-        public override bool CustomActivate()
-        {
-            foreach (var i in Config.Inputs)
-            {
-                var input = DeviceManager.GetDeviceForKey(i.DeviceKey) as IDigitalInput;
-
-                if(input != null)
-                    AddInput(input);
-            }
-
-            var greenLed = DeviceManager.GetDeviceForKey(Config.GreenLedRelay.DeviceKey) as GenericRelayDevice;
-
-            if (greenLed != null)
-                GreenLedRelay = greenLed;
-            else
-                Debug.LogMessage(LogEventLevel.Information, this, "Unable to add Green LED device");
-
-            var redLed = DeviceManager.GetDeviceForKey(Config.RedLedRelay.DeviceKey) as GenericRelayDevice;
-
-            if (redLed != null)
-                RedLedRelay = redLed;
-            else
-                Debug.LogMessage(LogEventLevel.Information, this, "Unable to add Red LED device");
-
-            AddPostActivationAction(() => {
-                PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange -= PrivacyModeIsOnFeedback_OutputChange;
-                PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange += PrivacyModeIsOnFeedback_OutputChange;
-            });
-
-            initialized = true;
-
-            return base.CustomActivate();
-        }
-
-        #region Overrides of Device
-
-        public override void Initialize()
-        {
-            CheckPrivacyMode();
-        }
-
-        #endregion
-
-        public void SetPrivacyDevice(IPrivacy privacyDevice)
-        {
-            PrivacyDevice = privacyDevice;
-        }
-
-        void PrivacyModeIsOnFeedback_OutputChange(object sender, EventArgs e)
-        {
-			Debug.LogMessage(LogEventLevel.Debug, this, "Privacy mode change: {0}", sender as BoolFeedback);
-            CheckPrivacyMode();
-        }
-
-        void CheckPrivacyMode()
-        {
-            if (PrivacyDevice != null)
-            {
-                var privacyState = PrivacyDevice.PrivacyModeIsOnFeedback.BoolValue;
-
-                if (privacyState)
-                    TurnOnRedLeds();
                 else
-                    TurnOnGreenLeds();
+                    TurnOffAllLeds();
             }
         }
+    }
+    bool _enableLeds;
 
-        void AddInput(IDigitalInput input)
+    public List<IDigitalInput> Inputs { get; private set; }
+
+    public GenericRelayDevice RedLedRelay { get; private set; }
+    bool _redLedRelayState;
+
+    public GenericRelayDevice GreenLedRelay { get; private set; }
+    bool _greenLedRelayState;
+
+    public IPrivacy PrivacyDevice { get; private set; }
+
+    public MicrophonePrivacyController(string key, MicrophonePrivacyControllerConfig config) :
+        base(key)
+    {
+        Config = config;
+
+        Inputs = new List<IDigitalInput>();
+    }
+
+    public override bool CustomActivate()
+    {
+        foreach (var i in Config.Inputs)
         {
-            Inputs.Add(input);
+            var input = DeviceManager.GetDeviceForKey(i.DeviceKey) as IDigitalInput;
 
-            input.InputStateFeedback.OutputChange += InputStateFeedback_OutputChange;
+            if(input != null)
+                AddInput(input);
         }
 
-        void RemoveInput(IDigitalInput input)
+        var greenLed = DeviceManager.GetDeviceForKey(Config.GreenLedRelay.DeviceKey) as GenericRelayDevice;
+
+        if (greenLed != null)
+            GreenLedRelay = greenLed;
+        else
+            Debug.LogMessage(LogEventLevel.Information, this, "Unable to add Green LED device");
+
+        var redLed = DeviceManager.GetDeviceForKey(Config.RedLedRelay.DeviceKey) as GenericRelayDevice;
+
+        if (redLed != null)
+            RedLedRelay = redLed;
+        else
+            Debug.LogMessage(LogEventLevel.Information, this, "Unable to add Red LED device");
+
+        AddPostActivationAction(() => {
+            PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange -= PrivacyModeIsOnFeedback_OutputChange;
+            PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange += PrivacyModeIsOnFeedback_OutputChange;
+        });
+
+        initialized = true;
+
+        return base.CustomActivate();
+    }
+
+    #region Overrides of Device
+
+    public override void Initialize()
+    {
+        CheckPrivacyMode();
+    }
+
+    #endregion
+
+    public void SetPrivacyDevice(IPrivacy privacyDevice)
+    {
+        PrivacyDevice = privacyDevice;
+    }
+
+    void PrivacyModeIsOnFeedback_OutputChange(object sender, EventArgs e)
+    {
+			Debug.LogMessage(LogEventLevel.Debug, this, "Privacy mode change: {0}", sender as BoolFeedback);
+        CheckPrivacyMode();
+    }
+
+    void CheckPrivacyMode()
+    {
+        if (PrivacyDevice != null)
         {
-            var tempInput = Inputs.FirstOrDefault(i => i.Equals(input));
+            var privacyState = PrivacyDevice.PrivacyModeIsOnFeedback.BoolValue;
 
-            if (tempInput != null)
-                tempInput.InputStateFeedback.OutputChange -= InputStateFeedback_OutputChange;
-
-            Inputs.Remove(input);
-        }
-
-        void SetRedLedRelay(GenericRelayDevice relay)
-        {
-            RedLedRelay = relay;
-        }
-
-        void SetGreenLedRelay(GenericRelayDevice relay)
-        {
-            GreenLedRelay = relay;
-        }
-
-        /// <summary>
-        /// Check the state of the input change and handle accordingly
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void InputStateFeedback_OutputChange(object sender, EventArgs e)
-        {
-            if ((sender as BoolFeedback).BoolValue == true)
-                TogglePrivacyMute();
-        }
-
-        /// <summary>
-        /// Toggles the state of the privacy mute
-        /// </summary>
-        public void TogglePrivacyMute()
-        {
-            PrivacyDevice.PrivacyModeToggle();
-        }
-
-        void TurnOnRedLeds()
-        {
-            _greenLedRelayState = false;
-            _redLedRelayState = true;
-            SetLedStates();
-        }
-
-        void TurnOnGreenLeds()
-        {
-            _redLedRelayState = false;
-            _greenLedRelayState = true;
-            SetLedStates();
-        }
-
-        /// <summary>
-        /// If enabled, sets the actual state of the relays
-        /// </summary>
-        void SetLedStates()
-        {
-            if (_enableLeds)
-            {
-                SetRelayStates();
-            }
+            if (privacyState)
+                TurnOnRedLeds();
             else
-                TurnOffAllLeds();
+                TurnOnGreenLeds();
         }
+    }
 
-        /// <summary>
-        /// Turns off all LEDs
-        /// </summary>
-        void TurnOffAllLeds()
+    void AddInput(IDigitalInput input)
+    {
+        Inputs.Add(input);
+
+        input.InputStateFeedback.OutputChange += InputStateFeedback_OutputChange;
+    }
+
+    void RemoveInput(IDigitalInput input)
+    {
+        var tempInput = Inputs.FirstOrDefault(i => i.Equals(input));
+
+        if (tempInput != null)
+            tempInput.InputStateFeedback.OutputChange -= InputStateFeedback_OutputChange;
+
+        Inputs.Remove(input);
+    }
+
+    void SetRedLedRelay(GenericRelayDevice relay)
+    {
+        RedLedRelay = relay;
+    }
+
+    void SetGreenLedRelay(GenericRelayDevice relay)
+    {
+        GreenLedRelay = relay;
+    }
+
+    /// <summary>
+    /// Check the state of the input change and handle accordingly
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    void InputStateFeedback_OutputChange(object sender, EventArgs e)
+    {
+        if ((sender as BoolFeedback).BoolValue == true)
+            TogglePrivacyMute();
+    }
+
+    /// <summary>
+    /// Toggles the state of the privacy mute
+    /// </summary>
+    public void TogglePrivacyMute()
+    {
+        PrivacyDevice.PrivacyModeToggle();
+    }
+
+    void TurnOnRedLeds()
+    {
+        _greenLedRelayState = false;
+        _redLedRelayState = true;
+        SetLedStates();
+    }
+
+    void TurnOnGreenLeds()
+    {
+        _redLedRelayState = false;
+        _greenLedRelayState = true;
+        SetLedStates();
+    }
+
+    /// <summary>
+    /// If enabled, sets the actual state of the relays
+    /// </summary>
+    void SetLedStates()
+    {
+        if (_enableLeds)
         {
-            _redLedRelayState = false;
-            _greenLedRelayState = false;
-
             SetRelayStates();
         }
-
-        void SetRelayStates()
-        {
-            if (RedLedRelay != null)
-            {
-                if (_redLedRelayState)
-                    RedLedRelay.CloseRelay();
-                else
-                    RedLedRelay.OpenRelay();
-            }
-
-            if(GreenLedRelay != null)
-            {
-                if (_greenLedRelayState)
-                    GreenLedRelay.CloseRelay();
-                else
-                    GreenLedRelay.OpenRelay();
-            }
-        }
+        else
+            TurnOffAllLeds();
     }
 
-    public class MicrophonePrivacyControllerFactory : EssentialsDeviceFactory<MicrophonePrivacyController>
+    /// <summary>
+    /// Turns off all LEDs
+    /// </summary>
+    void TurnOffAllLeds()
     {
-        public MicrophonePrivacyControllerFactory()
-        {
-            TypeNames = new List<string>() { "microphoneprivacycontroller" };
-        }
+        _redLedRelayState = false;
+        _greenLedRelayState = false;
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new MIcrophonePrivacyController Device");
-            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Privacy.MicrophonePrivacyControllerConfig>(dc.Properties.ToString());
-
-            return new Core.Privacy.MicrophonePrivacyController(dc.Key, props);
-        }
+        SetRelayStates();
     }
 
+    void SetRelayStates()
+    {
+        if (RedLedRelay != null)
+        {
+            if (_redLedRelayState)
+                RedLedRelay.CloseRelay();
+            else
+                RedLedRelay.OpenRelay();
+        }
+
+        if(GreenLedRelay != null)
+        {
+            if (_greenLedRelayState)
+                GreenLedRelay.CloseRelay();
+            else
+                GreenLedRelay.OpenRelay();
+        }
+    }
+}
+
+public class MicrophonePrivacyControllerFactory : EssentialsDeviceFactory<MicrophonePrivacyController>
+{
+    public MicrophonePrivacyControllerFactory()
+    {
+        TypeNames = new List<string>() { "microphoneprivacycontroller" };
+    }
+
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new MIcrophonePrivacyController Device");
+        var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Privacy.MicrophonePrivacyControllerConfig>(dc.Properties.ToString());
+
+        return new Core.Privacy.MicrophonePrivacyController(dc.Key, props);
+    }
 }

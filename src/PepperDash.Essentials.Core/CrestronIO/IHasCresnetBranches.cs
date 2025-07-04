@@ -6,10 +6,9 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+public interface IHasCresnetBranches
 {
-    public interface IHasCresnetBranches
-    {
-        CrestronCollection<CresnetBranch> CresnetBranches { get; }
-    }
+    CrestronCollection<CresnetBranch> CresnetBranches { get; }
 }

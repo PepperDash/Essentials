@@ -1,25 +1,24 @@
 ﻿using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Touchpanel
+namespace PepperDash.Essentials.Touchpanel;
+
+public interface ITswAppControl : IKeyed
 {
-    public interface ITswAppControl : IKeyed
-    {
-        BoolFeedback AppOpenFeedback { get; }
+    BoolFeedback AppOpenFeedback { get; }
 
-        void HideOpenApp();
+    void HideOpenApp();
 
-        void CloseOpenApp();
+    void CloseOpenApp();
 
-        void OpenApp();
-    }
+    void OpenApp();
+}
 
-    public interface ITswZoomControl : IKeyed
-    {
-        BoolFeedback ZoomIncomingCallFeedback { get; }
+public interface ITswZoomControl : IKeyed
+{
+    BoolFeedback ZoomIncomingCallFeedback { get; }
 
-        BoolFeedback ZoomInCallFeedback { get; }
+    BoolFeedback ZoomInCallFeedback { get; }
 
-        void EndZoomCall();
-    }
+    void EndZoomCall();
 }

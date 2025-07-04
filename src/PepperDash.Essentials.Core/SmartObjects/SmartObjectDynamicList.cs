@@ -10,8 +10,8 @@ using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core.SmartObjects
-{
+namespace PepperDash.Essentials.Core.SmartObjects;
+
 	public class SmartObjectDynamicList : SmartObjectHelperBase
 	{
 		public const string SigNameScrollToItem = "Scroll To Item";
@@ -34,12 +34,12 @@ namespace PepperDash.Essentials.Core.SmartObjects
 		/// </summary>
 		public int MaxCount { get; private set; }
 
-        /// <summary>
-        /// Wrapper for smart object
-        /// </summary>
-        /// <param name="so"></param>
-        /// <param name="useUserObjectHandler">True if the standard user object action handler will be used</param>
-        /// <param name="nameSigOffset">The starting join of the string sigs for the button labels</param>
+    /// <summary>
+    /// Wrapper for smart object
+    /// </summary>
+    /// <param name="so"></param>
+    /// <param name="useUserObjectHandler">True if the standard user object action handler will be used</param>
+    /// <param name="nameSigOffset">The starting join of the string sigs for the button labels</param>
 		public SmartObjectDynamicList(SmartObject so, bool useUserObjectHandler, uint nameSigOffset) : base(so, useUserObjectHandler) 
 		{		
 			try
@@ -126,4 +126,3 @@ namespace PepperDash.Essentials.Core.SmartObjects
 				SmartObject.BooleanOutput[string.Format("Item {0} Pressed", i)].UserObject = null;
 		}
 	}
-}

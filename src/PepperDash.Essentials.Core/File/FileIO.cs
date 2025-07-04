@@ -8,8 +8,8 @@ using PepperDash.Core;
 using Crestron.SimplSharpPro.CrestronThread;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public static class FileIO
 	{
 
@@ -22,37 +22,37 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
-        public static FileInfo[] GetFiles(string fileName)
+    public static FileInfo[] GetFiles(string fileName)
+    {
+        string fullFilePath = Global.FilePathPrefix + fileName;
+        DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
+        var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
+        Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
+        if (files.Count() > 0)
         {
-            string fullFilePath = Global.FilePathPrefix + fileName;
-            DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
-            var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
-            Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
-            if (files.Count() > 0)
-            {
-                return files;
-            }
-            else
-            {
-                return null;
-            }
+            return files;
         }
+        else
+        {
+            return null;
+        }
+    }
 
-        public static FileInfo GetFile(string fileName)
+    public static FileInfo GetFile(string fileName)
+    {
+        string fullFilePath = Global.FilePathPrefix + fileName;
+        DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
+        var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
+        Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
+        if (files.Count() > 0)
         {
-            string fullFilePath = Global.FilePathPrefix + fileName;
-            DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
-            var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
-            Debug.LogMessage(LogEventLevel.Information, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
-            if (files.Count() > 0)
-            {
-                return files.FirstOrDefault();
-            }
-            else
-            {
-                return null;
-            }
+            return files.FirstOrDefault();
         }
+        else
+        {
+            return null;
+        }
+    }
 
 
 		/// <summary>
@@ -73,12 +73,12 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-        /// <summary>
-        /// Get the data with fileInfo object 
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        public static string ReadDataFromFile(FileInfo file)
+    /// <summary>
+    /// Get the data with fileInfo object 
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    public static string ReadDataFromFile(FileInfo file)
 		{
 			try
 			{
@@ -200,7 +200,7 @@ namespace PepperDash.Essentials.Core
 		public static void WriteDataToFile(string data, string filePath)
 		{
 			Thread _WriteFileThread;
-            _WriteFileThread = new Thread((O) => _WriteFileMethod(data, Global.FilePathPrefix + "/" + filePath), null, Thread.eThreadStartOptions.CreateSuspended);
+        _WriteFileThread = new Thread((O) => _WriteFileMethod(data, Global.FilePathPrefix + "/" + filePath), null, Thread.eThreadStartOptions.CreateSuspended);
 			_WriteFileThread.Priority = Thread.eThreadPriority.LowestPriority;
 			_WriteFileThread.Start();
 			Debug.LogMessage(LogEventLevel.Information, "New WriteFile Thread");
@@ -216,7 +216,7 @@ namespace PepperDash.Essentials.Core
 				if (fileLock.TryEnter())
 				{
 
-                    using (StreamWriter sw = new StreamWriter(filePath))
+                using (StreamWriter sw = new StreamWriter(filePath))
 					{
 						sw.Write(data);
 						sw.Flush();
@@ -274,4 +274,3 @@ namespace PepperDash.Essentials.Core
 		public string Data { get; private set; } // readonly
 
 	}
-}

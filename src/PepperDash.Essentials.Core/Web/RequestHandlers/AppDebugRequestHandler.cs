@@ -6,8 +6,8 @@ using System;
 using Serilog.Events;
 using Newtonsoft.Json.Converters;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class AppDebugRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -80,7 +80,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	public class AppDebug
 	{
 		[JsonProperty("minimumLevel", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public LogEventLevel MinimumLevel { get; set; }
+    [JsonConverter(typeof(StringEnumConverter))]
+    public LogEventLevel MinimumLevel { get; set; }
 	}
-}

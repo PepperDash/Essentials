@@ -11,9 +11,9 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Devices.Common
-{
-    [Description("Wrapper class for an IR-Controlled Roku")]
+namespace PepperDash.Essentials.Devices.Common;
+
+[Description("Wrapper class for an IR-Controlled Roku")]
 	public class Roku2 : EssentialsDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingSource, IRoutingOutputs
 	{
 		[Api]
@@ -148,20 +148,18 @@ namespace PepperDash.Essentials.Devices.Common
 
 	}
 
-    public class Roku2Factory : EssentialsDeviceFactory<Roku2>
+public class Roku2Factory : EssentialsDeviceFactory<Roku2>
+{
+    public Roku2Factory()
     {
-        public Roku2Factory()
-        {
-            TypeNames = new List<string>() { "roku" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Roku Device");
-            var irCont = IRPortHelper.GetIrOutputPortController(dc);
-            return new Roku2(dc.Key, dc.Name, irCont);
-
-        }
+        TypeNames = new List<string>() { "roku" };
     }
 
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Roku Device");
+        var irCont = IRPortHelper.GetIrOutputPortController(dc);
+        return new Roku2(dc.Key, dc.Name, irCont);
+
+    }
 }

@@ -4,78 +4,78 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Core.JsonToSimpl
-{
+namespace PepperDash.Core.JsonToSimpl;
+
 	/// <summary>
 	/// Constants for Simpl modules
 	/// </summary>
 	public class JsonToSimplConstants
 	{
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort BoolValueChange = 1;
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort JsonIsValidBoolChange = 2;
 
-        /// <summary>
-        /// Reports the if the device is 3-series compatible
-        /// </summary>
-        public const ushort ProgramCompatibility3SeriesChange = 3;
+    /// <summary>
+    /// Reports the if the device is 3-series compatible
+    /// </summary>
+    public const ushort ProgramCompatibility3SeriesChange = 3;
 
-        /// <summary>
-        /// Reports the if the device is 4-series compatible
-        /// </summary>
-        public const ushort ProgramCompatibility4SeriesChange = 4;
+    /// <summary>
+    /// Reports the if the device is 4-series compatible
+    /// </summary>
+    public const ushort ProgramCompatibility4SeriesChange = 4;
 
-        /// <summary>
-        /// Reports the device platform enum value
-        /// </summary>
-        public const ushort DevicePlatformValueChange = 5;
+    /// <summary>
+    /// Reports the device platform enum value
+    /// </summary>
+    public const ushort DevicePlatformValueChange = 5;
 
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort UshortValueChange = 101;        
 		
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort StringValueChange = 201;
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort FullPathToArrayChange = 202;
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort ActualFilePathChange = 203;
 
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort FilenameResolvedChange = 204;
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort FilePathResolvedChange = 205;
 
-        /// <summary>
-        /// Reports the root directory change
-        /// </summary>
-        public const ushort RootDirectoryChange = 206;
+    /// <summary>
+    /// Reports the root directory change
+    /// </summary>
+    public const ushort RootDirectoryChange = 206;
 
-        /// <summary>
-        /// Reports the room ID change
-        /// </summary>
-        public const ushort RoomIdChange = 207;
+    /// <summary>
+    /// Reports the room ID change
+    /// </summary>
+    public const ushort RoomIdChange = 207;
 
-        /// <summary>
-        /// Reports the room name change
-        /// </summary>
-        public const ushort RoomNameChange = 208;
+    /// <summary>
+    /// Reports the room name change
+    /// </summary>
+    public const ushort RoomNameChange = 208;
 	}
 
 	/// <summary>
@@ -88,33 +88,33 @@ namespace PepperDash.Core.JsonToSimpl
 	/// </summary>
 	public class SPlusValueWrapper
 	{
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public SPlusType ValueType { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public ushort Index { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public ushort BoolUShortValue { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public string StringValue { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public SPlusValueWrapper() {}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="index"></param>
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="index"></param>
 		public SPlusValueWrapper(SPlusType type, ushort index)
 		{
 			ValueType = type;
@@ -127,17 +127,16 @@ namespace PepperDash.Core.JsonToSimpl
 	/// </summary>
 	public enum SPlusType
 	{
-        /// <summary>
-        /// Digital
-        /// </summary>
+    /// <summary>
+    /// Digital
+    /// </summary>
 		Digital, 
-        /// <summary>
-        /// Analog
-        /// </summary>
-        Analog, 
-        /// <summary>
-        /// String
-        /// </summary>
-        String
+    /// <summary>
+    /// Analog
+    /// </summary>
+    Analog, 
+    /// <summary>
+    /// String
+    /// </summary>
+    String
 	}
-}

@@ -181,7 +181,7 @@ public static class PluginLoader
     /// this method updates its associated assembly. If no matching name is found, the method does nothing.</remarks>
     /// <param name="name">The name used to identify the assembly. This value is case-sensitive and must not be null or empty.</param>
     /// <param name="assembly">The assembly to associate with the specified name. This value must not be null.</param>
-    public static void SetEssentialsAssembly(string name, Assembly assembly)
+    public static void AddLoadedAssembly(string name, Assembly assembly)
     {
         var loadedAssembly = LoadedAssemblies.FirstOrDefault(la => la.Name.Equals(name));
 
@@ -717,22 +717,23 @@ public static class PluginLoader
                 foreach (var type in types)
                 {
                     try
-                    {                    
-                        if (typeof (IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract)
+                    {
+                        if (!typeof(IPluginDeviceFactory).IsAssignableFrom(type) || type.IsAbstract)
                         {
-                            var plugin =
-                                (IPluginDeviceFactory)Activator.CreateInstance(type);
-                            LoadCustomPlugin(plugin, loadedAssembly);
+                            continue;
                         }
+
+                        var plugin = (IPluginDeviceFactory)Activator.CreateInstance(type);
+                        LoadCustomPlugin(plugin, loadedAssembly);
                     }
                     catch (NotSupportedException)
                     {
                         //this happens for dlls that aren't PD dlls, like ports of Mono classes into S#. Swallowing.                               
                     }
-                    catch (Exception e)
+                    catch (Exception ex)
                     {
-                        Debug.LogMessage(LogEventLevel.Error, "Load Plugin not found. {0}.{2} is not a plugin factory. Exception: {1}",
-                            loadedAssembly.Name, e.Message, type.Name);
+                        Debug.LogError("Load Plugin not found. {assemblyName}.{typeName} is not a plugin factory. Exception: {exception}",
+                            loadedAssembly.Name, type.Name, ex.Message);
                         continue;
                     }
                 }
@@ -814,7 +815,11 @@ public static class PluginLoader
     /// <param name="loadedAssembly">The assembly associated with the plugin being loaded. This is used for logging and tracking purposes.</param>
     private static void LoadCustomPlugin(IPluginDeviceFactory deviceFactory, LoadedAssembly loadedAssembly)
     {
-        var passed = Global.IsRunningMinimumVersionOrHigher(deviceFactory.MinimumEssentialsFrameworkVersion);
+        var developmentDeviceFactory = deviceFactory as IPluginDevelopmentDeviceFactory;
+
+        var passed = developmentDeviceFactory != null ? Global.IsRunningDevelopmentVersion
+            (developmentDeviceFactory.DevelopmentEssentialsFrameworkVersions, developmentDeviceFactory.MinimumEssentialsFrameworkVersion)
+            : Global.IsRunningMinimumVersionOrHigher(deviceFactory.MinimumEssentialsFrameworkVersion);
 
         if (!passed)
         {

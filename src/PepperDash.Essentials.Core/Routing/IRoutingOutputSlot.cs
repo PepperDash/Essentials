@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core.Routing
+namespace PepperDash.Essentials.Core.Routing;
+
+public interface IRoutingOutputSlot : IRoutingSlot
 {
-    public interface IRoutingOutputSlot : IRoutingSlot
-    {
-        event EventHandler OutputSlotChanged;
+    event EventHandler OutputSlotChanged;
 
-        string RxDeviceKey { get; }
+    string RxDeviceKey { get; }
 
-        Dictionary<eRoutingSignalType, IRoutingInputSlot> CurrentRoutes { get; }
-    }    
-}
+    Dictionary<eRoutingSignalType, IRoutingInputSlot> CurrentRoutes { get; }
+}    

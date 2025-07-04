@@ -2,18 +2,18 @@
 using System;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+/// <summary>
+/// Represents a basic routing output port on a device.
+/// </summary>
+public class RoutingOutputPort : RoutingPort
 {
     /// <summary>
-    /// Represents a basic routing output port on a device.
+    /// The IRoutingOutputs object this port lives on.
     /// </summary>
-    public class RoutingOutputPort : RoutingPort
-    {
-        /// <summary>
-        /// The IRoutingOutputs object this port lives on.
-        /// </summary>
-        [JsonIgnore]
-        public IRoutingOutputs ParentDevice { get; private set; }
+    [JsonIgnore]
+    public IRoutingOutputs ParentDevice { get; private set; }
 
 		/// <summary>
 		/// Tracks which destinations are currently using this output port.
@@ -48,52 +48,51 @@ namespace PepperDash.Essentials.Core
 			object selector, IRoutingOutputs parent, bool isInternal)
 			: base(key, type, connType, selector, isInternal)
 		{
-            ParentDevice = parent ?? throw new ArgumentNullException(nameof(parent));
+        ParentDevice = parent ?? throw new ArgumentNullException(nameof(parent));
 			InUseTracker = new InUseTracking();
 		}
 
-        /// <summary>
-        /// Returns a string representation of the output port.
-        /// </summary>
-        /// <returns>A string in the format "ParentDeviceKey|PortKey|SignalType|ConnectionType".</returns>
-        public override string ToString()
-        {
-            return $"{ParentDevice.Key}|{Key}|{Type}|{ConnectionType}";
-        }
+    /// <summary>
+    /// Returns a string representation of the output port.
+    /// </summary>
+    /// <returns>A string in the format "ParentDeviceKey|PortKey|SignalType|ConnectionType".</returns>
+    public override string ToString()
+    {
+        return $"{ParentDevice.Key}|{Key}|{Type}|{ConnectionType}";
+    }
 	}
 
-    /*public class RoutingOutputPort<TSelector> : RoutingPort<TSelector>
+/*public class RoutingOutputPort<TSelector> : RoutingPort<TSelector>
+{
+    /// <summary>
+    /// The IRoutingOutputs object this port lives on
+    /// </summary>
+    public IRoutingOutputs ParentDevice { get; private set; }
+
+    public InUseTracking InUseTracker { get; private set; }
+
+
+    /// <summary>
+    /// </summary>
+    /// <param name="selector">An object used to refer to this port in the IRouting device's ExecuteSwitch method.
+    /// May be string, number, whatever</param>
+    /// <param name="parent">The IRoutingOutputs object this port lives on</param>
+    public RoutingOutputPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType,
+        TSelector selector, IRoutingOutputs parent)
+        : this(key, type, connType, selector, parent, false)
     {
-        /// <summary>
-        /// The IRoutingOutputs object this port lives on
-        /// </summary>
-        public IRoutingOutputs ParentDevice { get; private set; }
+    }
 
-        public InUseTracking InUseTracker { get; private set; }
+    public RoutingOutputPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType,
+        TSelector selector, IRoutingOutputs parent, bool isInternal)
+        : base(key, type, connType, selector, isInternal)
+    {
+        ParentDevice = parent ?? throw new ArgumentNullException(nameof(parent));
+        InUseTracker = new InUseTracking();
+    }
 
-
-        /// <summary>
-        /// </summary>
-        /// <param name="selector">An object used to refer to this port in the IRouting device's ExecuteSwitch method.
-        /// May be string, number, whatever</param>
-        /// <param name="parent">The IRoutingOutputs object this port lives on</param>
-        public RoutingOutputPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType,
-            TSelector selector, IRoutingOutputs parent)
-            : this(key, type, connType, selector, parent, false)
-        {
-        }
-
-        public RoutingOutputPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType,
-            TSelector selector, IRoutingOutputs parent, bool isInternal)
-            : base(key, type, connType, selector, isInternal)
-        {
-            ParentDevice = parent ?? throw new ArgumentNullException(nameof(parent));
-            InUseTracker = new InUseTracking();
-        }
-
-        public override string ToString()
-        {
-            return ParentDevice.Key + ":" + Key;
-        }
-    }*/
-}
+    public override string ToString()
+    {
+        return ParentDevice.Key + ":" + Key;
+    }
+}*/

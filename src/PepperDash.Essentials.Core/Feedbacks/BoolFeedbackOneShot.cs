@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public class BoolFeedbackPulse
 	{
 		public uint TimeoutMs { get; set; }
@@ -66,4 +66,3 @@ namespace PepperDash.Essentials.Core
 				Timer.Reset(0);
 		}
 	}
-}

@@ -6,8 +6,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 
 	public enum AudioChangeType
 	{
@@ -25,4 +25,3 @@ namespace PepperDash.Essentials.Core
 			AudioDevice = device;
 		}
 	}
-}

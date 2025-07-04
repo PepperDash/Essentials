@@ -1,27 +1,26 @@
 ﻿using System;
 
-namespace PepperDash.Essentials.Core
-{
-    public delegate void InputChangedEventHandler(IRoutingSinkWithSwitching destination, RoutingInputPort currentPort);
+namespace PepperDash.Essentials.Core;
 
-    /// <summary>
-    /// Endpoint device like a display, that selects inputs
-    /// </summary>
-    public interface IRoutingSinkWithSwitching : IRoutingSink
+public delegate void InputChangedEventHandler(IRoutingSinkWithSwitching destination, RoutingInputPort currentPort);
+
+/// <summary>
+/// Endpoint device like a display, that selects inputs
+/// </summary>
+public interface IRoutingSinkWithSwitching : IRoutingSink
 	{		
 		void ExecuteSwitch(object inputSelector);        
-    }
+}
 
-    public interface IRoutingSinkWithSwitchingWithInputPort:IRoutingSinkWithSwitching, IRoutingSinkWithInputPort
-    {
-        event InputChangedEventHandler InputChanged;
-    }
+public interface IRoutingSinkWithSwitchingWithInputPort:IRoutingSinkWithSwitching, IRoutingSinkWithInputPort
+{
+    event InputChangedEventHandler InputChanged;
+}
 
 /*    /// <summary>
-    /// Endpoint device like a display, that selects inputs
-    /// </summary>
-    public interface IRoutingSinkWithSwitching<TSelector> : IRoutingSink<TSelector>
-    {
-        void ExecuteSwitch(TSelector inputSelector);
-    }*/
-}
+/// Endpoint device like a display, that selects inputs
+/// </summary>
+public interface IRoutingSinkWithSwitching<TSelector> : IRoutingSink<TSelector>
+{
+    void ExecuteSwitch(TSelector inputSelector);
+}*/

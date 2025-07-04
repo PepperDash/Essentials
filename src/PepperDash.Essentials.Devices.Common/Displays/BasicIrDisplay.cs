@@ -9,17 +9,17 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Devices.Common.Displays
-{
-    public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
+namespace PepperDash.Essentials.Devices.Common.Displays;
+
+public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
 	{
 		public IrOutputPortController IrPort { get; private set; }
 		public ushort IrPulseTime { get; set; }
 
-        protected Func<bool> PowerIsOnFeedbackFunc
-        {
-            get { return () => _PowerIsOn; }
-        }
+    protected Func<bool> PowerIsOnFeedbackFunc
+    {
+        get { return () => _PowerIsOn; }
+    }
 		protected override Func<bool> IsCoolingDownFeedbackFunc
 		{
 			get { return () => _IsCoolingDown; }
@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			get { return () => _IsWarmingUp; }
 		}
 
-        bool _PowerIsOn;
+    bool _PowerIsOn;
 		bool _IsWarmingUp;
 		bool _IsCoolingDown;
 
@@ -101,18 +101,18 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		public override void PowerOn()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_POWER_ON, IrPulseTime);
-            _PowerIsOn = true;
+        _PowerIsOn = true;
 		}
 
 		public override void PowerOff()
 		{
-            _PowerIsOn = false;
+        _PowerIsOn = false;
 			IrPort.Pulse(IROutputStandardCommands.IROut_POWER_OFF, IrPulseTime);
 		}
 
 		public override void PowerToggle()
 		{
-            _PowerIsOn = false;
+        _PowerIsOn = false;
 			IrPort.Pulse(IROutputStandardCommands.IROut_POWER, IrPulseTime);
 		}
 
@@ -166,7 +166,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// <param name="inputSelector">A delegate containing the input selector method to call</param>
 		public override void ExecuteSwitch(object inputSelector)
 		{
-            Debug.LogMessage(LogEventLevel.Verbose, this, "Switching to input '{0}'", (inputSelector as Action).ToString());
+        Debug.LogMessage(LogEventLevel.Verbose, this, "Switching to input '{0}'", (inputSelector as Action).ToString());
 
 			Action finishSwitch = () =>
 				{
@@ -199,26 +199,24 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 	    }
 	}
 
-    public class BasicIrDisplayFactory : EssentialsDeviceFactory<BasicIrDisplay>
+public class BasicIrDisplayFactory : EssentialsDeviceFactory<BasicIrDisplay>
+{
+    public BasicIrDisplayFactory()
     {
-        public BasicIrDisplayFactory()
-        {
-            TypeNames = new List<string>() { "basicirdisplay" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new BasicIrDisplay Device");
-            var ir = IRPortHelper.GetIrPort(dc.Properties);
-            if (ir != null)
-            {
-                var display = new BasicIrDisplay(dc.Key, dc.Name, ir.Port, ir.FileName);
-                display.IrPulseTime = 200;       // Set default pulse time for IR commands.
-                return display;
-            }
-
-            return null;
-        }
+        TypeNames = new List<string>() { "basicirdisplay" };
     }
 
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new BasicIrDisplay Device");
+        var ir = IRPortHelper.GetIrPort(dc.Properties);
+        if (ir != null)
+        {
+            var display = new BasicIrDisplay(dc.Key, dc.Name, ir.Port, ir.FileName);
+            display.IrPulseTime = 200;       // Set default pulse time for IR commands.
+            return display;
+        }
+
+        return null;
+    }
 }

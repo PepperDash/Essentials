@@ -6,8 +6,8 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.Ethernet
-{
+namespace PepperDash.Essentials.Core.Ethernet;
+
 	public static class EthernetSettings
 	{
 		public static readonly BoolFeedback LinkActive = new BoolFeedback("LinkActive",
@@ -30,4 +30,3 @@ namespace PepperDash.Essentials.Core.Ethernet
 			() => CrestronEthernetHelper.GetEthernetParameter(
 				CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, 0));	
 	}
-}

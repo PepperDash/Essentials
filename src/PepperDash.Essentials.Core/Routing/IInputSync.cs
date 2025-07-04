@@ -5,12 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.Core.Routing
-{
-    public interface IVideoSync : IKeyed
-    {
-        bool VideoSyncDetected { get; }
+namespace PepperDash.Essentials.Core.Routing;
 
-        event EventHandler VideoSyncChanged;
-    }
+public interface IVideoSync : IKeyed
+{
+    bool VideoSyncDetected { get; }
+
+    event EventHandler VideoSyncChanged;
 }

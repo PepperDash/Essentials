@@ -1,14 +1,13 @@
 ﻿using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+public interface IHasSelfviewPosition
 {
-    public interface IHasSelfviewPosition
-    {
-        StringFeedback SelfviewPipPositionFeedback { get; }
+    StringFeedback SelfviewPipPositionFeedback { get; }
 
-        void SelfviewPipPositionSet(CodecCommandWithLabel position);
+    void SelfviewPipPositionSet(CodecCommandWithLabel position);
 
-        void SelfviewPipPositionToggle();
-    }
+    void SelfviewPipPositionToggle();
 }

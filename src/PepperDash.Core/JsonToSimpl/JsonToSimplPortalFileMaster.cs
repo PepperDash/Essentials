@@ -6,22 +6,22 @@ using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core.Config;
 
-namespace PepperDash.Core.JsonToSimpl
+namespace PepperDash.Core.JsonToSimpl;
+
+/// <summary>
+/// Portal File Master
+/// </summary>
+public class JsonToSimplPortalFileMaster : JsonToSimplMaster
 {
-    /// <summary>
-    /// Portal File Master
-    /// </summary>
-    public class JsonToSimplPortalFileMaster : JsonToSimplMaster
-    {
 		/// <summary>
 		///  Sets the filepath as well as registers this with the Global.Masters list
 		/// </summary>
 		public string PortalFilepath { get; private set; }
 
-        /// <summary>
-        /// File path of the actual file being read (Portal or local)
-        /// </summary>
-        public string ActualFilePath { get; private set; }
+    /// <summary>
+    /// File path of the actual file being read (Portal or local)
+    /// </summary>
+    public string ActualFilePath { get; private set; }
 
 		/*****************************************************************************************/
 		/** Privates **/
@@ -33,10 +33,10 @@ namespace PepperDash.Core.JsonToSimpl
 		/*****************************************************************************************/
 
 		/// <summary>
-        /// SIMPL+ default constructor.
-        /// </summary>
+    /// SIMPL+ default constructor.
+    /// </summary>
 		public JsonToSimplPortalFileMaster()
-        {
+    {
 		}
 
 		/// <summary>
@@ -64,7 +64,7 @@ namespace PepperDash.Core.JsonToSimpl
 			if (actualLocalFile != null)
 			{
 				ActualFilePath = actualLocalFile.FullName;
-                OnStringChange(ActualFilePath, 0, JsonToSimplConstants.ActualFilePathChange);
+            OnStringChange(ActualFilePath, 0, JsonToSimplConstants.ActualFilePathChange);
 			}
 			// If the local file does not exist, then read the portal file xyz.json
 			// and create the local.
@@ -78,7 +78,7 @@ namespace PepperDash.Core.JsonToSimpl
 					// got the portal file, hand off to the merge / save method				
 					PortalConfigReader.ReadAndMergeFileIfNecessary(actualPortalFile.FullName, newLocalPath);
 					ActualFilePath = newLocalPath;
-                    OnStringChange(ActualFilePath, 0, JsonToSimplConstants.ActualFilePathChange);
+                OnStringChange(ActualFilePath, 0, JsonToSimplConstants.ActualFilePathChange);
 				}
 				else
 				{
@@ -188,4 +188,3 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 	}
-}

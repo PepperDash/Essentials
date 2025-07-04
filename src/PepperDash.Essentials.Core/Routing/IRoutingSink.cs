@@ -1,23 +1,22 @@
-﻿namespace PepperDash.Essentials.Core
-{
-    /// <summary>
-    /// For fixed-source endpoint devices
-    /// </summary>
-    public interface IRoutingSink : IRoutingInputs, IHasCurrentSourceInfoChange
-    {        
-    }
+﻿namespace PepperDash.Essentials.Core;
 
-    public interface IRoutingSinkWithInputPort :IRoutingSink
-    {
-        RoutingInputPort CurrentInputPort { get; }
-    }
-    /*/// <summary>
-    /// For fixed-source endpoint devices
-    /// </summary>
-    public interface IRoutingSink<TSelector> : IRoutingInputs<TSelector>, IHasCurrentSourceInfoChange
-    {
-        void UpdateRouteRequest<TOutputSelector>(RouteRequest<TSelector, TOutputSelector> request);
-
-        RouteRequest<TSelector, TOutputSelector> GetRouteRequest<TOutputSelector>();
-    }*/
+/// <summary>
+/// For fixed-source endpoint devices
+/// </summary>
+public interface IRoutingSink : IRoutingInputs, IHasCurrentSourceInfoChange
+{        
 }
+
+public interface IRoutingSinkWithInputPort :IRoutingSink
+{
+    RoutingInputPort CurrentInputPort { get; }
+}
+/*/// <summary>
+/// For fixed-source endpoint devices
+/// </summary>
+public interface IRoutingSink<TSelector> : IRoutingInputs<TSelector>, IHasCurrentSourceInfoChange
+{
+    void UpdateRouteRequest<TOutputSelector>(RouteRequest<TSelector, TOutputSelector> request);
+
+    RouteRequest<TSelector, TOutputSelector> GetRouteRequest<TOutputSelector>();
+}*/

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+public interface ILoadConfig
 {
-    public interface ILoadConfig
-    {
-        void GoWithLoad();
-    }
+    void GoWithLoad();
 }

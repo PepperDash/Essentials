@@ -7,17 +7,16 @@ using System.Text;
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core.CrestronIO
+namespace PepperDash.Essentials.Core.CrestronIO;
+
+public class IOPortConfig
 {
-    public class IOPortConfig
-    {
-        [JsonProperty("portDeviceKey")]
-        public string PortDeviceKey { get; set; }
-        [JsonProperty("portNumber")]
-        public uint PortNumber { get; set; }
-        [JsonProperty("disablePullUpResistor")]
-        public bool DisablePullUpResistor { get; set; }
-        [JsonProperty("minimumChange")]
-        public int MinimumChange { get; set; }
-    }
+    [JsonProperty("portDeviceKey")]
+    public string PortDeviceKey { get; set; }
+    [JsonProperty("portNumber")]
+    public uint PortNumber { get; set; }
+    [JsonProperty("disablePullUpResistor")]
+    public bool DisablePullUpResistor { get; set; }
+    [JsonProperty("minimumChange")]
+    public int MinimumChange { get; set; }
 }

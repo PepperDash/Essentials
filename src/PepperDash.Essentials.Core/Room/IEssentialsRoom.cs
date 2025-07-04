@@ -10,42 +10,40 @@ using PepperDash.Essentials.Core.Devices;
 
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+/// <summary>
+/// Describes the basic functionality of an EssentialsRoom
+/// </summary>
+public interface IEssentialsRoom : IKeyName, IReconfigurableDevice, IRunDefaultPresentRoute, IEnvironmentalControls
 {
-    /// <summary>
-    /// Describes the basic functionality of an EssentialsRoom
-    /// </summary>
-    public interface IEssentialsRoom : IKeyName, IReconfigurableDevice, IRunDefaultPresentRoute, IEnvironmentalControls
-    {
-        BoolFeedback OnFeedback { get; }        
+    BoolFeedback OnFeedback { get; }        
 
-        BoolFeedback IsWarmingUpFeedback { get; }
-        BoolFeedback IsCoolingDownFeedback { get; }        
+    BoolFeedback IsWarmingUpFeedback { get; }
+    BoolFeedback IsCoolingDownFeedback { get; }        
 
-        bool IsMobileControlEnabled { get; }
-        IMobileControlRoomMessenger MobileControlRoomBridge { get; }
+    bool IsMobileControlEnabled { get; }
+    IMobileControlRoomMessenger MobileControlRoomBridge { get; }
 
-        string SourceListKey { get; }
+    string SourceListKey { get; }
 
-        string DestinationListKey { get; }
+    string DestinationListKey { get; }
 
-        string AudioControlPointListKey { get; }
+    string AudioControlPointListKey { get; }
 
-        string CameraListKey { get; }
+    string CameraListKey { get; }
 
-        SecondsCountdownTimer ShutdownPromptTimer { get; }
-        int ShutdownPromptSeconds { get; }
-        int ShutdownVacancySeconds { get; }
-        eShutdownType ShutdownType { get; }      
+    SecondsCountdownTimer ShutdownPromptTimer { get; }
+    int ShutdownPromptSeconds { get; }
+    int ShutdownVacancySeconds { get; }
+    eShutdownType ShutdownType { get; }      
 
-        string LogoUrlLightBkgnd { get; }
-        string LogoUrlDarkBkgnd { get; }
+    string LogoUrlLightBkgnd { get; }
+    string LogoUrlDarkBkgnd { get; }
 
-        void StartShutdown(eShutdownType type);        
+    void StartShutdown(eShutdownType type);        
 
-        void Shutdown();        
+    void Shutdown();        
 
-        void PowerOnToDefaultOrLastSource();               
-    }
-
+    void PowerOnToDefaultOrLastSource();               
 }

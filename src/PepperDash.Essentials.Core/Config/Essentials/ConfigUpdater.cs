@@ -14,213 +14,212 @@ using Crestron.SimplSharpPro.Diagnostics;
 using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Config
+namespace PepperDash.Essentials.Core.Config;
+
+public static class ConfigUpdater
 {
-    public static class ConfigUpdater
+    public static event EventHandler<ConfigStatusEventArgs> ConfigStatusChanged;
+
+    public static void GetConfigFromServer(string url)
     {
-        public static event EventHandler<ConfigStatusEventArgs> ConfigStatusChanged;
+        Debug.LogMessage(LogEventLevel.Information, "Attempting to get new config from '{0}'", url);
 
-        public static void GetConfigFromServer(string url)
+        // HTTP GET 
+        var req = new HttpClientRequest();
+
+        try
         {
-            Debug.LogMessage(LogEventLevel.Information, "Attempting to get new config from '{0}'", url);
+            req.RequestType = RequestType.Get;
+            req.Url.Parse(url);
 
-            // HTTP GET 
-            var req = new HttpClientRequest();
-
-            try
-            {
-                req.RequestType = RequestType.Get;
-                req.Url.Parse(url);
-
-                new HttpClient().DispatchAsync(req, (r, e) =>
+            new HttpClient().DispatchAsync(req, (r, e) =>
+                {
+                    if (e == HTTP_CALLBACK_ERROR.COMPLETED)
                     {
-                        if (e == HTTP_CALLBACK_ERROR.COMPLETED)
+                        if (r.Code == 200)
                         {
-                            if (r.Code == 200)
-                            {
-                                var newConfig = r.ContentString;
+                            var newConfig = r.ContentString;
 
-                                OnStatusUpdate(eUpdateStatus.ConfigFileReceived);
+                            OnStatusUpdate(eUpdateStatus.ConfigFileReceived);
 
-                                ArchiveExistingPortalConfigs();
+                            ArchiveExistingPortalConfigs();
 
-                                CheckForLocalConfigAndDelete();
+                            CheckForLocalConfigAndDelete();
 
-                                WriteConfigToFile(newConfig);
+                            WriteConfigToFile(newConfig);
 
-                                RestartProgram();
-                            }
-                            else
-                            {
-                                Debug.LogMessage(LogEventLevel.Information, "Config Update Process Stopped. Failed to get config file from server: {0}", r.Code);
-                                OnStatusUpdate(eUpdateStatus.UpdateFailed);
-                            }
+                            RestartProgram();
                         }
                         else
-                            Debug.LogMessage(LogEventLevel.Information, "Request for config from Server Failed: {0}", e);
-                    });
-            }
-            catch (Exception e)
-            {
-                Debug.LogMessage(LogEventLevel.Debug, "Error Getting Config from Server: {0}", e);
-            }
-
-        }
-
-        static void OnStatusUpdate(eUpdateStatus status)
-        {
-            var handler = ConfigStatusChanged;
-
-            if(handler != null)
-            {
-                handler(typeof(ConfigUpdater), new ConfigStatusEventArgs(status));
-            }
-        }
-
-        static void WriteConfigToFile(string configData)
-        {
-            var filePath = Global.FilePathPrefix+ "configurationFile-updated.json";
-
-            try
-            {
-                var config = JObject.Parse(configData).ToObject<EssentialsConfig>();
-
-                ConfigWriter.WriteFile(filePath, configData);
-
-                OnStatusUpdate(eUpdateStatus.WritingConfigFile);
-            }
-            catch (Exception e)
-            {
-                Debug.LogMessage(LogEventLevel.Debug, "Error parsing new config: {0}", e);
-
-                OnStatusUpdate(eUpdateStatus.UpdateFailed);
-            }           
-        }
-
-        /// <summary>
-        /// Checks for any existing portal config files and archives them
-        /// </summary>
-        static void ArchiveExistingPortalConfigs()
-        {
-            var filePath = Global.FilePathPrefix + Global.ConfigFileName;
-
-            var configFiles = ConfigReader.GetConfigFiles(filePath);
-
-            if (configFiles != null)
-            {
-                Debug.LogMessage(LogEventLevel.Information, "Existing config files found.  Moving to Archive folder.");
-
-                OnStatusUpdate(eUpdateStatus.ArchivingConfigs);
-
-                MoveFilesToArchiveFolder(configFiles);
-            }
-            else
-            {
-                Debug.LogMessage(LogEventLevel.Information, "No Existing config files found in '{0}'. Nothing to archive", filePath);
-            }
-        }
-
-        /// <summary>
-        /// Checks for presence of archive folder and if found deletes contents.
-        /// Moves any config files to the archive folder and adds a .bak suffix
-        /// </summary>
-        /// <param name="files"></param>
-        static void MoveFilesToArchiveFolder(FileInfo[] files)
-        {
-            string archiveDirectoryPath = Global.FilePathPrefix + "archive";
-
-            if (!Directory.Exists(archiveDirectoryPath))
-            {
-                // Directory does not exist, create it
-                Directory.Create(archiveDirectoryPath);
-            }
-            else
-            {
-                // Directory exists, first clear any contents
-                var archivedConfigFiles = ConfigReader.GetConfigFiles(archiveDirectoryPath + Global.DirectorySeparator + Global.ConfigFileName + ".bak");
-
-                if(archivedConfigFiles != null || archivedConfigFiles.Length > 0)
-                {
-                    Debug.LogMessage(LogEventLevel.Information, "{0} Existing files found in archive folder.  Deleting.", archivedConfigFiles.Length);
-
-                    for (int i = 0; i < archivedConfigFiles.Length; i++ )
-                    {
-                        var file = archivedConfigFiles[i];
-                        Debug.LogMessage(LogEventLevel.Information, "Deleting archived file: '{0}'", file.FullName);
-                        file.Delete();
+                        {
+                            Debug.LogMessage(LogEventLevel.Information, "Config Update Process Stopped. Failed to get config file from server: {0}", r.Code);
+                            OnStatusUpdate(eUpdateStatus.UpdateFailed);
+                        }
                     }
-                }
+                    else
+                        Debug.LogMessage(LogEventLevel.Information, "Request for config from Server Failed: {0}", e);
+                });
+        }
+        catch (Exception e)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, "Error Getting Config from Server: {0}", e);
+        }
 
-            }
+    }
 
-            // Move any files from the program folder to the archive folder
-            foreach (var file in files)
+    static void OnStatusUpdate(eUpdateStatus status)
+    {
+        var handler = ConfigStatusChanged;
+
+        if(handler != null)
+        {
+            handler(typeof(ConfigUpdater), new ConfigStatusEventArgs(status));
+        }
+    }
+
+    static void WriteConfigToFile(string configData)
+    {
+        var filePath = Global.FilePathPrefix+ "configurationFile-updated.json";
+
+        try
+        {
+            var config = JObject.Parse(configData).ToObject<EssentialsConfig>();
+
+            ConfigWriter.WriteFile(filePath, configData);
+
+            OnStatusUpdate(eUpdateStatus.WritingConfigFile);
+        }
+        catch (Exception e)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, "Error parsing new config: {0}", e);
+
+            OnStatusUpdate(eUpdateStatus.UpdateFailed);
+        }           
+    }
+
+    /// <summary>
+    /// Checks for any existing portal config files and archives them
+    /// </summary>
+    static void ArchiveExistingPortalConfigs()
+    {
+        var filePath = Global.FilePathPrefix + Global.ConfigFileName;
+
+        var configFiles = ConfigReader.GetConfigFiles(filePath);
+
+        if (configFiles != null)
+        {
+            Debug.LogMessage(LogEventLevel.Information, "Existing config files found.  Moving to Archive folder.");
+
+            OnStatusUpdate(eUpdateStatus.ArchivingConfigs);
+
+            MoveFilesToArchiveFolder(configFiles);
+        }
+        else
+        {
+            Debug.LogMessage(LogEventLevel.Information, "No Existing config files found in '{0}'. Nothing to archive", filePath);
+        }
+    }
+
+    /// <summary>
+    /// Checks for presence of archive folder and if found deletes contents.
+    /// Moves any config files to the archive folder and adds a .bak suffix
+    /// </summary>
+    /// <param name="files"></param>
+    static void MoveFilesToArchiveFolder(FileInfo[] files)
+    {
+        string archiveDirectoryPath = Global.FilePathPrefix + "archive";
+
+        if (!Directory.Exists(archiveDirectoryPath))
+        {
+            // Directory does not exist, create it
+            Directory.Create(archiveDirectoryPath);
+        }
+        else
+        {
+            // Directory exists, first clear any contents
+            var archivedConfigFiles = ConfigReader.GetConfigFiles(archiveDirectoryPath + Global.DirectorySeparator + Global.ConfigFileName + ".bak");
+
+            if(archivedConfigFiles != null || archivedConfigFiles.Length > 0)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Moving config file '{0}' to archive folder", file.FullName);
+                Debug.LogMessage(LogEventLevel.Information, "{0} Existing files found in archive folder.  Deleting.", archivedConfigFiles.Length);
 
-                // Moves the file and appends the .bak extension
-                var fileDest = archiveDirectoryPath + "/" + file.Name + ".bak";
-                if(!File.Exists(fileDest))
+                for (int i = 0; i < archivedConfigFiles.Length; i++ )
                 {
-                  file.MoveTo(fileDest);
+                    var file = archivedConfigFiles[i];
+                    Debug.LogMessage(LogEventLevel.Information, "Deleting archived file: '{0}'", file.FullName);
+                    file.Delete();
                 }
-                else
-                    Debug.LogMessage(LogEventLevel.Information, "Cannot move file to archive folder.  Existing file already exists with same name: '{0}'", fileDest);
             }
+
         }
 
-        /// <summary>
-        /// Checks for LocalConfig folder in file system and deletes if found
-        /// </summary>
-        static void CheckForLocalConfigAndDelete()
+        // Move any files from the program folder to the archive folder
+        foreach (var file in files)
         {
-            var folderPath = Global.FilePathPrefix + ConfigWriter.LocalConfigFolder;
+            Debug.LogMessage(LogEventLevel.Information, "Moving config file '{0}' to archive folder", file.FullName);
 
-            if (Directory.Exists(folderPath))
+            // Moves the file and appends the .bak extension
+            var fileDest = archiveDirectoryPath + "/" + file.Name + ".bak";
+            if(!File.Exists(fileDest))
             {
-                OnStatusUpdate(eUpdateStatus.DeletingLocalConfig);
-                Directory.Delete(folderPath);
-                Debug.LogMessage(LogEventLevel.Information, "Local Config Found in '{0}'. Deleting.", folderPath);
+              file.MoveTo(fileDest);
             }
+            else
+                Debug.LogMessage(LogEventLevel.Information, "Cannot move file to archive folder.  Existing file already exists with same name: '{0}'", fileDest);
         }
-
-        /// <summary>
-        /// Connects to the processor via SSH and restarts the program
-        /// </summary>
-        static void RestartProgram()
-        {
-            Debug.LogMessage(LogEventLevel.Information, "Attempting to Reset Program");
-
-            OnStatusUpdate(eUpdateStatus.RestartingProgram);
-
-            string response = string.Empty;
-
-            CrestronConsole.SendControlSystemCommand(string.Format("progreset -p:{0}", InitialParametersClass.ApplicationNumber), ref response);
-
-            Debug.LogMessage(LogEventLevel.Debug, "Console Response: {0}", response);          
-        }
-
     }
 
-        public enum eUpdateStatus
+    /// <summary>
+    /// Checks for LocalConfig folder in file system and deletes if found
+    /// </summary>
+    static void CheckForLocalConfigAndDelete()
     {
-        UpdateStarted,
-        ConfigFileReceived,
-        ArchivingConfigs,
-        DeletingLocalConfig,
-        WritingConfigFile,
-        RestartingProgram,
-        UpdateSucceeded,
-        UpdateFailed
+        var folderPath = Global.FilePathPrefix + ConfigWriter.LocalConfigFolder;
+
+        if (Directory.Exists(folderPath))
+        {
+            OnStatusUpdate(eUpdateStatus.DeletingLocalConfig);
+            Directory.Delete(folderPath);
+            Debug.LogMessage(LogEventLevel.Information, "Local Config Found in '{0}'. Deleting.", folderPath);
+        }
     }
 
-    public class ConfigStatusEventArgs : EventArgs
+    /// <summary>
+    /// Connects to the processor via SSH and restarts the program
+    /// </summary>
+    static void RestartProgram()
     {
-        public eUpdateStatus UpdateStatus { get; private set; }
+        Debug.LogMessage(LogEventLevel.Information, "Attempting to Reset Program");
 
-        public ConfigStatusEventArgs(eUpdateStatus status)
-        {
-            UpdateStatus = status;
-        }
+        OnStatusUpdate(eUpdateStatus.RestartingProgram);
+
+        string response = string.Empty;
+
+        CrestronConsole.SendControlSystemCommand(string.Format("progreset -p:{0}", InitialParametersClass.ApplicationNumber), ref response);
+
+        Debug.LogMessage(LogEventLevel.Debug, "Console Response: {0}", response);          
+    }
+
+}
+
+    public enum eUpdateStatus
+{
+    UpdateStarted,
+    ConfigFileReceived,
+    ArchivingConfigs,
+    DeletingLocalConfig,
+    WritingConfigFile,
+    RestartingProgram,
+    UpdateSucceeded,
+    UpdateFailed
+}
+
+public class ConfigStatusEventArgs : EventArgs
+{
+    public eUpdateStatus UpdateStatus { get; private set; }
+
+    public ConfigStatusEventArgs(eUpdateStatus status)
+    {
+        UpdateStatus = status;
     }
 }

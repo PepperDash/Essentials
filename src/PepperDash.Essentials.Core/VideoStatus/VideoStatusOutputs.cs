@@ -6,8 +6,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// Use this class to pass in values to RoutingInputPorts.  Unused properties will have default 
 	/// funcs assigned to them.
@@ -145,4 +145,3 @@ namespace PepperDash.Essentials.Core
 	//}
 
 	//public delegate void VideoStatusChangeHandler(IBasicVideoStatus device, eVideoStatusChangeType type);
-}

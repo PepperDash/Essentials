@@ -9,173 +9,171 @@ using PepperDash.Essentials.Devices.Common.Sources;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Devices.Common.SoftCodec
+namespace PepperDash.Essentials.Devices.Common.SoftCodec;
+
+public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
 {
-    public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
+
+    public RoutingInputPort AnyVideoIn { get; private set; }
+
+    public RoutingInputPort CurrentInputPort => AnyVideoIn;
+
+    #region IRoutingInputs Members
+
+    public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
+
+    #endregion
+
+    public BlueJeansPc(string key, string name)
+        : base(key, name)
     {
-
-        public RoutingInputPort AnyVideoIn { get; private set; }
-
-        public RoutingInputPort CurrentInputPort => AnyVideoIn;
-
-        #region IRoutingInputs Members
-
-        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
-
-        #endregion
-
-        public BlueJeansPc(string key, string name)
-            : base(key, name)
+        InputPorts = new RoutingPortCollection<RoutingInputPort>
         {
-            InputPorts = new RoutingPortCollection<RoutingInputPort>
+            (AnyVideoIn = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, 0, this))
+        };
+    }
+
+    #region IRunRouteAction Members
+
+    public void RunRouteAction(string routeKey, string sourceListKey)
+    {
+        RunRouteAction(routeKey, sourceListKey, null);
+    }
+
+    public void RunRouteAction(string routeKey, string sourceListKey, Action successCallback)
+    {
+        CrestronInvoke.BeginInvoke(o =>
             {
-                (AnyVideoIn = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, 0, this))
-            };
-        }
+                Debug.LogMessage(LogEventLevel.Debug, this, "Run route action '{0}' on SourceList: {1}", routeKey, sourceListKey);
 
-        #region IRunRouteAction Members
-
-        public void RunRouteAction(string routeKey, string sourceListKey)
-        {
-            RunRouteAction(routeKey, sourceListKey, null);
-        }
-
-        public void RunRouteAction(string routeKey, string sourceListKey, Action successCallback)
-        {
-            CrestronInvoke.BeginInvoke(o =>
+                var dict = ConfigReader.ConfigObject.GetSourceListForKey(sourceListKey);
+                if (dict == null)
                 {
-                    Debug.LogMessage(LogEventLevel.Debug, this, "Run route action '{0}' on SourceList: {1}", routeKey, sourceListKey);
+                    Debug.LogMessage(LogEventLevel.Debug, this, "WARNING: Config source list '{0}' not found", sourceListKey);
+                    return;
+                }
 
-                    var dict = ConfigReader.ConfigObject.GetSourceListForKey(sourceListKey);
-                    if (dict == null)
-                    {
-                        Debug.LogMessage(LogEventLevel.Debug, this, "WARNING: Config source list '{0}' not found", sourceListKey);
-                        return;
-                    }
+                // Try to get the list item by it's string key
+                if (!dict.ContainsKey(routeKey))
+                {
+                    Debug.LogMessage(LogEventLevel.Debug, this, "WARNING: No item '{0}' found on config list '{1}'",
+                        routeKey, sourceListKey);
+                    return;
+                }
 
-                    // Try to get the list item by it's string key
-                    if (!dict.ContainsKey(routeKey))
-                    {
-                        Debug.LogMessage(LogEventLevel.Debug, this, "WARNING: No item '{0}' found on config list '{1}'",
-                            routeKey, sourceListKey);
-                        return;
-                    }
+                var item = dict[routeKey];
 
-                    var item = dict[routeKey];
+                foreach (var route in item.RouteList)
+                {
+                    DoRoute(route);
+                }
 
-                    foreach (var route in item.RouteList)
-                    {
-                        DoRoute(route);
-                    }
+                // store the name and UI info for routes
+                if (item.SourceKey == "none")
+                {
+                    CurrentSourceInfoKey = routeKey;
+                    CurrentSourceInfo = null;
+                }
+                else if (item.SourceKey != null)
+                {
+                    CurrentSourceInfoKey = routeKey;
+                    CurrentSourceInfo = item;
+                }
 
-                    // store the name and UI info for routes
-                    if (item.SourceKey == "none")
-                    {
-                        CurrentSourceInfoKey = routeKey;
-                        CurrentSourceInfo = null;
-                    }
-                    else if (item.SourceKey != null)
-                    {
-                        CurrentSourceInfoKey = routeKey;
-                        CurrentSourceInfo = item;
-                    }
+                // report back when done
+                if (successCallback != null)
+                    successCallback();
+            });
+    }
 
-                    // report back when done
-                    if (successCallback != null)
-                        successCallback();
-                });
+    #endregion
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="route"></param>
+    /// <returns></returns>
+    bool DoRoute(SourceRouteListItem route)
+    {
+        IRoutingSink dest = null;
+
+        dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
+
+        if (dest == null)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, this, "Cannot route, unknown destination '{0}'", route.DestinationKey);
+            return false;
         }
 
-        #endregion
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="route"></param>
-        /// <returns></returns>
-        bool DoRoute(SourceRouteListItem route)
+        if (route.SourceKey.Equals("$off", StringComparison.OrdinalIgnoreCase))
         {
-            IRoutingSink dest = null;
-
-            dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
-
-            if (dest == null)
+            dest.ReleaseRoute();
+            if (dest is IHasPowerControl)
+                (dest as IHasPowerControl).PowerOff();
+        }
+        else
+        {
+            var source = DeviceManager.GetDeviceForKey(route.SourceKey) as IRoutingOutputs;
+            if (source == null)
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, "Cannot route, unknown destination '{0}'", route.DestinationKey);
+                Debug.LogMessage(LogEventLevel.Debug, this, "Cannot route unknown source '{0}' to {1}", route.SourceKey, route.DestinationKey);
                 return false;
             }
-
-            if (route.SourceKey.Equals("$off", StringComparison.OrdinalIgnoreCase))
-            {
-                dest.ReleaseRoute();
-                if (dest is IHasPowerControl)
-                    (dest as IHasPowerControl).PowerOff();
-            }
-            else
-            {
-                var source = DeviceManager.GetDeviceForKey(route.SourceKey) as IRoutingOutputs;
-                if (source == null)
-                {
-                    Debug.LogMessage(LogEventLevel.Debug, this, "Cannot route unknown source '{0}' to {1}", route.SourceKey, route.DestinationKey);
-                    return false;
-                }
-                dest.ReleaseAndMakeRoute(source, route.Type);
-            }
-            return true;
+            dest.ReleaseAndMakeRoute(source, route.Type);
         }
-
-
-
-        #region IHasCurrentSourceInfoChange Members
-
-        public string CurrentSourceInfoKey { get; set; }
-
-        /// <summary>
-        /// The SourceListItem last run - containing names and icons 
-        /// </summary>
-        public SourceListItem CurrentSourceInfo
-        {
-            get { return _CurrentSourceInfo; }
-            set
-            {
-                if (value == _CurrentSourceInfo) return;
-
-                var handler = CurrentSourceChange;
-                // remove from in-use tracker, if so equipped
-                if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-                    (_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
-
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.WillChange);
-
-                _CurrentSourceInfo = value;
-
-                // add to in-use tracking
-                if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-                    (_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.DidChange);
-            }
-        }
-        SourceListItem _CurrentSourceInfo;
-
-        public event SourceInfoChangeHandler CurrentSourceChange;
-
-        #endregion
+        return true;
     }
 
-    public class BlueJeansPcFactory : EssentialsDeviceFactory<BlueJeansPc>
+
+
+    #region IHasCurrentSourceInfoChange Members
+
+    public string CurrentSourceInfoKey { get; set; }
+
+    /// <summary>
+    /// The SourceListItem last run - containing names and icons 
+    /// </summary>
+    public SourceListItem CurrentSourceInfo
     {
-        public BlueJeansPcFactory()
+        get { return _CurrentSourceInfo; }
+        set
         {
-            TypeNames = new List<string>() { "bluejeanspc" };
-        }
+            if (value == _CurrentSourceInfo) return;
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new BlueJeansPc Device");
-            return new SoftCodec.BlueJeansPc(dc.Key, dc.Name);
+            var handler = CurrentSourceChange;
+            // remove from in-use tracker, if so equipped
+            if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
+                (_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
+
+            if (handler != null)
+                handler(_CurrentSourceInfo, ChangeType.WillChange);
+
+            _CurrentSourceInfo = value;
+
+            // add to in-use tracking
+            if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
+                (_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
+            if (handler != null)
+                handler(_CurrentSourceInfo, ChangeType.DidChange);
         }
     }
+    SourceListItem _CurrentSourceInfo;
 
+    public event SourceInfoChangeHandler CurrentSourceChange;
+
+    #endregion
+}
+
+public class BlueJeansPcFactory : EssentialsDeviceFactory<BlueJeansPc>
+{
+    public BlueJeansPcFactory()
+    {
+        TypeNames = new List<string>() { "bluejeanspc" };
+    }
+
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new BlueJeansPc Device");
+        return new SoftCodec.BlueJeansPc(dc.Key, dc.Name);
+    }
 }

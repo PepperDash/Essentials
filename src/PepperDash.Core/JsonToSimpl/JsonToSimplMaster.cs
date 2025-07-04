@@ -5,29 +5,29 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace PepperDash.Core.JsonToSimpl
-{
-    /// <summary>
-    /// Abstract base class for JsonToSimpl interactions
-    /// </summary>
+namespace PepperDash.Core.JsonToSimpl;
+
+/// <summary>
+/// Abstract base class for JsonToSimpl interactions
+/// </summary>
 	public abstract class JsonToSimplMaster : IKeyed
 	{
-        /// <summary>
-        /// Notifies of bool change
-        /// </summary>
+    /// <summary>
+    /// Notifies of bool change
+    /// </summary>
 		public event EventHandler<BoolChangeEventArgs> BoolChange;
-        /// <summary>
-        /// Notifies of ushort change
-        /// </summary>
+    /// <summary>
+    /// Notifies of ushort change
+    /// </summary>
 		public event EventHandler<UshrtChangeEventArgs> UshrtChange;
-        /// <summary>
-        /// Notifies of string change
-        /// </summary>
+    /// <summary>
+    /// Notifies of string change
+    /// </summary>
 		public event EventHandler<StringChangeEventArgs> StringChange;
 
-        /// <summary>
-        /// A collection of associated child modules
-        /// </summary>
+    /// <summary>
+    /// A collection of associated child modules
+    /// </summary>
 		protected List<JsonToSimplChildObjectBase> Children = new List<JsonToSimplChildObjectBase>();
 
 		/*****************************************************************************************/
@@ -37,9 +37,9 @@ namespace PepperDash.Core.JsonToSimpl
 		/// </summary>
 		public string Key { get { return UniqueID; } }
 
-        /// <summary>
-        /// A unique ID
-        /// </summary>
+    /// <summary>
+    /// A unique ID
+    /// </summary>
 		public string UniqueID { get; protected set; }
 
 		/// <summary>
@@ -82,9 +82,9 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public JObject JsonObject { get; protected set; }
 
 		/*****************************************************************************************/
@@ -141,9 +141,9 @@ namespace PepperDash.Core.JsonToSimpl
 			//Debug.Console(0, "Master[{0}] Unsaved size={1}", UniqueID, UnsavedValues.Count);
 		}
 
-        /// <summary>
-        /// Saves the file
-        /// </summary>
+    /// <summary>
+    /// Saves the file
+    /// </summary>
 		public abstract void Save();
 
 
@@ -152,14 +152,14 @@ namespace PepperDash.Core.JsonToSimpl
 		/// </summary>
 		public static class JsonFixes
 		{
-            /// <summary>
-            /// Deserializes a string into a JObject
-            /// </summary>
-            /// <param name="json"></param>
-            /// <returns></returns>
+        /// <summary>
+        /// Deserializes a string into a JObject
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
 			public static JObject ParseObject(string json)
 			{
-                using (var reader = new JsonTextReader(new StringReader(json)))
+            using (var reader = new JsonTextReader(new StringReader(json)))
 				{
 					var startDepth = reader.Depth;
 					var obj = JObject.Load(reader);
@@ -169,15 +169,15 @@ namespace PepperDash.Core.JsonToSimpl
 				}
 			}
 
-            /// <summary>
-            /// Deserializes a string into a JArray
-            /// </summary>
-            /// <param name="json"></param>
-            /// <returns></returns>
+        /// <summary>
+        /// Deserializes a string into a JArray
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
 			public static JArray ParseArray(string json)
 			{
 
-                using (var reader = new JsonTextReader(new StringReader(json)))
+            using (var reader = new JsonTextReader(new StringReader(json)))
 				{
 					var startDepth = reader.Depth;
 					var obj = JArray.Load(reader);
@@ -220,12 +220,12 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-        /// <summary>
-        /// Helper event
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="index"></param>
-        /// <param name="type"></param>
+    /// <summary>
+    /// Helper event
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="index"></param>
+    /// <param name="type"></param>
 		protected void OnStringChange(string value, ushort index, ushort type)
 		{
 			if (StringChange != null)
@@ -236,4 +236,3 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 	}
-}

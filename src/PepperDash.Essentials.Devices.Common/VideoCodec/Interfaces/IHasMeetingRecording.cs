@@ -5,25 +5,24 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
+namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
+
+public interface IHasMeetingRecording
 {
-    public interface IHasMeetingRecording
-    {
-        BoolFeedback MeetingIsRecordingFeedback { get; }
+    BoolFeedback MeetingIsRecordingFeedback { get; }
 
-        void StartRecording();
-        void StopRecording();
-        void ToggleRecording();
-    }
+    void StartRecording();
+    void StopRecording();
+    void ToggleRecording();
+}
 
-    public interface IHasMeetingRecordingWithPrompt : IHasMeetingRecording
-    {
-        BoolFeedback RecordConsentPromptIsVisible { get; }
+public interface IHasMeetingRecordingWithPrompt : IHasMeetingRecording
+{
+    BoolFeedback RecordConsentPromptIsVisible { get; }
 
-        /// <summary>
-        /// Used to agree or disagree to the meeting being recorded when prompted
-        /// </summary>
-        /// <param name="agree"></param>
-        void RecordingPromptAcknowledgement(bool agree);
-    }
+    /// <summary>
+    /// Used to agree or disagree to the meeting being recorded when prompted
+    /// </summary>
+    /// <param name="agree"></param>
+    void RecordingPromptAcknowledgement(bool agree);
 }

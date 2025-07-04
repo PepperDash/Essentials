@@ -7,8 +7,8 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// 
 	/// </summary>
@@ -33,4 +33,3 @@ namespace PepperDash.Essentials.Core
 	{
 		WillChange, DidChange
 	}
-}

@@ -6,15 +6,15 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-namespace PepperDash.Essentials.Core.Presets
-{
+namespace PepperDash.Essentials.Core.Presets;
+
 	public class DevicePresetsView
 	{
 		public bool ShowNumbers { get; set; }
 		public bool ShowName { get; set; }
 		public bool ShowIcon { get; set; }
 
-        public SubpageReferenceList SRL { get; private set; }
+    public SubpageReferenceList SRL { get; private set; }
 		public DevicePresetsModel Model { get; private set; }
 
 		public DevicePresetsView(BasicTriListWithSmartObject tl, DevicePresetsModel model)
@@ -57,4 +57,3 @@ namespace PepperDash.Essentials.Core.Presets
 			Attach();
 		}
 	}
-}

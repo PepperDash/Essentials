@@ -10,40 +10,40 @@ using PepperDash.Essentials.Core.Config;
 
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Devices.Common
-{
+namespace PepperDash.Essentials.Devices.Common;
+
 	/// <summary>
 	/// Represents and audio endpoint
 	/// </summary>
 	public class GenericAudioOut : EssentialsDevice, IRoutingSink
 	{
-        public RoutingInputPort CurrentInputPort => AnyAudioIn;
+    public RoutingInputPort CurrentInputPort => AnyAudioIn;
 
-        public event SourceInfoChangeHandler CurrentSourceChange;
+    public event SourceInfoChangeHandler CurrentSourceChange;
 
-        public string CurrentSourceInfoKey { get; set; }
-        public SourceListItem CurrentSourceInfo
+    public string CurrentSourceInfoKey { get; set; }
+    public SourceListItem CurrentSourceInfo
+    {
+        get
         {
-            get
-            {
-                return _CurrentSourceInfo;
-            }
-            set
-            {
-                if (value == _CurrentSourceInfo) return;
-
-                var handler = CurrentSourceChange;
-
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.WillChange);
-
-                _CurrentSourceInfo = value;
-
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.DidChange);
-            }
+            return _CurrentSourceInfo;
         }
-        SourceListItem _CurrentSourceInfo;
+        set
+        {
+            if (value == _CurrentSourceInfo) return;
+
+            var handler = CurrentSourceChange;
+
+            if (handler != null)
+                handler(_CurrentSourceInfo, ChangeType.WillChange);
+
+            _CurrentSourceInfo = value;
+
+            if (handler != null)
+                handler(_CurrentSourceInfo, ChangeType.DidChange);
+        }
+    }
+    SourceListItem _CurrentSourceInfo;
 
 		public RoutingInputPort AnyAudioIn { get; private set; }
 
@@ -102,20 +102,18 @@ namespace PepperDash.Essentials.Devices.Common
 
 	}
 
-    public class GenericAudioOutWithVolumeFactory : EssentialsDeviceFactory<GenericAudioOutWithVolume>
+public class GenericAudioOutWithVolumeFactory : EssentialsDeviceFactory<GenericAudioOutWithVolume>
+{
+    public GenericAudioOutWithVolumeFactory()
     {
-        public GenericAudioOutWithVolumeFactory()
-        {
-            TypeNames = new List<string>() { "genericaudiooutwithvolume" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new GenericAudioOutWithVolumeFactory Device");
-            var zone = dc.Properties.Value<uint>("zone");
-            return new GenericAudioOutWithVolume(dc.Key, dc.Name,
-                dc.Properties.Value<string>("volumeDeviceKey"), zone);
-        }
+        TypeNames = new List<string>() { "genericaudiooutwithvolume" };
     }
 
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new GenericAudioOutWithVolumeFactory Device");
+        var zone = dc.Properties.Value<uint>("zone");
+        return new GenericAudioOutWithVolume(dc.Key, dc.Name,
+            dc.Properties.Value<string>("volumeDeviceKey"), zone);
+    }
 }

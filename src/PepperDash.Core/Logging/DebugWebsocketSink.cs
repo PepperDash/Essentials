@@ -13,8 +13,8 @@ using WebSocketSharp;
 using WebSocketSharp.Server;
 using X509Certificate2 = System.Security.Cryptography.X509Certificates.X509Certificate2;
 
-namespace PepperDash.Core
-{
+namespace PepperDash.Core;
+
     /// <summary>
     /// Provides a WebSocket-based logging sink for debugging purposes, allowing log events to be broadcast to connected
     /// WebSocket clients.
@@ -326,6 +326,5 @@ namespace PepperDash.Core
             base.OnError(e);
 
             Debug.Console(2, Debug.ErrorLogLevel.Notice, "WebSocket UiClient Error: {0} message: {1}", e.Exception, e.Message);
-        }
     }
 }

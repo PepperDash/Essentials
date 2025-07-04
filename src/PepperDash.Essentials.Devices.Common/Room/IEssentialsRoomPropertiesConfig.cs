@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.Devices.Common.Room
+namespace PepperDash.Essentials.Devices.Common.Room;
+
+public interface IEssentialsRoomPropertiesConfig
 {
-    public interface IEssentialsRoomPropertiesConfig
-    {
-        EssentialsRoomPropertiesConfig PropertiesConfig { get; }
-    }
+    EssentialsRoomPropertiesConfig PropertiesConfig { get; }
 }

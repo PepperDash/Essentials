@@ -2,9 +2,9 @@
 using PepperDash.Core;
 using System;
 
-namespace PepperDash.Essentials.Core
-{
-    [Obsolete("Please use the builtin HttpClient class instead: https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines")]
+namespace PepperDash.Essentials.Core;
+
+[Obsolete("Please use the builtin HttpClient class instead: https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines")]
 	public class GenericHttpClient : Device, IBasicCommunication
 	{
 		private readonly HttpClient Client;
@@ -13,13 +13,13 @@ namespace PepperDash.Essentials.Core
 		public GenericHttpClient(string key, string name, string hostname)
 			: base(key, name)
 		{
-            Client = new HttpClient
-            {
-                HostName = hostname
-            };
+        Client = new HttpClient
+        {
+            HostName = hostname
+        };
 
 
-        }
+    }
 
 		/// <summary>
 		/// 
@@ -56,8 +56,8 @@ namespace PepperDash.Essentials.Core
 
 				if (responseReceived.ContentString.Length > 0)
 				{
-                    ResponseRecived?.Invoke(this, new GenericHttpClientEventArgs(responseReceived.ContentString, (request as HttpClientRequest).Url.ToString(), error));
-                }
+                ResponseRecived?.Invoke(this, new GenericHttpClientEventArgs(responseReceived.ContentString, (request as HttpClientRequest).Url.ToString(), error));
+            }
 			}
 
 		}
@@ -109,4 +109,3 @@ namespace PepperDash.Essentials.Core
 			Error = error;
 		}
 	}
-}

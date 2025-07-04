@@ -1,7 +1,6 @@
-﻿namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core;
+
+public interface IRoutingNumeric : IRouting
 {
-    public interface IRoutingNumeric : IRouting
-    {
-        void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type);
-    }
+    void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type);
 }

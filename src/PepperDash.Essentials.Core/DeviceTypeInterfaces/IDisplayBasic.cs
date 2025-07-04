@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core.Devices.DeviceTypeInterfaces
-{
+namespace PepperDash.Essentials.Core.Devices.DeviceTypeInterfaces;
+
 	public interface IDisplayBasic
 	{
 		void InputHdmi1();
@@ -19,4 +19,3 @@ namespace PepperDash.Essentials.Core.Devices.DeviceTypeInterfaces
 		void InputVga2();
 		void InputRgb1();
 	}
-}

@@ -10,58 +10,58 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Devices.Common.Displays
-{
-    public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string>, IRoutingSinkWithSwitchingWithInputPort, IHasPowerControlWithFeedback
+namespace PepperDash.Essentials.Devices.Common.Displays;
+
+public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string>, IRoutingSinkWithSwitchingWithInputPort, IHasPowerControlWithFeedback
 	{
-        public ISelectableItems<string> Inputs { get; private set; }
+    public ISelectableItems<string> Inputs { get; private set; }
 
 		bool _PowerIsOn;
 		bool _IsWarmingUp;
 		bool _IsCoolingDown;
 
-        protected override Func<bool> PowerIsOnFeedbackFunc
+    protected override Func<bool> PowerIsOnFeedbackFunc
+    {
+        get
         {
-            get
-            {
-                return () =>
-                    {
-                        return _PowerIsOn;
-                    };
-        } }
+            return () =>
+                {
+                    return _PowerIsOn;
+                };
+    } }
 		protected override Func<bool> IsCoolingDownFeedbackFunc
+    {
+        get
         {
-            get
+            return () =>
             {
-                return () =>
-                {
-                    return _IsCoolingDown;
-                };
-            }
+                return _IsCoolingDown;
+            };
         }
+    }
 		protected override Func<bool> IsWarmingUpFeedbackFunc
+    {
+        get
         {
-            get
+            return () =>
             {
-                return () =>
-                {
-                    return _IsWarmingUp;
-                };
-            }
+                return _IsWarmingUp;
+            };
         }
-        protected override Func<string> CurrentInputFeedbackFunc { get { return () => Inputs.CurrentItem; } }
+    }
+    protected override Func<string> CurrentInputFeedbackFunc { get { return () => Inputs.CurrentItem; } }
 
-        int VolumeHeldRepeatInterval = 200;
-        ushort VolumeInterval = 655;
+    int VolumeHeldRepeatInterval = 200;
+    ushort VolumeInterval = 655;
 		ushort _FakeVolumeLevel = 31768;
 		bool _IsMuted;
 
 		public MockDisplay(string key, string name)
 			: base(key, name)
 		{
-            Inputs = new MockDisplayInputs
-            {
-                Items = new Dictionary<string, ISelectableItem>
+        Inputs = new MockDisplayInputs
+        {
+            Items = new Dictionary<string, ISelectableItem>
 				{
 					{ "HDMI1", new MockDisplayInput ( "HDMI1", "HDMI 1",this ) },
 					{ "HDMI2", new MockDisplayInput ("HDMI2", "HDMI 2",this ) },
@@ -69,11 +69,11 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 					{ "HDMI4", new MockDisplayInput ("HDMI4", "HDMI 4",this )},
 					{ "DP", new MockDisplayInput ("DP", "DisplayPort", this ) }
 				}
-            };
+        };
 
 			Inputs.CurrentItemChanged += (o, a) => CurrentInputFeedback.FireUpdate();
-           
-            var hdmiIn1 = new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo,
+       
+        var hdmiIn1 = new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.Hdmi, "HDMI1", this);
 			var hdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.Hdmi, "HDMI2", this);
@@ -88,8 +88,8 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			VolumeLevelFeedback = new IntFeedback(() => { return _FakeVolumeLevel; });
 			MuteFeedback = new BoolFeedback("MuteOn", () => _IsMuted);
 
-            WarmupTime = 10000;
-            CooldownTime = 10000;
+        WarmupTime = 10000;
+        CooldownTime = 10000;
 		}
 
 		public override void PowerOn()
@@ -123,8 +123,8 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 						Debug.LogMessage(LogEventLevel.Verbose, "Cooldown timer ending", this);
 						_IsCoolingDown = false;
 						IsCoolingDownFeedback.InvokeFireUpdate();
-                        _PowerIsOn = false;
-                        PowerIsOnFeedback.InvokeFireUpdate();
+                    _PowerIsOn = false;
+                    PowerIsOnFeedback.InvokeFireUpdate();
 					}, CooldownTime);
 			}
 		}		
@@ -139,43 +139,43 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 		public override void ExecuteSwitch(object selector)
 		{
-            try
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, "ExecuteSwitch: {0}", this, selector);
+        try
+        {
+            Debug.LogMessage(LogEventLevel.Verbose, "ExecuteSwitch: {0}", this, selector);
 
 			if (!_PowerIsOn)
 			{
 				PowerOn();
 			}
 
-                if (!Inputs.Items.TryGetValue(selector.ToString(), out var input))
-                    return;
+            if (!Inputs.Items.TryGetValue(selector.ToString(), out var input))
+                return;
 
-                Debug.LogMessage(LogEventLevel.Verbose, "Selected input: {input}", this, input.Key);
-                input.Select();
+            Debug.LogMessage(LogEventLevel.Verbose, "Selected input: {input}", this, input.Key);
+            input.Select();
 
-                var inputPort = InputPorts.FirstOrDefault(port =>
-                {
-                    Debug.LogMessage(LogEventLevel.Verbose, "Checking input port {inputPort} with selector {portSelector} against {selector}", this, port, port.Selector, selector);
-                    return port.Selector.ToString() == selector.ToString();
-                });
-
-                if (inputPort == null)
-                {
-                    Debug.LogMessage(LogEventLevel.Verbose, "Unable to find input port for selector {selector}", this, selector);                    
-                    return;
-                }
-
-                Debug.LogMessage(LogEventLevel.Verbose, "Setting current input port to {inputPort}", this, inputPort);
-                CurrentInputPort = inputPort;
-            } catch (Exception ex)
+            var inputPort = InputPorts.FirstOrDefault(port =>
             {
-                Debug.LogMessage(ex, "Error making switch: {Exception}", this, ex);
-            }
-        }
+                Debug.LogMessage(LogEventLevel.Verbose, "Checking input port {inputPort} with selector {portSelector} against {selector}", this, port, port.Selector, selector);
+                return port.Selector.ToString() == selector.ToString();
+            });
 
-        public void SetInput(string selector)
+            if (inputPort == null)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "Unable to find input port for selector {selector}", this, selector);                    
+                return;
+            }
+
+            Debug.LogMessage(LogEventLevel.Verbose, "Setting current input port to {inputPort}", this, inputPort);
+            CurrentInputPort = inputPort;
+        } catch (Exception ex)
         {
+            Debug.LogMessage(ex, "Error making switch: {Exception}", this, ex);
+        }
+    }
+
+    public void SetInput(string selector)
+    {
 			ISelectableItem currentInput = null;
 
 			try
@@ -185,24 +185,24 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			catch { }
 			
 
-            if (currentInput != null)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, this, "SetInput: {0}", selector);
-                currentInput.IsSelected = false;
-            }
+        if (currentInput != null)
+        {
+            Debug.LogMessage(LogEventLevel.Verbose, this, "SetInput: {0}", selector);
+            currentInput.IsSelected = false;
+        }
 
 			if (!Inputs.Items.TryGetValue(selector, out var input))
-                return;
+            return;
 
 			input.IsSelected = true;
 
 			Inputs.CurrentItem = selector;
-        }
+    }
 
 
-        #region IBasicVolumeWithFeedback Members
+    #region IBasicVolumeWithFeedback Members
 
-        public IntFeedback VolumeLevelFeedback { get; private set; }
+    public IntFeedback VolumeLevelFeedback { get; private set; }
 
 		public void SetVolume(ushort level)
 		{
@@ -225,36 +225,36 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		public BoolFeedback MuteFeedback { get; private set; }
 
 
-        #endregion
+    #endregion
 
-        #region IBasicVolumeControls Members
+    #region IBasicVolumeControls Members
 
-        public void VolumeUp(bool pressRelease)
+    public void VolumeUp(bool pressRelease)
 		{
-            //while (pressRelease)
-            //{
-                Debug.LogMessage(LogEventLevel.Verbose, this, "Volume Down {0}", pressRelease);
-                if (pressRelease)
-                {
-                    var newLevel = _FakeVolumeLevel + VolumeInterval;
-                    SetVolume((ushort)newLevel);
-                    CrestronEnvironment.Sleep(VolumeHeldRepeatInterval);
-                }
-            //}
+        //while (pressRelease)
+        //{
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Volume Down {0}", pressRelease);
+            if (pressRelease)
+            {
+                var newLevel = _FakeVolumeLevel + VolumeInterval;
+                SetVolume((ushort)newLevel);
+                CrestronEnvironment.Sleep(VolumeHeldRepeatInterval);
+            }
+        //}
 		}
 
 		public void VolumeDown(bool pressRelease)
 		{
-            //while (pressRelease)
-            //{
-                Debug.LogMessage(LogEventLevel.Verbose, this, "Volume Up {0}", pressRelease);
-                if (pressRelease)
-                {
-                    var newLevel = _FakeVolumeLevel - VolumeInterval;
-                    SetVolume((ushort)newLevel);
-                    CrestronEnvironment.Sleep(VolumeHeldRepeatInterval);
-                }
-            //}
+        //while (pressRelease)
+        //{
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Volume Up {0}", pressRelease);
+            if (pressRelease)
+            {
+                var newLevel = _FakeVolumeLevel - VolumeInterval;
+                SetVolume((ushort)newLevel);
+                CrestronEnvironment.Sleep(VolumeHeldRepeatInterval);
+            }
+        //}
 		}
 
 		public void MuteToggle()
@@ -269,7 +269,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }
-    }
+}
 
 	public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
 	{
@@ -284,4 +284,3 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			return new MockDisplay(dc.Key, dc.Name);
 		}
 	}
-}

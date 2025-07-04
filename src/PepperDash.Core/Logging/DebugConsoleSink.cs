@@ -9,47 +9,45 @@ using System.IO;
 using System.Text;
 
 
-namespace PepperDash.Core
+namespace PepperDash.Core;
+
+public class DebugConsoleSink : ILogEventSink
 {
-    public class DebugConsoleSink : ILogEventSink
+    private readonly ITextFormatter _textFormatter;
+
+    public void Emit(LogEvent logEvent)
     {
-        private readonly ITextFormatter _textFormatter;
+        if (!Debug.IsRunningOnAppliance) return;            
 
-        public void Emit(LogEvent logEvent)
+        /*string message = $"[{logEvent.Timestamp}][{logEvent.Level}][App {InitialParametersClass.ApplicationNumber}]{logEvent.RenderMessage()}";
+
+        if(logEvent.Properties.TryGetValue("Key",out var value) && value is ScalarValue sv && sv.Value is string rawValue)
         {
-            if (!Debug.IsRunningOnAppliance) return;            
+            message = $"[{logEvent.Timestamp}][{logEvent.Level}][App {InitialParametersClass.ApplicationNumber}][{rawValue,3}]: {logEvent.RenderMessage()}";
+        }*/
 
-            /*string message = $"[{logEvent.Timestamp}][{logEvent.Level}][App {InitialParametersClass.ApplicationNumber}]{logEvent.RenderMessage()}";
+        var buffer = new StringWriter(new StringBuilder(256));
 
-            if(logEvent.Properties.TryGetValue("Key",out var value) && value is ScalarValue sv && sv.Value is string rawValue)
-            {
-                message = $"[{logEvent.Timestamp}][{logEvent.Level}][App {InitialParametersClass.ApplicationNumber}][{rawValue,3}]: {logEvent.RenderMessage()}";
-            }*/
+        _textFormatter.Format(logEvent, buffer);
 
-            var buffer = new StringWriter(new StringBuilder(256));
+        var message = buffer.ToString();
 
-            _textFormatter.Format(logEvent, buffer);
-
-            var message = buffer.ToString();
-
-            CrestronConsole.PrintLine(message);
-        }
-
-        public DebugConsoleSink(ITextFormatter formatProvider )
-        {
-            _textFormatter = formatProvider ?? new JsonFormatter();
-        }
-
+        CrestronConsole.PrintLine(message);
     }
 
-    public static class DebugConsoleSinkExtensions
+    public DebugConsoleSink(ITextFormatter formatProvider )
     {
-        public static LoggerConfiguration DebugConsoleSink(
-                             this LoggerSinkConfiguration loggerConfiguration,
-                                              ITextFormatter formatProvider = null)
-        {
-            return loggerConfiguration.Sink(new DebugConsoleSink(formatProvider));
-        }
+        _textFormatter = formatProvider ?? new JsonFormatter();
     }
 
+}
+
+public static class DebugConsoleSinkExtensions
+{
+    public static LoggerConfiguration DebugConsoleSink(
+                         this LoggerSinkConfiguration loggerConfiguration,
+                                          ITextFormatter formatProvider = null)
+    {
+        return loggerConfiguration.Sink(new DebugConsoleSink(formatProvider));
+    }
 }

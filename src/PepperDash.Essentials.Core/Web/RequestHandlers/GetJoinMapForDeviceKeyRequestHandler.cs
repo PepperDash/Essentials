@@ -3,8 +3,8 @@ using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Bridges;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class GetJoinMapForDeviceKeyRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -92,4 +92,3 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			context.Response.End();
 		}
 	}
-}

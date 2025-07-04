@@ -4,30 +4,29 @@ using PepperDash.Core.Web.RequestHandlers;
 using System.Linq;
 using System.Text;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
+public class GetTieLinesRequestHandler : WebApiBaseRequestHandler
 {
-    public class GetTieLinesRequestHandler : WebApiBaseRequestHandler
+    public GetTieLinesRequestHandler() : base(true) { }
+
+    protected override void HandleGet(HttpCwsContext context)
     {
-        public GetTieLinesRequestHandler() : base(true) { }
-
-        protected override void HandleGet(HttpCwsContext context)
+        var tieLineString = JsonConvert.SerializeObject(TieLineCollection.Default.Select((tl) => new
         {
-            var tieLineString = JsonConvert.SerializeObject(TieLineCollection.Default.Select((tl) => new
-            {
-                sourceKey = tl.SourcePort.ParentDevice.Key,
-                sourcePort = tl.SourcePort.Key,
-                destinationKey = tl.DestinationPort.ParentDevice.Key,
-                destinationPort = tl.DestinationPort.Key,
-                type = tl.Type.ToString(),
-            }));
+            sourceKey = tl.SourcePort.ParentDevice.Key,
+            sourcePort = tl.SourcePort.Key,
+            destinationKey = tl.DestinationPort.ParentDevice.Key,
+            destinationPort = tl.DestinationPort.Key,
+            type = tl.Type.ToString(),
+        }));
 
-            context.Response.StatusCode = 200;
-            context.Response.StatusDescription = "OK";
-            context.Response.ContentType = "application/json";
-            context.Response.ContentEncoding = Encoding.UTF8;
-            context.Response.Write(tieLineString, false);
-            context.Response.End();
+        context.Response.StatusCode = 200;
+        context.Response.StatusDescription = "OK";
+        context.Response.ContentType = "application/json";
+        context.Response.ContentEncoding = Encoding.UTF8;
+        context.Response.Write(tieLineString, false);
+        context.Response.End();
 
-        }
     }
 }

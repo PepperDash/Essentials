@@ -2,19 +2,18 @@
 using System;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+public interface IRoomEventSchedule
 {
-    public interface IRoomEventSchedule
-    {
-        void AddOrUpdateScheduledEvent(ScheduledEventConfig eventConfig);
+    void AddOrUpdateScheduledEvent(ScheduledEventConfig eventConfig);
 
-        List<ScheduledEventConfig> GetScheduledEvents();
+    List<ScheduledEventConfig> GetScheduledEvents();
 
-        event EventHandler<ScheduledEventEventArgs> ScheduledEventsChanged;
-    }
+    event EventHandler<ScheduledEventEventArgs> ScheduledEventsChanged;
+}
 
-    public class ScheduledEventEventArgs : EventArgs
-    {
-        public List<ScheduledEventConfig> ScheduledEvents;
-    }
+public class ScheduledEventEventArgs : EventArgs
+{
+    public List<ScheduledEventConfig> ScheduledEvents;
 }

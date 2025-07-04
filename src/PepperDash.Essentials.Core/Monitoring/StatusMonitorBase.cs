@@ -11,18 +11,18 @@ using System.ComponentModel;
 using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public abstract class StatusMonitorBase : IStatusMonitor, IKeyName
 	{
 		public event EventHandler<MonitorStatusChangeEventArgs> StatusChange;
 
-        /// <summary>
-        /// Format returned: "parentdevkey-comMonitor"
-        /// </summary>
-        public string Key { get { return Parent.Key + "-comMonitor"; } }
+    /// <summary>
+    /// Format returned: "parentdevkey-comMonitor"
+    /// </summary>
+    public string Key { get { return Parent.Key + "-comMonitor"; } }
 
-        public string Name { get { return "Comm. monitor"; } }
+    public string Name { get { return "Comm. monitor"; } }
 
 		public IKeyed Parent { get; private set; }
 
@@ -118,13 +118,12 @@ namespace PepperDash.Essentials.Core
 			ErrorTimer = null;
 		}
 
-        protected void ResetErrorTimers()
-        {
-            if(WarningTimer != null)
-                WarningTimer.Reset(WarningTime, WarningTime);
-            if(ErrorTimer != null)
-                ErrorTimer.Reset(ErrorTime, ErrorTime);
+    protected void ResetErrorTimers()
+    {
+        if(WarningTimer != null)
+            WarningTimer.Reset(WarningTime, WarningTime);
+        if(ErrorTimer != null)
+            ErrorTimer.Reset(ErrorTime, ErrorTime);
 
-        }
+    }
 	}
-}

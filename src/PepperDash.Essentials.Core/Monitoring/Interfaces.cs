@@ -4,8 +4,8 @@ using System;
 using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public interface IStatusMonitor
 	{
 		IKeyed Parent { get; }
@@ -31,10 +31,10 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public enum MonitorStatus
 	{
-        StatusUnknown = 0,
+    StatusUnknown = 0,
 		IsOk = 1, 
-        InWarning = 2, 
-        InError = 3
+    InWarning = 2, 
+    InError = 3
 	}
 
 	public class MonitorStatusChangeEventArgs : EventArgs
@@ -54,4 +54,3 @@ namespace PepperDash.Essentials.Core
 			Message = message;
 		}
 	}
-}

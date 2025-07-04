@@ -7,165 +7,164 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+/// <summary>
+/// For rooms with in call feedback
+/// </summary>
+public interface IHasInCallFeedback
 {
-    /// <summary>
-    /// For rooms with in call feedback
-    /// </summary>
-    public interface IHasInCallFeedback
+    BoolFeedback InCallFeedback { get; }
+}
+
+/// <summary>
+/// For rooms with a single display
+/// </summary>
+public interface IHasDefaultDisplay
+{
+    IRoutingSink DefaultDisplay { get; }
+}
+
+/// <summary>
+/// For rooms with multiple displays
+/// </summary>
+public interface IHasMultipleDisplays
+{
+    Dictionary<eSourceListItemDestinationTypes, IRoutingSink> Displays { get; }
+}
+
+/// <summary>
+/// For rooms with routing
+/// </summary>
+public interface IRunRouteAction
+{
+    void RunRouteAction(string routeKey, string sourceListKey);
+
+    void RunRouteAction(string routeKey, string sourceListKey, Action successCallback);        
+}
+
+/// <summary>
+/// Simplified routing direct from source to destination
+/// </summary>
+public interface IRunDirectRouteAction
+{
+    void RunDirectRoute(string sourceKey, string destinationKey, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
+}
+
+/// <summary>
+/// Describes a room with matrix routing
+/// </summary>
+public interface IHasMatrixRouting
+{
+    string MatrixRoutingDeviceKey { get; }
+
+    List<string> EndpointKeys { get; }
+}
+
+/// <summary>
+/// Describes a room with routing endpoints
+/// </summary>
+public interface IHasRoutingEndpoints
+{
+    List<string> EndpointKeys { get; }
+}
+
+/// <summary>
+/// Describes a room with a shutdown prompt timer
+/// </summary>
+public interface IShutdownPromptTimer
+{
+    SecondsCountdownTimer ShutdownPromptTimer { get; }
+
+    void SetShutdownPromptSeconds(int seconds);
+
+    void StartShutdown(eShutdownType type);
+}
+
+/// <summary>
+/// Describes a room with a tech password
+/// </summary>
+public interface ITechPassword
+{
+    event EventHandler<TechPasswordEventArgs> TechPasswordValidateResult;
+
+    event EventHandler<EventArgs> TechPasswordChanged;
+
+    int TechPasswordLength { get; }
+
+    void ValidateTechPassword(string password);
+
+    void SetTechPassword(string oldPassword, string newPassword);
+}
+
+public class TechPasswordEventArgs : EventArgs
+{
+    public bool IsValid { get; private set; }
+
+    public TechPasswordEventArgs(bool isValid)
     {
-        BoolFeedback InCallFeedback { get; }
+        IsValid = isValid;
     }
+}
 
-    /// <summary>
-    /// For rooms with a single display
-    /// </summary>
-    public interface IHasDefaultDisplay
-    {
-        IRoutingSink DefaultDisplay { get; }
-    }
+/// <summary>
+/// For rooms that default presentation only routing
+/// </summary>
+public interface IRunDefaultPresentRoute
+{
+    bool RunDefaultPresentRoute();
+}
 
-    /// <summary>
-    /// For rooms with multiple displays
-    /// </summary>
-    public interface IHasMultipleDisplays
-    {
-        Dictionary<eSourceListItemDestinationTypes, IRoutingSink> Displays { get; }
-    }
+/// <summary>
+/// For rooms that have default presentation and calling routes
+/// </summary>
+public interface IRunDefaultCallRoute : IRunDefaultPresentRoute
+{
+    bool RunDefaultCallRoute();
+}
 
-    /// <summary>
-    /// For rooms with routing
-    /// </summary>
-    public interface IRunRouteAction
-    {
-        void RunRouteAction(string routeKey, string sourceListKey);
+/// <summary>
+/// Describes environmental controls available on a room such as lighting, shades, temperature, etc.
+/// </summary>
+public interface IEnvironmentalControls
+{
+    List<EssentialsDevice> EnvironmentalControlDevices { get; }
 
-        void RunRouteAction(string routeKey, string sourceListKey, Action successCallback);        
-    }
+    bool HasEnvironmentalControlDevices { get; }
+}
 
-    /// <summary>
-    /// Simplified routing direct from source to destination
-    /// </summary>
-    public interface IRunDirectRouteAction
-    {
-        void RunDirectRoute(string sourceKey, string destinationKey, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
-    }
-    
-    /// <summary>
-    /// Describes a room with matrix routing
-    /// </summary>
-    public interface IHasMatrixRouting
-    {
-        string MatrixRoutingDeviceKey { get; }
+public interface IRoomOccupancy:IKeyed
+{
+    IOccupancyStatusProvider RoomOccupancy { get; }
+    bool OccupancyStatusProviderIsRemote { get; }
 
-        List<string> EndpointKeys { get; }
-    }
+    void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes);
 
-    /// <summary>
-    /// Describes a room with routing endpoints
-    /// </summary>
-    public interface IHasRoutingEndpoints
-    {
-        List<string> EndpointKeys { get; }
-    }
+    void RoomVacatedForTimeoutPeriod(object o);
 
-    /// <summary>
-    /// Describes a room with a shutdown prompt timer
-    /// </summary>
-    public interface IShutdownPromptTimer
-    {
-        SecondsCountdownTimer ShutdownPromptTimer { get; }
+    void StartRoomVacancyTimer(eVacancyMode mode);
 
-        void SetShutdownPromptSeconds(int seconds);
+    eVacancyMode VacancyMode { get; }
 
-        void StartShutdown(eShutdownType type);
-    }
+    event EventHandler<EventArgs> RoomOccupancyIsSet;
+}
 
-    /// <summary>
-    /// Describes a room with a tech password
-    /// </summary>
-    public interface ITechPassword
-    {
-        event EventHandler<TechPasswordEventArgs> TechPasswordValidateResult;
+public interface IEmergency
+{
+    EssentialsRoomEmergencyBase Emergency { get; }
+}
 
-        event EventHandler<EventArgs> TechPasswordChanged;
+public interface IMicrophonePrivacy
+{
+    Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; }
+}
 
-        int TechPasswordLength { get; }
+public interface IHasAccessoryDevices : IKeyName
+{
+    List<string> AccessoryDeviceKeys { get; }
+}
 
-        void ValidateTechPassword(string password);
-
-        void SetTechPassword(string oldPassword, string newPassword);
-    }
-
-    public class TechPasswordEventArgs : EventArgs
-    {
-        public bool IsValid { get; private set; }
-
-        public TechPasswordEventArgs(bool isValid)
-        {
-            IsValid = isValid;
-        }
-    }
-
-    /// <summary>
-    /// For rooms that default presentation only routing
-    /// </summary>
-    public interface IRunDefaultPresentRoute
-    {
-        bool RunDefaultPresentRoute();
-    }
-
-    /// <summary>
-    /// For rooms that have default presentation and calling routes
-    /// </summary>
-    public interface IRunDefaultCallRoute : IRunDefaultPresentRoute
-    {
-        bool RunDefaultCallRoute();
-    }
-
-    /// <summary>
-    /// Describes environmental controls available on a room such as lighting, shades, temperature, etc.
-    /// </summary>
-    public interface IEnvironmentalControls
-    {
-        List<EssentialsDevice> EnvironmentalControlDevices { get; }
-
-        bool HasEnvironmentalControlDevices { get; }
-    }
-
-    public interface IRoomOccupancy:IKeyed
-    {
-        IOccupancyStatusProvider RoomOccupancy { get; }
-        bool OccupancyStatusProviderIsRemote { get; }
-
-        void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes);
-
-        void RoomVacatedForTimeoutPeriod(object o);
-
-        void StartRoomVacancyTimer(eVacancyMode mode);
-
-        eVacancyMode VacancyMode { get; }
-
-        event EventHandler<EventArgs> RoomOccupancyIsSet;
-    }
-
-    public interface IEmergency
-    {
-        EssentialsRoomEmergencyBase Emergency { get; }
-    }
-
-    public interface IMicrophonePrivacy
-    {
-        Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; }
-    }
-
-    public interface IHasAccessoryDevices : IKeyName
-    {
-        List<string> AccessoryDeviceKeys { get; }
-    }
-
-    public interface IHasCiscoNavigatorTouchpanel
-    {
-        string CiscoNavigatorTouchpanelKey { get; }
-    }
+public interface IHasCiscoNavigatorTouchpanel
+{
+    string CiscoNavigatorTouchpanelKey { get; }
 }

@@ -7,11 +7,11 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Core.Config
-{
-    /// <summary>
-    /// Reads a Portal formatted config file
-    /// </summary>
+namespace PepperDash.Core.Config;
+
+/// <summary>
+/// Reads a Portal formatted config file
+/// </summary>
 	public class PortalConfigReader
 	{
 		/// <summary>
@@ -100,31 +100,31 @@ namespace PepperDash.Core.Config
 		            Merge(template["destinationLists"], system["destinationLists"], "destinationLists"));
 
 
-            if (system["cameraLists"] == null)
-                merged.Add("cameraLists", template["cameraLists"]);
-            else
-                merged.Add("cameraLists", Merge(template["cameraLists"], system["cameraLists"], "cameraLists"));
+        if (system["cameraLists"] == null)
+            merged.Add("cameraLists", template["cameraLists"]);
+        else
+            merged.Add("cameraLists", Merge(template["cameraLists"], system["cameraLists"], "cameraLists"));
 
-            if (system["audioControlPointLists"] == null)
-                merged.Add("audioControlPointLists", template["audioControlPointLists"]);
-            else
-                merged.Add("audioControlPointLists",
-                    Merge(template["audioControlPointLists"], system["audioControlPointLists"], "audioControlPointLists"));
+        if (system["audioControlPointLists"] == null)
+            merged.Add("audioControlPointLists", template["audioControlPointLists"]);
+        else
+            merged.Add("audioControlPointLists",
+                Merge(template["audioControlPointLists"], system["audioControlPointLists"], "audioControlPointLists"));
 
 
-            // Template tie lines take precedence.  Config tool doesn't do them at system
-            // level anyway...
-            if (template["tieLines"] != null)
+        // Template tie lines take precedence.  Config tool doesn't do them at system
+        // level anyway...
+        if (template["tieLines"] != null)
 				merged.Add("tieLines", template["tieLines"]);
 			else if (system["tieLines"] != null)
 				merged.Add("tieLines", system["tieLines"]);
 			else
 				merged.Add("tieLines", new JArray());
 
-            if (template["joinMaps"] != null)
-                merged.Add("joinMaps", template["joinMaps"]);
-            else
-                merged.Add("joinMaps", new JObject());
+        if (template["joinMaps"] != null)
+            merged.Add("joinMaps", template["joinMaps"]);
+        else
+            merged.Add("joinMaps", new JObject());
 
 			if (system["global"] != null)
 				merged.Add("global", Merge(template["global"], system["global"], "global"));
@@ -147,26 +147,26 @@ namespace PepperDash.Core.Config
 				return a1;
 			else if (a1 != null)
 			{
-                if (a2[0]["key"] == null) // If the first item in the system array has no key, overwrite the template array
-                {                                                       // with the system array
-                    return a2;
-                }
-                else    // The arrays are keyed, merge them by key
+            if (a2[0]["key"] == null) // If the first item in the system array has no key, overwrite the template array
+            {                                                       // with the system array
+                return a2;
+            }
+            else    // The arrays are keyed, merge them by key
+            {
+                for (int i = 0; i < a1.Count(); i++)
                 {
-                    for (int i = 0; i < a1.Count(); i++)
+                    var a1Dev = a1[i];
+                    // Try to get a system device and if found, merge it onto template
+                    var a2Match = a2.FirstOrDefault(t => t[propertyName].Equals(a1Dev[propertyName]));// t.Value<int>("uid") == tmplDev.Value<int>("uid"));
+                    if (a2Match != null)
                     {
-                        var a1Dev = a1[i];
-                        // Try to get a system device and if found, merge it onto template
-                        var a2Match = a2.FirstOrDefault(t => t[propertyName].Equals(a1Dev[propertyName]));// t.Value<int>("uid") == tmplDev.Value<int>("uid"));
-                        if (a2Match != null)
-                        {
-                            var mergedItem = Merge(a1Dev, a2Match, string.Format("{0}[{1}].", path, i));// Merge(JObject.FromObject(a1Dev), JObject.FromObject(a2Match));
-                            result.Add(mergedItem);
-                        }
-                        else
-                            result.Add(a1Dev);
+                        var mergedItem = Merge(a1Dev, a2Match, string.Format("{0}[{1}].", path, i));// Merge(JObject.FromObject(a1Dev), JObject.FromObject(a2Match));
+                        result.Add(mergedItem);
                     }
+                    else
+                        result.Add(a1Dev);
                 }
+            }
 			}
 			return result;
 		}
@@ -183,9 +183,9 @@ namespace PepperDash.Core.Config
 		/// <summary>
 		/// Merge o2 onto o1
 		/// </summary>
-        /// <param name="o1"></param>
-        /// <param name="o2"></param>
-        /// <param name="path"></param>
+    /// <param name="o1"></param>
+    /// <param name="o2"></param>
+    /// <param name="path"></param>
 		static JObject Merge(JObject o1, JObject o2, string path)
 		{
 			foreach (var o2Prop in o2)
@@ -232,4 +232,3 @@ namespace PepperDash.Core.Config
 			return o1;
 		}
 	}
-}

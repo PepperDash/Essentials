@@ -1,23 +1,22 @@
-namespace PepperDash.Core.Intersystem.Tokens
+namespace PepperDash.Core.Intersystem.Tokens;
+
+/// <summary>
+/// XSig token types.
+/// </summary>
+public enum XSigTokenType
 {
     /// <summary>
-    /// XSig token types.
+    /// Digital signal datatype.
     /// </summary>
-    public enum XSigTokenType
-    {
-        /// <summary>
-        /// Digital signal datatype.
-        /// </summary>
-        Digital,
+    Digital,
 
-        /// <summary>
-        /// Analog signal datatype.
-        /// </summary>
-        Analog,
+    /// <summary>
+    /// Analog signal datatype.
+    /// </summary>
+    Analog,
 
-        /// <summary>
-        /// Serial signal datatype.
-        /// </summary>
-        Serial
-    }
+    /// <summary>
+    /// Serial signal datatype.
+    /// </summary>
+    Serial
 }

@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// Integers that represent the "source type number" for given sources.
 	/// Primarily used by the UI to calculate subpage join offsets
@@ -25,4 +25,3 @@ namespace PepperDash.Essentials.Core
 
 		public const uint TypeNoControls = 49;
 	}
-}

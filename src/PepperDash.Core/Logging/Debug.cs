@@ -16,8 +16,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace PepperDash.Core
-{
+namespace PepperDash.Core;
+
     /// <summary>
     /// Contains debug commands for use in various situations
     /// </summary>
@@ -1023,6 +1023,5 @@ namespace PepperDash.Core
             /// None
             /// </summary>
             None,
-        }
     }
 }

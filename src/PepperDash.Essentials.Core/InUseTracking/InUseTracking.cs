@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// Provides in use tracking.  Objects can register with this.  InUseFeedback can provide 
 	/// events when usage changes.
@@ -97,4 +97,3 @@ namespace PepperDash.Essentials.Core
 	//        EventType = eventType;
 	//    }
 	//}
-}

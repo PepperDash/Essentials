@@ -6,8 +6,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharp.Net.Https;
 
-namespace PepperDash.Core.GenericRESTfulCommunications
-{
+namespace PepperDash.Core.GenericRESTfulCommunications;
+
 	/// <summary>
 	/// Generic RESTful communication class
 	/// </summary>
@@ -42,7 +42,7 @@ namespace PepperDash.Core.GenericRESTfulCommunications
 		/// <param name="requestType"></param>
 		/// <param name="username"></param>
 		/// <param name="password"></param>
-        /// <param name="contentType"></param>
+    /// <param name="contentType"></param>
 		public void SubmitRequest(string url, ushort port, ushort requestType, string contentType, string username, string password)
 		{
 			if (url.StartsWith("https:", StringComparison.OrdinalIgnoreCase))
@@ -65,7 +65,7 @@ namespace PepperDash.Core.GenericRESTfulCommunications
 		/// <param name="url"></param>
 		/// <param name="port"></param>
 		/// <param name="requestType"></param>
-        /// <param name="contentType"></param>
+    /// <param name="contentType"></param>
 		/// <param name="username"></param>
 		/// <param name="password"></param>
 		private void SubmitRequestHttp(string url, ushort port, ushort requestType, string contentType, string username, string password)
@@ -123,7 +123,7 @@ namespace PepperDash.Core.GenericRESTfulCommunications
 		/// <param name="url"></param>
 		/// <param name="port"></param>
 		/// <param name="requestType"></param>
-        /// <param name="contentType"></param>
+    /// <param name="contentType"></param>
 		/// <param name="username"></param>
 		/// <param name="password"></param>
 		private void SubmitRequestHttps(string url, ushort port, ushort requestType, string contentType, string username, string password)
@@ -253,4 +253,3 @@ namespace PepperDash.Core.GenericRESTfulCommunications
 			}
 		}
 	}
-}

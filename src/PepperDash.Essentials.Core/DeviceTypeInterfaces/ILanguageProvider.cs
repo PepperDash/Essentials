@@ -1,13 +1,11 @@
 ﻿using System;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+
+public interface ILanguageProvider
 {
-   
-    public interface ILanguageProvider
-    {
-        ILanguageDefinition CurrentLanguage { get; set; }
+    ILanguageDefinition CurrentLanguage { get; set; }
 
-        event EventHandler CurrentLanguageChanged;
-    }
-
+    event EventHandler CurrentLanguageChanged;
 }

@@ -11,18 +11,18 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Devices.Common
-{
+namespace PepperDash.Essentials.Devices.Common;
+
 	public class GenericSource : EssentialsDevice, IUiDisplayInfo, IRoutingSource, IUsageTracking
 	{
 
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeNoControls; } }
 
-        public GenericSource(string key, string name)
+    public GenericSource(string key, string name)
 			: base(key, name)
 		{
 
-            AnyOut = new RoutingOutputPort(RoutingPortNames.AnyOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
+        AnyOut = new RoutingOutputPort(RoutingPortNames.AnyOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, null, this);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { AnyOut };
 		}
@@ -34,24 +34,23 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#endregion
 
-        #region IUsageTracking Members
+    #region IUsageTracking Members
 
-        public UsageTracking UsageTracker { get; set; }
+    public UsageTracking UsageTracker { get; set; }
 
-        #endregion
+    #endregion
 	}
 
-    public class GenericSourceFactory : EssentialsDeviceFactory<GenericSource>
+public class GenericSourceFactory : EssentialsDeviceFactory<GenericSource>
+{
+    public GenericSourceFactory()
     {
-        public GenericSourceFactory()
-        {
-            TypeNames = new List<string>() { "genericsource" };
-        }
+        TypeNames = new List<string>() { "genericsource" };
+    }
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Source Device");
-            return new GenericSource(dc.Key, dc.Name);
-        }
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Source Device");
+        return new GenericSource(dc.Key, dc.Name);
     }
 }

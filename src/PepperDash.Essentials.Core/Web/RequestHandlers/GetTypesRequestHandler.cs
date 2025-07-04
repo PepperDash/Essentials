@@ -3,8 +3,8 @@ using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class GetTypesRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -55,4 +55,3 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			context.Response.End();
 		}
 	}
-}

@@ -8,17 +8,15 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 
-namespace PepperDash.Essentials.Devices.Common.Codec
+namespace PepperDash.Essentials.Devices.Common.Codec;
+
+public interface IHasContentSharing
 {
-    public interface IHasContentSharing
-    {
-        BoolFeedback SharingContentIsOnFeedback { get; }
-        StringFeedback SharingSourceFeedback { get; }
+    BoolFeedback SharingContentIsOnFeedback { get; }
+    StringFeedback SharingSourceFeedback { get; }
 
-        bool AutoShareContentWhileInCall { get; }
+    bool AutoShareContentWhileInCall { get; }
 
-        void StartSharing();
-        void StopSharing();
-    }
-
+    void StartSharing();
+    void StopSharing();
 }

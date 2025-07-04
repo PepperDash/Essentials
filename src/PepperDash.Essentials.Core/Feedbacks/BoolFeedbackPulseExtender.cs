@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// A class that wraps a BoolFeedback with logic that extends it's true state for
 	/// a time period after the value goes false.
@@ -75,4 +75,3 @@ namespace PepperDash.Essentials.Core
 			Timer = null;
 		}
 	}
-}

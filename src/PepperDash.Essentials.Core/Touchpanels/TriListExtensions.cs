@@ -9,8 +9,8 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// Extensions used for more-clear attachment of Actions to user objects on sigs
 	/// </summary>
@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Core
 	{
 		/// <summary>
 		/// Attaches Action to Sig's user object and returns the same Sig. This provides no protection
-        /// from null sigs
+    /// from null sigs
 		/// </summary>
 		/// <param name="sig">The BoolOutputSig to attach the Action to</param>
 		/// <param name="a">An action to run when sig is pressed and when released</param>
@@ -64,14 +64,14 @@ namespace PepperDash.Essentials.Core
 			return sig.SetBoolSigAction(b => { if (!b) a(); });
 		}
 
-        /// <summary>
-        /// Sets an action to a held sig
-        /// </summary>
-        /// <returns>The sig</returns>
-        public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction)
-        {
-            return SetSigHeldAction(tl, sigNum, heldMs, heldAction, null);
-        }
+    /// <summary>
+    /// Sets an action to a held sig
+    /// </summary>
+    /// <returns>The sig</returns>
+    public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction)
+    {
+        return SetSigHeldAction(tl, sigNum, heldMs, heldAction, null);
+    }
 
 		/// <summary>
 		/// Sets an action to a held sig as well as a released-without-hold action
@@ -114,14 +114,14 @@ namespace PepperDash.Essentials.Core
 
 		}
 
-        /// <summary>
-        /// Sets an action to a held sig as well as a released-without-hold action
-        /// </summary>
-        /// <returns>The sig</returns>
-        public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction, Action releaseAction)
-        {
+    /// <summary>
+    /// Sets an action to a held sig as well as a released-without-hold action
+    /// </summary>
+    /// <returns>The sig</returns>
+    public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction, Action releaseAction)
+    {
 			return tl.BooleanOutput[sigNum].SetSigHeldAction(heldMs, heldAction, null, releaseAction);
-        }
+    }
 
 		/// <summary>
 		/// Sets an action to a held sig, an action for the release of hold, as well as a released-without-hold action
@@ -206,34 +206,34 @@ namespace PepperDash.Essentials.Core
 			return ClearSigAction(tl.StringOutput[sigNum]) as StringOutputSig;
 		}
 
-        /// <summary>
-        /// Clears all actions on all sigs
-        /// </summary>
-        public static void ClearAllSigActions(this BasicTriList t1)
+    /// <summary>
+    /// Clears all actions on all sigs
+    /// </summary>
+    public static void ClearAllSigActions(this BasicTriList t1)
+    {
+        foreach (var sig in t1.BooleanOutput)
         {
-            foreach (var sig in t1.BooleanOutput)
-            {
-                ClearSigAction(sig);
-            }
-
-            foreach (var sig in t1.UShortOutput)
-            {
-                ClearSigAction(sig);
-            }
-
-            foreach (var sig in t1.StringOutput)
-            {
-                ClearSigAction(sig);
-            }
+            ClearSigAction(sig);
         }
 
-        /// <summary>
-        /// Helper method to set the value of a bool Sig on TriList
-        /// </summary>
-        public static void SetBool(this BasicTriList tl, uint sigNum, bool value)
+        foreach (var sig in t1.UShortOutput)
         {
-            tl.BooleanInput[sigNum].BoolValue = value;
+            ClearSigAction(sig);
         }
+
+        foreach (var sig in t1.StringOutput)
+        {
+            ClearSigAction(sig);
+        }
+    }
+
+    /// <summary>
+    /// Helper method to set the value of a bool Sig on TriList
+    /// </summary>
+    public static void SetBool(this BasicTriList tl, uint sigNum, bool value)
+    {
+        tl.BooleanInput[sigNum].BoolValue = value;
+    }
 
 		/// <summary>
 		/// Sends an true-false pulse to the sig
@@ -256,21 +256,21 @@ namespace PepperDash.Essentials.Core
 			tl.BooleanInput[sigNum].Pulse(ms);
 		}
 
-        /// <summary>
-        /// Helper method to set the value of a ushort Sig on TriList
-        /// </summary>
-        public static void SetUshort(this BasicTriList tl, uint sigNum, ushort value)
-        {
-            tl.UShortInput[sigNum].UShortValue = value;
-        }
+    /// <summary>
+    /// Helper method to set the value of a ushort Sig on TriList
+    /// </summary>
+    public static void SetUshort(this BasicTriList tl, uint sigNum, ushort value)
+    {
+        tl.UShortInput[sigNum].UShortValue = value;
+    }
 
-        /// <summary>
-        /// Helper method to set the value of a string Sig on TriList
-        /// </summary>
-        public static void SetString(this BasicTriList tl, uint sigNum, string value)
-        {
-            tl.StringInput[sigNum].StringValue = value;
-        }
+    /// <summary>
+    /// Helper method to set the value of a string Sig on TriList
+    /// </summary>
+    public static void SetString(this BasicTriList tl, uint sigNum, string value)
+    {
+        tl.StringInput[sigNum].StringValue = value;
+    }
 
 	    public static void SetString(this BasicTriList tl, uint sigNum, string value, eStringEncoding encoding)
 	    {
@@ -310,5 +310,4 @@ namespace PepperDash.Essentials.Core
 		{
 			return tl.StringOutput[sigNum].StringValue;
 		}
-    }
 }

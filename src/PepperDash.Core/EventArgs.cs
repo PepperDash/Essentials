@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Core
-{
+namespace PepperDash.Core;
+
 	/// <summary>
 	/// Bool change event args
 	/// </summary>
@@ -169,4 +169,3 @@ namespace PepperDash.Core
 			Index = index;
 		}
 	}	
-}

@@ -8,26 +8,26 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core.JsonToSimpl;
 
 
-namespace PepperDash.Core.WebApi.Presets
-{
-    /// <summary>
-    /// Passcode client for the WebApi
-    /// </summary>
+namespace PepperDash.Core.WebApi.Presets;
+
+/// <summary>
+/// Passcode client for the WebApi
+/// </summary>
 	public class WebApiPasscodeClient : IKeyed
 	{
-        /// <summary>
-        /// Notifies when user received
-        /// </summary>
+    /// <summary>
+    /// Notifies when user received
+    /// </summary>
 		public event EventHandler<UserReceivedEventArgs> UserReceived;
 
-        /// <summary>
-        /// Notifies when Preset received
-        /// </summary>
+    /// <summary>
+    /// Notifies when Preset received
+    /// </summary>
 		public event EventHandler<PresetReceivedEventArgs> PresetReceived;
 
-        /// <summary>
-        /// Unique identifier for this instance
-        /// </summary>
+    /// <summary>
+    /// Unique identifier for this instance
+    /// </summary>
 		public string Key { get; private set; }
 
 		//string JsonMasterKey;
@@ -54,13 +54,13 @@ namespace PepperDash.Core.WebApi.Presets
 		{
 		}
 
-        /// <summary>
-        /// Initializes the instance
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="jsonMasterKey"></param>
-        /// <param name="urlBase"></param>
-        /// <param name="defaultPresetJsonFilePath"></param>
+    /// <summary>
+    /// Initializes the instance
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="jsonMasterKey"></param>
+    /// <param name="urlBase"></param>
+    /// <param name="defaultPresetJsonFilePath"></param>
 		public void Initialize(string key, string jsonMasterKey, string urlBase, string defaultPresetJsonFilePath)
 		{
 			Key = key;
@@ -73,41 +73,41 @@ namespace PepperDash.Core.WebApi.Presets
 			J2SMaster.Initialize(jsonMasterKey);
 		}
 
-        /// <summary>
-        /// Gets the user for a passcode
-        /// </summary>
-        /// <param name="passcode"></param>
+    /// <summary>
+    /// Gets the user for a passcode
+    /// </summary>
+    /// <param name="passcode"></param>
 		public void GetUserForPasscode(string passcode)
 		{
-            // Bullshit duplicate code here... These two cases should be the same 
-            // except for https/http and the certificate ignores 
-            if (!UrlBase.StartsWith("https"))
-                return;
-            var req = new HttpsClientRequest();
-            req.Url = new UrlParser(UrlBase + "/api/users/dopin");
-            req.RequestType = Crestron.SimplSharp.Net.Https.RequestType.Post;
-            req.Header.AddHeader(new HttpsHeader("Content-Type", "application/json"));
-            req.Header.AddHeader(new HttpsHeader("Accept", "application/json"));
-            var jo = new JObject();
-            jo.Add("pin", passcode);
-            req.ContentString = jo.ToString();
+        // Bullshit duplicate code here... These two cases should be the same 
+        // except for https/http and the certificate ignores 
+        if (!UrlBase.StartsWith("https"))
+            return;
+        var req = new HttpsClientRequest();
+        req.Url = new UrlParser(UrlBase + "/api/users/dopin");
+        req.RequestType = Crestron.SimplSharp.Net.Https.RequestType.Post;
+        req.Header.AddHeader(new HttpsHeader("Content-Type", "application/json"));
+        req.Header.AddHeader(new HttpsHeader("Accept", "application/json"));
+        var jo = new JObject();
+        jo.Add("pin", passcode);
+        req.ContentString = jo.ToString();
 
-            var client = new HttpsClient();
-            client.HostVerification = false;
-            client.PeerVerification = false;
-            var resp = client.Dispatch(req);
-            var handler = UserReceived;
-            if (resp.Code == 200)
-            {
-                //CrestronConsole.PrintLine("Received: {0}", resp.ContentString);
-                var user = JsonConvert.DeserializeObject<User>(resp.ContentString);
-                CurrentUser = user;
-                if (handler != null)
-                    UserReceived(this, new UserReceivedEventArgs(user, true));
-            }
-            else
-                if (handler != null)
-                    UserReceived(this, new UserReceivedEventArgs(null, false));
+        var client = new HttpsClient();
+        client.HostVerification = false;
+        client.PeerVerification = false;
+        var resp = client.Dispatch(req);
+        var handler = UserReceived;
+        if (resp.Code == 200)
+        {
+            //CrestronConsole.PrintLine("Received: {0}", resp.ContentString);
+            var user = JsonConvert.DeserializeObject<User>(resp.ContentString);
+            CurrentUser = user;
+            if (handler != null)
+                UserReceived(this, new UserReceivedEventArgs(user, true));
+        }
+        else
+            if (handler != null)
+                UserReceived(this, new UserReceivedEventArgs(null, false));
 		}
 
 		/// <summary>
@@ -130,57 +130,57 @@ namespace PepperDash.Core.WebApi.Presets
 				PresetNumber = presetNumber
 			};
 
-            var handler = PresetReceived;
+        var handler = PresetReceived;
 			try
 			{
-                if (!UrlBase.StartsWith("https"))
-                    return;
-                var req = new HttpsClientRequest();
-                req.Url = new UrlParser(UrlBase + "/api/presets/userandroom");
-                req.RequestType = Crestron.SimplSharp.Net.Https.RequestType.Post;
-                req.Header.AddHeader(new HttpsHeader("Content-Type", "application/json"));
-                req.Header.AddHeader(new HttpsHeader("Accept", "application/json"));
-                req.ContentString = JsonConvert.SerializeObject(msg);
+            if (!UrlBase.StartsWith("https"))
+                return;
+            var req = new HttpsClientRequest();
+            req.Url = new UrlParser(UrlBase + "/api/presets/userandroom");
+            req.RequestType = Crestron.SimplSharp.Net.Https.RequestType.Post;
+            req.Header.AddHeader(new HttpsHeader("Content-Type", "application/json"));
+            req.Header.AddHeader(new HttpsHeader("Accept", "application/json"));
+            req.ContentString = JsonConvert.SerializeObject(msg);
 
-                var client = new HttpsClient();
-                client.HostVerification = false;
-                client.PeerVerification = false;
+            var client = new HttpsClient();
+            client.HostVerification = false;
+            client.PeerVerification = false;
 
-                // ask for the preset
-                var resp = client.Dispatch(req);
-                if (resp.Code == 200) // got it
+            // ask for the preset
+            var resp = client.Dispatch(req);
+            if (resp.Code == 200) // got it
+            {
+                //Debug.Console(1, this, "Received: {0}", resp.ContentString);
+                var preset = JsonConvert.DeserializeObject<Preset>(resp.ContentString);
+                CurrentPreset = preset;
+
+                //if there's no preset data, load the template
+                if (preset.Data == null || preset.Data.Trim() == string.Empty || JObject.Parse(preset.Data).Count == 0)
                 {
-                    //Debug.Console(1, this, "Received: {0}", resp.ContentString);
-                    var preset = JsonConvert.DeserializeObject<Preset>(resp.ContentString);
-                    CurrentPreset = preset;
-
-                    //if there's no preset data, load the template
-                    if (preset.Data == null || preset.Data.Trim() == string.Empty || JObject.Parse(preset.Data).Count == 0)
-                    {
-                        //Debug.Console(1, this, "Loaded preset has no data. Loading default template.");
-                        LoadDefaultPresetData();
-                        return;
-                    }
-
-                    J2SMaster.LoadWithJson(preset.Data);
-                    if (handler != null)
-                        PresetReceived(this, new PresetReceivedEventArgs(preset, true));
-                }
-                else // no existing preset
-                {
-                    CurrentPreset = new Preset();
+                    //Debug.Console(1, this, "Loaded preset has no data. Loading default template.");
                     LoadDefaultPresetData();
-                    if (handler != null)
-                        PresetReceived(this, new PresetReceivedEventArgs(null, false));
+                    return;
                 }
+
+                J2SMaster.LoadWithJson(preset.Data);
+                if (handler != null)
+                    PresetReceived(this, new PresetReceivedEventArgs(preset, true));
+            }
+            else // no existing preset
+            {
+                CurrentPreset = new Preset();
+                LoadDefaultPresetData();
+                if (handler != null)
+                    PresetReceived(this, new PresetReceivedEventArgs(null, false));
+            }
 			}
 			catch (HttpException e)
 			{
 				var resp = e.Response;
 				Debug.Console(1, this, "No preset received (code {0}). Loading default template", resp.Code);
 				LoadDefaultPresetData();
-                if (handler != null)
-                    PresetReceived(this, new PresetReceivedEventArgs(null, false));
+            if (handler != null)
+                PresetReceived(this, new PresetReceivedEventArgs(null, false));
 			}
 		}
 
@@ -236,8 +236,8 @@ namespace PepperDash.Core.WebApi.Presets
 		{
 			CurrentPreset.Data = json;
 
-            if (!UrlBase.StartsWith("https"))
-                return;
+        if (!UrlBase.StartsWith("https"))
+            return;
 			var req = new HttpsClientRequest();
 			req.RequestType = Crestron.SimplSharp.Net.Https.RequestType.Post;
 			req.Url = new UrlParser(string.Format("{0}/api/presets/addorchange", UrlBase));
@@ -246,8 +246,8 @@ namespace PepperDash.Core.WebApi.Presets
 			req.ContentString = JsonConvert.SerializeObject(CurrentPreset);
 
 			var client = new HttpsClient();
-            client.HostVerification = false;
-            client.PeerVerification = false;
+        client.HostVerification = false;
+        client.PeerVerification = false;
 			try
 			{
 				var resp = client.Dispatch(req);
@@ -270,4 +270,3 @@ namespace PepperDash.Core.WebApi.Presets
 			}
 		}
 	}
-}

@@ -5,8 +5,8 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Devices.Common.Sources
-{
+namespace PepperDash.Essentials.Devices.Common.Sources;
+
 	public class InRoomPc : EssentialsDevice, IHasFeedback, IRoutingSource, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
@@ -40,37 +40,35 @@ namespace PepperDash.Essentials.Devices.Common.Sources
 		/// <summary>
 		/// Passes through the VideoStatuses list
 		/// </summary>
-        public FeedbackCollection<Feedback> Feedbacks
+    public FeedbackCollection<Feedback> Feedbacks
 		{
 			get 
-            {
-                var newList = new FeedbackCollection<Feedback>();
-                newList.AddRange(this.GetVideoStatuses().ToList());
-                return newList;
-            }
+        {
+            var newList = new FeedbackCollection<Feedback>();
+            newList.AddRange(this.GetVideoStatuses().ToList());
+            return newList;
+        }
 		}
 
 		#endregion
 
-        #region IUsageTracking Members
+    #region IUsageTracking Members
 
-        public UsageTracking UsageTracker { get; set; }
+    public UsageTracking UsageTracker { get; set; }
 
-        #endregion
+    #endregion
 	}
 
-    public class InRoomPcFactory : EssentialsDeviceFactory<InRoomPc>
+public class InRoomPcFactory : EssentialsDeviceFactory<InRoomPc>
+{
+    public InRoomPcFactory()
     {
-        public InRoomPcFactory()
-        {
-            TypeNames = new List<string>() { "inroompc" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new InRoomPc Device");
-            return new InRoomPc(dc.Key, dc.Name);
-        }
+        TypeNames = new List<string>() { "inroompc" };
     }
 
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new InRoomPc Device");
+        return new InRoomPc(dc.Key, dc.Name);
+    }
 }

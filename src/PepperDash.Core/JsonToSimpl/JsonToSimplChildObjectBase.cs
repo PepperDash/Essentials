@@ -3,29 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace PepperDash.Core.JsonToSimpl
-{
-    /// <summary>
-    /// Base class for JSON objects
-    /// </summary>
+namespace PepperDash.Core.JsonToSimpl;
+
+/// <summary>
+/// Base class for JSON objects
+/// </summary>
 	public abstract class JsonToSimplChildObjectBase : IKeyed
 	{
-        /// <summary>
-        /// Notifies of bool change
-        /// </summary>
+    /// <summary>
+    /// Notifies of bool change
+    /// </summary>
 		public event EventHandler<BoolChangeEventArgs> BoolChange;
-        /// <summary>
-        /// Notifies of ushort change
-        /// </summary>
+    /// <summary>
+    /// Notifies of ushort change
+    /// </summary>
 		public event EventHandler<UshrtChangeEventArgs> UShortChange;
-        /// <summary>
-        /// Notifies of string change
-        /// </summary>
+    /// <summary>
+    /// Notifies of string change
+    /// </summary>
 		public event EventHandler<StringChangeEventArgs> StringChange;
 
-        /// <summary>
-        /// Delegate to get all values
-        /// </summary>
+    /// <summary>
+    /// Delegate to get all values
+    /// </summary>
 		public SPlusValuesDelegate GetAllValuesDelegate { get; set; }
 
 		/// <summary>
@@ -33,9 +33,9 @@ namespace PepperDash.Core.JsonToSimpl
 		/// </summary>
 		public SPlusValuesDelegate SetAllPathsDelegate { get; set; }
 
-        /// <summary>
-        /// Unique identifier for instance
-        /// </summary>
+    /// <summary>
+    /// Unique identifier for instance
+    /// </summary>
 		public string Key { get; protected set; }
 
 		/// <summary>
@@ -49,33 +49,33 @@ namespace PepperDash.Core.JsonToSimpl
 		/// </summary>
 		public string PathSuffix { get; protected set; }
 
-        /// <summary>
-        /// Indicates if the instance is linked to an object
-        /// </summary>
+    /// <summary>
+    /// Indicates if the instance is linked to an object
+    /// </summary>
 		public bool LinkedToObject { get; protected set; }
 
-        /// <summary>
-        /// Reference to Master instance
-        /// </summary>
+    /// <summary>
+    /// Reference to Master instance
+    /// </summary>
 		protected JsonToSimplMaster Master;
 
-        /// <summary>
-        /// Paths to boolean values in JSON structure
-        /// </summary>
-        protected Dictionary<ushort, string> BoolPaths = new Dictionary<ushort, string>();
-        /// <summary>
-        /// Paths to numeric values in JSON structure
-        /// </summary>
+    /// <summary>
+    /// Paths to boolean values in JSON structure
+    /// </summary>
+    protected Dictionary<ushort, string> BoolPaths = new Dictionary<ushort, string>();
+    /// <summary>
+    /// Paths to numeric values in JSON structure
+    /// </summary>
 		protected Dictionary<ushort, string> UshortPaths = new Dictionary<ushort, string>();
-        /// <summary>
-        /// Paths to string values in JSON structure
-        /// </summary>
+    /// <summary>
+    /// Paths to string values in JSON structure
+    /// </summary>
 		protected Dictionary<ushort, string> StringPaths = new Dictionary<ushort, string>();
 
 		/// <summary>
 		/// Call this before doing anything else
 		/// </summary>
-        /// <param name="masterUniqueId"></param>
+    /// <param name="masterUniqueId"></param>
 		/// <param name="key"></param>
 		/// <param name="pathPrefix"></param>
 		/// <param name="pathSuffix"></param>
@@ -92,10 +92,10 @@ namespace PepperDash.Core.JsonToSimpl
 				Debug.Console(1, "JSON Child [{0}] cannot link to master {1}", key, masterUniqueId);
 		}
 
-        /// <summary>
-        /// Sets the path prefix for the object
-        /// </summary>
-        /// <param name="pathPrefix"></param>
+    /// <summary>
+    /// Sets the path prefix for the object
+    /// </summary>
+    /// <param name="pathPrefix"></param>
 		public void SetPathPrefix(string pathPrefix)
 		{
 			PathPrefix = pathPrefix;
@@ -170,18 +170,18 @@ namespace PepperDash.Core.JsonToSimpl
 		}
 
 		// Processes the path to a ushort, converting to ushort if able, twos complement if necessary, firing off UshrtChange event
-        void ProcessUshortPath(ushort index) {
-            string response;
-            if (Process(UshortPaths[index], out response)) {
-                ushort val;
-                try { val = Convert.ToInt32(response) < 0 ? (ushort)(Convert.ToInt16(response) + 65536) : Convert.ToUInt16(response); }
-                catch { val = 0; }
+    void ProcessUshortPath(ushort index) {
+        string response;
+        if (Process(UshortPaths[index], out response)) {
+            ushort val;
+            try { val = Convert.ToInt32(response) < 0 ? (ushort)(Convert.ToInt16(response) + 65536) : Convert.ToUInt16(response); }
+            catch { val = 0; }
 
-                OnUShortChange(val, index, JsonToSimplConstants.UshortValueChange);
-            }
-            else { }
-            // OnUShortChange(0, index, JsonToSimplConstants.UshortValueChange);
+            OnUShortChange(val, index, JsonToSimplConstants.UshortValueChange);
         }
+        else { }
+        // OnUShortChange(0, index, JsonToSimplConstants.UshortValueChange);
+    }
 
 		// Processes the path to a string property and fires of a StringChange event.
 		void ProcessStringPath(ushort index)
@@ -272,54 +272,54 @@ namespace PepperDash.Core.JsonToSimpl
 				GetAllValuesDelegate();
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="theValue"></param>
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="theValue"></param>
 		public void USetBoolValue(ushort key, ushort theValue)
 		{
 			SetBoolValue(key, theValue == 1);
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="theValue"></param>
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="theValue"></param>
 		public void SetBoolValue(ushort key, bool theValue)
 		{
 			if (BoolPaths.ContainsKey(key))
 				SetValueOnMaster(BoolPaths[key], new JValue(theValue));
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="theValue"></param>
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="theValue"></param>
 		public void SetUShortValue(ushort key, ushort theValue)
 		{
 			if (UshortPaths.ContainsKey(key))
 				SetValueOnMaster(UshortPaths[key], new JValue(theValue));
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="theValue"></param>
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="theValue"></param>
 		public void SetStringValue(ushort key, string theValue)
 		{
 			if (StringPaths.ContainsKey(key))
 				SetValueOnMaster(StringPaths[key], new JValue(theValue));
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="keyPath"></param>
-        /// <param name="valueToSave"></param>
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="keyPath"></param>
+    /// <param name="valueToSave"></param>
 		public void SetValueOnMaster(string keyPath, JValue valueToSave)
 		{
 			var path = GetFullPath(keyPath);
@@ -349,12 +349,12 @@ namespace PepperDash.Core.JsonToSimpl
 
 		// Helpers for events
 		//******************************************************************************************
-        /// <summary>
-        /// Event helper
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="index"></param>
-        /// <param name="type"></param>
+    /// <summary>
+    /// Event helper
+    /// </summary>
+    /// <param name="state"></param>
+    /// <param name="index"></param>
+    /// <param name="type"></param>
 		protected void OnBoolChange(bool state, ushort index, ushort type)
 		{
 			var handler = BoolChange;
@@ -367,12 +367,12 @@ namespace PepperDash.Core.JsonToSimpl
 		}
 
 		//******************************************************************************************
-        /// <summary>
-        /// Event helper
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="index"></param>
-        /// <param name="type"></param>
+    /// <summary>
+    /// Event helper
+    /// </summary>
+    /// <param name="state"></param>
+    /// <param name="index"></param>
+    /// <param name="type"></param>
 		protected void OnUShortChange(ushort state, ushort index, ushort type)
 		{
 			var handler = UShortChange;
@@ -384,12 +384,12 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-        /// <summary>
-        /// Event helper
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="index"></param>
-        /// <param name="type"></param>
+    /// <summary>
+    /// Event helper
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="index"></param>
+    /// <param name="type"></param>
 		protected void OnStringChange(string value, ushort index, ushort type)
 		{
 			var handler = StringChange;
@@ -401,4 +401,3 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 	}
-}

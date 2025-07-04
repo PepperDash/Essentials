@@ -10,8 +10,8 @@ using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core.Presets
-{
+namespace PepperDash.Essentials.Core.Presets;
+
 	public class PresetsListSubpageReferenceListItem : SubpageReferenceListItem
 	{
 		DevicePresetsView View;
@@ -47,4 +47,3 @@ namespace PepperDash.Essentials.Core.Presets
 			Owner.StringInputSig(Index, 3).StringValue = icon;
 		}
 	}
-}

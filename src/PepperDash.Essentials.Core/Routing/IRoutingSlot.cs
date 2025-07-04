@@ -5,12 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.Core.Routing
-{
-    public interface IRoutingSlot:IKeyName
-    {
-        int SlotNumber { get; }
+namespace PepperDash.Essentials.Core.Routing;
 
-        eRoutingSignalType SupportedSignalTypes { get; }
-    }
+public interface IRoutingSlot:IKeyName
+{
+    int SlotNumber { get; }
+
+    eRoutingSignalType SupportedSignalTypes { get; }
 }

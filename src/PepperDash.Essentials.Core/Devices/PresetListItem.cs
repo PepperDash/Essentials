@@ -7,39 +7,38 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+public class PresetListItem : AudioControlListItemBase
 {
-    public class PresetListItem : AudioControlListItemBase
+    [JsonIgnore]
+    public IKeyName Preset
     {
-        [JsonIgnore]
-        public IKeyName Preset
+        get
         {
-            get
+            if (_preset == null)
             {
-                if (_preset == null)
-                {
-                    var parent = DeviceManager.GetDeviceForKey(ParentDeviceKey) as IDspPresets;
-                    if (parent == null || !parent.Presets.ContainsKey(ItemKey))
-                        return null;
-                    _preset = parent.Presets[ItemKey];
-                }
-                return _preset;
+                var parent = DeviceManager.GetDeviceForKey(ParentDeviceKey) as IDspPresets;
+                if (parent == null || !parent.Presets.ContainsKey(ItemKey))
+                    return null;
+                _preset = parent.Presets[ItemKey];
             }
+            return _preset;
         }
-        private IKeyName _preset;
+    }
+    private IKeyName _preset;
 
-        /// <summary>
-        /// Gets the name from the device if it implements IKeyName or else returns the Name property
-        /// </summary>
-        [JsonProperty("preferredName")]
-        public string PreferredName
+    /// <summary>
+    /// Gets the name from the device if it implements IKeyName or else returns the Name property
+    /// </summary>
+    [JsonProperty("preferredName")]
+    public string PreferredName
+    {
+        get
         {
-            get
-            {
-                if (!string.IsNullOrEmpty(Name)) return Name;
+            if (!string.IsNullOrEmpty(Name)) return Name;
 
-                else return Preset.Name;
-            }
+            else return Preset.Name;
         }
     }
 }

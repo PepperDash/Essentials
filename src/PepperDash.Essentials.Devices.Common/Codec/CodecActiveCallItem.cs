@@ -9,67 +9,66 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace PepperDash.Essentials.Devices.Common.Codec
+namespace PepperDash.Essentials.Devices.Common.Codec;
 
+
+public class CodecActiveCallItem
 {
-    public class CodecActiveCallItem
-    {
 		[JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        [JsonProperty("number", NullValueHandling = NullValueHandling.Ignore)]
-        public string Number { get; set; }
+    [JsonProperty("number", NullValueHandling = NullValueHandling.Ignore)]
+    public string Number { get; set; }
 
-        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
 		[JsonConverter(typeof(StringEnumConverter))]
-        public eCodecCallType Type { get; set; }
+    public eCodecCallType Type { get; set; }
 
-        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
 		[JsonConverter(typeof(StringEnumConverter))]
-        public eCodecCallStatus Status { get; set; }
+    public eCodecCallStatus Status { get; set; }
 
-        [JsonProperty("direction", NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("direction", NullValueHandling = NullValueHandling.Ignore)]
 		[JsonConverter(typeof(StringEnumConverter))]
-        public eCodecCallDirection Direction { get; set; }
+    public eCodecCallDirection Direction { get; set; }
 
-        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
-        public string Id { get; set; }
+    [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+    public string Id { get; set; }
 
-        [JsonProperty("isOnHold", NullValueHandling = NullValueHandling.Ignore)]
-        public bool IsOnHold { get; set; }
+    [JsonProperty("isOnHold", NullValueHandling = NullValueHandling.Ignore)]
+    public bool IsOnHold { get; set; }
 
-        [JsonProperty("duration", NullValueHandling = NullValueHandling.Ignore)]
-        public TimeSpan Duration { get; set; }
+    [JsonProperty("duration", NullValueHandling = NullValueHandling.Ignore)]
+    public TimeSpan Duration { get; set; }
 
-        //public object CallMetaData { get; set; }
-
-        /// <summary>
-        /// Returns true when this call is any status other than 
-        /// Unknown, Disconnected, Disconnecting
-        /// </summary>
-        [JsonProperty("isActiveCall", NullValueHandling = NullValueHandling.Ignore)]
-        public bool IsActiveCall
-        {
-            get
-            {
-                return !(Status == eCodecCallStatus.Disconnected
-                    || Status == eCodecCallStatus.Disconnecting
-					|| Status == eCodecCallStatus.Idle
-                    || Status == eCodecCallStatus.Unknown);
-            }
-        }
-    }
+    //public object CallMetaData { get; set; }
 
     /// <summary>
-    /// 
+    /// Returns true when this call is any status other than 
+    /// Unknown, Disconnected, Disconnecting
     /// </summary>
-    public class CodecCallStatusItemChangeEventArgs : EventArgs
+    [JsonProperty("isActiveCall", NullValueHandling = NullValueHandling.Ignore)]
+    public bool IsActiveCall
     {
-        public CodecActiveCallItem CallItem { get; private set; }
-
-        public CodecCallStatusItemChangeEventArgs(CodecActiveCallItem item)
+        get
         {
-            CallItem = item;
+            return !(Status == eCodecCallStatus.Disconnected
+                || Status == eCodecCallStatus.Disconnecting
+					|| Status == eCodecCallStatus.Idle
+                || Status == eCodecCallStatus.Unknown);
         }
+    }
+}
+
+/// <summary>
+/// 
+/// </summary>
+public class CodecCallStatusItemChangeEventArgs : EventArgs
+{
+    public CodecActiveCallItem CallItem { get; private set; }
+
+    public CodecCallStatusItemChangeEventArgs(CodecActiveCallItem item)
+    {
+        CallItem = item;
     }
 }

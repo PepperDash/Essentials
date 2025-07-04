@@ -1,10 +1,10 @@
-﻿namespace PepperDash.Essentials.Core
-{
-    /// <summary>
-    /// Represents a routing input port that provides video status feedback (e.g., sync, resolution).
-    /// Suitable for devices like DM transmitters or DM input cards.
-    /// </summary>
-    public class RoutingInputPortWithVideoStatuses : RoutingInputPort
+﻿namespace PepperDash.Essentials.Core;
+
+/// <summary>
+/// Represents a routing input port that provides video status feedback (e.g., sync, resolution).
+/// Suitable for devices like DM transmitters or DM input cards.
+/// </summary>
+public class RoutingInputPortWithVideoStatuses : RoutingInputPort
 	{
 		/// <summary>
 		/// Provides feedback outputs for video statuses associated with this port.
@@ -28,4 +28,3 @@
 			VideoStatus = new VideoStatusOutputs(funcs);		
 		}
 	}
-}

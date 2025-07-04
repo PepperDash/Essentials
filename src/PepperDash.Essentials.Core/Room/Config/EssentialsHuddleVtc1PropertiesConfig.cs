@@ -1,13 +1,12 @@
 ﻿
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Room.Config
-{
+namespace PepperDash.Essentials.Room.Config;
 
-    public class EssentialsHuddleVtc1PropertiesConfig : EssentialsConferenceRoomPropertiesConfig
-    {
+
+public class EssentialsHuddleVtc1PropertiesConfig : EssentialsConferenceRoomPropertiesConfig
+{
 		[JsonProperty("defaultDisplayKey")]
 		public string DefaultDisplayKey { get; set; }
 
-    }
 }

@@ -1,7 +1,7 @@
 ﻿using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.Bridges.JoinMaps
-{
+namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
+
 		public sealed class GenericIrControllerJoinMap : JoinMapBaseAdvanced
 		{
 			[JoinName("PLAY")]
@@ -824,4 +824,3 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			{
 			}
 	}
-}

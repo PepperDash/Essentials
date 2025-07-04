@@ -3,27 +3,26 @@ using Crestron.SimplSharp.CrestronLogger;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace PepperDash.Core.Logging
+namespace PepperDash.Core.Logging;
+
+public class DebugCrestronLoggerSink : ILogEventSink
 {
-    public class DebugCrestronLoggerSink : ILogEventSink
+    public void Emit(LogEvent logEvent)
     {
-        public void Emit(LogEvent logEvent)
+        if (!Debug.IsRunningOnAppliance) return;
+
+        string message = $"[{logEvent.Timestamp}][{logEvent.Level}][App {InitialParametersClass.ApplicationNumber}]{logEvent.RenderMessage()}";
+
+        if (logEvent.Properties.TryGetValue("Key", out var value) && value is ScalarValue sv && sv.Value is string rawValue)
         {
-            if (!Debug.IsRunningOnAppliance) return;
-
-            string message = $"[{logEvent.Timestamp}][{logEvent.Level}][App {InitialParametersClass.ApplicationNumber}]{logEvent.RenderMessage()}";
-
-            if (logEvent.Properties.TryGetValue("Key", out var value) && value is ScalarValue sv && sv.Value is string rawValue)
-            {
-                message = $"[{logEvent.Timestamp}][{logEvent.Level}][App {InitialParametersClass.ApplicationNumber}][{rawValue}]: {logEvent.RenderMessage()}";
-            }
-
-            CrestronLogger.WriteToLog(message, (uint)logEvent.Level);
+            message = $"[{logEvent.Timestamp}][{logEvent.Level}][App {InitialParametersClass.ApplicationNumber}][{rawValue}]: {logEvent.RenderMessage()}";
         }
 
-        public DebugCrestronLoggerSink()
-        {
-            CrestronLogger.Initialize(1, LoggerModeEnum.RM);
-        }
+        CrestronLogger.WriteToLog(message, (uint)logEvent.Level);
+    }
+
+    public DebugCrestronLoggerSink()
+    {
+        CrestronLogger.Initialize(1, LoggerModeEnum.RM);
     }
 }

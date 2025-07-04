@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public static class IAttachVideoStatusExtensions
 	{
 		/// <summary>
@@ -36,4 +36,3 @@ namespace PepperDash.Essentials.Core
 				&& t.DestinationPort is RoutingInputPortWithVideoStatuses) != null;
 		}
 	}
-}

@@ -5,10 +5,9 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.CrestronIO
+namespace PepperDash.Essentials.Core.CrestronIO;
+
+public interface IAnalogInput
 {
-    public interface IAnalogInput
-    {
-        IntFeedback InputValueFeedback { get; }
-    }
+    IntFeedback InputValueFeedback { get; }
 }
