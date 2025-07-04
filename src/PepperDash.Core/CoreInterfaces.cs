@@ -14,7 +14,7 @@ namespace PepperDash.Core
 	public interface IKeyed
 	{
         /// <summary>
-        /// Unique Key
+        /// Gets the unique key associated with the object.
         /// </summary>
         [JsonProperty("key")]
 		string Key { get; }
@@ -26,7 +26,7 @@ namespace PepperDash.Core
 	public interface IKeyName : IKeyed
     {
         /// <summary>
-        /// Isn't it obvious :)
+        /// Gets the name associated with the current object.
         /// </summary>
         [JsonProperty("name")]
 		string Name { get; }
