@@ -17,14 +17,14 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Defines a class that is capable of loading custom plugin device types for development purposes
+    /// Defines a factory for creating plugin development devices, including support for specific framework versions.
     /// </summary>
-    [Obsolete("This interface is obsolete and will be removed in a future version." +
-              " Use IPluginDeviceFactory instead and check Global.IsRunningDevelopmentVersion to determine if the Essentials framework is in development mode.")]
+    /// <remarks>This interface extends <see cref="IPluginDeviceFactory"/> to provide additional functionality
+    /// specific to plugin development environments.</remarks>
     public interface IPluginDevelopmentDeviceFactory : IPluginDeviceFactory
     {
         /// <summary>
-        /// Gets a list of all the development versions of the Essentials framework that are supported by this factory.
+        /// Gets a list of Essentials versions that this device is compatible with.
         /// </summary>
         List<string> DevelopmentEssentialsFrameworkVersions { get; }
     }
