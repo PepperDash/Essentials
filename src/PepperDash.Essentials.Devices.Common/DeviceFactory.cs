@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Devices.Common
         public DeviceFactory()
         {
             var assy = Assembly.GetExecutingAssembly();
-            PluginLoader.SetEssentialsAssembly(assy.GetName().Name, assy);
+            PluginLoader.AddLoadedAssembly(assy.GetName().Name, assy);
 
             var types = assy.GetTypes().Where(ct => typeof(IDeviceFactory).IsAssignableFrom(ct) && !ct.IsInterface && !ct.IsAbstract);
 

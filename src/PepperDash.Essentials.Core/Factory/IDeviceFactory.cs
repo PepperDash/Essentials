@@ -1,6 +1,6 @@
-﻿using System;
+﻿using PepperDash.Essentials.Core.Config;
+using System;
 using System.Collections.Generic;
-using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core
 {

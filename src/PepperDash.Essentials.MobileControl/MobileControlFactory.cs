@@ -18,7 +18,7 @@ namespace PepperDash.Essentials
         {
             var assembly = Assembly.GetExecutingAssembly();
 
-            PluginLoader.SetEssentialsAssembly(assembly.GetName().Name, assembly);
+            PluginLoader.AddLoadedAssembly(assembly.GetName().Name, assembly);
 
             var types = assembly.GetTypes().Where(t => typeof(IDeviceFactory).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
 

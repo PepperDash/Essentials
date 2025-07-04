@@ -198,7 +198,7 @@ public static class PluginLoader
     /// this method updates its associated assembly. If no matching name is found, the method does nothing.</remarks>
     /// <param name="name">The name used to identify the assembly. This value is case-sensitive and must not be null or empty.</param>
     /// <param name="assembly">The assembly to associate with the specified name. This value must not be null.</param>
-    public static void SetEssentialsAssembly(string name, Assembly assembly)
+    public static void AddLoadedAssembly(string name, Assembly assembly)
     {
         var loadedAssembly = LoadedAssemblies.FirstOrDefault(la => la.Name.Equals(name));
 
@@ -816,7 +816,7 @@ public static class PluginLoader
             }
         }
     }
-
+   
     /// <summary>
     /// Loads a custom plugin and performs a dependency check to ensure compatibility with the required Essentials
     /// framework version.
@@ -824,34 +824,51 @@ public static class PluginLoader
     /// <remarks>This method verifies that the plugin meets the minimum required Essentials framework version
     /// before loading it.  If the plugin fails the dependency check, it is skipped, and a log message is generated.  If
     /// the plugin passes the check, it is loaded, and its type factories are initialized.</remarks>
-    /// <param name="plugin">The plugin to be loaded, implementing the <see cref="IPluginDeviceFactory"/> interface.  If the plugin also
+    /// <param name="deviceFactory">The plugin to be loaded, implementing the <see cref="IPluginDeviceFactory"/> interface.  If the plugin also
     /// implements <see cref="IPluginDevelopmentDeviceFactory"/>, additional checks for development versions are
     /// performed.</param>
     /// <param name="loadedAssembly">The assembly associated with the plugin being loaded. This is used for logging and tracking purposes.</param>
-    private static void LoadCustomPlugin(IPluginDeviceFactory plugin, LoadedAssembly loadedAssembly)
+    private static void LoadCustomPlugin(IPluginDeviceFactory deviceFactory, LoadedAssembly loadedAssembly)
     {
-        var passed = plugin is IPluginDevelopmentDeviceFactory developmentPlugin ? Global.IsRunningDevelopmentVersion
-            (developmentPlugin.DevelopmentEssentialsFrameworkVersions, developmentPlugin.MinimumEssentialsFrameworkVersion)
-            : Global.IsRunningMinimumVersionOrHigher(plugin.MinimumEssentialsFrameworkVersion);
+        var passed = Global.IsRunningMinimumVersionOrHigher(deviceFactory.MinimumEssentialsFrameworkVersion);
 
         if (!passed)
         {
-            Debug.LogMessage(LogEventLevel.Information,
-                "\r\n********************\r\n\tPlugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin {1}\r\n********************",
-                plugin.MinimumEssentialsFrameworkVersion, loadedAssembly.Name);
+            Debug.LogInformation(
+                "\r\n********************\r\n\tPlugin indicates minimum Essentials version {minimumEssentialsVersion}.  Dependency check failed.  Skipping Plugin {pluginName}\r\n********************",
+                deviceFactory.MinimumEssentialsFrameworkVersion, loadedAssembly.Name);
             return;
         }
         else
         {
-            Debug.LogMessage(LogEventLevel.Information, "Passed plugin passed dependency check (required version {0})", plugin.MinimumEssentialsFrameworkVersion);
+            Debug.LogInformation("Passed plugin passed dependency check (required version {essentialsMinimumVersion})", deviceFactory.MinimumEssentialsFrameworkVersion);
         }
 
-        Debug.LogMessage(LogEventLevel.Information, "Loading plugin: {0}", loadedAssembly.Name);
-        
+        Debug.LogInformation("Loading plugin: {pluginName}", loadedAssembly.Name);        
+
         LoadDeviceFactories(deviceFactory);
 
         if (!EssentialsPluginAssemblies.Contains(loadedAssembly))
             EssentialsPluginAssemblies.Add(loadedAssembly);
+    }
+
+    /// <summary>
+    /// Loads device factories from the specified plugin device factory and registers them for use.
+    /// </summary>
+    /// <remarks>This method retrieves metadata from the provided <paramref name="deviceFactory"/>, including
+    /// type names, descriptions, and configuration snippets, and registers the factory for each device type. The type
+    /// names are converted to lowercase for registration.</remarks>
+    /// <param name="deviceFactory">The plugin device factory that provides the device types, descriptions, and factory methods to be registered.</param>
+    private static void LoadDeviceFactories(IPluginDeviceFactory deviceFactory)
+    {
+        foreach (var typeName in deviceFactory.TypeNames)
+        {
+            //Debug.LogMessage(LogEventLevel.Verbose, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
+            var descriptionAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
+            string description = descriptionAttribute[0].Description;
+            var snippetAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
+            DeviceFactory.AddFactoryForType(typeName.ToLower(), description, deviceFactory.FactoryType, deviceFactory.BuildDevice);
+        }
     }
 
     /// <summary>

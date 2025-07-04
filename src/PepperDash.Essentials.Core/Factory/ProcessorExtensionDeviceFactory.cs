@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public ProcessorExtensionDeviceFactory() {
             var assy = Assembly.GetExecutingAssembly();
-            PluginLoader.SetEssentialsAssembly(assy.GetName().Name, assy);
+            PluginLoader.AddLoadedAssembly(assy.GetName().Name, assy);
 
             var extensions = assy.GetTypes().Where(ct => typeof(IProcessorExtensionDeviceFactory)
                 .IsAssignableFrom(ct) && !ct.IsInterface && !ct.IsAbstract);
