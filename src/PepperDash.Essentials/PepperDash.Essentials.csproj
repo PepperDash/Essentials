@@ -50,7 +50,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.90" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.128" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />

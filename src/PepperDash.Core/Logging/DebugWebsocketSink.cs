@@ -138,7 +138,7 @@ namespace PepperDash.Core
                     {
                         ClientCertificateRequired = false,
                         CheckCertificateRevocation = false,
-                        EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls,
+                        EnabledSslProtocols = SslProtocols.Tls12,
                         //this is just to test, you might want to actually validate
                         ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                         {

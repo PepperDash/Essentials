@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">  
   <PropertyGroup>
     <RootNamespace>PepperDash.Essentials</RootNamespace>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net8</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <Deterministic>false</Deterministic>
     <AssemblyTitle>epi-essentials-mobile-control</AssemblyTitle>
@@ -37,7 +37,8 @@
     <Compile Remove="RoomBridges\SourceDeviceMapDictionary.cs" />
   </ItemGroup>  
   <ItemGroup>    
-    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.90" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.128" />    
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />    
     <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
