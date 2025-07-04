@@ -28,7 +28,7 @@ namespace PepperDash.Core
     /// </summary>
     public class DebugWebsocketSink : ILogEventSink
     {
-        private HttpServer _httpsServer;
+        private WebSocketServer _wsServer;
         
         private string _path = "/debug/join/";
         private const string _certificateName = "selfCres";
@@ -38,8 +38,8 @@ namespace PepperDash.Core
         { get 
             { 
                 
-                if(_httpsServer == null) return 0;
-                return _httpsServer.Port;
+                if(_wsServer == null) return 0;
+                return _wsServer.Port;
             } 
         }
 
@@ -47,15 +47,15 @@ namespace PepperDash.Core
         {
             get
             {
-                if (_httpsServer == null) return "";
-                return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{_httpsServer.Port}{_httpsServer.WebSocketServices[_path].Path}";
+                if (_wsServer == null) return "";
+                return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{_wsServer.Port}{_wsServer.WebSocketServices[_path].Path}";
             }
         }
 
         /// <summary>
         /// Gets or sets the IsRunning
         /// </summary>
-        public bool IsRunning { get => _httpsServer?.IsListening ?? false; }
+        public bool IsRunning { get => _wsServer?.IsListening ?? false; }
         
 
         private readonly ITextFormatter _textFormatter;
@@ -118,12 +118,12 @@ namespace PepperDash.Core
         /// </summary>
         public void Emit(LogEvent logEvent)
         {
-            if (_httpsServer == null || !_httpsServer.IsListening) return;
+            if (_wsServer == null || !_wsServer.IsListening) return;
 
             var sw = new StringWriter();
             _textFormatter.Format(logEvent, sw);
 
-            _httpsServer.WebSocketServices.Broadcast(sw.ToString());
+            _wsServer.WebSocketServices.Broadcast(sw.ToString());
 
         }
 
@@ -142,17 +142,16 @@ namespace PepperDash.Core
         {
             try
             {
-                _httpsServer = new HttpServer(port, true);
-
+                ServerSslConfiguration sslConfig = null;
 
                 if (!string.IsNullOrWhiteSpace(certPath))
                 {
                     Debug.Console(0, "Assigning SSL Configuration");
-                    _httpsServer.SslConfiguration = new ServerSslConfiguration(new X509Certificate2(certPath, certPassword))
+                    sslConfig = new ServerSslConfiguration(new X509Certificate2(certPath, certPassword))
                     {
                         ClientCertificateRequired = false,
                         CheckCertificateRevocation = false,
-                        EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls,
+                        EnabledSslProtocols = SslProtocols.Tls12,
                         //this is just to test, you might want to actually validate
                         ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                         {
@@ -161,11 +160,18 @@ namespace PepperDash.Core
                         }
                     };
                 }
+
+                _wsServer = new WebSocketServer(port, true);
+                if (sslConfig != null)
+                {
+                    _wsServer.SslConfiguration.ServerCertificate = sslConfig.ServerCertificate;
+                }
+                
                 Debug.Console(0, "Adding Debug Client Service");
-                _httpsServer.AddWebSocketService<DebugClient>(_path);
+                _wsServer.AddWebSocketService<DebugClient>(_path);
                 Debug.Console(0, "Assigning Log Info");
-                _httpsServer.Log.Level = LogLevel.Trace;
-                _httpsServer.Log.Output = (d, s) =>
+                _wsServer.Log.Level = LogLevel.Trace;
+                _wsServer.Log.Output = (d, s) =>
                 {
                     uint level;
 
@@ -198,7 +204,7 @@ namespace PepperDash.Core
                 };
                 Debug.Console(0, "Starting");
 
-                _httpsServer.Start();
+                _wsServer.Start();
                 Debug.Console(0, "Ready");
             }
             catch (Exception ex)
@@ -213,9 +219,9 @@ namespace PepperDash.Core
         public void StopServer()
         {
             Debug.Console(0, "Stopping Websocket Server");
-            _httpsServer?.Stop();
+            _wsServer?.Stop();
 
-            _httpsServer = null;
+            _wsServer = null;
         }
     }
 

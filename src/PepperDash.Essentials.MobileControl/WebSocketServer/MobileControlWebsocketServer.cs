@@ -1,29 +1,26 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Collections.Concurrent;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.WebScripting;
-using Newtonsoft.Json;
-using Org.BouncyCastle.Crypto.Prng;
-using PepperDash.Core;
-using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using System.Collections.Generic;
+using System;
+using System.Net.Http;
+using Crestron.SimplSharp;
+using System.Linq;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core.Web;
-using PepperDash.Essentials.RoomBridges;
+using Crestron.SimplSharp.WebScripting;
 using PepperDash.Essentials.WebApiHandlers;
-using Serilog.Events;
 using WebSocketSharp;
 using WebSocketSharp.Net;
 using WebSocketSharp.Server;
-
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using System.IO;
+using Newtonsoft.Json;
+using PepperDash.Core;
+using Serilog.Events;
+using PepperDash.Essentials.RoomBridges;
 
 namespace PepperDash.Essentials.WebSocketServer
 {
@@ -51,7 +48,7 @@ namespace PepperDash.Essentials.WebSocketServer
         private HttpServer _server;
 
         /// <summary>
-        /// Gets the HttpServer instance
+        /// Gets the WebSocketServer instance
         /// </summary>
         public HttpServer Server => _server;
 
@@ -269,24 +266,31 @@ namespace PepperDash.Essentials.WebSocketServer
 
                 _server = new HttpServer(Port, false);
 
-                _server.OnGet += Server_OnGet;
 
-                _server.OnOptions += Server_OnOptions;
+
+                _server.OnGet += (sender, e) => Server_OnGet(sender, e);
+
+                _server.OnOptions += (sender, e) => Server_OnOptions(sender, e);
 
                 if (_parent.Config.DirectServer.Logging.EnableRemoteLogging)
                 {
-                    _server.OnPost += Server_OnPost;
+                    _server.OnPost += (sender, e) => Server_OnPost(sender, e);
                 }
 
                 if (_parent.Config.DirectServer.Secure)
                 {
                     this.LogInformation("Adding SSL Configuration to server");
-                    _server.SslConfiguration = new ServerSslConfiguration(new X509Certificate2($"\\user\\{certificateName}.pfx", certificatePassword))
+
+                    ServerSslConfiguration sslConfig = null;
+
+                    sslConfig = new ServerSslConfiguration(new X509Certificate2($"\\user\\{certificateName}.pfx", certificatePassword))
                     {
                         ClientCertificateRequired = false,
                         CheckCertificateRevocation = false,
                         EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11
                     };
+
+                    _server.SslConfiguration.ServerCertificate = sslConfig.ServerCertificate;
                 }
 
                 _server.Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message, this);
