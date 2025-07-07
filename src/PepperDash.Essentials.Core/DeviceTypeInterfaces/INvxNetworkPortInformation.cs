@@ -1,4 +1,4 @@
-﻿using Crestron.SimplSharpPro.DM.Streaming;
+using Crestron.SimplSharpPro.DM.Streaming;
 using System;
 using System.Collections.Generic;
 
