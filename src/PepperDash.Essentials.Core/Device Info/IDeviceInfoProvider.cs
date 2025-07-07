@@ -1,16 +1,15 @@
 ﻿using System;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core.DeviceInfo
+namespace PepperDash.Essentials.Core.DeviceInfo;
+
+public interface IDeviceInfoProvider:IKeyed
 {
-    public interface IDeviceInfoProvider:IKeyed
-    {
-        DeviceInfo DeviceInfo { get; }
+    DeviceInfo DeviceInfo { get; }
 
-        event DeviceInfoChangeHandler DeviceInfoChanged;
+    event DeviceInfoChangeHandler DeviceInfoChanged;
 
-        void UpdateDeviceInfo();
-    }
-
-    public delegate void DeviceInfoChangeHandler(IKeyed device, DeviceInfoEventArgs args);
+    void UpdateDeviceInfo();
 }
+
+public delegate void DeviceInfoChangeHandler(IKeyed device, DeviceInfoEventArgs args);

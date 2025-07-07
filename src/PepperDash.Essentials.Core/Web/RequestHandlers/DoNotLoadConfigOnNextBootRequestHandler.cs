@@ -3,8 +3,8 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class DoNotLoadConfigOnNextBootRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var data = new Data
 			{
 				DoNotLoadConfigOnNextBoot = Debug.DoNotLoadConfigOnNextBoot
-            };
+        };
 
 			var body = JsonConvert.SerializeObject(data, Formatting.Indented);
 
@@ -81,4 +81,3 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		[JsonProperty("doNotLoadConfigOnNextBoot", NullValueHandling = NullValueHandling.Ignore)]
 		public bool DoNotLoadConfigOnNextBoot { get; set; }
 	}
-}

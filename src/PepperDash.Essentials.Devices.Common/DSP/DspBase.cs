@@ -8,15 +8,15 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
-namespace PepperDash.Essentials.Devices.Common.DSP
-{
+namespace PepperDash.Essentials.Devices.Common.DSP;
+
 	public abstract class DspBase : EssentialsDevice, ILevelControls
 	{
 		public Dictionary<string,IBasicVolumeWithFeedback> LevelControlPoints { get; private set; }
 
-        public Dictionary<string, DspControlPoint> DialerControlPoints { get; private set; }
+    public Dictionary<string, DspControlPoint> DialerControlPoints { get; private set; }
 
-        public Dictionary<string, DspControlPoint> SwitcherControlPoints { get; private set; }
+    public Dictionary<string, DspControlPoint> SwitcherControlPoints { get; private set; }
 
 		public DspBase(string key, string name) :
 				base(key, name)
@@ -47,34 +47,34 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
 	public abstract class DspControlPoint :IKeyed
 	{
-        public string Key { get; }
+    public string Key { get; }
 
-        protected DspControlPoint(string key) => Key = key;
+    protected DspControlPoint(string key) => Key = key;
 	}
 
-    public abstract class DspLevelControlPoint :DspControlPoint, IBasicVolumeWithFeedback
+public abstract class DspLevelControlPoint :DspControlPoint, IBasicVolumeWithFeedback
+{
+    public BoolFeedback MuteFeedback { get; }
+    public IntFeedback VolumeLevelFeedback { get; }
+
+    protected DspLevelControlPoint(string key, Func<bool> muteFeedbackFunc, Func<int> volumeLevelFeedbackFunc) : base(key)
     {
-        public BoolFeedback MuteFeedback { get; }
-        public IntFeedback VolumeLevelFeedback { get; }
-
-        protected DspLevelControlPoint(string key, Func<bool> muteFeedbackFunc, Func<int> volumeLevelFeedbackFunc) : base(key)
-        {
-            MuteFeedback = new BoolFeedback(muteFeedbackFunc);
-            VolumeLevelFeedback = new IntFeedback(volumeLevelFeedbackFunc);
-        }
-
-        public abstract void MuteOff();
-        public abstract void MuteOn();
-        public abstract void MuteToggle();
-        public abstract void SetVolume(ushort level);
-        public abstract void VolumeDown(bool pressRelease);
-        public abstract void VolumeUp(bool pressRelease);
+        MuteFeedback = new BoolFeedback(muteFeedbackFunc);
+        VolumeLevelFeedback = new IntFeedback(volumeLevelFeedbackFunc);
     }
 
+    public abstract void MuteOff();
+    public abstract void MuteOn();
+    public abstract void MuteToggle();
+    public abstract void SetVolume(ushort level);
+    public abstract void VolumeDown(bool pressRelease);
+    public abstract void VolumeUp(bool pressRelease);
+}
 
-    public abstract class DspDialerBase:DspControlPoint
+
+public abstract class DspDialerBase:DspControlPoint
 	{
-        protected DspDialerBase(string key) : base(key) { }
+    protected DspDialerBase(string key) : base(key) { }
 	}
 
 
@@ -82,5 +82,3 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 	// VTC 
 	// ATC
 	// Mics, unusual
-
-}

@@ -6,71 +6,70 @@ using PepperDash.Essentials.Room.Config;
 using System;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.AppServer.Messengers
+namespace PepperDash.Essentials.AppServer.Messengers;
+
+public class RoomEventScheduleMessenger : MessengerBase
 {
-    public class RoomEventScheduleMessenger : MessengerBase
+    private readonly IRoomEventSchedule _room;
+
+
+    public RoomEventScheduleMessenger(string key, string messagePath, IRoomEventSchedule room)
+        : base(key, messagePath, room as IKeyName)
     {
-        private readonly IRoomEventSchedule _room;
+        _room = room;
+    }
 
+    #region Overrides of MessengerBase
 
-        public RoomEventScheduleMessenger(string key, string messagePath, IRoomEventSchedule room)
-            : base(key, messagePath, room as IKeyName)
+    protected override void RegisterActions()
+    {
+        AddAction("/saveScheduledEvents", (id, content) => SaveScheduledEvents(content.ToObject<List<ScheduledEventConfig>>()));
+        AddAction("/status", (id, content) =>
         {
-            _room = room;
-        }
+            var events = _room.GetScheduledEvents();
 
-        #region Overrides of MessengerBase
+            SendFullStatus(events);
+        });
 
-        protected override void RegisterActions()
+        _room.ScheduledEventsChanged += (sender, args) => SendFullStatus(args.ScheduledEvents);
+    }
+
+    #endregion
+
+    private void SaveScheduledEvents(List<ScheduledEventConfig> events)
+    {
+        foreach (var evt in events)
         {
-            AddAction("/saveScheduledEvents", (id, content) => SaveScheduledEvents(content.ToObject<List<ScheduledEventConfig>>()));
-            AddAction("/status", (id, content) =>
-            {
-                var events = _room.GetScheduledEvents();
-
-                SendFullStatus(events);
-            });
-
-            _room.ScheduledEventsChanged += (sender, args) => SendFullStatus(args.ScheduledEvents);
-        }
-
-        #endregion
-
-        private void SaveScheduledEvents(List<ScheduledEventConfig> events)
-        {
-            foreach (var evt in events)
-            {
-                SaveScheduledEvent(evt);
-            }
-        }
-
-        private void SaveScheduledEvent(ScheduledEventConfig eventConfig)
-        {
-            try
-            {
-                _room.AddOrUpdateScheduledEvent(eventConfig);
-            }
-            catch (Exception ex)
-            {
-                this.LogException(ex,"Exception saving event");
-            }
-        }
-
-        private void SendFullStatus(List<ScheduledEventConfig> events)
-        {
-
-            var message = new RoomEventScheduleStateMessage
-            {
-                ScheduleEvents = events,
-            };
-
-            PostStatusMessage(message);
+            SaveScheduledEvent(evt);
         }
     }
 
-    public class RoomEventScheduleStateMessage : DeviceStateMessageBase
+    private void SaveScheduledEvent(ScheduledEventConfig eventConfig)
     {
-        [JsonProperty("scheduleEvents")]
-        public List<ScheduledEventConfig> ScheduleEvents { get; set; }
+        try
+        {
+            _room.AddOrUpdateScheduledEvent(eventConfig);
+        }
+        catch (Exception ex)
+        {
+            this.LogException(ex,"Exception saving event");
+        }
     }
+
+    private void SendFullStatus(List<ScheduledEventConfig> events)
+    {
+
+        var message = new RoomEventScheduleStateMessage
+        {
+            ScheduleEvents = events,
+        };
+
+        PostStatusMessage(message);
+    }
+}
+
+public class RoomEventScheduleStateMessage : DeviceStateMessageBase
+{
+    [JsonProperty("scheduleEvents")]
+    public List<ScheduledEventConfig> ScheduleEvents { get; set; }
 }

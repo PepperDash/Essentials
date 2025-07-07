@@ -3,35 +3,35 @@ using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Newtonsoft.Json.Linq;
 
-namespace PepperDash.Core.JsonToSimpl
-{
-    /// <summary>
-    /// Generic Master
-    /// </summary>
+namespace PepperDash.Core.JsonToSimpl;
+
+/// <summary>
+/// Generic Master
+/// </summary>
 	public class JsonToSimplGenericMaster : JsonToSimplMaster
-    {
+{
 		/*****************************************************************************************/
 		/** Privates **/
 
-        
+    
 		// The JSON file in JObject form
 		// For gathering the incoming data
 		object StringBuilderLock = new object();
 		// To prevent multiple same-file access
 		static object WriteLock = new object();
 
-        /// <summary>
-        /// Callback action for saving
-        /// </summary>
+    /// <summary>
+    /// Callback action for saving
+    /// </summary>
 		public Action<string> SaveCallback { get; set; }
 
 		/*****************************************************************************************/
 
 		/// <summary>
-        /// SIMPL+ default constructor.
-        /// </summary>
+    /// SIMPL+ default constructor.
+    /// </summary>
 		public JsonToSimplGenericMaster()
-        {
+    {
 		}
 
 		/// <summary>
@@ -78,7 +78,7 @@ namespace PepperDash.Core.JsonToSimpl
 		public override void Save()
 		{
 			// this code is duplicated in the other masters!!!!!!!!!!!!!
- 			UnsavedValues = new Dictionary<string, JValue>();
+			UnsavedValues = new Dictionary<string, JValue>();
 			// Make each child update their values into master object
 			foreach (var child in Children)
 			{
@@ -115,4 +115,3 @@ namespace PepperDash.Core.JsonToSimpl
 				Debug.Console(0, this, "WARNING: No save callback defined.");
 		}
 	}
-}

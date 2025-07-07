@@ -6,38 +6,37 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Room.Config
+namespace PepperDash.Essentials.Room.Config;
+
+public class EssentialsRoomScheduledEventsConfig
 {
-    public class EssentialsRoomScheduledEventsConfig
-    {
-        [JsonProperty("scheduledEvents")]
-        public List<ScheduledEventConfig> ScheduledEvents;
-    }
+    [JsonProperty("scheduledEvents")]
+    public List<ScheduledEventConfig> ScheduledEvents;
+}
 
-    public class ScheduledEventConfig
-    {
-        [JsonProperty("key")]
-        public string Key;
+public class ScheduledEventConfig
+{
+    [JsonProperty("key")]
+    public string Key;
 
-        [JsonProperty("name")]
-        public string Name;
+    [JsonProperty("name")]
+    public string Name;
 
-        [JsonProperty("days")]
-        public ScheduledEventCommon.eWeekDays Days;
+    [JsonProperty("days")]
+    public ScheduledEventCommon.eWeekDays Days;
 
-        [JsonProperty("time")]
-        public string Time;
+    [JsonProperty("time")]
+    public string Time;
 
-        [JsonProperty("actions")]
-        public List<DeviceActionWrapper> Actions;
+    [JsonProperty("actions")]
+    public List<DeviceActionWrapper> Actions;
 
-        [JsonProperty("persistent")]
-        public bool Persistent;
+    [JsonProperty("persistent")]
+    public bool Persistent;
 
-        [JsonProperty("acknowledgeable")]
-        public bool Acknowledgeable;
+    [JsonProperty("acknowledgeable")]
+    public bool Acknowledgeable;
 
-        [JsonProperty("enable")]
-        public bool Enable;
-    }
+    [JsonProperty("enable")]
+    public bool Enable;
 }

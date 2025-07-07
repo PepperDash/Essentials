@@ -8,11 +8,10 @@ using Crestron.SimplSharp;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Devices.Common.AudioCodec
+namespace PepperDash.Essentials.Devices.Common.AudioCodec;
+
+public class MockAcPropertiesConfig
 {
-    public class MockAcPropertiesConfig
-    {
-        [JsonProperty("phoneNumber")]
-        public string PhoneNumber { get; set; }
-    }
+    [JsonProperty("phoneNumber")]
+    public string PhoneNumber { get; set; }
 }

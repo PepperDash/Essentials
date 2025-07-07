@@ -7,8 +7,8 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public abstract class HandlerBridge
 	{
 		public bool IsAttached { get; protected set; }
@@ -23,4 +23,3 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public abstract void DetachFromTriListOutputs();
 	}
-}

@@ -1,10 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.AppServer
+namespace PepperDash.Essentials.AppServer;
+
+public class MobileControlSimpleContent<T>
 {
-    public class MobileControlSimpleContent<T>
-    {
-        [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)]
-        public T Value { get; set; }
-    }
+    [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)]
+    public T Value { get; set; }
 }

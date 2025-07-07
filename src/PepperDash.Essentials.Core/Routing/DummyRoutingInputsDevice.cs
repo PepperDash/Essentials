@@ -6,8 +6,8 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core.Routing
-{
+namespace PepperDash.Essentials.Core.Routing;
+
 	public class DummyRoutingInputsDevice : Device, IRoutingSource, IRoutingOutputs
 	{
 		/// <summary>
@@ -33,4 +33,3 @@ namespace PepperDash.Essentials.Core.Routing
 				null, this, true);
 		}
 	}
-}

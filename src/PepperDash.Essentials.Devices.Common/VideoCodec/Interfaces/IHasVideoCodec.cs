@@ -6,8 +6,8 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.Common.VideoCodec
-{
+namespace PepperDash.Essentials.Devices.Common.VideoCodec;
+
 	/// <summary>
 	/// For rooms that have video codec
 	/// </summary>
@@ -15,10 +15,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 	{
 		VideoCodecBase VideoCodec { get; }
 
-        ///// <summary>
-        ///// Make this more specific
-        ///// </summary>
-        //List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem> ActiveCalls { get; }
+    ///// <summary>
+    ///// Make this more specific
+    ///// </summary>
+    //List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem> ActiveCalls { get; }
 
 		/// <summary>
 		/// States: 0 for on hook, 1 for video, 2 for audio, 3 for telekenesis
@@ -31,4 +31,3 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		BoolFeedback IsSharingFeedback { get; }
 
 	}
-}

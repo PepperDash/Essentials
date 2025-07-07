@@ -9,8 +9,8 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// 
 	/// </summary>
@@ -37,4 +37,3 @@ namespace PepperDash.Essentials.Core
 			triList.ClearBoolSigAction(152);
 		}
 	}
-}

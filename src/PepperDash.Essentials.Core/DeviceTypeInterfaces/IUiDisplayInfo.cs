@@ -1,7 +1,7 @@
 ﻿using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// Describes things needed to show on UI
 	/// </summary>
@@ -9,4 +9,3 @@ namespace PepperDash.Essentials.Core
 	{
 		uint DisplayUiType { get; }
 	}
-}

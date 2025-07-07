@@ -11,135 +11,134 @@ using WebSocketSharp.Server;
 using ErrorEventArgs = WebSocketSharp.ErrorEventArgs;
 
 
-namespace PepperDash.Essentials.WebSocketServer
+namespace PepperDash.Essentials.WebSocketServer;
+
+/// <summary>
+/// Represents the behaviour to associate with a UiClient for WebSocket communication
+/// </summary>
+public class UiClient : WebSocketBehavior
 {
-    /// <summary>
-    /// Represents the behaviour to associate with a UiClient for WebSocket communication
-    /// </summary>
-    public class UiClient : WebSocketBehavior
+    public MobileControlSystemController Controller { get; set; }
+
+    public string RoomKey { get; set; }
+
+    private string _clientId;
+
+    private DateTime _connectionTime;
+
+    public TimeSpan ConnectedDuration
     {
-        public MobileControlSystemController Controller { get; set; }
-
-        public string RoomKey { get; set; }
-
-        private string _clientId;
-
-        private DateTime _connectionTime;
-
-        public TimeSpan ConnectedDuration
+        get
         {
-            get
+            if (Context.WebSocket.IsAlive)
             {
-                if (Context.WebSocket.IsAlive)
-                {
-                    return DateTime.Now - _connectionTime;
-                }
-                else
-                {
-                    return new TimeSpan(0);
-                }
+                return DateTime.Now - _connectionTime;
+            }
+            else
+            {
+                return new TimeSpan(0);
             }
         }
+    }
 
-        public UiClient()
+    public UiClient()
+    {
+
+    }
+
+    protected override void OnOpen()
+    {
+        base.OnOpen();
+
+        var url = Context.WebSocket.Url;
+        Debug.LogMessage(LogEventLevel.Verbose, "New WebSocket Connection from: {0}", null, url);
+
+        var match = Regex.Match(url.AbsoluteUri, "(?:ws|wss):\\/\\/.*(?:\\/mc\\/api\\/ui\\/join\\/)(.*)");
+
+        if (!match.Success)
         {
-
+            _connectionTime = DateTime.Now;
+            return;
         }
 
-        protected override void OnOpen()
+        var clientId = match.Groups[1].Value;
+        _clientId = clientId;
+
+        if (Controller == null)
         {
-            base.OnOpen();
+            Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Controller is null");
+            _connectionTime = DateTime.Now;
+        }
 
-            var url = Context.WebSocket.Url;
-            Debug.LogMessage(LogEventLevel.Verbose, "New WebSocket Connection from: {0}", null, url);
-
-            var match = Regex.Match(url.AbsoluteUri, "(?:ws|wss):\\/\\/.*(?:\\/mc\\/api\\/ui\\/join\\/)(.*)");
-
-            if (!match.Success)
+        var clientJoinedMessage = new MobileControlMessage
+        {
+            Type = "/system/clientJoined",
+            Content = JToken.FromObject(new
             {
-                _connectionTime = DateTime.Now;
-                return;
-            }
+                clientId,
+                roomKey = RoomKey,
+            })
+        };
 
-            var clientId = match.Groups[1].Value;
-            _clientId = clientId;
+        Controller.HandleClientMessage(JsonConvert.SerializeObject(clientJoinedMessage));
 
-            if (Controller == null)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Controller is null");
-                _connectionTime = DateTime.Now;
-            }
+        var bridge = Controller.GetRoomBridge(RoomKey);
 
-            var clientJoinedMessage = new MobileControlMessage
-            {
-                Type = "/system/clientJoined",
-                Content = JToken.FromObject(new
-                {
-                    clientId,
-                    roomKey = RoomKey,
-                })
-            };
+        if (bridge == null) return;
 
-            Controller.HandleClientMessage(JsonConvert.SerializeObject(clientJoinedMessage));
+        SendUserCodeToClient(bridge, clientId);
 
-            var bridge = Controller.GetRoomBridge(RoomKey);
+        bridge.UserCodeChanged -= Bridge_UserCodeChanged;
+        bridge.UserCodeChanged += Bridge_UserCodeChanged;
 
-            if (bridge == null) return;
+        // TODO: Future: Check token to see if there's already an open session using that token and reject/close the session 
+    }
 
-            SendUserCodeToClient(bridge, clientId);
+    private void Bridge_UserCodeChanged(object sender, EventArgs e)
+    {
+        SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, _clientId);
+    }
 
-            bridge.UserCodeChanged -= Bridge_UserCodeChanged;
-            bridge.UserCodeChanged += Bridge_UserCodeChanged;
-
-            // TODO: Future: Check token to see if there's already an open session using that token and reject/close the session 
-        }
-
-        private void Bridge_UserCodeChanged(object sender, EventArgs e)
+    private void SendUserCodeToClient(MobileControlBridgeBase bridge, string clientId)
+    {
+        var content = new
         {
-            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, _clientId);
-        }
+            userCode = bridge.UserCode,
+            qrUrl = bridge.QrCodeUrl,
+        };
 
-        private void SendUserCodeToClient(MobileControlBridgeBase bridge, string clientId)
+        var message = new MobileControlMessage
         {
-            var content = new
-            {
-                userCode = bridge.UserCode,
-                qrUrl = bridge.QrCodeUrl,
-            };
+            Type = "/system/userCodeChanged",
+            ClientId = clientId,
+            Content = JToken.FromObject(content)
+        };
 
-            var message = new MobileControlMessage
-            {
-                Type = "/system/userCodeChanged",
-                ClientId = clientId,
-                Content = JToken.FromObject(content)
-            };
+        Controller.SendMessageObjectToDirectClient(message);
+    }
 
-            Controller.SendMessageObjectToDirectClient(message);
-        }
+    protected override void OnMessage(MessageEventArgs e)
+    {
+        base.OnMessage(e);
 
-        protected override void OnMessage(MessageEventArgs e)
+        if (e.IsText && e.Data.Length > 0 && Controller != null)
         {
-            base.OnMessage(e);
-
-            if (e.IsText && e.Data.Length > 0 && Controller != null)
-            {
-                // Forward the message to the controller to be put on the receive queue
-                Controller.HandleClientMessage(e.Data);
-            }
+            // Forward the message to the controller to be put on the receive queue
+            Controller.HandleClientMessage(e.Data);
         }
+    }
 
-        protected override void OnClose(CloseEventArgs e)
-        {
-            base.OnClose(e);
+    protected override void OnClose(CloseEventArgs e)
+    {
+        base.OnClose(e);
 
-            Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Closing: {0} reason: {1}", null, e.Code, e.Reason);
-        }
+        Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Closing: {0} reason: {1}", null, e.Code, e.Reason);
+    }
 
-        protected override void OnError(ErrorEventArgs e)
-        {
-            base.OnError(e);
+    protected override void OnError(ErrorEventArgs e)
+    {
+        base.OnError(e);
 
-            Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Error: {exception} message: {message}", e.Exception, e.Message);
-        }
+        Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Error: {exception} message: {message}", e.Exception, e.Message);
     }
 }

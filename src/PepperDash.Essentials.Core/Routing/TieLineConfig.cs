@@ -11,8 +11,8 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Config
-{
+namespace PepperDash.Essentials.Core.Config;
+
 	/// <summary>
 	/// Represents the configuration data for a single tie line between two routing ports.
 	/// </summary>
@@ -48,12 +48,12 @@ namespace PepperDash.Essentials.Core.Config
 		/// </summary>
 		public string DestinationPort { get; set; }
 
-        /// <summary>
-        /// Optional override for the signal type of the tie line. If set, this overrides the destination port's type for routing calculations.
-        /// </summary>
-        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public eRoutingSignalType? OverrideType { get; set; }
+    /// <summary>
+    /// Optional override for the signal type of the tie line. If set, this overrides the destination port's type for routing calculations.
+    /// </summary>
+    [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
+    [JsonConverter(typeof(StringEnumConverter))]
+    public eRoutingSignalType? OverrideType { get; set; }
 
 		/// <summary>
 		/// Returns the appropriate tie line for either a card-based device or 
@@ -79,19 +79,19 @@ namespace PepperDash.Essentials.Core.Config
 				return null;
 			}
 
-            //Get the source port
-            var sourceOutputPort = sourceDev.OutputPorts[SourcePort];
+        //Get the source port
+        var sourceOutputPort = sourceDev.OutputPorts[SourcePort];
 
-            if (sourceOutputPort == null)
+        if (sourceOutputPort == null)
 			{
 				LogError("Source does not contain port");
 				return null;
 			}
 
-            //Get the Destination port
-            var destinationInputPort = destDev.InputPorts[DestinationPort];
+        //Get the Destination port
+        var destinationInputPort = destDev.InputPorts[DestinationPort];
 
-            if (destinationInputPort == null)
+        if (destinationInputPort == null)
 				{
 					LogError("Destination does not contain port");
 					return null;
@@ -119,4 +119,3 @@ namespace PepperDash.Essentials.Core.Config
 				DestinationKey, DestinationCard, DestinationPort);
 		}
 	}
-}

@@ -4,68 +4,68 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Core.SystemInfo
-{
+namespace PepperDash.Core.SystemInfo;
+
 	/// <summary>
 	/// Constants 
 	/// </summary>
 	public class SystemInfoConstants
 	{
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort BoolValueChange = 1;
 		/// <summary>
 		/// 
 		/// </summary>
-        public const ushort CompleteBoolChange = 2;
+    public const ushort CompleteBoolChange = 2;
 		/// <summary>
 		/// 
 		/// </summary>
-        public const ushort BusyBoolChange = 3;
-        
-        /// <summary>
-        /// 
-        /// </summary>
+    public const ushort BusyBoolChange = 3;
+    
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort UshortValueChange = 101;
 
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort StringValueChange = 201;
 		/// <summary>
 		/// 
 		/// </summary>
-        public const ushort ConsoleResponseChange = 202;
+    public const ushort ConsoleResponseChange = 202;
 		/// <summary>
 		/// 
 		/// </summary>
-        public const ushort ProcessorUptimeChange = 203;
+    public const ushort ProcessorUptimeChange = 203;
 		/// <summary>
 		/// 
 		/// </summary>
-        public const ushort ProgramUptimeChange = 204;
+    public const ushort ProgramUptimeChange = 204;
 
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public const ushort ObjectChange = 301;
 		/// <summary>
 		/// 
 		/// </summary>
-        public const ushort ProcessorConfigChange = 302;
+    public const ushort ProcessorConfigChange = 302;
 		/// <summary>
 		/// 
 		/// </summary>
-        public const ushort EthernetConfigChange = 303;
+    public const ushort EthernetConfigChange = 303;
 		/// <summary>
 		/// 
 		/// </summary>
-        public const ushort ControlSubnetConfigChange = 304;
+    public const ushort ControlSubnetConfigChange = 304;
 		/// <summary>
 		/// 
 		/// </summary>
-        public const ushort ProgramConfigChange = 305;
+    public const ushort ProgramConfigChange = 305;
 	}
 
 	/// <summary>
@@ -73,18 +73,18 @@ namespace PepperDash.Core.SystemInfo
 	/// </summary>
 	public class ProcessorChangeEventArgs : EventArgs
 	{
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public ProcessorInfo Processor { get; set; }
 		/// <summary>
 		/// 
 		/// </summary>
-        public ushort Type { get; set; }
+    public ushort Type { get; set; }
 		/// <summary>
 		/// 
 		/// </summary>
-        public ushort Index { get; set; }
+    public ushort Index { get; set; }
 
 		/// <summary>
 		/// Constructor
@@ -119,18 +119,18 @@ namespace PepperDash.Core.SystemInfo
 	/// </summary>
 	public class EthernetChangeEventArgs : EventArgs
 	{
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public EthernetInfo Adapter { get; set; }
 		/// <summary>
 		/// 
 		/// </summary>
-        public ushort Type { get; set; }
+    public ushort Type { get; set; }
 		/// <summary>
 		/// 
 		/// </summary>
-        public ushort Index { get; set; }
+    public ushort Index { get; set; }
 
 		/// <summary>
 		/// Constructor
@@ -143,7 +143,7 @@ namespace PepperDash.Core.SystemInfo
 		/// <summary>
 		/// Constructor overload
 		/// </summary>
-        /// <param name="ethernet"></param>
+    /// <param name="ethernet"></param>
 		/// <param name="type"></param>
 		public EthernetChangeEventArgs(EthernetInfo ethernet, ushort type)
 		{
@@ -154,9 +154,9 @@ namespace PepperDash.Core.SystemInfo
 		/// <summary>
 		/// Constructor overload
 		/// </summary>
-        /// <param name="ethernet"></param>
+    /// <param name="ethernet"></param>
 		/// <param name="type"></param>
-        /// <param name="index"></param>
+    /// <param name="index"></param>
 		public EthernetChangeEventArgs(EthernetInfo ethernet, ushort type, ushort index)
 		{
 			Adapter = ethernet;
@@ -170,18 +170,18 @@ namespace PepperDash.Core.SystemInfo
 	/// </summary>
 	public class ControlSubnetChangeEventArgs : EventArgs
 	{
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public ControlSubnetInfo Adapter { get; set; }
 		/// <summary>
 		/// 
 		/// </summary>
-        public ushort Type { get; set; }
+    public ushort Type { get; set; }
 		/// <summary>
 		/// 
 		/// </summary>
-        public ushort Index { get; set; }
+    public ushort Index { get; set; }
 
 		/// <summary>
 		/// Constructor
@@ -216,18 +216,18 @@ namespace PepperDash.Core.SystemInfo
 	/// </summary>
 	public class ProgramChangeEventArgs : EventArgs
 	{
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public ProgramInfo Program { get; set; }
 		/// <summary>
 		/// 
 		/// </summary>
-        public ushort Type { get; set; }
+    public ushort Type { get; set; }
 		/// <summary>
 		/// 
 		/// </summary>
-        public ushort Index { get; set; }
+    public ushort Index { get; set; }
 
 		/// <summary>
 		/// Constructor
@@ -240,7 +240,7 @@ namespace PepperDash.Core.SystemInfo
 		/// <summary>
 		/// Constructor overload
 		/// </summary>
-        /// <param name="program"></param>
+    /// <param name="program"></param>
 		/// <param name="type"></param>
 		public ProgramChangeEventArgs(ProgramInfo program, ushort type)
 		{
@@ -251,9 +251,9 @@ namespace PepperDash.Core.SystemInfo
 		/// <summary>
 		/// Constructor overload
 		/// </summary>
-        /// <param name="program"></param>
+    /// <param name="program"></param>
 		/// <param name="type"></param>
-        /// <param name="index"></param>
+    /// <param name="index"></param>
 		public ProgramChangeEventArgs(ProgramInfo program, ushort type, ushort index)
 		{
 			Program = program;
@@ -261,4 +261,3 @@ namespace PepperDash.Core.SystemInfo
 			Index = index;
 		}
 	}
-}

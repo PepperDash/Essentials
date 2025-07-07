@@ -5,8 +5,8 @@ using System.Text;
 using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core.Web
-{
+namespace PepperDash.Essentials.Core.Web;
+
 	public static class EssentialsWebApiHelpers
 	{
 		public static string GetRequestBody(this HttpCwsRequest request)
@@ -22,8 +22,8 @@ namespace PepperDash.Essentials.Core.Web
 		{
 			return new
 			{
-                assembly.Name,
-                assembly.Version
+            assembly.Name,
+            assembly.Version
 			};
 		}
 
@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Core.Web
 		{
 			return new
 			{
-                device.Key,
+            device.Key,
 				Name = (device is IKeyName)
 					? (device as IKeyName).Name
 					: "---"
@@ -84,4 +84,3 @@ namespace PepperDash.Essentials.Core.Web
 			};
 		}
 	}
-}

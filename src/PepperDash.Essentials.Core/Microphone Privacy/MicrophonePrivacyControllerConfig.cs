@@ -6,17 +6,16 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core.CrestronIO;
 
-namespace PepperDash.Essentials.Core.Privacy
-{
-    public class MicrophonePrivacyControllerConfig
-    {
-        public List<KeyedDevice> Inputs { get; set; }
-        public KeyedDevice GreenLedRelay { get; set; }
-        public KeyedDevice RedLedRelay { get; set; }
-    }
+namespace PepperDash.Essentials.Core.Privacy;
 
-    public class KeyedDevice
-    {
-        public string DeviceKey { get; set; }
-    }
+public class MicrophonePrivacyControllerConfig
+{
+    public List<KeyedDevice> Inputs { get; set; }
+    public KeyedDevice GreenLedRelay { get; set; }
+    public KeyedDevice RedLedRelay { get; set; }
+}
+
+public class KeyedDevice
+{
+    public string DeviceKey { get; set; }
 }

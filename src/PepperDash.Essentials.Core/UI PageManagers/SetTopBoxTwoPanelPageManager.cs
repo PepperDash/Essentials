@@ -2,8 +2,8 @@
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Presets;
 
-namespace PepperDash.Essentials.Core.PageManagers
-{
+namespace PepperDash.Essentials.Core.PageManagers;
+
 	/// <summary>
 	/// A fixed-layout page manager that expects a DPad on the right, fixed portion of the page, and a two/three 
 	/// tab switchable area on the left for presets, numeric and transport controls
@@ -57,4 +57,3 @@ namespace PepperDash.Essentials.Core.PageManagers
 			TriList.BooleanInput[LeftSubpageJoin].BoolValue = false;
 		}
 	}
-}

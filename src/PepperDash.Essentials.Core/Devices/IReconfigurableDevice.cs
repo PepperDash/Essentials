@@ -6,14 +6,13 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core.Config;
 
 
-namespace PepperDash.Essentials.Core.Devices
+namespace PepperDash.Essentials.Core.Devices;
+
+public interface IReconfigurableDevice
 {
-    public interface IReconfigurableDevice
-    {
-        event EventHandler<EventArgs> ConfigChanged;
+    event EventHandler<EventArgs> ConfigChanged;
 
-        DeviceConfig Config { get; }
+    DeviceConfig Config { get; }
 
-        void SetConfig(DeviceConfig config);
-    }
+    void SetConfig(DeviceConfig config);
 }

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Room.Config
-{
+namespace PepperDash.Essentials.Room.Config;
+
 	public class SimplRoomPropertiesConfig : EssentialsHuddleVtc1PropertiesConfig
 	{
 		[JsonProperty("roomPhoneNumber")]
@@ -22,4 +22,3 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("number")]
 		public string Number { get; set; }
 	}
-}

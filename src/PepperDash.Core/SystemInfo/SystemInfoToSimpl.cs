@@ -4,37 +4,37 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Core.SystemInfo
-{
+namespace PepperDash.Core.SystemInfo;
+
 	/// <summary>
 	/// System Info class
 	/// </summary>
 	public class SystemInfoToSimpl
 	{
-        /// <summary>
-        /// Notifies of bool change
-        /// </summary>
+    /// <summary>
+    /// Notifies of bool change
+    /// </summary>
 		public event EventHandler<BoolChangeEventArgs> BoolChange;
-        /// <summary>
-        /// Notifies of string change
-        /// </summary>
+    /// <summary>
+    /// Notifies of string change
+    /// </summary>
 		public event EventHandler<StringChangeEventArgs> StringChange;
 
-        /// <summary>
-        /// Notifies of processor change
-        /// </summary>
+    /// <summary>
+    /// Notifies of processor change
+    /// </summary>
 		public event EventHandler<ProcessorChangeEventArgs> ProcessorChange;
-        /// <summary>
-        /// Notifies of ethernet change
-        /// </summary>
+    /// <summary>
+    /// Notifies of ethernet change
+    /// </summary>
 		public event EventHandler<EthernetChangeEventArgs> EthernetChange;
-        /// <summary>
-        /// Notifies of control subnet change
-        /// </summary>
+    /// <summary>
+    /// Notifies of control subnet change
+    /// </summary>
 		public event EventHandler<ControlSubnetChangeEventArgs> ControlSubnetChange;
-        /// <summary>
-        /// Notifies of program change
-        /// </summary>
+    /// <summary>
+    /// Notifies of program change
+    /// </summary>
 		public event EventHandler<ProgramChangeEventArgs> ProgramChange;
 
 		/// <summary>
@@ -327,10 +327,10 @@ namespace PepperDash.Core.SystemInfo
 		/// <summary>
 		/// private method to parse console messages
 		/// </summary>
-        /// <param name="data"></param>
+    /// <param name="data"></param>
 		/// <param name="line"></param>
-        /// <param name="dataStart"></param>
-        /// <param name="dataEnd"></param>
+    /// <param name="dataStart"></param>
+    /// <param name="dataEnd"></param>
 		/// <returns></returns>
 		private string ParseConsoleResponse(string data, string line, string dataStart, string dataEnd)
 		{
@@ -459,4 +459,3 @@ namespace PepperDash.Core.SystemInfo
 			}
 		}
 	}
-}

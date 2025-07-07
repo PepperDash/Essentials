@@ -15,8 +15,8 @@ using Serilog.Events;
 using System.IO;
 using PepperDash.Core.Logging;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 
 	/// <summary>
 	/// IR port wrapper. May act standalone
@@ -26,13 +26,13 @@ namespace PepperDash.Essentials.Core
 		uint IrPortUid;
 		IROutputPort IrPort;
 
-        public BoolFeedback DriverLoaded { get; private set; }
+    public BoolFeedback DriverLoaded { get; private set; }
 
 		public ushort StandardIrPulseTime { get; set; }
 		public string DriverFilepath { get; private set; }
 		public bool DriverIsLoaded { get; private set; }
 
-        public string[] IrFileCommands { get { return IrPort.AvailableStandardIRCmds(IrPortUid); } }
+    public string[] IrFileCommands { get { return IrPort.AvailableStandardIRCmds(IrPortUid); } }
 
 		public bool UseBridgeJoinMap { get; private set; }
 
@@ -59,53 +59,53 @@ namespace PepperDash.Essentials.Core
 	        DeviceConfig config)
 	        : base(key)
 	    {
-            DriverLoaded = new BoolFeedback(() => DriverIsLoaded);
+        DriverLoaded = new BoolFeedback(() => DriverIsLoaded);
 			UseBridgeJoinMap = config.Properties["control"].Value<bool>("useBridgeJoinMap");
-            AddPostActivationAction(() =>
-            {
+        AddPostActivationAction(() =>
+        {
 	            IrPort = postActivationFunc(config);
 
-                if (IrPort == null)
-                {
-                    Debug.LogMessage(LogEventLevel.Information, this, "WARNING No valid IR Port assigned to controller. IR will not function");
-                    return;
-                }
-                
-                // var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
+            if (IrPort == null)
+            {
+                Debug.LogMessage(LogEventLevel.Information, this, "WARNING No valid IR Port assigned to controller. IR will not function");
+                return;
+            }
+            
+            // var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
 
-                var fileName = config.Properties["control"]["irFile"].Value<string>();
+            var fileName = config.Properties["control"]["irFile"].Value<string>();
 
-                var files = Directory.GetFiles(Global.FilePathPrefix, fileName, SearchOption.AllDirectories);
+            var files = Directory.GetFiles(Global.FilePathPrefix, fileName, SearchOption.AllDirectories);
 
-                if(files.Length == 0)
-                {
-                    this.LogError("IR file {fileName} not found in {path}", fileName, Global.FilePathPrefix);
-                    return;
-                }
+            if(files.Length == 0)
+            {
+                this.LogError("IR file {fileName} not found in {path}", fileName, Global.FilePathPrefix);
+                return;
+            }
 
-                if(files.Length > 1)
-                {
-                    this.LogError("IR file {fileName} found in multiple locations: {files}", fileName, files);
-                    return;
-                }
+            if(files.Length > 1)
+            {
+                this.LogError("IR file {fileName} found in multiple locations: {files}", fileName, files);
+                return;
+            }
 
-                var filePath = files[0];
+            var filePath = files[0];
 
-                Debug.LogMessage(LogEventLevel.Debug, "*************Attempting to load IR file: {0}***************", filePath);
+            Debug.LogMessage(LogEventLevel.Debug, "*************Attempting to load IR file: {0}***************", filePath);
 
-                LoadDriver(filePath);
-                
+            LoadDriver(filePath);
+            
 				PrintAvailableCommands();
-            });
+        });
 	    }
 
 	    public void PrintAvailableCommands()
 	    {
-            Debug.LogMessage(LogEventLevel.Verbose, this, "Available IR Commands in IR File {0}", IrPortUid);
-            foreach (var cmd in IrPort.AvailableIRCmds())
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, this, "{0}", cmd);
-            }
+        Debug.LogMessage(LogEventLevel.Verbose, this, "Available IR Commands in IR File {0}", IrPortUid);
+        foreach (var cmd in IrPort.AvailableIRCmds())
+        {
+            Debug.LogMessage(LogEventLevel.Verbose, this, "{0}", cmd);
+        }
 	    }
 	    
 
@@ -115,7 +115,7 @@ namespace PepperDash.Essentials.Core
 		/// <param name="path"></param>
 		public void LoadDriver(string path)
 		{
-            Debug.LogMessage(LogEventLevel.Verbose, this, "***Loading IR File***");
+        Debug.LogMessage(LogEventLevel.Verbose, this, "***Loading IR File***");
 			if (string.IsNullOrEmpty(path)) path = DriverFilepath;
 	        try
 	        {
@@ -124,14 +124,14 @@ namespace PepperDash.Essentials.Core
 	            StandardIrPulseTime = 200;
 	            DriverIsLoaded = true;
 
-                DriverLoaded.FireUpdate();
+            DriverLoaded.FireUpdate();
 	        }
 			catch
 			{
 				DriverIsLoaded = false;
 				var message = string.Format("WARNING IR Driver '{0}' failed to load", path);
 				Debug.LogMessage(LogEventLevel.Information, this, message);
-                DriverLoaded.FireUpdate();
+            DriverLoaded.FireUpdate();
 			}
 		}
 
@@ -193,4 +193,3 @@ namespace PepperDash.Essentials.Core
 				Key, IrPort.IRDriverFileNameByIRDriverId(IrPortUid), command);
 		}
 	}
-}

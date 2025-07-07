@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Serilog.Events;
 
-namespace PepperDash.Core
-{
+namespace PepperDash.Core;
+
 	//*********************************************************************************************************
 	/// <summary>
 	/// The core event and status-bearing class that most if not all device and connectors can derive from.
@@ -178,15 +178,14 @@ namespace PepperDash.Core
 			if (o is bool && !(bool)o) a();
 		}
 
-        /// <summary>
-        /// Returns a string representation of the object, including its key and name.
-        /// </summary>
-        /// <remarks>The returned string is formatted as "{Key} - {Name}". If the <c>Name</c> property is
-        /// null or empty,  "---" is used in place of the name.</remarks>
-        /// <returns>A string that represents the object, containing the key and name in the format "{Key} - {Name}".</returns>
+    /// <summary>
+    /// Returns a string representation of the object, including its key and name.
+    /// </summary>
+    /// <remarks>The returned string is formatted as "{Key} - {Name}". If the <c>Name</c> property is
+    /// null or empty,  "---" is used in place of the name.</remarks>
+    /// <returns>A string that represents the object, containing the key and name in the format "{Key} - {Name}".</returns>
 		public override string ToString()
 		{
 			return string.Format("{0} - {1}", Key, string.IsNullOrEmpty(Name) ? "---" : Name);
 		}
 	}
-}

@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace PepperDash.Essentials.Core.Queues
+namespace PepperDash.Essentials.Core.Queues;
+
+public interface IQueueMessage
 {
-    public interface IQueueMessage
-    {
-        void Dispatch();
-    }
+    void Dispatch();
 }

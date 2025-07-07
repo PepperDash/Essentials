@@ -8,8 +8,8 @@ using Crestron.SimplSharpPro;
 using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	//***************************************************************************************************
 
 	public abstract class Room : Device, IHasFeedback
@@ -42,15 +42,14 @@ namespace PepperDash.Essentials.Core
 		{
 			get
 			{
-                return new FeedbackCollection<Feedback>
-                {
-                    RoomIsOnFeedback,
-                    IsCoolingDownFeedback,
-                    IsWarmingUpFeedback
-                };
+            return new FeedbackCollection<Feedback>
+            {
+                RoomIsOnFeedback,
+                IsCoolingDownFeedback,
+                IsWarmingUpFeedback
+            };
 			}
 		}
 
 		#endregion
 	}
-}

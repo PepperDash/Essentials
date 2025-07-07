@@ -5,167 +5,165 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+/// <summary>
+/// A Feedback whose output is derived from the return value of a provided Func.
+/// </summary>
+public class BoolFeedback : Feedback
 {
     /// <summary>
-    /// A Feedback whose output is derived from the return value of a provided Func.
+    /// Returns the current value of the feedback, derived from the ValueFunc. The ValueFunc is 
+    /// evaluated whenever FireUpdate() is called
     /// </summary>
-    public class BoolFeedback : Feedback
+    public override bool BoolValue { get { return _BoolValue; } }
+    bool _BoolValue;
+
+    /// <summary>
+    /// Fake value to be used in test mode
+    /// </summary>
+    public bool TestValue { get; private set; }
+
+    /// <summary>
+    /// Func that evaluates on FireUpdate
+    /// </summary>
+    public Func<bool> ValueFunc { get; private set; }
+
+    List<BoolInputSig> LinkedInputSigs = new List<BoolInputSig>();
+    List<BoolInputSig> LinkedComplementInputSigs = new List<BoolInputSig>();
+
+    List<Crestron.SimplSharpPro.DeviceSupport.Feedback> LinkedCrestronFeedbacks = new List<Crestron.SimplSharpPro.DeviceSupport.Feedback>();
+
+    /// <summary>
+    /// Creates the feedback with the Func as described.
+    /// </summary>
+    /// <remarks>
+    /// While the linked sig value will be updated with the current value stored when it is linked to a EISC Bridge,
+    /// it will NOT reflect an actual value from a device until <seealso cref="FireUpdate"/> has been called
+    /// </remarks>
+    /// <param name="valueFunc">Delegate to invoke when this feedback needs to be updated</param>
+    public BoolFeedback(Func<bool> valueFunc)
+        : this(null, valueFunc)
     {
-        /// <summary>
-        /// Returns the current value of the feedback, derived from the ValueFunc. The ValueFunc is 
-        /// evaluated whenever FireUpdate() is called
-        /// </summary>
-        public override bool BoolValue { get { return _BoolValue; } }
-        bool _BoolValue;
+    }
 
-        /// <summary>
-        /// Fake value to be used in test mode
-        /// </summary>
-        public bool TestValue { get; private set; }
+    /// <summary>
+    /// Creates the feedback with the Func as described.
+    /// </summary>
+    /// <remarks>
+    /// While the linked sig value will be updated with the current value stored when it is linked to a EISC Bridge,
+    /// it will NOT reflect an actual value from a device until <seealso cref="FireUpdate"/> has been called
+    /// </remarks>
+    /// <param name="key">Key to find this Feedback</param>
+    /// <param name="valueFunc">Delegate to invoke when this feedback needs to be updated</param>
+    public BoolFeedback(string key, Func<bool> valueFunc)
+        : base(key)
+    {
+        ValueFunc = valueFunc;
+    }
 
-        /// <summary>
-        /// Func that evaluates on FireUpdate
-        /// </summary>
-        public Func<bool> ValueFunc { get; private set; }
+    public void SetValueFunc(Func<bool> newFunc)
+    {
+        ValueFunc = newFunc;
+    }
 
-        List<BoolInputSig> LinkedInputSigs = new List<BoolInputSig>();
-        List<BoolInputSig> LinkedComplementInputSigs = new List<BoolInputSig>();
-
-        List<Crestron.SimplSharpPro.DeviceSupport.Feedback> LinkedCrestronFeedbacks = new List<Crestron.SimplSharpPro.DeviceSupport.Feedback>();
-
-        /// <summary>
-        /// Creates the feedback with the Func as described.
-        /// </summary>
-        /// <remarks>
-        /// While the linked sig value will be updated with the current value stored when it is linked to a EISC Bridge,
-        /// it will NOT reflect an actual value from a device until <seealso cref="FireUpdate"/> has been called
-        /// </remarks>
-        /// <param name="valueFunc">Delegate to invoke when this feedback needs to be updated</param>
-        public BoolFeedback(Func<bool> valueFunc)
-            : this(null, valueFunc)
+    public override void FireUpdate()
+    {
+        bool newValue = InTestMode ? TestValue : ValueFunc.Invoke();
+        if (newValue != _BoolValue)
         {
-        }
-
-        /// <summary>
-        /// Creates the feedback with the Func as described.
-        /// </summary>
-        /// <remarks>
-        /// While the linked sig value will be updated with the current value stored when it is linked to a EISC Bridge,
-        /// it will NOT reflect an actual value from a device until <seealso cref="FireUpdate"/> has been called
-        /// </remarks>
-        /// <param name="key">Key to find this Feedback</param>
-        /// <param name="valueFunc">Delegate to invoke when this feedback needs to be updated</param>
-        public BoolFeedback(string key, Func<bool> valueFunc)
-            : base(key)
-        {
-            ValueFunc = valueFunc;
-        }
-
-        public void SetValueFunc(Func<bool> newFunc)
-        {
-            ValueFunc = newFunc;
-        }
-
-        public override void FireUpdate()
-        {
-            bool newValue = InTestMode ? TestValue : ValueFunc.Invoke();
-            if (newValue != _BoolValue)
-            {
-                _BoolValue = newValue;
-                LinkedInputSigs.ForEach(s => UpdateSig(s));
-                LinkedComplementInputSigs.ForEach(s => UpdateComplementSig(s));
-                OnOutputChange(newValue);
-            }
-        }
-
-        /// <summary>
-        /// Links an input sig
-        /// </summary>
-        /// <param name="sig"></param>
-        public void LinkInputSig(BoolInputSig sig)
-        {
-            LinkedInputSigs.Add(sig);
-            UpdateSig(sig);
-        }
-
-        /// <summary>
-        /// Unlinks an inputs sig
-        /// </summary>
-        /// <param name="sig"></param>
-        public void UnlinkInputSig(BoolInputSig sig)
-        {
-            LinkedInputSigs.Remove(sig);
-        }
-
-        /// <summary>
-        /// Links an input sig to the complement value
-        /// </summary>
-        /// <param name="sig"></param>
-        public void LinkComplementInputSig(BoolInputSig sig)
-        {
-            LinkedComplementInputSigs.Add(sig);
-            UpdateComplementSig(sig);
-        }
-
-        /// <summary>
-        /// Unlinks an input sig to the complement value
-        /// </summary>
-        /// <param name="sig"></param>
-        public void UnlinkComplementInputSig(BoolInputSig sig)
-        {
-            LinkedComplementInputSigs.Remove(sig);
-        }
-
-        /// <summary>
-        /// Links a Crestron Feedback object
-        /// </summary>
-        /// <param name="feedback"></param>
-        public void LinkCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
-        {
-            LinkedCrestronFeedbacks.Add(feedback);
-            UpdateCrestronFeedback(feedback);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="feedback"></param>
-        public void UnlinkCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
-        {
-            LinkedCrestronFeedbacks.Remove(feedback);
-        }
-
-        public override string ToString()
-        {
-            return (InTestMode ? "TEST -- " : "") + BoolValue.ToString();
-        }
-
-        /// <summary>
-        /// Puts this in test mode, sets the test value and fires an update.
-        /// </summary>
-        /// <param name="value"></param>
-        public void SetTestValue(bool value)
-        {
-            TestValue = value;
-            InTestMode = true;
-            FireUpdate();
-        }
-
-        void UpdateSig(BoolInputSig sig)
-        {
-            sig.BoolValue = _BoolValue;
-        }
-
-        void UpdateComplementSig(BoolInputSig sig)
-        {
-            sig.BoolValue = !_BoolValue;
-        }
-
-        void UpdateCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
-        {
-            feedback.State = _BoolValue;
+            _BoolValue = newValue;
+            LinkedInputSigs.ForEach(s => UpdateSig(s));
+            LinkedComplementInputSigs.ForEach(s => UpdateComplementSig(s));
+            OnOutputChange(newValue);
         }
     }
 
+    /// <summary>
+    /// Links an input sig
+    /// </summary>
+    /// <param name="sig"></param>
+    public void LinkInputSig(BoolInputSig sig)
+    {
+        LinkedInputSigs.Add(sig);
+        UpdateSig(sig);
+    }
+
+    /// <summary>
+    /// Unlinks an inputs sig
+    /// </summary>
+    /// <param name="sig"></param>
+    public void UnlinkInputSig(BoolInputSig sig)
+    {
+        LinkedInputSigs.Remove(sig);
+    }
+
+    /// <summary>
+    /// Links an input sig to the complement value
+    /// </summary>
+    /// <param name="sig"></param>
+    public void LinkComplementInputSig(BoolInputSig sig)
+    {
+        LinkedComplementInputSigs.Add(sig);
+        UpdateComplementSig(sig);
+    }
+
+    /// <summary>
+    /// Unlinks an input sig to the complement value
+    /// </summary>
+    /// <param name="sig"></param>
+    public void UnlinkComplementInputSig(BoolInputSig sig)
+    {
+        LinkedComplementInputSigs.Remove(sig);
+    }
+
+    /// <summary>
+    /// Links a Crestron Feedback object
+    /// </summary>
+    /// <param name="feedback"></param>
+    public void LinkCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
+    {
+        LinkedCrestronFeedbacks.Add(feedback);
+        UpdateCrestronFeedback(feedback);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="feedback"></param>
+    public void UnlinkCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
+    {
+        LinkedCrestronFeedbacks.Remove(feedback);
+    }
+
+    public override string ToString()
+    {
+        return (InTestMode ? "TEST -- " : "") + BoolValue.ToString();
+    }
+
+    /// <summary>
+    /// Puts this in test mode, sets the test value and fires an update.
+    /// </summary>
+    /// <param name="value"></param>
+    public void SetTestValue(bool value)
+    {
+        TestValue = value;
+        InTestMode = true;
+        FireUpdate();
+    }
+
+    void UpdateSig(BoolInputSig sig)
+    {
+        sig.BoolValue = _BoolValue;
+    }
+
+    void UpdateComplementSig(BoolInputSig sig)
+    {
+        sig.BoolValue = !_BoolValue;
+    }
+
+    void UpdateCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
+    {
+        feedback.State = _BoolValue;
+    }
 }

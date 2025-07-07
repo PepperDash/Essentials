@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
-{
+namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
+
 	/// <summary>
 	/// Describes a device that has call participants
 	/// </summary>
@@ -13,23 +13,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 	{
 		CodecParticipants Participants { get; }
 
-        /// <summary>
-        /// Removes the participant from the meeting
-        /// </summary>
-        /// <param name="participant"></param>
-        void RemoveParticipant(int userId);
+    /// <summary>
+    /// Removes the participant from the meeting
+    /// </summary>
+    /// <param name="participant"></param>
+    void RemoveParticipant(int userId);
 
-        /// <summary>
-        /// Sets the participant as the new host
-        /// </summary>
-        /// <param name="participant"></param>
-        void SetParticipantAsHost(int userId);
+    /// <summary>
+    /// Sets the participant as the new host
+    /// </summary>
+    /// <param name="participant"></param>
+    void SetParticipantAsHost(int userId);
 
-        /// <summary>
-        /// Admits a participant from the waiting room
-        /// </summary>
-        /// <param name="userId"></param>
-        void AdmitParticipantFromWaitingRoom(int userId);
+    /// <summary>
+    /// Admits a participant from the waiting room
+    /// </summary>
+    /// <param name="userId"></param>
+    void AdmitParticipantFromWaitingRoom(int userId);
 	}
 
 	/// <summary>
@@ -47,10 +47,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 	/// </summary>
 	public interface IHasParticipantAudioMute : IHasParticipantVideoMute
 	{
-        /// <summary>
-        /// Mute audio of all participants
-        /// </summary>
-        void MuteAudioForAllParticipants();
+    /// <summary>
+    /// Mute audio of all participants
+    /// </summary>
+    void MuteAudioForAllParticipants();
 
 		void MuteAudioForParticipant(int userId);
 		void UnmuteAudioForParticipant(int userId);
@@ -84,13 +84,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 			}
 		}
 
-        public Participant Host
+    public Participant Host
+    {
+        get
         {
-            get
-            {
-                return _currentParticipants.FirstOrDefault(p => p.IsHost);
-            }
+            return _currentParticipants.FirstOrDefault(p => p.IsHost);
         }
+    }
 
 		public event EventHandler<EventArgs> ParticipantsListHasChanged;
 
@@ -116,7 +116,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 	{
 		public int UserId { get; set; }
 		public bool IsHost { get; set; }
-        public bool IsMyself { get; set; }
+    public bool IsMyself { get; set; }
 		public string Name { get; set; }
 		public bool CanMuteVideo { get; set; }
 		public bool CanUnmuteVideo { get; set; }
@@ -132,4 +132,3 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 			ScreenIndexIsPinnedToFb = -1;
 		}
 	}
-}

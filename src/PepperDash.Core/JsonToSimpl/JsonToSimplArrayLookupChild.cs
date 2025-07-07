@@ -3,20 +3,20 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Serilog.Events;
 
-namespace PepperDash.Core.JsonToSimpl
-{
-    /// <summary>
-    /// Used to interact with an array of values with the S+ modules
-    /// </summary>
+namespace PepperDash.Core.JsonToSimpl;
+
+/// <summary>
+/// Used to interact with an array of values with the S+ modules
+/// </summary>
 	public class JsonToSimplArrayLookupChild : JsonToSimplChildObjectBase
 	{
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public string SearchPropertyName { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 		public string SearchPropertyValue { get; set; }
 
 		int ArrayIndex;
@@ -76,9 +76,9 @@ namespace PepperDash.Core.JsonToSimpl
 				PathSuffix == null ? "" : PathSuffix);
 		}
 
-        /// <summary>
-        /// Process all values
-        /// </summary>
+    /// <summary>
+    /// Process all values
+    /// </summary>
 		public override void ProcessAll()
 		{
 			if (FindInArray())
@@ -159,4 +159,3 @@ namespace PepperDash.Core.JsonToSimpl
 			return false;
 		}
 	}
-}

@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+public interface IHasBranding
 {
-    public interface IHasBranding
-    {
-        bool BrandingEnabled { get; }
-        void InitializeBranding(string roomKey);
-    }
+    bool BrandingEnabled { get; }
+    void InitializeBranding(string roomKey);
 }

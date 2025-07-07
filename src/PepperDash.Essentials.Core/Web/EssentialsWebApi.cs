@@ -8,8 +8,8 @@ using PepperDash.Core.Web;
 using PepperDash.Essentials.Core.Web.RequestHandlers;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Web
-{
+namespace PepperDash.Essentials.Core.Web;
+
 	public class EssentialsWebApi : EssentialsDevice
 	{
 		private readonly WebApiServer _server;        
@@ -72,146 +72,146 @@ namespace PepperDash.Essentials.Core.Web
 
 		private void SetupRoutes()
 		{
-            var routes = new List<HttpCwsRoute>
-            {
-                new HttpCwsRoute("versions")
-                {
-                    Name = "ReportVersions",
-                    RouteHandler = new ReportVersionsRequestHandler()
-                },
-                new HttpCwsRoute("appdebug")
-                {
-                    Name = "AppDebug",
-                    RouteHandler = new AppDebugRequestHandler()
-                },
-                new HttpCwsRoute("devices")
-                {
-                    Name = "DevList",
-                    RouteHandler = new DevListRequestHandler()
-                },
-                new HttpCwsRoute("deviceCommands/{deviceKey}")
-                {
-                    Name = "DevJson",
-                    RouteHandler = new DevJsonRequestHandler()
-                },
-                new HttpCwsRoute("deviceProperties/{deviceKey}")
-                {
-                    Name = "DevProps",
-                    RouteHandler = new DevPropsRequestHandler()
-                },
-                new HttpCwsRoute("deviceMethods/{deviceKey}")
-                {
-                    Name = "DevMethods",
-                    RouteHandler = new DevMethodsRequestHandler()
-                },
-                new HttpCwsRoute("deviceFeedbacks/{deviceKey}")
-                {
-                    Name = "GetFeedbacksForDeviceKey",
-                    RouteHandler = new GetFeedbacksForDeviceRequestHandler()
-                },
-                new HttpCwsRoute("deviceStreamDebug")
-                {
-                    Name = "SetDeviceStreamDebug",
-                    RouteHandler = new SetDeviceStreamDebugRequestHandler()
-                },
-                new HttpCwsRoute("disableAllStreamDebug")
-                {
-                    Name = "DisableAllStreamDebug",
-                    RouteHandler = new DisableAllStreamDebugRequestHandler()
-                },
-                new HttpCwsRoute("config")
-                {
-                    Name = "ShowConfig",
-                    RouteHandler = new ShowConfigRequestHandler()
-                },
-                new HttpCwsRoute("types")
-                {
-                    Name = "GetTypes",
-                    RouteHandler = new GetTypesRequestHandler()
-                },
-                new HttpCwsRoute("types/{filter}")
-                {
-                    Name = "GetTypesByFilter",
-                    RouteHandler = new GetTypesByFilterRequestHandler()
-                },
-                new HttpCwsRoute("joinMap/{bridgeKey}")
-                {
-                    Name = "GetJoinMapsForBridgeKey",
-                    RouteHandler = new GetJoinMapForBridgeKeyRequestHandler()
-                },
-                new HttpCwsRoute("joinMap/{bridgeKey}/{deviceKey}")
-                {
-                    Name = "GetJoinMapsForDeviceKey",
-                    RouteHandler = new GetJoinMapForDeviceKeyRequestHandler()
-                },
-                new HttpCwsRoute("debugSession")
-                {
-                    Name = "DebugSession",
-                    RouteHandler = new DebugSessionRequestHandler()
-                },
-                new HttpCwsRoute("doNotLoadConfigOnNextBoot")
-                {
-                    Name = "DoNotLoadConfigOnNextBoot",
-                    RouteHandler = new DoNotLoadConfigOnNextBootRequestHandler()
-                },
-                new HttpCwsRoute("restartProgram")
-                {
-                    Name = "Restart Program",
-                    RouteHandler = new RestartProgramRequestHandler()
-                },
-                new HttpCwsRoute("loadConfig")
-                {
-                    Name = "Load Config",
-                    RouteHandler = new LoadConfigRequestHandler()
-                },
-                new HttpCwsRoute("tielines")
-                {
-                    Name = "Get TieLines",
-                    RouteHandler = new GetTieLinesRequestHandler()
-                },
-                new HttpCwsRoute("device/{deviceKey}/routingPorts")
-                {
-                    Name = "Get Routing Ports for a device",
-                    RouteHandler = new GetRoutingPortsHandler()
-                },
-            };
-
-            AddRoute(routes);
-        }
-
-        /// <summary>
-        /// Add a single route to the API. MUST be done during the activation phase
-        /// </summary>
-        /// <param name="route"></param>
-        public void AddRoute(HttpCwsRoute route)
+        var routes = new List<HttpCwsRoute>
         {
-            _server.AddRoute(route);
-        }
-
-        /// <summary>
-        /// Add a collection of routes to the API. MUST be done during the activation phase
-        /// </summary>
-        /// <param name="routes"></param>
-        public void AddRoute(List<HttpCwsRoute> routes)
-        {
-            foreach (var route in routes)
+            new HttpCwsRoute("versions")
             {
-                AddRoute(route);
-            }
-        }
+                Name = "ReportVersions",
+                RouteHandler = new ReportVersionsRequestHandler()
+            },
+            new HttpCwsRoute("appdebug")
+            {
+                Name = "AppDebug",
+                RouteHandler = new AppDebugRequestHandler()
+            },
+            new HttpCwsRoute("devices")
+            {
+                Name = "DevList",
+                RouteHandler = new DevListRequestHandler()
+            },
+            new HttpCwsRoute("deviceCommands/{deviceKey}")
+            {
+                Name = "DevJson",
+                RouteHandler = new DevJsonRequestHandler()
+            },
+            new HttpCwsRoute("deviceProperties/{deviceKey}")
+            {
+                Name = "DevProps",
+                RouteHandler = new DevPropsRequestHandler()
+            },
+            new HttpCwsRoute("deviceMethods/{deviceKey}")
+            {
+                Name = "DevMethods",
+                RouteHandler = new DevMethodsRequestHandler()
+            },
+            new HttpCwsRoute("deviceFeedbacks/{deviceKey}")
+            {
+                Name = "GetFeedbacksForDeviceKey",
+                RouteHandler = new GetFeedbacksForDeviceRequestHandler()
+            },
+            new HttpCwsRoute("deviceStreamDebug")
+            {
+                Name = "SetDeviceStreamDebug",
+                RouteHandler = new SetDeviceStreamDebugRequestHandler()
+            },
+            new HttpCwsRoute("disableAllStreamDebug")
+            {
+                Name = "DisableAllStreamDebug",
+                RouteHandler = new DisableAllStreamDebugRequestHandler()
+            },
+            new HttpCwsRoute("config")
+            {
+                Name = "ShowConfig",
+                RouteHandler = new ShowConfigRequestHandler()
+            },
+            new HttpCwsRoute("types")
+            {
+                Name = "GetTypes",
+                RouteHandler = new GetTypesRequestHandler()
+            },
+            new HttpCwsRoute("types/{filter}")
+            {
+                Name = "GetTypesByFilter",
+                RouteHandler = new GetTypesByFilterRequestHandler()
+            },
+            new HttpCwsRoute("joinMap/{bridgeKey}")
+            {
+                Name = "GetJoinMapsForBridgeKey",
+                RouteHandler = new GetJoinMapForBridgeKeyRequestHandler()
+            },
+            new HttpCwsRoute("joinMap/{bridgeKey}/{deviceKey}")
+            {
+                Name = "GetJoinMapsForDeviceKey",
+                RouteHandler = new GetJoinMapForDeviceKeyRequestHandler()
+            },
+            new HttpCwsRoute("debugSession")
+            {
+                Name = "DebugSession",
+                RouteHandler = new DebugSessionRequestHandler()
+            },
+            new HttpCwsRoute("doNotLoadConfigOnNextBoot")
+            {
+                Name = "DoNotLoadConfigOnNextBoot",
+                RouteHandler = new DoNotLoadConfigOnNextBootRequestHandler()
+            },
+            new HttpCwsRoute("restartProgram")
+            {
+                Name = "Restart Program",
+                RouteHandler = new RestartProgramRequestHandler()
+            },
+            new HttpCwsRoute("loadConfig")
+            {
+                Name = "Load Config",
+                RouteHandler = new LoadConfigRequestHandler()
+            },
+            new HttpCwsRoute("tielines")
+            {
+                Name = "Get TieLines",
+                RouteHandler = new GetTieLinesRequestHandler()
+            },
+            new HttpCwsRoute("device/{deviceKey}/routingPorts")
+            {
+                Name = "Get Routing Ports for a device",
+                RouteHandler = new GetRoutingPortsHandler()
+            },
+        };
 
-        /// <summary>
-        /// Initializes the CWS class
-        /// </summary>
-        public override void Initialize()
+        AddRoute(routes);
+    }
+
+    /// <summary>
+    /// Add a single route to the API. MUST be done during the activation phase
+    /// </summary>
+    /// <param name="route"></param>
+    public void AddRoute(HttpCwsRoute route)
+    {
+        _server.AddRoute(route);
+    }
+
+    /// <summary>
+    /// Add a collection of routes to the API. MUST be done during the activation phase
+    /// </summary>
+    /// <param name="routes"></param>
+    public void AddRoute(List<HttpCwsRoute> routes)
+    {
+        foreach (var route in routes)
+        {
+            AddRoute(route);
+        }
+    }
+
+    /// <summary>
+    /// Initializes the CWS class
+    /// </summary>
+    public override void Initialize()
 		{
-            AddRoute(new HttpCwsRoute("apiPaths") {
-                Name = "GetPaths",
-                RouteHandler = new GetRoutesHandler(_server.GetRouteCollection(), BasePath)
-            });
+        AddRoute(new HttpCwsRoute("apiPaths") {
+            Name = "GetPaths",
+            RouteHandler = new GetRoutesHandler(_server.GetRouteCollection(), BasePath)
+        });
 
-            // If running on an appliance
-            if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
+        // If running on an appliance
+        if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
 			{
 				/*
 					WEBSERVER [ON | OFF | TIMEOUT <VALUE IN SECONDS> | MAXSESSIONSPERUSER <Number of sessions>]
@@ -253,11 +253,11 @@ namespace PepperDash.Essentials.Core.Web
 				CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
 			
 			var hostname = CrestronEthernetHelper.GetEthernetParameter(
-                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
+                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
 
-            var path = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
-                ? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws{BasePath}"
-                : $"https://{currentIp}/cws{BasePath}";
+        var path = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
+            ? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws{BasePath}"
+            : $"https://{currentIp}/cws{BasePath}";
 			
 			Debug.LogMessage(LogEventLevel.Information, this, "Server:{path:l}", path);
 
@@ -275,4 +275,3 @@ namespace PepperDash.Essentials.Core.Web
 			Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));
 		}
 	}
-}

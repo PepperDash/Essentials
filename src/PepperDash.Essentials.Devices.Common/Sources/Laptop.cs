@@ -5,9 +5,9 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Devices.Common.Sources
-{
-    public class Laptop : EssentialsDevice, IHasFeedback, IRoutingSource, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
+namespace PepperDash.Essentials.Devices.Common.Sources;
+
+public class Laptop : EssentialsDevice, IHasFeedback, IRoutingSource, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
 		public string IconName { get; set; }
@@ -33,10 +33,10 @@ namespace PepperDash.Essentials.Devices.Common.Sources
 				() => this.GetVideoStatuses() != VideoStatusOutputs.NoStatus);
 
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>
-            {
-                (AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                eRoutingPortConnectionType.None, 0, this))
-            };
+        {
+            (AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            eRoutingPortConnectionType.None, 0, this))
+        };
 		}
 
 		#region IHasFeedback Members
@@ -44,36 +44,35 @@ namespace PepperDash.Essentials.Devices.Common.Sources
 		/// <summary>
 		/// Passes through the VideoStatuses list
 		/// </summary>
-        public FeedbackCollection<Feedback> Feedbacks
+    public FeedbackCollection<Feedback> Feedbacks
+    {
+        get
         {
-            get
-            {
-                var newList = new FeedbackCollection<Feedback>();
-                newList.AddRange(this.GetVideoStatuses().ToList());
-                return newList;
-            }
+            var newList = new FeedbackCollection<Feedback>();
+            newList.AddRange(this.GetVideoStatuses().ToList());
+            return newList;
         }
+    }
 
 		#endregion
 
-        #region IUsageTracking Members
+    #region IUsageTracking Members
 
-        public UsageTracking UsageTracker { get; set; }
+    public UsageTracking UsageTracker { get; set; }
 
-        #endregion
+    #endregion
 	}
 
-    public class LaptopFactory : EssentialsDeviceFactory<Laptop>
+public class LaptopFactory : EssentialsDeviceFactory<Laptop>
+{
+    public LaptopFactory()
     {
-        public LaptopFactory()
-        {
-            TypeNames = new List<string>() { "laptop" };
-        }
+        TypeNames = new List<string>() { "laptop" };
+    }
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Laptop Device");
-            return new Laptop(dc.Key, dc.Name);
-        }
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Laptop Device");
+        return new Laptop(dc.Key, dc.Name);
     }
 }

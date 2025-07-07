@@ -2,8 +2,8 @@
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.PageManagers
-{
+namespace PepperDash.Essentials.Core.PageManagers;
+
 	/// <summary>
 	/// A simple class that hides and shows the default subpage for a given source type
 	/// </summary>
@@ -28,4 +28,3 @@ namespace PepperDash.Essentials.Core.PageManagers
 			TriList.BooleanInput[BackingPageJoin].BoolValue = false;
 		}
 	}
-}

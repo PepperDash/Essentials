@@ -9,8 +9,8 @@ using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public class ConsoleCommMockDevice : EssentialsDevice, ICommunicationMonitor
 	{
 		public IBasicCommunication Communication { get; private set; }
@@ -67,21 +67,19 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-    public class ConsoleCommMockDeviceFactory : EssentialsDeviceFactory<ConsoleCommMockDevice>
+public class ConsoleCommMockDeviceFactory : EssentialsDeviceFactory<ConsoleCommMockDevice>
+{
+    public ConsoleCommMockDeviceFactory()
     {
-        public ConsoleCommMockDeviceFactory()
-        {
-            TypeNames = new List<string>() { "commmock" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Comm Mock Device");
-            var comm = CommFactory.CreateCommForDevice(dc);
-            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<ConsoleCommMockDevicePropertiesConfig>(
-                dc.Properties.ToString());
-            return new ConsoleCommMockDevice(dc.Key, dc.Name, props, comm);
-        }
+        TypeNames = new List<string>() { "commmock" };
     }
 
+    public override EssentialsDevice BuildDevice(DeviceConfig dc)
+    {
+        Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Comm Mock Device");
+        var comm = CommFactory.CreateCommForDevice(dc);
+        var props = Newtonsoft.Json.JsonConvert.DeserializeObject<ConsoleCommMockDevicePropertiesConfig>(
+            dc.Properties.ToString());
+        return new ConsoleCommMockDevice(dc.Key, dc.Name, props, comm);
+    }
 }

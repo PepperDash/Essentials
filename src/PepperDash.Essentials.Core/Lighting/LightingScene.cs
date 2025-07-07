@@ -3,38 +3,37 @@
 using System;
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core.Lighting
+namespace PepperDash.Essentials.Core.Lighting;
+
+public class LightingScene
 {
-    public class LightingScene
+    [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+    public string Name { get; set; }
+    [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+    public string ID { get; set; }
+    bool _IsActive;
+    [JsonProperty("isActive", NullValueHandling = NullValueHandling.Ignore)]
+    public bool IsActive 
     {
-        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
-        public string Name { get; set; }
-        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
-        public string ID { get; set; }
-        bool _IsActive;
-        [JsonProperty("isActive", NullValueHandling = NullValueHandling.Ignore)]
-        public bool IsActive 
+        get
         {
-            get
-            {
-                return _IsActive;
-            }
-            set
-            {
-                _IsActive = value;
-                IsActiveFeedback.FireUpdate();
-            }
+            return _IsActive;
         }
-
-        [JsonProperty("sortOrder", NullValueHandling = NullValueHandling.Ignore)]
-        public int SortOrder { get; set; }
-
-        [JsonIgnore]
-        public BoolFeedback IsActiveFeedback { get; set; }
-
-        public LightingScene()
+        set
         {
-            IsActiveFeedback = new BoolFeedback(new Func<bool>(() => IsActive));
+            _IsActive = value;
+            IsActiveFeedback.FireUpdate();
         }
+    }
+
+    [JsonProperty("sortOrder", NullValueHandling = NullValueHandling.Ignore)]
+    public int SortOrder { get; set; }
+
+    [JsonIgnore]
+    public BoolFeedback IsActiveFeedback { get; set; }
+
+    public LightingScene()
+    {
+        IsActiveFeedback = new BoolFeedback(new Func<bool>(() => IsActive));
     }
 }

@@ -5,8 +5,8 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 
 
 	public abstract class BoolFeedbackLogic
@@ -71,7 +71,7 @@ namespace PepperDash.Essentials.Core
 	    public void ClearOutputs()
 	    {
 	        OutputsIn.Clear();
-            Evaluate();
+        Evaluate();
 	    }
 
 		void AnyInput_OutputChange(object sender, EventArgs e)
@@ -134,4 +134,3 @@ namespace PepperDash.Essentials.Core
 		    Output.FireUpdate();
 		} 
 	}
-}

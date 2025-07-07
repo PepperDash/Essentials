@@ -1,7 +1,7 @@
 ﻿using PepperDash.Essentials.Devices.Common.VideoCodec;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
-{
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
 	public interface IHasSelfviewSize
 	{
 		StringFeedback SelfviewPipSizeFeedback { get; }
@@ -10,4 +10,3 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
 		void SelfviewPipSizeToggle();
 	}
-}

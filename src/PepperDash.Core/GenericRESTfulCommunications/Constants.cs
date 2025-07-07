@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Core.GenericRESTfulCommunications
-{
+namespace PepperDash.Core.GenericRESTfulCommunications;
+
 	/// <summary>
 	/// Constants
 	/// </summary>
-    public class GenericRESTfulConstants
-    {
+public class GenericRESTfulConstants
+{
 		/// <summary>
 		/// Generic boolean change
 		/// </summary>
@@ -35,5 +35,4 @@ namespace PepperDash.Core.GenericRESTfulCommunications
 		/// Error string change
 		/// </summary>
 		public const ushort ErrorStringChange = 203;
-    }
 }

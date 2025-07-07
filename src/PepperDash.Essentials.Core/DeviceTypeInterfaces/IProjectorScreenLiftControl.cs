@@ -3,8 +3,8 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
-{
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
 	/// <summary>
 	/// Defines a class that has warm up and cool down
 	/// </summary>
@@ -24,4 +24,3 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 		lift,
 		screen
 	}
-}

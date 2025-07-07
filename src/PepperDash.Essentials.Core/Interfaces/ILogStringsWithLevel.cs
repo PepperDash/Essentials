@@ -5,8 +5,8 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core.Interfaces
-{
+namespace PepperDash.Essentials.Core.Interfaces;
+
 	public interface ILogStringsWithLevel : IKeyed
 	{
 		/// <summary>
@@ -14,5 +14,3 @@ namespace PepperDash.Essentials.Core.Interfaces
 		/// </summary>
 		void SendToLog(IKeyed device, Debug.ErrorLogLevel level,string logMessage);
 	}
-
-}

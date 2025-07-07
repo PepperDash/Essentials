@@ -6,17 +6,16 @@ using System.Collections.Generic;
 using TwoWayDisplayBase = PepperDash.Essentials.Devices.Common.Displays.TwoWayDisplayBase;
 
 
-namespace PepperDash.Essentials.Devices.Common.Room
+namespace PepperDash.Essentials.Devices.Common.Room;
+
+public interface IEssentialsTechRoom:IEssentialsRoom, ITvPresetsProvider,IBridgeAdvanced,IRunDirectRouteAction
 {
-    public interface IEssentialsTechRoom:IEssentialsRoom, ITvPresetsProvider,IBridgeAdvanced,IRunDirectRouteAction
-    {
-        EssentialsTechRoomConfig PropertiesConfig { get; }
-        Dictionary<string, IRSetTopBoxBase> Tuners { get; }
+    EssentialsTechRoomConfig PropertiesConfig { get; }
+    Dictionary<string, IRSetTopBoxBase> Tuners { get; }
 
-        Dictionary<string, TwoWayDisplayBase> Displays { get; }
+    Dictionary<string, TwoWayDisplayBase> Displays { get; }
 
-        void RoomPowerOn();
+    void RoomPowerOn();
 
-        void RoomPowerOff();
-    }
+    void RoomPowerOff();
 }

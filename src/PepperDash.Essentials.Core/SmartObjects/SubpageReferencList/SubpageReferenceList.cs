@@ -12,16 +12,16 @@ using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core
-{
-    ////*****************************************************************************
-    ///// <summary>
-    ///// Base class for all subpage reference list controllers
-    ///// </summary>
-    //public class SubpageReferenceListController
-    //{
-    //    public SubpageReferenceList TheList { get; protected set; }
-    //}
+namespace PepperDash.Essentials.Core;
+
+////*****************************************************************************
+///// <summary>
+///// Base class for all subpage reference list controllers
+///// </summary>
+//public class SubpageReferenceListController
+//{
+//    public SubpageReferenceList TheList { get; protected set; }
+//}
 
 	//*****************************************************************************
 	/// <summary>
@@ -76,7 +76,7 @@ namespace PepperDash.Essentials.Core
 			}
 			else
 				Debug.LogMessage(LogEventLevel.Information, "ERROR: TriList 0x{0:X2} Cannot load smart object {1}. Verify correct SGD file is loaded", 
-                    triList.ID, smartObjectId);
+                triList.ID, smartObjectId);
 		}
 
 		/// <summary>
@@ -145,7 +145,7 @@ namespace PepperDash.Essentials.Core
 		public UShortOutputSig GetUShortOutputSig(uint index, uint sigNum)
 		{
 			if (sigNum > UShortIncrement) return null;
-            return SRL.UShortOutput.FirstOrDefault(s => s.Name.Equals(GetUShortOutputSigName(index, sigNum)));
+        return SRL.UShortOutput.FirstOrDefault(s => s.Name.Equals(GetUShortOutputSigName(index, sigNum)));
 		}
 
 		/// <summary>
@@ -160,7 +160,7 @@ namespace PepperDash.Essentials.Core
 		public StringOutputSig GetStringOutputSig(uint index, uint sigNum)
 		{
 			if (sigNum > StringIncrement) return null;
-            return SRL.StringOutput.FirstOrDefault(s => s.Name.Equals(GetStringOutputSigName(index, sigNum)));
+        return SRL.StringOutput.FirstOrDefault(s => s.Name.Equals(GetStringOutputSigName(index, sigNum)));
 		}
 
 		/// <summary>
@@ -262,4 +262,3 @@ namespace PepperDash.Essentials.Core
 				(uo as Action<string>)(args.Sig.StringValue);
 		}
 	}
-}

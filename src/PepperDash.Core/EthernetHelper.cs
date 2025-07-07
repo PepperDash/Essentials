@@ -2,11 +2,11 @@
 using Newtonsoft.Json;
 using Serilog.Events;
 
-namespace PepperDash.Core
-{
-    /// <summary>
-    /// Class to help with accessing values from the CrestronEthernetHelper class 
-    /// </summary>
+namespace PepperDash.Core;
+
+/// <summary>
+/// Class to help with accessing values from the CrestronEthernetHelper class 
+/// </summary>
 	public class EthernetHelper
 	{
 		/// <summary>
@@ -114,4 +114,3 @@ namespace PepperDash.Core
 			}
 		}
 	}
-}

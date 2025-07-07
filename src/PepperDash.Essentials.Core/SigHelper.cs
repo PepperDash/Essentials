@@ -7,8 +7,8 @@ using Crestron.SimplSharpPro;
 
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	/// <summary>
 	/// Helper class for various Sig events
 	/// </summary>
@@ -69,4 +69,3 @@ namespace PepperDash.Essentials.Core
 			sig.CreateRamp(level, time / 10);
 		}
 	}
-}

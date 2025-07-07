@@ -4,8 +4,8 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class LoadConfigRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -28,12 +28,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var message = "";
 			var cs = Global.ControlSystem as ILoadConfig;
 			if(cs != null)
-                cs.GoWithLoad();
-            
-            context.Response.StatusCode = 200;
-            context.Response.StatusDescription = "OK";
+            cs.GoWithLoad();
+        
+        context.Response.StatusCode = 200;
+        context.Response.StatusDescription = "OK";
 			context.Response.Write(message, false);
-            context.Response.End();
-        }
+        context.Response.End();
+    }
 	}
-}

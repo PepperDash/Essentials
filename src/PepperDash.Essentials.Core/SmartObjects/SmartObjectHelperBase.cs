@@ -9,8 +9,8 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.SmartObjects
-{
+namespace PepperDash.Essentials.Core.SmartObjects;
+
 	public class SmartObjectHelperBase
 	{
 		public SmartObject SmartObject { get; private set; }
@@ -36,36 +36,36 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			SmartObject.SigChange -= this.SmartObject_SigChange;
 		}
 
-        /// <summary>
-        /// Helper to get a sig name with debugging when fail
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+    /// <summary>
+    /// Helper to get a sig name with debugging when fail
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
 		public BoolOutputSig GetBoolOutputNamed(string name)
 		{
 			if (SmartObject.BooleanOutput.Contains(name))
 				return SmartObject.BooleanOutput[name];
-            else
-                Debug.LogMessage(LogEventLevel.Information, "WARNING: Cannot get signal. Smart object {0} on trilist {1:x2} does not contain signal '{2}'",
-                    SmartObject.ID, SmartObject.Device.ID, name);
+        else
+            Debug.LogMessage(LogEventLevel.Information, "WARNING: Cannot get signal. Smart object {0} on trilist {1:x2} does not contain signal '{2}'",
+                SmartObject.ID, SmartObject.Device.ID, name);
 			return null;
 		}
 
-        /// <summary>
-        /// Sets action on signal after checking for existence.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="a"></param>
-        public void SetBoolAction(string name, Action<bool> a)
+    /// <summary>
+    /// Sets action on signal after checking for existence.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="a"></param>
+    public void SetBoolAction(string name, Action<bool> a)
+    {
+        if (SmartObject.BooleanOutput.Contains(name))
+            SmartObject.BooleanOutput[name].UserObject = a;
+        else
         {
-            if (SmartObject.BooleanOutput.Contains(name))
-                SmartObject.BooleanOutput[name].UserObject = a;
-            else
-            {
-                Debug.LogMessage(LogEventLevel.Information, "WARNING: Cannot set action. Smart object {0} on trilist {1:x2} does not contain signal '{2}'",
-                    SmartObject.ID, SmartObject.Device.ID, name);
-            }
+            Debug.LogMessage(LogEventLevel.Information, "WARNING: Cannot set action. Smart object {0} on trilist {1:x2} does not contain signal '{2}'",
+                SmartObject.ID, SmartObject.Device.ID, name);
         }
+    }
 
 		/// <summary>
 		/// Standard Action listener
@@ -84,4 +84,3 @@ namespace PepperDash.Essentials.Core.SmartObjects
 		}
 
 	}
-}

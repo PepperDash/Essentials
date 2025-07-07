@@ -7,8 +7,8 @@ using System.Text;
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core.Presets
-{
+namespace PepperDash.Essentials.Core.Presets;
+
 	public class PresetChannel
 	{
 
@@ -30,4 +30,3 @@ namespace PepperDash.Essentials.Core.Presets
 		[JsonProperty(Required = Required.Always, PropertyName = "channels")]
 		public List<PresetChannel> Channels { get; set; }
 	}
-}

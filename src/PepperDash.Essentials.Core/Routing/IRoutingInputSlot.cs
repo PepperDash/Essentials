@@ -1,7 +1,6 @@
-﻿namespace PepperDash.Essentials.Core.Routing
+﻿namespace PepperDash.Essentials.Core.Routing;
+
+public interface IRoutingInputSlot: IRoutingSlot, IOnline, IVideoSync
 {
-    public interface IRoutingInputSlot: IRoutingSlot, IOnline, IVideoSync
-    {
-        string TxDeviceKey { get; }
-    }
+    string TxDeviceKey { get; }
 }

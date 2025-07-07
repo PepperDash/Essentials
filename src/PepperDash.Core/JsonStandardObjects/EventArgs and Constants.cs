@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Core.JsonStandardObjects
-{
+namespace PepperDash.Core.JsonStandardObjects;
+
 	/// <summary>
 	/// Constants for simpl modules
 	/// </summary>
@@ -74,4 +74,3 @@ namespace PepperDash.Core.JsonStandardObjects
 			Index = index;
 		}
 	}
-}

@@ -1,16 +1,15 @@
 ﻿using System;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials;
+
+/// <summary>
+/// Represents a room whose configuration is derived from runtime data,
+/// perhaps from another program, and that the data may not be fully
+/// available at startup.
+/// </summary>
+public interface IDelayedConfiguration
 {
-    /// <summary>
-    /// Represents a room whose configuration is derived from runtime data,
-    /// perhaps from another program, and that the data may not be fully
-    /// available at startup.
-    /// </summary>
-    public interface IDelayedConfiguration
-    {
 
 
-        event EventHandler<EventArgs> ConfigurationIsReady;
-    }
+    event EventHandler<EventArgs> ConfigurationIsReady;
 }

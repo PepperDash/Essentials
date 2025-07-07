@@ -4,19 +4,18 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+public interface IBasicVideoMute
 {
-    public interface IBasicVideoMute
-    {
-        void VideoMuteToggle();
-    }
+    void VideoMuteToggle();
+}
 
-    public interface IBasicVideoMuteWithFeedback : IBasicVideoMute
-    {
-        BoolFeedback VideoMuteIsOn { get; }
+public interface IBasicVideoMuteWithFeedback : IBasicVideoMute
+{
+    BoolFeedback VideoMuteIsOn { get; }
 
-        void VideoMuteOn();
-        void VideoMuteOff();
- 
-    }
+    void VideoMuteOn();
+    void VideoMuteOff();
+
 }

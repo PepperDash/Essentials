@@ -1,12 +1,12 @@
 ﻿using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
-{
-    /// <summary>
-    /// Base class for <see cref="RoutingInputPort"/> and <see cref="RoutingOutputPort"/>.
-    /// </summary>
-    public abstract class RoutingPort : IKeyed
+namespace PepperDash.Essentials.Core;
+
+/// <summary>
+/// Base class for <see cref="RoutingInputPort"/> and <see cref="RoutingOutputPort"/>.
+/// </summary>
+public abstract class RoutingPort : IKeyed
 	{
 		/// <summary>
 		/// The unique key identifying this port within its parent device.
@@ -28,14 +28,14 @@ namespace PepperDash.Essentials.Core
 		/// Indicates if this port represents an internal connection within a device (e.g., card to backplane).
 		/// </summary>
 		public bool IsInternal { get; private set; }
-        /// <summary>
-        /// An object used to match feedback values to this port, if applicable.
-        /// </summary>
-        public object FeedbackMatchObject { get; set; }
-        /// <summary>
-        /// A reference to the underlying hardware port object (e.g., SimplSharpPro Port), if applicable.
-        /// </summary>
-        public object Port { get; set; }
+    /// <summary>
+    /// An object used to match feedback values to this port, if applicable.
+    /// </summary>
+    public object FeedbackMatchObject { get; set; }
+    /// <summary>
+    /// A reference to the underlying hardware port object (e.g., SimplSharpPro Port), if applicable.
+    /// </summary>
+    public object Port { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RoutingPort"/> class.
@@ -53,25 +53,24 @@ namespace PepperDash.Essentials.Core
 			Selector = selector;
 			IsInternal = isInternal;
 		}        
-    }
-
-    /*public abstract class RoutingPort<TSelector>:IKeyed
-    {
-        public string Key { get; private set; }
-        public eRoutingSignalType Type { get; private set; }
-        public eRoutingPortConnectionType ConnectionType { get; private set; }
-        public readonly TSelector Selector;
-        public bool IsInternal { get; private set; }
-        public object FeedbackMatchObject { get; set; }
-        public object Port { get; set; }
-
-        public RoutingPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType, TSelector selector, bool isInternal)
-        {
-            Key = key;
-            Type = type;
-            ConnectionType = connType;
-            Selector = selector;
-            IsInternal = isInternal;
-        }
-    }*/
 }
+
+/*public abstract class RoutingPort<TSelector>:IKeyed
+{
+    public string Key { get; private set; }
+    public eRoutingSignalType Type { get; private set; }
+    public eRoutingPortConnectionType ConnectionType { get; private set; }
+    public readonly TSelector Selector;
+    public bool IsInternal { get; private set; }
+    public object FeedbackMatchObject { get; set; }
+    public object Port { get; set; }
+
+    public RoutingPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType, TSelector selector, bool isInternal)
+    {
+        Key = key;
+        Type = type;
+        ConnectionType = connType;
+        Selector = selector;
+        IsInternal = isInternal;
+    }
+}*/

@@ -5,8 +5,8 @@ using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class DevJsonRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -26,25 +26,25 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandlePost(HttpCwsContext context)
 		{
-            var routeData = context.Request.RouteData;
+        var routeData = context.Request.RouteData;
 
-            if(routeData == null)
-            {
-                context.Response.StatusCode = 400;
-                context.Response.StatusDescription = "Bad Request";
-                context.Response.End();
+        if(routeData == null)
+        {
+            context.Response.StatusCode = 400;
+            context.Response.StatusDescription = "Bad Request";
+            context.Response.End();
 
-                return;
-            }
+            return;
+        }
 
-            if(!routeData.Values.TryGetValue("deviceKey", out var deviceKey))
-            {
-                context.Response.StatusCode = 400;
-                context.Response.StatusDescription = "Bad Request";
-                context.Response.End();
+        if(!routeData.Values.TryGetValue("deviceKey", out var deviceKey))
+        {
+            context.Response.StatusCode = 400;
+            context.Response.StatusDescription = "Bad Request";
+            context.Response.End();
 
-                return;
-            }
+            return;
+        }
 
 			if (context.Request.ContentLength < 0)
 			{
@@ -68,11 +68,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			
 			try
 			{                
-                var daw = new DeviceActionWrapper { DeviceKey = (string) deviceKey};
+            var daw = new DeviceActionWrapper { DeviceKey = (string) deviceKey};
 
-                JsonConvert.PopulateObject(data, daw);
+            JsonConvert.PopulateObject(data, daw);
 
-                Debug.LogMessage(LogEventLevel.Verbose, "Device Action Wrapper: {@wrapper}", null, daw);
+            Debug.LogMessage(LogEventLevel.Verbose, "Device Action Wrapper: {@wrapper}", null, daw);
 
 				DeviceJsonApi.DoDeviceAction(daw);
 
@@ -86,9 +86,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
-                context.Response.Write(JsonConvert.SerializeObject(new { error = ex.Message }), false);
+            context.Response.Write(JsonConvert.SerializeObject(new { error = ex.Message }), false);
 				context.Response.End();
 			}
 		}
 	}
-}

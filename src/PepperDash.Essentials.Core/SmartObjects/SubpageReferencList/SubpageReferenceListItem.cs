@@ -6,8 +6,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.UI;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public class SubpageReferenceListItem
 	{
 		/// <summary>
@@ -31,4 +31,3 @@ namespace PepperDash.Essentials.Core
 
 		public virtual void Refresh() { }
 	}
-}

@@ -7,8 +7,8 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Presets;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.PageManagers
-{
+namespace PepperDash.Essentials.Core.PageManagers;
+
 	public class ThreePanelPlusOnePageManager : PageManager
 	{
 		protected BasicTriListWithSmartObject TriList;
@@ -37,7 +37,7 @@ namespace PepperDash.Essentials.Core.PageManagers
 		public ThreePanelPlusOnePageManager(BasicTriListWithSmartObject trilist)
 		{
 			TriList = trilist;
-            CurrentVisiblePosition5Item = 1;
+        CurrentVisiblePosition5Item = 1;
 		}
 	
 		/// <summary>
@@ -56,8 +56,8 @@ namespace PepperDash.Essentials.Core.PageManagers
 		{
 			// Project the joins into corresponding sigs.
 			var fixedSigs = FixedVisibilityJoins.Select(u => TriList.BooleanInput[u]).ToList();
-            foreach (var sig in fixedSigs)
-                sig.BoolValue = true;
+        foreach (var sig in fixedSigs)
+            sig.BoolValue = true;
 			
 			if (ShowPosition5Tabs)
 			{
@@ -65,32 +65,32 @@ namespace PepperDash.Essentials.Core.PageManagers
 				TriList.BooleanInput[Position5SubpageJoins[CurrentVisiblePosition5Item]].BoolValue = true;
 				// hook up tab object
 				var tabSo = TriList.SmartObjects[Position5TabsId];
-                tabSo.BooleanOutput["Tab Button 1 Press"].UserObject = new Action<bool>(b => { if (!b) ShowTab(1); });
-                tabSo.BooleanOutput["Tab Button 2 Press"].UserObject = new Action<bool>(b => { if (!b) ShowTab(2); });
-                tabSo.SigChange -= tabSo_SigChange;
-                tabSo.SigChange += tabSo_SigChange;
-            }
+            tabSo.BooleanOutput["Tab Button 1 Press"].UserObject = new Action<bool>(b => { if (!b) ShowTab(1); });
+            tabSo.BooleanOutput["Tab Button 2 Press"].UserObject = new Action<bool>(b => { if (!b) ShowTab(2); });
+            tabSo.SigChange -= tabSo_SigChange;
+            tabSo.SigChange += tabSo_SigChange;
+        }
 		}
 
-        void tabSo_SigChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.SmartObjectEventArgs args)
-        {
-            var uo = args.Sig.UserObject;
-            if(uo is Action<bool>)
-                (uo as Action<bool>)(args.Sig.BoolValue);
-        }
+    void tabSo_SigChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.SmartObjectEventArgs args)
+    {
+        var uo = args.Sig.UserObject;
+        if(uo is Action<bool>)
+            (uo as Action<bool>)(args.Sig.BoolValue);
+    }
 
 		public override void Hide()
 		{
-            var fixedSigs = FixedVisibilityJoins.Select(u => TriList.BooleanInput[u]).ToList();
-            foreach (var sig in fixedSigs)
-                sig.BoolValue = false;
+        var fixedSigs = FixedVisibilityJoins.Select(u => TriList.BooleanInput[u]).ToList();
+        foreach (var sig in fixedSigs)
+            sig.BoolValue = false;
 			if (ShowPosition5Tabs)
 			{
-                TriList.BooleanInput[Position5SubpageJoins[CurrentVisiblePosition5Item]].BoolValue = false;
+            TriList.BooleanInput[Position5SubpageJoins[CurrentVisiblePosition5Item]].BoolValue = false;
 
-                //var tabSo = TriList.SmartObjects[Position5TabsId];
-                //tabSo.BooleanOutput["Tab Button 1 Press"].UserObject = null;
-                //tabSo.BooleanOutput["Tab Button 2 Press"].UserObject = null;
+            //var tabSo = TriList.SmartObjects[Position5TabsId];
+            //tabSo.BooleanOutput["Tab Button 1 Press"].UserObject = null;
+            //tabSo.BooleanOutput["Tab Button 2 Press"].UserObject = null;
 			}
 		}
 
@@ -140,37 +140,37 @@ namespace PepperDash.Essentials.Core.PageManagers
 			bool dvr = stb.HasDvr;
 			bool numbers = stb.HasNumeric;
 
-            if (dpad && !preset && !dvr && !numbers) FixedVisibilityJoins = new uint[] { 10031, 10091 };
-            else if (!dpad && preset && !dvr && !numbers) FixedVisibilityJoins = new uint[] { 10032, 10091 };
-            else if (!dpad && !preset && dvr && !numbers) FixedVisibilityJoins = new uint[] { 10033, 10091 };
-            else if (!dpad && !preset && !dvr && numbers) FixedVisibilityJoins = new uint[] { 10034, 10091 };
+        if (dpad && !preset && !dvr && !numbers) FixedVisibilityJoins = new uint[] { 10031, 10091 };
+        else if (!dpad && preset && !dvr && !numbers) FixedVisibilityJoins = new uint[] { 10032, 10091 };
+        else if (!dpad && !preset && dvr && !numbers) FixedVisibilityJoins = new uint[] { 10033, 10091 };
+        else if (!dpad && !preset && !dvr && numbers) FixedVisibilityJoins = new uint[] { 10034, 10091 };
 
-            else if (dpad && preset && !dvr && !numbers) FixedVisibilityJoins = new uint[] { 10042, 10021, 10092 };
-            else if (dpad && !preset && dvr && !numbers) FixedVisibilityJoins = new uint[] { 10043, 10021, 10092 };
-            else if (dpad && !preset && !dvr && numbers) FixedVisibilityJoins = new uint[] { 10044, 10021, 10092 };
-            else if (!dpad && preset && dvr && !numbers) FixedVisibilityJoins = new uint[] { 10043, 10022, 10092 };
-            else if (!dpad && preset && !dvr && numbers) FixedVisibilityJoins = new uint[] { 10044, 10022, 10092 };
-            else if (!dpad && !preset && dvr && numbers) FixedVisibilityJoins = new uint[] { 10044, 10023, 10092 };
+        else if (dpad && preset && !dvr && !numbers) FixedVisibilityJoins = new uint[] { 10042, 10021, 10092 };
+        else if (dpad && !preset && dvr && !numbers) FixedVisibilityJoins = new uint[] { 10043, 10021, 10092 };
+        else if (dpad && !preset && !dvr && numbers) FixedVisibilityJoins = new uint[] { 10044, 10021, 10092 };
+        else if (!dpad && preset && dvr && !numbers) FixedVisibilityJoins = new uint[] { 10043, 10022, 10092 };
+        else if (!dpad && preset && !dvr && numbers) FixedVisibilityJoins = new uint[] { 10044, 10022, 10092 };
+        else if (!dpad && !preset && dvr && numbers) FixedVisibilityJoins = new uint[] { 10044, 10023, 10092 };
 
-            else if (dpad && preset && dvr && !numbers) FixedVisibilityJoins = new uint[] { 10053, 10032, 10011, 10093 };
-            else if (dpad && preset && !dvr && numbers) FixedVisibilityJoins = new uint[] { 10054, 10032, 10011, 10093 };
-            else if (dpad && !preset && dvr && numbers) FixedVisibilityJoins = new uint[] { 10054, 10033, 10011, 10093 };
-            else if (!dpad && preset && dvr && numbers) FixedVisibilityJoins = new uint[] { 10054, 10033, 10012, 10093 };
+        else if (dpad && preset && dvr && !numbers) FixedVisibilityJoins = new uint[] { 10053, 10032, 10011, 10093 };
+        else if (dpad && preset && !dvr && numbers) FixedVisibilityJoins = new uint[] { 10054, 10032, 10011, 10093 };
+        else if (dpad && !preset && dvr && numbers) FixedVisibilityJoins = new uint[] { 10054, 10033, 10011, 10093 };
+        else if (!dpad && preset && dvr && numbers) FixedVisibilityJoins = new uint[] { 10054, 10033, 10012, 10093 };
 
-            else if (dpad && preset && dvr && numbers)
-            {
-                FixedVisibilityJoins = new uint[] { 10081, 10032, 10011, 10093 }; // special case
-                ShowPosition5Tabs = true;
-            }
-            // Bad config case
-            else
-            {
-                Debug.LogMessage(LogEventLevel.Debug, stb, "WARNING: Not configured to show any UI elements");
-                FixedVisibilityJoins = new uint[] { 10091 };
-            }
+        else if (dpad && preset && dvr && numbers)
+        {
+            FixedVisibilityJoins = new uint[] { 10081, 10032, 10011, 10093 }; // special case
+            ShowPosition5Tabs = true;
+        }
+        // Bad config case
+        else
+        {
+            Debug.LogMessage(LogEventLevel.Debug, stb, "WARNING: Not configured to show any UI elements");
+            FixedVisibilityJoins = new uint[] { 10091 };
+        }
 
 			// Build presets
-            if (stb.HasPresets && stb.TvPresets != null)
+        if (stb.HasPresets && stb.TvPresets != null)
 			{
 				PresetsView = new DevicePresetsView(trilist, stb.TvPresets);
 			}
@@ -185,9 +185,8 @@ namespace PepperDash.Essentials.Core.PageManagers
 
 		public override void Hide()
 		{
-            if (PresetsView != null)
-    			PresetsView.Detach();
+        if (PresetsView != null)
+			PresetsView.Detach();
 			base.Hide();
 		}
 	}
-}

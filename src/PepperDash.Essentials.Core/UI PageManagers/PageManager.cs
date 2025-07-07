@@ -2,8 +2,8 @@
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.PageManagers
-{
+namespace PepperDash.Essentials.Core.PageManagers;
+
 	/// <summary>
 	/// The PageManager classes are used to bridge a device to subpage
 	/// visibility.
@@ -93,4 +93,3 @@ namespace PepperDash.Essentials.Core.PageManagers
 			return GetOffsetJoin(DisplayUiType);
 		}
 	}
-}

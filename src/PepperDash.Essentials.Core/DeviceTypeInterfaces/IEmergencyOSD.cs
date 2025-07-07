@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+public interface IEmergencyOSD
 {
-    public interface IEmergencyOSD
-    {
-        void ShowEmergencyMessage(string url);
-        void HideEmergencyMessage();
-    }
+    void ShowEmergencyMessage(string url);
+    void HideEmergencyMessage();
 }

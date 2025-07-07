@@ -1,9 +1,8 @@
 ﻿using PepperDash.Essentials.Core.Presets;
 
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+public interface ITvPresetsProvider
 {
-    public interface ITvPresetsProvider
-    {
-        DevicePresetsModel TvPresets { get; }
-    }
+    DevicePresetsModel TvPresets { get; }
 }

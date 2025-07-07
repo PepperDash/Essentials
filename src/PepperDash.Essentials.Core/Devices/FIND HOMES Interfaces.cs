@@ -1,8 +1,8 @@
 ﻿using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public interface IOnline
 	{
 		BoolFeedback IsOnline { get; }
@@ -29,4 +29,3 @@ namespace PepperDash.Essentials.Core
 		string DeviceMake { get; }
 		string DeviceModel { get; }
 	}
-}

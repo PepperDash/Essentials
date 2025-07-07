@@ -6,21 +6,20 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.Common.VideoCodec
+namespace PepperDash.Essentials.Devices.Common.VideoCodec;
+
+/// <summary>
+/// Defines the requred elements for selfview control
+/// </summary>
+public interface IHasCodecSelfView
 {
-    /// <summary>
-    /// Defines the requred elements for selfview control
-    /// </summary>
-    public interface IHasCodecSelfView
-    {
-        BoolFeedback SelfviewIsOnFeedback { get; }
+    BoolFeedback SelfviewIsOnFeedback { get; }
 
-        bool ShowSelfViewByDefault { get; }
+    bool ShowSelfViewByDefault { get; }
 
-        void SelfViewModeOn();
+    void SelfViewModeOn();
 
-        void SelfViewModeOff();
+    void SelfViewModeOff();
 
-        void SelfViewModeToggle();
-    }
+    void SelfViewModeToggle();
 }

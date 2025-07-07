@@ -8,8 +8,8 @@ using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core.Devices
-{
+namespace PepperDash.Essentials.Core.Devices;
+
 	public class GenericCommunicationMonitoredDevice : Device, ICommunicationMonitor
 	{
 		IBasicCommunication Client;
@@ -48,4 +48,3 @@ namespace PepperDash.Essentials.Core.Devices
 			return true;
 		}
 	}
-}

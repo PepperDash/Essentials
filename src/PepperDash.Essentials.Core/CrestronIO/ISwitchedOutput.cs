@@ -6,21 +6,20 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core.CrestronIO
+namespace PepperDash.Essentials.Core.CrestronIO;
+
+/// <summary>
+/// Describes an output capable of switching on and off
+/// </summary>
+public interface ISwitchedOutput
 {
-    /// <summary>
-    /// Describes an output capable of switching on and off
-    /// </summary>
-    public interface ISwitchedOutput
-    {
-        BoolFeedback OutputIsOnFeedback {get;}
+    BoolFeedback OutputIsOnFeedback {get;}
 
-        void On();
-        void Off();
-    }
+    void On();
+    void Off();
+}
 
-    public interface ISwitchedOutputCollection
-    {
-        Dictionary<uint, ISwitchedOutput> SwitchedOutputs { get; }
-    }
+public interface ISwitchedOutputCollection
+{
+    Dictionary<uint, ISwitchedOutput> SwitchedOutputs { get; }
 }

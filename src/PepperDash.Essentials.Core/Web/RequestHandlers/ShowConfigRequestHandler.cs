@@ -3,8 +3,8 @@ using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Config;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class ShowConfigRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -34,4 +34,3 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			context.Response.End();
 		}
 	}
-}

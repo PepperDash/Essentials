@@ -1,7 +1,7 @@
 ﻿using Crestron.SimplSharp.WebScripting;
 
-namespace PepperDash.Core.Web.RequestHandlers
-{
+namespace PepperDash.Core.Web.RequestHandlers;
+
 	/// <summary>
 	/// Web API default request handler
 	/// </summary>
@@ -14,4 +14,3 @@ namespace PepperDash.Core.Web.RequestHandlers
 			: base(true)
 		{ }
 	}
-}

@@ -7,8 +7,8 @@ using PepperDash.Core;
 using PepperDash.Core.Logging;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Touchpanels
-{
+namespace PepperDash.Essentials.Core.Touchpanels;
+
 	/// <summary>
 	/// A wrapper class for the touchpanel portion of an MPC3 class process to allow for configurable
 	/// behavior of the keybad buttons
@@ -75,9 +75,9 @@ namespace PepperDash.Essentials.Core.Touchpanels
 				return;
 			}
 
-            TryParseInt(key, out int buttonNumber);
+        TryParseInt(key, out int buttonNumber);
 
-            var buttonEventTypes = config.EventTypes;
+        var buttonEventTypes = config.EventTypes;
 			BoolOutputSig enabledFb = null;
 			BoolOutputSig disabledFb = null;
 
@@ -161,10 +161,10 @@ namespace PepperDash.Essentials.Core.Touchpanels
 				return;
 			}
 
-            TryParseInt(key, out int buttonNumber);
+        TryParseInt(key, out int buttonNumber);
 
-            // Link up the button feedbacks to the specified device feedback
-            var buttonFeedback = config.Feedback;
+        // Link up the button feedbacks to the specified device feedback
+        var buttonFeedback = config.Feedback;
 			if (buttonFeedback == null || string.IsNullOrEmpty(buttonFeedback.DeviceKey))
 			{
 				Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedback not configured, skipping.",
@@ -176,14 +176,14 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 			try
 			{
-                if (!(DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) is Device device))
-                {
-                    Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedback deviceKey '{1}' not found.",
-                        key, buttonFeedback.DeviceKey);
-                    return;
-                }
+            if (!(DeviceManager.GetDeviceForKey(buttonFeedback.DeviceKey) is Device device))
+            {
+                Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedback deviceKey '{1}' not found.",
+                    key, buttonFeedback.DeviceKey);
+                return;
+            }
 
-                deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
+            deviceFeedback = device.GetFeedbackProperty(buttonFeedback.FeedbackName);
 				if (deviceFeedback == null)
 				{
 					Debug.LogMessage(LogEventLevel.Debug, this, "Button '{0}' feedbackName property '{1}' not found.",
@@ -223,36 +223,36 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 			var boolFeedback = deviceFeedback as BoolFeedback;
 
-            switch (key)
-            {
-                case ("power"):
+        switch (key)
+        {
+            case ("power"):
+                {
+                    boolFeedback?.LinkCrestronFeedback(_touchpanel.FeedbackPower);
+                    break;
+                }
+            case ("volumeup"):
+            case ("volumedown"):
+            case ("volumefeedback"):
+                {
+                    if (deviceFeedback is IntFeedback intFeedback)
                     {
-                        boolFeedback?.LinkCrestronFeedback(_touchpanel.FeedbackPower);
-                        break;
+                        var volumeFeedback = intFeedback;
+                        volumeFeedback.LinkInputSig(_touchpanel.VolumeBargraph);
                     }
-                case ("volumeup"):
-                case ("volumedown"):
-                case ("volumefeedback"):
-                    {
-                        if (deviceFeedback is IntFeedback intFeedback)
-                        {
-                            var volumeFeedback = intFeedback;
-                            volumeFeedback.LinkInputSig(_touchpanel.VolumeBargraph);
-                        }
-                        break;
-                    }
-                case ("mute"):
-                    {
-                        boolFeedback?.LinkCrestronFeedback(_touchpanel.FeedbackMute);
-                        break;
-                    }
-                default:
-                    {
-                        boolFeedback?.LinkCrestronFeedback(_touchpanel.Feedbacks[(uint)buttonNumber]);
-                        break;
-                    }
-            }
+                    break;
+                }
+            case ("mute"):
+                {
+                    boolFeedback?.LinkCrestronFeedback(_touchpanel.FeedbackMute);
+                    break;
+                }
+            default:
+                {
+                    boolFeedback?.LinkCrestronFeedback(_touchpanel.Feedbacks[(uint)buttonNumber]);
+                    break;
+                }
         }
+    }
 
 		/// <summary>
 		/// Try parse int helper method
@@ -360,4 +360,3 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		[JsonProperty("feedbackName")]
 		public string FeedbackName { get; set; }
 	}
-}

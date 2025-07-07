@@ -11,8 +11,8 @@ using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.License
-{
+namespace PepperDash.Essentials.License;
+
 	public abstract class LicenseManager
 	{
 		public BoolFeedback LicenseIsValid { get; protected set; }
@@ -84,4 +84,3 @@ namespace PepperDash.Essentials.License
 			return string.Format("License Status: {0}", IsValid ? "Valid" : "Not Valid");
 		}
 	}
-}

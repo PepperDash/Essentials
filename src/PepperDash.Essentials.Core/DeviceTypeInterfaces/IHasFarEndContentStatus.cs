@@ -1,7 +1,6 @@
-﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
+
+public interface IHasFarEndContentStatus
 {
-    public interface IHasFarEndContentStatus
-    {
-         BoolFeedback ReceivingContent { get; }
-    }
+     BoolFeedback ReceivingContent { get; }
 }

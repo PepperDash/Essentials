@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public static class JobTimer
 	{
 		static CTimer MinuteTimer;
@@ -72,9 +72,8 @@ namespace PepperDash.Essentials.Core
 
 	public enum eJobTimerCycleTypes
 	{
-        RunEveryDay,
+    RunEveryDay,
 		RunEveryHour,
 		RunEveryHalfHour,
 		RunEveryMinute
 	}
-}

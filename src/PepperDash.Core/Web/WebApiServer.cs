@@ -7,8 +7,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core.Web.RequestHandlers;
 
-namespace PepperDash.Core.Web
-{
+namespace PepperDash.Core.Web;
+
 	/// <summary>
 	/// Web API server
 	/// </summary>
@@ -281,4 +281,3 @@ namespace PepperDash.Core.Web
 			}
 		}
 	}
-}

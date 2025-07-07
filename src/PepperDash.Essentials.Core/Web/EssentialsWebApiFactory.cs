@@ -3,8 +3,8 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Web
-{
+namespace PepperDash.Essentials.Core.Web;
+
 	public class EssentialsWebApiFactory : EssentialsDeviceFactory<EssentialsWebApi>
 	{
 		public EssentialsWebApiFactory()
@@ -23,4 +23,3 @@ namespace PepperDash.Essentials.Core.Web
 			return null;
 		}
 	}
-}

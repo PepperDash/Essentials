@@ -7,18 +7,18 @@ using Crestron.SimplSharpPro;
 
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
-{
+namespace PepperDash.Essentials.Core;
+
 	public abstract class Feedback : IKeyed
 	{
 		public event EventHandler<FeedbackEventArgs> OutputChange;
 
-        public string Key { get; private set; }
+    public string Key { get; private set; }
 
 		public virtual bool BoolValue { get { return false; } }
 		public virtual int IntValue { get { return 0; } }
 		public virtual string StringValue { get { return ""; } }
-        public virtual string SerialValue { get { return ""; } }
+    public virtual string SerialValue { get { return ""; } }
 
 		/// <summary>
 		/// Feedbacks can be put into test mode for simulation of events without real data. 
@@ -34,13 +34,13 @@ namespace PepperDash.Essentials.Core
 		{
 		}
 
-        protected Feedback(string key)
-        {
-            if (key == null)
-                Key = "";
-            else
-                Key = key;
-        }
+    protected Feedback(string key)
+    {
+        if (key == null)
+            Key = "";
+        else
+            Key = key;
+    }
 
 
 
@@ -66,28 +66,27 @@ namespace PepperDash.Essentials.Core
 			CrestronInvoke.BeginInvoke(o => FireUpdate());
 		}
 
-        ///// <summary>
-        ///// Helper method that fires event. Use this intstead of calling OutputChange
-        ///// </summary>
-        //protected void OnOutputChange()
-        //{
-        //    if (OutputChange != null) OutputChange(this, EventArgs.Empty);
-        //}
+    ///// <summary>
+    ///// Helper method that fires event. Use this intstead of calling OutputChange
+    ///// </summary>
+    //protected void OnOutputChange()
+    //{
+    //    if (OutputChange != null) OutputChange(this, EventArgs.Empty);
+    //}
 
-        protected void OnOutputChange(bool value)
-        {
-            if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
-        }
+    protected void OnOutputChange(bool value)
+    {
+        if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
+    }
 
-        protected void OnOutputChange(int value)
-        {
-            if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
-        }
+    protected void OnOutputChange(int value)
+    {
+        if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
+    }
 
 
-        protected void OnOutputChange(string value)
-        {
-            if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
-        }
+    protected void OnOutputChange(string value)
+    {
+        if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
+    }
 	}
-}

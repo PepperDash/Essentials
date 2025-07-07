@@ -4,14 +4,13 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core.CrestronIO
+namespace PepperDash.Essentials.Core.CrestronIO;
+
+/// <summary>
+/// Represents a device that provides digital input
+/// </summary>
+public interface IDigitalOutput
 {
-    /// <summary>
-    /// Represents a device that provides digital input
-    /// </summary>
-    public interface IDigitalOutput
-    {
-        BoolFeedback OutputStateFeedback { get; }
-        void SetOutput(bool state);
-    }
+    BoolFeedback OutputStateFeedback { get; }
+    void SetOutput(bool state);
 }

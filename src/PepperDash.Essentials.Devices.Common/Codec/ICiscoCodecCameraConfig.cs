@@ -5,27 +5,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.Devices.Common.Codec
-{ 
-    /// <summary>
-    /// Describes a cisco codec device that can allow configuration of cameras
-    /// </summary>
-    public interface ICiscoCodecCameraConfig
-    {
-        void SetCameraAssignedSerialNumber(uint cameraId, string serialNumber);
+namespace PepperDash.Essentials.Devices.Common.Codec;
 
-        void SetCameraName(uint videoConnectorId, string name);
+/// <summary>
+/// Describes a cisco codec device that can allow configuration of cameras
+/// </summary>
+public interface ICiscoCodecCameraConfig
+{
+    void SetCameraAssignedSerialNumber(uint cameraId, string serialNumber);
 
-        void SetInputSourceType(uint videoConnectorId, eCiscoCodecInputSourceType sourceType);
-    }
+    void SetCameraName(uint videoConnectorId, string name);
 
-    public enum eCiscoCodecInputSourceType
-    {
-        PC,
-        camera,
-        document_camera,
-        mediaplayer,
-        other,
-        whiteboard
-    }
+    void SetInputSourceType(uint videoConnectorId, eCiscoCodecInputSourceType sourceType);
+}
+
+public enum eCiscoCodecInputSourceType
+{
+    PC,
+    camera,
+    document_camera,
+    mediaplayer,
+    other,
+    whiteboard
 }

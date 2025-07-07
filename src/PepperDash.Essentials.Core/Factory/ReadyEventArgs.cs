@@ -5,21 +5,20 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core;
+
+public class IsReadyEventArgs : EventArgs
 {
-    public class IsReadyEventArgs : EventArgs
-    {
-        public bool IsReady { get; set; }
+    public bool IsReady { get; set; }
 
-        public IsReadyEventArgs(bool data)
-        {
-            IsReady = data;
-        }
-    }
-
-    public interface IHasReady
+    public IsReadyEventArgs(bool data)
     {
-        event EventHandler<IsReadyEventArgs> IsReadyEvent;
-        bool IsReady { get; }
+        IsReady = data;
     }
+}
+
+public interface IHasReady
+{
+    event EventHandler<IsReadyEventArgs> IsReadyEvent;
+    bool IsReady { get; }
 }

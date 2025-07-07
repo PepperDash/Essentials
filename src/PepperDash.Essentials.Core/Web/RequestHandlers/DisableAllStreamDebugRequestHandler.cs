@@ -1,8 +1,8 @@
 ﻿using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core.Web.RequestHandlers;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
-{
+namespace PepperDash.Essentials.Core.Web.RequestHandlers;
+
 	public class DisableAllStreamDebugRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -29,4 +29,3 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			context.Response.End();
 		}
 	}
-}
