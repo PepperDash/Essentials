@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.Core
     /// Represents information about a network port, including its configuration and associated system details.
     /// </summary>
     /// <remarks>This class provides properties to describe various attributes of a network port, such as its
-    /// name,  description, VLAN configuration, and management IP address. It is typically used to store and retrieve 
+    /// name, description, VLAN configuration, and management IP address. It is typically used to store and retrieve 
     /// metadata about network ports in a managed environment.</remarks>
     public class NvxNetworkPortInformation
     {
