@@ -13,7 +13,6 @@ using Serilog.Events;
 
 
 namespace PepperDash.Essentials;
-
 /// <summary>
 /// Provides functionality for loading and managing plugins and assemblies in the application.
 /// </summary>
