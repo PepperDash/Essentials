@@ -86,4 +86,5 @@ namespace PepperDash.Essentials.Core
             this.port = port ?? throw new ArgumentNullException(nameof(port), "Port cannot be null");
             DevicePortIndex = devicePortIndex;
         }
+    }
 }
