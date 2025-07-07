@@ -4,18 +4,15 @@ using System.Linq;
 using Crestron.SimplSharp;
 using System.Reflection;
 using System.IO;
-using Newtonsoft.Json;
 using System.Reflection.PortableExecutable;
 using System.Reflection.Metadata;
-using SystemIO = System.IO;
-using CrestronIO = System.IO;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials;
 
+namespace PepperDash.Essentials;
 /// <summary>
 /// Provides functionality for loading and managing plugins and assemblies in the application.
 /// </summary>
@@ -76,19 +73,6 @@ public static class PluginLoader
     private static string TempDirectory => PluginDirectory + Global.DirectorySeparator + "temp";
 
     /// <summary>
-    /// The directory to look in for .cplz plugin packages
-    /// </summary>
-    static string _pluginDirectory => Global.FilePathPrefix + "plugins";
-
-    /// <summary>
-    /// The directory where plugins will be moved to and loaded from
-    /// </summary>
-    static string _loadedPluginsDirectoryPath => _pluginDirectory + Global.DirectorySeparator + "loadedAssemblies";
-
-    // The temp directory where .cplz archives will be unzipped to
-    static string _tempDirectory => _pluginDirectory + Global.DirectorySeparator + "temp";
-
-    /// <summary>
     /// Represents a collection of fully qualified type names that are known to be incompatible with the current
     /// application or framework.
     /// </summary>
@@ -96,8 +80,8 @@ public static class PluginLoader
     /// incompatible with the intended usage of the application. These types may represent security risks, unsupported
     /// features, or legacy APIs that should be avoided.</remarks>
     private static readonly HashSet<string> KnownIncompatibleTypes =
-        [
-            "System.Net.ICertificatePolicy",
+    [
+        "System.Net.ICertificatePolicy",
         "System.Security.Cryptography.SHA1CryptoServiceProvider",
         "System.Web.HttpUtility",
         "System.Configuration.ConfigurationManager",
@@ -108,7 +92,7 @@ public static class PluginLoader
         "System.Security.SecurityManager",
         "System.Security.Permissions.FileIOPermission",
         "System.AppDomain.CreateDomain"
-        ];
+    ];
 
     /// <summary>
     /// Initializes static members of the <see cref="PluginLoader"/> class.
@@ -141,7 +125,6 @@ public static class PluginLoader
         var assemblyFiles = appDi.GetFiles("*.dll");
 
         Debug.LogMessage(LogEventLevel.Verbose, "Found {0} Assemblies", assemblyFiles.Length);
-
 
         foreach (var fi in assemblyFiles.Where(fi => fi.Name.Contains("Essentials") || fi.Name.Contains("PepperDash")))
         {
@@ -189,7 +172,6 @@ public static class PluginLoader
             }
         }
     }
-
 
     /// <summary>
     /// Associates the specified assembly with the given name in the loaded assemblies collection.
@@ -314,7 +296,7 @@ public static class PluginLoader
             {
                 string fileName = Path.GetFileName(filePath);
                 Debug.LogMessage(LogEventLevel.Warning, "Assembly '{0}' is not compatible with .NET 8: {1}", fileName, reason);
-
+                
                 var incompatiblePlugin = new IncompatiblePlugin(fileName, reason, requestedBy);
                 IncompatiblePlugins.Add(incompatiblePlugin);
                 return null;
@@ -335,15 +317,15 @@ public static class PluginLoader
             }
             return null;
         }
-        catch (FileLoadException ex) when (ex.Message.Contains("Assembly with same name is already loaded"))
+        catch(FileLoadException ex) when (ex.Message.Contains("Assembly with same name is already loaded"))
         {
             // Get the assembly name from the file path
             string assemblyName = Path.GetFileNameWithoutExtension(filePath);
-
+            
             // Try to find the already loaded assembly
             var existingAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .FirstOrDefault(a => a.GetName().Name.Equals(assemblyName, StringComparison.OrdinalIgnoreCase));
-
+                
             if (existingAssembly != null)
             {
                 Debug.LogMessage(LogEventLevel.Information, "Assembly '{0}' is already loaded, using existing instance", assemblyName);
@@ -352,19 +334,19 @@ public static class PluginLoader
                 LoadedAssemblies.Add(loadedAssembly);
                 return loadedAssembly;
             }
-
+            
             Debug.LogMessage(LogEventLevel.Warning, "Assembly with same name already loaded but couldn't find it: {0}", filePath);
             return null;
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             string fileName = Path.GetFileName(filePath);
-
+            
             // Check if this might be a .NET Framework compatibility issue
-            if (ex.Message.Contains("Could not load type") ||
+            if (ex.Message.Contains("Could not load type") || 
                 ex.Message.Contains("Unable to load one or more of the requested types"))
             {
-                Debug.LogMessage(LogEventLevel.Error, "Error loading assembly {0}: Likely .NET 8 compatibility issue: {1}",
+                Debug.LogMessage(LogEventLevel.Error, "Error loading assembly {0}: Likely .NET 8 compatibility issue: {1}", 
                     fileName, ex.Message);
                 IncompatiblePlugins.Add(new IncompatiblePlugin(fileName, ex.Message, requestedBy));
             }
@@ -454,12 +436,12 @@ public static class PluginLoader
             {
                 if (plugin.TriggeredBy != "Direct load")
                 {
-                    CrestronConsole.ConsoleCommandResponse("{0}: {1} (Required by: {2})" + CrestronEnvironment.NewLine,
+                    CrestronConsole.ConsoleCommandResponse("{0}: {1} (Required by: {2})" + CrestronEnvironment.NewLine, 
                         plugin.Name, plugin.Reason, plugin.TriggeredBy);
                 }
                 else
                 {
-                    CrestronConsole.ConsoleCommandResponse("{0}: {1}" + CrestronEnvironment.NewLine,
+                    CrestronConsole.ConsoleCommandResponse("{0}: {1}" + CrestronEnvironment.NewLine, 
                         plugin.Name, plugin.Reason);
                 }
             }
@@ -626,29 +608,29 @@ public static class PluginLoader
 
         // First, check compatibility of all assemblies before loading any
         var assemblyCompatibility = new Dictionary<string, (bool IsCompatible, string Reason, List<string> References)>();
-
+        
         foreach (var pluginFile in pluginFiles)
         {
             string fileName = pluginFile.Name;
             assemblyCompatibility[fileName] = IsPluginCompatibleWithNet8(pluginFile.FullName);
         }
-
+        
         // Now load compatible assemblies and track incompatible ones
         foreach (var pluginFile in pluginFiles)
         {
             string fileName = pluginFile.Name;
             var (isCompatible, reason, _) = assemblyCompatibility[fileName];
-
+            
             if (!isCompatible)
             {
                 Debug.LogMessage(LogEventLevel.Warning, "Assembly '{0}' is not compatible with .NET 8: {1}", fileName, reason);
                 IncompatiblePlugins.Add(new IncompatiblePlugin(fileName, reason, null));
                 continue;
             }
-
+            
             // Try to load the assembly
             var loadedAssembly = LoadAssembly(pluginFile.FullName, null);
-
+            
             if (loadedAssembly != null)
             {
                 LoadedPluginFolderAssemblies.Add(loadedAssembly);
@@ -668,13 +650,13 @@ public static class PluginLoader
     private static void LoadCustomPluginTypes()
     {
         Debug.LogMessage(LogEventLevel.Information, "Loading Custom Plugin Types...");
-
+        
         foreach (var loadedAssembly in LoadedPluginFolderAssemblies)
         {
             // Skip if assembly is null (can happen if we had loading issues)
             if (loadedAssembly == null || loadedAssembly.Assembly == null)
                 continue;
-
+            
             // iteratate this assembly's classes, looking for "LoadPlugin()" methods
             try
             {
@@ -689,7 +671,7 @@ public static class PluginLoader
                 {
                     Debug.LogMessage(LogEventLevel.Error, "Unable to get types for assembly {0}: {1}",
                         loadedAssembly.Name, e.Message);
-
+                    
                     // Check if any of the loader exceptions are due to missing assemblies
                     foreach (var loaderEx in e.LoaderExceptions)
                     {
@@ -698,18 +680,18 @@ public static class PluginLoader
                             string missingAssembly = fileNotFoundEx.FileName;
                             if (!string.IsNullOrEmpty(missingAssembly))
                             {
-                                Debug.LogMessage(LogEventLevel.Warning, "Assembly {0} requires missing dependency: {1}",
+                                Debug.LogMessage(LogEventLevel.Warning, "Assembly {0} requires missing dependency: {1}", 
                                     loadedAssembly.Name, missingAssembly);
-
+                                
                                 // Add to incompatible plugins with dependency information
                                 IncompatiblePlugins.Add(new IncompatiblePlugin(
-                                    Path.GetFileName(missingAssembly),
-                                    $"Missing dependency required by {loadedAssembly.Name}",
+                                    Path.GetFileName(missingAssembly), 
+                                    $"Missing dependency required by {loadedAssembly.Name}", 
                                     loadedAssembly.Name));
                             }
                         }
                     }
-
+                    
                     Debug.LogMessage(LogEventLevel.Verbose, e.StackTrace);
                     continue;
                 }
@@ -718,18 +700,19 @@ public static class PluginLoader
                     Debug.LogMessage(LogEventLevel.Error, "Unable to get types for assembly {0}: {1}",
                         loadedAssembly.Name, e.Message);
                     Debug.LogMessage(LogEventLevel.Verbose, e.StackTrace);
-
+                    
                     // Add to incompatible plugins if this is likely a .NET 8 compatibility issue
-                    if (e.Message.Contains("Could not load type") ||
+                    if (e.Message.Contains("Could not load type") || 
                         e.Message.Contains("Unable to load one or more of the requested types"))
                     {
-                        IncompatiblePlugins.Add(new IncompatiblePlugin(loadedAssembly.Name,
-                            $"Type loading error: {e.Message}",
+                        IncompatiblePlugins.Add(new IncompatiblePlugin(loadedAssembly.Name, 
+                            $"Type loading error: {e.Message}", 
                             null));
                     }
-
+                    
                     continue;
                 }
+
                 foreach (var type in types)
                 {
                     try
@@ -759,26 +742,26 @@ public static class PluginLoader
                 Debug.LogMessage(LogEventLevel.Information, "Error Loading assembly {0}: {1}",
                     loadedAssembly.Name, e.Message);
                 Debug.LogMessage(LogEventLevel.Verbose, "{0}", e.StackTrace);
-
+                
                 // Add to incompatible plugins if this is likely a .NET 8 compatibility issue
-                if (e.Message.Contains("Could not load type") ||
+                if (e.Message.Contains("Could not load type") || 
                     e.Message.Contains("Unable to load one or more of the requested types"))
                 {
-                    IncompatiblePlugins.Add(new IncompatiblePlugin(loadedAssembly.Name,
-                        $"Assembly loading error: {e.Message}",
+                    IncompatiblePlugins.Add(new IncompatiblePlugin(loadedAssembly.Name, 
+                        $"Assembly loading error: {e.Message}", 
                         null));
                 }
-
+                
                 continue;
             }
         }
-
+        
         // Update incompatible plugins with dependency information
         var pluginDependencies = new Dictionary<string, List<string>>();
         // Populate pluginDependencies with relevant data
         // Example: pluginDependencies["PluginA"] = new List<string> { "Dependency1", "Dependency2" };
         UpdateIncompatiblePluginDependencies(pluginDependencies);
-
+        
         // plugin dll will be loaded.  Any classes in plugin should have a static constructor
         // that registers that class with the Core.DeviceFactory
         Debug.LogMessage(LogEventLevel.Information, "Done Loading Custom Plugin Types.");
@@ -800,15 +783,15 @@ public static class PluginLoader
             // If it already has a requestedBy, skip it
             if (incompatiblePlugin.TriggeredBy != "Direct load")
                 continue;
-
+                
             // Find plugins that depend on this incompatible plugin
             foreach (var plugin in pluginDependencies)
             {
                 string pluginName = plugin.Key;
                 List<string> dependencies = plugin.Value;
-
+                
                 // If this plugin depends on the incompatible plugin
-                if (dependencies.Contains(incompatiblePlugin.Name) ||
+                if (dependencies.Contains(incompatiblePlugin.Name) || 
                     dependencies.Any(d => d.StartsWith(incompatiblePlugin.Name + ",")))
                 {
                     incompatiblePlugin.UpdateTriggeringPlugin(pluginName);
@@ -853,7 +836,7 @@ public static class PluginLoader
 
         LoadDeviceFactories(deviceFactory);
 
-        if (!EssentialsPluginAssemblies.Contains(loadedAssembly))
+        if(!EssentialsPluginAssemblies.Contains(loadedAssembly))
             EssentialsPluginAssemblies.Add(loadedAssembly);
     }
 
@@ -908,7 +891,7 @@ public static class PluginLoader
                 // Load the types from any custom plugin assemblies
                 LoadCustomPluginTypes();
             }
-
+            
             // Report on incompatible plugins
             if (IncompatiblePlugins.Count > 0)
             {
@@ -917,12 +900,12 @@ public static class PluginLoader
                 {
                     if (plugin.TriggeredBy != "Direct load")
                     {
-                        Debug.LogMessage(LogEventLevel.Warning, "  - {0}: {1} (Required by: {2})",
+                        Debug.LogMessage(LogEventLevel.Warning, "  - {0}: {1} (Required by: {2})", 
                             plugin.Name, plugin.Reason, plugin.TriggeredBy);
                     }
                     else
                     {
-                        Debug.LogMessage(LogEventLevel.Warning, "  - {0}: {1}",
+                        Debug.LogMessage(LogEventLevel.Warning, "  - {0}: {1}", 
                             plugin.Name, plugin.Reason);
                     }
                 }
