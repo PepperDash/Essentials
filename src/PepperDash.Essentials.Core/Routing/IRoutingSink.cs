@@ -7,8 +7,14 @@
     {        
     }
 
+    /// <summary>
+    /// For fixed-source endpoint devices with an input port
+    /// </summary>
     public interface IRoutingSinkWithInputPort :IRoutingSink
     {
+        /// <summary>
+        /// Gets the current input port for this routing sink.
+        /// </summary>
         RoutingInputPort CurrentInputPort { get; }
     }
     /*/// <summary>

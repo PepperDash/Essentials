@@ -394,3 +394,4 @@ essentials-framework/Essentials Interfaces/PepperDash_Essentials_Interfaces/Pepp
 .vscode/settings.json
 _site/
 api/
+*.DS_Store
