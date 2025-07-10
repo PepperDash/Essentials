@@ -1,19 +1,35 @@
-﻿using Crestron.SimplSharpPro.DeviceSupport;
+﻿using System.Collections.Generic;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Provides messaging capabilities for direct routing operations in SIMPL-based systems.
+    /// Handles source selection, destination routing, and advanced sharing mode functionality.
+    /// </summary>
     public class SimplDirectRouteMessenger : MessengerBase
     {
         private readonly BasicTriList _eisc;
 
+        /// <summary>
+        /// Gets the join map for SIMPL direct route actions.
+        /// </summary>
         public MobileControlSIMPLRunDirectRouteActionJoinMap JoinMap { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the dictionary of destination items for routing operations.
+        /// </summary>
         public Dictionary<string, DestinationListItem> DestinationList { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SimplDirectRouteMessenger"/> class.
+        /// </summary>
+        /// <param name="key">The unique identifier for this messenger instance.</param>
+        /// <param name="eisc">The basic tri-list for SIMPL communication.</param>
+        /// <param name="messagePath">The message path for routing messages.</param>
         public SimplDirectRouteMessenger(string key, BasicTriList eisc, string messagePath) : base(key, messagePath)
         {
             _eisc = eisc;
@@ -25,6 +41,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         #region Overrides of MessengerBase
 
+        /// <summary>
+        /// Registers actions for handling direct route messaging operations.
+        /// Includes audio source selection, full status reporting, and advanced sharing mode controls.
+        /// </summary>
         protected override void RegisterActions()
         {
             Debug.Console(2, "********** Direct Route Messenger CustomRegisterWithAppServer **********");
@@ -92,6 +112,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 ));
         }
 
+        /// <summary>
+        /// Registers routing actions for each destination in the destination list.
+        /// Sets up feedback handlers and source selection actions for individual destinations.
+        /// </summary>
         public void RegisterForDestinationPaths()
         {
             //handle routing feedback from SIMPL
@@ -114,6 +138,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         #endregion
 
+        /// <summary>
+        /// Updates the source selection for a specific destination and posts a status message.
+        /// </summary>
+        /// <param name="sourceKey">The key of the selected source.</param>
+        /// <param name="destKey">The key of the destination being updated.</param>
         private void UpdateSourceForDestination(string sourceKey, string destKey)
         {
             PostStatusMessage(JToken.FromObject(new

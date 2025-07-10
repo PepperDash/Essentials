@@ -90,7 +90,7 @@ namespace PepperDash.Essentials.WebApiHandlers
 
 
 
-            if (!server.UiClients.TryGetValue(request.Token, out UiClientContext clientContext))
+            if (!server.UiClientContexts.TryGetValue(request.Token, out UiClientContext clientContext))
             {
                 var response = new ClientResponse
                 {
@@ -131,7 +131,7 @@ namespace PepperDash.Essentials.WebApiHandlers
                 return;
             }
 
-            server.UiClients.Remove(request.Token);
+            server.UiClientContexts.Remove(request.Token);
 
             server.UpdateSecret();
 
