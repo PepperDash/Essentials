@@ -1,4 +1,10 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharp.WebScripting;
@@ -30,12 +36,6 @@ using PepperDash.Essentials.RoomBridges;
 using PepperDash.Essentials.Services;
 using PepperDash.Essentials.WebApiHandlers;
 using PepperDash.Essentials.WebSocketServer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using WebSocketSharp;
 
 namespace PepperDash.Essentials
@@ -570,7 +570,7 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose(
                             "Adding ISetTopBoxControlMessenger for {deviceKey}"
-                        );                        
+                        );
 
                         var messenger = new ISetTopBoxControlsMessenger(
                             $"{device.Key}-stb-{Key}",
@@ -587,7 +587,7 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose(
                             "Adding IChannelMessenger for {deviceKey}", device.Key
-                        );                        
+                        );
 
                         var messenger = new IChannelMessenger(
                             $"{device.Key}-channel-{Key}",
@@ -602,7 +602,7 @@ namespace PepperDash.Essentials
 
                     if (device is IColor colorDevice)
                     {
-                        this.LogVerbose("Adding IColorMessenger for {deviceKey}", device.Key);                        
+                        this.LogVerbose("Adding IColorMessenger for {deviceKey}", device.Key);
 
                         var messenger = new IColorMessenger(
                             $"{device.Key}-color-{Key}",
@@ -617,7 +617,7 @@ namespace PepperDash.Essentials
 
                     if (device is IDPad dPadDevice)
                     {
-                        this.LogVerbose("Adding IDPadMessenger for {deviceKey}", device.Key);                        
+                        this.LogVerbose("Adding IDPadMessenger for {deviceKey}", device.Key);
 
                         var messenger = new IDPadMessenger(
                             $"{device.Key}-dPad-{Key}",
@@ -632,7 +632,7 @@ namespace PepperDash.Essentials
 
                     if (device is INumericKeypad nkDevice)
                     {
-                        this.LogVerbose("Adding INumericKeyapdMessenger for {deviceKey}", device.Key);                        
+                        this.LogVerbose("Adding INumericKeyapdMessenger for {deviceKey}", device.Key);
 
                         var messenger = new INumericKeypadMessenger(
                             $"{device.Key}-numericKeypad-{Key}",
@@ -647,7 +647,7 @@ namespace PepperDash.Essentials
 
                     if (device is IHasPowerControl pcDevice)
                     {
-                        this.LogVerbose("Adding IHasPowerControlMessenger for {deviceKey}", device.Key);                        
+                        this.LogVerbose("Adding IHasPowerControlMessenger for {deviceKey}", device.Key);
 
                         var messenger = new IHasPowerMessenger(
                             $"{device.Key}-powerControl-{Key}",
@@ -681,7 +681,7 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose(
                             "Adding ITransportMessenger for {deviceKey}", device.Key
-                        );                        
+                        );
 
                         var messenger = new ITransportMessenger(
                             $"{device.Key}-transport-{Key}",
@@ -1619,12 +1619,12 @@ Mobile Control Direct Server Information:
     Tokens Defined: {0}
     Clients Connected: {1}
 ",
-                    _directServer.UiClients.Count,
+                    _directServer.UiClientContexts.Count,
                     _directServer.ConnectedUiClientsCount
                 );
 
                 var clientNo = 1;
-                foreach (var clientContext in _directServer.UiClients)
+                foreach (var clientContext in _directServer.UiClientContexts)
                 {
                     var isAlive = false;
                     var duration = "Not Connected";
@@ -2238,7 +2238,7 @@ Mobile Control Direct Server Infromation:
                         {
                             this.LogInformation("-- Warning: Incoming message has no registered handler {type}", message.Type);
                             break;
-                        }                        
+                        }
 
                         foreach (var handler in handlers)
                         {

@@ -1,12 +1,12 @@
-﻿using Crestron.SimplSharp.WebScripting;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.WebSocketServer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PepperDash.Essentials.WebApiHandlers
 {
@@ -99,13 +99,13 @@ namespace PepperDash.Essentials.WebApiHandlers
         public int ServerPort => directServer.Port;
 
         [JsonProperty("tokensDefined")]
-        public int TokensDefined => directServer.UiClients.Count;
+        public int TokensDefined => directServer.UiClientContexts.Count;
 
         [JsonProperty("clientsConnected")]
         public int ClientsConnected => directServer.ConnectedUiClientsCount;
 
         [JsonProperty("clients")]
-        public List<MobileControlDirectClient> Clients => directServer.UiClients.Select((c, i) => { return new MobileControlDirectClient(c, i, directServer.UserAppUrlPrefix); }).ToList();
+        public List<MobileControlDirectClient> Clients => directServer.UiClientContexts.Select((c, i) => { return new MobileControlDirectClient(c, i, directServer.UserAppUrlPrefix); }).ToList();
 
         public MobileControlDirectServer(MobileControlWebsocketServer server)
         {
