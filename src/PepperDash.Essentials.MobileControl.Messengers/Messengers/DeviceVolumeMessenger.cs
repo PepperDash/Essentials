@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _localDevice = device;
         }
 
-        private void SendStatus()
+        private void SendStatus(string id = null)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     messageObj.Volume.Units = volumeAdvanced.Units;
                 }
 
-                PostStatusMessage(messageObj);
+                PostStatusMessage(messageObj, id);
             }
             catch (Exception ex)
             {
@@ -64,7 +64,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         protected override void RegisterActions()
         {
-            AddAction("/fullStatus", (id, content) => SendStatus());
+            AddAction("/fullStatus", (id, content) => SendStatus(id));
 
             AddAction("/level", (id, content) =>
             {

@@ -40,7 +40,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     Presets = device.Presets
                 };
 
-                PostStatusMessage(message);
+                PostStatusMessage(message, id);
             });
 
             AddAction("/recallPreset", (id, content) =>

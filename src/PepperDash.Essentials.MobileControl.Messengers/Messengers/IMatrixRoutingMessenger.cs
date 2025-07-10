@@ -45,7 +45,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     };
 
 
-                    PostStatusMessage(message);
+                    PostStatusMessage(message, id);
                 }
                 catch (Exception e)
                 {

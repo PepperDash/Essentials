@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/shadeUp", (id, content) =>
                 {
@@ -86,7 +86,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var state = new ShadeBaseStateMessage();
 
@@ -96,7 +96,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 state.IsClosed = feedbackDevice.ShadeIsClosedFeedback.BoolValue;
             }
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, id);
         }
     }
 

@@ -38,7 +38,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendAtcFullMessageObject());
+            AddAction("/fullStatus", (id, content) => SendAtcFullMessageObject(id));
             AddAction("/dial", (id, content) =>
             {
                 var msg = content.ToObject<MobileControlSimpleContent<string>>();
@@ -101,7 +101,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// Helper method to build call status for vtc
         /// </summary>
         /// <returns></returns>
-        private void SendAtcFullMessageObject()
+        private void SendAtcFullMessageObject(string id = null)
         {
             var info = Codec.CodecInfo;
 
@@ -113,7 +113,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 {
                     phoneNumber = info.PhoneNumber
                 }
-            })
+            }), clientId: id
             );
         }
     }

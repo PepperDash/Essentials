@@ -1,4 +1,8 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -9,9 +13,6 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -21,18 +22,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
     public class VideoCodecBaseMessenger : MessengerBase
     {
         /// <summary>
-        /// 
+        /// The video codec device being managed by this messenger.
         /// </summary>
         protected VideoCodecBase Codec { get; private set; }
 
 
-
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="VideoCodecBaseMessenger"/> class.
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="codec"></param>
-        /// <param name="messagePath"></param>
+        /// <param name="key">The unique identifier for the messenger.</param>
+        /// <param name="codec">The video codec device to be managed.</param>
+        /// <param name="messagePath">The message path for communication.</param>
+        /// <exception cref="ArgumentNullException">Thrown when codec is null</exception>
         public VideoCodecBaseMessenger(string key, VideoCodecBase codec, string messagePath)
             : base(key, messagePath, codec)
         {
@@ -70,11 +71,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostEventMessage(eventMsg);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void CallHistory_RecentCallsListHasChanged(object sender, EventArgs e)
         {
             try
@@ -98,10 +94,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// 
+        ///  Handles the event when a directory result is returned from the codec.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The directory event arguments.</param>
         protected virtual void DirCodec_DirectoryResultReturned(object sender, DirectoryEventArgs e)
         {
             if (Codec is IHasDirectory)
@@ -109,8 +105,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// Posts the current directory
+        /// Sends the current directory structure to the mobile control interface.
         /// </summary>
+        /// <param name="directory">The directory structure to send.</param>
         protected void SendDirectory(CodecDirectory directory)
         {
             try
@@ -134,11 +131,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void Codec_IsReadyChange(object sender, EventArgs e)
         {
             try
@@ -151,16 +143,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 PostStatusMessage(state);
 
                 SendFullStatus();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 this.LogError(ex, "Error sending codec ready status");
             }
         }
 
-        /// <summary>
-        /// Called from base's RegisterWithAppServer method
-        /// </summary>
-        /// <param name="appServerController"></param>
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             try
@@ -169,7 +159,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 AddAction("/isReady", (id, content) => SendIsReady());
 
-                AddAction("/fullStatus", (id, content) => SendFullStatus());
+                AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
                 AddAction("/dial", (id, content) =>
                 {
@@ -369,7 +359,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 };
 
                 PostStatusMessage(state);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 this.LogError(ex, "Error posting sharing source");
             }
@@ -385,7 +376,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 };
 
                 PostStatusMessage(state);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 this.LogError(ex, "Error posting sharing content");
             }
@@ -435,15 +427,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 MapCameraActions();
                 PostSelectedCamera();
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 this.LogError(ex, "Exception handling camera selected event");
             }
         }
 
-        /// <summary>
-        /// Maps the camera control actions to the current selected camera on the codec
-        /// </summary>
         private void MapCameraActions()
         {
             if (Codec is IHasCameras cameraCodec && cameraCodec.SelectedCamera != null)
@@ -599,7 +589,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             try
             {
-                var codec = (Codec as IHasCallHistory);
+                var codec = Codec as IHasCallHistory;
 
                 if (codec != null)
                 {
@@ -621,20 +611,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        /// <summary>
-        /// Helper to grab a call with string ID
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         private CodecActiveCallItem GetCallWithId(string id)
         {
             return Codec.ActiveCalls.FirstOrDefault(c => c.Id == id);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id"></param>
         private void GetDirectory(string id)
         {
             if (!(Codec is IHasDirectory dirCodec))
@@ -644,10 +625,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             dirCodec.GetDirectoryFolderContents(id);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        private void GetDirectoryRoot()
+        private void GetDirectoryRoot(string id = null)
         {
             try
             {
@@ -675,9 +653,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        /// <summary>
-        /// Requests the parent folder contents
-        /// </summary>
         private void GetPreviousDirectory()
         {
             if (!(Codec is IHasDirectory dirCodec))
@@ -688,17 +663,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             dirCodec.GetDirectoryParentFolderContents();
         }
 
-        /// <summary>
-        /// Handler for codec changes
-        /// </summary>
         private void Codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
         {
             SendFullStatus();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         private void SendIsReady()
         {
             try
@@ -719,9 +688,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// Helper method to build call status for vtc
+        /// Gets the current status of the video codec.
         /// </summary>
-        /// <returns></returns>
+        /// <returns> The current status of the video codec.</returns>
         protected VideoCodecBaseStateMessage GetStatus()
         {
             try
@@ -780,14 +749,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        protected virtual void SendFullStatus()
+        /// <summary>
+        /// Sends the full status of the codec.
+        /// </summary>
+        /// <param name="id">The unique identifier for the status message.</param>
+        protected virtual void SendFullStatus(string id = null)
         {
             if (!Codec.IsReady)
             {
                 return;
             }
 
-            CrestronInvoke.BeginInvoke((o) => PostStatusMessage(GetStatus()));
+            Task.Run(() => PostStatusMessage(GetStatus(), id));
         }
 
         private void PostReceivingContent(bool receivingContent)
@@ -800,7 +773,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 };
 
                 PostStatusMessage(state);
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 this.LogError(ex, "Error posting receiving content");
             }
@@ -824,9 +798,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         private void PostCameraMode()
         {
             try
@@ -928,164 +899,324 @@ namespace PepperDash.Essentials.AppServer.Messengers
     public class VideoCodecBaseStateMessage : DeviceStateMessageBase
     {
 
+        /// <summary>
+        /// The list of active calls on the codec.
+        /// </summary>
         [JsonProperty("calls", NullValueHandling = NullValueHandling.Ignore)]
         public List<CodecActiveCallItem> Calls { get; set; }
 
+        /// <summary>
+        /// The current mode of the camera.
+        /// </summary>
         [JsonProperty("cameraMode", NullValueHandling = NullValueHandling.Ignore)]
         public string CameraMode { get; set; }
 
+        /// <summary>
+        /// Indicates whether the camera self-view is enabled.
+        /// </summary>
         [JsonProperty("cameraSelfView", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CameraSelfViewIsOn { get; set; }
 
+        /// <summary>
+        /// Gets the current status of the cameras.
+        /// </summary>
         [JsonProperty("cameras", NullValueHandling = NullValueHandling.Ignore)]
         public CameraStatus Cameras { get; set; }
 
+        /// <summary>
+        /// Indicates whether the camera supports auto mode.
+        /// </summary>
         [JsonProperty("cameraSupportsAutoMode", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CameraSupportsAutoMode { get; set; }
 
+        /// <summary>
+        /// Indicates whether the camera supports off mode.
+        /// </summary>
         [JsonProperty("cameraSupportsOffMode", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CameraSupportsOffMode { get; set; }
 
+        /// <summary>
+        /// The current dial string for the codec.
+        /// </summary>
         [JsonProperty("currentDialString", NullValueHandling = NullValueHandling.Ignore)]
         public string CurrentDialString { get; set; }
 
+        /// <summary>
+        /// Gets the current directory for the codec.
+        /// </summary>
         [JsonProperty("currentDirectory", NullValueHandling = NullValueHandling.Ignore)]
         public CodecDirectory CurrentDirectory { get; set; }
 
+        /// <summary>
+        /// Gets the selected folder name in the directory.
+        /// </summary>
         [JsonProperty("directorySelectedFolderName", NullValueHandling = NullValueHandling.Ignore)]
         public string DirectorySelectedFolderName { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec has active camera streams.
+        /// </summary>
         [JsonProperty("hasCameras", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasCameras { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec has a directory.
+        /// </summary>
         [JsonProperty("hasDirectory", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasDirectory { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec supports directory search functionality.
+        /// </summary>
         [JsonProperty("hasDirectorySearch", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasDirectorySearch { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec has presets.
+        /// </summary>
         [JsonProperty("hasPresets", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasPresets { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec has recent calls.
+        /// </summary>
         [JsonProperty("hasRecents", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasRecents { get; set; }
 
+        /// <summary>
+        /// Indicates whether the initial phonebook sync is complete.
+        /// </summary>
         [JsonProperty("initialPhonebookSyncComplete", NullValueHandling = NullValueHandling.Ignore)]
         public bool? InitialPhonebookSyncComplete { get; set; }
 
+        /// <summary>
+        /// Gets the information about the video codec.
+        /// </summary>
         [JsonProperty("info", NullValueHandling = NullValueHandling.Ignore)]
         public VideoCodecInfo Info { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec is currently in a call.
+        /// </summary>
         [JsonProperty("isInCall", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsInCall { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec is ready.
+        /// </summary>
         [JsonProperty("isReady", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsReady { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec is a Zoom Room.
+        /// </summary>
         [JsonProperty("isZoomRoom", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsZoomRoom { get; set; }
 
+        /// <summary>
+        /// Gets the meeting information for the codec, if available.
+        /// </summary>
         [JsonProperty("meetingInfo", NullValueHandling = NullValueHandling.Ignore)]
         public MeetingInfo MeetingInfo { get; set; }
 
+        /// <summary>
+        /// Gets the list of presets for the codec.
+        /// </summary>
         [JsonProperty("presets", NullValueHandling = NullValueHandling.Ignore)]
         public List<CodecRoomPreset> Presets { get; set; }
 
+        /// <summary>
+        /// Indicates whether the privacy mode is currently enabled.
+        /// </summary>
         [JsonProperty("privacyModeIsOn", NullValueHandling = NullValueHandling.Ignore)]
         public bool? PrivacyModeIsOn { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec is currently receiving content.
+        /// </summary>
         [JsonProperty("receivingContent", NullValueHandling = NullValueHandling.Ignore)]
         public bool? ReceivingContent { get; set; }
 
+        /// <summary>
+        /// Gets the list of recent calls for the codec, if available.
+        /// </summary>
         [JsonProperty("recentCalls", NullValueHandling = NullValueHandling.Ignore)]
         public List<CodecCallHistory.CallHistoryEntry> RecentCalls { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec is currently sharing content.
+        /// </summary>
         [JsonProperty("sharingContentIsOn", NullValueHandling = NullValueHandling.Ignore)]
         public bool? SharingContentIsOn { get; set; }
 
+        /// <summary>
+        /// Gets the source of the shared content, if available.
+        /// </summary>
         [JsonProperty("sharingSource", NullValueHandling = NullValueHandling.Ignore)]
         public string SharingSource { get; set; }
 
+        /// <summary>
+        /// Indicates whether the cameras should be shown when not in a call.
+        /// </summary>
         [JsonProperty("showCamerasWhenNotInCall", NullValueHandling = NullValueHandling.Ignore)]
         public bool? ShowCamerasWhenNotInCall { get; set; }
 
+        /// <summary>
+        /// Indicates whether the self-view is shown by default.
+        /// </summary>
         [JsonProperty("showSelfViewByDefault", NullValueHandling = NullValueHandling.Ignore)]
         public bool? ShowSelfViewByDefault { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec is currently in standby mode.
+        /// </summary>
         [JsonProperty("standbyIsOn", NullValueHandling = NullValueHandling.Ignore)]
         public bool? StandbyIsOn { get; set; }
 
+        /// <summary>
+        /// Indicates whether the codec supports ad-hoc meetings.
+        /// </summary>
         [JsonProperty("supportsAdHocMeeting", NullValueHandling = NullValueHandling.Ignore)]
         public bool? SupportsAdHocMeeting { get; set; }
     }
 
+    /// <summary>
+    /// Represents the status of the camera.
+    /// </summary>
     public class CameraStatus
     {
+        /// <summary>
+        /// Indicates whether the camera manual control is supported.
+        /// </summary>
         [JsonProperty("cameraManualSupported", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CameraManualIsSupported { get; set; }
 
+        /// <summary>
+        /// Indicates whether the camera auto control is supported.
+        /// </summary>
         [JsonProperty("cameraAutoSupported", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CameraAutoIsSupported { get; set; }
 
+        /// <summary>
+        /// Indicates whether the camera off control is supported.
+        /// </summary>
         [JsonProperty("cameraOffSupported", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CameraOffIsSupported { get; set; }
 
+        /// <summary>
+        /// Indicates the current mode of the camera.
+        /// </summary>
         [JsonProperty("cameraMode", NullValueHandling = NullValueHandling.Ignore)]
         public string CameraMode { get; set; }
 
+        /// <summary>
+        /// Represents the list of cameras available.
+        /// </summary>
         [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
         public List<CameraBase> Cameras { get; set; }
 
+        /// <summary>
+        /// Represents the currently selected camera.
+        /// </summary>
         [JsonProperty("selectedCamera", NullValueHandling = NullValueHandling.Ignore)]
-        public Camera SelectedCamera { get; set; }        
+        public Camera SelectedCamera { get; set; }
     }
 
+    /// <summary>
+    /// Represents a camera in the video codec system.
+    /// </summary>
     public class Camera
     {
+        /// <summary>
+        /// The unique identifier for the camera.
+        /// </summary>
         [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
         public string Key { get; set; }
 
+        /// <summary>
+        /// The name of the camera.
+        /// </summary>
         [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Indicates whether the camera is a far-end camera.
+        /// </summary>
         [JsonProperty("isFarEnd", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsFarEnd { get; set; }
 
+        /// <summary>
+        /// Represents the capabilities of the camera.
+        /// </summary>
         [JsonProperty("capabilities", NullValueHandling = NullValueHandling.Ignore)]
         public CameraCapabilities Capabilities { get; set; }
     }
 
+    /// <summary>
+    /// Represents the capabilities of the camera.
+    /// </summary>
     public class CameraCapabilities
     {
+        /// <summary>
+        /// Indicates whether the camera can pan.
+        /// </summary>
         [JsonProperty("canPan", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CanPan { get; set; }
 
+        /// <summary>
+        /// Indicates whether the camera can tilt.
+        /// </summary>
         [JsonProperty("canTilt", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CanTilt { get; set; }
 
+        /// <summary>
+        /// Indicates whether the camera can zoom.
+        /// </summary>
         [JsonProperty("canZoom", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CanZoom { get; set; }
 
+        /// <summary>
+        /// Indicates whether the camera can focus.
+        /// </summary>
         [JsonProperty("canFocus", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CanFocus { get; set; }
 
     }
 
+    /// <summary>
+    /// Represents a video codec event message.
+    /// </summary>
     public class VideoCodecBaseEventMessage : DeviceEventMessageBase
     {
 
     }
 
+    /// <summary>
+    /// Represents a password prompt event message.
+    /// </summary>
     public class PasswordPromptEventMessage : VideoCodecBaseEventMessage
     {
+        /// <summary>
+        /// The message to display in the password prompt.
+        /// </summary>
         [JsonProperty("message", NullValueHandling = NullValueHandling.Ignore)]
         public string Message { get; set; }
+
+        /// <summary>
+        /// Indicates whether the last password attempt was incorrect.
+        /// </summary>
         [JsonProperty("lastAttemptWasIncorrect", NullValueHandling = NullValueHandling.Ignore)]
         public bool LastAttemptWasIncorrect { get; set; }
 
+        /// <summary>
+        /// Indicates whether the login attempt failed.
+        /// </summary>
         [JsonProperty("loginAttemptFailed", NullValueHandling = NullValueHandling.Ignore)]
         public bool LoginAttemptFailed { get; set; }
 
+        /// <summary>
+        /// Indicates whether the login attempt was cancelled.
+        /// </summary>
         [JsonProperty("loginAttemptCancelled", NullValueHandling = NullValueHandling.Ignore)]
         public bool LoginAttemptCancelled { get; set; }
     }

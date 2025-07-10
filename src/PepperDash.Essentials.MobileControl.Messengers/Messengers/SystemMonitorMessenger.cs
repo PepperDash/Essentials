@@ -64,17 +64,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
             SendSystemMonitorStatusMessage();
         }
 
-        private void SendFullStatusMessage()
+        private void SendFullStatusMessage(string id = null)
         {
-            SendSystemMonitorStatusMessage();
+            SendSystemMonitorStatusMessage(id);
 
             foreach (var p in systemMonitor.ProgramStatusFeedbackCollection)
             {
-                PostStatusMessage(JToken.FromObject(p.Value.ProgramInfo));
+                PostStatusMessage(JToken.FromObject(p.Value.ProgramInfo), id);
             }
         }
 
-        private void SendSystemMonitorStatusMessage()
+        private void SendSystemMonitorStatusMessage(string id = null)
         {
             // This takes a while, launch a new thread
 
@@ -87,7 +87,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 SnmpVersion = systemMonitor.SnmpVersionFeedback.StringValue,
                 BacnetVersion = systemMonitor.BaCnetAppVersionFeedback.StringValue,
                 ControllerVersion = systemMonitor.ControllerVersionFeedback.StringValue
-            })
+            }), id
             ));
         }
 
@@ -97,7 +97,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         protected override void RegisterActions()
         {
-            AddAction("/fullStatus", (id, content) => SendFullStatusMessage());
+            AddAction("/fullStatus", (id, content) => SendFullStatusMessage(id));
         }
     }
 

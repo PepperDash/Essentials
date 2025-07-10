@@ -37,7 +37,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/fullStatus", (id, context) =>
             {
-                SendFullStatus();
+                SendFullStatus(id);
             });
 
             itemDevice.ItemsUpdated += (sender, args) =>
@@ -67,7 +67,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             try
             {
@@ -79,7 +79,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     CurrentItem = itemDevice.CurrentItem
                 };
 
-                PostStatusMessage(stateObject);
+                PostStatusMessage(stateObject, id);
             }
             catch (Exception e)
             {

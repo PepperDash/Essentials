@@ -28,14 +28,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Sends the full power control status to connected clients.
         /// </summary>
-        public void SendFullStatus()
+        public void SendFullStatus(string id = null)
         {
             var messageObj = new PowerControlWithFeedbackStateMessage
             {
                 PowerState = _powerControl.PowerIsOnFeedback.BoolValue
             };
 
-            PostStatusMessage(messageObj);
+            PostStatusMessage(messageObj, id);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
             _powerControl.PowerIsOnFeedback.OutputChange += PowerIsOnFeedback_OutputChange; ;
         }

@@ -29,12 +29,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _presetsDevice = presetsDevice;
         }
 
-        private void SendPresets()
+        private void SendPresets(string id = null)
         {
             PostStatusMessage(new PresetStateMessage
             {
                 Favorites = _presetsDevice.TvPresets.PresetsList
-            });
+            }, id);
         }
 
         private void RecallPreset(ISetTopBoxNumericKeypad device, string channel)
@@ -62,7 +62,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 this.LogInformation("getting full status for client {id}", id);
                 try
                 {
-                    SendPresets();
+                    SendPresets(id);
                 }
                 catch (Exception ex)
                 {

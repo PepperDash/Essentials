@@ -36,7 +36,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     CurrentSource = sourceDevice.CurrentSourceInfo
                 };
 
-                PostStatusMessage(message);
+                PostStatusMessage(message, id);
             });
 
             sourceDevice.CurrentSourceChange += (sender, e) =>

@@ -22,14 +22,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var state = new DeviceStateMessageBase();
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, id);
         }
     }
 }

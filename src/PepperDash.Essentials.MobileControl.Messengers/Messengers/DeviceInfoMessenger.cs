@@ -1,4 +1,5 @@
 ﻿using System.Timers;
+using Independentsoft.Exchange;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -70,7 +71,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             AddAction("/fullStatus", (id, context) => PostStatusMessage(new DeviceInfoStateMessage
             {
                 DeviceInfo = _deviceInfoProvider.DeviceInfo
-            }));
+            }, id));
 
             AddAction("/update", (id, context) => _deviceInfoProvider.UpdateDeviceInfo());
         }

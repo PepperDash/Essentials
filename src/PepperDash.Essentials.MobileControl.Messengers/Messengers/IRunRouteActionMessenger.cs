@@ -1,12 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
-using System;
 
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Messenger for routing actions
+    /// </summary>
     public class RunRouteActionMessenger : MessengerBase
     {
         /// <summary>
@@ -14,6 +17,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         public IRunRouteAction RoutingDevice { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RunRouteActionMessenger"/> class.
+        /// </summary>
+        /// <param name="key">Unique identifier for the messenger</param>
+        /// <param name="routingDevice">Device that implements IRunRouteAction</param>
+        /// <param name="messagePath">Path for message routing</param>
+        /// <exception cref="ArgumentNullException">Thrown when routingDevice is null</exception>
         public RunRouteActionMessenger(string key, IRunRouteAction routingDevice, string messagePath)
             : base(key, messagePath, routingDevice as IKeyName)
         {
@@ -31,9 +41,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             SendRoutingFullMessageObject();
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
-            AddAction("/fullStatus", (id, content) => SendRoutingFullMessageObject());
+            AddAction("/fullStatus", (id, content) => SendRoutingFullMessageObject(id));
 
             AddAction("/source", (id, content) =>
                 {
@@ -59,7 +70,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Helper method to update full status of the routing device
         /// </summary>
-        private void SendRoutingFullMessageObject()
+        private void SendRoutingFullMessageObject(string id = null)
         {
             if (RoutingDevice is IRoutingSink sinkDevice)
             {
@@ -71,13 +82,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 PostStatusMessage(new RoutingStateMessage
                 {
                     SelectedSourceKey = sourceKey
-                });
+                }, id);
             }
         }
     }
 
+    /// <summary>
+    /// Message class for routing state
+    /// </summary>
     public class RoutingStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the selected source key
+        /// </summary>
         [JsonProperty("selectedSourceKey")]
         public string SelectedSourceKey { get; set; }
     }

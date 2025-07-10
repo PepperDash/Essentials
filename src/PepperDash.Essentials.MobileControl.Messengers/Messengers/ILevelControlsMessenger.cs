@@ -37,7 +37,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     Levels = levelControlsDevice.LevelControlPoints.ToDictionary(kv => kv.Key, kv => new Volume { Level = kv.Value.VolumeLevelFeedback.IntValue, Muted = kv.Value.MuteFeedback.BoolValue })
                 };
 
-                PostStatusMessage(message);
+                PostStatusMessage(message, id);
             });
 
             foreach (var levelControl in levelControlsDevice.LevelControlPoints)

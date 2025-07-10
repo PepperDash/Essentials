@@ -42,7 +42,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                         IsOnline = _communicationMonitor.CommunicationMonitor.IsOnline,
                         Status = _communicationMonitor.CommunicationMonitor.Status
                     }
-                });
+                }, id);
             });
 
             _communicationMonitor.CommunicationMonitor.StatusChange += (sender, args) =>
