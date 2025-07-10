@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Codec;
-using System;
-using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -29,6 +29,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             codec.CallStatusChange += Codec_CallStatusChange;
         }
 
+        /// <summary>
+        /// Registers actions for handling audio codec operations.
+        /// Includes call control, status reporting, and audio codec management.
+        /// </summary>
         protected override void RegisterActions()
 
         {

@@ -1,16 +1,26 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Provides messaging capabilities for device volume control operations.
+    /// Handles volume level adjustment, mute control, and volume status reporting.
+    /// </summary>
     public class DeviceVolumeMessenger : MessengerBase
     {
         private readonly IBasicVolumeWithFeedback _localDevice;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceVolumeMessenger"/> class.
+        /// </summary>
+        /// <param name="key">The unique identifier for this messenger instance.</param>
+        /// <param name="messagePath">The message path for volume control messages.</param>
+        /// <param name="device">The device that provides volume control functionality.</param>
         public DeviceVolumeMessenger(string key, string messagePath, IBasicVolumeWithFeedback device)
             : base(key, messagePath, device as IKeyName)
         {
@@ -48,6 +58,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
         #region Overrides of MessengerBase
 
 
+        /// <summary>
+        /// Registers actions for handling volume control operations.
+        /// Includes volume level adjustment, mute control, and full status reporting.
+        /// </summary>
         protected override void RegisterActions()
         {
             AddAction("/fullStatus", (id, content) => SendStatus());
@@ -142,29 +156,56 @@ namespace PepperDash.Essentials.AppServer.Messengers
         #endregion
     }
 
+    /// <summary>
+    /// Represents a volume state message containing volume information.
+    /// </summary>
     public class VolumeStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the volume information.
+        /// </summary>
         [JsonProperty("volume", NullValueHandling = NullValueHandling.Ignore)]
         public Volume Volume { get; set; }
     }
 
+    /// <summary>
+    /// Represents volume control information including level, mute status, and units.
+    /// </summary>
     public class Volume
     {
+        /// <summary>
+        /// Gets or sets the volume level.
+        /// </summary>
         [JsonProperty("level", NullValueHandling = NullValueHandling.Ignore)]
         public int? Level { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the device has mute capability.
+        /// </summary>
         [JsonProperty("hasMute", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasMute { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the device is currently muted.
+        /// </summary>
         [JsonProperty("muted", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Muted { get; set; }
 
+        /// <summary>
+        /// Gets or sets the volume label for display purposes.
+        /// </summary>
         [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
         public string Label { get; set; }
 
+        /// <summary>
+        /// Gets or sets the raw volume value as a string.
+        /// </summary>
         [JsonProperty("rawValue", NullValueHandling = NullValueHandling.Ignore)]
         public string RawValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the volume level units.
+        /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("units", NullValueHandling = NullValueHandling.Ignore)]
         public eVolumeLevelUnits? Units { get; set; }

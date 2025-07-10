@@ -4,14 +4,25 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Messenger for devices that implement IColor interface
+    /// </summary>
     public class IColorMessenger : MessengerBase
     {
         private readonly IColor colorDevice;
+
+        /// <summary>
+        /// Initializes a new instance of the IColorMessenger class
+        /// </summary>
+        /// <param name="key">Unique identifier for the messenger</param>
+        /// <param name="messagePath">Path for message routing</param>
+        /// <param name="device">Device that implements IColor</param>
         public IColorMessenger(string key, string messagePath, IColor device) : base(key, messagePath, device as IKeyName)
         {
             colorDevice = device as IColor;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();

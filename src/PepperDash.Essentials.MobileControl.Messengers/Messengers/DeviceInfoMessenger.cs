@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System.Timers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceInfo;
-using System.Timers;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -84,6 +84,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// device.</remarks>
     public class DeviceInfoStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the device information.
+        /// </summary>
         [JsonProperty("deviceInfo")]
         public DeviceInfo DeviceInfo { get; set; }
     }

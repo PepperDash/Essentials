@@ -1,33 +1,51 @@
-﻿using Crestron.SimplSharpPro.DeviceSupport;
+﻿using System;
+using System.Collections.Generic;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// SIMPL messenger for video conference devices that provides video calling and camera control functionality
+    /// </summary>
     // ReSharper disable once InconsistentNaming
     public class SIMPLVtcMessenger : MessengerBase
     {
+        /// <summary>
+        /// The EISC (Ethernet Intersystem Communication) device
+        /// </summary>
         private readonly BasicTriList _eisc;
 
+        /// <summary>
+        /// Gets the join map for SIMPL VTC operations
+        /// </summary>
         public SIMPLVtcJoinMap JoinMap { get; private set; }
 
+        /// <summary>
+        /// The current active call item for video calls
+        /// </summary>
         private readonly CodecActiveCallItem _currentCallItem;
 
+        /// <summary>
+        /// The incoming call item for video calls
+        /// </summary>
         private CodecActiveCallItem _incomingCallItem;
 
+        /// <summary>
+        /// The previous directory length for tracking changes
+        /// </summary>
         private ushort _previousDirectoryLength = 701;
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the SIMPLVtcMessenger class
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="eisc"></param>
-        /// <param name="messagePath"></param>
+        /// <param name="key">Unique identifier for the messenger</param>
+        /// <param name="eisc">The EISC device for communication</param>
+        /// <param name="messagePath">Path for message routing</param>
         public SIMPLVtcMessenger(string key, BasicTriList eisc, string messagePath)
             : base(key, messagePath)
         {
@@ -39,9 +57,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// 
+        /// Registers actions and feedback handlers for the SIMPL VTC messenger
         /// </summary>
-        /// <param name="appServerController"></param>
         protected override void RegisterActions()
         {
             _eisc.SetStringSigAction(JoinMap.HookState.JoinNumber, s =>

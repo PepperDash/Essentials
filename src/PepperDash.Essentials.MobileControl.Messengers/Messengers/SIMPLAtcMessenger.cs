@@ -1,32 +1,39 @@
-﻿using Crestron.SimplSharpPro.DeviceSupport;
+﻿using System;
+using System.Collections.Generic;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Codec;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// SIMPL messenger for audio-only conference devices that provides audio calling functionality
+    /// </summary>
     // ReSharper disable once InconsistentNaming
     public class SIMPLAtcMessenger : MessengerBase
     {
+        /// <summary>
+        /// The EISC (Ethernet Intersystem Communication) device
+        /// </summary>
         private readonly BasicTriList _eisc;
 
+        /// <summary>
+        /// Gets the join map for SIMPL ATC operations
+        /// </summary>
         public SIMPLAtcJoinMap JoinMap { get; private set; }
 
-
         /// <summary>
-        /// 
+        /// The current active call item for audio calls
         /// </summary>
         private readonly CodecActiveCallItem _currentCallItem;
 
-
         /// <summary>
-        /// 
+        /// Initializes a new instance of the SIMPLAtcMessenger class
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="eisc"></param>
-        /// <param name="messagePath"></param>
+        /// <param name="key">Unique identifier for the messenger</param>
+        /// <param name="eisc">The EISC device for communication</param>
+        /// <param name="messagePath">Path for message routing</param>
         public SIMPLAtcMessenger(string key, BasicTriList eisc, string messagePath)
             : base(key, messagePath)
         {
@@ -38,7 +45,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// 
+        /// Sends the current status of the audio conference device to connected clients
         /// </summary>
         private void SendFullStatus()
         {
@@ -53,9 +60,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// 
+        /// Registers actions and feedback handlers for the SIMPL ATC messenger
         /// </summary>
-        /// <param name="appServerController"></param>
         protected override void RegisterActions()
         {
             //EISC.SetStringSigAction(SCurrentDialString, s => PostStatusMessage(new { currentDialString = s }));
@@ -133,7 +139,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// 
+        /// Sends the current calls list to connected clients
         /// </summary>
         private void SendCallsList()
         {
@@ -145,9 +151,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// Turns the 
+        /// Gets the current call list based on the call status
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A list containing the current call item if connected, or an empty list if disconnected</returns>
         private List<CodecActiveCallItem> GetCurrentCallList()
         {
             return _currentCallItem.Status == eCodecCallStatus.Disconnected

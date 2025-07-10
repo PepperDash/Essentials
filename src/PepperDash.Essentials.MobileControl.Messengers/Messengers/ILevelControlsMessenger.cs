@@ -1,20 +1,31 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Messenger for devices that implement ILevelControls interface
+    /// </summary>
     public class ILevelControlsMessenger : MessengerBase
     {
         private ILevelControls levelControlsDevice;
+
+        /// <summary>
+        /// Initializes a new instance of the ILevelControlsMessenger class
+        /// </summary>
+        /// <param name="key">Unique identifier for the messenger</param>
+        /// <param name="messagePath">Path for message routing</param>
+        /// <param name="device">Device that implements ILevelControls</param>
         public ILevelControlsMessenger(string key, string messagePath, ILevelControls device) : base(key, messagePath, device as IKeyName)
         {
             levelControlsDevice = device;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();
@@ -74,17 +85,32 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// State message for level controls
+    /// </summary>
     public class LevelControlStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the level controls
+        /// </summary>
         [JsonProperty("levelControls")]
         public Dictionary<string, Volume> Levels { get; set; }
     }
 
+    /// <summary>
+    /// Request message for level control operations
+    /// </summary>
     public class LevelControlRequestMessage
     {
+        /// <summary>
+        /// Gets or sets the control key
+        /// </summary>
         [JsonProperty("key")]
         public string Key { get; set; }
 
+        /// <summary>
+        /// Gets or sets the level
+        /// </summary>
         [JsonProperty("level", NullValueHandling = NullValueHandling.Ignore)]
         public ushort? Level { get; set; }
     }

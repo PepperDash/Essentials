@@ -1,11 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Cameras;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Provides messaging capabilities for camera control operations.
+    /// Handles camera movement, zoom, preset management, and camera status reporting.
+    /// </summary>
     public class CameraBaseMessenger : MessengerBase
     {
         /// <summary>
@@ -45,6 +49,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             );
         }
 
+        /// <summary>
+        /// Registers actions for handling camera control operations.
+        /// Includes camera movement, zoom, preset management, and full status reporting.
+        /// </summary>
         protected override void RegisterActions()
         {
             base.RegisterActions();
