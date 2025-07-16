@@ -6,11 +6,14 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Messenger for a CameraBase device
+    /// </summary>
     public class CameraBaseMessenger : MessengerBase
     {
         /// <summary>
         /// Device being bridged
-        /// </summary>
+        /// </summary>  
         public CameraBase Camera { get; set; }
 
         /// <summary>
@@ -45,6 +48,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
             );
         }
 
+        /// <summary>
+        /// Registers the actions for this messenger.  This is called by the base class
+        /// </summary>
         protected override void RegisterActions()
         {
             base.RegisterActions();
