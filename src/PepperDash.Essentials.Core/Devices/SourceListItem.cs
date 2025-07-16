@@ -1,12 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Core;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// 
+    /// Defines the type of source list item, which can be a route, off, or other.
+    /// This is used to categorize the source list items in a room.
+    /// The type is serialized to JSON and can be used to determine how the item should be displayed or handled in the UI.
     /// </summary>
     public enum eSourceListItemType
     {
@@ -167,6 +169,12 @@ namespace PepperDash.Essentials.Core
         public bool DisableSimpleRouting { get; set; }
 
         /// <summary>
+        /// The key of the device that provides video sync for this source item        
+        /// </summary>
+        [JsonProperty("syncProviderDeviceKey")]
+        public string SyncProviderDeviceKey { get; set; }
+
+        /// <summary>
         /// Default constructor for SourceListItem, initializes the Icon to "Blank"
         /// </summary>
         public SourceListItem()
@@ -177,7 +185,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Returns a string representation of the SourceListItem, including the SourceKey and Name
         /// </summary>
-        /// <returns></returns>
+        /// <returns> A string representation of the SourceListItem</returns>
         public override string ToString()
         {
             return $"{SourceKey}:{Name}";
