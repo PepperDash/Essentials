@@ -1,4 +1,10 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
@@ -9,12 +15,6 @@ using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.RoomBridges;
 using PepperDash.Essentials.WebApiHandlers;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
 using WebSocketSharp;
 using WebSocketSharp.Net;
 using WebSocketSharp.Server;
@@ -60,7 +60,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private string lanIpAddress => CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter));
 
-        private System.Net.IPAddress csIpAddress;     
+        private System.Net.IPAddress csIpAddress;
 
         private System.Net.IPAddress csSubnetMask;
 
@@ -122,7 +122,7 @@ namespace PepperDash.Essentials.WebSocketServer
             _parent = parent;
 
             // Set the default port to be 50000 plus the slot number of the program
-            Port = 50000 + (int)Global.ControlSystem.ProgramNumber;            
+            Port = 50000 + (int)Global.ControlSystem.ProgramNumber;
 
             if (customPort != 0)
             {
@@ -156,9 +156,9 @@ namespace PepperDash.Essentials.WebSocketServer
             }
 
             try
-            {                
+            {
                 var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
-                var csSubnetMask = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, csAdapterId); 
+                var csSubnetMask = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, csAdapterId);
                 var csIpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
 
                 this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
@@ -298,8 +298,6 @@ namespace PepperDash.Essentials.WebSocketServer
 
             var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);
 
-            this.LogVerbose("Processor IP: {processorIp}", processorIp);
-
             foreach (var touchpanel in touchpanels.Select(tp =>
             {
                 var token = _secret.Tokens.FirstOrDefault((t) => t.Value.TouchpanelKey.Equals(tp.Key, StringComparison.InvariantCultureIgnoreCase));
@@ -321,11 +319,21 @@ namespace PepperDash.Essentials.WebSocketServer
                     continue;
                 }
 
-                var appUrl = $"http://{processorIp}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
+                var ip = touchpanel.Touchpanel.ConnectedIps.Any(ipInfo =>
+                {
+                    if (System.Net.IPAddress.TryParse(ipInfo.DeviceIpAddress, out var parsedIp))
+                    {
+                        return csIpAddress.IsInSameSubnet(parsedIp, csSubnetMask);
+                    }
+                    this.LogWarning("Invalid IP address: {deviceIpAddress}", ipInfo.DeviceIpAddress);
+                    return false;
+                }) ? csIpAddress.ToString() : processorIp;
+
+                var appUrl = $"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
 
                 this.LogVerbose("Sending URL {appUrl}", appUrl);
 
-                touchpanel.Messenger.UpdateAppUrl($"http://{processorIp}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}");
+                touchpanel.Messenger.UpdateAppUrl($"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}");
             }
         }
 
@@ -349,7 +357,7 @@ namespace PepperDash.Essentials.WebSocketServer
             if (!Directory.Exists($"{userAppPath}{localConfigFolderName}"))
             {
                 Directory.CreateDirectory($"{userAppPath}{localConfigFolderName}");
-            }            
+            }
 
             using (var sw = new StreamWriter(File.Open($"{userAppPath}{localConfigFolderName}{Global.DirectorySeparator}{appConfigFileName}", FileMode.Create, FileAccess.ReadWrite)))
             {
@@ -358,7 +366,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
                 this.LogDebug("LAN Adapter ID: {lanAdapterId}", lanAdapterId);
 
-                var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);                
+                var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);
 
                 var config = GetApplicationConfig(processorIp);
 
@@ -378,7 +386,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 return;
             }
 
-            if(csAdapterId == -1)
+            if (csAdapterId == -1)
             {
                 this.LogDebug("CS LAN Adapter not found");
                 return;
@@ -389,8 +397,8 @@ namespace PepperDash.Essentials.WebSocketServer
             using (var sw = new StreamWriter(File.Open($"{userAppPath}{localConfigFolderName}{Global.DirectorySeparator}{appConfigCsFileName}", FileMode.Create, FileAccess.ReadWrite)))
             {
                 // Write the CS application configuration file. Used when a request comes in for the application config from the CS
-                var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);             
-               
+                var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
                 var config = GetApplicationConfig(processorIp);
 
                 var contents = JsonConvert.SerializeObject(config, Formatting.Indented);
@@ -400,7 +408,7 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
         private MobileControlApplicationConfig GetApplicationConfig(string processorIp)
-        {      
+        {
             try
             {
                 var config = new MobileControlApplicationConfig
@@ -430,10 +438,10 @@ namespace PepperDash.Essentials.WebSocketServer
             }
             catch (Exception ex)
             {
-                this.LogError(ex, "Error getting application configuration");                
+                this.LogError(ex, "Error getting application configuration");
 
                 return null;
-            }            
+            }
         }
 
         /// <summary>
@@ -572,7 +580,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
             var values = s.Split(' ');
 
-            if(values.Length < 2)
+            if (values.Length < 2)
             {
                 CrestronConsole.ConsoleCommandResponse("Invalid number of arguments.  Please provide a room key and a grant code");
                 return;
