@@ -175,6 +175,13 @@ namespace PepperDash.Essentials.Core
         public string SyncProviderDeviceKey { get; set; }
 
         /// <summary>
+        /// Indicates if the source supports USB connections
+        /// </summary>
+        [JsonProperty("supportsUsb")]
+        public bool SupportsUsb { get; set; }
+
+
+        /// <summary>
         /// Default constructor for SourceListItem, initializes the Icon to "Blank"
         /// </summary>
         public SourceListItem()
