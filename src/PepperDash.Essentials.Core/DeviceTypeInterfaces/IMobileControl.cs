@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using Crestron.SimplSharpPro;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -33,11 +35,11 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         string SystemUuid { get; }
 
-        BoolFeedback ApiOnlineAndAuthorized { get;}
+        BoolFeedback ApiOnlineAndAuthorized { get; }
 
         void SendMessageObject(IMobileControlMessage o);
 
-        void AddAction<T>(T messenger, Action<string, string, JToken> action) where T:IMobileControlMessenger;
+        void AddAction<T>(T messenger, Action<string, string, JToken> action) where T : IMobileControlMessenger;
 
         void RemoveAction(string key);
 
@@ -45,14 +47,14 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         bool CheckForDeviceMessenger(string key);
 
-		IMobileControlRoomMessenger GetRoomMessenger(string key);
+        IMobileControlRoomMessenger GetRoomMessenger(string key);
 
-	}
+    }
 
     /// <summary>
     /// Describes a mobile control messenger
     /// </summary>
-    public interface IMobileControlMessenger: IKeyed
+    public interface IMobileControlMessenger : IKeyed
     {
         IMobileControl AppServerController { get; }
         string MessagePath { get; }
@@ -104,9 +106,9 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
     public interface IMobileControlAction
     {
-       IMobileControlMessenger Messenger { get; }
+        IMobileControlMessenger Messenger { get; }
 
-       Action<string,string, JToken> Action { get; }
+        Action<string, string, JToken> Action { get; }
     }
 
     public interface IMobileControlTouchpanelController : IKeyed
@@ -115,5 +117,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         void SetAppUrl(string url);
         bool UseDirectServer { get; }
         bool ZoomRoomController { get; }
+
+        ReadOnlyCollection<ConnectedIpInformation> ConnectedIps { get; }
     }
 }
