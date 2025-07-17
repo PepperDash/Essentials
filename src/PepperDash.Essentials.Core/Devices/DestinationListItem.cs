@@ -105,5 +105,12 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("isProgramAudioDestination")]
         public bool isProgramAudioDestination { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this destination supports USB connections.
+        /// This is used to determine if the destination can handle USB.
+        /// </summary>
+        [JsonProperty("supportsUsb")]
+        public bool SupportsUsb { get; set; }
     }
 }
