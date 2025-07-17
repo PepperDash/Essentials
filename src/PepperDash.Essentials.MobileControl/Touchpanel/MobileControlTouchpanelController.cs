@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.Touchpanel
     /// Mobile Control touchpanel controller that provides app control, Zoom integration, 
     /// and mobile control functionality for Crestron touchpanels.
     /// </summary>
-    public class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlTouchpanelController, ITheme
+    public class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlCrestronTouchpanelController, ITheme
     {
         private readonly MobileControlTouchpanelProperties localConfig;
         private IMobileControlRoomMessenger _bridge;

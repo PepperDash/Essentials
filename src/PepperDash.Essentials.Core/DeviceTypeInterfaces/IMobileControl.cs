@@ -111,13 +111,42 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         Action<string, string, JToken> Action { get; }
     }
 
+    /// <summary>
+    /// Describes a MobileControl Touchpanel Controller
+    /// </summary>
     public interface IMobileControlTouchpanelController : IKeyed
     {
+        /// <summary>
+        /// The default room key for the controller
+        /// </summary>
         string DefaultRoomKey { get; }
-        void SetAppUrl(string url);
-        bool UseDirectServer { get; }
-        bool ZoomRoomController { get; }
 
+        /// <summary>
+        /// Sets the application URL for the controller
+        /// </summary>
+        /// <param name="url">The application URL</param>
+        void SetAppUrl(string url);
+
+        /// <summary>
+        /// Indicates whether the controller uses a direct server connection
+        /// </summary>
+        bool UseDirectServer { get; }
+
+        /// <summary>
+        /// Indicates whether the controller is a Zoom Room controller
+        /// </summary>
+        bool ZoomRoomController { get; }
+    }
+
+    /// <summary>
+    /// Describes a MobileControl Crestron Touchpanel Controller
+    /// This interface extends the IMobileControlTouchpanelController to include connected IP information
+    /// </summary>
+    public interface IMobileControlCrestronTouchpanelController : IMobileControlTouchpanelController
+    {
+        /// <summary>
+        /// Gets a collection of connected IP information for the touchpanel controller
+        /// </summary>
         ReadOnlyCollection<ConnectedIpInformation> ConnectedIps { get; }
     }
 }
