@@ -319,15 +319,19 @@ namespace PepperDash.Essentials.WebSocketServer
                     continue;
                 }
 
-                var ip = touchpanel.Touchpanel.ConnectedIps.Any(ipInfo =>
+                string ip = processorIp;
+                if (touchpanel.Touchpanel is IMobileControlCrestronTouchpanelController crestronTouchpanel)
                 {
-                    if (System.Net.IPAddress.TryParse(ipInfo.DeviceIpAddress, out var parsedIp))
+                    ip = crestronTouchpanel.ConnectedIps.Any(ipInfo =>
                     {
-                        return csIpAddress.IsInSameSubnet(parsedIp, csSubnetMask);
-                    }
-                    this.LogWarning("Invalid IP address: {deviceIpAddress}", ipInfo.DeviceIpAddress);
-                    return false;
-                }) ? csIpAddress.ToString() : processorIp;
+                        if (System.Net.IPAddress.TryParse(ipInfo.DeviceIpAddress, out var parsedIp))
+                        {
+                            return csIpAddress.IsInSameSubnet(parsedIp, csSubnetMask);
+                        }
+                        this.LogWarning("Invalid IP address: {deviceIpAddress}", ipInfo.DeviceIpAddress);
+                        return false;
+                    }) ? csIpAddress.ToString() : processorIp;
+                }
 
                 var appUrl = $"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
 
