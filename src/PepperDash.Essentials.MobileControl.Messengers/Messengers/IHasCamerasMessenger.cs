@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="cameraController"></param>
         /// <param name="messagePath"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public IHasCamerasMessenger(string key, IHasCameras cameraController, string messagePath)
+        public IHasCamerasMessenger(string key, string messagePath , IHasCameras cameraController)
             : base(key, messagePath, cameraController)
         {
             CameraController = cameraController ?? throw new ArgumentNullException("cameraController");
