@@ -1,19 +1,34 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using Crestron.SimplSharp;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Static handler for managing press and hold button actions with automatic timeout functionality
+    /// </summary>
     public static class PressAndHoldHandler
     {
+        /// <summary>
+        /// The interval in milliseconds for button heartbeat timeout
+        /// </summary>
         private const long ButtonHeartbeatInterval = 1000;
 
+        /// <summary>
+        /// Dictionary of active timers for pressed actions, keyed by device key
+        /// </summary>
         private static readonly Dictionary<string, CTimer> _pushedActions = new Dictionary<string, CTimer>();
 
+        /// <summary>
+        /// Dictionary of action handlers for different button states
+        /// </summary>
         private static readonly Dictionary<string, Action<string, Action<bool>>> _pushedActionHandlers;
 
+        /// <summary>
+        /// Static constructor that initializes the action handlers for different button states
+        /// </summary>
         static PressAndHoldHandler()
         {
             _pushedActionHandlers = new Dictionary<string, Action<string, Action<bool>>>
@@ -24,6 +39,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             };
         }
 
+        /// <summary>
+        /// Adds a timer for a device key and executes the action with true state
+        /// </summary>
+        /// <param name="deviceKey">The unique key for the device</param>
+        /// <param name="action">The action to execute with boolean state</param>
         private static void AddTimer(string deviceKey, Action<bool> action)
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Attempting to add timer for {deviceKey}", deviceKey);
@@ -50,6 +70,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _pushedActions.Add(deviceKey, cancelTimer);
         }
 
+        /// <summary>
+        /// Resets an existing timer for the specified device key
+        /// </summary>
+        /// <param name="deviceKey">The unique key for the device</param>
+        /// <param name="action">The action associated with the timer</param>
         private static void ResetTimer(string deviceKey, Action<bool> action)
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Attempting to reset timer for {deviceKey}", deviceKey);
@@ -65,6 +90,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             cancelTimer.Reset(ButtonHeartbeatInterval);
         }
 
+        /// <summary>
+        /// Stops and removes the timer for the specified device key
+        /// </summary>
+        /// <param name="deviceKey">The unique key for the device</param>
+        /// <param name="action">The action to execute with false state before stopping</param>
         private static void StopTimer(string deviceKey, Action<bool> action)
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Attempting to stop timer for {deviceKey}", deviceKey);
@@ -82,6 +112,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _pushedActions.Remove(deviceKey);
         }
 
+        /// <summary>
+        /// Gets the appropriate press and hold handler for the specified value
+        /// </summary>
+        /// <param name="value">The button state value (pressed, held, released)</param>
+        /// <returns>The handler action for the specified state, or null if not found</returns>
         public static Action<string, Action<bool>> GetPressAndHoldHandler(string value)
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Getting press and hold handler for {value}", value);
@@ -97,6 +132,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             return handler;
         }
 
+        /// <summary>
+        /// Handles press and hold messages by parsing the content and executing the appropriate handler
+        /// </summary>
+        /// <param name="deviceKey">The unique key for the device</param>
+        /// <param name="content">The JSON content containing the button state</param>
+        /// <param name="action">The action to execute with boolean state</param>
         public static void HandlePressAndHold(string deviceKey, JToken content, Action<bool> action)
         {
             var msg = content.ToObject<MobileControlSimpleContent<string>>();

@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.RoomBridges;
 using Serilog.Events;
-using System;
-using System.Text.RegularExpressions;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 using ErrorEventArgs = WebSocketSharp.ErrorEventArgs;
@@ -22,7 +22,10 @@ namespace PepperDash.Essentials.WebSocketServer
 
         public string RoomKey { get; set; }
 
-        private string _clientId;
+        public string ClientId
+        {
+            get; private set;
+        }
 
         private DateTime _connectionTime;
 
@@ -41,9 +44,9 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
-        public UiClient()
+        public UiClient(string clientId)
         {
-
+            ClientId = clientId;
         }
 
         protected override void OnOpen()
@@ -61,8 +64,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 return;
             }
 
-            var clientId = match.Groups[1].Value;
-            _clientId = clientId;
+            var clientId = ClientId;
 
             if (Controller == null)
             {
@@ -96,7 +98,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private void Bridge_UserCodeChanged(object sender, EventArgs e)
         {
-            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, _clientId);
+            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, ClientId);
         }
 
         private void SendUserCodeToClient(MobileControlBridgeBase bridge, string clientId)

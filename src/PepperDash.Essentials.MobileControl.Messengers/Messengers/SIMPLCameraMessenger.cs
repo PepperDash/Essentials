@@ -1,14 +1,18 @@
-﻿using Crestron.SimplSharpPro.DeviceSupport;
+﻿using System;
+using System.Collections.Generic;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Devices.Common.Cameras;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Provides messaging capabilities for camera control operations in SIMPL-based systems.
+    /// Handles camera movement, zoom, preset management, and mode control.
+    /// </summary>
     // ReSharper disable once InconsistentNaming
     public class SIMPLCameraMessenger : MessengerBase
     {
@@ -16,7 +20,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private readonly CameraControllerJoinMap _joinMap;
 
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SIMPLCameraMessenger"/> class.
+        /// </summary>
+        /// <param name="key">The unique identifier for this messenger instance.</param>
+        /// <param name="eisc">The basic tri-list for SIMPL communication.</param>
+        /// <param name="messagePath">The message path for camera control messages.</param>
+        /// <param name="joinStart">The starting join number for SIMPL signal mapping.</param>
         public SIMPLCameraMessenger(string key, BasicTriList eisc, string messagePath, uint joinStart)
             : base(key, messagePath)
         {
@@ -32,6 +42,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
 
+        /// <summary>
+        /// Registers actions for handling camera control operations.
+        /// Includes camera movement, zoom, preset management, and mode control actions.
+        /// </summary>
         protected override void RegisterActions()
         {
             AddAction("/fullStatus", (id, content) => SendCameraFullMessageObject());

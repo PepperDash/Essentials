@@ -5,16 +5,26 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Messenger for the shutdown prompt timer
+    /// </summary>
     public class IShutdownPromptTimerMessenger : MessengerBase
     {
         private readonly IShutdownPromptTimer _room;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IShutdownPromptTimerMessenger"/> class.
+        /// </summary>
+        /// <param name="key">Unique identifier for the messenger</param>
+        /// <param name="messagePath">Path for message routing</param>
+        /// <param name="room">Room that implements IShutdownPromptTimer</param>
         public IShutdownPromptTimerMessenger(string key, string messagePath, IShutdownPromptTimer room)
             : base(key, messagePath, room as IKeyName)
         {
             _room = room;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             AddAction("/status", (id, content) =>
@@ -65,7 +75,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             };
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var status = new IShutdownPromptTimerStateMessage
             {
@@ -74,7 +84,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 PercentageRemaining = _room.ShutdownPromptTimer.PercentFeedback.UShortValue
             };
 
-            PostStatusMessage(status);
+            PostStatusMessage(status, id);
         }
     }
 

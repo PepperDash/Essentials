@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/raise", (id, content) =>
             {
@@ -50,7 +50,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostStatusMessage(JToken.FromObject(state));
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var state = new ScreenLiftStateMessage
             {
@@ -59,7 +59,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 DisplayDeviceKey = device.DisplayDeviceKey
             };
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, id);
         }
     }
 
