@@ -14,13 +14,13 @@ namespace PepperDash.Essentials.Core.Routing
   {
     /// <summary>
     /// Gets the current sources for the room, keyed by eRoutingSignalType.
-    /// This dictionary contains the current source for each signal type, such as audio, video,
+    /// This dictionary contains the current source for each signal type, such as audio, video, and control signals.
     /// </summary>
     Dictionary<eRoutingSignalType, SourceListItem> CurrentSources { get; }
 
     /// <summary>
     /// Gets the current source keys for the room, keyed by eRoutingSignalType.
-    /// This dictionary contains the keys for the current source for each signal type, such as audio,
+    /// This dictionary contains the keys for the current source for each signal type, such as audio, video, and control signals.
     /// </summary>
     Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; }
 
