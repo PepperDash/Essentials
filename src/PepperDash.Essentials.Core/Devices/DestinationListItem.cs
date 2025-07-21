@@ -108,7 +108,8 @@ namespace PepperDash.Essentials.Core
 
         /// <summary>
         /// Gets or sets a value indicating whether this destination supports USB connections.
-        /// This is used to determine if the destination can handle USB.
+        /// Indicates if the destination can handle USB functionality, such as USB signal routing or device connections.
+        /// This property is used to determine compatibility with USB-based devices or systems.
         /// </summary>
         [JsonProperty("supportsUsb")]
         public bool SupportsUsb { get; set; }
