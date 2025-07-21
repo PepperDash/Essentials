@@ -4,8 +4,8 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
 
   /// <summary>
-  /// Interface for devices that provide audio meter feedback.
-  /// This interface is used to standardize access to meter feedback across different devices.
+  /// Interface for devices that provide state feedback.
+  /// This interface is used to standardize access to state feedback across different devices.
   /// </summary>
   public interface IStateFeedback
   {
