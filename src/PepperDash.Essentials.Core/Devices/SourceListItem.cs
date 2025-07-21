@@ -169,7 +169,7 @@ namespace PepperDash.Essentials.Core
         public bool DisableSimpleRouting { get; set; }
 
         /// <summary>
-        /// The key of the device that provides video sync for this source item        
+        /// The key of the device that provides video sync for this source item
         /// </summary>
         [JsonProperty("syncProviderDeviceKey")]
         public string SyncProviderDeviceKey { get; set; }
