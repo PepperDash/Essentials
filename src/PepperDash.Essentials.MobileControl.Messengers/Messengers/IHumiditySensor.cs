@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -19,19 +19,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
             device.HumidityFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>((o, a) => SendFullStatus());
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var state = new IHumiditySensorStateMessage
             {
                 Humidity = string.Format("{0}%", device.HumidityFeedback.UShortValue)
             };
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, id);
         }
     }
 

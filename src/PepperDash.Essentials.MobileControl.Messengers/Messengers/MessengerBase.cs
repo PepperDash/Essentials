@@ -1,41 +1,57 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     /// <summary>
-    /// Provides a messaging bridge
+    /// Provides a messaging bridge between mobile control clients and Essentials devices.
+    /// This abstract base class handles message routing, action registration, and status updates.
     /// </summary>
     public abstract class MessengerBase : EssentialsDevice, IMobileControlMessenger
     {
+        /// <summary>
+        /// The device that this messenger is associated with
+        /// </summary>
         protected IKeyName _device;
 
+        /// <summary>
+        /// List of interfaces implemented by the associated device
+        /// </summary>
         private readonly List<string> _deviceInterfaces;
 
+        /// <summary>
+        /// Dictionary of registered actions, keyed by path
+        /// </summary>
         private readonly Dictionary<string, Action<string, JToken>> _actions = new Dictionary<string, Action<string, JToken>>();
 
+        /// <summary>
+        /// Gets the key of the associated device
+        /// </summary>
         public string DeviceKey => _device?.Key ?? "";
 
         /// <summary>
-        /// 
+        /// Gets the mobile control app server controller
         /// </summary>
-
         public IMobileControl AppServerController { get; private set; }
 
+        /// <summary>
+        /// Gets the message path for this messenger
+        /// </summary>
         public string MessagePath { get; private set; }
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the MessengerBase class
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="messagePath"></param>
+        /// <param name="key">The unique key for this messenger</param>
+        /// <param name="messagePath">The message path for routing messages</param>
+        /// <exception cref="ArgumentException">Thrown when messagePath is null or empty</exception>
         protected MessengerBase(string key, string messagePath)
             : base(key)
         {
@@ -47,6 +63,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             MessagePath = messagePath;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the MessengerBase class with an associated device
+        /// </summary>
+        /// <param name="key">The unique key for this messenger</param>
+        /// <param name="messagePath">The message path for routing messages</param>
+        /// <param name="device">The device to associate with this messenger</param>
         protected MessengerBase(string key, string messagePath, IKeyName device)
             : this(key, messagePath)
         {
@@ -56,7 +78,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// Gets the interfaces implmented on the device
+        /// Gets the interfaces implented on the device
         /// </summary>
         /// <param name="device"></param>
         /// <returns></returns>
@@ -93,6 +115,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             action(id, content);
         }
 
+        /// <summary>
+        /// Adds an action to be executed when a message is received at the specified path
+        /// </summary>
+        /// <param name="path">The path to register the action for</param>
+        /// <param name="action">The action to execute when the path is matched</param>
         protected void AddAction(string path, Action<string, JToken> action)
         {
             if (_actions.ContainsKey(path))
@@ -104,11 +131,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _actions.Add(path, action);
         }
 
+        /// <summary>
+        /// Gets a list of all registered action paths
+        /// </summary>
+        /// <returns>A list of action paths</returns>
         public List<string> GetActionPaths()
         {
             return _actions.Keys.ToList();
         }
 
+        /// <summary>
+        /// Removes an action from the specified path
+        /// </summary>
+        /// <param name="path">The path to remove the action from</param>
         protected void RemoveAction(string path)
         {
             if (!_actions.ContainsKey(path))
@@ -122,7 +157,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Implemented in extending classes. Wire up API calls and feedback here
         /// </summary>
-        /// <param name="appServerController"></param>
         protected virtual void RegisterActions()
         {
 
@@ -131,8 +165,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Helper for posting status message
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="message"></param>
+        /// <param name="message">The device state message to post</param>
+        /// <param name="clientId">Optional client ID to send the message to a specific client</param>
         protected void PostStatusMessage(DeviceStateMessageBase message, string clientId = null)
         {
             try
@@ -153,16 +187,22 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 message.Name = _device.Name;
 
-                var token = JToken.FromObject(message);                
-                
+                var token = JToken.FromObject(message);
+
                 PostStatusMessage(token, MessagePath, clientId);
             }
             catch (Exception ex)
             {
-                this.LogError(ex, "Exception posting status message for {messagePath} to {clientId}", MessagePath, clientId ?? "all clients");                
+                this.LogError(ex, "Exception posting status message for {messagePath} to {clientId}", MessagePath, clientId ?? "all clients");
             }
         }
 
+        /// <summary>
+        /// Posts a status message with a specific message type
+        /// </summary>
+        /// <param name="type">The message type to send</param>
+        /// <param name="deviceState">The device state message to post</param>
+        /// <param name="clientId">Optional client ID to send the message to a specific client</param>
         protected void PostStatusMessage(string type, DeviceStateMessageBase deviceState, string clientId = null)
         {
             try
@@ -182,10 +222,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception ex)
             {
-                this.LogError(ex, "Exception posting status message for {type} to {clientId}", type, clientId ?? "all clients");                
+                this.LogError(ex, "Exception posting status message for {type} to {clientId}", type, clientId ?? "all clients");
             }
         }
 
+        /// <summary>
+        /// Posts a status message with JSON content
+        /// </summary>
+        /// <param name="content">The JSON content to send</param>
+        /// <param name="type">The message type (defaults to MessagePath if empty)</param>
+        /// <param name="clientId">Optional client ID to send the message to a specific client</param>
         protected void PostStatusMessage(JToken content, string type = "", string clientId = null)
         {
             try
@@ -198,6 +244,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
+        /// <summary>
+        /// Posts an event message for the device
+        /// </summary>
+        /// <param name="message">The device event message to post</param>
         protected void PostEventMessage(DeviceEventMessageBase message)
         {
             message.Key = _device.Key;
@@ -211,6 +261,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             });
         }
 
+        /// <summary>
+        /// Posts an event message with a specific event type
+        /// </summary>
+        /// <param name="message">The device event message to post</param>
+        /// <param name="eventType">The event type to use</param>
         protected void PostEventMessage(DeviceEventMessageBase message, string eventType)
         {
             message.Key = _device.Key;
@@ -226,6 +281,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             });
         }
 
+        /// <summary>
+        /// Posts an event message with only an event type
+        /// </summary>
+        /// <param name="eventType">The event type to post</param>
         protected void PostEventMessage(string eventType)
         {
             AppServerController?.SendMessageObject(new MobileControlMessage
@@ -237,6 +296,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
     }
 
+    /// <summary>
+    /// Base class for device messages containing common properties like key, name, and message type
+    /// </summary>
     public abstract class DeviceMessageBase
     {
         /// <summary>
@@ -257,21 +319,28 @@ namespace PepperDash.Essentials.AppServer.Messengers
         [JsonProperty("messageType")]
         public string MessageType => GetType().Name;
 
+        /// <summary>
+        /// Gets or sets the base path for the message
+        /// </summary>
         [JsonProperty("messageBasePath")]
         public string MessageBasePath { get; set; }
     }
 
     /// <summary>
-    /// Base class for state messages that includes the type of message and the implmented interfaces
+    /// Base class for state messages that includes the type of message and the implemented interfaces
     /// </summary>
     public class DeviceStateMessageBase : DeviceMessageBase
     {
         /// <summary>
-        /// The interfaces implmented by the device sending the messsage
+        /// The interfaces implented by the device sending the messsage
         /// </summary>
         [JsonProperty("interfaces")]
         public List<string> Interfaces { get; private set; }
 
+        /// <summary>
+        /// Sets the interfaces implemented by the device
+        /// </summary>
+        /// <param name="interfaces">List of interface names to set</param>
         public void SetInterfaces(List<string> interfaces)
         {
             Interfaces = interfaces;

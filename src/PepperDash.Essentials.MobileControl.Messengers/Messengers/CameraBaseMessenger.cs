@@ -1,11 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Cameras;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Provides messaging capabilities for camera control operations.
+    /// Handles camera movement, zoom, preset management, and camera status reporting.
+    /// </summary>
     public class CameraBaseMessenger : MessengerBase
     {
         /// <summary>
@@ -45,11 +49,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
             );
         }
 
+        /// <summary>
+        /// Registers actions for handling camera control operations.
+        /// Includes camera movement, zoom, preset management, and full status reporting.
+        /// </summary>
         protected override void RegisterActions()
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendCameraFullMessageObject());
+            AddAction("/fullStatus", (id, content) => SendCameraFullMessageObject(id));
 
 
             if (Camera is IHasCameraPtzControl ptzCamera)
@@ -166,7 +174,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Helper method to update the full status of the camera
         /// </summary>
-        private void SendCameraFullMessageObject()
+        private void SendCameraFullMessageObject(string id = null)
         {
             var presetList = new List<CameraPreset>();
 
@@ -181,7 +189,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 cameraMode = GetCameraMode(),
                 hasPresets = Camera is IHasCameraPresets,
                 presets = presetList
-            })
+            }), clientId: id
             );
         }
 

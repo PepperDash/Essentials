@@ -4,14 +4,28 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Messenger that provides mobile control interface for devices with numeric keypad functionality
+    /// </summary>
     public class INumericKeypadMessenger : MessengerBase
     {
+        /// <summary>
+        /// The numeric keypad device this messenger is associated with
+        /// </summary>
         private readonly INumericKeypad keypadDevice;
+
+        /// <summary>
+        /// Initializes a new instance of the INumericKeypadMessenger class
+        /// </summary>
+        /// <param name="key">The unique key for this messenger</param>
+        /// <param name="messagePath">The message path for routing numeric keypad messages</param>
+        /// <param name="device">The device that implements numeric keypad functionality</param>
         public INumericKeypadMessenger(string key, string messagePath, INumericKeypad device) : base(key, messagePath, device as IKeyName)
         {
             keypadDevice = device;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();
