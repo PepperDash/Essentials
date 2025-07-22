@@ -24,6 +24,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="joinMapKey"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetSerializedJoinMapForDevice method
+        /// </summary>
         public static string GetSerializedJoinMapForDevice(string joinMapKey)
         {
             if (string.IsNullOrEmpty(joinMapKey))
@@ -39,6 +42,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="joinMapKey"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetJoinMapForDevice method
+        /// </summary>
         public static string GetJoinMapForDevice(string joinMapKey)
         {
             return GetSerializedJoinMapForDevice(joinMapKey);
@@ -143,7 +149,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Prints the join information to console
+        /// PrintJoinMapInfo method
         /// </summary>
         public void PrintJoinMapInfo()
         {
@@ -195,7 +201,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Prints the join information to console
+        /// MarkdownJoinMapInfo method
         /// </summary>
         public void MarkdownJoinMapInfo(string deviceKey, string bridgeKey)
         {
@@ -273,6 +279,9 @@ namespace PepperDash.Essentials.Core
         /// Attempts to find the matching key for the custom join and if found overwrites the default JoinData with the custom
         /// </summary>
         /// <param name="joinData"></param>
+        /// <summary>
+        /// SetCustomJoinData method
+        /// </summary>
         public void SetCustomJoinData(Dictionary<string, JoinData> joinData)
         {
             foreach (var customJoinData in joinData)
@@ -333,6 +342,9 @@ namespace PepperDash.Essentials.Core
     }
 
     [Flags]
+    /// <summary>
+    /// Enumeration of eJoinType values
+    /// </summary>
     public enum eJoinType
     {
         None = 0,
@@ -346,7 +358,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Metadata describing the join
+    /// Represents a JoinMetadata
     /// </summary>
     public class JoinMetadata
     {
@@ -360,16 +372,25 @@ namespace PepperDash.Essentials.Core
         /// Signal type(s)
         /// </summary>
         [JsonProperty("joinType")]
+        /// <summary>
+        /// Gets or sets the JoinType
+        /// </summary>
         public eJoinType JoinType { get; set; }
         /// <summary>
         /// Indicates whether the join is read and/or write
         /// </summary>
         [JsonProperty("joinCapabilities")]
+        /// <summary>
+        /// Gets or sets the JoinCapabilities
+        /// </summary>
         public eJoinCapabilities JoinCapabilities { get; set; }
         /// <summary>
         /// Indicates a set of valid values (particularly if this translates to an enum
         /// </summary>
         [JsonProperty("validValues")]
+        /// <summary>
+        /// Gets or sets the ValidValues
+        /// </summary>
         public string[] ValidValues { get; set; }
 
     }
@@ -393,6 +414,9 @@ namespace PepperDash.Essentials.Core
         /// Fusion Attribute Name (optional)
         /// </summary>
         [JsonProperty("attributeName")]
+        /// <summary>
+        /// Gets or sets the AttributeName
+        /// </summary>
         public string AttributeName { get; set; }
     }
 
@@ -478,6 +502,9 @@ namespace PepperDash.Essentials.Core
         /// Sets the join offset value
         /// </summary>
         /// <param name="joinOffset"></param>
+        /// <summary>
+        /// SetJoinOffset method
+        /// </summary>
         public void SetJoinOffset(uint joinOffset)
         {
             _joinOffset = joinOffset;
@@ -502,11 +529,17 @@ namespace PepperDash.Essentials.Core
             get { return _data.AttributeName; }
         }
 
+        /// <summary>
+        /// SetCustomJoinData method
+        /// </summary>
         public void SetCustomJoinData(JoinData customJoinData)
         {
             _data = customJoinData;
         }
 
+        /// <summary>
+        /// GetNameAttribute method
+        /// </summary>
         public string GetNameAttribute(MemberInfo memberInfo)
         {
             var name = string.Empty;
@@ -523,6 +556,9 @@ namespace PepperDash.Essentials.Core
     
 
     [AttributeUsage(AttributeTargets.All)]
+    /// <summary>
+    /// Represents a JoinNameAttribute
+    /// </summary>
     public class JoinNameAttribute : Attribute
     {
         private string _Name;

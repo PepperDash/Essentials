@@ -33,6 +33,9 @@ namespace PepperDash.Essentials.Core.Config
         public Dictionary<string, Dictionary<string, CameraListItem>> CameraLists { get; set; }
 
         [JsonProperty("tieLines")]
+  /// <summary>
+  /// Gets or sets the TieLines
+  /// </summary>
 		public List<TieLineConfig> TieLines { get; set; }
 
         [JsonProperty("joinMaps")]
@@ -81,6 +84,9 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         /// <param name="key">key of the list to retrieve</param>
         /// <returns>AudioControlPointList if the key exists, null otherwise</returns>
+        /// <summary>
+        /// GetAudioControlPointListForKey method
+        /// </summary>
         public AudioControlPointListItem GetAudioControlPointListForKey(string key)
         {
             if (AudioControlPointLists == null ||  string.IsNullOrEmpty(key) || !AudioControlPointLists.ContainsKey(key))
@@ -105,6 +111,9 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         /// <param name="key">Key of desired device</param>
         /// <returns></returns>
+        /// <summary>
+        /// GetDeviceForKey method
+        /// </summary>
         public DeviceConfig GetDeviceForKey(string key)
         {
             if (string.IsNullOrEmpty(key))

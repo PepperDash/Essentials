@@ -7,19 +7,34 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Sources
 {
+ /// <summary>
+ /// Represents a InRoomPc
+ /// </summary>
 	public class InRoomPc : EssentialsDevice, IHasFeedback, IRoutingSource, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
+  /// <summary>
+  /// Gets or sets the DisplayUiType
+  /// </summary>
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
+  /// <summary>
+  /// Gets or sets the IconName
+  /// </summary>
 		public string IconName { get; set; }
+  /// <summary>
+  /// Gets or sets the HasPowerOnFeedback
+  /// </summary>
 		public BoolFeedback HasPowerOnFeedback { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the AnyVideoOut
+  /// </summary>
 		public RoutingOutputPort AnyVideoOut { get; private set; }
 
 		#region IRoutingOutputs Members
 
-		/// <summary>
-		/// Options: hdmi
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the OutputPorts
+  /// </summary>
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
 		#endregion
@@ -54,11 +69,17 @@ namespace PepperDash.Essentials.Devices.Common.Sources
 
         #region IUsageTracking Members
 
+        /// <summary>
+        /// Gets or sets the UsageTracker
+        /// </summary>
         public UsageTracking UsageTracker { get; set; }
 
         #endregion
 	}
 
+    /// <summary>
+    /// Represents a InRoomPcFactory
+    /// </summary>
     public class InRoomPcFactory : EssentialsDeviceFactory<InRoomPc>
     {
         public InRoomPcFactory()
@@ -66,6 +87,10 @@ namespace PepperDash.Essentials.Devices.Common.Sources
             TypeNames = new List<string>() { "inroompc" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new InRoomPc Device");

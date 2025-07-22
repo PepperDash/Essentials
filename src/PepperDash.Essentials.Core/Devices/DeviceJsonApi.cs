@@ -11,12 +11,18 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a DeviceJsonApi
+    /// </summary>
     public class DeviceJsonApi
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="json"></param>
+        /// <summary>
+        /// DoDeviceActionWithJson method
+        /// </summary>
         public static void DoDeviceActionWithJson(string json)
         {
             if (String.IsNullOrEmpty(json))
@@ -43,6 +49,9 @@ namespace PepperDash.Essentials.Core
         /// 
         /// </summary>
         /// <param name="action"></param>
+        /// <summary>
+        /// DoDeviceAction method
+        /// </summary>
         public static void DoDeviceAction(DeviceActionWrapper action)
         {
             var key = action.DeviceKey;
@@ -187,6 +196,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetProperties method
+        /// </summary>
         public static string GetProperties(string deviceObjectPath)
         {
             var obj = FindObjectOnPath(deviceObjectPath);
@@ -205,6 +217,9 @@ namespace PepperDash.Essentials.Core
         /// <param name="deviceObjectPath"></param>
         /// <param name="propertyName"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetPropertyByName method
+        /// </summary>
         public static object GetPropertyByName(string deviceObjectPath, string propertyName)
         {
             var dev = FindObjectOnPath(deviceObjectPath);
@@ -230,6 +245,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetMethods method
+        /// </summary>
         public static string GetMethods(string deviceObjectPath)
         {
             var obj = FindObjectOnPath(deviceObjectPath);
@@ -244,6 +262,9 @@ namespace PepperDash.Essentials.Core
             return JsonConvert.SerializeObject(methods, Formatting.Indented);
         }
 
+        /// <summary>
+        /// GetApiMethods method
+        /// </summary>
         public static string GetApiMethods(string deviceObjectPath)
         {
             var obj = FindObjectOnPath(deviceObjectPath);
@@ -261,8 +282,7 @@ namespace PepperDash.Essentials.Core
 
 
         /// <summary>
-        ///  Walks down a dotted object path, starting with a Device, and returns the object
-        ///  at the end of the path
+        /// FindObjectOnPath method
         /// </summary>
         public static object FindObjectOnPath(string deviceObjectPath)
         {
@@ -351,6 +371,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="deviceObjectPath"></param>
         /// <returns></returns>
+        /// <summary>
+        /// SetProperty method
+        /// </summary>
         public static string SetProperty(string deviceObjectPath)
         {
             throw new NotImplementedException("This could be really useful. Finish it please");
@@ -373,17 +396,35 @@ namespace PepperDash.Essentials.Core
     public class DeviceActionWrapper
     {
         public string DeviceKey { get; set; }
+        /// <summary>
+        /// Gets or sets the MethodName
+        /// </summary>
         public string MethodName { get; set; }
+        /// <summary>
+        /// Gets or sets the Params
+        /// </summary>
         public object[] Params { get; set; }
     }
 
+    /// <summary>
+    /// Represents a PropertyNameType
+    /// </summary>
     public class PropertyNameType
     {
         private object Parent;
 
         [JsonIgnore]
+        /// <summary>
+        /// Gets or sets the PropInfo
+        /// </summary>
         public PropertyInfo PropInfo { get; private set; }
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get { return PropInfo.Name; } }
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public string Type { get { return PropInfo.PropertyType.Name; } }
         public string Value
         {
@@ -405,7 +446,13 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the CanRead
+        /// </summary>
         public bool CanRead { get { return PropInfo.CanRead; } }
+        /// <summary>
+        /// Gets or sets the CanWrite
+        /// </summary>
         public bool CanWrite { get { return PropInfo.CanWrite; } }
 
 
@@ -416,11 +463,20 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Represents a MethodNameParams
+    /// </summary>
     public class MethodNameParams
     {
         [JsonIgnore]
+        /// <summary>
+        /// Gets or sets the MethodInfo
+        /// </summary>
         public MethodInfo MethodInfo { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get { return MethodInfo.Name; } }
         public IEnumerable<NameType> Params
         {
@@ -437,13 +493,25 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Represents a NameType
+    /// </summary>
     public class NameType
     {
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public string Type { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.All)]
+    /// <summary>
+    /// Represents a ApiAttribute
+    /// </summary>
     public class ApiAttribute : Attribute
     {
 

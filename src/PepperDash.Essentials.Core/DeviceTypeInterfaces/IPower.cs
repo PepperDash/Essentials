@@ -37,6 +37,9 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public static class IHasPowerControlExtensions
 	{
+        /// <summary>
+        /// LinkButtons method
+        /// </summary>
         public static void LinkButtons(this IHasPowerControl dev, BasicTriList triList)
 		{
 			triList.SetSigFalseAction(101, dev.PowerOn);
@@ -50,6 +53,9 @@ namespace PepperDash.Essentials.Core
             }
 		}
 
+        /// <summary>
+        /// UnlinkButtons method
+        /// </summary>
         public static void UnlinkButtons(this IHasPowerControl dev, BasicTriList triList)
 		{
 			triList.ClearBoolSigAction(101);

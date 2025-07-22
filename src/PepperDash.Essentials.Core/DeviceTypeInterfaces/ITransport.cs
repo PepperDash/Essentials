@@ -2,9 +2,9 @@
 
 namespace PepperDash.Essentials.Core
 {
-	/// <summary>
-	/// 
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for ITransport
+ /// </summary>
 	public interface ITransport
 	{
 		void Play(bool pressRelease);
@@ -38,6 +38,9 @@ namespace PepperDash.Essentials.Core
 			triList.SetBoolSigAction(154, dev.Record);
 		}
 
+  /// <summary>
+  /// UnlinkButtons method
+  /// </summary>
 		public static void UnlinkButtons(this ITransport dev, BasicTriList triList)
 		{
 			triList.ClearBoolSigAction(145);

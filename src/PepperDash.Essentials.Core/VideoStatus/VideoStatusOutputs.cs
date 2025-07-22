@@ -30,20 +30,26 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-	/// <summary>
-	/// Wraps up the common video statuses exposed on a video input port
-	/// </summary>
+ /// <summary>
+ /// Represents a VideoStatusOutputs
+ /// </summary>
 	public class VideoStatusOutputs
 	{
+  /// <summary>
+  /// Gets or sets the HasVideoStatusFeedback
+  /// </summary>
 		public BoolFeedback HasVideoStatusFeedback { get; private set; }
+  /// <summary>
+  /// Gets or sets the HdcpActiveFeedback
+  /// </summary>
 		public BoolFeedback HdcpActiveFeedback { get; private set; }
 		public StringFeedback HdcpStateFeedback { get; private set; }
 		public StringFeedback VideoResolutionFeedback { get; private set; }
 		public BoolFeedback VideoSyncFeedback { get; private set; }
 
-		/// <summary>
-		/// Gets the default, empty status group.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the NoStatus
+  /// </summary>
 		public static VideoStatusOutputs NoStatus { get { return _Default; } }
 		static VideoStatusOutputs _Default = new VideoStatusOutputs(new VideoStatusFuncsWrapper
 			{
@@ -60,6 +66,9 @@ namespace PepperDash.Essentials.Core
 			VideoSyncFeedback = new BoolFeedback("VideoSyncFeedback", funcs.VideoSyncFeedbackFunc);
 		}
 
+  /// <summary>
+  /// FireAll method
+  /// </summary>
 		public void FireAll()
 		{
 			HasVideoStatusFeedback.FireUpdate();
@@ -69,6 +78,9 @@ namespace PepperDash.Essentials.Core
 			VideoSyncFeedback.FireUpdate();
 		}
 
+  /// <summary>
+  /// ToList method
+  /// </summary>
 		public List<Feedback> ToList()
 		{
 			return new List<Feedback>

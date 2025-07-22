@@ -25,9 +25,6 @@ namespace PepperDash.Core.WebApi.Presets
         /// </summary>
 		public event EventHandler<PresetReceivedEventArgs> PresetReceived;
 
-        /// <summary>
-        /// Unique identifier for this instance
-        /// </summary>
   /// <summary>
   /// Gets or sets the Key
   /// </summary>

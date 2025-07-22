@@ -5,9 +5,6 @@ using Serilog.Events;
 namespace PepperDash.Core
 {
 	//*********************************************************************************************************
-	/// <summary>
-	/// The core event and status-bearing class that most if not all device and connectors can derive from.
-	/// </summary>
  /// <summary>
  /// Represents a Device
  /// </summary>
@@ -18,9 +15,6 @@ namespace PepperDash.Core
 		/// Unique Key
 		/// </summary>
 		public string Key { get; protected set; }
-		/// <summary>
-		/// Name of the devie
-		/// </summary>
   /// <summary>
   /// Gets or sets the Name
   /// </summary>
@@ -102,9 +96,6 @@ namespace PepperDash.Core
 			_PostActivationActions.Add(act);
 		}
 
-		/// <summary>
-		/// Executes the preactivation actions
-		/// </summary>
   /// <summary>
   /// PreActivate method
   /// </summary>
@@ -124,11 +115,6 @@ namespace PepperDash.Core
 				});
 		}
 
-		/// <summary>
-		/// Gets this device ready to be used in the system. Runs any added pre-activation items, and
-		/// all post-activation at end. Classes needing additional logic to 
-		/// run should override CustomActivate()
-		/// </summary>
   /// <summary>
   /// Activate method
   /// </summary>
@@ -142,9 +128,6 @@ namespace PepperDash.Core
 			return result;
 		}
 
-		/// <summary>
-		/// Executes the postactivation actions
-		/// </summary>
   /// <summary>
   /// PostActivate method
   /// </summary>

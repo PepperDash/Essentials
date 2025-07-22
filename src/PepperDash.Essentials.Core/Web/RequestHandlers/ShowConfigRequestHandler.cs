@@ -5,6 +5,9 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+ /// <summary>
+ /// Represents a ShowConfigRequestHandler
+ /// </summary>
 	public class ShowConfigRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

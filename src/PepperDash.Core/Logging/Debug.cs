@@ -78,16 +78,10 @@ namespace PepperDash.Core
         public static string FileName = string.Format(@"app{0}Debug.json", InitialParametersClass.ApplicationNumber);
 
         /// <summary>
-        /// Debug level to set for a given program.
-        /// </summary>
-        /// <summary>
         /// Gets or sets the Level
         /// </summary>
         public static int Level { get; private set; }
 
-        /// <summary>
-        /// When this is true, the configuration file will NOT be loaded until triggered by either a console command or a signal
-        /// </summary>
         /// <summary>
         /// Gets or sets the DoNotLoadConfigOnNextBoot
         /// </summary>
@@ -99,9 +93,6 @@ namespace PepperDash.Core
 
         public static bool IsRunningOnAppliance = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance;
 
-        /// <summary>
-        /// Version for the currently loaded PepperDashCore dll
-        /// </summary>
         /// <summary>
         /// Gets or sets the PepperDashCoreVersion
         /// </summary>
@@ -621,9 +612,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <summary>
         /// ShowDebugLog method
         /// </summary>
         public static void ShowDebugLog(string s)
@@ -1137,9 +1125,6 @@ namespace PepperDash.Core
             return string.Format("{0}{1}user{1}debugSettings{1}{2}.json",Directory.GetApplicationRootDirectory(), Path.DirectorySeparatorChar, InitialParametersClass.RoomId);
         }
 
-        /// <summary>
-        /// Error level to for message to be logged at
-        /// </summary>
         /// <summary>
         /// Enumeration of ErrorLogLevel values
         /// </summary>

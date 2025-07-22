@@ -5,9 +5,6 @@ using Serilog.Events;
 
 namespace PepperDash.Core.JsonToSimpl
 {
-    /// <summary>
-    /// Used to interact with an array of values with the S+ modules
-    /// </summary>
  /// <summary>
  /// Represents a JsonToSimplArrayLookupChild
  /// </summary>
@@ -79,12 +76,10 @@ namespace PepperDash.Core.JsonToSimpl
 				PathSuffix == null ? "" : PathSuffix);
 		}
 
-        /// <summary>
-        /// Process all values
-        /// </summary>
   /// <summary>
   /// ProcessAll method
   /// </summary>
+  /// <inheritdoc />
 		public override void ProcessAll()
 		{
 			if (FindInArray())

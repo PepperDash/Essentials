@@ -20,16 +20,10 @@ namespace PepperDash.Core.JsonToSimpl
         public string Filepath { get; private set; }
 
         /// <summary>
-        /// Filepath to the actual file that will be read (Portal or local)
-        /// </summary>
-        /// <summary>
         /// Gets or sets the ActualFilePath
         /// </summary>
         public string ActualFilePath { get; private set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
         /// <summary>
         /// Gets or sets the Filename
         /// </summary>

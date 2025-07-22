@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Core
         public Type Type { get; set; }
         
         /// <summary>
-        /// Gets or sets the description of the device factory
+        /// Gets or sets the Description
         /// </summary>
         public string Description { get; set; }
         
@@ -43,7 +43,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Factory class for loading and managing device types
+    /// Represents a DeviceFactory
     /// </summary>
     public class DeviceFactory
     {
@@ -141,6 +141,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="dc"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetDevice method
+        /// </summary>
         public static IKeyed GetDevice(DeviceConfig dc)
         {
             try
@@ -181,6 +184,9 @@ namespace PepperDash.Essentials.Core
         /// Prints the type names and associated metadata from the FactoryMethods collection.
         /// </summary>
         /// <param name="filter"></param>
+        /// <summary>
+        /// GetDeviceFactoryTypes method
+        /// </summary>
         public static void GetDeviceFactoryTypes(string filter)
         {
             var types = !string.IsNullOrEmpty(filter)

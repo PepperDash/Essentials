@@ -1,7 +1,7 @@
 ﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Defines a class that is capable of loading device types
+    /// Defines the contract for IDeviceFactory
     /// </summary>
     public interface IDeviceFactory
     {

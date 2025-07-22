@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     }*/
 
     /// <summary>
-    /// Describes a MobileSystemController that accepts IEssentialsRoom
+    /// Defines the contract for IMobileControl
     /// </summary>
     public interface IMobileControl : IKeyed
     {
@@ -52,7 +52,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     }
 
     /// <summary>
-    /// Describes a mobile control messenger
+    /// Defines the contract for IMobileControlMessenger
     /// </summary>
     public interface IMobileControlMessenger : IKeyed
     {
@@ -77,7 +77,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     }
 
     /// <summary>
-    /// Describes a MobileControl Room Bridge
+    /// Defines the contract for IMobileControlRoomMessenger
     /// </summary>
     public interface IMobileControlRoomMessenger : IKeyed
     {
@@ -104,6 +104,9 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         void UpdateAppUrl(string url);
     }
 
+    /// <summary>
+    /// Defines the contract for IMobileControlAction
+    /// </summary>
     public interface IMobileControlAction
     {
         IMobileControlMessenger Messenger { get; }
@@ -112,7 +115,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     }
 
     /// <summary>
-    /// Describes a MobileControl Touchpanel Controller
+    /// Defines the contract for IMobileControlTouchpanelController
     /// </summary>
     public interface IMobileControlTouchpanelController : IKeyed
     {

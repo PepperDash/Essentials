@@ -9,6 +9,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
+    /// <summary>
+    /// Represents a DeviceFactory
+    /// </summary>
     public class DeviceFactory
     {
 

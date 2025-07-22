@@ -7,6 +7,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Devices.Common.Generic
 {
+    /// <summary>
+    /// Represents a GenericSink
+    /// </summary>
     public class GenericSink : EssentialsDevice, IRoutingSinkWithInputPort
     {
         public GenericSink(string key, string name) : base(key, name)
@@ -18,11 +21,20 @@ namespace PepperDash.Essentials.Devices.Common.Generic
             InputPorts.Add(inputPort);
         }
 
+        /// <summary>
+        /// Gets or sets the InputPorts
+        /// </summary>
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the CurrentSourceInfoKey
+        /// </summary>
         public string CurrentSourceInfoKey { get; set; }
 
         private SourceListItem _currentSource;
+        /// <summary>
+        /// Gets or sets the CurrentSourceInfo
+        /// </summary>
         public SourceListItem CurrentSourceInfo {
             get => _currentSource;
             set {
@@ -44,6 +56,9 @@ namespace PepperDash.Essentials.Devices.Common.Generic
         public event SourceInfoChangeHandler CurrentSourceChange;
     }
 
+    /// <summary>
+    /// Represents a GenericSinkFactory
+    /// </summary>
     public class GenericSinkFactory : EssentialsDeviceFactory<GenericSink>
     {
         public GenericSinkFactory()
@@ -51,6 +66,10 @@ namespace PepperDash.Essentials.Devices.Common.Generic
             TypeNames = new List<string>() { "genericsink", "genericdestination" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Sink Device");

@@ -5,6 +5,9 @@ using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a IHumiditySensorMessenger
+    /// </summary>
     public class IHumiditySensorMessenger : MessengerBase
     {
         private readonly IHumiditySensor device;
@@ -35,9 +38,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a IHumiditySensorStateMessage
+    /// </summary>
     public class IHumiditySensorStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("humidity")]
+        /// <summary>
+        /// Gets or sets the Humidity
+        /// </summary>
         public string Humidity { get; set; }
     }
 }

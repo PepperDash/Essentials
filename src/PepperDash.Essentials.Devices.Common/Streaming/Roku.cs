@@ -14,12 +14,21 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Devices.Common
 {
     [Description("Wrapper class for an IR-Controlled Roku")]
+ /// <summary>
+ /// Represents a Roku2
+ /// </summary>
 	public class Roku2 : EssentialsDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingSource, IRoutingOutputs
 	{
 		[Api]
+  /// <summary>
+  /// Gets or sets the IrPort
+  /// </summary>
 		public IrOutputPortController IrPort { get; private set; }
 		public const string StandardDriverName = "Roku XD_S.ir";
 		[Api]
+  /// <summary>
+  /// Gets or sets the DisplayUiType
+  /// </summary>
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeRoku; } }
 
 		public Roku2(string key, string name, IrOutputPortController portCont)
@@ -36,42 +45,63 @@ namespace PepperDash.Essentials.Devices.Common
 		#region IDPad Members
 
 		[Api]
+  /// <summary>
+  /// Up method
+  /// </summary>
 		public void Up(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_UP_ARROW, pressRelease);
 		}
 
 		[Api]
+  /// <summary>
+  /// Down method
+  /// </summary>
 		public void Down(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_DN_ARROW, pressRelease);
 		}
 
 		[Api]
+  /// <summary>
+  /// Left method
+  /// </summary>
 		public void Left(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_LEFT_ARROW, pressRelease);
 		}
 
 		[Api]
+  /// <summary>
+  /// Right method
+  /// </summary>
 		public void Right(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_RIGHT_ARROW, pressRelease);
 		}
 
 		[Api]
+  /// <summary>
+  /// Select method
+  /// </summary>
 		public void Select(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_ENTER, pressRelease);
 		}
 
 		[Api]
+  /// <summary>
+  /// Menu method
+  /// </summary>
 		public void Menu(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_MENU, pressRelease);
 		}
 
 		[Api]
+  /// <summary>
+  /// Exit method
+  /// </summary>
 		public void Exit(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_EXIT, pressRelease);
@@ -82,24 +112,36 @@ namespace PepperDash.Essentials.Devices.Common
 		#region ITransport Members
 
 		[Api]
+  /// <summary>
+  /// Play method
+  /// </summary>
 		public void Play(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_PLAY, pressRelease);
 		}
 
 		[Api]
+  /// <summary>
+  /// Pause method
+  /// </summary>
 		public void Pause(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_PAUSE, pressRelease);
 		}
 
 		[Api]
+  /// <summary>
+  /// Rewind method
+  /// </summary>
 		public void Rewind(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_RSCAN, pressRelease);
 		}
 
 		[Api]
+  /// <summary>
+  /// FFwd method
+  /// </summary>
 		public void FFwd(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_FSCAN, pressRelease);
@@ -109,6 +151,9 @@ namespace PepperDash.Essentials.Devices.Common
 		/// Not implemented
 		/// </summary>
 		/// <param name="pressRelease"></param>
+  /// <summary>
+  /// ChapMinus method
+  /// </summary>
 		public void ChapMinus(bool pressRelease)
 		{
 		}
@@ -148,6 +193,9 @@ namespace PepperDash.Essentials.Devices.Common
 
 	}
 
+    /// <summary>
+    /// Represents a Roku2Factory
+    /// </summary>
     public class Roku2Factory : EssentialsDeviceFactory<Roku2>
     {
         public Roku2Factory()
@@ -155,6 +203,10 @@ namespace PepperDash.Essentials.Devices.Common
             TypeNames = new List<string>() { "roku" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Roku Device");

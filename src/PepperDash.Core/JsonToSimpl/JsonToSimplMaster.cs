@@ -38,9 +38,6 @@ namespace PepperDash.Core.JsonToSimpl
 		/// </summary>
 		public string Key { get { return UniqueID; } }
 
-        /// <summary>
-        /// A unique ID
-        /// </summary>
   /// <summary>
   /// Gets or sets the UniqueID
   /// </summary>
@@ -56,10 +53,6 @@ namespace PepperDash.Core.JsonToSimpl
 		}
 		string _DebugName = "";
 
-		/// <summary>
-		/// This will be prepended to all paths to allow path swapping or for more organized
-		/// sub-paths
-		/// </summary>
   /// <summary>
   /// Gets or sets the PathPrefix
   /// </summary>
@@ -89,9 +82,6 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the JsonObject
   /// </summary>
@@ -140,9 +130,6 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-		/// <summary>
-		/// Called from the child to add changed or new values for saving
-		/// </summary>
   /// <summary>
   /// AddUnsavedValue method
   /// </summary>

@@ -84,10 +84,6 @@ namespace PepperDash.Core
             port.TextReceived += Port_TextReceivedStringDelimiter;
         }
 
-		/// <summary>
-		/// Disconnects this gather from the Port's TextReceived event. This will not fire LineReceived
-		/// after the this call.
-		/// </summary>
   /// <summary>
   /// Stop method
   /// </summary>

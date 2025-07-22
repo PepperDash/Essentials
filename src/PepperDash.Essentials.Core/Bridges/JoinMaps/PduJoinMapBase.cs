@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a PduJoinMapBase
+    /// </summary>
     public class PduJoinMapBase : JoinMapBaseAdvanced
     {
         [JoinName("Name")]

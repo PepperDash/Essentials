@@ -2,9 +2,6 @@
 
 namespace PepperDash.Core.WebApi.Presets
 {
-    /// <summary>
-    /// Represents a preset
-    /// </summary>
  /// <summary>
  /// Represents a Preset
  /// </summary>
@@ -15,41 +12,26 @@ namespace PepperDash.Core.WebApi.Presets
         /// </summary>
 		public int Id { get; set; }
 
-        /// <summary>
-        /// User ID
-        /// </summary>
   /// <summary>
   /// Gets or sets the UserId
   /// </summary>
 		public int UserId { get; set; }
 
-        /// <summary>
-        /// Room Type ID
-        /// </summary>
   /// <summary>
   /// Gets or sets the RoomTypeId
   /// </summary>
 		public int RoomTypeId { get; set; }
 
-        /// <summary>
-        /// Preset Name
-        /// </summary>
   /// <summary>
   /// Gets or sets the PresetName
   /// </summary>
 		public string PresetName { get; set; }
 
-        /// <summary>
-        /// Preset Number
-        /// </summary>
   /// <summary>
   /// Gets or sets the PresetNumber
   /// </summary>
 		public int PresetNumber { get; set; }
 
-        /// <summary>
-        /// Preset Data
-        /// </summary>
   /// <summary>
   /// Gets or sets the Data
   /// </summary>
@@ -66,9 +48,6 @@ namespace PepperDash.Core.WebApi.Presets
 		}
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
  /// <summary>
  /// Represents a PresetReceivedEventArgs
  /// </summary>
@@ -80,16 +59,10 @@ namespace PepperDash.Core.WebApi.Presets
         public bool LookupSuccess { get; private set; }
         
         /// <summary>
-        /// S+ helper
-        /// </summary>
-        /// <summary>
         /// Gets or sets the ULookupSuccess
         /// </summary>
         public ushort ULookupSuccess { get { return (ushort)(LookupSuccess ? 1 : 0); } }
 
-        /// <summary>
-        /// The preset
-        /// </summary>
         /// <summary>
         /// Gets or sets the Preset
         /// </summary>

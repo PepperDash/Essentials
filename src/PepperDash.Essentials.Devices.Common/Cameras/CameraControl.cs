@@ -8,6 +8,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
+    /// <summary>
+    /// Enumeration of eCameraControlMode values
+    /// </summary>
     public enum eCameraControlMode
     {       
         Manual = 0,
@@ -16,6 +19,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
 
+    /// <summary>
+    /// Defines the contract for IHasCameras
+    /// </summary>
     public interface IHasCameras
     {
         event EventHandler<CameraSelectedEventArgs> CameraSelected;
@@ -30,7 +36,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Aggregates far end cameras with near end cameras
+    /// Defines the contract for IHasCodecCameras
     /// </summary>
     public interface IHasCodecCameras : IHasCameras, IHasFarEndCameraControl
     {
@@ -62,8 +68,14 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         event EventHandler VideoUnmuteRequested;
     }
 
+    /// <summary>
+    /// Represents a CameraSelectedEventArgs
+    /// </summary>
     public class CameraSelectedEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the SelectedCamera
+        /// </summary>
         public CameraBase SelectedCamera { get; private set; }
 
         public CameraSelectedEventArgs(CameraBase camera)
@@ -72,6 +84,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         }
     }
 
+    /// <summary>
+    /// Defines the contract for IHasFarEndCameraControl
+    /// </summary>
     public interface IHasFarEndCameraControl
     {
         CameraBase FarEndCamera { get; }
@@ -81,7 +96,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Used to decorate a camera as a far end
+    /// Defines the contract for IAmFarEndCamera
     /// </summary>
     public interface IAmFarEndCamera
     {
@@ -93,7 +108,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Aggregates the pan, tilt and zoom interfaces
+    /// Defines the contract for IHasCameraPtzControl
     /// </summary>
     public interface IHasCameraPtzControl : IHasCameraPanControl, IHasCameraTiltControl, IHasCameraZoomControl
     {
@@ -114,7 +129,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Interface for camera tilt control
+    /// Defines the contract for IHasCameraTiltControl
     /// </summary>
     public interface IHasCameraTiltControl : IHasCameraControls
     {
@@ -124,7 +139,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Interface for camera zoom control
+    /// Defines the contract for IHasCameraZoomControl
     /// </summary>
     public interface IHasCameraZoomControl : IHasCameraControls
     {
@@ -134,7 +149,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Interface for camera focus control
+    /// Defines the contract for IHasCameraFocusControl
     /// </summary>
     public interface IHasCameraFocusControl : IHasCameraControls
     {
@@ -152,6 +167,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         void ToggleFocusMode();
     }
 
+    /// <summary>
+    /// Defines the contract for IHasCameraAutoMode
+    /// </summary>
     public interface IHasCameraAutoMode : IHasCameraControls
     {
         void CameraAutoModeOn();

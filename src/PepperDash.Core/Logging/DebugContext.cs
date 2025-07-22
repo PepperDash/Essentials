@@ -150,9 +150,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Appends a device Key to the beginning of a message
-        /// </summary>
-        /// <summary>
         /// Console method
         /// </summary>
         public void Console(uint level, IKeyed dev, string format, params object[] items)

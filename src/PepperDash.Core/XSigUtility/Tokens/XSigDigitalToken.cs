@@ -73,6 +73,7 @@ namespace PepperDash.Core.Intersystem.Tokens
         /// <summary>
         /// ToString method
         /// </summary>
+        /// <inheritdoc />
         public override string ToString()
         {
             return Index + " = " + (Value ? "High" : "Low");

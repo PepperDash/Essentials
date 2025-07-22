@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a SystemMonitorJoinMap
+    /// </summary>
     public class SystemMonitorJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("TimeZone")]

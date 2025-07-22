@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace PepperDash.Essentials.Core
 {
-	/// <summary>
-	/// Basically a List , with an indexer to find ports by key name
-	/// </summary>
+ /// <summary>
+ /// Represents a RoutingPortCollection
+ /// </summary>
 	public class RoutingPortCollection<T> : List<T> where T: RoutingPort
 	{
 		/// <summary>
@@ -24,6 +24,9 @@ namespace PepperDash.Essentials.Core
 /*    /// <summary>
 	/// Basically a List , with an indexer to find ports by key name
 	/// </summary>
+ /// <summary>
+ /// Represents a RoutingPortCollection
+ /// </summary>
 	public class RoutingPortCollection<T, TSelector> : List<T> where T : RoutingPort<TSelector>
     {
         /// <summary>

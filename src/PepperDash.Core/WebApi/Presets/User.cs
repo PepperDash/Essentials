@@ -16,25 +16,16 @@ namespace PepperDash.Core.WebApi.Presets
         /// </summary>
 		public int Id { get; set; }
 		
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the ExternalId
   /// </summary>
 		public string ExternalId { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the FirstName
   /// </summary>
 		public string FirstName { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the LastName
   /// </summary>
@@ -53,16 +44,10 @@ namespace PepperDash.Core.WebApi.Presets
         public bool LookupSuccess { get; private set; }
 
         /// <summary>
-        /// For stupid S+
-        /// </summary>
-        /// <summary>
         /// Gets or sets the ULookupSuccess
         /// </summary>
         public ushort ULookupSuccess { get { return (ushort)(LookupSuccess ? 1 : 0); } }
 
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the User
   /// </summary>
@@ -85,9 +70,6 @@ namespace PepperDash.Core.WebApi.Presets
 		}
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
  /// <summary>
  /// Represents a UserAndRoomMessage
  /// </summary>
@@ -98,17 +80,11 @@ namespace PepperDash.Core.WebApi.Presets
         /// </summary>
 		public int UserId { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the RoomTypeId
   /// </summary>
 		public int RoomTypeId { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the PresetNumber
   /// </summary>

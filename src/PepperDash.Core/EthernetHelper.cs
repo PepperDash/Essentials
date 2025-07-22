@@ -4,9 +4,6 @@ using Serilog.Events;
 
 namespace PepperDash.Core
 {
-    /// <summary>
-    /// Class to help with accessing values from the CrestronEthernetHelper class 
-    /// </summary>
  /// <summary>
  /// Represents a EthernetHelper
  /// </summary>
@@ -27,9 +24,6 @@ namespace PepperDash.Core
 
 		// ADD OTHER HELPERS HERE
 
-		/// <summary>
-		/// 
-		/// </summary>
   /// <summary>
   /// Gets or sets the PortNumber
   /// </summary>

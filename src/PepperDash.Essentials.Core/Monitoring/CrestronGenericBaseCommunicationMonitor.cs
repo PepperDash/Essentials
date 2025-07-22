@@ -26,6 +26,10 @@ namespace PepperDash.Essentials.Core
 			Device = device;
 		}
 
+  /// <summary>
+  /// Start method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Start()
 		{
 			Device.OnlineStatusChange -= Device_OnlineStatusChange;
@@ -33,6 +37,10 @@ namespace PepperDash.Essentials.Core
 			GetStatus();
 		}
 
+  /// <summary>
+  /// Stop method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Stop()
 		{
 			Device.OnlineStatusChange -= Device_OnlineStatusChange;

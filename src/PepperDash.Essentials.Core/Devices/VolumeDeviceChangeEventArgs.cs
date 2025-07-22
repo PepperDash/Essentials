@@ -26,9 +26,9 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
+ /// <summary>
+ /// Enumeration of ChangeType values
+ /// </summary>
 	public enum ChangeType
 	{
 		WillChange, DidChange

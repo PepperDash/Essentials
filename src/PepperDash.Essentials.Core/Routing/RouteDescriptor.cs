@@ -20,22 +20,22 @@ namespace PepperDash.Essentials.Core
         public IRoutingInputs Destination { get; private set; }
 
         /// <summary>
-        /// The specific input port on the destination device used for this route. Can be null if not specified or applicable.
+        /// Gets or sets the InputPort
         /// </summary>
         public RoutingInputPort InputPort { get; private set; }
 
         /// <summary>
-        /// The source device for the route.
+        /// Gets or sets the Source
         /// </summary>
         public IRoutingOutputs Source { get; private set; }
 
         /// <summary>
-        /// The type of signal being routed (e.g., Audio, Video). This descriptor represents a single signal type.
+        /// Gets or sets the SignalType
         /// </summary>
         public eRoutingSignalType SignalType { get; private set; }
 
         /// <summary>
-        /// A list of individual switching steps required to establish the route.
+        /// Gets or sets the Routes
         /// </summary>
         public List<RouteSwitchDescriptor> Routes { get; private set; }
 
@@ -66,7 +66,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Executes all the switching steps defined in the <see cref="Routes"/> list.
+        /// ExecuteRoutes method
         /// </summary>
         public void ExecuteRoutes()
         {
@@ -95,6 +95,9 @@ namespace PepperDash.Essentials.Core
         /// Releases the usage tracking for the route and optionally clears the route on the switching devices.
         /// </summary>
         /// <param name="clearRoute">If true, attempts to clear the route on the switching devices (e.g., set input to null/0).</param>
+        /// <summary>
+        /// ReleaseRoutes method
+        /// </summary>
         public void ReleaseRoutes(bool clearRoute = false)
         {
             foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
@@ -135,6 +138,9 @@ namespace PepperDash.Essentials.Core
         /// Returns a string representation of the route descriptor, including source, destination, and individual route steps.
         /// </summary>
         /// <returns>A string describing the route.</returns>
+        /// <summary>
+        /// ToString method
+        /// </summary>
         public override string ToString()
         {
             var routesText = Routes.Select(r => r.ToString()).ToArray();
@@ -145,10 +151,22 @@ namespace PepperDash.Essentials.Core
     /*/// <summary>
     /// Represents an collection of individual route steps between Source and Destination
     /// </summary>
+    /// <summary>
+    /// Represents a RouteDescriptor
+    /// </summary>
     public class RouteDescriptor<TInputSelector, TOutputSelector>
     {
+        /// <summary>
+        /// Gets or sets the Destination
+        /// </summary>
         public IRoutingInputs<TInputSelector> Destination { get; private set; }
+        /// <summary>
+        /// Gets or sets the Source
+        /// </summary>
         public IRoutingOutputs<TOutputSelector> Source { get; private set; }
+        /// <summary>
+        /// Gets or sets the SignalType
+        /// </summary>
         public eRoutingSignalType SignalType { get; private set; }
         public List<RouteSwitchDescriptor<TInputSelector, TOutputSelector>> Routes { get; private set; }
 
@@ -162,8 +180,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Executes all routes described in this collection.  Typically called via
-        /// extension method IRoutingInputs.ReleaseAndMakeRoute()
+        /// ExecuteRoutes method
         /// </summary>
         public void ExecuteRoutes()
         {
@@ -189,8 +206,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Releases all routes in this collection. Typically called via
-        /// extension method IRoutingInputs.ReleaseAndMakeRoute()
+        /// ReleaseRoutes method
         /// </summary>
         public void ReleaseRoutes()
         {
@@ -206,6 +222,10 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// ToString method
+        /// </summary>
+        /// <inheritdoc />
         public override string ToString()
         {
             var routesText = Routes.Select(r => r.ToString()).ToArray();

@@ -80,9 +80,6 @@ namespace PepperDash.Core
         public string Hostname { get; set; }
 
         /// <summary>
-        /// Port on server
-        /// </summary>
-        /// <summary>
         /// Gets or sets the Port
         /// </summary>
         public int Port { get; set; }
@@ -116,9 +113,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// SharedKey is sent for varification to the server. Shared key can be any text (255 char limit in SIMPL+ Module), but must match the Shared Key on the Server module
-        /// </summary>
-        /// <summary>
         /// Gets or sets the SharedKey
         /// </summary>
         public string SharedKey { get; set; }
@@ -128,9 +122,6 @@ namespace PepperDash.Core
         /// </summary>
         private bool WaitingForSharedKeyResponse { get; set; }
 
-        /// <summary>
-        /// Defaults to 2000
-        /// </summary>
         /// <summary>
         /// Gets or sets the BufferSize
         /// </summary>
@@ -345,9 +336,6 @@ namespace PepperDash.Core
         #region Methods
 
         /// <summary>
-        /// Just to help S+ set the key
-        /// </summary>
-        /// <summary>
         /// Initialize method
         /// </summary>
         public void Initialize(string key)
@@ -406,9 +394,6 @@ namespace PepperDash.Core
 
         }
 
-        /// <summary>
-        /// Connect Method. Will return if already connected. Will write errors if missing address, port, or unique key/name.
-        /// </summary>
         /// <summary>
         /// Connect method
         /// </summary>
@@ -540,9 +525,6 @@ namespace PepperDash.Core
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         /// <summary>
         /// Disconnect method
         /// </summary>
@@ -822,9 +804,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// General send method
-        /// </summary>
-        /// <summary>
         /// SendText method
         /// </summary>
         public void SendText(string text)
@@ -853,9 +832,6 @@ namespace PepperDash.Core
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         /// <summary>
         /// SendBytes method
         /// </summary>

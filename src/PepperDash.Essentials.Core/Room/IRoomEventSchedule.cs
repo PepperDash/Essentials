@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Defines the contract for IRoomEventSchedule
+    /// </summary>
     public interface IRoomEventSchedule
     {
         void AddOrUpdateScheduledEvent(ScheduledEventConfig eventConfig);
@@ -13,8 +16,14 @@ namespace PepperDash.Essentials.Core
         event EventHandler<ScheduledEventEventArgs> ScheduledEventsChanged;
     }
 
+    /// <summary>
+    /// Represents a ScheduledEventEventArgs
+    /// </summary>
     public class ScheduledEventEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the ScheduledEvents
+        /// </summary>
         public List<ScheduledEventConfig> ScheduledEvents;
     }
 }

@@ -22,6 +22,9 @@ using WebSocketSharp.Server;
 
 namespace PepperDash.Essentials.WebSocketServer
 {
+    /// <summary>
+    /// Represents a MobileControlWebsocketServer
+    /// </summary>
     public class MobileControlWebsocketServer : EssentialsDevice
     {
         private readonly string userAppPath = Global.FilePathPrefix + "mcUserApp" + Global.DirectorySeparator;
@@ -82,7 +85,7 @@ namespace PepperDash.Essentials.WebSocketServer
         private string _userAppBaseHref = "/mc/app";
 
         /// <summary>
-        /// The port the server will run on
+        /// Gets or sets the Port
         /// </summary>
         public int Port { get; private set; }
 
@@ -216,6 +219,10 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
 
+        /// <summary>
+        /// Initialize method
+        /// </summary>
+        /// <inheritdoc />
         public override void Initialize()
         {
             try
@@ -540,7 +547,7 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
         /// <summary>
-        /// Stores secrets to memory to persist through reboot
+        /// UpdateSecret method
         /// </summary>
         public void UpdateSecret()
         {
@@ -1137,6 +1144,9 @@ namespace PepperDash.Essentials.WebSocketServer
             res.Close(contents, true);
         }
 
+        /// <summary>
+        /// StopServer method
+        /// </summary>
         public void StopServer()
         {
             this.LogVerbose("Stopping WebSocket Server");
@@ -1147,6 +1157,9 @@ namespace PepperDash.Essentials.WebSocketServer
         /// Sends a message to all connectd clients
         /// </summary>
         /// <param name="message"></param>
+        /// <summary>
+        /// SendMessageToAllClients method
+        /// </summary>
         public void SendMessageToAllClients(string message)
         {
             foreach (var clientContext in UiClients.Values)
@@ -1163,6 +1176,9 @@ namespace PepperDash.Essentials.WebSocketServer
         /// </summary>
         /// <param name="clientId"></param>
         /// <param name="message"></param>
+        /// <summary>
+        /// SendMessageToClient method
+        /// </summary>
         public void SendMessageToClient(object clientId, string message)
         {
             if (clientId == null)
@@ -1190,7 +1206,7 @@ namespace PepperDash.Essentials.WebSocketServer
     }
 
     /// <summary>
-    /// Class to describe the server version info
+    /// Represents a Version
     /// </summary>
     public class Version
     {
@@ -1207,11 +1223,17 @@ namespace PepperDash.Essentials.WebSocketServer
     }
 
     /// <summary>
-    /// Represents an instance of a UiClient and the associated Token
+    /// Represents a UiClientContext
     /// </summary>
     public class UiClientContext
     {
+        /// <summary>
+        /// Gets or sets the Client
+        /// </summary>
         public UiClient Client { get; private set; }
+        /// <summary>
+        /// Gets or sets the Token
+        /// </summary>
         public JoinToken Token { get; private set; }
 
         public UiClientContext(JoinToken token)
@@ -1219,6 +1241,9 @@ namespace PepperDash.Essentials.WebSocketServer
             Token = token;
         }
 
+        /// <summary>
+        /// SetClient method
+        /// </summary>
         public void SetClient(UiClient client)
         {
             Client = client;
@@ -1227,10 +1252,13 @@ namespace PepperDash.Essentials.WebSocketServer
     }
 
     /// <summary>
-    /// Represents the data structure for the grant code and UiClient tokens to be stored in the secrets manager
+    /// Represents a ServerTokenSecrets
     /// </summary>
     public class ServerTokenSecrets
     {
+        /// <summary>
+        /// Gets or sets the GrantCode
+        /// </summary>
         public string GrantCode { get; set; }
 
         public Dictionary<string, JoinToken> Tokens { get; set; }
@@ -1243,10 +1271,13 @@ namespace PepperDash.Essentials.WebSocketServer
     }
 
     /// <summary>
-    /// Represents a join token with the associated properties
+    /// Represents a JoinToken
     /// </summary>
     public class JoinToken
     {
+        /// <summary>
+        /// Gets or sets the Code
+        /// </summary>
         public string Code { get; set; }
 
         public string RoomKey { get; set; }
@@ -1255,15 +1286,21 @@ namespace PepperDash.Essentials.WebSocketServer
 
         public string TouchpanelKey { get; set; } = "";
 
+        /// <summary>
+        /// Gets or sets the Token
+        /// </summary>
         public string Token { get; set; } = null;
     }
 
     /// <summary>
-    /// Represents the structure of the join response
+    /// Represents a JoinResponse
     /// </summary>
     public class JoinResponse
     {
         [JsonProperty("clientId")]
+        /// <summary>
+        /// Gets or sets the ClientId
+        /// </summary>
         public string ClientId { get; set; }
 
         [JsonProperty("roomKey")]
@@ -1273,21 +1310,39 @@ namespace PepperDash.Essentials.WebSocketServer
         public string SystemUuid { get; set; }
 
         [JsonProperty("roomUUid")]
+        /// <summary>
+        /// Gets or sets the RoomUuid
+        /// </summary>
         public string RoomUuid { get; set; }
 
         [JsonProperty("config")]
+        /// <summary>
+        /// Gets or sets the Config
+        /// </summary>
         public object Config { get; set; }
 
         [JsonProperty("codeExpires")]
+        /// <summary>
+        /// Gets or sets the CodeExpires
+        /// </summary>
         public DateTime CodeExpires { get; set; }
 
         [JsonProperty("userCode")]
+        /// <summary>
+        /// Gets or sets the UserCode
+        /// </summary>
         public string UserCode { get; set; }
 
         [JsonProperty("userAppUrl")]
+        /// <summary>
+        /// Gets or sets the UserAppUrl
+        /// </summary>
         public string UserAppUrl { get; set; }
 
         [JsonProperty("enableDebug")]
+        /// <summary>
+        /// Gets or sets the EnableDebug
+        /// </summary>
         public bool EnableDebug { get; set; }
     }
 }

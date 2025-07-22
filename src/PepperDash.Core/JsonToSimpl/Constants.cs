@@ -88,9 +88,6 @@ namespace PepperDash.Core.JsonToSimpl
 	/// </summary>
 	public class SPlusValueWrapper
 	{
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the ValueType
   /// </summary>
@@ -125,9 +122,6 @@ namespace PepperDash.Core.JsonToSimpl
 		}
 	}
 
-	/// <summary>
-	/// S+ types enum
-	/// </summary>
  /// <summary>
  /// Enumeration of SPlusType values
  /// </summary>

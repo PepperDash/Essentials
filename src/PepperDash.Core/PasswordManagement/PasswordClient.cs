@@ -2,9 +2,6 @@
 
 namespace PepperDash.Core.PasswordManagement
 {
-    /// <summary>
-    /// A class to allow user interaction with the PasswordManager
-    /// </summary>
  /// <summary>
  /// Represents a PasswordClient
  /// </summary>
@@ -120,9 +117,6 @@ namespace PepperDash.Core.PasswordManagement
 				ValidatePassword(PasswordToValidate);
 		}
 
-		/// <summary>
-		/// Clears the user entered password and resets the LEDs
-		/// </summary>
   /// <summary>
   /// ClearPassword method
   /// </summary>

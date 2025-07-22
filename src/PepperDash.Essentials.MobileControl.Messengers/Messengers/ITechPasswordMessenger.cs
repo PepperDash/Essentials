@@ -4,6 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a ITechPasswordMessenger
+    /// </summary>
     public class ITechPasswordMessenger : MessengerBase
     {
         private readonly ITechPassword _room;
@@ -64,12 +67,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
     }
 
+    /// <summary>
+    /// Represents a ITechPasswordStateMessage
+    /// </summary>
     public class ITechPasswordStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("techPasswordLength", NullValueHandling = NullValueHandling.Ignore)]
         public int? TechPasswordLength { get; set; }
     }
 
+    /// <summary>
+    /// Represents a ITechPasswordEventMessage
+    /// </summary>
     public class ITechPasswordEventMessage : DeviceEventMessageBase
     {
         [JsonProperty("isValid", NullValueHandling = NullValueHandling.Ignore)]
@@ -79,9 +88,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
     internal class SetTechPasswordContent
     {
         [JsonProperty("oldPassword")]
+        /// <summary>
+        /// Gets or sets the OldPassword
+        /// </summary>
         public string OldPassword { get; set; }
 
         [JsonProperty("newPassword")]
+        /// <summary>
+        /// Gets or sets the NewPassword
+        /// </summary>
         public string NewPassword { get; set; }
     }
 

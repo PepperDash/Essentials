@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.Core.Lighting
 {
     /// <summary>
-    /// Requirements for a device that implements lighting scene control
+    /// Defines the contract for ILightingScenes
     /// </summary>
     public interface ILightingScenes
     {
@@ -18,13 +18,16 @@ namespace PepperDash.Essentials.Core.Lighting
 
     }
 
+    /// <summary>
+    /// Defines the contract for ILightingScenesDynamic
+    /// </summary>
     public interface ILightingScenesDynamic : ILightingScenes
     {
         event EventHandler LightingScenesUpdated;
     }
 
     /// <summary>
-    /// Requirements for a device that implements master raise/lower
+    /// Defines the contract for ILightingMasterRaiseLower
     /// </summary>
     public interface ILightingMasterRaiseLower
     {
@@ -34,7 +37,7 @@ namespace PepperDash.Essentials.Core.Lighting
     }
 
     /// <summary>
-    /// Requiremnts for controlling a lighting load
+    /// Defines the contract for ILightingLoad
     /// </summary>
     public interface ILightingLoad
     {
@@ -46,8 +49,14 @@ namespace PepperDash.Essentials.Core.Lighting
         BoolFeedback LoadIsOnFeedback { get; }
     }
 
+    /// <summary>
+    /// Represents a LightingSceneChangeEventArgs
+    /// </summary>
     public class LightingSceneChangeEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the CurrentLightingScene
+        /// </summary>
         public LightingScene CurrentLightingScene { get; private set; }
 
         public LightingSceneChangeEventArgs(LightingScene scene)

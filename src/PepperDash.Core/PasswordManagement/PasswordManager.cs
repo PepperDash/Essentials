@@ -4,9 +4,6 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Core.PasswordManagement
 {
-    /// <summary>
-    /// Allows passwords to be stored and managed
-    /// </summary>
  /// <summary>
  /// Represents a PasswordManager
  /// </summary>

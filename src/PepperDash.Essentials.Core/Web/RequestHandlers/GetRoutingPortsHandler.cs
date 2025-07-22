@@ -7,6 +7,9 @@ using System.Text;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+    /// <summary>
+    /// Represents a GetRoutingPortsHandler
+    /// </summary>
     public class GetRoutingPortsHandler : WebApiBaseRequestHandler
     {
         public GetRoutingPortsHandler() : base(true) { }
@@ -62,9 +65,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
     internal class ReturnValue {
         [JsonProperty("inputPorts", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the InputPorts
+        /// </summary>
         public List<string> InputPorts { get; set; }
 
         [JsonProperty("outputPorts", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the OutputPorts
+        /// </summary>
         public List<string> OutputPorts { get; set; }
     }
 }

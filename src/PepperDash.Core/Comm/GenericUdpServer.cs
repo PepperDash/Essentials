@@ -188,9 +188,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Enables the UDP Server
-        /// </summary>
-        /// <summary>
         /// Connect method
         /// </summary>
         public void Connect()
@@ -227,9 +224,6 @@ namespace PepperDash.Core
             Server.ReceiveDataAsync(Receive);
         }
 
-        /// <summary>
-        /// Disabled the UDP Server
-        /// </summary>
         /// <summary>
         /// Disconnect method
         /// </summary>
@@ -335,9 +329,6 @@ namespace PepperDash.Core
 
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
  /// <summary>
  /// Represents a GenericUdpReceiveTextExtraArgs
  /// </summary>

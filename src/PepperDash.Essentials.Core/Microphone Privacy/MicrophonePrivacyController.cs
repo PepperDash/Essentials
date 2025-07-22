@@ -47,14 +47,26 @@ namespace PepperDash.Essentials.Core.Privacy
         }
         bool _enableLeds;
 
+        /// <summary>
+        /// Gets or sets the Inputs
+        /// </summary>
         public List<IDigitalInput> Inputs { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the RedLedRelay
+        /// </summary>
         public GenericRelayDevice RedLedRelay { get; private set; }
         bool _redLedRelayState;
 
+        /// <summary>
+        /// Gets or sets the GreenLedRelay
+        /// </summary>
         public GenericRelayDevice GreenLedRelay { get; private set; }
         bool _greenLedRelayState;
 
+        /// <summary>
+        /// Gets or sets the PrivacyDevice
+        /// </summary>
         public IPrivacy PrivacyDevice { get; private set; }
 
         public MicrophonePrivacyController(string key, MicrophonePrivacyControllerConfig config) :
@@ -65,6 +77,10 @@ namespace PepperDash.Essentials.Core.Privacy
             Inputs = new List<IDigitalInput>();
         }
 
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
         public override bool CustomActivate()
         {
             foreach (var i in Config.Inputs)
@@ -101,6 +117,10 @@ namespace PepperDash.Essentials.Core.Privacy
 
         #region Overrides of Device
 
+        /// <summary>
+        /// Initialize method
+        /// </summary>
+        /// <inheritdoc />
         public override void Initialize()
         {
             CheckPrivacyMode();
@@ -108,6 +128,9 @@ namespace PepperDash.Essentials.Core.Privacy
 
         #endregion
 
+        /// <summary>
+        /// SetPrivacyDevice method
+        /// </summary>
         public void SetPrivacyDevice(IPrivacy privacyDevice)
         {
             PrivacyDevice = privacyDevice;
@@ -236,6 +259,9 @@ namespace PepperDash.Essentials.Core.Privacy
         }
     }
 
+    /// <summary>
+    /// Represents a MicrophonePrivacyControllerFactory
+    /// </summary>
     public class MicrophonePrivacyControllerFactory : EssentialsDeviceFactory<MicrophonePrivacyController>
     {
         public MicrophonePrivacyControllerFactory()
@@ -243,6 +269,10 @@ namespace PepperDash.Essentials.Core.Privacy
             TypeNames = new List<string>() { "microphoneprivacycontroller" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new MIcrophonePrivacyController Device");

@@ -4,6 +4,9 @@
 namespace PepperDash.Essentials.Core
 {
     [Flags]
+ /// <summary>
+ /// Enumeration of eRoutingSignalType values
+ /// </summary>
 	public enum eRoutingSignalType
 	{
 		Audio = 1,

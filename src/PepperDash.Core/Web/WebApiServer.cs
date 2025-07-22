@@ -25,33 +25,21 @@ namespace PepperDash.Core.Web
 		private readonly CCriticalSection _serverLock = new CCriticalSection();
 		private HttpCwsServer _server;
 
-		/// <summary>
-		/// Web API server key
-		/// </summary>
   /// <summary>
   /// Gets or sets the Key
   /// </summary>
 		public string Key { get; private set; }
 
-		/// <summary>
-		/// Web API server name
-		/// </summary>
   /// <summary>
   /// Gets or sets the Name
   /// </summary>
 		public string Name { get; private set; }
 
-		/// <summary>
-		/// CWS base path, will default to "/api" if not set via initialize method
-		/// </summary>
   /// <summary>
   /// Gets or sets the BasePath
   /// </summary>
 		public string BasePath { get; private set; }
 
-		/// <summary>
-		/// Indicates CWS is registered with base path
-		/// </summary>
   /// <summary>
   /// Gets or sets the IsRegistered
   /// </summary>
@@ -149,9 +137,6 @@ namespace PepperDash.Core.Web
 			Start();
 		}
 
-		/// <summary>
-		/// Initializes CWS class
-		/// </summary>
   /// <summary>
   /// Initialize method
   /// </summary>
@@ -194,9 +179,6 @@ namespace PepperDash.Core.Web
 			_server.Routes.Remove(route);
 		}
 
-		/// <summary>
-		/// Returns a list of the current routes
-		/// </summary>
   /// <summary>
   /// GetRouteCollection method
   /// </summary>
@@ -243,9 +225,6 @@ namespace PepperDash.Core.Web
 			}
 		}
 
-		/// <summary>
-		/// Stop CWS instance
-		/// </summary>
   /// <summary>
   /// Stop method
   /// </summary>

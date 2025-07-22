@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a AppleTvJoinMap
+    /// </summary>
     public class AppleTvJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("UpArrow")]

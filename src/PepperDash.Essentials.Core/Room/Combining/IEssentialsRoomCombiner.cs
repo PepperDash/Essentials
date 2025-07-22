@@ -92,6 +92,9 @@ namespace PepperDash.Essentials.Core
     /// activation and deactivation, tracking the active state, and managing related partition states and UI mappings.
     /// Implementations of this interface are expected to handle the logic for room combinations based on the provided
     /// partition states and UI mappings.</remarks>
+    /// <summary>
+    /// Defines the contract for IRoomCombinationScenario
+    /// </summary>
     public interface IRoomCombinationScenario : IKeyName
     {
         /// <summary>

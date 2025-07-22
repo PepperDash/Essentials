@@ -28,17 +28,11 @@ namespace PepperDash.Core.JsonToSimpl
         /// </summary>
 		public SPlusValuesDelegate GetAllValuesDelegate { get; set; }
 
-		/// <summary>
-		/// Use a callback to reduce task switch/threading
-		/// </summary>
   /// <summary>
   /// Gets or sets the SetAllPathsDelegate
   /// </summary>
 		public SPlusValuesDelegate SetAllPathsDelegate { get; set; }
 
-        /// <summary>
-        /// Unique identifier for instance
-        /// </summary>
   /// <summary>
   /// Gets or sets the Key
   /// </summary>
@@ -55,9 +49,6 @@ namespace PepperDash.Core.JsonToSimpl
 		/// </summary>
 		public string PathSuffix { get; protected set; }
 
-        /// <summary>
-        /// Indicates if the instance is linked to an object
-        /// </summary>
   /// <summary>
   /// Gets or sets the LinkedToObject
   /// </summary>
@@ -122,9 +113,6 @@ namespace PepperDash.Core.JsonToSimpl
 			BoolPaths[index] = path;
 		}
 
-		/// <summary>
-		/// Set the JPath for a ushort out index.
-		/// </summary>
   /// <summary>
   /// SetUshortPath method
   /// </summary>
@@ -135,9 +123,6 @@ namespace PepperDash.Core.JsonToSimpl
 			UshortPaths[index] = path;
 		}
 
-		/// <summary>
-		/// Set the JPath for a string output index. 
-		/// </summary>
   /// <summary>
   /// SetStringPath method
   /// </summary>
@@ -148,13 +133,10 @@ namespace PepperDash.Core.JsonToSimpl
 			StringPaths[index] = path;
 		}
 
-		/// <summary>
-		/// Evalutates all outputs with defined paths. called by S+ when paths are ready to process
-		/// and by Master when file is read.
-		/// </summary>
   /// <summary>
   /// ProcessAll method
   /// </summary>
+  /// <inheritdoc />
 		public virtual void ProcessAll()
 		{
 			if (!LinkedToObject)

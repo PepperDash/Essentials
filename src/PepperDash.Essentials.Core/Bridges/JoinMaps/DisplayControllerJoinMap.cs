@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a DisplayControllerJoinMap
+    /// </summary>
     public class DisplayControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("Name")]

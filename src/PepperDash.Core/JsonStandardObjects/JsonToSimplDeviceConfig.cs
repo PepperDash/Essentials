@@ -47,17 +47,11 @@ namespace PepperDash.Core.JsonStandardObjects
 		]
 	}
 	*/
-	/// <summary>
-	/// Device communication parameter class
-	/// </summary>
  /// <summary>
  /// Represents a ComParamsConfig
  /// </summary>
 	public class ComParamsConfig
 	{
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the baudRate
   /// </summary>
@@ -92,16 +86,10 @@ namespace PepperDash.Core.JsonStandardObjects
 		public int pacing { get; set; }
 
 		// convert properties for simpl
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the simplBaudRate
   /// </summary>
 		public ushort simplBaudRate { get { return Convert.ToUInt16(baudRate); } }
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the simplDataBits
   /// </summary>
@@ -155,16 +143,10 @@ namespace PepperDash.Core.JsonStandardObjects
 		public int autoReconnectIntervalMs { get; set; }
 
 		// convert properties for simpl
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the simplPort
   /// </summary>
 		public ushort simplPort { get { return Convert.ToUInt16(port); } }
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the simplAutoReconnect
   /// </summary>
@@ -210,9 +192,6 @@ namespace PepperDash.Core.JsonStandardObjects
 		public TcpSshPropertiesConfig tcpSshProperties { get; set; }
 
 		// convert properties for simpl
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the simplControlPortNumber
   /// </summary>
@@ -228,9 +207,6 @@ namespace PepperDash.Core.JsonStandardObjects
 		}
 	}
 
-	/// <summary>
-	/// Device properties class
-	/// </summary>
  /// <summary>
  /// Represents a PropertiesConfig
  /// </summary>
@@ -250,16 +226,10 @@ namespace PepperDash.Core.JsonStandardObjects
 		public ControlConfig control { get; set; }
 
 		// convert properties for simpl
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the simplDeviceId
   /// </summary>
 		public ushort simplDeviceId { get { return Convert.ToUInt16(deviceId); } }
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the simplEnabled
   /// </summary>

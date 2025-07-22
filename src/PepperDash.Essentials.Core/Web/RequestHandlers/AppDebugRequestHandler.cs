@@ -8,6 +8,9 @@ using Newtonsoft.Json.Converters;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+ /// <summary>
+ /// Represents a AppDebugRequestHandler
+ /// </summary>
 	public class AppDebugRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -77,10 +80,16 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		}
 	}
 
+ /// <summary>
+ /// Represents a AppDebug
+ /// </summary>
 	public class AppDebug
 	{
 		[JsonProperty("minimumLevel", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(StringEnumConverter))]
+        /// <summary>
+        /// Gets or sets the MinimumLevel
+        /// </summary>
         public LogEventLevel MinimumLevel { get; set; }
 	}
 }

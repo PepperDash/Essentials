@@ -32,8 +32,14 @@ namespace PepperDash.Essentials.Core
 		public string DriverFilepath { get; private set; }
 		public bool DriverIsLoaded { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the IrFileCommands
+        /// </summary>
         public string[] IrFileCommands { get { return IrPort.AvailableStandardIRCmds(IrPortUid); } }
 
+  /// <summary>
+  /// Gets or sets the UseBridgeJoinMap
+  /// </summary>
 		public bool UseBridgeJoinMap { get; private set; }
 
 		/// <summary>
@@ -99,6 +105,9 @@ namespace PepperDash.Essentials.Core
             });
 	    }
 
+     /// <summary>
+     /// PrintAvailableCommands method
+     /// </summary>
 	    public void PrintAvailableCommands()
 	    {
             Debug.LogMessage(LogEventLevel.Verbose, this, "Available IR Commands in IR File {0}", IrPortUid);
@@ -113,6 +122,9 @@ namespace PepperDash.Essentials.Core
 		/// Loads the IR driver at path
 		/// </summary>
 		/// <param name="path"></param>
+  /// <summary>
+  /// LoadDriver method
+  /// </summary>
 		public void LoadDriver(string path)
 		{
             Debug.LogMessage(LogEventLevel.Verbose, this, "***Loading IR File***");
@@ -136,9 +148,10 @@ namespace PepperDash.Essentials.Core
 		}
 
 
-		/// <summary>
-		/// Starts and stops IR command on driver. Safe for missing commands
-		/// </summary>
+  /// <summary>
+  /// PressRelease method
+  /// </summary>
+  /// <inheritdoc />
 		public virtual void PressRelease(string command, bool state)
 		{
 			Debug.LogMessage(LogEventLevel.Verbose, this, "IR:'{0}'={1}", command, state);
@@ -163,9 +176,10 @@ namespace PepperDash.Essentials.Core
 				IrPort.Release();
 		}
 
-		/// <summary>
-		/// Pulses a command on driver. Safe for missing commands
-		/// </summary>
+  /// <summary>
+  /// Pulse method
+  /// </summary>
+  /// <inheritdoc />
 		public virtual void Pulse(string command, ushort time)
 		{
 			if (IrPort == null)

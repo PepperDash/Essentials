@@ -8,11 +8,14 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Routing
 {
+ /// <summary>
+ /// Represents a DummyRoutingInputsDevice
+ /// </summary>
 	public class DummyRoutingInputsDevice : Device, IRoutingSource, IRoutingOutputs
 	{
-		/// <summary>
-		/// A single output port, backplane, audioVideo
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the AudioVideoOutputPort
+  /// </summary>
 		public RoutingOutputPort AudioVideoOutputPort { get; private set; }
 
 		/// <summary>

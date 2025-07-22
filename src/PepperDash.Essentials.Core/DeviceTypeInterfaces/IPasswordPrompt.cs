@@ -31,17 +31,17 @@ namespace PepperDash.Essentials.Core
         public bool LastAttemptWasIncorrect { get; private set; }
 
         /// <summary>
-        /// Indicates that the login attempt has failed
+        /// Gets or sets the LoginAttemptFailed
         /// </summary>
         public bool LoginAttemptFailed { get; private set; }
 
         /// <summary>
-        /// Indicates that the process was cancelled and the prompt should be dismissed
+        /// Gets or sets the LoginAttemptCancelled
         /// </summary>
         public bool LoginAttemptCancelled { get; private set; }
 
         /// <summary>
-        /// A message to be displayed to the user
+        /// Gets or sets the Message
         /// </summary>
         public string Message { get; private set; }
 

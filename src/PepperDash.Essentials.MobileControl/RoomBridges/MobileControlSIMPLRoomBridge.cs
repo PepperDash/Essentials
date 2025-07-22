@@ -21,6 +21,9 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.Room.MobileControl
 {
     // ReSharper disable once InconsistentNaming
+    /// <summary>
+    /// Represents a MobileControlSIMPLRoomBridge
+    /// </summary>
     public class MobileControlSIMPLRoomBridge : MobileControlBridgeBase, IDelayedConfiguration
     {
         private const int SupportedDisplayCount = 10;
@@ -30,18 +33,25 @@ namespace PepperDash.Essentials.Room.MobileControl
         /// </summary>
         public event EventHandler<EventArgs> ConfigurationIsReady;
 
+        /// <summary>
+        /// Gets or sets the Eisc
+        /// </summary>
         public ThreeSeriesTcpIpEthernetIntersystemCommunications Eisc { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the JoinMap
+        /// </summary>
         public MobileControlSIMPLRoomJoinMap JoinMap { get; private set; }
 
         public Dictionary<string, MessengerBase> DeviceMessengers { get; private set; }
 
 
         /// <summary>
-        /// 
+        /// Gets or sets the ConfigIsLoaded
         /// </summary>
         public bool ConfigIsLoaded { get; private set; }
 
+        /// <inheritdoc />
         public override string RoomName
         {
             get
@@ -51,6 +61,7 @@ namespace PepperDash.Essentials.Room.MobileControl
             }
         }
 
+        /// <inheritdoc />
         public override string RoomKey
         {
             get { return "room1"; }
@@ -127,6 +138,9 @@ namespace PepperDash.Essentials.Room.MobileControl
         /// parent controller and link them up.
         /// </summary>
         /// <returns></returns>
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
         public override bool CustomActivate()
         {
             Debug.Console(0, this, "Final activation. Setting up actions and feedbacks");

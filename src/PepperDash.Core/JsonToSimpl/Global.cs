@@ -52,9 +52,6 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-		/// <summary>
-		/// Gets a master by its key.  Case-insensitive
-		/// </summary>
   /// <summary>
   /// GetMasterByFile method
   /// </summary>

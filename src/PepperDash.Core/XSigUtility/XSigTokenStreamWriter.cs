@@ -140,9 +140,6 @@ namespace PepperDash.Core.Intersystem
         }
 
         /// <summary>
-        /// Disposes of the internal stream if specified to not leave open.
-        /// </summary>
-        /// <summary>
         /// Dispose method
         /// </summary>
         public void Dispose()

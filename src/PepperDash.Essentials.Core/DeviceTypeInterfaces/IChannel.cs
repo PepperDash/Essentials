@@ -24,6 +24,9 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public static class IChannelExtensions
 	{
+  /// <summary>
+  /// LinkButtons method
+  /// </summary>
 		public static void LinkButtons(this IChannel dev, BasicTriList triList)
 		{
 			triList.SetBoolSigAction(123, dev.ChannelUp);
@@ -34,6 +37,9 @@ namespace PepperDash.Essentials.Core
 			triList.SetBoolSigAction(134, dev.Exit);
 		}
 
+  /// <summary>
+  /// UnlinkButtons method
+  /// </summary>
 		public static void UnlinkButtons(this IChannel dev, BasicTriList triList)
 		{
 			triList.ClearBoolSigAction(123);

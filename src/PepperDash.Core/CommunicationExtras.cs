@@ -38,9 +38,6 @@ namespace PepperDash.Core
         void Disconnect();
     }
 
-	/// <summary>
-	/// Represents a device that uses basic connection
-	/// </summary>
     /// <summary>
     /// Defines the contract for IBasicCommunication
     /// </summary>
@@ -150,9 +147,6 @@ namespace PepperDash.Core
 	/// </summary>
 	public class GenericCommMethodReceiveBytesArgs : EventArgs
 	{
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the Bytes
   /// </summary>

@@ -25,9 +25,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public static void Released(Sig sig, Action act) { if (!sig.BoolValue) act(); }
 
-		/// <summary>
-		/// Safely sets an action to non-null sig
-		/// </summary>
+  /// <summary>
+  /// SetBoolOutAction method
+  /// </summary>
 		public static void SetBoolOutAction(BoolOutputSig sig, Action<bool> a)
 		{
 			if (sig != null)
@@ -50,6 +50,9 @@ namespace PepperDash.Essentials.Core
 		/// <param name="sig">Ushort sig to scale</param>
 		/// <param name="newLevel">Level to go to</param>
 		/// <param name="time">In ms (not hundredths like Crestron Sig ramp function)</param>
+  /// <summary>
+  /// RampTimeScaled method
+  /// </summary>
 		public static void RampTimeScaled(Sig sig, ushort newLevel, uint time)
 		{
 			ushort level = sig.UShortValue;
@@ -64,6 +67,9 @@ namespace PepperDash.Essentials.Core
 		/// <param name="sig"></param>
 		/// <param name="level"></param>
 		/// <param name="time">In ms (not hundredths like Crestron Sig ramp function)</param>
+  /// <summary>
+  /// Ramp method
+  /// </summary>
 		public static void Ramp(Sig sig, ushort level, uint time)
 		{
 			sig.CreateRamp(level, time / 10);

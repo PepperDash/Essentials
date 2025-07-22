@@ -20,15 +20,33 @@ namespace PepperDash.Essentials.RoomBridges
 
         public event EventHandler<EventArgs> AppUrlChanged;
 
+        /// <summary>
+        /// Gets or sets the Parent
+        /// </summary>
         public IMobileControl Parent { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the AppUrl
+        /// </summary>
         public string AppUrl { get; private set; }
+        /// <summary>
+        /// Gets or sets the UserCode
+        /// </summary>
         public string UserCode { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the QrCodeUrl
+        /// </summary>
         public string QrCodeUrl { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the QrCodeChecksum
+        /// </summary>
         public string QrCodeChecksum { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the McServerUrl
+        /// </summary>
         public string McServerUrl { get; private set; }
 
         public abstract string RoomName { get; }
@@ -50,6 +68,9 @@ namespace PepperDash.Essentials.RoomBridges
         /// as adding actions to parent
         /// </summary>
         /// <param name="parent"></param>
+        /// <summary>
+        /// AddParent method
+        /// </summary>
         public virtual void AddParent(IMobileControl parent)
         {
             Parent = parent;
@@ -62,6 +83,9 @@ namespace PepperDash.Essentials.RoomBridges
         /// fire method UserCodeChange.  Override that to handle changes
         /// </summary>
         /// <param name="code"></param>
+        /// <summary>
+        /// SetUserCode method
+        /// </summary>
         public void SetUserCode(string code)
         {
             var changed = UserCode != code;

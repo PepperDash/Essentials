@@ -75,6 +75,7 @@ namespace PepperDash.Core.Intersystem.Tokens
         /// <summary>
         /// ToString method
         /// </summary>
+        /// <inheritdoc />
         public override string ToString()
         {
             return Index + " = 0x" + Value.ToString("X4");

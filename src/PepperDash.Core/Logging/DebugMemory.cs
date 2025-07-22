@@ -4,9 +4,6 @@ using Newtonsoft.Json;
 
 namespace PepperDash.Core.Logging
 {
-    /// <summary>
-    /// Class to persist current Debug settings across program restarts
-    /// </summary>
  /// <summary>
  /// Represents a DebugContextCollection
  /// </summary>

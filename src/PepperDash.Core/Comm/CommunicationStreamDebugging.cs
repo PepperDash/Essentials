@@ -23,9 +23,6 @@ namespace PepperDash.Core
         private CTimer DebugExpiryPeriod;
 
         /// <summary>
-        /// The current debug setting
-        /// </summary>
-        /// <summary>
         /// Gets or sets the DebugSetting
         /// </summary>
         public eStreamDebuggingSetting DebugSetting { get; private set; }
@@ -44,9 +41,6 @@ namespace PepperDash.Core
             }
         }
 
-        /// <summary>
-        /// Indicates that receive stream debugging is enabled
-        /// </summary>
         /// <summary>
         /// Gets or sets the RxStreamDebuggingIsEnabled
         /// </summary>

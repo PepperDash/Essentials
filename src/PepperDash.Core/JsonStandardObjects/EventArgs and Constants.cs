@@ -32,17 +32,11 @@ namespace PepperDash.Core.JsonStandardObjects
 		/// </summary>
 		public DeviceConfig Device { get; set; }
 
-		/// <summary>
-		/// Device change event args type
-		/// </summary>
   /// <summary>
   /// Gets or sets the Type
   /// </summary>
 		public ushort Type { get; set; }
 
-		/// <summary>
-		/// Device change event args index
-		/// </summary>
   /// <summary>
   /// Gets or sets the Index
   /// </summary>

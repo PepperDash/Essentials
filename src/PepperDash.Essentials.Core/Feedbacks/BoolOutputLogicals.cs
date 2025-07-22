@@ -11,9 +11,9 @@ namespace PepperDash.Essentials.Core
 
 	public abstract class BoolFeedbackLogic
 	{
-		/// <summary>
-		/// Output representing the "and" value of all connected inputs
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Output
+  /// </summary>
 		public BoolFeedback Output { get; private set; }
 
 		/// <summary>
@@ -38,6 +38,9 @@ namespace PepperDash.Essentials.Core
 			Evaluate();
 		}
 
+  /// <summary>
+  /// AddOutputsIn method
+  /// </summary>
 		public void AddOutputsIn(List<BoolFeedback> outputs)
 		{
 		    foreach (var o in outputs.Where(o => !OutputsIn.Contains(o)))
@@ -48,6 +51,9 @@ namespace PepperDash.Essentials.Core
 		    Evaluate();
 		}
 
+     /// <summary>
+     /// RemoveOutputIn method
+     /// </summary>
 	    public void RemoveOutputIn(BoolFeedback output)
 		{
 			// Don't double up outputs
@@ -58,6 +64,9 @@ namespace PepperDash.Essentials.Core
 			Evaluate();
 		}
 
+  /// <summary>
+  /// RemoveOutputsIn method
+  /// </summary>
 		public void RemoveOutputsIn(List<BoolFeedback> outputs)
 		{
 			foreach (var o in outputs)
@@ -68,6 +77,9 @@ namespace PepperDash.Essentials.Core
 			Evaluate();
 		}
 
+     /// <summary>
+     /// ClearOutputs method
+     /// </summary>
 	    public void ClearOutputs()
 	    {
 	        OutputsIn.Clear();
@@ -82,6 +94,9 @@ namespace PepperDash.Essentials.Core
 		protected abstract void Evaluate();
 	}
 
+ /// <summary>
+ /// Represents a BoolFeedbackAnd
+ /// </summary>
 	public class BoolFeedbackAnd : BoolFeedbackLogic
 	{
 		protected override void Evaluate()
@@ -97,6 +112,9 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
+ /// <summary>
+ /// Represents a BoolFeedbackOr
+ /// </summary>
 	public class BoolFeedbackOr : BoolFeedbackLogic
 	{
 		protected override void Evaluate()
@@ -112,6 +130,9 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
+ /// <summary>
+ /// Represents a BoolFeedbackLinq
+ /// </summary>
 	public class BoolFeedbackLinq : BoolFeedbackLogic
 	{
 	    readonly Func<IEnumerable<BoolFeedback>, bool> _predicate;

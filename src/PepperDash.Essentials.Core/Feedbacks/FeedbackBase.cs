@@ -13,18 +13,32 @@ namespace PepperDash.Essentials.Core
 	{
 		public event EventHandler<FeedbackEventArgs> OutputChange;
 
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the BoolValue
+  /// </summary>
+  /// <inheritdoc />
 		public virtual bool BoolValue { get { return false; } }
+  /// <summary>
+  /// Gets or sets the IntValue
+  /// </summary>
 		public virtual int IntValue { get { return 0; } }
+  /// <summary>
+  /// Gets or sets the StringValue
+  /// </summary>
 		public virtual string StringValue { get { return ""; } }
+        /// <summary>
+        /// Gets or sets the SerialValue
+        /// </summary>
         public virtual string SerialValue { get { return ""; } }
 
-		/// <summary>
-		/// Feedbacks can be put into test mode for simulation of events without real data. 
-		/// Using JSON debugging methods and the Set/ClearTestValue methods, we can simulate
-		/// Feedback behaviors
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the InTestMode
+  /// </summary>
 		public bool InTestMode { get; protected set; }
 
 		/// <summary>
@@ -44,9 +58,9 @@ namespace PepperDash.Essentials.Core
 
 
 
-		/// <summary>
-		/// Clears test mode and fires update.
-		/// </summary>
+  /// <summary>
+  /// ClearTestValue method
+  /// </summary>
 		public void ClearTestValue()
 		{
 			InTestMode = false;

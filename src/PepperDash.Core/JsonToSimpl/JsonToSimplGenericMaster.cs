@@ -5,9 +5,6 @@ using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Core.JsonToSimpl
 {
-    /// <summary>
-    /// Generic Master
-    /// </summary>
  /// <summary>
  /// Represents a JsonToSimplGenericMaster
  /// </summary>
@@ -23,9 +20,6 @@ namespace PepperDash.Core.JsonToSimpl
 		// To prevent multiple same-file access
 		static object WriteLock = new object();
 
-        /// <summary>
-        /// Callback action for saving
-        /// </summary>
   /// <summary>
   /// Gets or sets the SaveCallback
   /// </summary>
@@ -81,12 +75,10 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
   /// <summary>
   /// Save method
   /// </summary>
+  /// <inheritdoc />
 		public override void Save()
 		{
 			// this code is duplicated in the other masters!!!!!!!!!!!!!

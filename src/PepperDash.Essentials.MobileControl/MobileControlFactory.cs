@@ -6,6 +6,9 @@ using System.Reflection;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// Represents a MobileControlFactory
+    /// </summary>
     public class MobileControlFactory
     {
         public MobileControlFactory()

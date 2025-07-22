@@ -52,9 +52,6 @@ namespace PepperDash.Core
         public ServerHasChokedCallbackDelegate ServerHasChoked { get; set; }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <summary>
         /// Delegate for ServerHasChokedCallbackDelegate
         /// </summary>
         public delegate void ServerHasChokedCallbackDelegate();
@@ -84,9 +81,6 @@ namespace PepperDash.Core
         /// </summary>
         int MonitorClientFailureCount;
 
-        /// <summary>
-        /// 3 by default
-        /// </summary>
         /// <summary>
         /// Gets or sets the MonitorClientMaxFailureCount
         /// </summary>
@@ -177,9 +171,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Port Server should listen on
-        /// </summary>
-        /// <summary>
         /// Gets or sets the Port
         /// </summary>
         public int Port { get; set; }
@@ -213,10 +204,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// SharedKey is sent for varification to the server. Shared key can be any text (255 char limit in SIMPL+ Module), but must match the Shared Key on the Server module. 
-        /// If SharedKey changes while server is listening or clients are connected, disconnect and stop listening will be called
-        /// </summary>
-        /// <summary>
         /// Gets or sets the SharedKey
         /// </summary>
         public string SharedKey { get; set; }
@@ -241,9 +228,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Milliseconds before server expects another heartbeat. Set by property HeartbeatRequiredIntervalInSeconds which is driven from S+
-        /// </summary>
-        /// <summary>
         /// Gets or sets the HeartbeatRequiredIntervalMs
         /// </summary>
         public int HeartbeatRequiredIntervalMs { get; set; }
@@ -253,9 +237,6 @@ namespace PepperDash.Core
         /// </summary>
         public ushort HeartbeatRequiredIntervalInSeconds { set { HeartbeatRequiredIntervalMs = (value * 1000); } }
 
-        /// <summary>
-        /// String to Match for heartbeat. If null or empty any string will reset heartbeat timer
-        /// </summary>
         /// <summary>
         /// Gets or sets the HeartbeatStringToMatch
         /// </summary>
@@ -274,9 +255,6 @@ namespace PepperDash.Core
         /// </summary>
         public List<uint> ConnectedClientsIndexes = new List<uint>();
 
-        /// <summary>
-        /// Defaults to 2000
-        /// </summary>
         /// <summary>
         /// Gets or sets the BufferSize
         /// </summary>
@@ -341,9 +319,6 @@ namespace PepperDash.Core
 
         #region Methods - Server Actions
         /// <summary>
-        /// Disconnects all clients and stops the server
-        /// </summary>
-        /// <summary>
         /// KillServer method
         /// </summary>
         public void KillServer()
@@ -402,9 +377,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Start listening on the specified port
-        /// </summary>
-        /// <summary>
         /// Listen method
         /// </summary>
         public void Listen()
@@ -462,9 +434,6 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Stop Listening
-        /// </summary>
-        /// <summary>
         /// StopListening method
         /// </summary>
         public void StopListening()
@@ -505,9 +474,6 @@ namespace PepperDash.Core
                 Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Disconnecting client index: {0}. Error: {1}", client, ex);
             }
         }
-        /// <summary>
-        /// Disconnect All Clients
-        /// </summary>
         /// <summary>
         /// DisconnectAllClientsForShutdown method
         /// </summary>

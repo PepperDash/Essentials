@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Represents a connection (tie line) between a <see cref="RoutingOutputPort"/> and a <see cref="RoutingInputPort"/>.
+    /// Represents a TieLine
     /// </summary>
     public class TieLine
     {
@@ -127,7 +127,7 @@ namespace PepperDash.Essentials.Core
     //********************************************************************************
 
     /// <summary>
-    /// Represents a collection of <see cref="TieLine"/> objects.
+    /// Represents a TieLineCollection
     /// </summary>
     public class TieLineCollection : List<TieLine>
     {

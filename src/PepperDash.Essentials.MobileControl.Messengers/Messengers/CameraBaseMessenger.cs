@@ -6,10 +6,13 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a CameraBaseMessenger
+    /// </summary>
     public class CameraBaseMessenger : MessengerBase
     {
         /// <summary>
-        /// Device being bridged
+        /// Gets or sets the Camera
         /// </summary>
         public CameraBase Camera { get; set; }
 

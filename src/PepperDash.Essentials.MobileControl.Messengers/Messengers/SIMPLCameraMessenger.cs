@@ -10,6 +10,9 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     // ReSharper disable once InconsistentNaming
+    /// <summary>
+    /// Represents a SIMPLCameraMessenger
+    /// </summary>
     public class SIMPLCameraMessenger : MessengerBase
     {
         private readonly BasicTriList _eisc;
@@ -80,6 +83,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
             cameraAction(state.Value.Equals("true", StringComparison.InvariantCultureIgnoreCase));
         }
 
+        /// <summary>
+        /// CustomUnregisterWithAppServer method
+        /// </summary>
         public void CustomUnregisterWithAppServer(IMobileControl appServerController)
         {
             appServerController.RemoveAction(MessagePath + "/fullStatus");

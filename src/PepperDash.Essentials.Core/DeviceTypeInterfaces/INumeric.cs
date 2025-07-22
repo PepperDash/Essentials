@@ -5,9 +5,9 @@ using PepperDash.Essentials.Core.SmartObjects;
 
 namespace PepperDash.Essentials.Core
 {
-	/// <summary>
-	/// 
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for INumericKeypad
+ /// </summary>
 	public interface INumericKeypad:IKeyed
 	{
 		void Digit0(bool pressRelease);
@@ -65,6 +65,9 @@ namespace PepperDash.Essentials.Core
 			trilist.StringInput[111].StringValue = dev.KeypadAccessoryButton2Label;
 		}
 
+  /// <summary>
+  /// UnlinkButtons method
+  /// </summary>
 		public static void UnlinkButtons(this INumericKeypad dev, BasicTriList trilist)
 		{
 			trilist.ClearBoolSigAction(110);

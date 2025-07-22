@@ -29,9 +29,6 @@ namespace PepperDash.Core
     /// </summary>
 	public class GenericSocketStatusChageEventArgs : EventArgs
 	{
-        /// <summary>
-        /// 
-        /// </summary>
   /// <summary>
   /// Gets or sets the Client
   /// </summary>
@@ -62,9 +59,6 @@ namespace PepperDash.Core
     /// </summary>
     public class GenericTcpServerStateChangedEventArgs : EventArgs
     {
-        /// <summary>
-        /// 
-        /// </summary>
         /// <summary>
         /// Gets or sets the State
         /// </summary>
@@ -159,9 +153,6 @@ namespace PepperDash.Core
 			}
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
         /// <summary>
         /// Gets or sets the Text
         /// </summary>

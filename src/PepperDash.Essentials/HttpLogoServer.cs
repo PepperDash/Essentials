@@ -121,6 +121,9 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="extension">The file extension</param>
         /// <returns>The corresponding content type string</returns>
+        /// <summary>
+        /// GetContentType method
+        /// </summary>
         public static string GetContentType(string extension)
         {
             var type = ExtensionContentTypes.ContainsKey(extension) ? ExtensionContentTypes[extension] : "text/plain";

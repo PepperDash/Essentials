@@ -3,6 +3,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a GenericLightingJoinMap
+    /// </summary>
     public class GenericLightingJoinMap : JoinMapBaseAdvanced
     {
 

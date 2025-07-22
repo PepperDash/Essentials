@@ -56,7 +56,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Retrieves all the loaded assemblies from the program directory
+        /// AddProgramAssemblies method
         /// </summary>
         public static void AddProgramAssemblies()
         {
@@ -115,6 +115,9 @@ namespace PepperDash.Essentials
         }
 
 
+        /// <summary>
+        /// SetEssentialsAssembly method
+        /// </summary>
         public static void SetEssentialsAssembly(string name, Assembly assembly)
         {
             var loadedAssembly = LoadedAssemblies.FirstOrDefault(la => la.Name.Equals(name));
@@ -163,6 +166,9 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="assembly"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetAssemblyVersion method
+        /// </summary>
         public static string GetAssemblyVersion(Assembly assembly)
         {
             var ver = assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
@@ -186,6 +192,9 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="filename"></param>
         /// <returns>True if file already matches loaded assembly file.</returns>
+        /// <summary>
+        /// CheckIfAssemblyLoaded method
+        /// </summary>
         public static bool CheckIfAssemblyLoaded(string name)
         {
             Debug.LogMessage(LogEventLevel.Verbose, "Checking if assembly: {0} is loaded...", name);
@@ -207,6 +216,9 @@ namespace PepperDash.Essentials
         /// Used by console command to report the currently loaded assemblies and versions
         /// </summary>
         /// <param name="command"></param>
+        /// <summary>
+        /// ReportAssemblyVersions method
+        /// </summary>
         public static void ReportAssemblyVersions(string command)
         {
             CrestronConsole.ConsoleCommandResponse("Essentials Version: {0}" + CrestronEnvironment.NewLine, Global.AssemblyVersion);
@@ -521,7 +533,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Loads plugins
+        /// LoadPlugins method
         /// </summary>
         public static void LoadPlugins()
         {
@@ -551,7 +563,7 @@ namespace PepperDash.Essentials
     }
 
     /// <summary>
-    /// Represents an assembly loaded at runtime and it's associated metadata
+    /// Represents a LoadedAssembly
     /// </summary>
     public class LoadedAssembly
     {
@@ -569,6 +581,9 @@ namespace PepperDash.Essentials
             Assembly = assembly;
         }
 
+        /// <summary>
+        /// SetAssembly method
+        /// </summary>
         public void SetAssembly(Assembly assembly)
         {
             Assembly = assembly;

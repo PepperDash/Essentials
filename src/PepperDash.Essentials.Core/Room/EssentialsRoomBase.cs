@@ -32,6 +32,9 @@ namespace PepperDash.Essentials.Core
         public BoolFeedback IsWarmingUpFeedback { get; private set; }
         public BoolFeedback IsCoolingDownFeedback { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the RoomOccupancy
+        /// </summary>
         public IOccupancyStatusProvider RoomOccupancy { get; protected set; }
 
         public bool OccupancyStatusProviderIsRemote { get; private set; }
@@ -50,12 +53,12 @@ namespace PepperDash.Essentials.Core
         protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
 
         /// <summary>
-        /// Indicates if this room is Mobile Control Enabled
+        /// Gets or sets the IsMobileControlEnabled
         /// </summary>
         public bool IsMobileControlEnabled { get; private set; }
 
         /// <summary>
-        /// The bridge for this room if Mobile Control is enabled
+        /// Gets or sets the MobileControlRoomBridge
         /// </summary>
         public IMobileControlRoomMessenger MobileControlRoomBridge { get; private set; }
 
@@ -157,8 +160,8 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Timer used for informing the UIs of a shutdown
-        /// </summary>        
+        /// Gets or sets the ShutdownPromptTimer
+        /// </summary>
         public SecondsCountdownTimer ShutdownPromptTimer { get; private set; }
 
         /// <summary>
@@ -174,10 +177,16 @@ namespace PepperDash.Essentials.Core
 
         public string LogoUrlLightBkgnd { get; set; }
 
+        /// <summary>
+        /// Gets or sets the LogoUrlDarkBkgnd
+        /// </summary>
         public string LogoUrlDarkBkgnd { get; set; }
 
         protected SecondsCountdownTimer RoomVacancyShutdownTimer { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the VacancyMode
+        /// </summary>
         public eVacancyMode VacancyMode { get; private set; }
 
         /// <summary>
@@ -247,6 +256,10 @@ namespace PepperDash.Essentials.Core
             });
         }
 
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
         public override bool CustomActivate()
         {
             SetUpMobileControl();
@@ -324,6 +337,9 @@ namespace PepperDash.Essentials.Core
         /// 
         /// </summary>
         /// <param name="type"></param>
+        /// <summary>
+        /// StartShutdown method
+        /// </summary>
         public void StartShutdown(eShutdownType type)
         {
             // Check for shutdowns running. Manual should override other shutdowns
@@ -338,6 +354,9 @@ namespace PepperDash.Essentials.Core
             Debug.LogMessage(LogEventLevel.Information, this, "ShutdownPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
         }
 
+        /// <summary>
+        /// StartRoomVacancyTimer method
+        /// </summary>
         public void StartRoomVacancyTimer(eVacancyMode mode)
         {
             if (mode == eVacancyMode.None)
@@ -353,7 +372,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Resets the vacancy mode and shutsdwon the room
+        /// Shutdown method
         /// </summary>
         public void Shutdown()
         {
@@ -474,7 +493,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// 
+    /// Enumeration of eWarmingCoolingMode values
     /// </summary>
     public enum eWarmingCoolingMode
     {

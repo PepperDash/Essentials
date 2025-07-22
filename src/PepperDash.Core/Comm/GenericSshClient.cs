@@ -42,9 +42,6 @@ namespace PepperDash.Core
         //public event GenericSocketStatusChangeEventDelegate SocketStatusChange;
 
         /// <summary>
-        /// Address of server
-        /// </summary>
-        /// <summary>
         /// Gets or sets the Hostname
         /// </summary>
         public string Hostname { get; set; }
@@ -55,16 +52,10 @@ namespace PepperDash.Core
         public int Port { get; set; }
 
         /// <summary>
-        /// Username for server
-        /// </summary>
-        /// <summary>
         /// Gets or sets the Username
         /// </summary>
         public string Username { get; set; }
 
-        /// <summary>
-        /// And... Password for server.  That was worth documenting!
-        /// </summary>
         /// <summary>
         /// Gets or sets the Password
         /// </summary>
@@ -131,10 +122,6 @@ namespace PepperDash.Core
             set { AutoReconnect = value == 1; }
         }
 
-        /// <summary>
-        /// Millisecond value, determines the timeout period in between reconnect attempts.
-        /// Set to 5000 by default
-        /// </summary>
         /// <summary>
         /// Gets or sets the AutoReconnectIntervalMs
         /// </summary>
@@ -209,9 +196,6 @@ namespace PepperDash.Core
             }
         }
 
-        /// <summary>
-        /// Connect to the server, using the provided properties.
-        /// </summary>
         /// <summary>
         /// Connect method
         /// </summary>
@@ -339,9 +323,6 @@ namespace PepperDash.Core
             }
         }
 
-		/// <summary>
-		/// Disconnect the clients and put away it's resources.
-		/// </summary>
   /// <summary>
   /// Disconnect method
   /// </summary>
@@ -573,9 +554,6 @@ namespace PepperDash.Core
 //*****************************************************************************************************
 //*****************************************************************************************************
 /// <summary>
-/// Fired when connection changes
-/// </summary>
-/// <summary>
 /// Represents a SshConnectionChangeEventArgs
 /// </summary>
 public class SshConnectionChangeEventArgs : EventArgs
@@ -585,25 +563,16 @@ public class SshConnectionChangeEventArgs : EventArgs
         /// </summary>
 		public bool IsConnected { get; private set; }
 
-        /// <summary>
-        /// Connection Status represented as a ushort
-        /// </summary>
   /// <summary>
   /// Gets or sets the UIsConnected
   /// </summary>
 		public ushort UIsConnected { get { return (ushort)(Client.IsConnected ? 1 : 0); } }
 
-        /// <summary>
-        /// The client
-        /// </summary>
   /// <summary>
   /// Gets or sets the Client
   /// </summary>
 		public GenericSshClient Client { get; private set; }
 
-        /// <summary>
-        /// Socket Status as represented by
-        /// </summary>
   /// <summary>
   /// Gets or sets the Status
   /// </summary>

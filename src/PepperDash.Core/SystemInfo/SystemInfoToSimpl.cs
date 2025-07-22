@@ -100,9 +100,6 @@ namespace PepperDash.Core.SystemInfo
 			OnBoolChange(false, 0, SystemInfoConstants.BusyBoolChange);
 		}
 
-		/// <summary>
-		/// Gets the current ethernet info
-		/// </summary>
   /// <summary>
   /// GetEthernetInfo method
   /// </summary>
@@ -164,9 +161,6 @@ namespace PepperDash.Core.SystemInfo
 			OnBoolChange(false, 0, SystemInfoConstants.BusyBoolChange);
 		}
 
-		/// <summary>
-		/// Gets the current control subnet info
-		/// </summary>
   /// <summary>
   /// GetControlSubnetInfo method
   /// </summary>
@@ -272,9 +266,6 @@ namespace PepperDash.Core.SystemInfo
 			OnBoolChange(false, 0, SystemInfoConstants.BusyBoolChange);
 		}
 
-		/// <summary>
-		/// Gets the processor uptime and passes it to S+
-		/// </summary>
   /// <summary>
   /// RefreshProcessorUptime method
   /// </summary>
