@@ -48,11 +48,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Gets the RouteDescriptor for a destination
-        /// </summary>
-        /// <returns>null if no RouteDescriptor for a destination exists</returns>
-        /// <summary>
-        /// GetRouteDescriptorForDestination method
+        /// Gets the RouteDescriptor for a destination. Returns null if no RouteDescriptor for a destination exists.
         /// </summary>
         public RouteDescriptor GetRouteDescriptorForDestination(IRoutingInputs destination)
         {
