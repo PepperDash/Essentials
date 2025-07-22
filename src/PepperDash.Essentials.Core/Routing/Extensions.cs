@@ -47,12 +47,9 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Will release the existing route to the destination, if a route is found. This does not CLEAR the route, only stop counting usage time on any output ports that have a usage tracker set
+        /// Will release the existing route to the destination, if a route is found. This does not CLEAR the route, only stop counting usage time on any output ports that have a usage tracker set.
         /// </summary>
         /// <param name="destination">destination to clear</param>
-        /// <summary>
-        /// ReleaseRoute method
-        /// </summary>
         public static void ReleaseRoute(this IRoutingInputs destination)
         {
             routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, string.Empty, false));
