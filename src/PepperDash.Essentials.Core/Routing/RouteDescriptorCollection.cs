@@ -30,9 +30,6 @@ namespace PepperDash.Essentials.Core
         /// proper route releasing.
         /// </summary>
         /// <param name="descriptor"></param>
-        /// <summary>
-        /// AddRouteDescriptor method
-        /// </summary>
         public void AddRouteDescriptor(RouteDescriptor descriptor)
         {
             if (descriptor == null)
