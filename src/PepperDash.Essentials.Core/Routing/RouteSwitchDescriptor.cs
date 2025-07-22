@@ -42,7 +42,6 @@
 		/// Returns a string representation of the route switch descriptor.
 		/// </summary>
 		/// <returns>A string describing the switch operation.</returns>
-  /// </summary>
   /// <inheritdoc />
 		public override string ToString()
 		{
