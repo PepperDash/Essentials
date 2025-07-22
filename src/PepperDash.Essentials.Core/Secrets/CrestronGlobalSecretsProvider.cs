@@ -80,9 +80,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key">Secret Key</param>
         /// <returns>ISecret Object containing key, provider, and value</returns>
-        /// <summary>
-        /// GetSecret method
-        /// </summary>
+        
+        
+        
         public ISecret GetSecret(string key)
         {
             string mySecret;
