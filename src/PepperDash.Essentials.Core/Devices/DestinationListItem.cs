@@ -115,7 +115,7 @@ namespace PepperDash.Essentials.Core
         public bool SupportsUsb { get; set; }
 
         /// <summary>
-        /// The key of the destination port associated with this source item
+        /// The key of the destination port associated with this destination item
         /// This is used to identify the specific port on the destination device that this item refers to for advanced routing
         /// </summary>
         [JsonProperty("destinationPortKey")]
