@@ -105,9 +105,6 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key">Secret Key</param>
         /// <returns>bool if present</returns>
-        /// <summary>
-        /// TestSecret method
-        /// </summary>
         public bool TestSecret(string key)
         {
             string mySecret;
