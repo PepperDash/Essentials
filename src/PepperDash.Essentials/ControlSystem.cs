@@ -18,6 +18,9 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// Main control system class that inherits from CrestronControlSystem and manages program lifecycle
+    /// </summary>
     public class ControlSystem : CrestronControlSystem, ILoadConfig
     {
         HttpLogoServer LogoServer;
@@ -26,6 +29,9 @@ namespace PepperDash.Essentials
         private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
+        /// <summary>
+        /// Initializes a new instance of the ControlSystem class
+        /// </summary>
         public ControlSystem()
             : base()
         {
