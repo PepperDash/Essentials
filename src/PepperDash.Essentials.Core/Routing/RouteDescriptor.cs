@@ -146,10 +146,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /*/// <summary>
-    /// Represents an collection of individual route steps between Source and Destination
-    /// </summary>
-    /// <summary>
-    /// Represents a RouteDescriptor
+    /// Represents a collection of individual route steps between Source and Destination for a specific signal type.
     /// </summary>
     public class RouteDescriptor<TInputSelector, TOutputSelector>
     {
