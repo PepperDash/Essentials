@@ -24,7 +24,7 @@ namespace PepperDash.Essentials.Core.Config
 		public string SourceKey { get; set; }
 		
   /// <summary>
-  /// Gets or sets the SourceCard
+  /// The key of the source card (if applicable, e.g., in a modular chassis).
   /// </summary>
 		public string SourceCard { get; set; }
 		
