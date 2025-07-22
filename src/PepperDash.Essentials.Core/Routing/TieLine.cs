@@ -5,7 +5,8 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Represents a TieLine
+    /// Represents a connection between routing ports, linking a source output port to a destination input port.
+    /// This class is used to define signal paths for routing algorithms, including signal type overrides and internal connections.
     /// </summary>
     public class TieLine
     {
