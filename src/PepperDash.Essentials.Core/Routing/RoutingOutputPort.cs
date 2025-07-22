@@ -56,10 +56,6 @@ namespace PepperDash.Essentials.Core
         /// Returns a string representation of the output port.
         /// </summary>
         /// <returns>A string in the format "ParentDeviceKey|PortKey|SignalType|ConnectionType".</returns>
-        /// <summary>
-        /// ToString method
-        /// </summary>
-        /// <inheritdoc />
         public override string ToString()
         {
             return $"{ParentDevice.Key}|{Key}|{Type}|{ConnectionType}";
