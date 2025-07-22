@@ -70,9 +70,6 @@ namespace PepperDash.Essentials.Core
         /// Returns a string representation of the route request.
         /// </summary>
         /// <returns>A string describing the source and destination of the route request.</returns>
-        /// <summary>
-        /// ToString method
-        /// </summary>
         public override string ToString()
         {
             return $"Route {Source?.Key ?? "No Source Device"}:{SourcePort?.Key ?? "auto"} to {Destination?.Key ?? "No Destination Device"}:{DestinationPort?.Key ?? "auto"}";
