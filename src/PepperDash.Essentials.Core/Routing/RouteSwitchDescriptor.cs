@@ -53,20 +53,23 @@
 	}
 
     /*/// <summary>
-    /// Represents a RouteSwitchDescriptor with generic input and output selectors.
+    /// Represents an individual link for a route
+    /// </summary>
+    /// <summary>
+    /// Represents a RouteSwitchDescriptor
     /// </summary>
     public class RouteSwitchDescriptor<TInputSelector, TOutputSelector>
     {
         /// <summary>
-        /// Gets or sets the SwitchingDevice.
+        /// Gets or sets the SwitchingDevice
         /// </summary>
         public IRoutingInputs<TInputSelector> SwitchingDevice { get { return InputPort.ParentDevice; } }
         /// <summary>
-        /// Gets or sets the OutputPort.
+        /// Gets or sets the OutputPort
         /// </summary>
         public RoutingOutputPort<TOutputSelector> OutputPort { get; set; }
         /// <summary>
-        /// Gets or sets the InputPort.
+        /// Gets or sets the InputPort
         /// </summary>
         public RoutingInputPort<TInputSelector> InputPort { get; set; }
 

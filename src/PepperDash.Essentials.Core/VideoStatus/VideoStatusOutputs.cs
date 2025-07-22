@@ -94,9 +94,9 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-	///// <summary>
-	///// Wraps up the common video statuses exposed on a video input port
-	///// </summary>
+	/// <summary>
+	/// Wraps up the common video statuses exposed on a video input port
+	/// </summary>
 	//public class BasicVideoStatus : IBasicVideoStatus
 	//{
 	//    public event VideoStatusChangeHandler VideoStatusChange;

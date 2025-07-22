@@ -83,7 +83,10 @@ namespace PepperDash.Essentials.Core
     }
 
     /*/// <summary>
-    /// Represents a RouteDescriptorCollection - typically the static DefaultCollection is used
+    /// A collection of RouteDescriptors - typically the static DefaultCollection is used
+    /// </summary>
+    /// <summary>
+    /// Represents a RouteDescriptorCollection
     /// </summary>
     public class RouteDescriptorCollection<TInputSelector, TOutputSelector>
 	{

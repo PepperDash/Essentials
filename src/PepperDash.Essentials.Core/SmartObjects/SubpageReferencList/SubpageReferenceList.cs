@@ -15,9 +15,9 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Core
 {
     ////*****************************************************************************
-    ///// <summary>
-    ///// Base class for all subpage reference list controllers
-    ///// </summary>
+    /// <summary>
+    /// Base class for all subpage reference list controllers
+    /// </summary>
     //public class SubpageReferenceListController
     //{
     //    public SubpageReferenceList TheList { get; protected set; }

@@ -95,6 +95,9 @@ namespace PepperDash.Essentials.Core
         /// Releases the usage tracking for the route and optionally clears the route on the switching devices.
         /// </summary>
         /// <param name="clearRoute">If true, attempts to clear the route on the switching devices (e.g., set input to null/0).</param>
+        /// <summary>
+        /// ReleaseRoutes method
+        /// </summary>
         public void ReleaseRoutes(bool clearRoute = false)
         {
             foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
@@ -146,7 +149,10 @@ namespace PepperDash.Essentials.Core
     }
 
     /*/// <summary>
-    /// Represents a collection of individual route steps between Source and Destination for a specific signal type.
+    /// Represents an collection of individual route steps between Source and Destination
+    /// </summary>
+    /// <summary>
+    /// Represents a RouteDescriptor
     /// </summary>
     public class RouteDescriptor<TInputSelector, TOutputSelector>
     {

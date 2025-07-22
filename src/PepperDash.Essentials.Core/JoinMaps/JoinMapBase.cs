@@ -303,22 +303,22 @@ namespace PepperDash.Essentials.Core
             PrintJoinMapInfo();
         }
 
-        ///// <summary>
-        ///// Returns the join number for the join with the specified key
-        ///// </summary>
-        ///// <param name="key"></param>
-        ///// <returns></returns>
+        /// <summary>
+        /// Returns the join number for the join with the specified key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         //public uint GetJoinForKey(string key)
         //{
         //    return Joins.ContainsKey(key) ? Joins[key].JoinNumber : 0;
         //}
 
 
-        ///// <summary>
-        ///// Returns the join span for the join with the specified key
-        ///// </summary>
-        ///// <param name="key"></param>
-        ///// <returns></returns>
+        /// <summary>
+        /// Returns the join span for the join with the specified key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         //public uint GetJoinSpanForKey(string key)
         //{
         //    return Joins.ContainsKey(key) ? Joins[key].JoinSpan : 0;

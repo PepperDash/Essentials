@@ -80,9 +80,9 @@ namespace PepperDash.Essentials.Core
 			CrestronInvoke.BeginInvoke(o => FireUpdate());
 		}
 
-        ///// <summary>
-        ///// Helper method that fires event. Use this intstead of calling OutputChange
-        ///// </summary>
+        /// <summary>
+        /// Helper method that fires event. Use this intstead of calling OutputChange
+        /// </summary>
         //protected void OnOutputChange()
         //{
         //    if (OutputChange != null) OutputChange(this, EventArgs.Empty);

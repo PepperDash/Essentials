@@ -19,9 +19,9 @@ namespace PepperDash.Core
         /// </summary>
         public string Key { get; private set; }
 
-        ///// <summary>
-        ///// The name of the file containing the current debug settings.
-        ///// </summary>
+        /// <summary>
+        /// The name of the file containing the current debug settings.
+        /// </summary>
         //string FileName = string.Format(@"\nvram\debug\app{0}Debug.json", InitialParametersClass.ApplicationNumber);
 
         DebugContextSaveData SaveData;

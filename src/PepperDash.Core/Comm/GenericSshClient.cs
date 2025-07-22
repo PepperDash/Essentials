@@ -36,7 +36,7 @@ namespace PepperDash.Core
         /// </summary>
         public event EventHandler<GenericSocketStatusChageEventArgs> ConnectionChange;
 
-        ///// <summary>
+        /// <summary>
         ///// 
         ///// </summary>
         //public event GenericSocketStatusChangeEventDelegate SocketStatusChange;
@@ -79,7 +79,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// 
+        /// Socket status change event
         /// </summary>
         public SocketStatus ClientStatus
         {
