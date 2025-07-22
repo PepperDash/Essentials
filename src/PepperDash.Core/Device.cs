@@ -8,6 +8,9 @@ namespace PepperDash.Core
 	/// <summary>
 	/// The core event and status-bearing class that most if not all device and connectors can derive from.
 	/// </summary>
+ /// <summary>
+ /// Represents a Device
+ /// </summary>
 	public class Device : IKeyName
 	{
 
@@ -18,6 +21,9 @@ namespace PepperDash.Core
 		/// <summary>
 		/// Name of the devie
 		/// </summary>
+  /// <summary>
+  /// Gets or sets the Name
+  /// </summary>
 		public string Name { get; protected set; }
 		/// <summary>
 		/// 
@@ -86,6 +92,9 @@ namespace PepperDash.Core
 		/// Adds a post activation action
 		/// </summary>
 		/// <param name="act"></param>
+  /// <summary>
+  /// AddPostActivationAction method
+  /// </summary>
 		public void AddPostActivationAction(Action act)
 		{
 			if (_PostActivationActions == null)
@@ -96,6 +105,9 @@ namespace PepperDash.Core
 		/// <summary>
 		/// Executes the preactivation actions
 		/// </summary>
+  /// <summary>
+  /// PreActivate method
+  /// </summary>
 		public void PreActivate()
 		{
 			if (_PreActivationActions != null)
@@ -117,6 +129,9 @@ namespace PepperDash.Core
 		/// all post-activation at end. Classes needing additional logic to 
 		/// run should override CustomActivate()
 		/// </summary>
+  /// <summary>
+  /// Activate method
+  /// </summary>
 		public bool Activate()
 		{
 			//if (_PreActivationActions != null)
@@ -130,6 +145,9 @@ namespace PepperDash.Core
 		/// <summary>
 		/// Executes the postactivation actions
 		/// </summary>
+  /// <summary>
+  /// PostActivate method
+  /// </summary>
 		public void PostActivate()
 		{
 			if (_PostActivationActions != null)
@@ -152,6 +170,9 @@ namespace PepperDash.Core
 		/// do not need to call base.CustomActivate()
 		/// </summary>
 		/// <returns>true if device activated successfully.</returns>
+  /// <summary>
+  /// CustomActivate method
+  /// </summary>
 		public virtual bool CustomActivate() { return true; }
 
 		/// <summary>
@@ -184,6 +205,9 @@ namespace PepperDash.Core
         /// <remarks>The returned string is formatted as "{Key} - {Name}". If the <c>Name</c> property is
         /// null or empty,  "---" is used in place of the name.</remarks>
         /// <returns>A string that represents the object, containing the key and name in the format "{Key} - {Name}".</returns>
+  /// <summary>
+  /// ToString method
+  /// </summary>
 		public override string ToString()
 		{
 			return string.Format("{0} - {1}", Key, string.IsNullOrEmpty(Name) ? "---" : Name);

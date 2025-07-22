@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Core.Logging
 {
+    /// <summary>
+    /// Represents a DebugErrorLogSink
+    /// </summary>
     public class DebugErrorLogSink : ILogEventSink
     {
         private ITextFormatter _formatter;
@@ -24,6 +27,9 @@ namespace PepperDash.Core.Logging
             {LogEventLevel.Error, (msg) => ErrorLog.Error(msg) },
             {LogEventLevel.Fatal, (msg) => ErrorLog.Error(msg) }
         };
+        /// <summary>
+        /// Emit method
+        /// </summary>
         public void Emit(LogEvent logEvent)
         {
             string message;

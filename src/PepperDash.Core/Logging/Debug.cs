@@ -80,10 +80,16 @@ namespace PepperDash.Core
         /// <summary>
         /// Debug level to set for a given program.
         /// </summary>
+        /// <summary>
+        /// Gets or sets the Level
+        /// </summary>
         public static int Level { get; private set; }
 
         /// <summary>
         /// When this is true, the configuration file will NOT be loaded until triggered by either a console command or a signal
+        /// </summary>
+        /// <summary>
+        /// Gets or sets the DoNotLoadConfigOnNextBoot
         /// </summary>
         public static bool DoNotLoadConfigOnNextBoot { get; private set; }
 
@@ -95,6 +101,9 @@ namespace PepperDash.Core
 
         /// <summary>
         /// Version for the currently loaded PepperDashCore dll
+        /// </summary>
+        /// <summary>
+        /// Gets or sets the PepperDashCoreVersion
         /// </summary>
         public static string PepperDashCoreVersion { get; private set; } 
 
@@ -233,6 +242,9 @@ namespace PepperDash.Core
             };
         }
 
+        /// <summary>
+        /// UpdateLoggerConfiguration method
+        /// </summary>
         public static void UpdateLoggerConfiguration(LoggerConfiguration config)
         {
             _loggerConfiguration = config;
@@ -240,6 +252,9 @@ namespace PepperDash.Core
             _logger = config.CreateLogger();
         }
 
+        /// <summary>
+        /// ResetLoggerConfiguration method
+        /// </summary>
         public static void ResetLoggerConfiguration()
         {
             _loggerConfiguration = _defaultLoggerConfiguration;
@@ -319,6 +334,9 @@ namespace PepperDash.Core
         /// Callback for console command
         /// </summary>
         /// <param name="levelString"></param>
+        /// <summary>
+        /// SetDebugFromConsole method
+        /// </summary>
         public static void SetDebugFromConsole(string levelString)
         {
             try
@@ -371,6 +389,9 @@ namespace PepperDash.Core
         /// Sets the debug level
         /// </summary>
         /// <param name="level"> Valid values 0-5</param>
+        /// <summary>
+        /// SetDebugLevel method
+        /// </summary>
         public static void SetDebugLevel(uint level)
         {
             if(!_logLevels.TryGetValue(level, out var logLevel))
@@ -385,6 +406,9 @@ namespace PepperDash.Core
             SetDebugLevel(logLevel);
         }
 
+        /// <summary>
+        /// SetDebugLevel method
+        /// </summary>
         public static void SetDebugLevel(LogEventLevel level)
         {
             _consoleLoggingLevelSwitch.MinimumLevel = level;
@@ -402,6 +426,9 @@ namespace PepperDash.Core
                 CrestronConsole.PrintLine($"Error saving console debug level setting: {err}");
         }
 
+        /// <summary>
+        /// SetWebSocketMinimumDebugLevel method
+        /// </summary>
         public static void SetWebSocketMinimumDebugLevel(LogEventLevel level)
         {
             _websocketLoggingLevelSwitch.MinimumLevel = level;            
@@ -414,6 +441,9 @@ namespace PepperDash.Core
             LogMessage(LogEventLevel.Information, "Websocket debug level set to {0}", _websocketLoggingLevelSwitch.MinimumLevel);
         }
 
+        /// <summary>
+        /// SetErrorLogMinimumDebugLevel method
+        /// </summary>
         public static void SetErrorLogMinimumDebugLevel(LogEventLevel level)
         {
             _errorLogLevelSwitch.MinimumLevel = level;
@@ -426,6 +456,9 @@ namespace PepperDash.Core
             LogMessage(LogEventLevel.Information, "Error log debug level set to {0}", _websocketLoggingLevelSwitch.MinimumLevel);
         }
 
+        /// <summary>
+        /// SetFileMinimumDebugLevel method
+        /// </summary>
         public static void SetFileMinimumDebugLevel(LogEventLevel level)
         {
             _errorLogLevelSwitch.MinimumLevel = level;
@@ -442,6 +475,9 @@ namespace PepperDash.Core
         /// Callback for console command
         /// </summary>
         /// <param name="stateString"></param>
+        /// <summary>
+        /// SetDoNotLoadOnNextBootFromConsole method
+        /// </summary>
         public static void SetDoNotLoadOnNextBootFromConsole(string stateString)
         {
             try
@@ -464,6 +500,9 @@ namespace PepperDash.Core
         /// Callback for console command
         /// </summary>
         /// <param name="items"></param>
+  /// <summary>
+  /// SetDebugFilterFromConsole method
+  /// </summary>
 		public static void SetDebugFilterFromConsole(string items)
 		{
 			var str = items.Trim();
@@ -559,6 +598,9 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="deviceKey"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetDeviceDebugSettingsForKey method
+        /// </summary>
         public static object GetDeviceDebugSettingsForKey(string deviceKey)
         {
             return _contexts.GetDebugSettingsForKey(deviceKey);
@@ -581,6 +623,9 @@ namespace PepperDash.Core
         /// <summary>
         /// 
         /// </summary>
+        /// <summary>
+        /// ShowDebugLog method
+        /// </summary>
         public static void ShowDebugLog(string s)
         {
             var loglist = CrestronLogger.PrintTheLog(s.ToLower() == "all");
@@ -595,6 +640,9 @@ namespace PepperDash.Core
         /// <param name="message">Message template</param>
         /// <param name="device">Optional IKeyed device. If provided, the Key of the device will be added to the log message</param>
         /// <param name="args">Args to put into message template</param>
+        /// <summary>
+        /// LogMessage method
+        /// </summary>
         public static void LogMessage(Exception ex, string message, IKeyed device = null, params object[] args)
         {
             using (LogContext.PushProperty("Key", device?.Key))
@@ -623,16 +671,25 @@ namespace PepperDash.Core
            _logger.Write(level, message, args);
         }
 
+        /// <summary>
+        /// LogMessage method
+        /// </summary>
         public static void LogMessage(LogEventLevel level, Exception ex, string message, params object[] args)
         {
             _logger.Write(level, ex, message, args);
         }
 
+        /// <summary>
+        /// LogMessage method
+        /// </summary>
         public static void LogMessage(LogEventLevel level, IKeyed keyed, string message, params object[] args)
         {
             LogMessage(level, message, keyed, args);
         }
 
+        /// <summary>
+        /// LogMessage method
+        /// </summary>
         public static void LogMessage(LogEventLevel level, Exception ex, IKeyed device, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", device?.Key))
@@ -642,6 +699,9 @@ namespace PepperDash.Core
         }
 
         #region Explicit methods for logging levels
+        /// <summary>
+        /// LogVerbose method
+        /// </summary>
         public static void LogVerbose(IKeyed keyed, string message, params object[] args)
         {
             using(LogContext.PushProperty("Key", keyed?.Key))
@@ -650,6 +710,9 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogVerbose method
+        /// </summary>
         public static void LogVerbose(Exception ex, IKeyed keyed, string message, params object[] args)
         {
             using(LogContext.PushProperty("Key", keyed?.Key))
@@ -658,16 +721,25 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogVerbose method
+        /// </summary>
         public static void LogVerbose(string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Verbose, message, args);
         }
 
+        /// <summary>
+        /// LogVerbose method
+        /// </summary>
         public static void LogVerbose(Exception ex, string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Verbose, ex, null, message, args);
         }
 
+        /// <summary>
+        /// LogDebug method
+        /// </summary>
         public static void LogDebug(IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -676,6 +748,9 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogDebug method
+        /// </summary>
         public static void LogDebug(Exception ex, IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -684,16 +759,25 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogDebug method
+        /// </summary>
         public static void LogDebug(string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Debug, message, args);
         }
 
+        /// <summary>
+        /// LogDebug method
+        /// </summary>
         public static void LogDebug(Exception ex, string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Debug, ex, null, message, args);
         }
 
+        /// <summary>
+        /// LogInformation method
+        /// </summary>
         public static void LogInformation(IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -702,6 +786,9 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogInformation method
+        /// </summary>
         public static void LogInformation(Exception ex, IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -710,16 +797,25 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogInformation method
+        /// </summary>
         public static void LogInformation(string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Information, message, args);
         }
 
+        /// <summary>
+        /// LogInformation method
+        /// </summary>
         public static void LogInformation(Exception ex, string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Information, ex, null, message, args);
         }
 
+        /// <summary>
+        /// LogWarning method
+        /// </summary>
         public static void LogWarning(IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -728,6 +824,9 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogWarning method
+        /// </summary>
         public static void LogWarning(Exception ex, IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -736,16 +835,25 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogWarning method
+        /// </summary>
         public static void LogWarning(string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Warning, message, args);
         }
 
+        /// <summary>
+        /// LogWarning method
+        /// </summary>
         public static void LogWarning(Exception ex, string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Warning, ex, null, message, args);
         }
 
+        /// <summary>
+        /// LogError method
+        /// </summary>
         public static void LogError(IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -754,6 +862,9 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogError method
+        /// </summary>
         public static void LogError(Exception ex, IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -762,16 +873,25 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogError method
+        /// </summary>
         public static void LogError(string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Error, message, args);
         }
 
+        /// <summary>
+        /// LogError method
+        /// </summary>
         public static void LogError(Exception ex, string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Error, ex, null, message, args);
         }
 
+        /// <summary>
+        /// LogFatal method
+        /// </summary>
         public static void LogFatal(IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -780,6 +900,9 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogFatal method
+        /// </summary>
         public static void LogFatal(Exception ex, IKeyed keyed, string message, params object[] args)
         {
             using (LogContext.PushProperty("Key", keyed?.Key))
@@ -788,11 +911,17 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// LogFatal method
+        /// </summary>
         public static void LogFatal(string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Fatal, message, args);
         }
 
+        /// <summary>
+        /// LogFatal method
+        /// </summary>
         public static void LogFatal(Exception ex, string message, params object[] args)
         {
             _logger.Write(LogEventLevel.Fatal, ex, null, message, args);
@@ -869,6 +998,9 @@ namespace PepperDash.Core
         /// Logs to Console when at-level, and all messages to error log
         /// </summary>
         [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
+        /// <summary>
+        /// Console method
+        /// </summary>
         public static void Console(uint level, ErrorLogLevel errorLogLevel,
             string format, params object[] items)
         {
@@ -881,6 +1013,9 @@ namespace PepperDash.Core
         /// it will only be written to the log.
         /// </summary>
         [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
+        /// <summary>
+        /// ConsoleWithLog method
+        /// </summary>
         public static void ConsoleWithLog(uint level, string format, params object[] items)
         {
             LogMessage(level, format, items);
@@ -1004,6 +1139,9 @@ namespace PepperDash.Core
 
         /// <summary>
         /// Error level to for message to be logged at
+        /// </summary>
+        /// <summary>
+        /// Enumeration of ErrorLogLevel values
         /// </summary>
         public enum ErrorLogLevel
         {

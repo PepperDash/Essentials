@@ -44,6 +44,9 @@ namespace PepperDash.Core
         /// <summary>
         /// Address of server
         /// </summary>
+        /// <summary>
+        /// Gets or sets the Hostname
+        /// </summary>
         public string Hostname { get; set; }
 
         /// <summary>
@@ -54,10 +57,16 @@ namespace PepperDash.Core
         /// <summary>
         /// Username for server
         /// </summary>
+        /// <summary>
+        /// Gets or sets the Username
+        /// </summary>
         public string Username { get; set; }
 
         /// <summary>
         /// And... Password for server.  That was worth documenting!
+        /// </summary>
+        /// <summary>
+        /// Gets or sets the Password
         /// </summary>
         public string Password { get; set; }
 
@@ -125,6 +134,9 @@ namespace PepperDash.Core
         /// <summary>
         /// Millisecond value, determines the timeout period in between reconnect attempts.
         /// Set to 5000 by default
+        /// </summary>
+        /// <summary>
+        /// Gets or sets the AutoReconnectIntervalMs
         /// </summary>
         public int AutoReconnectIntervalMs { get; set; }
 
@@ -199,6 +211,9 @@ namespace PepperDash.Core
 
         /// <summary>
         /// Connect to the server, using the provided properties.
+        /// </summary>
+        /// <summary>
+        /// Connect method
         /// </summary>
         public void Connect()
         {
@@ -327,6 +342,9 @@ namespace PepperDash.Core
 		/// <summary>
 		/// Disconnect the clients and put away it's resources.
 		/// </summary>
+  /// <summary>
+  /// Disconnect method
+  /// </summary>
 		public void Disconnect()
 		{
 			ConnectEnabled = false;
@@ -476,6 +494,9 @@ namespace PepperDash.Core
 		/// Sends text to the server
 		/// </summary>
 		/// <param name="text"></param>
+  /// <summary>
+  /// SendText method
+  /// </summary>
 		public void SendText(string text)
 		{
 		    try
@@ -513,6 +534,9 @@ namespace PepperDash.Core
         /// Sends Bytes to the server
         /// </summary>
         /// <param name="bytes"></param>
+  /// <summary>
+  /// SendBytes method
+  /// </summary>
 		public void SendBytes(byte[] bytes)
 		{
             try
@@ -551,6 +575,9 @@ namespace PepperDash.Core
 /// <summary>
 /// Fired when connection changes
 /// </summary>
+/// <summary>
+/// Represents a SshConnectionChangeEventArgs
+/// </summary>
 public class SshConnectionChangeEventArgs : EventArgs
 	{
         /// <summary>
@@ -561,16 +588,25 @@ public class SshConnectionChangeEventArgs : EventArgs
         /// <summary>
         /// Connection Status represented as a ushort
         /// </summary>
+  /// <summary>
+  /// Gets or sets the UIsConnected
+  /// </summary>
 		public ushort UIsConnected { get { return (ushort)(Client.IsConnected ? 1 : 0); } }
 
         /// <summary>
         /// The client
         /// </summary>
+  /// <summary>
+  /// Gets or sets the Client
+  /// </summary>
 		public GenericSshClient Client { get; private set; }
 
         /// <summary>
         /// Socket Status as represented by
         /// </summary>
+  /// <summary>
+  /// Gets or sets the Status
+  /// </summary>
 		public ushort Status { get { return Client.UStatus; } }
 
         /// <summary>

@@ -50,11 +50,17 @@ namespace PepperDash.Core.JsonStandardObjects
 	/// <summary>
 	/// Device communication parameter class
 	/// </summary>
+ /// <summary>
+ /// Represents a ComParamsConfig
+ /// </summary>
 	public class ComParamsConfig
 	{
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the baudRate
+  /// </summary>
 		public int baudRate { get; set; }
         /// <summary>
         /// 
@@ -89,10 +95,16 @@ namespace PepperDash.Core.JsonStandardObjects
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the simplBaudRate
+  /// </summary>
 		public ushort simplBaudRate { get { return Convert.ToUInt16(baudRate); } }
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the simplDataBits
+  /// </summary>
 		public ushort simplDataBits { get { return Convert.ToUInt16(dataBits); } }
         /// <summary>
         /// 
@@ -146,10 +158,16 @@ namespace PepperDash.Core.JsonStandardObjects
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the simplPort
+  /// </summary>
 		public ushort simplPort { get { return Convert.ToUInt16(port); } }
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the simplAutoReconnect
+  /// </summary>
 		public ushort simplAutoReconnect { get { return (ushort)(autoReconnect ? 1 : 0); } }
         /// <summary>
         /// 
@@ -195,6 +213,9 @@ namespace PepperDash.Core.JsonStandardObjects
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the simplControlPortNumber
+  /// </summary>
 		public ushort simplControlPortNumber { get { return Convert.ToUInt16(controlPortNumber); } }
 
 		/// <summary>
@@ -210,6 +231,9 @@ namespace PepperDash.Core.JsonStandardObjects
 	/// <summary>
 	/// Device properties class
 	/// </summary>
+ /// <summary>
+ /// Represents a PropertiesConfig
+ /// </summary>
 	public class PropertiesConfig
 	{
         /// <summary>
@@ -229,10 +253,16 @@ namespace PepperDash.Core.JsonStandardObjects
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the simplDeviceId
+  /// </summary>
 		public ushort simplDeviceId { get { return Convert.ToUInt16(deviceId); } }
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the simplEnabled
+  /// </summary>
 		public ushort simplEnabled { get { return (ushort)(enabled ? 1 : 0); } }
 
 		/// <summary>

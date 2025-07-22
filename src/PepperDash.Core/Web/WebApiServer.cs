@@ -28,21 +28,33 @@ namespace PepperDash.Core.Web
 		/// <summary>
 		/// Web API server key
 		/// </summary>
+  /// <summary>
+  /// Gets or sets the Key
+  /// </summary>
 		public string Key { get; private set; }
 
 		/// <summary>
 		/// Web API server name
 		/// </summary>
+  /// <summary>
+  /// Gets or sets the Name
+  /// </summary>
 		public string Name { get; private set; }
 
 		/// <summary>
 		/// CWS base path, will default to "/api" if not set via initialize method
 		/// </summary>
+  /// <summary>
+  /// Gets or sets the BasePath
+  /// </summary>
 		public string BasePath { get; private set; }
 
 		/// <summary>
 		/// Indicates CWS is registered with base path
 		/// </summary>
+  /// <summary>
+  /// Gets or sets the IsRegistered
+  /// </summary>
 		public bool IsRegistered { get; private set; }
 
 		/// <summary>
@@ -140,6 +152,9 @@ namespace PepperDash.Core.Web
 		/// <summary>
 		/// Initializes CWS class
 		/// </summary>
+  /// <summary>
+  /// Initialize method
+  /// </summary>
 		public void Initialize(string key, string basePath)
 		{
 			Key = key;
@@ -165,6 +180,9 @@ namespace PepperDash.Core.Web
 		/// Removes a route from CWS
 		/// </summary>
 		/// <param name="route"></param>
+  /// <summary>
+  /// RemoveRoute method
+  /// </summary>
 		public void RemoveRoute(HttpCwsRoute route)
 		{
 			if (route == null)
@@ -179,6 +197,9 @@ namespace PepperDash.Core.Web
 		/// <summary>
 		/// Returns a list of the current routes
 		/// </summary>
+  /// <summary>
+  /// GetRouteCollection method
+  /// </summary>
 		public HttpCwsRouteCollection GetRouteCollection()
 		{
 			return _server.Routes;
@@ -225,6 +246,9 @@ namespace PepperDash.Core.Web
 		/// <summary>
 		/// Stop CWS instance
 		/// </summary>
+  /// <summary>
+  /// Stop method
+  /// </summary>
 		public void Stop()
 		{
 			try

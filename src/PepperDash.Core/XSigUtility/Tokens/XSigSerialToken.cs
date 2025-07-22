@@ -63,6 +63,9 @@ namespace PepperDash.Core.Intersystem.Tokens
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetTokenWithOffset method
+        /// </summary>
         public override XSigToken GetTokenWithOffset(int offset)
         {
             if (offset == 0) return this;
@@ -73,6 +76,9 @@ namespace PepperDash.Core.Intersystem.Tokens
         /// 
         /// </summary>
         /// <returns></returns>
+        /// <summary>
+        /// ToString method
+        /// </summary>
         public override string ToString()
         {
             return Index + " = \"" + Value + "\"";

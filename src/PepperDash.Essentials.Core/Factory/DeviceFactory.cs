@@ -12,12 +12,29 @@ using System.Linq;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Wrapper class for device factory information
+    /// </summary>
     public class DeviceFactoryWrapper
     {
+        /// <summary>
+        /// Gets or sets the device type
+        /// </summary>
         public Type Type { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the description of the device factory
+        /// </summary>
         public string Description { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the factory method for creating devices
+        /// </summary>
         public Func<DeviceConfig, IKeyed> FactoryMethod { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the DeviceFactoryWrapper class
+        /// </summary>
         public DeviceFactoryWrapper()
         {
             Type = null;
@@ -25,8 +42,14 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Factory class for loading and managing device types
+    /// </summary>
     public class DeviceFactory
     {
+        /// <summary>
+        /// Initializes a new instance of the DeviceFactory class and loads all device type factories
+        /// </summary>
         public DeviceFactory()
         {
             var assy = Assembly.GetExecutingAssembly();

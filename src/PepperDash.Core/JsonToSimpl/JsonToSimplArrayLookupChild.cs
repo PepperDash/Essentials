@@ -8,6 +8,9 @@ namespace PepperDash.Core.JsonToSimpl
     /// <summary>
     /// Used to interact with an array of values with the S+ modules
     /// </summary>
+ /// <summary>
+ /// Represents a JsonToSimplArrayLookupChild
+ /// </summary>
 	public class JsonToSimplArrayLookupChild : JsonToSimplChildObjectBase
 	{
         /// <summary>
@@ -79,6 +82,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// <summary>
         /// Process all values
         /// </summary>
+  /// <summary>
+  /// ProcessAll method
+  /// </summary>
 		public override void ProcessAll()
 		{
 			if (FindInArray())

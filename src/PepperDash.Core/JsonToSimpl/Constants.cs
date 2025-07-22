@@ -91,6 +91,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the ValueType
+  /// </summary>
 		public SPlusType ValueType { get; private set; }
         /// <summary>
         /// 
@@ -125,6 +128,9 @@ namespace PepperDash.Core.JsonToSimpl
 	/// <summary>
 	/// S+ types enum
 	/// </summary>
+ /// <summary>
+ /// Enumeration of SPlusType values
+ /// </summary>
 	public enum SPlusType
 	{
         /// <summary>

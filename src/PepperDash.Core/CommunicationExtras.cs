@@ -41,6 +41,9 @@ namespace PepperDash.Core
 	/// <summary>
 	/// Represents a device that uses basic connection
 	/// </summary>
+    /// <summary>
+    /// Defines the contract for IBasicCommunication
+    /// </summary>
     public interface IBasicCommunication : ICommunicationReceiver
 	{
         /// <summary>
@@ -150,6 +153,9 @@ namespace PepperDash.Core
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the Bytes
+  /// </summary>
 		public byte[] Bytes { get; private set; }
 
         /// <summary>
@@ -228,6 +234,9 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
+  /// <summary>
+  /// GetEscapedText method
+  /// </summary>
 		public static string GetEscapedText(string text)
 		{
 			var bytes = Encoding.GetEncoding(28591).GetBytes(text);
@@ -239,6 +248,9 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetDebugText method
+        /// </summary>
         public static string GetDebugText(string text)
         {
             return Regex.Replace(text, @"[^\u0020-\u007E]", a => GetEscapedText(a.Value));

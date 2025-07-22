@@ -71,6 +71,9 @@ namespace PepperDash.Core.SystemInfo
 	/// <summary>
 	/// Processor Change Event Args Class
 	/// </summary>
+ /// <summary>
+ /// Represents a ProcessorChangeEventArgs
+ /// </summary>
 	public class ProcessorChangeEventArgs : EventArgs
 	{
         /// <summary>
@@ -117,6 +120,9 @@ namespace PepperDash.Core.SystemInfo
 	/// <summary>
 	/// Ethernet Change Event Args Class
 	/// </summary>
+ /// <summary>
+ /// Represents a EthernetChangeEventArgs
+ /// </summary>
 	public class EthernetChangeEventArgs : EventArgs
 	{
         /// <summary>
@@ -168,6 +174,9 @@ namespace PepperDash.Core.SystemInfo
 	/// <summary>
 	/// Control Subnet Chage Event Args Class
 	/// </summary>
+ /// <summary>
+ /// Represents a ControlSubnetChangeEventArgs
+ /// </summary>
 	public class ControlSubnetChangeEventArgs : EventArgs
 	{
         /// <summary>
@@ -214,6 +223,9 @@ namespace PepperDash.Core.SystemInfo
 	/// <summary>
 	/// Program Change Event Args Class
 	/// </summary>
+ /// <summary>
+ /// Represents a ProgramChangeEventArgs
+ /// </summary>
 	public class ProgramChangeEventArgs : EventArgs
 	{
         /// <summary>

@@ -47,6 +47,9 @@ namespace PepperDash.Core.Intersystem
         /// Write XSig data gathered from an IXSigStateResolver to the stream.
         /// </summary>
         /// <param name="xSigSerialization">IXSigStateResolver object.</param>
+        /// <summary>
+        /// WriteXSigData method
+        /// </summary>
         public void WriteXSigData(IXSigSerialization xSigSerialization)
         {
             WriteXSigData(xSigSerialization, 0);
@@ -57,6 +60,9 @@ namespace PepperDash.Core.Intersystem
         /// </summary>
         /// <param name="xSigSerialization">IXSigStateResolver object.</param>
         /// <param name="offset">Index offset for each XSigToken.</param>
+        /// <summary>
+        /// WriteXSigData method
+        /// </summary>
         public void WriteXSigData(IXSigSerialization xSigSerialization, int offset)
         {
             if (xSigSerialization == null)
@@ -70,6 +76,9 @@ namespace PepperDash.Core.Intersystem
         /// Write XSigToken to the stream.
         /// </summary>
         /// <param name="token">XSigToken object.</param>
+        /// <summary>
+        /// WriteXSigData method
+        /// </summary>
         public void WriteXSigData(XSigToken token)
         {
             WriteXSigData(token, 0);
@@ -80,6 +89,9 @@ namespace PepperDash.Core.Intersystem
         /// </summary>
         /// <param name="token">XSigToken object.</param>
         /// <param name="offset">Index offset for each XSigToken.</param>
+        /// <summary>
+        /// WriteXSigData method
+        /// </summary>
         public void WriteXSigData(XSigToken token, int offset)
         {
             WriteXSigData(new[] { token }, offset);
@@ -108,6 +120,9 @@ namespace PepperDash.Core.Intersystem
         /// </summary>
         /// <param name="tokens">XSigToken objects.</param>
         /// <param name="offset">Index offset for each XSigToken.</param>
+        /// <summary>
+        /// WriteXSigData method
+        /// </summary>
         public void WriteXSigData(IEnumerable<XSigToken> tokens, int offset)
         {
             if (offset < 0)
@@ -126,6 +141,9 @@ namespace PepperDash.Core.Intersystem
 
         /// <summary>
         /// Disposes of the internal stream if specified to not leave open.
+        /// </summary>
+        /// <summary>
+        /// Dispose method
         /// </summary>
         public void Dispose()
         {

@@ -71,6 +71,9 @@ namespace PepperDash.Core
         /// <summary>
         /// Port on server
         /// </summary>
+        /// <summary>
+        /// Gets or sets the Port
+        /// </summary>
         public int Port { get; set; }
 
         /// <summary>
@@ -104,6 +107,9 @@ namespace PepperDash.Core
         /// <summary>
         /// SharedKey is sent for varification to the server. Shared key can be any text (255 char limit in SIMPL+ Module), but must match the Shared Key on the Server module
         /// </summary>
+        /// <summary>
+        /// Gets or sets the SharedKey
+        /// </summary>
         public string SharedKey { get; set; }
 
         /// <summary>
@@ -113,6 +119,9 @@ namespace PepperDash.Core
 
         /// <summary>
         /// Defaults to 2000
+        /// </summary>
+        /// <summary>
+        /// Gets or sets the BufferSize
         /// </summary>
         public int BufferSize { get; set; }
 
@@ -291,6 +300,9 @@ namespace PepperDash.Core
         /// <summary>
         /// Just to help S+ set the key
         /// </summary>
+        /// <summary>
+        /// Initialize method
+        /// </summary>
         public void Initialize(string key)
         {
             Key = key;
@@ -312,6 +324,9 @@ namespace PepperDash.Core
 
         /// <summary>
         /// Connect Method. Will return if already connected. Will write errors if missing address, port, or unique key/name.
+        /// </summary>
+        /// <summary>
+        /// Connect method
         /// </summary>
         public void Connect()
         {
@@ -443,6 +458,9 @@ namespace PepperDash.Core
 
         /// <summary>
         /// 
+        /// </summary>
+        /// <summary>
+        /// Disconnect method
         /// </summary>
         public void Disconnect()
         {
@@ -671,6 +689,9 @@ namespace PepperDash.Core
         /// <summary>
         /// General send method
         /// </summary>
+        /// <summary>
+        /// SendText method
+        /// </summary>
         public void SendText(string text)
         {
             if (!string.IsNullOrEmpty(text))
@@ -699,6 +720,9 @@ namespace PepperDash.Core
 
         /// <summary>
         /// 
+        /// </summary>
+        /// <summary>
+        /// SendBytes method
         /// </summary>
         public void SendBytes(byte[] bytes)
         {

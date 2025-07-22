@@ -5,6 +5,9 @@ namespace PepperDash.Core
     /// <summary>
     /// Client config object for TCP client with server that inherits from TcpSshPropertiesConfig and adds properties for shared key and heartbeat
     /// </summary>
+    /// <summary>
+    /// Represents a TcpClientConfigObject
+    /// </summary>
     public class TcpClientConfigObject
     {
         /// <summary>

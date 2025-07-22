@@ -25,6 +25,9 @@ namespace PepperDash.Core
         /// <summary>
         /// The current debug setting
         /// </summary>
+        /// <summary>
+        /// Gets or sets the DebugSetting
+        /// </summary>
         public eStreamDebuggingSetting DebugSetting { get; private set; }
 
         private uint _DebugTimeoutInMs;
@@ -43,6 +46,9 @@ namespace PepperDash.Core
 
         /// <summary>
         /// Indicates that receive stream debugging is enabled
+        /// </summary>
+        /// <summary>
+        /// Gets or sets the RxStreamDebuggingIsEnabled
         /// </summary>
         public bool RxStreamDebuggingIsEnabled{ get; private set; }
 
@@ -65,6 +71,9 @@ namespace PepperDash.Core
         /// Sets the debugging setting and if not setting to off, assumes the default of 30 mintues
         /// </summary>
         /// <param name="setting"></param>
+        /// <summary>
+        /// SetDebuggingWithDefaultTimeout method
+        /// </summary>
         public void SetDebuggingWithDefaultTimeout(eStreamDebuggingSetting setting)
         {
             if (setting == eStreamDebuggingSetting.Off)
@@ -81,6 +90,9 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="setting"></param>
         /// <param name="minutes"></param>
+        /// <summary>
+        /// SetDebuggingWithSpecificTimeout method
+        /// </summary>
         public void SetDebuggingWithSpecificTimeout(eStreamDebuggingSetting setting, uint minutes)
         {
             if (setting == eStreamDebuggingSetting.Off)
@@ -135,6 +147,9 @@ namespace PepperDash.Core
     /// The available settings for stream debugging
     /// </summary>
     [Flags]
+    /// <summary>
+    /// Enumeration of eStreamDebuggingSetting values
+    /// </summary>
     public enum eStreamDebuggingSetting
     {
         /// <summary>

@@ -7,6 +7,9 @@ namespace PepperDash.Core.PasswordManagement
     /// <summary>
     /// Allows passwords to be stored and managed
     /// </summary>
+ /// <summary>
+ /// Represents a PasswordManager
+ /// </summary>
 	public class PasswordManager
 	{
 		/// <summary>
@@ -71,6 +74,9 @@ namespace PepperDash.Core.PasswordManagement
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="password"></param>
+  /// <summary>
+  /// UpdatePassword method
+  /// </summary>
 		public void UpdatePassword(ushort key, string password)
 		{
 			// validate the parameters
@@ -152,6 +158,9 @@ namespace PepperDash.Core.PasswordManagement
 		/// Method to change the default timer value, (default 5000ms/5s)
 		/// </summary>
 		/// <param name="time"></param>
+  /// <summary>
+  /// PasswordTimerMs method
+  /// </summary>
 		public void PasswordTimerMs(ushort time)
 		{
 			PasswordTimerElapsedMs = Convert.ToInt64(time);

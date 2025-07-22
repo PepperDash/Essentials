@@ -5,6 +5,9 @@ namespace PepperDash.Core.PasswordManagement
     /// <summary>
     /// A class to allow user interaction with the PasswordManager
     /// </summary>
+ /// <summary>
+ /// Represents a PasswordClient
+ /// </summary>
 	public class PasswordClient
 	{
 		/// <summary>
@@ -59,6 +62,9 @@ namespace PepperDash.Core.PasswordManagement
 		/// Retrieve password by index
 		/// </summary>
 		/// <param name="key"></param>
+  /// <summary>
+  /// GetPasswordByIndex method
+  /// </summary>
 		public void GetPasswordByIndex(ushort key)
 		{
 			OnUshrtChange((ushort)PasswordManager.Passwords.Count, 0, PasswordManagementConstants.PasswordManagerCountChange);
@@ -81,6 +87,9 @@ namespace PepperDash.Core.PasswordManagement
 		/// Password validation method
 		/// </summary>
 		/// <param name="password"></param>
+  /// <summary>
+  /// ValidatePassword method
+  /// </summary>
 		public void ValidatePassword(string password)
 		{
 			if (string.IsNullOrEmpty(password))
@@ -99,6 +108,9 @@ namespace PepperDash.Core.PasswordManagement
 		/// password against the selected password when the length of the 2 are equal
 		/// </summary>
 		/// <param name="data"></param>
+  /// <summary>
+  /// BuildPassword method
+  /// </summary>
 		public void BuildPassword(string data)
 		{
 			PasswordToValidate = String.Concat(PasswordToValidate, data);
@@ -111,6 +123,9 @@ namespace PepperDash.Core.PasswordManagement
 		/// <summary>
 		/// Clears the user entered password and resets the LEDs
 		/// </summary>
+  /// <summary>
+  /// ClearPassword method
+  /// </summary>
 		public void ClearPassword()
 		{
 			PasswordToValidate = "";

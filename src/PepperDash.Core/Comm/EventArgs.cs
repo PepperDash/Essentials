@@ -32,6 +32,9 @@ namespace PepperDash.Core
         /// <summary>
         /// 
         /// </summary>
+  /// <summary>
+  /// Gets or sets the Client
+  /// </summary>
 		public ISocketStatus Client { get; private set; }
 
         /// <summary>
@@ -61,6 +64,9 @@ namespace PepperDash.Core
     {
         /// <summary>
         /// 
+        /// </summary>
+        /// <summary>
+        /// Gets or sets the State
         /// </summary>
         public ServerState State { get; private set; }
 
@@ -155,6 +161,9 @@ namespace PepperDash.Core
 
         /// <summary>
         /// 
+        /// </summary>
+        /// <summary>
+        /// Gets or sets the Text
         /// </summary>
         public string Text { get; private set; }
 

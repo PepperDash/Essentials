@@ -28,6 +28,9 @@ namespace PepperDash.Core.WebApi.Presets
         /// <summary>
         /// Unique identifier for this instance
         /// </summary>
+  /// <summary>
+  /// Gets or sets the Key
+  /// </summary>
 		public string Key { get; private set; }
 
 		//string JsonMasterKey;
@@ -77,6 +80,9 @@ namespace PepperDash.Core.WebApi.Presets
         /// Gets the user for a passcode
         /// </summary>
         /// <param name="passcode"></param>
+  /// <summary>
+  /// GetUserForPasscode method
+  /// </summary>
 		public void GetUserForPasscode(string passcode)
 		{
             // Bullshit duplicate code here... These two cases should be the same 
@@ -115,6 +121,9 @@ namespace PepperDash.Core.WebApi.Presets
 		/// </summary>
 		/// <param name="roomTypeId"></param>
 		/// <param name="presetNumber"></param>
+  /// <summary>
+  /// GetPresetForThisUser method
+  /// </summary>
 		public void GetPresetForThisUser(int roomTypeId, int presetNumber)
 		{
 			if (CurrentUser == null)
@@ -212,6 +221,9 @@ namespace PepperDash.Core.WebApi.Presets
 		/// </summary>
 		/// <param name="roomTypeId"></param>
 		/// <param name="presetNumber"></param>
+  /// <summary>
+  /// SavePresetForThisUser method
+  /// </summary>
 		public void SavePresetForThisUser(int roomTypeId, int presetNumber)
 		{
 			if (CurrentPreset == null)

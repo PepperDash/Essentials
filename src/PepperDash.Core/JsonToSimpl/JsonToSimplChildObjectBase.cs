@@ -31,11 +31,17 @@ namespace PepperDash.Core.JsonToSimpl
 		/// <summary>
 		/// Use a callback to reduce task switch/threading
 		/// </summary>
+  /// <summary>
+  /// Gets or sets the SetAllPathsDelegate
+  /// </summary>
 		public SPlusValuesDelegate SetAllPathsDelegate { get; set; }
 
         /// <summary>
         /// Unique identifier for instance
         /// </summary>
+  /// <summary>
+  /// Gets or sets the Key
+  /// </summary>
 		public string Key { get; protected set; }
 
 		/// <summary>
@@ -52,6 +58,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// <summary>
         /// Indicates if the instance is linked to an object
         /// </summary>
+  /// <summary>
+  /// Gets or sets the LinkedToObject
+  /// </summary>
 		public bool LinkedToObject { get; protected set; }
 
         /// <summary>
@@ -96,6 +105,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// Sets the path prefix for the object
         /// </summary>
         /// <param name="pathPrefix"></param>
+  /// <summary>
+  /// SetPathPrefix method
+  /// </summary>
 		public void SetPathPrefix(string pathPrefix)
 		{
 			PathPrefix = pathPrefix;
@@ -113,6 +125,9 @@ namespace PepperDash.Core.JsonToSimpl
 		/// <summary>
 		/// Set the JPath for a ushort out index.
 		/// </summary>
+  /// <summary>
+  /// SetUshortPath method
+  /// </summary>
 		public void SetUshortPath(ushort index, string path)
 		{
 			Debug.Console(1, "JSON Child[{0}] SetUshortPath {1}={2}", Key, index, path);
@@ -123,6 +138,9 @@ namespace PepperDash.Core.JsonToSimpl
 		/// <summary>
 		/// Set the JPath for a string output index. 
 		/// </summary>
+  /// <summary>
+  /// SetStringPath method
+  /// </summary>
 		public void SetStringPath(ushort index, string path)
 		{
 			Debug.Console(1, "JSON Child[{0}] SetStringPath {1}={2}", Key, index, path);
@@ -134,6 +152,9 @@ namespace PepperDash.Core.JsonToSimpl
 		/// Evalutates all outputs with defined paths. called by S+ when paths are ready to process
 		/// and by Master when file is read.
 		/// </summary>
+  /// <summary>
+  /// ProcessAll method
+  /// </summary>
 		public virtual void ProcessAll()
 		{
 			if (!LinkedToObject)
@@ -277,6 +298,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// </summary>
         /// <param name="key"></param>
         /// <param name="theValue"></param>
+  /// <summary>
+  /// USetBoolValue method
+  /// </summary>
 		public void USetBoolValue(ushort key, ushort theValue)
 		{
 			SetBoolValue(key, theValue == 1);
@@ -287,6 +311,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// </summary>
         /// <param name="key"></param>
         /// <param name="theValue"></param>
+  /// <summary>
+  /// SetBoolValue method
+  /// </summary>
 		public void SetBoolValue(ushort key, bool theValue)
 		{
 			if (BoolPaths.ContainsKey(key))
@@ -298,6 +325,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// </summary>
         /// <param name="key"></param>
         /// <param name="theValue"></param>
+  /// <summary>
+  /// SetUShortValue method
+  /// </summary>
 		public void SetUShortValue(ushort key, ushort theValue)
 		{
 			if (UshortPaths.ContainsKey(key))
@@ -309,6 +339,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// </summary>
         /// <param name="key"></param>
         /// <param name="theValue"></param>
+  /// <summary>
+  /// SetStringValue method
+  /// </summary>
 		public void SetStringValue(ushort key, string theValue)
 		{
 			if (StringPaths.ContainsKey(key))
@@ -320,6 +353,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// </summary>
         /// <param name="keyPath"></param>
         /// <param name="valueToSave"></param>
+  /// <summary>
+  /// SetValueOnMaster method
+  /// </summary>
 		public void SetValueOnMaster(string keyPath, JValue valueToSave)
 		{
 			var path = GetFullPath(keyPath);

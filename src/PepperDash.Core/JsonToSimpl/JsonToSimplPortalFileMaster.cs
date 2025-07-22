@@ -21,6 +21,9 @@ namespace PepperDash.Core.JsonToSimpl
         /// <summary>
         /// File path of the actual file being read (Portal or local)
         /// </summary>
+        /// <summary>
+        /// Gets or sets the ActualFilePath
+        /// </summary>
         public string ActualFilePath { get; private set; }
 
 		/*****************************************************************************************/
@@ -128,6 +131,9 @@ namespace PepperDash.Core.JsonToSimpl
 		/// 
 		/// </summary>
 		/// <param name="level"></param>
+  /// <summary>
+  /// setDebugLevel method
+  /// </summary>
 		public void setDebugLevel(uint level)
 		{
 			Debug.SetDebugLevel(level);
