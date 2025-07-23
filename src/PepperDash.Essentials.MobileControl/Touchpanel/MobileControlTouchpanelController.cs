@@ -1,4 +1,8 @@
-﻿using Crestron.SimplSharpPro;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.UI;
 using Newtonsoft.Json;
@@ -10,64 +14,105 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.UI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Touchpanel
 {
-    //public interface IMobileControlTouchpanelController 
-    //{
-    //    StringFeedback AppUrlFeedback { get; }
-    //    string DefaultRoomKey { get; }
-    //    string DeviceKey { get; }
-    //}
-
-
-    public class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlTouchpanelController, ITheme
+    /// <summary>
+    /// Mobile Control touchpanel controller that provides app control, Zoom integration, 
+    /// and mobile control functionality for Crestron touchpanels.
+    /// </summary>
+    public class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlCrestronTouchpanelController, ITheme
     {
         private readonly MobileControlTouchpanelProperties localConfig;
         private IMobileControlRoomMessenger _bridge;
 
         private string _appUrl;
 
+        /// <summary>
+        /// Gets feedback for the current application URL.
+        /// </summary>
         public StringFeedback AppUrlFeedback { get; private set; }
+
         private readonly StringFeedback QrCodeUrlFeedback;
         private readonly StringFeedback McServerUrlFeedback;
         private readonly StringFeedback UserCodeFeedback;
 
         private readonly BoolFeedback _appOpenFeedback;
 
+        /// <summary>
+        /// Gets feedback indicating whether an application is currently open on the touchpanel.
+        /// </summary>
         public BoolFeedback AppOpenFeedback => _appOpenFeedback;
 
         private readonly BoolFeedback _zoomIncomingCallFeedback;
 
+        /// <summary>
+        /// Gets feedback indicating whether there is an incoming Zoom call.
+        /// </summary>
         public BoolFeedback ZoomIncomingCallFeedback => _zoomIncomingCallFeedback;
 
         private readonly BoolFeedback _zoomInCallFeedback;
 
+        /// <summary>
+        /// Event that is raised when device information changes.
+        /// </summary>
         public event DeviceInfoChangeHandler DeviceInfoChanged;
 
+        /// <summary>
+        /// Gets feedback indicating whether a Zoom call is currently active.
+        /// </summary>
         public BoolFeedback ZoomInCallFeedback => _zoomInCallFeedback;
 
-
+        /// <summary>
+        /// Gets the collection of feedback objects for this touchpanel controller.
+        /// </summary>
         public FeedbackCollection<Feedback> Feedbacks { get; private set; }
 
+        /// <summary>
+        /// Gets the collection of Zoom-related feedback objects.
+        /// </summary>
         public FeedbackCollection<Feedback> ZoomFeedbacks { get; private set; }
 
+        /// <summary>
+        /// Gets the default room key for this touchpanel controller.
+        /// </summary>
         public string DefaultRoomKey => _config.DefaultRoomKey;
 
+        /// <summary>
+        /// Gets a value indicating whether to use direct server communication.
+        /// </summary>
         public bool UseDirectServer => localConfig.UseDirectServer;
 
+        /// <summary>
+        /// Gets a value indicating whether this touchpanel acts as a Zoom Room controller.
+        /// </summary>
         public bool ZoomRoomController => localConfig.ZoomRoomController;
 
+        /// <summary>
+        /// Gets the current theme for the touchpanel interface.
+        /// </summary>
         public string Theme => localConfig.Theme;
 
+        /// <summary>
+        /// Gets feedback for the current theme setting.
+        /// </summary>
         public StringFeedback ThemeFeedback { get; private set; }
 
+        /// <summary>
+        /// Gets device information including MAC address and IP address.
+        /// </summary>
         public DeviceInfo DeviceInfo => new DeviceInfo();
 
+        public ReadOnlyCollection<ConnectedIpInformation> ConnectedIps => Panel.ConnectedIpList;
+
+        /// <summary>
+        /// Initializes a new instance of the MobileControlTouchpanelController class.
+        /// </summary>
+        /// <param name="key">The unique key identifier for this touchpanel controller.</param>
+        /// <param name="name">The friendly name for this touchpanel controller.</param>
+        /// <param name="panel">The touchpanel hardware device.</param>
+        /// <param name="config">The configuration properties for this controller.</param>
         public MobileControlTouchpanelController(string key, string name, BasicTriListWithSmartObject panel, MobileControlTouchpanelProperties config) : base(key, name, panel, config)
         {
             localConfig = config;
@@ -139,6 +184,10 @@ namespace PepperDash.Essentials.Touchpanel
             RegisterForExtenders();
         }
 
+        /// <summary>
+        /// Updates the theme setting for this touchpanel controller and persists the change to configuration.
+        /// </summary>
+        /// <param name="theme">The new theme identifier to apply.</param>
         public void UpdateTheme(string theme)
         {
             localConfig.Theme = theme;
@@ -271,6 +320,11 @@ namespace PepperDash.Essentials.Touchpanel
             }
         }
 
+        /// <summary>
+        /// Performs custom activation setup for the touchpanel controller, including 
+        /// registering messengers and linking to mobile control.
+        /// </summary>
+        /// <returns>True if activation was successful; otherwise, false.</returns>
         public override bool CustomActivate()
         {
             var appMessenger = new ITswAppControlMessenger($"appControlMessenger-{Key}", $"/device/{Key}", this);
@@ -300,12 +354,20 @@ namespace PepperDash.Essentials.Touchpanel
             return base.CustomActivate();
         }
 
-
+        /// <summary>
+        /// Handles device extender signal changes for system reserved signals.
+        /// </summary>
+        /// <param name="currentDeviceExtender">The device extender that generated the signal change.</param>
+        /// <param name="args">The signal event arguments containing the changed signal information.</param>
         protected override void ExtenderSystemReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"System Device Extender args: ${args.Event}:${args.Sig}");
         }
 
+        /// <summary>
+        /// Sets up the panel drivers and signal mappings for the specified room.
+        /// </summary>
+        /// <param name="roomKey">The room key to configure the panel drivers for.</param>
         protected override void SetupPanelDrivers(string roomKey)
         {
             AppUrlFeedback.LinkInputSig(Panel.StringInput[1]);
@@ -366,6 +428,10 @@ namespace PepperDash.Essentials.Touchpanel
             SetAppUrl(_bridge.AppUrl);
         }
 
+        /// <summary>
+        /// Sets the application URL and updates the corresponding feedback.
+        /// </summary>
+        /// <param name="url">The new application URL to set.</param>
         public void SetAppUrl(string url)
         {
             _appUrl = url;
@@ -391,6 +457,9 @@ namespace PepperDash.Essentials.Touchpanel
             }
         }
 
+        /// <summary>
+        /// Hides the currently open application on the touchpanel.
+        /// </summary>
         public void HideOpenApp()
         {
             if (Panel is TswX70Base x70Panel)
@@ -406,6 +475,9 @@ namespace PepperDash.Essentials.Touchpanel
             }
         }
 
+        /// <summary>
+        /// Opens an application on the touchpanel. Note: X60 panels do not support Zoom app opening.
+        /// </summary>
         public void OpenApp()
         {
             if (Panel is TswX70Base x70Panel)
@@ -421,6 +493,9 @@ namespace PepperDash.Essentials.Touchpanel
             }
         }
 
+        /// <summary>
+        /// Closes the currently open application on the touchpanel.
+        /// </summary>
         public void CloseOpenApp()
         {
             if (Panel is TswX70Base x70Panel)
@@ -436,6 +511,9 @@ namespace PepperDash.Essentials.Touchpanel
             }
         }
 
+        /// <summary>
+        /// Ends the current Zoom call on the touchpanel.
+        /// </summary>
         public void EndZoomCall()
         {
             if (Panel is TswX70Base x70Panel)
@@ -451,6 +529,10 @@ namespace PepperDash.Essentials.Touchpanel
             }
         }
 
+        /// <summary>
+        /// Updates the device information (MAC address and IP address) from the touchpanel
+        /// and raises the DeviceInfoChanged event.
+        /// </summary>
         public void UpdateDeviceInfo()
         {
             if (Panel is TswXX70Base x70Panel)
@@ -487,14 +569,27 @@ namespace PepperDash.Essentials.Touchpanel
         }
     }
 
+    /// <summary>
+    /// Factory class for creating MobileControlTouchpanelController instances from device configuration.
+    /// Supports various Crestron touchpanel models including TSW, TS, CrestronApp, XPanel, and DGE series.
+    /// </summary>
     public class MobileControlTouchpanelControllerFactory : EssentialsPluginDeviceFactory<MobileControlTouchpanelController>
     {
+        /// <summary>
+        /// Initializes a new instance of the MobileControlTouchpanelControllerFactory class.
+        /// Sets up supported device type names and minimum framework version requirements.
+        /// </summary>
         public MobileControlTouchpanelControllerFactory()
         {
             TypeNames = new List<string>() { "mccrestronapp", "mctsw550", "mctsw750", "mctsw1050", "mctsw560", "mctsw760", "mctsw1060", "mctsw570", "mctsw770", "mcts770", "mctsw1070", "mcts1070", "mcxpanel", "mcdge1000" };
             MinimumEssentialsFrameworkVersion = "2.0.0";
         }
 
+        /// <summary>
+        /// Builds a MobileControlTouchpanelController device from the provided device configuration.
+        /// </summary>
+        /// <param name="dc">The device configuration containing the device properties and settings.</param>
+        /// <returns>A configured MobileControlTouchpanelController instance.</returns>
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             var comm = CommFactory.GetControlPropertiesConfig(dc);
@@ -557,7 +652,7 @@ namespace PepperDash.Essentials.Touchpanel
                     return new Ts1070(id, Global.ControlSystem);
                 else if (type == "dge1000")
                     return new Dge1000(id, Global.ControlSystem);
-                else 
+                else
 
                 {
                     Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "WARNING: Cannot create TSW controller with type '{0}'", type);

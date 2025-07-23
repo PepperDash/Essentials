@@ -1,23 +1,29 @@
-﻿namespace PepperDash.Essentials.Core
+﻿using PepperDash.Essentials.Core.Routing;
+
+namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// For fixed-source endpoint devices
     /// </summary>
     public interface IRoutingSink : IRoutingInputs, IHasCurrentSourceInfoChange
-    {        
+    {
     }
 
-    public interface IRoutingSinkWithInputPort :IRoutingSink
+    /// <summary>
+    /// For fixed-source endpoint devices with an input port
+    /// </summary>
+    public interface IRoutingSinkWithInputPort : IRoutingSink
     {
+        /// <summary>
+        /// Gets the current input port for this routing sink.
+        /// </summary>
         RoutingInputPort CurrentInputPort { get; }
     }
-    /*/// <summary>
-    /// For fixed-source endpoint devices
-    /// </summary>
-    public interface IRoutingSink<TSelector> : IRoutingInputs<TSelector>, IHasCurrentSourceInfoChange
-    {
-        void UpdateRouteRequest<TOutputSelector>(RouteRequest<TSelector, TOutputSelector> request);
 
-        RouteRequest<TSelector, TOutputSelector> GetRouteRequest<TOutputSelector>();
-    }*/
+    /// <summary>
+    /// Interface for routing sinks that have access to the current source information.
+    /// </summary>
+    public interface IRoutingSinkWithCurrentSources : IRoutingSink, ICurrentSources
+    {
+    }
 }
