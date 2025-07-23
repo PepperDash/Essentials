@@ -304,14 +304,10 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Returns the join number for the join with the specified key
+        /// Returns the join span for the join with the specified key
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        //public uint GetJoinForKey(string key)
-        //{
-        //    return Joins.ContainsKey(key) ? Joins[key].JoinNumber : 0;
-        //}
 
 
         /// <summary>

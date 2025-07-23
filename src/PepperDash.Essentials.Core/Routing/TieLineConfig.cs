@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.Core.Config
 		public string SourceCard { get; set; }
 		
   /// <summary>
-  /// Gets or sets the SourcePort
+  /// The key of the source output port, used for routing configurations.
   /// </summary>
 		public string SourcePort { get; set; }
 		

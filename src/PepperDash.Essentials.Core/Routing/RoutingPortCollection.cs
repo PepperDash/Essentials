@@ -5,7 +5,7 @@ using System.Linq;
 namespace PepperDash.Essentials.Core
 {
  /// <summary>
- /// Represents a RoutingPortCollection
+ /// Represents a RoutingPortCollection, which is essentially a List with an indexer for case-insensitive lookup of ports by their key names.
  /// </summary>
 	public class RoutingPortCollection<T> : List<T> where T: RoutingPort
 	{

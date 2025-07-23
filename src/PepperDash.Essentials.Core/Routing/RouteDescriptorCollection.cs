@@ -64,8 +64,11 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// RemoveRouteDescriptor method
+        /// Removes a RouteDescriptor from the collection based on the specified destination and input port key.
         /// </summary>
+        /// <param name="destination">The destination for which the route descriptor is to be removed.</param>
+        /// <param name="inputPortKey">The key of the input port associated with the route descriptor. If empty, the method will attempt to remove a descriptor based solely on the destination.</param>
+        /// <returns>The removed RouteDescriptor object if a matching descriptor was found; otherwise, null.</returns>
         public RouteDescriptor RemoveRouteDescriptor(IRoutingInputs destination, string inputPortKey = "")
         {
             Debug.LogMessage(LogEventLevel.Information, "Removing route descriptor for '{destination}':'{inputPortKey}'", destination.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
