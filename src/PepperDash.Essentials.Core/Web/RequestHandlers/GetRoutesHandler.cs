@@ -2,9 +2,16 @@
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "GetPaths",
+		Description = "Get available API paths and routes",
+		OperationId = "getApiPaths")]
+	[OpenApiResponse(200, Description = "Successful response")]
     public class GetRoutesHandler:WebApiBaseRequestHandler
     {
         private HttpCwsRouteCollection routeCollection;

@@ -2,9 +2,17 @@
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "DevList",
+		Description = "Retrieve a list of all devices in the system",
+		OperationId = "getDevices")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(404, Description = "Not Found")]
 	public class DevListRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

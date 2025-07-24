@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
@@ -84,56 +87,155 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
         private object GeneratePathItem(HttpCwsRoute route)
         {
-            // Determine HTTP methods and create appropriate operation objects
+            if (route.RouteHandler == null) return null;
+
+            var handlerType = route.RouteHandler.GetType();
             var operations = new Dictionary<string, object>();
 
-            // Based on the route name and common patterns, determine likely HTTP methods
-            var routeName = route.Name?.ToLower() ?? "";
-            var routeUrl = route.Url?.ToLower() ?? "";
+            // Get HTTP method attributes from the handler class
+            var httpMethodAttributes = handlerType.GetCustomAttributes(typeof(HttpMethodAttribute), false)
+                .Cast<HttpMethodAttribute>()
+                .ToList();
 
-            if (routeName.Contains("get") || routeUrl.Contains("devices") || routeUrl.Contains("config") || 
-                routeUrl.Contains("versions") || routeUrl.Contains("types") || routeUrl.Contains("tielines") ||
-                routeUrl.Contains("apipaths") || routeUrl.Contains("feedbacks") || routeUrl.Contains("properties") ||
-                routeUrl.Contains("methods") || routeUrl.Contains("joinmap") || routeUrl.Contains("routingports"))
+            // If no HTTP method attributes found, fall back to the original logic
+            if (!httpMethodAttributes.Any())
             {
-                operations["get"] = GenerateOperation(route, "GET");
+                httpMethodAttributes = DetermineHttpMethodsFromRoute(route);
             }
 
-            if (routeName.Contains("command") || routeName.Contains("restart") || routeName.Contains("load") ||
-                routeName.Contains("debug") || routeName.Contains("disable"))
+            foreach (var methodAttr in httpMethodAttributes)
             {
-                operations["post"] = GenerateOperation(route, "POST");
+                var operation = GenerateOperation(route, methodAttr.Method, handlerType);
+                if (operation != null)
+                {
+                    operations[methodAttr.Method.ToLower()] = operation;
+                }
             }
 
             return operations.Count > 0 ? operations : null;
         }
 
-        private object GenerateOperation(HttpCwsRoute route, string method)
+        private List<HttpMethodAttribute> DetermineHttpMethodsFromRoute(HttpCwsRoute route)
         {
-            var operation = new Dictionary<string, object>
-            {
-                ["summary"] = route.Name ?? "API Operation",
-                ["operationId"] = route.Name?.Replace(" ", "") ?? "operation",
-                ["responses"] = new Dictionary<string, object>
-                {
-                    ["200"] = new
-                    {
-                        description = "Successful response",
-                        content = new Dictionary<string, object>
-                        {
-                            ["application/json"] = new { schema = new { type = "object" } }
-                        }
-                    },
-                    ["400"] = new { description = "Bad Request" },
-                    ["404"] = new { description = "Not Found" },
-                    ["500"] = new { description = "Internal Server Error" }
-                }
-            };
+            var methods = new List<HttpMethodAttribute>();
+            var routeName = route.Name?.ToLower() ?? "";
+            var routeUrl = route.Url?.ToLower() ?? "";
 
-            // Add parameters for path variables
+            // Fallback logic for routes without attributes
+            if (routeName.Contains("get") || routeUrl.Contains("devices") || routeUrl.Contains("config") || 
+                routeUrl.Contains("versions") || routeUrl.Contains("types") || routeUrl.Contains("tielines") ||
+                routeUrl.Contains("apipaths") || routeUrl.Contains("feedbacks") || routeUrl.Contains("properties") ||
+                routeUrl.Contains("methods") || routeUrl.Contains("joinmap") || routeUrl.Contains("routingports"))
+            {
+                methods.Add(new HttpGetAttribute());
+            }
+
+            if (routeName.Contains("command") || routeName.Contains("restart") || routeName.Contains("load") ||
+                routeName.Contains("debug") || routeName.Contains("disable"))
+            {
+                methods.Add(new HttpPostAttribute());
+            }
+
+            return methods;
+        }
+
+        private object GenerateOperation(HttpCwsRoute route, string method, Type handlerType)
+        {
+            var operation = new Dictionary<string, object>();
+
+            // Get OpenApiOperation attribute
+            var operationAttr = handlerType.GetCustomAttribute<OpenApiOperationAttribute>();
+            if (operationAttr != null)
+            {
+                operation["summary"] = operationAttr.Summary ?? route.Name ?? "API Operation";
+                operation["operationId"] = operationAttr.OperationId ?? route.Name?.Replace(" ", "") ?? "operation";
+                
+                if (!string.IsNullOrEmpty(operationAttr.Description))
+                {
+                    operation["description"] = operationAttr.Description;
+                }
+
+                if (operationAttr.Tags != null && operationAttr.Tags.Length > 0)
+                {
+                    operation["tags"] = operationAttr.Tags;
+                }
+            }
+            else
+            {
+                // Fallback to route name
+                operation["summary"] = route.Name ?? "API Operation";
+                operation["operationId"] = route.Name?.Replace(" ", "") ?? "operation";
+                
+                // Add fallback description
+                var fallbackDescription = GetFallbackDescription(route);
+                if (!string.IsNullOrEmpty(fallbackDescription))
+                {
+                    operation["description"] = fallbackDescription;
+                }
+            }
+
+            // Get response attributes
+            var responses = new Dictionary<string, object>();
+            var responseAttrs = handlerType.GetCustomAttributes<OpenApiResponseAttribute>().ToList();
+            
+            if (responseAttrs.Any())
+            {
+                foreach (var responseAttr in responseAttrs)
+                {
+                    var responseObj = new Dictionary<string, object>
+                    {
+                        ["description"] = responseAttr.Description ?? "Response"
+                    };
+
+                    if (!string.IsNullOrEmpty(responseAttr.ContentType))
+                    {
+                        responseObj["content"] = new Dictionary<string, object>
+                        {
+                            [responseAttr.ContentType] = new { schema = new { type = "object" } }
+                        };
+                    }
+
+                    responses[responseAttr.StatusCode.ToString()] = responseObj;
+                }
+            }
+            else
+            {
+                // Default responses
+                responses["200"] = new
+                {
+                    description = "Successful response",
+                    content = new Dictionary<string, object>
+                    {
+                        ["application/json"] = new { schema = new { type = "object" } }
+                    }
+                };
+                responses["400"] = new { description = "Bad Request" };
+                responses["404"] = new { description = "Not Found" };
+                responses["500"] = new { description = "Internal Server Error" };
+            }
+
+            operation["responses"] = responses;
+
+            // Get parameter attributes
+            var parameterAttrs = handlerType.GetCustomAttributes<OpenApiParameterAttribute>().ToList();
+            var parameters = new List<object>();
+
+            // Add parameters from attributes
+            foreach (var paramAttr in parameterAttrs)
+            {
+                parameters.Add(new
+                {
+                    name = paramAttr.Name,
+                    @in = paramAttr.In.ToString().ToLower(),
+                    required = paramAttr.Required,
+                    schema = new { type = GetSchemaType(paramAttr.Type) },
+                    description = paramAttr.Description ?? $"The {paramAttr.Name} parameter"
+                });
+            }
+
+            // Add parameters from URL path variables (fallback)
             if (route.Url.Contains("{"))
             {
-                var parameters = new List<object>();
                 var url = route.Url;
                 while (url.Contains("{"))
                 {
@@ -142,107 +244,143 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     if (end > start)
                     {
                         var paramName = url.Substring(start + 1, end - start - 1);
-                        parameters.Add(new
+                        
+                        // Only add if not already added from attributes
+                        if (!parameters.Any(p => ((dynamic)p).name == paramName))
                         {
-                            name = paramName,
-                            @in = "path",
-                            required = true,
-                            schema = new { type = "string" },
-                            description = $"The {paramName} parameter"
-                        });
+                            parameters.Add(new
+                            {
+                                name = paramName,
+                                @in = "path",
+                                required = true,
+                                schema = new { type = "string" },
+                                description = $"The {paramName} parameter"
+                            });
+                        }
                         url = url.Substring(end + 1);
                     }
                     else break;
                 }
-                if (parameters.Count > 0)
+            }
+
+            if (parameters.Count > 0)
+            {
+                operation["parameters"] = parameters;
+            }
+
+            // Get request body attribute for POST operations
+            if (method == "POST")
+            {
+                var requestBodyAttr = handlerType.GetCustomAttribute<OpenApiRequestBodyAttribute>();
+                if (requestBodyAttr != null)
                 {
-                    operation["parameters"] = parameters;
+                    operation["requestBody"] = new
+                    {
+                        required = requestBodyAttr.Required,
+                        description = requestBodyAttr.Description,
+                        content = new Dictionary<string, object>
+                        {
+                            [requestBodyAttr.ContentType] = new Dictionary<string, object>
+                            { 
+                                ["schema"] = requestBodyAttr.Type != null 
+                                    ? (object)new Dictionary<string, object> { ["$ref"] = $"#/components/schemas/{requestBodyAttr.Type.Name}" }
+                                    : new Dictionary<string, object> { ["type"] = "object" }
+                            }
+                        }
+                    };
+                }
+                else if (route.Name != null && route.Name.Contains("Command"))
+                {
+                    // Fallback for command routes
+                    operation["requestBody"] = new
+                    {
+                        required = true,
+                        content = new Dictionary<string, object>
+                        {
+                            ["application/json"] = new 
+                            { 
+                                schema = new Dictionary<string, object> { ["$ref"] = "#/components/schemas/DeviceCommand" }
+                            }
+                        }
+                    };
                 }
             }
-
-            // Add request body for POST operations
-            if (method == "POST" && route.Name != null && route.Name.Contains("Command"))
-            {
-                operation["requestBody"] = new
-                {
-                    required = true,
-                    content = new Dictionary<string, object>
-                    {
-                        ["application/json"] = new 
-                        { 
-                            schema = new Dictionary<string, object> { ["$ref"] = "#/components/schemas/DeviceCommand" }
-                        }
-                    }
-                };
-            }
-
-            // Add specific descriptions based on route patterns
-            AddRouteSpecificDescription(operation, route);
 
             return operation;
         }
 
-        private void AddRouteSpecificDescription(Dictionary<string, object> operation, HttpCwsRoute route)
+        private string GetSchemaType(Type type)
+        {
+            if (type == typeof(string)) return "string";
+            if (type == typeof(int) || type == typeof(long)) return "integer";
+            if (type == typeof(bool)) return "boolean";
+            if (type == typeof(double) || type == typeof(float)) return "number";
+            return "string"; // default
+        }
+
+        private string GetFallbackDescription(HttpCwsRoute route)
         {
             var routeName = route.Name?.ToLower() ?? "";
             var routeUrl = route.Url?.ToLower() ?? "";
 
             if (routeUrl.Contains("devices") && !routeUrl.Contains("{"))
             {
-                operation["description"] = "Retrieve a list of all devices in the system";
+                return "Retrieve a list of all devices in the system";
             }
             else if (routeUrl.Contains("versions"))
             {
-                operation["description"] = "Get version information for loaded assemblies";
+                return "Get version information for loaded assemblies";
             }
             else if (routeUrl.Contains("config"))
             {
-                operation["description"] = "Retrieve the current system configuration";
+                return "Retrieve the current system configuration";
             }
             else if (routeUrl.Contains("devicecommands"))
             {
-                operation["description"] = "Send a command to a specific device";
+                return "Send a command to a specific device";
             }
             else if (routeUrl.Contains("devicefeedbacks"))
             {
-                operation["description"] = "Get feedback values from a specific device";
+                return "Get feedback values from a specific device";
             }
             else if (routeUrl.Contains("deviceproperties"))
             {
-                operation["description"] = "Get properties of a specific device";
+                return "Get properties of a specific device";
             }
             else if (routeUrl.Contains("devicemethods"))
             {
-                operation["description"] = "Get available methods for a specific device";
+                return "Get available methods for a specific device";
             }
             else if (routeUrl.Contains("types"))
             {
-                operation["description"] = routeUrl.Contains("{") ? "Get types filtered by the specified filter" : "Get all available types";
+                return routeUrl.Contains("{") ? "Get types filtered by the specified filter" : "Get all available types";
             }
             else if (routeUrl.Contains("tielines"))
             {
-                operation["description"] = "Get information about tielines in the system";
+                return "Get information about tielines in the system";
             }
             else if (routeUrl.Contains("joinmap"))
             {
-                operation["description"] = "Get join map information for bridge or device";
+                return "Get join map information for bridge or device";
             }
             else if (routeUrl.Contains("routingports"))
             {
-                operation["description"] = "Get routing ports for a specific device";
+                return "Get routing ports for a specific device";
             }
             else if (routeUrl.Contains("apipaths"))
             {
-                operation["description"] = "Get available API paths and routes";
+                return "Get available API paths and routes";
             }
             else if (routeName.Contains("restart"))
             {
-                operation["description"] = "Restart the program";
+                return "Restart the program";
             }
             else if (routeName.Contains("debug"))
             {
-                operation["description"] = "Debug operation";
+                return "Debug operation";
             }
+
+            return null;
         }
 
         private Dictionary<string, object> GetSchemas()
