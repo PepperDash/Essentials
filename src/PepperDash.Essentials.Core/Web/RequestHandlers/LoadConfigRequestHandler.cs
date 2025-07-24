@@ -3,9 +3,16 @@ using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpPost]
+	[OpenApiOperation(
+		Summary = "Load Config",
+		Description = "Load configuration",
+		OperationId = "loadConfig")]
+	[OpenApiResponse(200, Description = "Configuration load initiated successfully")]
 	public class LoadConfigRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
