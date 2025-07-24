@@ -2,9 +2,19 @@
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "GetTypesByFilter",
+		Description = "Retrieve device types filtered by a specific category",
+		OperationId = "getDeviceTypesByFilter")]
+	[OpenApiParameter("filter", Description = "The filter criteria for device types")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(400, Description = "Bad Request")]
+	[OpenApiResponse(404, Description = "Filtered device types not found")]
 	public class GetTypesByFilterRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

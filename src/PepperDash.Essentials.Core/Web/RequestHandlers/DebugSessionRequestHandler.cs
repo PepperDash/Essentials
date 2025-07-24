@@ -4,6 +4,7 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,15 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
-    public class DebugSessionRequestHandler : WebApiBaseRequestHandler
+	[HttpGet]
+	[HttpPost]
+	[OpenApiOperation(
+		Summary = "DebugSession",
+		Description = "Start or stop a WebSocket debug session",
+		OperationId = "debugSession")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(400, Description = "Bad Request")]
+	public class DebugSessionRequestHandler : WebApiBaseRequestHandler
     {    
         public DebugSessionRequestHandler()
             : base(true)

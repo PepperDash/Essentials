@@ -1,13 +1,23 @@
 ﻿using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
-    public class GetRoutingPortsHandler : WebApiBaseRequestHandler
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "Get Routing Ports for a device",
+		Description = "Retrieve routing input and output ports for a specific device",
+		OperationId = "getDeviceRoutingPorts")]
+	[OpenApiParameter("deviceKey", Description = "The key of the device")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(400, Description = "Bad Request")]
+	[OpenApiResponse(404, Description = "Device not found")]
+	public class GetRoutingPortsHandler : WebApiBaseRequestHandler
     {
         public GetRoutingPortsHandler() : base(true) { }
 

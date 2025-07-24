@@ -1,12 +1,19 @@
 ﻿using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 using System.Linq;
 using System.Text;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
-    public class GetTieLinesRequestHandler : WebApiBaseRequestHandler
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "Get TieLines",
+		Description = "Retrieve a list of all tie lines in the system",
+		OperationId = "getTieLines")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	public class GetTieLinesRequestHandler : WebApiBaseRequestHandler
     {
         public GetTieLinesRequestHandler() : base(true) { }
 

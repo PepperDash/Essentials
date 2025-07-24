@@ -1,8 +1,15 @@
 ﻿using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpPost]
+	[OpenApiOperation(
+		Summary = "DisableAllStreamDebug",
+		Description = "Disable stream debugging for all devices",
+		OperationId = "disableAllStreamDebug")]
+	[OpenApiResponse(200, Description = "Successful response")]
 	public class DisableAllStreamDebugRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

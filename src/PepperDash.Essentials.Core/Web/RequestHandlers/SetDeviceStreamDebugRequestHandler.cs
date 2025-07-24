@@ -3,9 +3,20 @@ using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpPost]
+	[OpenApiOperation(
+		Summary = "SetDeviceStreamDebug",
+		Description = "Configure stream debugging settings for a device",
+		OperationId = "setDeviceStreamDebug")]
+	[OpenApiRequestBody(Description = "Device stream debug configuration")]
+	[OpenApiResponse(200, Description = "Successful response")]
+	[OpenApiResponse(400, Description = "Bad Request")]
+	[OpenApiResponse(404, Description = "Device not found")]
+	[OpenApiResponse(500, Description = "Internal Server Error")]
 	public class SetDeviceStreamDebugRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

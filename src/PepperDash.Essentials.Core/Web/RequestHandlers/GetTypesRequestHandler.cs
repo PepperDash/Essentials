@@ -2,9 +2,18 @@
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "GetTypes",
+		Description = "Retrieve a list of all available device types",
+		OperationId = "getDeviceTypes")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(400, Description = "Bad Request")]
+	[OpenApiResponse(404, Description = "Device factory not found")]
 	public class GetTypesRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
