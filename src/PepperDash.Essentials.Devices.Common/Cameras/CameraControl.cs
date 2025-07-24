@@ -54,9 +54,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         StringFeedback SelectedCameraFeedback { get; }
 
         /// <summary>
-        /// 
+        /// Selects a camera from the list of available cameras based on the provided key.
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="key">The unique identifier or name of the camera to select.</param>
         void SelectCamera(string key);
     }
 
