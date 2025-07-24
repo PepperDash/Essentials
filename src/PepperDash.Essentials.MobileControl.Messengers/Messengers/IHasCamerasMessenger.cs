@@ -51,7 +51,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/fullStatus", (id, context) =>
             {
-                SendFullStatus();
+                SendFullStatus(id);
             });
 
             AddAction("/selectCamera", (id, content) =>
@@ -69,7 +69,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             });
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string clientId)
         {
             var state = new IHasCamerasStateMessage
             {
@@ -77,7 +77,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 SelectedCamera = CameraController.SelectedCamera
             };
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, clientId);
         }
 
 
