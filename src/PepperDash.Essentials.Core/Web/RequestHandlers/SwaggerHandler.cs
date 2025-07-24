@@ -170,7 +170,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     {
                         ["application/json"] = new 
                         { 
-                            schema = new { @ref = "#/components/schemas/DeviceCommand" }
+                            schema = new Dictionary<string, object> { ["$ref"] = "#/components/schemas/DeviceCommand" }
                         }
                     }
                 };
@@ -276,9 +276,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     type = "object",
                     properties = new Dictionary<string, object>
                     {
-                        ["BoolValues"] = new { type = "array", items = new { @ref = "#/components/schemas/BoolFeedback" } },
-                        ["IntValues"] = new { type = "array", items = new { @ref = "#/components/schemas/IntFeedback" } },
-                        ["SerialValues"] = new { type = "array", items = new { @ref = "#/components/schemas/StringFeedback" } }
+                        ["BoolValues"] = new { type = "array", items = new Dictionary<string, object> { ["$ref"] = "#/components/schemas/BoolFeedback" } },
+                        ["IntValues"] = new { type = "array", items = new Dictionary<string, object> { ["$ref"] = "#/components/schemas/IntFeedback" } },
+                        ["SerialValues"] = new { type = "array", items = new Dictionary<string, object> { ["$ref"] = "#/components/schemas/StringFeedback" } }
                     }
                 },
                 ["BoolFeedback"] = new
@@ -314,7 +314,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     properties = new Dictionary<string, object>
                     {
                         ["url"] = new { type = "string", description = "Base URL for the API" },
-                        ["routes"] = new { type = "array", items = new { @ref = "#/components/schemas/Route" } }
+                        ["routes"] = new { type = "array", items = new Dictionary<string, object> { ["$ref"] = "#/components/schemas/Route" } }
                     }
                 },
                 ["Route"] = new
