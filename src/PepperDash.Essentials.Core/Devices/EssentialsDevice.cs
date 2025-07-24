@@ -20,19 +20,20 @@ namespace PepperDash.Essentials.Core
         public event EventHandler Initialized;
 
         private bool _isInitialized;
-        public bool IsInitialized { 
+        public bool IsInitialized
+        {
             get { return _isInitialized; }
-            private set 
-            { 
+            private set
+            {
                 if (_isInitialized == value) return;
-                
+
                 _isInitialized = value;
 
                 if (_isInitialized)
                 {
                     Initialized?.Invoke(this, new EventArgs());
                 }
-            } 
+            }
         }
 
         protected EssentialsDevice(string key)
@@ -80,8 +81,9 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Override this method to build and create custom Mobile Control Messengers during the Activation phase
         /// </summary>
-        protected virtual void CreateMobileControlMessengers() {
-           
+        protected virtual void CreateMobileControlMessengers()
+        {
+
         }
     }
 
