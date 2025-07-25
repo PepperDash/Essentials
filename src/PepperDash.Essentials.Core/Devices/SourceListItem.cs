@@ -183,6 +183,13 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("supportsUsb")]
         public bool SupportsUsb { get; set; }
 
+        /// <summary>
+        /// The key of the source port associated with this source item
+        /// This is used to identify the specific port on the source device that this item refers to for advanced routing
+        /// </summary>
+        [JsonProperty("sourcePortKey")]
+        public string SourcePortKey { get; set; }
+
 
         /// <summary>
         /// Default constructor for SourceListItem, initializes the Icon to "Blank"
