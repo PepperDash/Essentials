@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Core;
@@ -248,6 +249,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Defines the valid destination types for SourceListItems in a room
     /// </summary>
+    [Obsolete]
     public enum eSourceListItemDestinationTypes
     {
         /// <summary>

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 
 using PepperDash.Core;
 
@@ -28,6 +25,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// For rooms with multiple displays
     /// </summary>
+    [Obsolete("Will be removed in a future version")]
     public interface IHasMultipleDisplays
     {
         Dictionary<eSourceListItemDestinationTypes, IRoutingSink> Displays { get; }
@@ -40,7 +38,7 @@ namespace PepperDash.Essentials.Core
     {
         void RunRouteAction(string routeKey, string sourceListKey);
 
-        void RunRouteAction(string routeKey, string sourceListKey, Action successCallback);        
+        void RunRouteAction(string routeKey, string sourceListKey, Action successCallback);
     }
 
     /// <summary>
@@ -50,7 +48,7 @@ namespace PepperDash.Essentials.Core
     {
         void RunDirectRoute(string sourceKey, string destinationKey, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
     }
-    
+
     /// <summary>
     /// Describes a room with matrix routing
     /// </summary>
@@ -139,7 +137,7 @@ namespace PepperDash.Essentials.Core
         bool HasEnvironmentalControlDevices { get; }
     }
 
-    public interface IRoomOccupancy:IKeyed
+    public interface IRoomOccupancy : IKeyed
     {
         IOccupancyStatusProvider RoomOccupancy { get; }
         bool OccupancyStatusProviderIsRemote { get; }
