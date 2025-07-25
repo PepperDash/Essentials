@@ -53,9 +53,9 @@ namespace PepperDash.Essentials.Core
             // Loop through all loaded assemblies that contain at least 1 type that implements IDeviceFactory
             foreach (var assembly in loadedAssemblies)
             {
-                Debug.LogDebug("loaded assembly: {assemblyName}", assembly.GetName().Name);
+                Debug.LogDebug("loaded assembly: {assemblyName}", assembly.GetName()?.Name ?? "Unknown");
 
-                PluginLoader.AddLoadedAssembly(assembly.GetName().Name, assembly);
+                PluginLoader.AddLoadedAssembly(assembly.GetName()?.Name ?? "Unknown", assembly);
 
                 var types = assembly.GetTypes().Where(ct => typeof(IDeviceFactory).IsAssignableFrom(ct) && !ct.IsInterface && !ct.IsAbstract);
 
