@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class SerialFeedback : Feedback
     {
-        public override string SerialValue { get { return _SerialValue; } } 
+        public override string SerialValue { get { return _SerialValue; } }
         string _SerialValue;
 
         //public override eCueType Type { get { return eCueType.Serial; } }
@@ -25,6 +25,7 @@ namespace PepperDash.Essentials.Core
 
         List<StringInputSig> LinkedInputSigs = new List<StringInputSig>();
 
+        [Obsolete("use constructor with Key parameter. This constructor will be removed in a future version")]
         public SerialFeedback()
         {
         }
