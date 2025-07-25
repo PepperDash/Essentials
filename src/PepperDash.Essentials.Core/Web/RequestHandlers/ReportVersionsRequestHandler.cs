@@ -2,9 +2,17 @@
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "ReportVersions",
+		Description = "Get version information for loaded assemblies",
+		OperationId = "getVersions")]
+	[OpenApiResponse(200, Description = "List of loaded assemblies with version information")]
+	[OpenApiResponse(500, Description = "Internal Server Error")]
 	public class ReportVersionsRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

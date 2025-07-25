@@ -3,10 +3,20 @@ using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpPost]
+	[OpenApiOperation(
+		Summary = "DevJson",
+		Description = "Send a command to a specific device",
+		OperationId = "sendDeviceCommand")]
+	[OpenApiParameter("deviceKey", Description = "The key of the device to send the command to")]
+	[OpenApiRequestBody(Description = "Device command data")]
+	[OpenApiResponse(200, Description = "Command executed successfully")]
+	[OpenApiResponse(400, Description = "Bad Request")]
 	public class DevJsonRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

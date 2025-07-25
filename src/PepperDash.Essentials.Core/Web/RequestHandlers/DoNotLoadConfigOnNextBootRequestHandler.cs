@@ -2,9 +2,19 @@
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[HttpPost]
+	[OpenApiOperation(
+		Summary = "DoNotLoadConfigOnNextBoot",
+		Description = "Get or set flag to prevent configuration loading on next boot",
+		OperationId = "doNotLoadConfigOnNextBoot")]
+	[OpenApiRequestBody(Description = "Configuration loading flag")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(400, Description = "Bad Request")]
 	public class DoNotLoadConfigOnNextBootRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

@@ -3,9 +3,16 @@ using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpPost]
+	[OpenApiOperation(
+		Summary = "Restart Program",
+		Description = "Restart the program",
+		OperationId = "restartProgram")]
+	[OpenApiResponse(200, Description = "Program restart initiated successfully")]
 	public class RestartProgramRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

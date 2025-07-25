@@ -2,12 +2,22 @@
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 using System;
 using Serilog.Events;
 using Newtonsoft.Json.Converters;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[HttpPost]
+	[OpenApiOperation(
+		Summary = "AppDebug",
+		Description = "Get or set application debug level settings",
+		OperationId = "appDebug")]
+	[OpenApiRequestBody(Description = "Debug level configuration")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(400, Description = "Bad Request")]
 	public class AppDebugRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

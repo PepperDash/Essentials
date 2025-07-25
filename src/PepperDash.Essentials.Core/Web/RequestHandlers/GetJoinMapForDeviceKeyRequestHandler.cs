@@ -2,9 +2,21 @@
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "GetJoinMapsForDeviceKey",
+		Description = "Retrieve join map for a specific device within a bridge",
+		OperationId = "getJoinMapForDevice")]
+	[OpenApiParameter("bridgeKey", Description = "The key of the bridge")]
+	[OpenApiParameter("deviceKey", Description = "The key of the device")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(400, Description = "Bad Request")]
+	[OpenApiResponse(404, Description = "Bridge not found")]
+	[OpenApiResponse(500, Description = "Device join map not found")]
 	public class GetJoinMapForDeviceKeyRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

@@ -3,9 +3,19 @@ using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "DevMethods",
+		Description = "Retrieve available methods for a specific device",
+		OperationId = "getDeviceMethods")]
+	[OpenApiParameter("deviceKey", Description = "The key of the device")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(400, Description = "Bad Request")]
+	[OpenApiResponse(404, Description = "Device not found")]
 	public class DevMethodsRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

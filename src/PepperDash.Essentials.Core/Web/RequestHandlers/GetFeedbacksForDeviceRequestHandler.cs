@@ -2,9 +2,19 @@
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "GetFeedbacksForDeviceKey",
+		Description = "Get feedback values from a specific device",
+		OperationId = "getDeviceFeedbacks")]
+	[OpenApiParameter("deviceKey", Description = "The key of the device to get feedbacks from")]
+	[OpenApiResponse(200, Description = "Device feedback values")]
+	[OpenApiResponse(400, Description = "Bad Request")]
+	[OpenApiResponse(404, Description = "Device not found")]
 	public class GetFeedbacksForDeviceRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

@@ -210,6 +210,11 @@ namespace PepperDash.Essentials.Core.Web
                 RouteHandler = new GetRoutesHandler(_server.GetRouteCollection(), BasePath)
             });
 
+            AddRoute(new HttpCwsRoute("swagger") {
+                Name = "OpenAPI Documentation",
+                RouteHandler = new SwaggerHandler(_server.GetRouteCollection(), BasePath)
+            });
+
             // If running on an appliance
             if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
 			{

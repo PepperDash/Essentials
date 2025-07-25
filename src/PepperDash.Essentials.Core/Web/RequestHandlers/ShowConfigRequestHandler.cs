@@ -2,9 +2,16 @@
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "ShowConfig",
+		Description = "Retrieve the current system configuration",
+		OperationId = "getConfig")]
+	[OpenApiResponse(200, Description = "Current system configuration")]
 	public class ShowConfigRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

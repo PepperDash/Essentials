@@ -3,9 +3,19 @@ using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Web.Attributes;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+	[HttpGet]
+	[OpenApiOperation(
+		Summary = "GetJoinMapsForBridgeKey",
+		Description = "Retrieve all join maps for a specific bridge",
+		OperationId = "getJoinMapForBridge")]
+	[OpenApiParameter("bridgeKey", Description = "The key of the bridge")]
+	[OpenApiResponse(200, Description = "Successful response", ContentType = "application/json")]
+	[OpenApiResponse(400, Description = "Bad Request")]
+	[OpenApiResponse(404, Description = "Bridge not found")]
 	public class GetJoinMapForBridgeKeyRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
