@@ -19,11 +19,10 @@ namespace PepperDash.Essentials.Core
     {
       foreach (var typeName in TypeNames)
       {
-        //Debug.LogMessage(LogEventLevel.Verbose, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
         var descriptionAttribute = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
-        string description = descriptionAttribute != null && descriptionAttribute.Length > 0 
-            ? descriptionAttribute[0].Description 
-            : throw new InvalidOperationException($"No DescriptionAttribute found for type {typeof(T).FullName}");
+        string description = descriptionAttribute != null && descriptionAttribute.Length > 0
+            ? descriptionAttribute[0].Description
+            : "No description available";
         var snippetAttribute = typeof(T).GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
         ProcessorExtensionDeviceFactory.AddFactoryForType(typeName.ToLower(), description, typeof(T), BuildDevice);
       }
