@@ -34,6 +34,22 @@ namespace PepperDash.Essentials.Core.Web.Attributes
     }
 
     /// <summary>
+    /// Indicates that a request handler supports HTTP PUT operations
+    /// </summary>
+    public class HttpPutAttribute : HttpMethodAttribute
+    {
+        public HttpPutAttribute() : base("PUT") { }
+    }
+
+    /// <summary>
+    /// Indicates that a request handler supports HTTP DELETE operations
+    /// </summary>
+    public class HttpDeleteAttribute : HttpMethodAttribute
+    {
+        public HttpDeleteAttribute() : base("DELETE") { }
+    }
+
+    /// <summary>
     /// Provides OpenAPI operation metadata for a request handler
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
