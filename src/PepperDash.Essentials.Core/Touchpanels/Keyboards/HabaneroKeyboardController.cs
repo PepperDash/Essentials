@@ -7,6 +7,9 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
 {
+    /// <summary>
+    /// Represents a HabaneroKeyboardController
+    /// </summary>
     public class HabaneroKeyboardController
     {
         /// <summary>
@@ -14,26 +17,47 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         /// </summary>
         public event EventHandler<KeyboardControllerPressEventArgs> KeyPress;
 
+        /// <summary>
+        /// Gets or sets the TriList
+        /// </summary>
         public BasicTriList TriList { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the OutputFeedback
+        /// </summary>
         public StringFeedback OutputFeedback { get; private set; }
 
         public bool IsVisible { get; private set; }
 
         public string DotComButtonString { get; set; }
 
+        /// <summary>
+        /// Gets or sets the GoButtonText
+        /// </summary>
         public string GoButtonText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the SecondaryButtonText
+        /// </summary>
         public string SecondaryButtonText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the GoButtonVisible
+        /// </summary>
         public bool GoButtonVisible { get; set; }
 
+        /// <summary>
+        /// Gets or sets the SecondaryButtonVisible
+        /// </summary>
         public bool SecondaryButtonVisible { get; set; }
 
         int ShiftMode = 0;
         
         StringBuilder Output;
 
+        /// <summary>
+        /// Gets or sets the HideAction
+        /// </summary>
         public Action HideAction { get; set; }
 
 		CTimer BackspaceTimer;
@@ -51,7 +75,7 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         }
 
         /// <summary>
-        /// Shows the keyboard and attaches sig handlers in the range of 2901-2969
+        /// Show method
         /// </summary>
         public void Show()
         {
@@ -108,7 +132,7 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         }
 
         /// <summary>
-        /// Hides the keyboard and disconnects ALL sig handlers from 2901 - 2969
+        /// Hide method
         /// </summary>
         public void Hide()
         {
@@ -130,6 +154,9 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         /// 
         /// </summary>
         /// <param name="c"></param>
+        /// <summary>
+        /// Press method
+        /// </summary>
         public void Press(char c)
         {
             OnKeyPress(c.ToString());
@@ -142,6 +169,9 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         /// 
         /// </summary>
         /// <param name="s"></param>
+        /// <summary>
+        /// Press method
+        /// </summary>
         public void Press(string s)
         {
             OnKeyPress(s);
@@ -151,7 +181,7 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         }
 
         /// <summary>
-        /// 
+        /// EnableGoButton method
         /// </summary>
         public void EnableGoButton()
         {
@@ -416,6 +446,9 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
     public class KeyboardControllerPressEventArgs : EventArgs
     {
         public string Text { get; private set; }
+        /// <summary>
+        /// Gets or sets the SpecialKey
+        /// </summary>
         public KeyboardSpecialKey SpecialKey { get; private set; }
 
         public KeyboardControllerPressEventArgs(string text)
@@ -429,6 +462,9 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         }
     }
 
+    /// <summary>
+    /// Enumeration of KeyboardSpecialKey values
+    /// </summary>
     public enum KeyboardSpecialKey
     {
         None = 0, Backspace, Clear, GoButton, SecondaryButton

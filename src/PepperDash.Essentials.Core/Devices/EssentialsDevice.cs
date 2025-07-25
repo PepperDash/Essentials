@@ -71,6 +71,10 @@ namespace PepperDash.Essentials.Core
             });
         }
 
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
         public override bool CustomActivate()
         {
             CreateMobileControlMessengers();
@@ -105,6 +109,9 @@ namespace PepperDash.Essentials.Core
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = true)]
+    /// <summary>
+    /// Represents a ConfigSnippetAttribute
+    /// </summary>
     public class ConfigSnippetAttribute : Attribute
     {
         private string _ConfigSnippet;
@@ -134,7 +141,7 @@ namespace PepperDash.Essentials.Core
         public List<string> TypeNames { get; protected set; }
 
         /// <summary>
-        /// Loads an item to the DeviceFactory.FactoryMethods dictionary for each entry in the TypeNames list
+        /// LoadTypeFactories method
         /// </summary>
         public void LoadTypeFactories()
         {
@@ -163,12 +170,12 @@ namespace PepperDash.Essentials.Core
         #region IProcessorExtensionDeviceFactory Members
 
         /// <summary>
-        /// A list of strings that can be used in the type property of a DeviceConfig object to build an instance of this device
+        /// Gets or sets the TypeNames
         /// </summary>
         public List<string> TypeNames { get; protected set; }
 
         /// <summary>
-        /// Loads an item to the ProcessorExtensionDeviceFactory.ProcessorExtensionFactoryMethods dictionary for each entry in the TypeNames list
+        /// LoadFactories method
         /// </summary>
         public void LoadFactories()
         {
@@ -211,6 +218,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public string MinimumEssentialsFrameworkVersion { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the DevelopmentEssentialsFrameworkVersions
+        /// </summary>
         public List<string>  DevelopmentEssentialsFrameworkVersions { get; protected set; }
     }
 

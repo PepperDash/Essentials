@@ -18,6 +18,9 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// Main control system class that inherits from CrestronControlSystem and manages program lifecycle
+    /// </summary>
     public class ControlSystem : CrestronControlSystem, ILoadConfig
     {
         HttpLogoServer LogoServer;
@@ -26,6 +29,9 @@ namespace PepperDash.Essentials
         private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
+        /// <summary>
+        /// Initializes a new instance of the ControlSystem class
+        /// </summary>
         public ControlSystem()
             : base()
         {
@@ -62,8 +68,9 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Entry point for the program
+        /// InitializeSystem method
         /// </summary>
+        /// <inheritdoc />
         public override void InitializeSystem()
         {
             // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
@@ -159,9 +166,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Determines if the program is running on a processor (appliance) or server (VC-4).
-        /// 
-        /// Sets Global.FilePathPrefix and Global.ApplicationDirectoryPathPrefix based on platform
+        /// DeterminePlatform method
         /// </summary>
         public void DeterminePlatform()
         {
@@ -246,7 +251,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Begins the process of loading resources including plugins and configuration data
+        /// GoWithLoad method
         /// </summary>
         public void GoWithLoad()
         {
@@ -342,9 +347,9 @@ namespace PepperDash.Essentials
 			return configExists;
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
+  /// <summary>
+  /// TearDown method
+  /// </summary>
 		public void TearDown()
 		{
 			Debug.LogMessage(LogEventLevel.Information, "Tearing down existing system");
@@ -380,7 +385,7 @@ namespace PepperDash.Essentials
 		}
 
         /// <summary>
-        /// Reads all devices from config and adds them to DeviceManager
+        /// LoadDevices method
         /// </summary>
         public void LoadDevices()
         {
@@ -441,7 +446,7 @@ namespace PepperDash.Essentials
 
 
         /// <summary>
-        /// Helper method to load tie lines.  This should run after devices have loaded
+        /// LoadTieLines method
         /// </summary>
         public void LoadTieLines()
         {
@@ -467,7 +472,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Reads all rooms from config and adds them to DeviceManager
+        /// LoadRooms method
         /// </summary>
         public void LoadRooms()
         {            

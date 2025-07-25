@@ -8,18 +8,24 @@ using Crestron.SimplSharpPro;
 namespace PepperDash.Essentials.Core
 {
 
+    /// <summary>
+    /// Represents a StringFeedback
+    /// </summary>
     public class StringFeedback : Feedback
     {
+        /// <summary>
+        /// Gets or sets the StringValue
+        /// </summary>
         public override string StringValue { get { return _StringValue; } } // ValueFunc.Invoke(); } }
         string _StringValue;
 
         /// <summary>
-        /// Used in testing.  Set/Clear functions
+        /// Gets or sets the TestValue
         /// </summary>
         public string TestValue { get; private set; }
 
         /// <summary>
-        /// Evaluated on FireUpdate
+        /// Gets or sets the ValueFunc
         /// </summary>
         public Func<string> ValueFunc { get; private set; }
         List<StringInputSig> LinkedInputSigs = new List<StringInputSig>();
@@ -57,6 +63,10 @@ namespace PepperDash.Essentials.Core
             ValueFunc = newFunc;
         }
 
+        /// <summary>
+        /// FireUpdate method
+        /// </summary>
+        /// <inheritdoc />
         public override void FireUpdate()
         {
             var newValue = InTestMode ? TestValue : ValueFunc.Invoke();
@@ -68,17 +78,26 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// LinkInputSig method
+        /// </summary>
         public void LinkInputSig(StringInputSig sig)
         {
             LinkedInputSigs.Add(sig);
             UpdateSig(sig);
         }
 
+        /// <summary>
+        /// UnlinkInputSig method
+        /// </summary>
         public void UnlinkInputSig(StringInputSig sig)
         {
             LinkedInputSigs.Remove(sig);
         }
 
+        /// <summary>
+        /// ToString method
+        /// </summary>
         public override string ToString()
         {
             return (InTestMode ? "TEST -- " : "") + StringValue;
@@ -88,6 +107,9 @@ namespace PepperDash.Essentials.Core
         /// Puts this in test mode, sets the test value and fires an update.
         /// </summary>
         /// <param name="value"></param>
+        /// <summary>
+        /// SetTestValue method
+        /// </summary>
         public void SetTestValue(string value)
         {
             TestValue = value;

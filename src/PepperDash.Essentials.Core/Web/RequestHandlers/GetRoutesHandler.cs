@@ -5,6 +5,9 @@ using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+    /// <summary>
+    /// Represents a GetRoutesHandler
+    /// </summary>
     public class GetRoutesHandler:WebApiBaseRequestHandler
     {
         private HttpCwsRouteCollection routeCollection;
@@ -41,12 +44,21 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         }
     }
 
+    /// <summary>
+    /// Represents a RoutesResponseObject
+    /// </summary>
     public class  RoutesResponseObject 
     {
         [JsonProperty("url")]
+        /// <summary>
+        /// Gets or sets the Url
+        /// </summary>
         public string Url { set; get; }
 
         [JsonProperty("routes")]
+        /// <summary>
+        /// Gets or sets the Routes
+        /// </summary>
         public HttpCwsRouteCollection Routes { get; set; }
     }
 }

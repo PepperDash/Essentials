@@ -11,15 +11,24 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
 {
+    /// <summary>
+    /// Represents a BlueJeansPc
+    /// </summary>
     public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
     {
 
+        /// <summary>
+        /// Gets or sets the AnyVideoIn
+        /// </summary>
         public RoutingInputPort AnyVideoIn { get; private set; }
 
         public RoutingInputPort CurrentInputPort => AnyVideoIn;
 
         #region IRoutingInputs Members
 
+        /// <summary>
+        /// Gets or sets the InputPorts
+        /// </summary>
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
         #endregion
@@ -35,11 +44,17 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
         #region IRunRouteAction Members
 
+        /// <summary>
+        /// RunRouteAction method
+        /// </summary>
         public void RunRouteAction(string routeKey, string sourceListKey)
         {
             RunRouteAction(routeKey, sourceListKey, null);
         }
 
+        /// <summary>
+        /// RunRouteAction method
+        /// </summary>
         public void RunRouteAction(string routeKey, string sourceListKey, Action successCallback)
         {
             CrestronInvoke.BeginInvoke(o =>
@@ -128,6 +143,9 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
         #region IHasCurrentSourceInfoChange Members
 
+        /// <summary>
+        /// Gets or sets the CurrentSourceInfoKey
+        /// </summary>
         public string CurrentSourceInfoKey { get; set; }
 
         /// <summary>
@@ -164,6 +182,9 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         #endregion
     }
 
+    /// <summary>
+    /// Represents a BlueJeansPcFactory
+    /// </summary>
     public class BlueJeansPcFactory : EssentialsDeviceFactory<BlueJeansPc>
     {
         public BlueJeansPcFactory()
@@ -171,6 +192,10 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
             TypeNames = new List<string>() { "bluejeanspc" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new BlueJeansPc Device");

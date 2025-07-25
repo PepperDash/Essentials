@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Cameras;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -12,8 +12,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
     public class CameraBaseMessenger : MessengerBase
     {
         /// <summary>
-        /// Device being bridged
-        /// </summary>  
+        /// Gets or sets the Camera
+        /// </summary>
         public CameraBase Camera { get; set; }
 
         /// <summary>

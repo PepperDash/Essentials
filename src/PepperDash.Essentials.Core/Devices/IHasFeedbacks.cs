@@ -6,6 +6,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+ /// <summary>
+ /// Defines the contract for IHasFeedback
+ /// </summary>
 	public interface IHasFeedback : IKeyed
 	{
 		/// <summary>

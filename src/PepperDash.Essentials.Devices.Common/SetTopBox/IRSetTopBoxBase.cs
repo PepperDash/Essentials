@@ -19,18 +19,45 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Devices.Common
 {
     [Description("Wrapper class for an IR Set Top Box")]
+    /// <summary>
+    /// Represents a IRSetTopBoxBase
+    /// </summary>
     public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingSource, IRoutingOutputs, IUsageTracking, IHasPowerControl, ITvPresetsProvider
 	{
+  /// <summary>
+  /// Gets or sets the IrPort
+  /// </summary>
 		public IrOutputPortController IrPort { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the DisplayUiType
+  /// </summary>
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeDirecTv; } }
+        /// <summary>
+        /// Gets or sets the IrPulseTime
+        /// </summary>
         public ushort IrPulseTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the HasPresets
+        /// </summary>
         public bool HasPresets { get; set; }
+        /// <summary>
+        /// Gets or sets the HasDvr
+        /// </summary>
         public bool HasDvr { get; set; }
+        /// <summary>
+        /// Gets or sets the HasDpad
+        /// </summary>
         public bool HasDpad { get; set; }
+        /// <summary>
+        /// Gets or sets the HasNumeric
+        /// </summary>
         public bool HasNumeric { get; set; }
 
+        /// <summary>
+        /// Gets or sets the TvPresets
+        /// </summary>
         public DevicePresetsModel TvPresets { get; private set; }
 
 		public IRSetTopBoxBase(string key, string name, IrOutputPortController portCont,
@@ -67,6 +94,9 @@ namespace PepperDash.Essentials.Devices.Common
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { AnyVideoOut, AnyAudioOut };
 		}
 
+  /// <summary>
+  /// LoadPresets method
+  /// </summary>
 		public void LoadPresets(string filePath)
 		{
 			TvPresets = new DevicePresetsModel(Key + "-presets", this, filePath);
@@ -76,11 +106,17 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#region ISetTopBoxControls Members
 
+  /// <summary>
+  /// DvrList method
+  /// </summary>
 		public void DvrList(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_DVR, pressRelease);
 		}
 
+  /// <summary>
+  /// Replay method
+  /// </summary>
 		public void Replay(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_REPLAY, pressRelease);
@@ -90,36 +126,57 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#region IDPad Members
 
+  /// <summary>
+  /// Up method
+  /// </summary>
 		public void Up(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_UP_ARROW, pressRelease);
 		}
 
+  /// <summary>
+  /// Down method
+  /// </summary>
 		public void Down(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_DN_ARROW, pressRelease);
 		}
 
+  /// <summary>
+  /// Left method
+  /// </summary>
 		public void Left(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_LEFT_ARROW, pressRelease);
 		}
 
+  /// <summary>
+  /// Right method
+  /// </summary>
 		public void Right(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_RIGHT_ARROW, pressRelease);
 		}
 
+  /// <summary>
+  /// Select method
+  /// </summary>
 		public void Select(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_ENTER, pressRelease);
 		}
 
+  /// <summary>
+  /// Menu method
+  /// </summary>
 		public void Menu(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_MENU, pressRelease);
 		}
 
+  /// <summary>
+  /// Exit method
+  /// </summary>
 		public void Exit(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_EXIT, pressRelease);
@@ -129,59 +186,89 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#region INumericKeypad Members
 
+  /// <summary>
+  /// Digit0 method
+  /// </summary>
 		public void Digit0(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_0, pressRelease);
 		}
 
+  /// <summary>
+  /// Digit1 method
+  /// </summary>
 		public void Digit1(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_1, pressRelease);
 		}
 
+  /// <summary>
+  /// Digit2 method
+  /// </summary>
 		public void Digit2(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_2, pressRelease);
 		}
 
+  /// <summary>
+  /// Digit3 method
+  /// </summary>
 		public void Digit3(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_3, pressRelease);
 		}
 
+  /// <summary>
+  /// Digit4 method
+  /// </summary>
 		public void Digit4(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_4, pressRelease);
 		}
 
+  /// <summary>
+  /// Digit5 method
+  /// </summary>
 		public void Digit5(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_5, pressRelease);
 		}
 
+  /// <summary>
+  /// Digit6 method
+  /// </summary>
 		public void Digit6(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_6, pressRelease);
 		}
 
+  /// <summary>
+  /// Digit7 method
+  /// </summary>
 		public void Digit7(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_7, pressRelease);
 		}
 
+  /// <summary>
+  /// Digit8 method
+  /// </summary>
 		public void Digit8(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_8, pressRelease);
 		}
 
+  /// <summary>
+  /// Digit9 method
+  /// </summary>
 		public void Digit9(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_9, pressRelease);
 		}
 
-		/// <summary>
-		/// Defaults to true
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the HasKeypadAccessoryButton1
+  /// </summary>
 		public bool HasKeypadAccessoryButton1 { get; set; }
 
 		/// <summary>
@@ -200,9 +287,9 @@ namespace PepperDash.Essentials.Devices.Common
 			IrPort.PressRelease(KeypadAccessoryButton1Command, pressRelease);
 		}
 
-		/// <summary>
-		/// Defaults to true
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the HasKeypadAccessoryButton2
+  /// </summary>
 		public bool HasKeypadAccessoryButton2 { get; set; }
 
 		/// <summary>
@@ -225,9 +312,9 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#region ISetTopBoxNumericKeypad Members
 
-		/// <summary>
-		/// Corresponds to "dash" IR command
-		/// </summary>
+  /// <summary>
+  /// Dash method
+  /// </summary>
 		public void Dash(bool pressRelease)
 		{
 			IrPort.PressRelease("dash", pressRelease);
@@ -250,21 +337,33 @@ namespace PepperDash.Essentials.Devices.Common
 			IrPort.PressRelease(IROutputStandardCommands.IROut_CH_PLUS, pressRelease);
 		}
 
+  /// <summary>
+  /// ChannelDown method
+  /// </summary>
 		public void ChannelDown(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_CH_MINUS, pressRelease);
 		}
 
+  /// <summary>
+  /// LastChannel method
+  /// </summary>
 		public void LastChannel(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_LAST, pressRelease);
 		}
 
+  /// <summary>
+  /// Guide method
+  /// </summary>
 		public void Guide(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_GUIDE, pressRelease);
 		}
 
+  /// <summary>
+  /// Info method
+  /// </summary>
 		public void Info(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_INFO, pressRelease);
@@ -274,21 +373,33 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#region IColorFunctions Members
 
+  /// <summary>
+  /// Red method
+  /// </summary>
 		public void Red(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_RED, pressRelease);
 		}
 
+  /// <summary>
+  /// Green method
+  /// </summary>
 		public void Green(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_GREEN, pressRelease);
 		}
 
+  /// <summary>
+  /// Yellow method
+  /// </summary>
 		public void Yellow(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_YELLOW, pressRelease);
 		}
 
+  /// <summary>
+  /// Blue method
+  /// </summary>
 		public void Blue(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_BLUE, pressRelease);
@@ -298,48 +409,81 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#region IRoutingOutputs Members
 
+  /// <summary>
+  /// Gets or sets the AnyVideoOut
+  /// </summary>
 		public RoutingOutputPort AnyVideoOut { get; private set; }
+  /// <summary>
+  /// Gets or sets the AnyAudioOut
+  /// </summary>
 		public RoutingOutputPort AnyAudioOut { get; private set; }
+  /// <summary>
+  /// Gets or sets the OutputPorts
+  /// </summary>
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
 		#endregion
 
 		#region ITransport Members
 
+  /// <summary>
+  /// ChapMinus method
+  /// </summary>
 		public void ChapMinus(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_REPLAY, pressRelease);
 		}
 
+  /// <summary>
+  /// ChapPlus method
+  /// </summary>
 		public void ChapPlus(bool pressRelease)
 		{
 		}
 
+  /// <summary>
+  /// FFwd method
+  /// </summary>
 		public void FFwd(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_FSCAN, pressRelease);
 		}
 
+  /// <summary>
+  /// Pause method
+  /// </summary>
 		public void Pause(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_RSCAN, pressRelease);
 		}
 
+  /// <summary>
+  /// Play method
+  /// </summary>
 		public void Play(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_PLAY, pressRelease);
 		}
 
+  /// <summary>
+  /// Record method
+  /// </summary>
 		public void Record(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_RECORD, pressRelease);
 		}
 
+  /// <summary>
+  /// Rewind method
+  /// </summary>
 		public void Rewind(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_RSCAN, pressRelease);
 		}
 
+  /// <summary>
+  /// Stop method
+  /// </summary>
 		public void Stop(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_STOP, pressRelease);
@@ -349,22 +493,34 @@ namespace PepperDash.Essentials.Devices.Common
 
         #region IUsageTracking Members
 
+        /// <summary>
+        /// Gets or sets the UsageTracker
+        /// </summary>
         public UsageTracking UsageTracker { get; set; }
 
         #endregion
 
         #region IPower Members
 
+        /// <summary>
+        /// PowerOn method
+        /// </summary>
         public void PowerOn()
         {
             IrPort.Pulse(IROutputStandardCommands.IROut_POWER_ON, IrPulseTime);
         }
 
+        /// <summary>
+        /// PowerOff method
+        /// </summary>
         public void PowerOff()
         {
             IrPort.Pulse(IROutputStandardCommands.IROut_POWER_OFF, IrPulseTime);
         }
 
+        /// <summary>
+        /// PowerToggle method
+        /// </summary>
         public void PowerToggle()
         {
             IrPort.Pulse(IROutputStandardCommands.IROut_POWER, IrPulseTime);
@@ -372,6 +528,10 @@ namespace PepperDash.Essentials.Devices.Common
 
         #endregion
 
+     /// <summary>
+     /// LinkToApi method
+     /// </summary>
+     /// <inheritdoc />
 	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
             var joinMap = new SetTopBoxControllerJoinMap(joinStart);
@@ -495,6 +655,9 @@ namespace PepperDash.Essentials.Devices.Common
 	    }
 	}
 
+    /// <summary>
+    /// Represents a IRSetTopBoxBaseFactory
+    /// </summary>
     public class IRSetTopBoxBaseFactory : EssentialsDeviceFactory<IRSetTopBoxBase>
     {
         public IRSetTopBoxBaseFactory()
@@ -502,6 +665,10 @@ namespace PepperDash.Essentials.Devices.Common
             TypeNames = new List<string>() { "settopbox" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new SetTopBox Device");

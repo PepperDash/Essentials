@@ -25,6 +25,9 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public static class IDvrExtensions
 	{
+  /// <summary>
+  /// LinkButtons method
+  /// </summary>
 		public static void LinkButtons(this IDvr dev, BasicTriList triList)
 		{
 			triList.SetBoolSigAction(136, dev.DvrList);

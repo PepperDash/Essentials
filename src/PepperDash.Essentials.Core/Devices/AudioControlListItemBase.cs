@@ -13,6 +13,9 @@ namespace PepperDash.Essentials.Core
         /// Key of the parent device in the DeviceManager
         /// </summary>
         [JsonProperty("parentDeviceKey")]
+        /// <summary>
+        /// Gets or sets the ParentDeviceKey
+        /// </summary>
         public string ParentDeviceKey { get; set; }
 
         /// <summary>

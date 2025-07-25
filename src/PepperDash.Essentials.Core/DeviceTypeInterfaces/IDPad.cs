@@ -25,6 +25,9 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public static class IDPadExtensions
 	{
+  /// <summary>
+  /// LinkButtons method
+  /// </summary>
 		public static void LinkButtons(this IDPad dev, BasicTriList triList)
 		{
 			triList.SetBoolSigAction(138, dev.Up);
@@ -36,6 +39,9 @@ namespace PepperDash.Essentials.Core
 			triList.SetBoolSigAction(134, dev.Exit);        
 		}
 
+  /// <summary>
+  /// UnlinkButtons method
+  /// </summary>
 		public static void UnlinkButtons(this IDPad dev, BasicTriList triList)
 		{
 			triList.ClearBoolSigAction(138);

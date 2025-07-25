@@ -3,6 +3,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
+    /// <summary>
+    /// Represents a GlsPartitionSensorJoinMap
+    /// </summary>
     public class GlsPartitionSensorJoinMap : JoinMapBaseAdvanced
     {
 

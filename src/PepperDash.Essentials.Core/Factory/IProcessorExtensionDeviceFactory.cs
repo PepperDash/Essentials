@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Defines the contract for IProcessorExtensionDeviceFactory
+    /// </summary>
     public interface IProcessorExtensionDeviceFactory
     {
         /// <summary>

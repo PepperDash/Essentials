@@ -84,8 +84,14 @@ namespace PepperDash.Essentials.Core
 
         #region IPartitionController Members
 
+        /// <summary>
+        /// Gets or sets the AdjacentRoomKeys
+        /// </summary>
         public List<string> AdjacentRoomKeys { get; private set; }
 
+        /// <summary>
+        /// SetAutoMode method
+        /// </summary>
         public void SetAutoMode()
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Setting {Key} to Auto Mode", this);
@@ -110,6 +116,9 @@ namespace PepperDash.Essentials.Core
             PartitionPresentFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// SetManualMode method
+        /// </summary>
         public void SetManualMode()
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Setting {Key} to Manual Mode", this);
@@ -134,6 +143,9 @@ namespace PepperDash.Essentials.Core
         }
 
 
+        /// <summary>
+        /// SetPartitionStatePresent method
+        /// </summary>
         public void SetPartitionStatePresent()
         {
             if (!IsInAutoMode)
@@ -143,6 +155,9 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// SetPartitionStateNotPresent method
+        /// </summary>
         public void SetPartitionStateNotPresent()
         {
             if (!IsInAutoMode)
@@ -152,6 +167,9 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// ToggglePartitionState method
+        /// </summary>
         public void ToggglePartitionState()
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Toggling Partition State for {Key}", this);
@@ -168,18 +186,27 @@ namespace PepperDash.Essentials.Core
 
         #region IPartitionStateProvider Members
 
+        /// <summary>
+        /// Gets or sets the PartitionPresentFeedback
+        /// </summary>
         public BoolFeedback PartitionPresentFeedback { get; private set; }
 
         #endregion
 
         #region IKeyName Members
 
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; private set; }
 
         #endregion
 
         #region IKeyed Members
 
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; private set; }
 
         #endregion

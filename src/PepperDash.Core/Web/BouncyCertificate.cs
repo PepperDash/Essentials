@@ -35,6 +35,9 @@ namespace PepperDash.Core
             return issuerCertificate;
         }
 
+        /// <summary>
+        /// IssueCertificate method
+        /// </summary>
         public X509Certificate2 IssueCertificate(string subjectName, X509Certificate2 issuerCertificate, string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             // It's self-signed, so these are the same.
@@ -56,6 +59,9 @@ namespace PepperDash.Core
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }
 
+        /// <summary>
+        /// CreateCertificateAuthorityCertificate method
+        /// </summary>
         public X509Certificate2 CreateCertificateAuthorityCertificate(string subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             // It's self-signed, so these are the same.
@@ -78,6 +84,9 @@ namespace PepperDash.Core
             return ConvertCertificate(certificate, subjectKeyPair, random);
         }
 
+        /// <summary>
+        /// CreateSelfSignedCertificate method
+        /// </summary>
         public X509Certificate2 CreateSelfSignedCertificate(string subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             // It's self-signed, so these are the same.
@@ -305,6 +314,9 @@ namespace PepperDash.Core
             return convertedCertificate;
         }
 
+        /// <summary>
+        /// WriteCertificate method
+        /// </summary>
         public void WriteCertificate(X509Certificate2 certificate, string outputDirectory, string certName)
         {
             // This password is the one attached to the PFX file. Use 'null' for no password.
@@ -332,6 +344,9 @@ namespace PepperDash.Core
                 }
             }
         }
+        /// <summary>
+        /// AddCertToStore method
+        /// </summary>
         public bool AddCertToStore(X509Certificate2 cert, System.Security.Cryptography.X509Certificates.StoreName st, System.Security.Cryptography.X509Certificates.StoreLocation sl)
         {
             bool bRet = false;

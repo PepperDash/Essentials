@@ -3,7 +3,7 @@
 namespace PepperDash.Essentials.Core.Bridges
 {
     /// <summary>
-    /// Defines a device that uses JoinMapBaseAdvanced for its join map
+    /// Defines the contract for IBridgeAdvanced
     /// </summary>
     public interface IBridgeAdvanced
     {

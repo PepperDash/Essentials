@@ -94,7 +94,7 @@ namespace PepperDash.Essentials.Core.Queues
         }
 
         /// <summary>
-        /// If the instance has been disposed or not.  If it has, you can not use it anymore
+        /// Gets or sets the Disposed
         /// </summary>
         public bool Disposed { get; private set; }
 

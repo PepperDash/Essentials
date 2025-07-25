@@ -4,6 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Represents a ITransportMessenger
+    /// </summary>
     public class ITransportMessenger : MessengerBase
     {
         private readonly ITransport transportDevice;

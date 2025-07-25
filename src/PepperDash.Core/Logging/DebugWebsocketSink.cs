@@ -21,6 +21,9 @@ using Serilog.Formatting.Json;
 
 namespace PepperDash.Core
 {
+    /// <summary>
+    /// Represents a DebugWebsocketSink
+    /// </summary>
     public class DebugWebsocketSink : ILogEventSink
     {
         private HttpServer _httpsServer;
@@ -47,6 +50,9 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the IsRunning
+        /// </summary>
         public bool IsRunning { get => _httpsServer?.IsListening ?? false; }
         
 
@@ -105,6 +111,9 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// Emit method
+        /// </summary>
         public void Emit(LogEvent logEvent)
         {
             if (_httpsServer == null || !_httpsServer.IsListening) return;
@@ -116,6 +125,9 @@ namespace PepperDash.Core
 
         }
 
+        /// <summary>
+        /// StartServerAndSetPort method
+        /// </summary>
         public void StartServerAndSetPort(int port)
         {
             Debug.Console(0, "Starting Websocket Server on port: {0}", port);
@@ -193,6 +205,9 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// StopServer method
+        /// </summary>
         public void StopServer()
         {
             Debug.Console(0, "Stopping Websocket Server");
@@ -204,6 +219,9 @@ namespace PepperDash.Core
 
     public static class DebugWebsocketSinkExtensions
     {
+        /// <summary>
+        /// DebugWebsocketSink method
+        /// </summary>
         public static LoggerConfiguration DebugWebsocketSink(
                              this LoggerSinkConfiguration loggerConfiguration,
                                               ITextFormatter formatProvider = null)
@@ -212,6 +230,9 @@ namespace PepperDash.Core
         }
     }
 
+    /// <summary>
+    /// Represents a DebugClient
+    /// </summary>
     public class DebugClient : WebSocketBehavior
     {
         private DateTime _connectionTime;

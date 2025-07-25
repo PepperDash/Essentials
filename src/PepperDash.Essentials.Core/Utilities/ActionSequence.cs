@@ -46,7 +46,7 @@ namespace PepperDash.Essentials.Core.Utilities
         }
 
         /// <summary>
-        /// Starts executing the sequenced actions
+        /// StartSequence method
         /// </summary>
         public void StartSequence()
         {
@@ -63,7 +63,7 @@ namespace PepperDash.Essentials.Core.Utilities
         }
 
         /// <summary>
-        /// Stops executing the sequenced actions
+        /// StopSequence method
         /// </summary>
         public void StopSequence()
         {
@@ -122,7 +122,7 @@ namespace PepperDash.Essentials.Core.Utilities
     }
 
     /// <summary>
-    /// Configuration Properties for ActionSequence
+    /// Represents a ActionSequencePropertiesConfig
     /// </summary>
     public class ActionSequencePropertiesConfig
     {
@@ -135,14 +135,20 @@ namespace PepperDash.Essentials.Core.Utilities
         }
     }
 
+    /// <summary>
+    /// Represents a SequencedDeviceActionWrapper
+    /// </summary>
     public class SequencedDeviceActionWrapper : DeviceActionWrapper
     {
         [JsonProperty("delayMs")]
+        /// <summary>
+        /// Gets or sets the DelayMs
+        /// </summary>
         public int DelayMs { get; set; }
     }
 
     /// <summary>
-    /// Factory class
+    /// Represents a ActionSequenceFactory
     /// </summary>
     public class ActionSequenceFactory : EssentialsDeviceFactory<ActionSequence>
     {

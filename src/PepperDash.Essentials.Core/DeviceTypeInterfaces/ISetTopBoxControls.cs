@@ -5,9 +5,9 @@ using PepperDash.Essentials.Core.SmartObjects;
 
 namespace PepperDash.Essentials.Core
 {
-	/// <summary>
-	/// 
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for ISetTopBoxControls
+ /// </summary>
 	public interface ISetTopBoxControls : IChannel, IColor, IDPad, ISetTopBoxNumericKeypad, 
 		ITransport, IUiDisplayInfo
 	{
@@ -40,12 +40,18 @@ namespace PepperDash.Essentials.Core
 
 	public static class ISetTopBoxControlsExtensions
 	{
+  /// <summary>
+  /// LinkButtons method
+  /// </summary>
 		public static void LinkButtons(this ISetTopBoxControls dev, BasicTriList triList)
 		{
 			triList.SetBoolSigAction(136, dev.DvrList);
 			triList.SetBoolSigAction(152, dev.Replay);
 		}
 
+  /// <summary>
+  /// UnlinkButtons method
+  /// </summary>
 		public static void UnlinkButtons(this ISetTopBoxControls dev, BasicTriList triList)
 		{
 			triList.ClearBoolSigAction(136);

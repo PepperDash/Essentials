@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a C2nRthsControllerJoinMap
+    /// </summary>
     public class C2nRthsControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("IsOnline")]

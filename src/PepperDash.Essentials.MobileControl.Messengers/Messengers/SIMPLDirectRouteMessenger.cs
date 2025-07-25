@@ -6,10 +6,16 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a SimplDirectRouteMessenger
+    /// </summary>
     public class SimplDirectRouteMessenger : MessengerBase
     {
         private readonly BasicTriList _eisc;
 
+        /// <summary>
+        /// Gets or sets the JoinMap
+        /// </summary>
         public MobileControlSIMPLRunDirectRouteActionJoinMap JoinMap { get; private set; }
 
         public Dictionary<string, DestinationListItem> DestinationList { get; set; }
@@ -92,6 +98,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 ));
         }
 
+        /// <summary>
+        /// RegisterForDestinationPaths method
+        /// </summary>
         public void RegisterForDestinationPaths()
         {
             //handle routing feedback from SIMPL

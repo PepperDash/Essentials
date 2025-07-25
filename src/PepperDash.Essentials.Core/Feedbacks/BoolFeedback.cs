@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Core
         public bool TestValue { get; private set; }
 
         /// <summary>
-        /// Func that evaluates on FireUpdate
+        /// Gets or sets the ValueFunc
         /// </summary>
         public Func<bool> ValueFunc { get; private set; }
 
@@ -67,6 +67,10 @@ namespace PepperDash.Essentials.Core
             ValueFunc = newFunc;
         }
 
+        /// <summary>
+        /// FireUpdate method
+        /// </summary>
+        /// <inheritdoc />
         public override void FireUpdate()
         {
             bool newValue = InTestMode ? TestValue : ValueFunc.Invoke();
@@ -83,6 +87,9 @@ namespace PepperDash.Essentials.Core
         /// Links an input sig
         /// </summary>
         /// <param name="sig"></param>
+        /// <summary>
+        /// LinkInputSig method
+        /// </summary>
         public void LinkInputSig(BoolInputSig sig)
         {
             LinkedInputSigs.Add(sig);
@@ -93,6 +100,9 @@ namespace PepperDash.Essentials.Core
         /// Unlinks an inputs sig
         /// </summary>
         /// <param name="sig"></param>
+        /// <summary>
+        /// UnlinkInputSig method
+        /// </summary>
         public void UnlinkInputSig(BoolInputSig sig)
         {
             LinkedInputSigs.Remove(sig);
@@ -112,6 +122,9 @@ namespace PepperDash.Essentials.Core
         /// Unlinks an input sig to the complement value
         /// </summary>
         /// <param name="sig"></param>
+        /// <summary>
+        /// UnlinkComplementInputSig method
+        /// </summary>
         public void UnlinkComplementInputSig(BoolInputSig sig)
         {
             LinkedComplementInputSigs.Remove(sig);
@@ -131,6 +144,9 @@ namespace PepperDash.Essentials.Core
         /// 
         /// </summary>
         /// <param name="feedback"></param>
+        /// <summary>
+        /// UnlinkCrestronFeedback method
+        /// </summary>
         public void UnlinkCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
         {
             LinkedCrestronFeedbacks.Remove(feedback);
@@ -145,6 +161,9 @@ namespace PepperDash.Essentials.Core
         /// Puts this in test mode, sets the test value and fires an update.
         /// </summary>
         /// <param name="value"></param>
+        /// <summary>
+        /// SetTestValue method
+        /// </summary>
         public void SetTestValue(bool value)
         {
             TestValue = value;

@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Touchpanel
         private string _appUrl;
 
         /// <summary>
-        /// Gets feedback for the current application URL.
+        /// Gets or sets the AppUrlFeedback
         /// </summary>
         public StringFeedback AppUrlFeedback { get; private set; }
 
@@ -65,12 +65,12 @@ namespace PepperDash.Essentials.Touchpanel
         public BoolFeedback ZoomInCallFeedback => _zoomInCallFeedback;
 
         /// <summary>
-        /// Gets the collection of feedback objects for this touchpanel controller.
+        /// Gets or sets the Feedbacks
         /// </summary>
         public FeedbackCollection<Feedback> Feedbacks { get; private set; }
 
         /// <summary>
-        /// Gets the collection of Zoom-related feedback objects.
+        /// Gets or sets the ZoomFeedbacks
         /// </summary>
         public FeedbackCollection<Feedback> ZoomFeedbacks { get; private set; }
 
@@ -95,7 +95,7 @@ namespace PepperDash.Essentials.Touchpanel
         public string Theme => localConfig.Theme;
 
         /// <summary>
-        /// Gets feedback for the current theme setting.
+        /// Gets or sets the ThemeFeedback
         /// </summary>
         public StringFeedback ThemeFeedback { get; private set; }
 
@@ -188,6 +188,9 @@ namespace PepperDash.Essentials.Touchpanel
         /// Updates the theme setting for this touchpanel controller and persists the change to configuration.
         /// </summary>
         /// <param name="theme">The new theme identifier to apply.</param>
+        /// <summary>
+        /// UpdateTheme method
+        /// </summary>
         public void UpdateTheme(string theme)
         {
             localConfig.Theme = theme;
@@ -325,6 +328,9 @@ namespace PepperDash.Essentials.Touchpanel
         /// registering messengers and linking to mobile control.
         /// </summary>
         /// <returns>True if activation was successful; otherwise, false.</returns>
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
         public override bool CustomActivate()
         {
             var appMessenger = new ITswAppControlMessenger($"appControlMessenger-{Key}", $"/device/{Key}", this);
@@ -432,6 +438,9 @@ namespace PepperDash.Essentials.Touchpanel
         /// Sets the application URL and updates the corresponding feedback.
         /// </summary>
         /// <param name="url">The new application URL to set.</param>
+        /// <summary>
+        /// SetAppUrl method
+        /// </summary>
         public void SetAppUrl(string url)
         {
             _appUrl = url;
@@ -458,7 +467,7 @@ namespace PepperDash.Essentials.Touchpanel
         }
 
         /// <summary>
-        /// Hides the currently open application on the touchpanel.
+        /// HideOpenApp method
         /// </summary>
         public void HideOpenApp()
         {
@@ -476,7 +485,7 @@ namespace PepperDash.Essentials.Touchpanel
         }
 
         /// <summary>
-        /// Opens an application on the touchpanel. Note: X60 panels do not support Zoom app opening.
+        /// OpenApp method
         /// </summary>
         public void OpenApp()
         {
@@ -494,7 +503,7 @@ namespace PepperDash.Essentials.Touchpanel
         }
 
         /// <summary>
-        /// Closes the currently open application on the touchpanel.
+        /// CloseOpenApp method
         /// </summary>
         public void CloseOpenApp()
         {
@@ -512,7 +521,7 @@ namespace PepperDash.Essentials.Touchpanel
         }
 
         /// <summary>
-        /// Ends the current Zoom call on the touchpanel.
+        /// EndZoomCall method
         /// </summary>
         public void EndZoomCall()
         {
@@ -530,8 +539,7 @@ namespace PepperDash.Essentials.Touchpanel
         }
 
         /// <summary>
-        /// Updates the device information (MAC address and IP address) from the touchpanel
-        /// and raises the DeviceInfoChanged event.
+        /// UpdateDeviceInfo method
         /// </summary>
         public void UpdateDeviceInfo()
         {
@@ -570,8 +578,7 @@ namespace PepperDash.Essentials.Touchpanel
     }
 
     /// <summary>
-    /// Factory class for creating MobileControlTouchpanelController instances from device configuration.
-    /// Supports various Crestron touchpanel models including TSW, TS, CrestronApp, XPanel, and DGE series.
+    /// Represents a MobileControlTouchpanelControllerFactory
     /// </summary>
     public class MobileControlTouchpanelControllerFactory : EssentialsPluginDeviceFactory<MobileControlTouchpanelController>
     {
@@ -590,6 +597,9 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         /// <param name="dc">The device configuration containing the device properties and settings.</param>
         /// <returns>A configured MobileControlTouchpanelController instance.</returns>
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             var comm = CommFactory.GetControlPropertiesConfig(dc);

@@ -40,6 +40,9 @@ using WebSocketSharp;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// Represents a MobileControlSystemController
+    /// </summary>
     public class MobileControlSystemController : EssentialsDevice, IMobileControl
     {
         private bool _initialized = false;
@@ -70,6 +73,9 @@ namespace PepperDash.Essentials
         private bool _disableReconnect;
         private WebSocket _wsClient2;
 
+        /// <summary>
+        /// Gets or sets the ApiService
+        /// </summary>
         public MobileControlApiService ApiService { get; private set; }
 
         public List<MobileControlBridgeBase> RoomBridges => _roomBridges;
@@ -80,6 +86,9 @@ namespace PepperDash.Essentials
 
         private readonly CCriticalSection _wsCriticalSection = new CCriticalSection();
 
+        /// <summary>
+        /// Gets or sets the SystemUrl
+        /// </summary>
         public string SystemUrl; //set only from SIMPL Bridge!
 
         public bool Connected => _wsClient2 != null && _wsClient2.IsAlive;
@@ -117,6 +126,9 @@ namespace PepperDash.Essentials
             }
         }
 
+        /// <summary>
+        /// Gets or sets the ApiOnlineAndAuthorized
+        /// </summary>
         public BoolFeedback ApiOnlineAndAuthorized { get; private set; }
 
         /// <summary>
@@ -1098,8 +1110,14 @@ namespace PepperDash.Essentials
             );
         }
 
+        /// <summary>
+        /// Gets or sets the Config
+        /// </summary>
         public MobileControlConfig Config { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the Host
+        /// </summary>
         public string Host { get; private set; }
 
         public string ClientAppUrl => Config.ClientAppUrl;
@@ -1112,11 +1130,17 @@ namespace PepperDash.Essentials
             SendMessageObject(new MobileControlMessage { Type = "/system/roomCombinationChanged" });
         }
 
+        /// <summary>
+        /// CheckForDeviceMessenger method
+        /// </summary>
         public bool CheckForDeviceMessenger(string key)
         {
             return _messengers.ContainsKey(key);
         }
 
+        /// <summary>
+        /// AddDeviceMessenger method
+        /// </summary>
         public void AddDeviceMessenger(IMobileControlMessenger messenger)
         {
             if (_messengers.ContainsKey(messenger.Key))
@@ -1190,6 +1214,10 @@ namespace PepperDash.Essentials
             messenger.RegisterWithAppServer(this);
         }
 
+        /// <summary>
+        /// Initialize method
+        /// </summary>
+        /// <inheritdoc />
         public override void Initialize()
         {
             foreach (var messenger in _messengers)
@@ -1232,6 +1260,9 @@ namespace PepperDash.Essentials
 
         #region IMobileControl Members
 
+        /// <summary>
+        /// GetAppServer method
+        /// </summary>
         public static IMobileControl GetAppServer()
         {
             try
@@ -1294,6 +1325,9 @@ namespace PepperDash.Essentials
             return true;
         }
 
+        /// <summary>
+        /// LinkSystemMonitorToAppServer method
+        /// </summary>
         public void LinkSystemMonitorToAppServer()
         {
             if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Appliance)
@@ -1385,6 +1419,9 @@ namespace PepperDash.Essentials
             CleanUpWebsocketClient();
         }
 
+        /// <summary>
+        /// PrintActionDictionaryPaths method
+        /// </summary>
         public void PrintActionDictionaryPaths(object o)
         {
             CrestronConsole.ConsoleCommandResponse("ActionDictionary Contents:\r\n");
@@ -1456,6 +1493,9 @@ namespace PepperDash.Essentials
         /// Removes an action from the dictionary
         /// </summary>
         /// <param name="key"></param>
+        /// <summary>
+        /// RemoveAction method
+        /// </summary>
         public void RemoveAction(string key)
         {
             if (_actionDictionary.ContainsKey(key))
@@ -1469,6 +1509,9 @@ namespace PepperDash.Essentials
             return _roomBridges.FirstOrDefault((r) => r.RoomKey.Equals(key));
         }
 
+        /// <summary>
+        /// GetRoomMessenger method
+        /// </summary>
         public IMobileControlRoomMessenger GetRoomMessenger(string key)
         {
             return _roomBridges.FirstOrDefault((r) => r.RoomKey.Equals(key));
@@ -1680,7 +1723,7 @@ Mobile Control Direct Server Infromation:
         }
 
         /// <summary>
-        /// Registers the room with the server
+        /// RegisterSystemToServer method
         /// </summary>
         public void RegisterSystemToServer()
         {
@@ -1913,6 +1956,9 @@ Mobile Control Direct Server Infromation:
             SendMessageObject(msg);
         }
 
+        /// <summary>
+        /// GetConfigWithPluginVersion method
+        /// </summary>
         public MobileControlEssentialsConfig GetConfigWithPluginVersion()
         {
             // Populate the application name and version number
@@ -1945,6 +1991,9 @@ Mobile Control Direct Server Infromation:
             return confObject;
         }
 
+        /// <summary>
+        /// SetClientUrl method
+        /// </summary>
         public void SetClientUrl(string path, string roomKey = null)
         {
             var message = new MobileControlMessage
@@ -1960,6 +2009,9 @@ Mobile Control Direct Server Infromation:
         /// Sends any object type to server
         /// </summary>
         /// <param name="o"></param>
+        /// <summary>
+        /// SendMessageObject method
+        /// </summary>
         public void SendMessageObject(IMobileControlMessage o)
         {
 
@@ -1982,6 +2034,9 @@ Mobile Control Direct Server Infromation:
         }
 
 
+        /// <summary>
+        /// SendMessageObjectToDirectClient method
+        /// </summary>
         public void SendMessageObjectToDirectClient(object o)
         {
             if (
@@ -2180,6 +2235,9 @@ Mobile Control Direct Server Infromation:
             action(code.Value<string>(), qrChecksum.Value<string>());
         }
 
+        /// <summary>
+        /// HandleClientMessage method
+        /// </summary>
         public void HandleClientMessage(string message)
         {
             _receiveQueue.Enqueue(new ProcessStringMessage(message, ParseStreamRx));
@@ -2343,6 +2401,9 @@ Mobile Control Direct Server Infromation:
         }
     }
 
+    /// <summary>
+    /// Represents a ClientSpecificUpdateRequest
+    /// </summary>
     public class ClientSpecificUpdateRequest
     {
         public ClientSpecificUpdateRequest(Action<string> action)
@@ -2350,9 +2411,15 @@ Mobile Control Direct Server Infromation:
             ResponseMethod = action;
         }
 
+        /// <summary>
+        /// Gets or sets the ResponseMethod
+        /// </summary>
         public Action<string> ResponseMethod { get; private set; }
     }
 
+    /// <summary>
+    /// Represents a UserCodeChanged
+    /// </summary>
     public class UserCodeChanged
     {
         public Action<string, string> UpdateUserCode { get; private set; }

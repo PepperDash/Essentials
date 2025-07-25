@@ -7,12 +7,18 @@ using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
 
+    /// <summary>
+    /// Represents a SIMPLRouteMessenger
+    /// </summary>
     public class SIMPLRouteMessenger : MessengerBase
     {
         private readonly BasicTriList _eisc;
 
         private readonly uint _joinStart;
 
+        /// <summary>
+        /// Represents a StringJoin
+        /// </summary>
         public class StringJoin
         {
             /// <summary>
@@ -43,6 +49,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
             });
         }
 
+        /// <summary>
+        /// CustomUnregisterWithAppServer method
+        /// </summary>
         public void CustomUnregisterWithAppServer(IMobileControl appServerController)
         {
             appServerController.RemoveAction(MessagePath + "/fullStatus");

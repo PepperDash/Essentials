@@ -6,6 +6,9 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core.Devices.DeviceTypeInterfaces
 {
+ /// <summary>
+ /// Defines the contract for IDisplayBasic
+ /// </summary>
 	public interface IDisplayBasic
 	{
 		void InputHdmi1();

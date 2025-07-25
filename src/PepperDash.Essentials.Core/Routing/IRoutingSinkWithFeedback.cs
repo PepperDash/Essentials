@@ -6,7 +6,7 @@ namespace PepperDash.Essentials.Core
 {
     
     /// <summary>
-    /// For fixed-source endpoint devices
+    /// Defines the contract for IRoutingSinkWithFeedback
     /// </summary>
     public interface IRoutingSinkWithFeedback : IRoutingSinkWithSwitching
     {

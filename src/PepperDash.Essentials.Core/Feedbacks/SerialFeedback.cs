@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Core
         //public override eCueType Type { get { return eCueType.Serial; } }
 
         /// <summary>
-        /// Used in testing.  Set/Clear functions
+        /// Gets or sets the TestValue
         /// </summary>
         public string TestValue { get; private set; }
 
@@ -34,11 +34,18 @@ namespace PepperDash.Essentials.Core
         {
         }
 
+        /// <summary>
+        /// FireUpdate method
+        /// </summary>
+        /// <inheritdoc />
         public override void FireUpdate()
         {
             throw new NotImplementedException("This feedback type does not use Funcs");
         }
 
+        /// <summary>
+        /// FireUpdate method
+        /// </summary>
         public void FireUpdate(string newValue)
         {
             _SerialValue = newValue;
@@ -46,17 +53,26 @@ namespace PepperDash.Essentials.Core
             OnOutputChange(newValue);
         }
 
+        /// <summary>
+        /// LinkInputSig method
+        /// </summary>
         public void LinkInputSig(StringInputSig sig)
         {
             LinkedInputSigs.Add(sig);
             UpdateSig(sig);
         }
 
+        /// <summary>
+        /// UnlinkInputSig method
+        /// </summary>
         public void UnlinkInputSig(StringInputSig sig)
         {
             LinkedInputSigs.Remove(sig);
         }
 
+        /// <summary>
+        /// ToString method
+        /// </summary>
         public override string ToString()
         {
             return (InTestMode ? "TEST -- " : "") + SerialValue;
@@ -66,6 +82,9 @@ namespace PepperDash.Essentials.Core
         /// Puts this in test mode, sets the test value and fires an update.
         /// </summary>
         /// <param name="value"></param>
+        /// <summary>
+        /// SetTestValue method
+        /// </summary>
         public void SetTestValue(string value)
         {
             TestValue = value;

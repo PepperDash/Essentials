@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Starts incrementing cycle
+        /// StartUp method
         /// </summary>
         public void StartUp()
         {

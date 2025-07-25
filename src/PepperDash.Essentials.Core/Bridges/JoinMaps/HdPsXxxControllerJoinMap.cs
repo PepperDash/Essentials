@@ -3,6 +3,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+ /// <summary>
+ /// Represents a HdPsXxxControllerJoinMap
+ /// </summary>
 	public class HdPsXxxControllerJoinMap : JoinMapBaseAdvanced
 	{
 

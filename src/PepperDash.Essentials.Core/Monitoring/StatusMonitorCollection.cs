@@ -26,10 +26,19 @@ namespace PepperDash.Essentials.Core
 
 		public event EventHandler<MonitorStatusChangeEventArgs> StatusChange;
 
+  /// <summary>
+  /// Gets or sets the Status
+  /// </summary>
 		public MonitorStatus Status { get; protected set; }
 
+  /// <summary>
+  /// Gets or sets the Message
+  /// </summary>
 		public string Message { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the IsOnlineFeedback
+  /// </summary>
 		public BoolFeedback IsOnlineFeedback { get; set; }
 
 		public StatusMonitorCollection(IKeyed parent)
@@ -37,6 +46,9 @@ namespace PepperDash.Essentials.Core
 			Parent = parent;
 		}
 
+  /// <summary>
+  /// Start method
+  /// </summary>
 		public void Start()
 		{
 			foreach (var mon in Monitors)
@@ -104,6 +116,9 @@ namespace PepperDash.Essentials.Core
 			ProcessStatuses();
 		}
 
+  /// <summary>
+  /// Stop method
+  /// </summary>
 		public void Stop()
 		{
 			throw new NotImplementedException();
@@ -111,6 +126,9 @@ namespace PepperDash.Essentials.Core
 
 		#endregion
 
+  /// <summary>
+  /// AddMonitor method
+  /// </summary>
 		public void AddMonitor(IStatusMonitor monitor)
 		{
 			if (!Monitors.Contains(monitor))

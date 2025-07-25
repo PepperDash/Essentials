@@ -61,7 +61,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Aggregates far end cameras with near end cameras
+    /// Defines the contract for IHasCodecCameras
     /// </summary>
     public interface IHasCodecCameras : IHasCameras, IHasFarEndCameraControl
     {
@@ -127,7 +127,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     public class CameraSelectedEventArgs : EventArgs
     {
         /// <summary>
-        /// The selected camera
+        /// Gets or sets the SelectedCamera
         /// </summary>
         public CameraBase SelectedCamera { get; private set; }
 
@@ -159,7 +159,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Used to decorate a camera as a far end
+    /// Defines the contract for IAmFarEndCamera
     /// </summary>
     public interface IAmFarEndCamera
     {
@@ -174,7 +174,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Aggregates the pan, tilt and zoom interfaces
+    /// Defines the contract for IHasCameraPtzControl
     /// </summary>
     public interface IHasCameraPtzControl : IHasCameraPanControl, IHasCameraTiltControl, IHasCameraZoomControl
     {
@@ -206,7 +206,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Interface for camera tilt control
+    /// Defines the contract for IHasCameraTiltControl
     /// </summary>
     public interface IHasCameraTiltControl : IHasCameraControls
     {
@@ -227,7 +227,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Interface for camera zoom control
+    /// Defines the contract for IHasCameraZoomControl
     /// </summary>
     public interface IHasCameraZoomControl : IHasCameraControls
     {
@@ -248,7 +248,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
     /// <summary>
-    /// Interface for camera focus control
+    /// Defines the contract for IHasCameraFocusControl
     /// </summary>
     public interface IHasCameraFocusControl : IHasCameraControls
     {

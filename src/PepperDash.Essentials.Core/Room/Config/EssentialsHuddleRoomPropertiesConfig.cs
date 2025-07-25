@@ -3,7 +3,7 @@
 namespace PepperDash.Essentials.Room.Config
 {
     /// <summary>
-    /// 
+    /// Represents a EssentialsHuddleRoomPropertiesConfig
     /// </summary>
     public class EssentialsHuddleRoomPropertiesConfig : EssentialsRoomPropertiesConfig
     {

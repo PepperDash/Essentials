@@ -5,6 +5,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a IHasCurrentSourceInfoMessenger
+    /// </summary>
     public class IHasCurrentSourceInfoMessenger : MessengerBase
     {
         private readonly IHasCurrentSourceInfoChange sourceDevice;
@@ -46,12 +49,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a CurrentSourceStateMessage
+    /// </summary>
     public class CurrentSourceStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("currentSourceKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the CurrentSourceKey
+        /// </summary>
         public string CurrentSourceKey { get; set; }
 
         [JsonProperty("currentSource")]
+        /// <summary>
+        /// Gets or sets the CurrentSource
+        /// </summary>
         public SourceListItem CurrentSource { get; set; }
     }
 }

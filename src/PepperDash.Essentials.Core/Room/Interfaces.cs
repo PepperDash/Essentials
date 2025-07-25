@@ -44,7 +44,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Simplified routing direct from source to destination
+    /// Defines the contract for IRunDirectRouteAction
     /// </summary>
     public interface IRunDirectRouteAction
     {
@@ -62,7 +62,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Describes a room with routing endpoints
+    /// Defines the contract for IHasRoutingEndpoints
     /// </summary>
     public interface IHasRoutingEndpoints
     {
@@ -82,7 +82,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Describes a room with a tech password
+    /// Defines the contract for ITechPassword
     /// </summary>
     public interface ITechPassword
     {
@@ -97,8 +97,14 @@ namespace PepperDash.Essentials.Core
         void SetTechPassword(string oldPassword, string newPassword);
     }
 
+    /// <summary>
+    /// Represents a TechPasswordEventArgs
+    /// </summary>
     public class TechPasswordEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the IsValid
+        /// </summary>
         public bool IsValid { get; private set; }
 
         public TechPasswordEventArgs(bool isValid)
@@ -108,7 +114,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// For rooms that default presentation only routing
+    /// Defines the contract for IRunDefaultPresentRoute
     /// </summary>
     public interface IRunDefaultPresentRoute
     {
@@ -149,21 +155,33 @@ namespace PepperDash.Essentials.Core
         event EventHandler<EventArgs> RoomOccupancyIsSet;
     }
 
+    /// <summary>
+    /// Defines the contract for IEmergency
+    /// </summary>
     public interface IEmergency
     {
         EssentialsRoomEmergencyBase Emergency { get; }
     }
 
+    /// <summary>
+    /// Defines the contract for IMicrophonePrivacy
+    /// </summary>
     public interface IMicrophonePrivacy
     {
         Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; }
     }
 
+    /// <summary>
+    /// Defines the contract for IHasAccessoryDevices
+    /// </summary>
     public interface IHasAccessoryDevices : IKeyName
     {
         List<string> AccessoryDeviceKeys { get; }
     }
 
+    /// <summary>
+    /// Defines the contract for IHasCiscoNavigatorTouchpanel
+    /// </summary>
     public interface IHasCiscoNavigatorTouchpanel
     {
         string CiscoNavigatorTouchpanelKey { get; }

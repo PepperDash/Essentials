@@ -8,6 +8,9 @@ using Crestron.SimplSharpPro.UI;
 
 namespace PepperDash.Essentials.Core
 {
+ /// <summary>
+ /// Represents a SubpageReferenceListItem
+ /// </summary>
 	public class SubpageReferenceListItem
 	{
 		/// <summary>
@@ -22,13 +25,17 @@ namespace PepperDash.Essentials.Core
 			Owner = owner;
 		}
 
-		/// <summary>
-		/// Called by SRL to release all referenced objects
-		/// </summary>
+  /// <summary>
+  /// Clear method
+  /// </summary>
+  /// <inheritdoc />
 		public virtual void Clear()
 		{
 		}
 
+  /// <summary>
+  /// Refresh method
+  /// </summary>
 		public virtual void Refresh() { }
 	}
 }

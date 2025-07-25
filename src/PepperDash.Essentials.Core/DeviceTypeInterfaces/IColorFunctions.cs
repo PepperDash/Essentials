@@ -22,6 +22,9 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public static class IColorExtensions
 	{
+  /// <summary>
+  /// LinkButtons method
+  /// </summary>
 		public static void LinkButtons(this IColor dev, BasicTriList TriList)
 		{
 			TriList.SetBoolSigAction(155, dev.Red);
@@ -30,6 +33,9 @@ namespace PepperDash.Essentials.Core
 			TriList.SetBoolSigAction(158, dev.Blue);
 		}
 
+  /// <summary>
+  /// UnlinkButtons method
+  /// </summary>
 		public static void UnlinkButtons(this IColor dev, BasicTriList triList)
 		{
 			triList.ClearBoolSigAction(155);

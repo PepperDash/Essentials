@@ -8,10 +8,19 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a CrestronLocalSecretsProvider
+    /// </summary>
     public class CrestronLocalSecretsProvider : ISecretProvider
     {
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; set; }
         //Added for reference
+        /// <summary>
+        /// Gets or sets the Description
+        /// </summary>
         public string Description { get; private set; }
 
 
@@ -72,6 +81,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key">Secret Key</param>
         /// <returns>ISecret Object containing key, provider, and value</returns>
+        /// <summary>
+        /// GetSecret method
+        /// </summary>
         public ISecret GetSecret(string key)
         {
             string mySecret;
@@ -94,6 +106,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key">Secret Key</param>
         /// <returns>bool if present</returns>
+        /// <summary>
+        /// TestSecret method
+        /// </summary>
         public bool TestSecret(string key)
         {
             string mySecret;

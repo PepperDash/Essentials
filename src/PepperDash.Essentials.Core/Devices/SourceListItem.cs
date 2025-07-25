@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Represents an item in a source list - can be deserialized into.
+    /// Represents a SourceListItem
     /// </summary>
     public class SourceListItem
     {
@@ -76,6 +76,9 @@ namespace PepperDash.Essentials.Core
         /// A name that will override the source's name on the UI
         /// </summary>
         [JsonProperty("name")]
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
 
         /// <summary>

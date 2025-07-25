@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Defines the contract for IDspPresets
+    /// </summary>
     public interface IDspPresets
     {
         Dictionary<string, IKeyName> Presets { get; }

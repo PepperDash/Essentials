@@ -13,6 +13,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Devices
 {
+    /// <summary>
+    /// Represents a GenericIrController
+    /// </summary>
     public class GenericIrController: EssentialsBridgeableDevice
     {
         //data storage for bridging
@@ -23,6 +26,9 @@ namespace PepperDash.Essentials.Core.Devices
 
         private readonly IrOutputPortController _port; 
 
+        /// <summary>
+        /// Gets or sets the IrCommands
+        /// </summary>
         public string[] IrCommands {get { return _port.IrFileCommands; }}	    
 
         public GenericIrController(string key, string name, IrOutputPortController irPort) : base(key, name)
@@ -55,6 +61,10 @@ namespace PepperDash.Essentials.Core.Devices
 
         #region Overrides of EssentialsBridgeableDevice
 
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
+        /// <inheritdoc />
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             //if driver isn't loaded yet, store the variables until it is loaded, then call the LinkToApi method again
@@ -148,12 +158,18 @@ Value.Metadata.Description-'{3}'",
 
         #endregion
 
+        /// <summary>
+        /// Press method
+        /// </summary>
         public void Press(string command, bool pressRelease)
         {
             _port.PressRelease(command, pressRelease);
         }
     }
 
+    /// <summary>
+    /// Represents a GenericIrControllerFactory
+    /// </summary>
     public class GenericIrControllerFactory : EssentialsDeviceFactory<GenericIrController>
     {
         public GenericIrControllerFactory()
@@ -162,6 +178,10 @@ Value.Metadata.Description-'{3}'",
         }
         #region Overrides of EssentialsDeviceFactory<GenericIRController>
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic IR Controller Device");

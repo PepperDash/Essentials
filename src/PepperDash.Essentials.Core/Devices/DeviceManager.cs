@@ -25,12 +25,18 @@ namespace PepperDash.Essentials.Core
         private static readonly Dictionary<string, IKeyed> Devices = new Dictionary<string, IKeyed>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Returns a copy of all the devices in a list
+        /// Gets or sets the AllDevices
         /// </summary>
         public static List<IKeyed> AllDevices { get { return new List<IKeyed>(Devices.Values); } }
 
+        /// <summary>
+        /// Gets or sets the AddDeviceEnabled
+        /// </summary>
         public static bool AddDeviceEnabled;
 
+        /// <summary>
+        /// Initialize method
+        /// </summary>
         public static void Initialize(CrestronControlSystem cs)
         {
             AddDeviceEnabled = true;
@@ -53,7 +59,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Calls activate steps on all Device class items
+        /// ActivateAll method
         /// </summary>
         public static void ActivateAll()
         {
@@ -164,7 +170,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Calls activate on all Device class items
+        /// DeactivateAll method
         /// </summary>
         public static void DeactivateAll()
         {
@@ -258,6 +264,9 @@ namespace PepperDash.Essentials.Core
         //    Debug.LogMessage(LogEventLevel.Information, "Not yet implemented.  Stay tuned");
         //}
 
+        /// <summary>
+        /// AddDevice method
+        /// </summary>
         public static void AddDevice(IKeyed newDev)
         {
             try
@@ -296,6 +305,9 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// AddDevice method
+        /// </summary>
         public static void AddDevice(IEnumerable<IKeyed> devicesToAdd)
         {
             try
@@ -332,6 +344,9 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// RemoveDevice method
+        /// </summary>
         public static void RemoveDevice(IKeyed newDev)
         {
             try
@@ -352,18 +367,27 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// GetDeviceKeys method
+        /// </summary>
         public static IEnumerable<string> GetDeviceKeys()
         {
             //return _Devices.Select(d => d.Key).ToList();
             return Devices.Keys;
         }
 
+        /// <summary>
+        /// GetDevices method
+        /// </summary>
         public static IEnumerable<IKeyed> GetDevices()
         {
             //return _Devices.Select(d => d.Key).ToList();
             return Devices.Values;
         }
 
+        /// <summary>
+        /// GetDeviceForKey method
+        /// </summary>
         public static IKeyed GetDeviceForKey(string key)
         {
             //return _Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
@@ -377,6 +401,9 @@ namespace PepperDash.Essentials.Core
         /// Console handler that simulates com port data receive 
         /// </summary>
         /// <param name="s"></param>
+        /// <summary>
+        /// SimulateComReceiveOnDevice method
+        /// </summary>
         public static void SimulateComReceiveOnDevice(string s)
         {
             // devcomsim:1 xyzabc
@@ -400,6 +427,9 @@ namespace PepperDash.Essentials.Core
         /// Prints a list of routing inputs and outputs by device key.
         /// </summary>
         /// <param name="s">Device key from which to report data</param>
+        /// <summary>
+        /// GetRoutingPorts method
+        /// </summary>
         public static void GetRoutingPorts(string s)
         {
             var device = GetDeviceForKey(s);
@@ -427,6 +457,9 @@ namespace PepperDash.Essentials.Core
         /// Attempts to set the debug level of a device
         /// </summary>
         /// <param name="s"></param>
+        /// <summary>
+        /// SetDeviceStreamDebugging method
+        /// </summary>
         public static void SetDeviceStreamDebugging(string s)
         {
             if (String.IsNullOrEmpty(s) || s.Contains("?"))
@@ -492,7 +525,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Sets stream debugging settings to off for all devices
+        /// DisableAllDeviceStreamDebugging method
         /// </summary>
         public static void DisableAllDeviceStreamDebugging()
         {

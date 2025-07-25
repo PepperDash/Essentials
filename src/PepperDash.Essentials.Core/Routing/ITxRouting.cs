@@ -1,8 +1,7 @@
 ﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Represents a routing device (typically a transmitter or source) that provides numeric feedback for its current route.
-    /// Extends <see cref="IRoutingNumeric"/>.
+    /// Defines the contract for ITxRouting
     /// </summary>
     public interface ITxRouting : IRoutingNumeric
     {

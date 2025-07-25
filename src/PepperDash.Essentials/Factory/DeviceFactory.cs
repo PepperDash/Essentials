@@ -22,6 +22,9 @@ namespace PepperDash.Essentials
     public class DeviceFactory
     {
 
+        /// <summary>
+        /// Initializes a new instance of the DeviceFactory class and loads all device type factories
+        /// </summary>
         public DeviceFactory()
         {
             var assy = Assembly.GetExecutingAssembly();

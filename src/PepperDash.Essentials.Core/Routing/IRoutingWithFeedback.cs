@@ -8,6 +8,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     /// <param name="midpoint">The routing device where the change occurred.</param>
     /// <param name="newRoute">A descriptor of the new route that was established.</param>
+    /// <summary>
+    /// Delegate for RouteChangedEventHandler
+    /// </summary>
     public delegate void RouteChangedEventHandler(IRoutingWithFeedback midpoint, RouteSwitchDescriptor newRoute);
     /// <summary>
     /// Defines a routing device (<see cref="IRouting"/>) that provides feedback about its current routes.

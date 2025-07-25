@@ -26,6 +26,9 @@ namespace PepperDash.Essentials.Core.Config
 
 		public static EssentialsConfig ConfigObject { get; private set; }
 
+  /// <summary>
+  /// LoadConfig2 method
+  /// </summary>
 		public static bool LoadConfig2()
 		{
 			Debug.LogMessage(LogEventLevel.Information, "Loading unmerged system/template portal configuration file.");
@@ -157,6 +160,9 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetConfigFiles method
+        /// </summary>
         public static FileInfo[] GetConfigFiles(string filePath)
         {
             // Get the directory
@@ -189,6 +195,9 @@ namespace PepperDash.Essentials.Core.Config
 		/// </summary>
 		/// <param name="key"></param>
 		/// <returns></returns>
+        /// <summary>
+        /// GetGroupForDeviceKey method
+        /// </summary>
         public static string GetGroupForDeviceKey(string key)
         {
             var dev = ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));

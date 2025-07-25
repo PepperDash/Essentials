@@ -3,7 +3,7 @@
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// All ISecrecretProvider classes must implement this interface.
+    /// Defines the contract for ISecretProvider
     /// </summary>
     public interface ISecretProvider : IKeyed
     {

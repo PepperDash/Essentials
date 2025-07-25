@@ -7,6 +7,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 {
+    /// <summary>
+    /// Defines the contract for IHasMeetingRecording
+    /// </summary>
     public interface IHasMeetingRecording
     {
         BoolFeedback MeetingIsRecordingFeedback { get; }
@@ -16,6 +19,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         void ToggleRecording();
     }
 
+    /// <summary>
+    /// Defines the contract for IHasMeetingRecordingWithPrompt
+    /// </summary>
     public interface IHasMeetingRecordingWithPrompt : IHasMeetingRecording
     {
         BoolFeedback RecordConsentPromptIsVisible { get; }

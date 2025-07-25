@@ -12,12 +12,29 @@ using System.Linq;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Wrapper class for device factory information
+    /// </summary>
     public class DeviceFactoryWrapper
     {
+        /// <summary>
+        /// Gets or sets the device type
+        /// </summary>
         public Type Type { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Description
+        /// </summary>
         public string Description { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the factory method for creating devices
+        /// </summary>
         public Func<DeviceConfig, IKeyed> FactoryMethod { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the DeviceFactoryWrapper class
+        /// </summary>
         public DeviceFactoryWrapper()
         {
             Type = null;
@@ -25,8 +42,14 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Represents a DeviceFactory
+    /// </summary>
     public class DeviceFactory
     {
+        /// <summary>
+        /// Initializes a new instance of the DeviceFactory class and loads all device type factories
+        /// </summary>
         public DeviceFactory()
         {
             var assy = Assembly.GetExecutingAssembly();
@@ -118,6 +141,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="dc"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetDevice method
+        /// </summary>
         public static IKeyed GetDevice(DeviceConfig dc)
         {
             try
@@ -158,6 +184,9 @@ namespace PepperDash.Essentials.Core
         /// Prints the type names and associated metadata from the FactoryMethods collection.
         /// </summary>
         /// <param name="filter"></param>
+        /// <summary>
+        /// GetDeviceFactoryTypes method
+        /// </summary>
         public static void GetDeviceFactoryTypes(string filter)
         {
             var types = !string.IsNullOrEmpty(filter)

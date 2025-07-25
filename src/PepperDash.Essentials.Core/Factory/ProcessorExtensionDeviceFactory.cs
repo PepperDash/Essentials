@@ -10,6 +10,9 @@ using System.Linq;
 namespace PepperDash.Essentials.Core
 {
 
+    /// <summary>
+    /// Represents a ProcessorExtensionDeviceFactory
+    /// </summary>
     public class ProcessorExtensionDeviceFactory
     {
         public ProcessorExtensionDeviceFactory() {
@@ -103,6 +106,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="dc"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetExtensionDevice method
+        /// </summary>
         public static IKeyed GetExtensionDevice(DeviceConfig dc)
         {
             try

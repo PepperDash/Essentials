@@ -53,11 +53,17 @@ namespace PepperDash.Essentials.Core.Fusion
     }
 
     /// <summary>
-    /// Used in ProcessorProgReg
+    /// Represents a ProcessorProgramItem
     /// </summary>
     public class ProcessorProgramItem
     {
+        /// <summary>
+        /// Gets or sets the Exists
+        /// </summary>
         public bool Exists { get; set; }
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
     }
 }

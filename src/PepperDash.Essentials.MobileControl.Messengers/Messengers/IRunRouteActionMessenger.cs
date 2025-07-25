@@ -7,10 +7,13 @@ using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a RunRouteActionMessenger
+    /// </summary>
     public class RunRouteActionMessenger : MessengerBase
     {
         /// <summary>
-        /// Device being bridged
+        /// Gets or sets the RoutingDevice
         /// </summary>
         public IRunRouteAction RoutingDevice { get; private set; }
 
@@ -76,9 +79,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a RoutingStateMessage
+    /// </summary>
     public class RoutingStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("selectedSourceKey")]
+        /// <summary>
+        /// Gets or sets the SelectedSourceKey
+        /// </summary>
         public string SelectedSourceKey { get; set; }
     }
 }
