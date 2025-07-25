@@ -1,26 +1,38 @@
-﻿using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using PepperDash.Core;
-using Serilog.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
+using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Manages the devices in the system
+    /// </summary>
     public static class DeviceManager
     {
+        /// <summary>
+        /// Raised when all devices have been activated
+        /// </summary>
         public static event EventHandler<EventArgs> AllDevicesActivated;
+
+        /// <summary>
+        /// Raised when all devices have been registered
+        /// </summary>
         public static event EventHandler<EventArgs> AllDevicesRegistered;
+
+        /// <summary>
+        /// Raised when all devices have been initialized
+        /// </summary>
         public static event EventHandler<EventArgs> AllDevicesInitialized;
 
         private static readonly CCriticalSection DeviceCriticalSection = new CCriticalSection();
-        private static readonly CEvent AllowAddDevicesCEvent = new CEvent(false, true);
 
-        //public static List<Device> Devices { get { return _Devices; } }
-        //static List<Device> _Devices = new List<Device>();
+        private static readonly CEvent AllowAddDevicesCEvent = new CEvent(false, true);
 
         private static readonly Dictionary<string, IKeyed> Devices = new Dictionary<string, IKeyed>(StringComparer.OrdinalIgnoreCase);
 
@@ -74,7 +86,7 @@ namespace PepperDash.Essentials.Core
                 foreach (var d in Devices.Values)
                 {
                     try
-                    { 
+                    {
                         if (d is Device)
                             (d as Device).PreActivate();
                     }
@@ -187,27 +199,6 @@ namespace PepperDash.Essentials.Core
                 DeviceCriticalSection.Leave();
             }
         }
-
-        //static void ListMethods(string devKey)
-        //{
-        //    var dev = GetDeviceForKey(devKey);
-        //    if(dev != null)
-        //    {
-        //        var type = dev.GetType().GetType();
-        //        var methods = type.GetMethods(BindingFlags.Public|BindingFlags.Instance);
-        //        var sb = new StringBuilder();
-        //        sb.AppendLine(string.Format("{2} methods on [{0}] ({1}):", dev.Key, type.Name, methods.Length));
-        //        foreach (var m in methods)
-        //        {
-        //            sb.Append(string.Format("{0}(", m.Name));
-        //            var pars = m.GetParameters();
-        //            foreach (var p in pars)
-        //                sb.Append(string.Format("({1}){0} ", p.Name, p.ParameterType.Name));
-        //            sb.AppendLine(")");
-        //        }
-        //        CrestronConsole.ConsoleCommandResponse(sb.ToString());
-        //    }
-        //}
 
         private static void ListDevices(string s)
         {
@@ -395,6 +386,25 @@ namespace PepperDash.Essentials.Core
                 return Devices[key];
 
             return null;
+        }
+
+        /// <summary>
+        /// GetDeviceForKey method
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public static T GetDeviceForKey<T>(string key)
+        {
+            //return _Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+            if (key == null || !Devices.ContainsKey(key))
+                return default;
+
+            if (!(Devices[key] is T))
+            {
+                Debug.LogMessage(LogEventLevel.Error, "Device with key '{0}' is not of type '{1}'", key, typeof(T).Name);
+                return default;
+            }
+
+            return (T)Devices[key];
         }
 
         /// <summary>
