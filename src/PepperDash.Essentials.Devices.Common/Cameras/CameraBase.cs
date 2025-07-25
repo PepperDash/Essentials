@@ -4,9 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using Crestron.SimplSharp;
-using System.Reflection;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -14,7 +11,6 @@ using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Presets;
-using PepperDash.Essentials.Devices.Common.Codec;
 
 using Newtonsoft.Json;
 using Serilog.Events;

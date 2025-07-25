@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     /// <summary>
     /// Defines the contract for IHasBranding

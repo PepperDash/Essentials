@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Crestron.SimplSharp;
+﻿using Crestron.SimplSharp;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Devices
 {

@@ -1,15 +1,10 @@
 ﻿
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Crestron.SimplSharp.Net.Http;
-using Crestron.SimplSharpPro.Diagnostics;
 
 using PepperDash.Core;
 using Serilog.Events;

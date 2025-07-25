@@ -1,5 +1,4 @@
-﻿using Crestron.SimplSharpPro.Keypads;
-using PepperDash.Essentials.Core.Queues;
+﻿using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 using System;

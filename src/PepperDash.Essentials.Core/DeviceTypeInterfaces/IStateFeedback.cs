@@ -1,5 +1,3 @@
-using System;
-
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
 

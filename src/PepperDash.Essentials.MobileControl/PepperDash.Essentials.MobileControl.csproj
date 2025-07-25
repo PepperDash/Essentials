@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">  
   <PropertyGroup>
     <RootNamespace>PepperDash.Essentials</RootNamespace>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net8</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <Deterministic>false</Deterministic>
     <AssemblyTitle>epi-essentials-mobile-control</AssemblyTitle>

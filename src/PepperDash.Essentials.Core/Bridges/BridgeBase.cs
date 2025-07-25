@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
-using System.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.EthernetCommunication;

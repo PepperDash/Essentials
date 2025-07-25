@@ -1,8 +1,4 @@
-﻿using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
-
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.SmartObjects;
+﻿using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.Core
 {

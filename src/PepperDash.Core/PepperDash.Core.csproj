@@ -5,7 +5,7 @@
   <PropertyGroup>
     <RootNamespace>PepperDash.Core</RootNamespace>
     <AssemblyName>PepperDashCore</AssemblyName>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net8</TargetFramework>
     <Deterministic>true</Deterministic>
     <NeutralLanguage>en</NeutralLanguage>
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -44,6 +44,7 @@
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
     <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.21.90" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Serilog" Version="3.1.1" />
     <PackageReference Include="Serilog.Expressions" Version="4.0.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="2.0.0" />
@@ -51,9 +52,6 @@
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="SSH.NET" Version="2024.2.0" />
     <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6'">
-	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Comm\._GenericSshClient.cs" />

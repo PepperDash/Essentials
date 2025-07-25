@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharp.Scheduler;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Core.Fusion;
 using PepperDash.Essentials.Room.Config;
 using Serilog.Events;
-using Activator = System.Activator;
 
 namespace PepperDash.Essentials.Core
 {

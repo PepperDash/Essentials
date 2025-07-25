@@ -1,5 +1,4 @@
 ﻿using System;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using Serilog.Events;

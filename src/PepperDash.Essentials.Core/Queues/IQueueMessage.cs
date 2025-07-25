@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PepperDash.Essentials.Core.Queues
+﻿namespace PepperDash.Essentials.Core.Queues
 {
     /// <summary>
     /// Defines the contract for IQueueMessage

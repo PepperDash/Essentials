@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using PepperDash.Essentials.Core;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
-using Crestron.SimplSharpPro.UI;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Serilog.Events;

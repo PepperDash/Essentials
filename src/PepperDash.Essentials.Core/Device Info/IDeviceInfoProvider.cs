@@ -1,5 +1,4 @@
-﻿using System;
-using PepperDash.Core;
+﻿using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.DeviceInfo
 {

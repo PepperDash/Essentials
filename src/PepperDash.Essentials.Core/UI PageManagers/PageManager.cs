@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Crestron.SimplSharpPro.DeviceSupport;
-using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.PageManagers
 {

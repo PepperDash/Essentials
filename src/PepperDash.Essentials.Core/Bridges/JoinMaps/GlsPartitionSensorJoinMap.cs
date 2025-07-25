@@ -1,5 +1,4 @@
 ﻿using System;
-using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {

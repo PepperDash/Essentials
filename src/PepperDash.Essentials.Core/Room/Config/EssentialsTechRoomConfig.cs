@@ -1,7 +1,6 @@
 ﻿
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.Room.Config
 {

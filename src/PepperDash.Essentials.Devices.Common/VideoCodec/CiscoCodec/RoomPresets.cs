@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using PepperDash.Core;
 using PepperDash.Essentials.Core.Presets;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec

@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using Crestron.SimplSharp.WebScripting;
-using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers

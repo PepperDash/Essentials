@@ -1,7 +1,6 @@
 ﻿
 
 using Newtonsoft.Json;
-using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core
 {

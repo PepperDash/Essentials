@@ -1,9 +1,6 @@
 ﻿
 
 using System;
-using System.Collections.Generic;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 
 using Newtonsoft.Json;

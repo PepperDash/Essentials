@@ -8,7 +8,6 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using PepperDash.Essentials.Devices.Common;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Shades

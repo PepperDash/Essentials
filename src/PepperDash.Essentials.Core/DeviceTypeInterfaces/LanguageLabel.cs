@@ -1,7 +1,4 @@
-﻿using System;
-using PepperDash.Core;
-
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     /// <summary>
     /// Represents a LanguageLabel

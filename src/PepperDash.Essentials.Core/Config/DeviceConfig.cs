@@ -1,15 +1,9 @@
 ﻿
 
 using System;
-using System.Collections.Generic;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharpPro;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Config
 {
