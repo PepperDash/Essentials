@@ -9,6 +9,9 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a PresetListItem
+    /// </summary>
     public class PresetListItem : AudioControlListItemBase
     {
         [JsonIgnore]

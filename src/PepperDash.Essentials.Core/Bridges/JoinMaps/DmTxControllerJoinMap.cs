@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a DmTxControllerJoinMap
+    /// </summary>
     public class DmTxControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("IsOnline")]

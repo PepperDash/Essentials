@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Adds control of codec transmit volume
+    /// Defines the contract for ITransmitVolume
     /// </summary>
     public interface ITransmitVolume
     {
@@ -34,7 +34,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Adds control of codec privacy function (microphone mute)
+    /// Defines the contract for IPrivacy
     /// </summary>
     public interface IPrivacy
     {

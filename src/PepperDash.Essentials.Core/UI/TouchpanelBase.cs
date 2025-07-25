@@ -16,6 +16,9 @@ namespace PepperDash.Essentials.Core.UI
     public abstract class TouchpanelBase: EssentialsDevice, IHasBasicTriListWithSmartObject
     {
         protected CrestronTouchpanelPropertiesConfig _config;
+        /// <summary>
+        /// Gets or sets the Panel
+        /// </summary>
         public BasicTriListWithSmartObject Panel { get; private set; }
 
         /// <summary>

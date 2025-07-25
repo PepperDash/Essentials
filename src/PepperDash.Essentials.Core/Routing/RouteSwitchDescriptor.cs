@@ -1,13 +1,13 @@
 ﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Represents a single switching step within a larger route, detailing the switching device, input port, and optionally the output port.
+    /// Represents a RouteSwitchDescriptor
     /// </summary>
     public class RouteSwitchDescriptor
 	{
-		/// <summary>
-		/// The device performing the switch (derived from the InputPort's parent).
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the SwitchingDevice
+  /// </summary>
 		public IRoutingInputs SwitchingDevice { get { return InputPort?.ParentDevice; } }
 		/// <summary>
 		/// The output port being switched from (relevant for matrix switchers). Null for sink devices.
@@ -42,6 +42,7 @@
 		/// Returns a string representation of the route switch descriptor.
 		/// </summary>
 		/// <returns>A string describing the switch operation.</returns>
+  /// <inheritdoc />
 		public override string ToString()
 		{
             if (SwitchingDevice is IRouting)
@@ -54,10 +55,22 @@
     /*/// <summary>
     /// Represents an individual link for a route
     /// </summary>
+    /// <summary>
+    /// Represents a RouteSwitchDescriptor
+    /// </summary>
     public class RouteSwitchDescriptor<TInputSelector, TOutputSelector>
     {
+        /// <summary>
+        /// Gets or sets the SwitchingDevice
+        /// </summary>
         public IRoutingInputs<TInputSelector> SwitchingDevice { get { return InputPort.ParentDevice; } }
+        /// <summary>
+        /// Gets or sets the OutputPort
+        /// </summary>
         public RoutingOutputPort<TOutputSelector> OutputPort { get; set; }
+        /// <summary>
+        /// Gets or sets the InputPort
+        /// </summary>
         public RoutingInputPort<TInputSelector> InputPort { get; set; }
 
         public RouteSwitchDescriptor(RoutingInputPort<TInputSelector> inputPort)
@@ -71,6 +84,10 @@
             OutputPort = outputPort;
         }
 
+        /// <summary>
+        /// ToString method
+        /// </summary>
+        /// <inheritdoc />
         public override string ToString()
         {
             if (SwitchingDevice is IRouting)

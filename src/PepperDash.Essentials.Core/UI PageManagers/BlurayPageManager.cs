@@ -3,6 +3,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.PageManagers
 {
+ /// <summary>
+ /// Represents a DiscPlayerMediumPageManager
+ /// </summary>
 	public class DiscPlayerMediumPageManager : MediumLeftSwitchablePageManager
 	{
 		IDiscPlayerControls Player;
@@ -14,6 +17,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 			TriList = trilist;
 		}
 
+  /// <summary>
+  /// Show method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Show()
 		{
 			uint offset = GetOffsetJoin();
@@ -33,6 +40,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 			}
 		}
 
+  /// <summary>
+  /// Hide method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Hide()
 		{
 			TriList.BooleanInput[BackingPageJoin].BoolValue = false;

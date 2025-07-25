@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
+ /// <summary>
+ /// Defines the contract for IHasSelfviewSize
+ /// </summary>
 	public interface IHasSelfviewSize
 	{
 		StringFeedback SelfviewPipSizeFeedback { get; }

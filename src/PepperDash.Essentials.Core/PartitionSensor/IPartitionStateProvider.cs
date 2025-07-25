@@ -5,7 +5,7 @@ using PepperDash.Core;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Describes the functionality of a device that senses and provides partition state
+    /// Defines the contract for IPartitionStateProvider
     /// </summary>
     public interface IPartitionStateProvider : IKeyName
     {
@@ -17,7 +17,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Describes the functionality of a device that can provide partition state either manually via user input or optionally via a sensor state
+    /// Defines the contract for IPartitionController
     /// </summary>
     public interface IPartitionController : IPartitionStateProvider
     {

@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a IBasicCommunicationJoinMap
+    /// </summary>
     public class IBasicCommunicationJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("TextReceived")]

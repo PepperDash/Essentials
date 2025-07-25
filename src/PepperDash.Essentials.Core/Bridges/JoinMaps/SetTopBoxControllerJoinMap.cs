@@ -3,6 +3,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a SetTopBoxControllerJoinMap
+    /// </summary>
     public class SetTopBoxControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("PowerOn")]

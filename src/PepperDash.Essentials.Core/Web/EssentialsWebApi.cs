@@ -10,6 +10,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Web
 {
+ /// <summary>
+ /// Represents a EssentialsWebApi
+ /// </summary>
 	public class EssentialsWebApi : EssentialsDevice
 	{
 		private readonly WebApiServer _server;        
@@ -26,9 +29,9 @@ namespace PepperDash.Essentials.Core.Web
 		private const int DebugInfo = 1;
 		private const int DebugVerbose = 2;
 
-		/// <summary>
-		/// CWS base path
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the BasePath
+  /// </summary>
 		public string BasePath { get; private set; }
 
 		/// <summary>
@@ -183,6 +186,9 @@ namespace PepperDash.Essentials.Core.Web
         /// Add a single route to the API. MUST be done during the activation phase
         /// </summary>
         /// <param name="route"></param>
+        /// <summary>
+        /// AddRoute method
+        /// </summary>
         public void AddRoute(HttpCwsRoute route)
         {
             _server.AddRoute(route);
@@ -201,8 +207,9 @@ namespace PepperDash.Essentials.Core.Web
         }
 
         /// <summary>
-        /// Initializes the CWS class
+        /// Initialize method
         /// </summary>
+        /// <inheritdoc />
         public override void Initialize()
 		{
             AddRoute(new HttpCwsRoute("apiPaths") {
@@ -245,6 +252,9 @@ namespace PepperDash.Essentials.Core.Web
 		/// http(s)://{ipaddress}/cws/{basePath}
 		/// http(s)://{ipaddress}/VirtualControl/Rooms/{roomId}/cws/{basePath}
 		/// </example>
+  /// <summary>
+  /// GetPaths method
+  /// </summary>
 		public void GetPaths()
 		{
 			Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));

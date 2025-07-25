@@ -12,6 +12,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Presets
 {
+ /// <summary>
+ /// Represents a PresetsListSubpageReferenceListItem
+ /// </summary>
 	public class PresetsListSubpageReferenceListItem : SubpageReferenceListItem
 	{
 		DevicePresetsView View;
@@ -27,6 +30,10 @@ namespace PepperDash.Essentials.Core.Presets
 			Refresh();
 		}
 
+  /// <summary>
+  /// Clear method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Clear()
 		{
 			Owner.GetBoolFeedbackSig(Index, 1).UserObject = null;
@@ -35,6 +42,10 @@ namespace PepperDash.Essentials.Core.Presets
 			Owner.StringInputSig(Index, 3).StringValue = "";
 		}
 
+  /// <summary>
+  /// Refresh method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Refresh()
 		{
 			var name = View.ShowName ? Channel.Name : "";

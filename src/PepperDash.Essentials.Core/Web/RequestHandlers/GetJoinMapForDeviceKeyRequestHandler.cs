@@ -5,6 +5,9 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+ /// <summary>
+ /// Represents a GetJoinMapForDeviceKeyRequestHandler
+ /// </summary>
 	public class GetJoinMapForDeviceKeyRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

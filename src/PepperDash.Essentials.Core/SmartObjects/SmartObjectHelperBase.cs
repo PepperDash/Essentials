@@ -11,13 +11,19 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.SmartObjects
 {
+ /// <summary>
+ /// Represents a SmartObjectHelperBase
+ /// </summary>
 	public class SmartObjectHelperBase
 	{
+  /// <summary>
+  /// Gets or sets the SmartObject
+  /// </summary>
 		public SmartObject SmartObject { get; private set; }
 
-		/// <summary>
-		/// This should be set by all inheriting classes, after the class has verified that it is linked to the right object.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Validated
+  /// </summary>
 		public bool Validated { get; protected set; }
 
 		public SmartObjectHelperBase(SmartObject so, bool useUserObjectHandler)
@@ -41,6 +47,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
+  /// <summary>
+  /// GetBoolOutputNamed method
+  /// </summary>
 		public BoolOutputSig GetBoolOutputNamed(string name)
 		{
 			if (SmartObject.BooleanOutput.Contains(name))
@@ -56,6 +65,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
         /// </summary>
         /// <param name="name"></param>
         /// <param name="a"></param>
+        /// <summary>
+        /// SetBoolAction method
+        /// </summary>
         public void SetBoolAction(string name, Action<bool> a)
         {
             if (SmartObject.BooleanOutput.Contains(name))

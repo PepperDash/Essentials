@@ -1,6 +1,9 @@
 ﻿using System;
 
 namespace PepperDash.Essentials.Core.Bridges {
+    /// <summary>
+    /// Represents a DmBladeChassisControllerJoinMap
+    /// </summary>
     public class DmBladeChassisControllerJoinMap : JoinMapBaseAdvanced {
 
         [JoinName("IsOnline")]

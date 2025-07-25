@@ -3,9 +3,15 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a CameraListItem
+    /// </summary>
     public class CameraListItem
     {
         [JsonProperty("deviceKey")]
+        /// <summary>
+        /// Gets or sets the DeviceKey
+        /// </summary>
         public string DeviceKey { get; set; }
 
         /// <summary>
@@ -46,6 +52,9 @@ namespace PepperDash.Essentials.Core
         /// A name that will override the source's name on the UI
         /// </summary>
         [JsonProperty("name")]
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
 
 

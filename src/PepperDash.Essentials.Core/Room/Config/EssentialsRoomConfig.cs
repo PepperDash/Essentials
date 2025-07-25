@@ -9,11 +9,13 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Room.Config
 {
+ /// <summary>
+ /// Represents a EssentialsRoomConfigHelper
+ /// </summary>
 	public class EssentialsRoomConfigHelper
 	{
         /// <summary>
-        /// Gets and operating, standalone emergegncy object that can be plugged into a room.
-        /// Returns null if there is no emergency defined
+        /// GetEmergency method
         /// </summary>
         public static EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, IEssentialsRoom room)
         {
@@ -35,6 +37,9 @@ namespace PepperDash.Essentials.Room.Config
 		/// <param name="props"></param>
 		/// <param name="room"></param>
 		/// <returns></returns>
+  /// <summary>
+  /// GetMicrophonePrivacy method
+  /// </summary>
 		public static MicrophonePrivacyController GetMicrophonePrivacy(
 			EssentialsRoomPropertiesConfig props, IPrivacy room)
 		{
@@ -95,9 +100,9 @@ namespace PepperDash.Essentials.Room.Config
 	
 	}
 
-    /// <summary>
-    /// 
-    /// </summary>
+ /// <summary>
+ /// Represents a EssentialsRoomPropertiesConfig
+ /// </summary>
 	public class EssentialsRoomPropertiesConfig
 	{
 		[JsonProperty("addresses")]
@@ -110,9 +115,15 @@ namespace PepperDash.Essentials.Room.Config
 		public EssentialsRoomEmergencyConfig Emergency { get; set; }
 
 		[JsonProperty("help")]
+  /// <summary>
+  /// Gets or sets the Help
+  /// </summary>
 		public EssentialsHelpPropertiesConfig Help { get; set; }
 
 		[JsonProperty("helpMessage")]
+  /// <summary>
+  /// Gets or sets the HelpMessage
+  /// </summary>
 		public string HelpMessage { get; set; }
 
         /// <summary>
@@ -134,48 +145,90 @@ namespace PepperDash.Essentials.Room.Config
         }
 
 		[JsonProperty("environment")]
+  /// <summary>
+  /// Gets or sets the Environment
+  /// </summary>
 		public EssentialsEnvironmentPropertiesConfig Environment { get; set; }
 
 		[JsonProperty("logo")]
+  /// <summary>
+  /// Gets or sets the LogoLight
+  /// </summary>
 		public EssentialsLogoPropertiesConfig LogoLight { get; set; }
 
         [JsonProperty("logoDark")]
+        /// <summary>
+        /// Gets or sets the LogoDark
+        /// </summary>
         public EssentialsLogoPropertiesConfig LogoDark { get; set; }
 	
 		[JsonProperty("microphonePrivacy")]
+  /// <summary>
+  /// Gets or sets the MicrophonePrivacy
+  /// </summary>
 		public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy { get; set; }
 
 		[JsonProperty("occupancy")]
+  /// <summary>
+  /// Gets or sets the Occupancy
+  /// </summary>
 		public EssentialsRoomOccSensorConfig Occupancy { get; set; }
 
 		[JsonProperty("oneButtonMeeting")]
+  /// <summary>
+  /// Gets or sets the OneButtonMeeting
+  /// </summary>
 		public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
 
 		[JsonProperty("shutdownVacancySeconds")]
+  /// <summary>
+  /// Gets or sets the ShutdownVacancySeconds
+  /// </summary>
 		public int ShutdownVacancySeconds { get; set; }
 
 		[JsonProperty("shutdownPromptSeconds")]
+  /// <summary>
+  /// Gets or sets the ShutdownPromptSeconds
+  /// </summary>
 		public int ShutdownPromptSeconds { get; set; }
 
 		[JsonProperty("tech")]
+  /// <summary>
+  /// Gets or sets the Tech
+  /// </summary>
 		public EssentialsRoomTechConfig Tech { get; set; }
 
 		[JsonProperty("volumes")]
+  /// <summary>
+  /// Gets or sets the Volumes
+  /// </summary>
 		public EssentialsRoomVolumesConfig Volumes { get; set; }
 
         [JsonProperty("fusion")]
+        /// <summary>
+        /// Gets or sets the Fusion
+        /// </summary>
         public EssentialsRoomFusionConfig Fusion { get; set; }
 
         [JsonProperty("essentialsRoomUiBehaviorConfig", NullValueHandling=NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the UiBehavior
+        /// </summary>
         public EssentialsRoomUiBehaviorConfig UiBehavior { get; set; }
 
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
+  /// <summary>
+  /// Gets or sets the ZeroVolumeWhenSwtichingVolumeDevices
+  /// </summary>
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 
         /// <summary>
         /// Indicates if this room represents a combination of other rooms
         /// </summary>
         [JsonProperty("isRoomCombinationScenario")]
+        /// <summary>
+        /// Gets or sets the IsRoomCombinationScenario
+        /// </summary>
         public bool IsRoomCombinationScenario { get; set; }
 
         public EssentialsRoomPropertiesConfig()
@@ -185,58 +238,109 @@ namespace PepperDash.Essentials.Room.Config
         }
 	}
 
+    /// <summary>
+    /// Represents a EssentialsRoomUiBehaviorConfig
+    /// </summary>
     public class EssentialsRoomUiBehaviorConfig
     {
         [JsonProperty("disableActivityButtonsWhileWarmingCooling")]
+        /// <summary>
+        /// Gets or sets the DisableActivityButtonsWhileWarmingCooling
+        /// </summary>
         public bool DisableActivityButtonsWhileWarmingCooling { get; set; }
     }
 
+    /// <summary>
+    /// Represents a EssentialsAvRoomPropertiesConfig
+    /// </summary>
     public class EssentialsAvRoomPropertiesConfig : EssentialsRoomPropertiesConfig
     {
         [JsonProperty("defaultAudioKey")]
+        /// <summary>
+        /// Gets or sets the DefaultAudioKey
+        /// </summary>
         public string DefaultAudioKey { get; set; }
         [JsonProperty("sourceListKey")]
+        /// <summary>
+        /// Gets or sets the SourceListKey
+        /// </summary>
         public string SourceListKey { get; set; }
         [JsonProperty("destinationListKey")]
+        /// <summary>
+        /// Gets or sets the DestinationListKey
+        /// </summary>
         public string DestinationListKey { get; set; }
         [JsonProperty("audioControlPointListKey")]
+        /// <summary>
+        /// Gets or sets the AudioControlPointListKey
+        /// </summary>
         public string AudioControlPointListKey { get; set; }
         [JsonProperty("cameraListKey")]
+        /// <summary>
+        /// Gets or sets the CameraListKey
+        /// </summary>
         public string CameraListKey { get; set; }
 
 
         [JsonProperty("defaultSourceItem")]
+        /// <summary>
+        /// Gets or sets the DefaultSourceItem
+        /// </summary>
         public string DefaultSourceItem { get; set; }
         /// <summary>
         /// Indicates if the room supports advanced sharing
         /// </summary>
         [JsonProperty("supportsAdvancedSharing")]
+        /// <summary>
+        /// Gets or sets the SupportsAdvancedSharing
+        /// </summary>
         public bool SupportsAdvancedSharing { get; set; }
         /// <summary>
         /// Indicates if non-tech users can change the share mode
         /// </summary>
         [JsonProperty("userCanChangeShareMode")]
+        /// <summary>
+        /// Gets or sets the UserCanChangeShareMode
+        /// </summary>
         public bool UserCanChangeShareMode { get; set; }
 
 
         [JsonProperty("matrixRoutingKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the MatrixRoutingKey
+        /// </summary>
         public string MatrixRoutingKey { get; set; }
     }
 
     public class EssentialsConferenceRoomPropertiesConfig : EssentialsAvRoomPropertiesConfig
     {
         [JsonProperty("videoCodecKey")]
+        /// <summary>
+        /// Gets or sets the VideoCodecKey
+        /// </summary>
         public string VideoCodecKey { get; set; }
         [JsonProperty("audioCodecKey")]
+        /// <summary>
+        /// Gets or sets the AudioCodecKey
+        /// </summary>
         public string AudioCodecKey { get; set; }
 
     }
 
+ /// <summary>
+ /// Represents a EssentialsEnvironmentPropertiesConfig
+ /// </summary>
 	public class EssentialsEnvironmentPropertiesConfig
 	{
+  /// <summary>
+  /// Gets or sets the Enabled
+  /// </summary>
 		public bool Enabled { get; set; }
 
         [JsonProperty("deviceKeys")]
+        /// <summary>
+        /// Gets or sets the DeviceKeys
+        /// </summary>
         public List<string> DeviceKeys { get; set; }
 
         public EssentialsEnvironmentPropertiesConfig()
@@ -246,6 +350,9 @@ namespace PepperDash.Essentials.Room.Config
 
 	}
 
+    /// <summary>
+    /// Represents a EssentialsRoomFusionConfig
+    /// </summary>
     public class EssentialsRoomFusionConfig
     {
         public uint IpIdInt
@@ -265,28 +372,46 @@ namespace PepperDash.Essentials.Room.Config
         }
 
         [JsonProperty("ipId")]
+        /// <summary>
+        /// Gets or sets the IpId
+        /// </summary>
         public string IpId { get; set; }
 
         [JsonProperty("joinMapKey")]
+        /// <summary>
+        /// Gets or sets the JoinMapKey
+        /// </summary>
         public string JoinMapKey { get; set; }
 
     }
 
+    /// <summary>
+    /// Represents a EssentialsRoomMicrophonePrivacyConfig
+    /// </summary>
     public class EssentialsRoomMicrophonePrivacyConfig
     {
 		[JsonProperty("deviceKey")]
+  /// <summary>
+  /// Gets or sets the DeviceKey
+  /// </summary>
 		public string DeviceKey { get; set; }
 
 		[JsonProperty("behaviour")]
+  /// <summary>
+  /// Gets or sets the Behaviour
+  /// </summary>
 		public string Behaviour { get; set; }
     }
 
     /// <summary>
-    /// Properties for the help text box
+    /// Represents a EssentialsHelpPropertiesConfig
     /// </summary>
     public class EssentialsHelpPropertiesConfig
     {
 		[JsonProperty("message")]
+  /// <summary>
+  /// Gets or sets the Message
+  /// </summary>
 		public string Message { get; set; }
 
 		[JsonProperty("showCallButton")]
@@ -296,6 +421,9 @@ namespace PepperDash.Essentials.Room.Config
         /// Defaults to "Call Help Desk"
         /// </summary>
 		[JsonProperty("callButtonText")]
+  /// <summary>
+  /// Gets or sets the CallButtonText
+  /// </summary>
 		public string CallButtonText { get; set; }
 
         public EssentialsHelpPropertiesConfig()
@@ -305,11 +433,14 @@ namespace PepperDash.Essentials.Room.Config
     }
 
     /// <summary>
-    /// 
+    /// Represents a EssentialsOneButtonMeetingPropertiesConfig
     /// </summary>
     public class EssentialsOneButtonMeetingPropertiesConfig
     {
 		[JsonProperty("enable")]
+  /// <summary>
+  /// Gets or sets the Enable
+  /// </summary>
 		public bool Enable { get; set; }
     }
 
@@ -319,22 +450,28 @@ namespace PepperDash.Essentials.Room.Config
 		public string PhoneNumber { get; set; }
 
 		[JsonProperty("sipAddress")]
+  /// <summary>
+  /// Gets or sets the SipAddress
+  /// </summary>
 		public string SipAddress { get; set; }
     }
 
 
     /// <summary>
-    /// Properties for the room's logo on panels
+    /// Represents a EssentialsLogoPropertiesConfig
     /// </summary>
     public class EssentialsLogoPropertiesConfig
     {
 		[JsonProperty("type")]
+  /// <summary>
+  /// Gets or sets the Type
+  /// </summary>
 		public string Type { get; set; }
 
 		[JsonProperty("url")]
 		public string Url { get; set; }
         /// <summary>
-        /// Gets either the custom URL, a local-to-processor URL, or null if it's a default logo
+        /// GetLogoUrlLight method
         /// </summary>
         public string GetLogoUrlLight()
         {
@@ -346,6 +483,9 @@ namespace PepperDash.Essentials.Room.Config
             return null;
         }
 
+        /// <summary>
+        /// GetLogoUrlDark method
+        /// </summary>
         public string GetLogoUrlDark()
         {
             if (Type == "url")
@@ -358,11 +498,14 @@ namespace PepperDash.Essentials.Room.Config
     }
 
     /// <summary>
-    /// Represents occupancy sensor(s) setup for a room
+    /// Represents a EssentialsRoomOccSensorConfig
     /// </summary>
     public class EssentialsRoomOccSensorConfig
     {
 		[JsonProperty("deviceKey")]
+  /// <summary>
+  /// Gets or sets the DeviceKey
+  /// </summary>
 		public string DeviceKey { get; set; }
 
 		[JsonProperty("timeoutMinutes")]
@@ -372,6 +515,9 @@ namespace PepperDash.Essentials.Room.Config
 	public class EssentialsRoomTechConfig
 	{
 		[JsonProperty("password")]
+  /// <summary>
+  /// Gets or sets the Password
+  /// </summary>
 		public string Password { get; set; }
 	}
 }

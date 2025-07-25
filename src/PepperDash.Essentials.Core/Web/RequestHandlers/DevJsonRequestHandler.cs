@@ -7,6 +7,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+ /// <summary>
+ /// Represents a DevJsonRequestHandler
+ /// </summary>
 	public class DevJsonRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

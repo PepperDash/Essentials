@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Core.Shades
 {
-	/// <summary>
-	/// Requirements for an object that contains shades
-	/// </summary>
+    /// <summary>
+    /// Defines the contract for IShades
+    /// </summary>
     public interface IShades
     {
         List<IShadesOpenCloseStop> Shades { get; }
@@ -32,7 +32,7 @@ namespace PepperDash.Essentials.Core.Shades
 
 
     /// <summary>
-    /// Requirements for a shade device that provides raising/lowering feedback
+    /// Defines the contract for IShadesRaiseLowerFeedback
     /// </summary>
     public interface IShadesRaiseLowerFeedback
     {
@@ -59,9 +59,9 @@ namespace PepperDash.Essentials.Core.Shades
 		void OpenCloseOrStop();
 	}
 
-	/// <summary>
-	/// Basic feedback for shades/scene stopped
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for IShadesStopFeedback
+ /// </summary>
 	public interface IShadesStopFeedback : IShadesOpenCloseStop
 	{
 		BoolFeedback IsStoppedFeedback { get; }

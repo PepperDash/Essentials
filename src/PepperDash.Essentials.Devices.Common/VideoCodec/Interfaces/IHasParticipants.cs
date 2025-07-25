@@ -42,9 +42,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 		void ToggleVideoForParticipant(int userId);
 	}
 
-	/// <summary>
-	/// Describes the ability to mute and unmute a participant's audio in a meeting
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for IHasParticipantAudioMute
+ /// </summary>
 	public interface IHasParticipantAudioMute : IHasParticipantVideoMute
 	{
         /// <summary>
@@ -57,9 +57,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 		void ToggleAudioForParticipant(int userId);
 	}
 
-	/// <summary>
-	/// Describes the ability to pin and unpin a participant in a meeting
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for IHasParticipantPinUnpin
+ /// </summary>
 	public interface IHasParticipantPinUnpin : IHasParticipants
 	{
 		IntFeedback NumberOfScreensFeedback { get; }
@@ -70,6 +70,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 		void ToggleParticipantPinState(int userId, int screenIndex);
 	}
 
+ /// <summary>
+ /// Represents a CodecParticipants
+ /// </summary>
 	public class CodecParticipants
 	{
 		private List<Participant> _currentParticipants;
@@ -99,6 +102,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 			_currentParticipants = new List<Participant>();
 		}
 
+  /// <summary>
+  /// OnParticipantsChanged method
+  /// </summary>
 		public void OnParticipantsChanged()
 		{
 			var handler = ParticipantsListHasChanged;
@@ -109,12 +115,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 		}
 	}
 
-	/// <summary>
-	/// Represents a call participant
-	/// </summary>
+ /// <summary>
+ /// Represents a Participant
+ /// </summary>
 	public class Participant
 	{
+  /// <summary>
+  /// Gets or sets the UserId
+  /// </summary>
 		public int UserId { get; set; }
+  /// <summary>
+  /// Gets or sets the IsHost
+  /// </summary>
 		public bool IsHost { get; set; }
         public bool IsMyself { get; set; }
 		public string Name { get; set; }
@@ -122,8 +134,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 		public bool CanUnmuteVideo { get; set; }
 		public bool VideoMuteFb { get; set; }
 		public bool AudioMuteFb { get; set; }
+  /// <summary>
+  /// Gets or sets the HandIsRaisedFb
+  /// </summary>
 		public bool HandIsRaisedFb { get; set; }
+  /// <summary>
+  /// Gets or sets the IsPinnedFb
+  /// </summary>
 		public bool IsPinnedFb { get; set; }
+  /// <summary>
+  /// Gets or sets the ScreenIndexIsPinnedToFb
+  /// </summary>
 		public int ScreenIndexIsPinnedToFb { get; set; }
 
 		public Participant()

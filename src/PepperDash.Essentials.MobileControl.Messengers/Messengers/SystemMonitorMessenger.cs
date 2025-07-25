@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a SystemMonitorMessenger
+    /// </summary>
     public class SystemMonitorMessenger : MessengerBase
     {
         private readonly SystemMonitorController systemMonitor;
@@ -86,24 +89,45 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a SystemMonitorStateMessage
+    /// </summary>
     public class SystemMonitorStateMessage
     {
         [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the TimeZone
+        /// </summary>
         public int TimeZone { get; set; }
 
         [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the TimeZoneName
+        /// </summary>
         public string TimeZoneName { get; set; }
 
         [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the IoControllerVersion
+        /// </summary>
         public string IoControllerVersion { get; set; }
 
         [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the SnmpVersion
+        /// </summary>
         public string SnmpVersion { get; set; }
 
         [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the BacnetVersion
+        /// </summary>
         public string BacnetVersion { get; set; }
 
         [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the ControllerVersion
+        /// </summary>
         public string ControllerVersion { get; set; }
     }
 }

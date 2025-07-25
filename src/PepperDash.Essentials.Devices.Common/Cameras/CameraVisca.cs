@@ -19,12 +19,21 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
+ /// <summary>
+ /// Represents a CameraVisca
+ /// </summary>
 	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IHasPowerControlWithFeedback, IBridgeAdvanced, IHasCameraFocusControl, IHasAutoFocusMode
 	{
         private readonly CameraViscaPropertiesConfig PropertiesConfig;
 
+  /// <summary>
+  /// Gets or sets the Communication
+  /// </summary>
 		public IBasicCommunication Communication { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the CommunicationMonitor
+  /// </summary>
 		public StatusMonitorBase CommunicationMonitor { get; private set; }
 
         /// <summary>
@@ -156,6 +165,10 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             }
         }
 
+  /// <summary>
+  /// CustomActivate method
+  /// </summary>
+  /// <inheritdoc />
 		public override bool CustomActivate()
 		{
 			Communication.Connect();
@@ -169,6 +182,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			return true;
 		}
 
+     /// <summary>
+     /// LinkToApi method
+     /// </summary>
 	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
@@ -408,6 +424,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             InquiryResponseQueue.Enqueue(HandlePowerResponse);
         }
 
+  /// <summary>
+  /// PowerOn method
+  /// </summary>
 		public void PowerOn()
 		{
 			SendBytes(new byte[] { ID, 0x01, 0x04, 0x00, 0x02, 0xFF });
@@ -431,12 +450,18 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             }
         }
 
+  /// <summary>
+  /// PowerOff method
+  /// </summary>
 		public void PowerOff()
 		{
 			SendBytes(new byte[] {ID, 0x01, 0x04, 0x00, 0x03, 0xFF});
             SendPowerQuery();
         }
 
+        /// <summary>
+        /// PowerToggle method
+        /// </summary>
         public void PowerToggle()
         {
             if (PowerIsOnFeedback.BoolValue)
@@ -445,30 +470,48 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 PowerOn();
         }
 
+  /// <summary>
+  /// PanLeft method
+  /// </summary>
 		public void PanLeft() 
 		{
 			SendPanTiltCommand(new byte[] {0x01, 0x03}, false);
 			// IsMoving = true;
 		}
+  /// <summary>
+  /// PanRight method
+  /// </summary>
 		public void PanRight() 
 		{
             SendPanTiltCommand(new byte[] { 0x02, 0x03 }, false);
 			// IsMoving = true;
 		}
+        /// <summary>
+        /// PanStop method
+        /// </summary>
         public void PanStop()
         {
             Stop();
         }
+  /// <summary>
+  /// TiltDown method
+  /// </summary>
 		public void TiltDown() 
 		{
             SendPanTiltCommand(new byte[] { 0x03, 0x02 }, false);
 			// IsMoving = true;
 		}
+  /// <summary>
+  /// TiltUp method
+  /// </summary>
 		public void TiltUp() 
 		{
             SendPanTiltCommand(new byte[] { 0x03, 0x01 }, false);
 			// IsMoving = true;
 		}
+        /// <summary>
+        /// TiltStop method
+        /// </summary>
         public void TiltStop()
         {
             Stop();
@@ -480,21 +523,33 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		}
 
 
+  /// <summary>
+  /// ZoomIn method
+  /// </summary>
 		public void ZoomIn() 
 		{
             SendZoomCommand(ZoomInCmd);
 			IsZooming = true;
 		}
+  /// <summary>
+  /// ZoomOut method
+  /// </summary>
 		public void ZoomOut() 
 		{
             SendZoomCommand(ZoomOutCmd);
 			IsZooming = true;
 		}
+        /// <summary>
+        /// ZoomStop method
+        /// </summary>
         public void ZoomStop()
         {
             Stop();
         }
 
+  /// <summary>
+  /// Stop method
+  /// </summary>
 		public void Stop() 
 		{
 			if (IsZooming)
@@ -509,15 +564,24 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 				// IsMoving = false;
 			}
 		}
+        /// <summary>
+        /// PositionHome method
+        /// </summary>
         public void PositionHome()
         {
             SendBytes(new byte[] { ID, 0x01, 0x06, 0x02, PanSpeedFast, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF });
             SendBytes(new byte[] { ID, 0x01, 0x04, 0x47, 0x00, 0x00, 0x00, 0x00, 0xFF });
         }
+  /// <summary>
+  /// RecallPreset method
+  /// </summary>
 		public void RecallPreset(int presetNumber)
 		{
 			SendBytes(new byte[] {ID, 0x01, 0x04, 0x3F, 0x02, (byte)presetNumber, 0xFF} );
 		}
+  /// <summary>
+  /// SavePreset method
+  /// </summary>
 		public void SavePreset(int presetNumber)
 		{
 			SendBytes(new byte[] { ID, 0x01, 0x04, 0x3F, 0x01, (byte)presetNumber, 0xFF });
@@ -536,13 +600,22 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			handler.Invoke(this, EventArgs.Empty);
 		}
 
+        /// <summary>
+        /// Gets or sets the Presets
+        /// </summary>
         public List<CameraPreset> Presets { get; private set; }
 
+        /// <summary>
+        /// PresetSelect method
+        /// </summary>
         public void PresetSelect(int preset)
         {
             RecallPreset(preset);
         }
 
+        /// <summary>
+        /// PresetStore method
+        /// </summary>
         public void PresetStore(int preset, string description)
         {
             SavePreset(preset);
@@ -553,21 +626,33 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraFocusControl Members
 
+        /// <summary>
+        /// FocusNear method
+        /// </summary>
         public void FocusNear()
         {
             SendBytes(new byte[] { ID, 0x01, 0x04, 0x08, 0x03, 0xFF });
         }
 
+        /// <summary>
+        /// FocusFar method
+        /// </summary>
         public void FocusFar()
         {
             SendBytes(new byte[] { ID, 0x01, 0x04, 0x08, 0x02, 0xFF });
         }
 
+        /// <summary>
+        /// FocusStop method
+        /// </summary>
         public void FocusStop()
         {
             SendBytes(new byte[] { ID, 0x01, 0x04, 0x08, 0x00, 0xFF });
         }
 
+        /// <summary>
+        /// TriggerAutoFocus method
+        /// </summary>
         public void TriggerAutoFocus()
         {
             SendBytes(new byte[] { ID, 0x01, 0x04, 0x18, 0x01, 0xFF });
@@ -578,18 +663,27 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasAutoFocus Members
 
+        /// <summary>
+        /// SetFocusModeAuto method
+        /// </summary>
         public void SetFocusModeAuto()
         {
             SendBytes(new byte[] { ID, 0x01, 0x04, 0x38, 0x02, 0xFF });
             SendAutoFocusQuery();
         }
 
+        /// <summary>
+        /// SetFocusModeManual method
+        /// </summary>
         public void SetFocusModeManual()
         {
             SendBytes(new byte[] { ID, 0x01, 0x04, 0x38, 0x03, 0xFF });
             SendAutoFocusQuery();
         }
 
+        /// <summary>
+        /// ToggleFocusMode method
+        /// </summary>
         public void ToggleFocusMode()
         {
             SendBytes(new byte[] { ID, 0x01, 0x04, 0x38, 0x10, 0xFF });
@@ -625,9 +719,15 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraOff Members
 
+        /// <summary>
+        /// Gets or sets the CameraIsOffFeedback
+        /// </summary>
         public BoolFeedback CameraIsOffFeedback { get; private set; }
 
 
+        /// <summary>
+        /// CameraOff method
+        /// </summary>
         public void CameraOff()
         {
             PowerOff();
@@ -636,6 +736,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         #endregion
     }
 
+    /// <summary>
+    /// Represents a CameraViscaFactory
+    /// </summary>
     public class CameraViscaFactory : EssentialsDeviceFactory<CameraVisca>
     {
         public CameraViscaFactory()
@@ -643,6 +746,10 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             TypeNames = new List<string>() { "cameravisca" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new CameraVisca Device");
@@ -654,12 +761,18 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
 
+    /// <summary>
+    /// Represents a CameraViscaPropertiesConfig
+    /// </summary>
     public class CameraViscaPropertiesConfig : CameraPropertiesConfig
     {
         /// <summary>
         /// Control ID of the camera (1-7)
         /// </summary>
         [JsonProperty("id")]
+        /// <summary>
+        /// Gets or sets the Id
+        /// </summary>
         public uint Id { get; set; }
 
         /// <summary>

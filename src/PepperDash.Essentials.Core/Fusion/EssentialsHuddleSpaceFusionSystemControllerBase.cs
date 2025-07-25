@@ -18,6 +18,9 @@ using System.Text;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
+    /// <summary>
+    /// Represents a EssentialsHuddleSpaceFusionSystemControllerBase
+    /// </summary>
     public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupancyStatusProvider
     {
         private readonly EssentialsHuddleSpaceRoomFusionRoomJoinMap JoinMap;
@@ -196,6 +199,9 @@ namespace PepperDash.Essentials.Core.Fusion
             get { return _guiDs.RoomGuid; }
         }
 
+        /// <summary>
+        /// Gets or sets the RoomOccupancyRemoteStringFeedback
+        /// </summary>
         public StringFeedback RoomOccupancyRemoteStringFeedback { get; private set; }
 
         protected Func<bool> RoomIsOccupiedFeedbackFunc
@@ -205,6 +211,9 @@ namespace PepperDash.Essentials.Core.Fusion
 
         #region IOccupancyStatusProvider Members
 
+        /// <summary>
+        /// Gets or sets the RoomIsOccupiedFeedback
+        /// </summary>
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
         #endregion
@@ -580,6 +589,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// Requests the local date and time from the Fusion Server
         /// </summary>
         /// <param name="callbackObject"></param>
+        /// <summary>
+        /// RequestLocalDateTime method
+        /// </summary>
         public void RequestLocalDateTime(object callbackObject)
         {
             const string timeRequestId = "TimeRequest";
@@ -591,7 +603,7 @@ namespace PepperDash.Essentials.Core.Fusion
         }
 
         /// <summary>
-        /// Generates a room schedule request for this room for the next 24 hours.
+        /// RequestFullRoomSchedule method
         /// </summary>
         public void RequestFullRoomSchedule(object callbackObject)
         {
@@ -618,6 +630,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// Wrapper method to allow console commands to modify the current meeting end time
         /// </summary>
         /// <param name="command">meetingID extendTime</param>
+        /// <summary>
+        /// ModifyMeetingEndTimeConsoleHelper method
+        /// </summary>
         public void ModifyMeetingEndTimeConsoleHelper(string command)
         {
             var extendMinutes = -1;
@@ -643,6 +658,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         /// <param name="requestId"></param>
         /// <param name="extendMinutes">Number of minutes to extend the meeting.  A value of 0 will end the meeting.</param>
+        /// <summary>
+        /// ModifyMeetingEndTime method
+        /// </summary>
         public void ModifyMeetingEndTime(string requestId, int extendMinutes)
         {
             if (_currentMeeting == null)
@@ -677,7 +695,7 @@ namespace PepperDash.Essentials.Core.Fusion
         }
 
         /// <summary>
-        /// Creates and Ad Hoc meeting with a duration of 1 hour, or until the next meeting if in less than 1 hour.
+        /// CreateAdHocMeeting method
         /// </summary>
         public void CreateAdHocMeeting(string command)
         {
@@ -1625,6 +1643,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// FusionRoom.AddSig with join number - 49
         /// </summary>
         /// <returns>The new attribute</returns>
+        /// <summary>
+        /// CreateOffsetBoolSig method
+        /// </summary>
         public static BooleanSigData CreateOffsetBoolSig(this FusionRoom fr, uint number, string name, eSigIoMask mask)
         {
             if (number < 50)
@@ -1642,6 +1663,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// FusionRoom.AddSig with join number - 49
         /// </summary>
         /// <returns>The new attribute</returns>
+        /// <summary>
+        /// CreateOffsetUshortSig method
+        /// </summary>
         public static UShortSigData CreateOffsetUshortSig(this FusionRoom fr, uint number, string name, eSigIoMask mask)
         {
             if (number < 50)
@@ -1659,6 +1683,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// FusionRoom.AddSig with join number - 49
         /// </summary>
         /// <returns>The new attribute</returns>
+        /// <summary>
+        /// CreateOffsetStringSig method
+        /// </summary>
         public static StringSigData CreateOffsetStringSig(this FusionRoom fr, uint number, string name, eSigIoMask mask)
         {
             if (number < 50)
@@ -1674,6 +1701,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// Creates and returns a static asset
         /// </summary>
         /// <returns>the new asset</returns>
+        /// <summary>
+        /// CreateStaticAsset method
+        /// </summary>
         public static FusionStaticAsset CreateStaticAsset(this FusionRoom fr, uint number, string name, string type,
             string instanceId)
         {
@@ -1696,6 +1726,9 @@ namespace PepperDash.Essentials.Core.Fusion
             }
         }
 
+        /// <summary>
+        /// CreateOccupancySensorAsset method
+        /// </summary>
         public static FusionOccupancySensor CreateOccupancySensorAsset(this FusionRoom fr, uint number, string name,
             string type, string instanceId)
         {
@@ -1765,6 +1798,9 @@ namespace PepperDash.Essentials.Core.Fusion
         }
     }
 
+    /// <summary>
+    /// Represents a RoomInformation
+    /// </summary>
     public class RoomInformation
     {
         public RoomInformation()
@@ -1772,18 +1808,51 @@ namespace PepperDash.Essentials.Core.Fusion
             FusionCustomProperties = new List<FusionCustomProperty>();
         }
 
+        /// <summary>
+        /// Gets or sets the ID
+        /// </summary>
         public string ID { get; set; }
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the Location
+        /// </summary>
         public string Location { get; set; }
+        /// <summary>
+        /// Gets or sets the Description
+        /// </summary>
         public string Description { get; set; }
+        /// <summary>
+        /// Gets or sets the TimeZone
+        /// </summary>
         public string TimeZone { get; set; }
+        /// <summary>
+        /// Gets or sets the WebcamURL
+        /// </summary>
         public string WebcamURL { get; set; }
+        /// <summary>
+        /// Gets or sets the BacklogMsg
+        /// </summary>
         public string BacklogMsg { get; set; }
+        /// <summary>
+        /// Gets or sets the SubErrorMsg
+        /// </summary>
         public string SubErrorMsg { get; set; }
+        /// <summary>
+        /// Gets or sets the EmailInfo
+        /// </summary>
         public string EmailInfo { get; set; }
+        /// <summary>
+        /// Gets or sets the FusionCustomProperties
+        /// </summary>
         public List<FusionCustomProperty> FusionCustomProperties { get; set; }
     }
 
+    /// <summary>
+    /// Represents a FusionCustomProperty
+    /// </summary>
     public class FusionCustomProperty
     {
         public FusionCustomProperty()
@@ -1795,9 +1864,21 @@ namespace PepperDash.Essentials.Core.Fusion
             ID = id;
         }
 
+        /// <summary>
+        /// Gets or sets the ID
+        /// </summary>
         public string ID { get; set; }
+        /// <summary>
+        /// Gets or sets the CustomFieldName
+        /// </summary>
         public string CustomFieldName { get; set; }
+        /// <summary>
+        /// Gets or sets the CustomFieldType
+        /// </summary>
         public string CustomFieldType { get; set; }
+        /// <summary>
+        /// Gets or sets the CustomFieldValue
+        /// </summary>
         public string CustomFieldValue { get; set; }
     }
 }

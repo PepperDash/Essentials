@@ -16,19 +16,19 @@ namespace PepperDash.Core
 		/// </summary>
 		public bool State { get; set; }
 		
-		/// <summary>
-		/// Boolean ushort value property
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the IntValue
+  /// </summary>
 		public ushort IntValue { get { return (ushort)(State ? 1 : 0); } }
 		
-		/// <summary>
-		/// Boolean change event args type
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Type
+  /// </summary>
 		public ushort Type { get; set; }
 		
-		/// <summary>
-		/// Boolean change event args index
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Index
+  /// </summary>
 		public ushort Index { get; set; }
 		
 		/// <summary>
@@ -64,9 +64,9 @@ namespace PepperDash.Core
 		}
 	}
 
-	/// <summary>
-	/// Ushort change event args
-	/// </summary>
+ /// <summary>
+ /// Represents a UshrtChangeEventArgs
+ /// </summary>
 	public class UshrtChangeEventArgs : EventArgs
 	{
 		/// <summary>
@@ -74,14 +74,14 @@ namespace PepperDash.Core
 		/// </summary>
 		public ushort IntValue { get; set; }
 		
-		/// <summary>
-		/// Ushort change event args type
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Type
+  /// </summary>
 		public ushort Type { get; set; }
 		
-		/// <summary>
-		/// Ushort change event args index
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Index
+  /// </summary>
 		public ushort Index { get; set; }
 		
 		/// <summary>
@@ -117,9 +117,9 @@ namespace PepperDash.Core
 		}
 	}
 
-	/// <summary>
-	/// String change event args
-	/// </summary>
+ /// <summary>
+ /// Represents a StringChangeEventArgs
+ /// </summary>
 	public class StringChangeEventArgs : EventArgs
 	{
 		/// <summary>
@@ -127,14 +127,14 @@ namespace PepperDash.Core
 		/// </summary>
 		public string StringValue { get; set; }
 
-		/// <summary>
-		/// String change event args type
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Type
+  /// </summary>
 		public ushort Type { get; set; }
 
-		/// <summary>
-		/// string change event args index
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Index
+  /// </summary>
 		public ushort Index { get; set; }
 
 		/// <summary>

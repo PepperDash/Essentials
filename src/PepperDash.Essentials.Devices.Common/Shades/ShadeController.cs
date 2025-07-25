@@ -24,6 +24,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             Shades = new List<IShadesOpenCloseStop>();
         }
 
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
         public override bool CustomActivate()
         {
             foreach (var shadeConfig in Config.Shades)
@@ -44,17 +48,32 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         }
     }
 
+    /// <summary>
+    /// Represents a ShadeControllerConfigProperties
+    /// </summary>
     public class ShadeControllerConfigProperties
     {
+        /// <summary>
+        /// Gets or sets the Shades
+        /// </summary>
         public List<ShadeConfig> Shades { get; set; }
 
 
+        /// <summary>
+        /// Represents a ShadeConfig
+        /// </summary>
         public class ShadeConfig
         {
+            /// <summary>
+            /// Gets or sets the Key
+            /// </summary>
             public string Key { get; set; }
         }
     }
 
+    /// <summary>
+    /// Represents a ShadeControllerFactory
+    /// </summary>
     public class ShadeControllerFactory : EssentialsDeviceFactory<ShadeController>
     {
         public ShadeControllerFactory()
@@ -62,6 +81,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             TypeNames = new List<string>() { "shadecontroller" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new ShadeController Device");

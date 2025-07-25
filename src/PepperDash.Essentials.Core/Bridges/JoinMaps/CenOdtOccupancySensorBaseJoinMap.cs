@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a CenOdtOccupancySensorBaseJoinMap
+    /// </summary>
     public class CenOdtOccupancySensorBaseJoinMap : JoinMapBaseAdvanced
     {
         #region Digitals

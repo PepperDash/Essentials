@@ -67,6 +67,9 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="config"></param>
+  /// <summary>
+  /// InitializeButton method
+  /// </summary>
 		public void InitializeButton(string key, KeypadButton config)
 		{
 			if (config == null)
@@ -151,6 +154,9 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="config"></param>
+  /// <summary>
+  /// InitializeButtonFeedback method
+  /// </summary>
 		public void InitializeButtonFeedback(string key, KeypadButton config)
 		{
 			//Debug.LogMessage(LogEventLevel.Debug, this, "Initializing button '{0}' feedback...", key);
@@ -305,6 +311,9 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		/// </summary>
 		/// <param name="buttonKey"></param>
 		/// <param name="type"></param>
+  /// <summary>
+  /// Press method
+  /// </summary>
 		public void Press(string buttonKey, string type)
 		{
 			this.LogVerbose("Press: buttonKey-'{buttonKey}', type-'{type}'", buttonKey, type);
@@ -320,6 +329,9 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		}
 
 
+  /// <summary>
+  /// ListButtons method
+  /// </summary>
 		public void ListButtons()
 		{
 			this.LogVerbose("MPC3 Controller {0} - Available Buttons", Key);
@@ -331,9 +343,9 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		}
 	}
 
-	/// <summary>
-	/// Represents the configuration of a keypad button
-	/// </summary>
+ /// <summary>
+ /// Represents a KeypadButton
+ /// </summary>
 	public class KeypadButton
 	{
 		[JsonProperty("eventTypes")]
@@ -349,12 +361,15 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		}
 	}
 
-	/// <summary>
-	/// Represents the configuration of a keypad button feedback
-	/// </summary>
+ /// <summary>
+ /// Represents a KeypadButtonFeedback
+ /// </summary>
 	public class KeypadButtonFeedback
 	{
 		[JsonProperty("deviceKey")]
+  /// <summary>
+  /// Gets or sets the DeviceKey
+  /// </summary>
 		public string DeviceKey { get; set; }
 
 		[JsonProperty("feedbackName")]

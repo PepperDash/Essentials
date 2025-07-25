@@ -7,6 +7,9 @@ using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a DeviceVolumeMessenger
+    /// </summary>
     public class DeviceVolumeMessenger : MessengerBase
     {
         private readonly IBasicVolumeWithFeedback _localDevice;
@@ -142,12 +145,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
         #endregion
     }
 
+    /// <summary>
+    /// Represents a VolumeStateMessage
+    /// </summary>
     public class VolumeStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("volume", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Volume
+        /// </summary>
         public Volume Volume { get; set; }
     }
 
+    /// <summary>
+    /// Represents a Volume
+    /// </summary>
     public class Volume
     {
         [JsonProperty("level", NullValueHandling = NullValueHandling.Ignore)]
@@ -160,9 +172,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public bool? Muted { get; set; }
 
         [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Label
+        /// </summary>
         public string Label { get; set; }
 
         [JsonProperty("rawValue", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the RawValue
+        /// </summary>
         public string RawValue { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]

@@ -68,6 +68,9 @@ namespace PepperDash.Essentials.Core.Config
         }
 
 		[JsonProperty("rooms")]
+        /// <summary>
+        /// Gets or sets the Rooms
+        /// </summary>
         public List<DeviceConfig> Rooms { get; set; }
 
 
@@ -78,11 +81,14 @@ namespace PepperDash.Essentials.Core.Config
         }
 	}
 		
-	/// <summary>
-	/// 
-	/// </summary>
+ /// <summary>
+ /// Represents a SystemTemplateConfigs
+ /// </summary>
 	public class SystemTemplateConfigs
 	{
+  /// <summary>
+  /// Gets or sets the System
+  /// </summary>
 		public EssentialsConfig System { get; set; }
 
 		public EssentialsConfig Template { get; set; }

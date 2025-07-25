@@ -9,30 +9,57 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a SecondsCountdownTimer
+    /// </summary>
     public class SecondsCountdownTimer: IKeyed
     {
         public event EventHandler<EventArgs> HasStarted;
         public event EventHandler<EventArgs> HasFinished;
         public event EventHandler<EventArgs> WasCancelled;
 
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the IsRunningFeedback
+        /// </summary>
         public BoolFeedback IsRunningFeedback { get; private set; }
         bool _isRunning;
 
+        /// <summary>
+        /// Gets or sets the PercentFeedback
+        /// </summary>
         public IntFeedback PercentFeedback { get; private set; }
+        /// <summary>
+        /// Gets or sets the TimeRemainingFeedback
+        /// </summary>
         public StringFeedback TimeRemainingFeedback { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the SecondsRemainingFeedback
+        /// </summary>
         public IntFeedback SecondsRemainingFeedback { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the CountsDown
+        /// </summary>
         public bool CountsDown { get; set; }
 
         /// <summary>
-        /// The number of seconds to countdown
+        /// Gets or sets the SecondsToCount
         /// </summary>
         public int SecondsToCount { get; set; }
         
+        /// <summary>
+        /// Gets or sets the StartTime
+        /// </summary>
         public DateTime StartTime { get; private set; }
+        /// <summary>
+        /// Gets or sets the FinishTime
+        /// </summary>
         public DateTime FinishTime { get; private set; }
  
         private CTimer _secondTimer;
@@ -77,7 +104,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Starts the Timer
+        /// Start method
         /// </summary>
         public void Start()
         {
@@ -98,7 +125,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Restarts the timer
+        /// Reset method
         /// </summary>
         public void Reset()
         {
@@ -108,7 +135,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Cancels the timer (without triggering it to finish)
+        /// Cancel method
         /// </summary>
         public void Cancel()
         {
@@ -120,7 +147,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Called upon expiration, or calling this will force timer to finish.
+        /// Finish method
         /// </summary>
         public void Finish()
         {

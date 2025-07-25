@@ -6,7 +6,7 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
-    /// Represents an item in the route request queue.
+    /// Represents a RouteRequestQueueItem
     /// </summary>
     public class RouteRequestQueueItem : IQueueMessage
     {
@@ -41,7 +41,7 @@ namespace PepperDash.Essentials.Core.Routing
     }
 
     /// <summary>
-    /// Represents an item in the queue for releasing a route.
+    /// Represents a ReleaseRouteQueueItem
     /// </summary>
     public class ReleaseRouteQueueItem : IQueueMessage
     {
@@ -78,7 +78,7 @@ namespace PepperDash.Essentials.Core.Routing
         }
 
         /// <summary>
-        /// Dispatches the release route action.
+        /// Dispatch method
         /// </summary>
         public void Dispatch()
         {

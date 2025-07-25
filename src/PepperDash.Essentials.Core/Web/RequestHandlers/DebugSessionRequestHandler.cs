@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+    /// <summary>
+    /// Represents a DebugSessionRequestHandler
+    /// </summary>
     public class DebugSessionRequestHandler : WebApiBaseRequestHandler
     {    
         public DebugSessionRequestHandler()

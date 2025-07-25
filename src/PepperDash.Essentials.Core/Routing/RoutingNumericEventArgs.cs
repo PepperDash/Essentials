@@ -4,7 +4,7 @@
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Provides event arguments for routing changes, potentially including numeric or port object references.
+    /// Represents a RoutingNumericEventArgs
     /// </summary>
     public class RoutingNumericEventArgs : EventArgs
     {

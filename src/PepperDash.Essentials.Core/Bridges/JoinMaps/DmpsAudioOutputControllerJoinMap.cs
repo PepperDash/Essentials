@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a DmpsAudioOutputControllerJoinMap
+    /// </summary>
     public class DmpsAudioOutputControllerJoinMap : JoinMapBaseAdvanced
     {
 

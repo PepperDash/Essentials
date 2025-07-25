@@ -18,12 +18,18 @@ namespace PepperDash.Essentials.Core
 		public event EventHandler<MonitorStatusChangeEventArgs> StatusChange;
 
         /// <summary>
-        /// Format returned: "parentdevkey-comMonitor"
+        /// Gets or sets the Key
         /// </summary>
         public string Key { get { return Parent.Key + "-comMonitor"; } }
 
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get { return "Comm. monitor"; } }
 
+  /// <summary>
+  /// Gets or sets the Parent
+  /// </summary>
 		public IKeyed Parent { get; private set; }
 
 		public BoolFeedback IsOnlineFeedback { get; set; }
