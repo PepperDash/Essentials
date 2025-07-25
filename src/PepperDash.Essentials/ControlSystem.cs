@@ -1,7 +1,9 @@
 ﻿
+using System;
+using System.Linq;
+using System.Reflection;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
-using System.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Diagnostics;
@@ -9,12 +11,9 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using PepperDash.Essentials.Core.Web;
-using System;
-using System.Linq;
-using Serilog.Events;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Web;
+using Serilog.Events;
 
 namespace PepperDash.Essentials
 {
@@ -46,22 +45,22 @@ namespace PepperDash.Essentials
             // AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
         }
 
-        private System.Reflection.Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
+        private Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
         {
-            var assemblyName = new System.Reflection.AssemblyName(args.Name).Name;
+            var assemblyName = new AssemblyName(args.Name).Name;
             if (assemblyName == "PepperDash_Core")
             {
-                return System.Reflection.Assembly.LoadFrom("PepperDashCore.dll");
+                return Assembly.LoadFrom("PepperDashCore.dll");
             }
 
             if (assemblyName == "PepperDash_Essentials_Core")
             {
-                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Core.dll");
+                return Assembly.LoadFrom("PepperDash.Essentials.Core.dll");
             }
 
             if (assemblyName == "Essentials Devices Common")
             {
-                return System.Reflection.Assembly.LoadFrom("PepperDash.Essentials.Devices.Common.dll");
+                return Assembly.LoadFrom("PepperDash.Essentials.Devices.Common.dll");
             }
 
             return null;
@@ -79,7 +78,7 @@ namespace PepperDash.Essentials
             if (preventInitializationComplete)
             {
                 Debug.LogMessage(LogEventLevel.Debug, "******************* InitializeSystem() Entering **********************");
-                
+
                 _startTimer = new CTimer(StartSystem, preventInitializationComplete, StartupTime);
                 _initializeEvent = new CEvent(true, false);
                 DeviceManager.AllDevicesRegistered += (o, a) =>
@@ -88,7 +87,7 @@ namespace PepperDash.Essentials
                 };
                 _initializeEvent.Wait(30000);
                 Debug.LogMessage(LogEventLevel.Debug, "******************* InitializeSystem() Exiting **********************");
-                
+
                 SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
             }
             else
@@ -99,7 +98,7 @@ namespace PepperDash.Essentials
 
         private void StartSystem(object preventInitialization)
         {
-            Debug.SetErrorLogMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
+            Debug.SetErrorLogMinimumDebugLevel(LogEventLevel.Verbose);
 
             DeterminePlatform();
 
@@ -201,8 +200,8 @@ namespace PepperDash.Essentials
                     {
                         userFolder = "User";
                         nvramFolder = "Nvram";
-                    }                    
-                    
+                    }
+
                     Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on {processorSeries:l} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
                     //Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
 
@@ -210,8 +209,8 @@ namespace PepperDash.Essentials
                     if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
-                       
-                        Debug.LogMessage(LogEventLevel.Information, "{userFolder:l}/program{applicationNumber} directory found", userFolder, InitialParametersClass.ApplicationNumber);                        
+
+                        Debug.LogMessage(LogEventLevel.Information, "{userFolder:l}/program{applicationNumber} directory found", userFolder, InitialParametersClass.ApplicationNumber);
                         filePathPrefix = directoryPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
@@ -220,7 +219,7 @@ namespace PepperDash.Essentials
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
                         Debug.LogMessage(LogEventLevel.Information, "{nvramFolder:l}/program{applicationNumber} directory found", nvramFolder, InitialParametersClass.ApplicationNumber);
-                        
+
                         filePathPrefix = directoryPrefix + dirSeparator + nvramFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
@@ -228,7 +227,7 @@ namespace PepperDash.Essentials
                     else
                     {
                         Debug.LogMessage(LogEventLevel.Information, "{userFolder:l}/program{applicationNumber} directory found", userFolder, InitialParametersClass.ApplicationNumber);
-                        
+
                         filePathPrefix = directoryPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
@@ -236,7 +235,7 @@ namespace PepperDash.Essentials
                 else   // Handles Linux OS (Virtual Control)
                 {
                     //Debug.SetDebugLevel(2);
-                    Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on Virtual Control Server", Global.AssemblyVersion);                    
+                    Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on Virtual Control Server", Global.AssemblyVersion);
 
                     // Set path to User/
                     filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
@@ -246,7 +245,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.LogMessage(e, "Unable to determine platform due to exception");                
+                Debug.LogMessage(e, "Unable to determine platform due to exception");
             }
         }
 
@@ -262,11 +261,11 @@ namespace PepperDash.Essentials
                 PluginLoader.AddProgramAssemblies();
 
                 _ = new Core.DeviceFactory();
-                _ = new Devices.Common.DeviceFactory();
-                _ = new DeviceFactory();
+                // _ = new Devices.Common.DeviceFactory();
+                // _ = new DeviceFactory();
 
-                _ = new ProcessorExtensionDeviceFactory();
-                _ = new MobileControlFactory();
+                // _ = new ProcessorExtensionDeviceFactory();
+                // _ = new MobileControlFactory();
 
                 Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 
@@ -313,7 +312,7 @@ namespace PepperDash.Essentials
 
         }
 
-       
+
 
         /// <summary>
         /// Verifies filesystem is set up. IR, SGD, and programX folders
@@ -333,46 +332,46 @@ namespace PepperDash.Essentials
                 Directory.Create(irDir);
 
             var sgdDir = Global.FilePathPrefix + "sgd";
-			if (!Directory.Exists(sgdDir))
-				Directory.Create(sgdDir);
+            if (!Directory.Exists(sgdDir))
+                Directory.Create(sgdDir);
 
             var pluginDir = Global.FilePathPrefix + "plugins";
             if (!Directory.Exists(pluginDir))
                 Directory.Create(pluginDir);
 
             var joinmapDir = Global.FilePathPrefix + "joinmaps";
-            if(!Directory.Exists(joinmapDir))
+            if (!Directory.Exists(joinmapDir))
                 Directory.Create(joinmapDir);
 
-			return configExists;
-		}
+            return configExists;
+        }
 
-  /// <summary>
-  /// TearDown method
-  /// </summary>
-		public void TearDown()
-		{
-			Debug.LogMessage(LogEventLevel.Information, "Tearing down existing system");
-			DeviceManager.DeactivateAll();
+        /// <summary>
+        /// TearDown method
+        /// </summary>
+        public void TearDown()
+        {
+            Debug.LogMessage(LogEventLevel.Information, "Tearing down existing system");
+            DeviceManager.DeactivateAll();
 
-			TieLineCollection.Default.Clear();
+            TieLineCollection.Default.Clear();
 
-			foreach (var key in DeviceManager.GetDevices())
-				DeviceManager.RemoveDevice(key);
+            foreach (var key in DeviceManager.GetDevices())
+                DeviceManager.RemoveDevice(key);
 
-			Debug.LogMessage(LogEventLevel.Information, "Tear down COMPLETE");
-		}
+            Debug.LogMessage(LogEventLevel.Information, "Tear down COMPLETE");
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		void Load()
-		{
-			LoadDevices();
-			LoadRooms();
-			LoadLogoServer();
+        /// <summary>
+        /// 
+        /// </summary>
+        void Load()
+        {
+            LoadDevices();
+            LoadRooms();
+            LoadLogoServer();
 
-			DeviceManager.ActivateAll();
+            DeviceManager.ActivateAll();
 
             LoadTieLines();
 
@@ -381,8 +380,8 @@ namespace PepperDash.Essentials
 		    if (mobileControl == null) return;
 
             mobileControl.LinkSystemMonitorToAppServer();*/
-		    
-		}
+
+        }
 
         /// <summary>
         /// LoadDevices method
@@ -414,8 +413,8 @@ namespace PepperDash.Essentials
                     {
                         var prompt = Global.ControlSystem.ControllerPrompt;
 
-                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
-                                        String.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
+                        var typeMatch = string.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
+                                        string.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
 
                         if (!typeMatch)
                             Debug.LogMessage(LogEventLevel.Information,
@@ -430,14 +429,14 @@ namespace PepperDash.Essentials
                     if (newDev == null)
                         newDev = Core.DeviceFactory.GetDevice(devConf);
 
-					if (newDev != null)
-						DeviceManager.AddDevice(newDev);
-					else
+                    if (newDev != null)
+                        DeviceManager.AddDevice(newDev);
+                    else
                         Debug.LogMessage(LogEventLevel.Information, "ERROR: Cannot load unknown device type '{deviceType:l}', key '{deviceKey:l}'.", devConf.Type, devConf.Key);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.",args: new[] { devConf.Key });
+                    Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.", args: new[] { devConf.Key });
                 }
             }
             Debug.LogMessage(LogEventLevel.Information, "All Devices Loaded.");
@@ -475,27 +474,28 @@ namespace PepperDash.Essentials
         /// LoadRooms method
         /// </summary>
         public void LoadRooms()
-        {            
+        {
             if (ConfigReader.ConfigObject.Rooms == null)
             {
                 Debug.LogMessage(LogEventLevel.Information, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
                 return;
             }
 
-            foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)         
+            foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
                 try
                 {
                     var room = Core.DeviceFactory.GetDevice(roomConfig);
 
-                    if(room == null)
+                    if (room == null)
                     {
                         Debug.LogWarning("ERROR: Cannot load unknown room type '{roomType:l}', key '{roomKey:l}'.", roomConfig.Type, roomConfig.Key);
                         continue;
                     }
 
                     DeviceManager.AddDevice(room);
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Debug.LogMessage(ex, "Exception loading room {roomKey}:{roomType}", null, roomConfig.Key, roomConfig.Type);
                     continue;
@@ -564,7 +564,7 @@ namespace PepperDash.Essentials
             }
             catch
             {
-                Debug.LogMessage(LogEventLevel.Information, "Unable to find logo information in any room config");                
+                Debug.LogMessage(LogEventLevel.Information, "Unable to find logo information in any room config");
                 return false;
             }
         }
