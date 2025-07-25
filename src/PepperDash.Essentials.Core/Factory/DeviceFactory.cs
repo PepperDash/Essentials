@@ -155,7 +155,7 @@ namespace PepperDash.Essentials.Core
                     prop.Parent.Replace(secret);
                 }
 
-                if (!(prop.Value is JObject recurseProp)) return;
+                if (!(prop.Value is JObject recurseProp)) continue;
 
                 CheckForSecrets(recurseProp.Properties());
             }
