@@ -523,9 +523,11 @@ namespace PepperDash.Essentials
         {
             foreach (var typeName in deviceFactory.TypeNames)
             {
-                //Debug.LogMessage(LogEventLevel.Verbose, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
+                
                 var descriptionAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
-                string description = descriptionAttribute[0].Description;
+                string description = descriptionAttribute != null && descriptionAttribute.Length > 0 
+                    ? descriptionAttribute[0].Description 
+                    : "No description available";
                 var snippetAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
                 DeviceFactory.AddFactoryForType(typeName.ToLower(), description, deviceFactory.FactoryType, deviceFactory.BuildDevice);
             }
