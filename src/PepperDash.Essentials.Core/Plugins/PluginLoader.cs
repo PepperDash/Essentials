@@ -523,62 +523,14 @@ namespace PepperDash.Essentials
         {
             foreach (var typeName in deviceFactory.TypeNames)
             {
-                
-                var descriptionAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
-                string description = descriptionAttribute != null && descriptionAttribute.Length > 0 
-                    ? descriptionAttribute[0].Description 
+                string description = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
+                    ? descriptionAttribute[0].Description
                     : "No description available";
-                var snippetAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
+
                 DeviceFactory.AddFactoryForType(typeName.ToLower(), description, deviceFactory.FactoryType, deviceFactory.BuildDevice);
             }
         }
 
-        /// <summary>
-        /// Loads a a custom plugin via the legacy method
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="loadPlugin"></param>
-        static void LoadCustomLegacyPlugin(Type type, MethodInfo loadPlugin, LoadedAssembly loadedAssembly)
-        {
-            Debug.LogMessage(LogEventLevel.Verbose, "LoadPlugin method found in {0}", type.Name);
-
-            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-
-            var minimumVersion = fields.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
-            if (minimumVersion != null)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, "MinimumEssentialsFrameworkVersion found");
-
-                var minimumVersionString = minimumVersion.GetValue(null) as string;
-
-                if (!string.IsNullOrEmpty(minimumVersionString))
-                {
-                    var passed = Global.IsRunningMinimumVersionOrHigher(minimumVersionString);
-
-                    if (!passed)
-                    {
-                        Debug.LogMessage(LogEventLevel.Information, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", minimumVersionString);
-                        return;
-                    }
-                    else
-                    {
-                        Debug.LogMessage(LogEventLevel.Information, "Passed plugin passed dependency check (required version {0})", minimumVersionString);
-                    }
-                }
-                else
-                {
-                    Debug.LogMessage(LogEventLevel.Information, "MinimumEssentialsFrameworkVersion found but not set.  Loading plugin, but your mileage may vary.");
-                }
-            }
-            else
-            {
-                Debug.LogMessage(LogEventLevel.Information, "MinimumEssentialsFrameworkVersion not found.  Loading plugin, but your mileage may vary.");
-            }
-
-            Debug.LogMessage(LogEventLevel.Information, "Loading legacy plugin: {0}", loadedAssembly.Name);
-            loadPlugin.Invoke(null, null);
-
-        }
 
         /// <summary>
         /// LoadPlugins method

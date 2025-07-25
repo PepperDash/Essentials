@@ -1,8 +1,14 @@
+using System;
 using System.Collections.Generic;
 using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core
 {
+  /// <summary>
+  /// Represents a factory for creating processor extension devices.
+  /// </summary>
+  /// <typeparam name="T">The type of the processor extension device.</typeparam>
+  [Obsolete("will be removed in a future version")]
   public abstract class ProcessorExtensionDeviceFactory<T> : IProcessorExtensionDeviceFactory where T : EssentialsDevice
   {
     #region IProcessorExtensionDeviceFactory Members
@@ -19,11 +25,10 @@ namespace PepperDash.Essentials.Core
     {
       foreach (var typeName in TypeNames)
       {
-        var descriptionAttribute = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
-        string description = descriptionAttribute != null && descriptionAttribute.Length > 0
+        string description = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
             ? descriptionAttribute[0].Description
             : "No description available";
-        var snippetAttribute = typeof(T).GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
+
         ProcessorExtensionDeviceFactory.AddFactoryForType(typeName.ToLower(), description, typeof(T), BuildDevice);
       }
     }

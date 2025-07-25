@@ -92,12 +92,10 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var typeName in deviceFactory.TypeNames)
             {
-                
-                var descriptionAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
-                string description = descriptionAttribute != null && descriptionAttribute.Length > 0 
-                    ? descriptionAttribute[0].Description 
+                string description = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
+                    ? descriptionAttribute[0].Description
                     : "No description available";
-                var snippetAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
+
                 AddFactoryForType(typeName.ToLower(), description, deviceFactory.FactoryType, deviceFactory.BuildDevice);
             }
         }

@@ -1,17 +1,11 @@
 ﻿
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharpPro;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials
 {
@@ -59,12 +53,10 @@ namespace PepperDash.Essentials
         {
             foreach (var typeName in deviceFactory.TypeNames)
             {
-                
-                var descriptionAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
-                string description = (descriptionAttribute != null && descriptionAttribute.Length > 0) 
-                    ? descriptionAttribute[0].Description 
+                string description = (deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0)
+                    ? descriptionAttribute[0].Description
                     : "No description available";
-                var snippetAttribute = deviceFactory.FactoryType.GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
+
                 Core.DeviceFactory.AddFactoryForType(typeName.ToLower(), description, deviceFactory.FactoryType, deviceFactory.BuildDevice);
             }
         }
