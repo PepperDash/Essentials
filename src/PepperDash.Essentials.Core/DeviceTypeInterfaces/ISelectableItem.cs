@@ -6,7 +6,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
 
     /// <summary>
-    /// Describes an item that can be selected
+    /// Defines the contract for ISelectableItem
     /// </summary>
     public interface ISelectableItem : IKeyName
     {

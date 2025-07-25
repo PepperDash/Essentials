@@ -1,7 +1,7 @@
 ﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Defines an IRoutingNumeric with a feedback event 
+    /// Defines the contract for IRoutingNumericWithFeedback
     /// </summary>
     public interface IRoutingNumericWithFeedback : IRoutingNumeric, IRoutingFeedback
     {

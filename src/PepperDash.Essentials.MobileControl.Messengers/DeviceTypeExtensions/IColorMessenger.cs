@@ -4,6 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Represents a IColorMessenger
+    /// </summary>
     public class IColorMessenger : MessengerBase
     {
         private readonly IColor colorDevice;

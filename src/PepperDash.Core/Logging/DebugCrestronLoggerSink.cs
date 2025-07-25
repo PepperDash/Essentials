@@ -5,8 +5,14 @@ using Serilog.Events;
 
 namespace PepperDash.Core.Logging
 {
+    /// <summary>
+    /// Represents a DebugCrestronLoggerSink
+    /// </summary>
     public class DebugCrestronLoggerSink : ILogEventSink
     {
+        /// <summary>
+        /// Emit method
+        /// </summary>
         public void Emit(LogEvent logEvent)
         {
             if (!Debug.IsRunningOnAppliance) return;

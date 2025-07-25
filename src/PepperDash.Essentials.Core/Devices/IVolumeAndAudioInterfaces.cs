@@ -17,7 +17,7 @@ namespace PepperDash.Essentials.Core
 	}
 
     /// <summary>
-    /// Defines basic volume control methods
+    /// Defines the contract for IHasVolumeControl
     /// </summary>
     public interface IHasVolumeControl
     {
@@ -52,9 +52,9 @@ namespace PepperDash.Essentials.Core
         void MuteOff();
     }
 
-	/// <summary>
-	/// Adds feedback and direct volume level set to IBasicVolumeControls
-	/// </summary>
+    /// <summary>
+    /// Defines the contract for IBasicVolumeWithFeedback
+    /// </summary>
     public interface IBasicVolumeWithFeedback : IBasicVolumeControls
 	{
 		BoolFeedback MuteFeedback { get; }
@@ -64,9 +64,9 @@ namespace PepperDash.Essentials.Core
 		IntFeedback VolumeLevelFeedback { get; }
 	}
 
-	/// <summary>
-	/// Adds the ability to display a raw volume level and the units of that level
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for IBasicVolumeWithFeedbackAdvanced
+ /// </summary>
 	public interface IBasicVolumeWithFeedbackAdvanced : IBasicVolumeWithFeedback
 	{
 		int RawVolumeLevel { get; }
@@ -83,8 +83,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// A class that implements this contains a reference to a current IBasicVolumeControls device.
-    /// The class may have multiple IBasicVolumeControls.
+    /// Defines the contract for IHasCurrentVolumeControls
     /// </summary>
     public interface IHasCurrentVolumeControls
     {
@@ -97,9 +96,9 @@ namespace PepperDash.Essentials.Core
 	}
 
 
-	/// <summary>
-	/// 
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for IFullAudioSettings
+ /// </summary>
 	public interface IFullAudioSettings : IBasicVolumeWithFeedback
 	{
 		void SetBalance(ushort level);
@@ -136,11 +135,9 @@ namespace PepperDash.Essentials.Core
 		IntFeedback DefaultVolumeFeedback { get; }
 	}
 
-	/// <summary>
-	/// A class that implements this, contains a reference to an IBasicVolumeControls device.
-	/// For example, speakers attached to an audio zone.  The speakers can provide reference
-	/// to their linked volume control.
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for IHasVolumeDevice
+ /// </summary>
 	public interface IHasVolumeDevice
 	{
 		IBasicVolumeControls VolumeDevice { get; }

@@ -21,6 +21,9 @@ namespace PepperDash.Essentials.Core.PageManagers
 		/// </summary>
 		/// <param name="deviceType">1 through 49, as defined in some constants somewhere!</param>
 		/// <returns></returns>
+  /// <summary>
+  /// GetOffsetJoin method
+  /// </summary>
 		public uint GetOffsetJoin(uint deviceType)
 		{
 			return 10000 + (deviceType * 100);
@@ -47,11 +50,18 @@ namespace PepperDash.Essentials.Core.PageManagers
 			BackingPageJoin = join;
 		}
 
+  /// <summary>
+  /// Show method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Show()
 		{
 			TriList.BooleanInput[BackingPageJoin].BoolValue = true;
 		}
 
+  /// <summary>
+  /// Hide method
+  /// </summary>
 		public override void Hide()
 		{
 			TriList.BooleanInput[BackingPageJoin].BoolValue = false;

@@ -5,7 +5,7 @@ using System;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Represents a request to establish a route between a source and a destination device.
+    /// Represents a RouteRequest
     /// </summary>
     public class RouteRequest
     {
@@ -15,22 +15,22 @@ namespace PepperDash.Essentials.Core
         public RoutingInputPort DestinationPort { get; set; }
 
         /// <summary>
-        /// The specific output port on the source device to use for the route. Can be null if the port should be automatically determined or is not applicable.
+        /// Gets or sets the SourcePort
         /// </summary>
         public RoutingOutputPort SourcePort { get; set; }
 
         /// <summary>
-        /// The destination device (sink or midpoint) for the route.
+        /// Gets or sets the Destination
         /// </summary>
         public IRoutingInputs Destination { get; set; }
 
         /// <summary>
-        /// The source device for the route.
+        /// Gets or sets the Source
         /// </summary>
         public IRoutingOutputs Source { get; set; }
 
         /// <summary>
-        /// The type of signal being routed (e.g., Audio, Video, AudioVideo).
+        /// Gets or sets the SignalType
         /// </summary>
         public eRoutingSignalType SignalType { get; set; }
 

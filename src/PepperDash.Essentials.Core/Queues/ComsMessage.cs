@@ -4,7 +4,7 @@ using PepperDash.Core;
 namespace PepperDash.Essentials.Core.Queues
 {
     /// <summary>
-    /// IBasicCommunication Message for IQueue
+    /// Represents a ComsMessage
     /// </summary>
     public class ComsMessage : IQueueMessage
     {
@@ -48,7 +48,7 @@ namespace PepperDash.Essentials.Core.Queues
         }
 
         /// <summary>
-        /// Dispatchs the string/byte[] to the IBasicCommunication specified
+        /// Dispatch method
         /// </summary>
         public void Dispatch()
         {
@@ -63,8 +63,9 @@ namespace PepperDash.Essentials.Core.Queues
         }
 
         /// <summary>
-        /// Shows either the byte[] or string to be sent
+        /// ToString method
         /// </summary>
+        /// <inheritdoc />
         public override string ToString()
         {
             return _bytes != null ? _bytes.ToString() : _string;

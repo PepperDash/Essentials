@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a ILightingScenesMessenger
+    /// </summary>
     public class ILightingScenesMessenger : MessengerBase
     {
         private ILightingScenes lightingScenesDevice;
@@ -59,12 +62,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a LightingBaseStateMessage
+    /// </summary>
     public class LightingBaseStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("scenes", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Scenes
+        /// </summary>
         public List<LightingScene> Scenes { get; set; }
 
         [JsonProperty("currentLightingScene", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the CurrentLightingScene
+        /// </summary>
         public LightingScene CurrentLightingScene { get; set; }
     }
 }

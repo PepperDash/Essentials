@@ -12,6 +12,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec
 {
+    /// <summary>
+    /// Represents a MockAC
+    /// </summary>
     public class MockAC : AudioCodecBase
     {
         public MockAC(string key, string name, MockAcPropertiesConfig props)
@@ -22,6 +25,10 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
             CodecInfo.PhoneNumber = props.PhoneNumber;
         }
 
+        /// <summary>
+        /// Dial method
+        /// </summary>
+        /// <inheritdoc />
         public override void Dial(string number)
         {
             if (!IsInCall)
@@ -47,6 +54,10 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
             }
         }
 
+        /// <summary>
+        /// EndCall method
+        /// </summary>
+        /// <inheritdoc />
         public override void EndCall(CodecActiveCallItem call)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "EndCall");
@@ -54,6 +65,10 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
         }
 
+        /// <summary>
+        /// EndAllCalls method
+        /// </summary>
+        /// <inheritdoc />
         public override void EndAllCalls()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "EndAllCalls");
@@ -65,12 +80,19 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
             }
         }
 
+        /// <summary>
+        /// AcceptCall method
+        /// </summary>
+        /// <inheritdoc />
         public override void AcceptCall(CodecActiveCallItem call)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "AcceptCall");
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
         }
 
+        /// <summary>
+        /// RejectCall method
+        /// </summary>
         public override void RejectCall(CodecActiveCallItem call)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "RejectCall");
@@ -78,6 +100,10 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
         }
 
+        /// <summary>
+        /// SendDtmf method
+        /// </summary>
+        /// <inheritdoc />
         public override void SendDtmf(string s)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "BEEP BOOP SendDTMF: {0}", s);
@@ -87,6 +113,9 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
         /// 
         /// </summary>
         /// <param name="url"></param>
+        /// <summary>
+        /// TestIncomingAudioCall method
+        /// </summary>
         public void TestIncomingAudioCall(string number)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "TestIncomingAudioCall from {0}", number);
@@ -97,6 +126,9 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
 
     }
 
+    /// <summary>
+    /// Represents a MockAudioCodecInfo
+    /// </summary>
     public class MockAudioCodecInfo : AudioCodecInfo
     {
         string _phoneNumber;
@@ -114,6 +146,9 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
         }
     }
 
+    /// <summary>
+    /// Represents a MockACFactory
+    /// </summary>
     public class MockACFactory : EssentialsDeviceFactory<MockAC>
     {
         public MockACFactory()
@@ -121,6 +156,10 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
             TypeNames = new List<string>() { "mockac" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new MockAc Device");

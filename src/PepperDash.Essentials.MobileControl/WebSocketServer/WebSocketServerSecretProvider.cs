@@ -12,12 +12,24 @@ namespace PepperDash.Essentials.WebSocketServer
         }
     }
 
+    /// <summary>
+    /// Represents a WebSocketServerSecret
+    /// </summary>
     public class WebSocketServerSecret : ISecret
     {
+        /// <summary>
+        /// Gets or sets the Provider
+        /// </summary>
         public ISecretProvider Provider { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the Value
+        /// </summary>
         public object Value { get; private set; }
 
         public WebSocketServerSecret(string key, object value, ISecretProvider provider)
@@ -27,6 +39,9 @@ namespace PepperDash.Essentials.WebSocketServer
             Provider = provider;
         }
 
+        /// <summary>
+        /// DeserializeSecret method
+        /// </summary>
         public ServerTokenSecrets DeserializeSecret()
         {
             return JsonConvert.DeserializeObject<ServerTokenSecrets>(Value.ToString());

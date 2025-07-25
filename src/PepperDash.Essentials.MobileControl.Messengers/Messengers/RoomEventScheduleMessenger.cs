@@ -8,6 +8,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a RoomEventScheduleMessenger
+    /// </summary>
     public class RoomEventScheduleMessenger : MessengerBase
     {
         private readonly IRoomEventSchedule _room;
@@ -68,9 +71,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a RoomEventScheduleStateMessage
+    /// </summary>
     public class RoomEventScheduleStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("scheduleEvents")]
+        /// <summary>
+        /// Gets or sets the ScheduleEvents
+        /// </summary>
         public List<ScheduledEventConfig> ScheduleEvents { get; set; }
     }
 }

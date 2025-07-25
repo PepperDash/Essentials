@@ -4,7 +4,7 @@ using PepperDash.Core;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Interface for any device that has a battery that can be monitored
+    /// Defines the contract for IHasBatteryStats
     /// </summary>
     public interface IHasBatteryStats : IKeyName
     {
@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Interface for any device that has a battery that can be monitored and the ability to charge and discharge
+    /// Defines the contract for IHasBatteryCharging
     /// </summary>
     public interface IHasBatteryCharging : IHasBatteryStats
     {
@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Interface for any device that is able to control its power, has a configurable reboot time, and has batteries that can be monitored
+    /// Defines the contract for IHasPowerCycleWithBattery
     /// </summary>
     public interface IHasPowerCycleWithBattery : IHasPowerCycle, IHasBatteryStats
     {

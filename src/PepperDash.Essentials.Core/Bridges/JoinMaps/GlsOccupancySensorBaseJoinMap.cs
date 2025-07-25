@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a GlsOccupancySensorBaseJoinMap
+    /// </summary>
     public class GlsOccupancySensorBaseJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("IsOnline")]

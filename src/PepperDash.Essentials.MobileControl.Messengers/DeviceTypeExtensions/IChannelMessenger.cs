@@ -4,6 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Represents a IChannelMessenger
+    /// </summary>
     public class IChannelMessenger : MessengerBase
     {
         private readonly IChannel channelDevice;

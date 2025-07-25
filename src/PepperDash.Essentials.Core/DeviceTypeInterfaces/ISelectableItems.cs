@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
+    /// <summary>
+    /// Defines the contract for ISelectableItems
+    /// </summary>
     public interface ISelectableItems<TKey, TValue> where TValue : ISelectableItem
     {
         event EventHandler ItemsUpdated;
@@ -21,6 +24,9 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// Describes a collection of items that can be selected
     /// </summary>
     /// <typeparam name="TKey">type for the keys in the collection.  Probably a string or enum</typeparam>
+    /// <summary>
+    /// Defines the contract for ISelectableItems
+    /// </summary>
     public interface ISelectableItems<TKey> : ISelectableItems<TKey, ISelectableItem>
     {        
     }

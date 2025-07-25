@@ -7,11 +7,17 @@ using Crestron.SimplSharp;
 namespace PepperDash.Essentials.Devices.Common.Codec
 
 {
+    /// <summary>
+    /// Enumeration of eCodecCallDirection values
+    /// </summary>
     public enum eCodecCallDirection
     {
         Unknown = 0, Incoming, Outgoing
     }
 
+    /// <summary>
+    /// Represents a CodecCallDirection
+    /// </summary>
     public class CodecCallDirection
     {
         /// <summary>
@@ -19,6 +25,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
+        /// <summary>
+        /// ConvertToDirectionEnum method
+        /// </summary>
         public static eCodecCallDirection ConvertToDirectionEnum(string s)
         {
             switch (s.ToLower())

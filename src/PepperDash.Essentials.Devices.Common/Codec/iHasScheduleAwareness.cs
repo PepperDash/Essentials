@@ -14,6 +14,9 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
     [Flags]
+    /// <summary>
+    /// Enumeration of eMeetingEventChangeType values
+    /// </summary>
     public enum eMeetingEventChangeType
     {
         Unknown = 0,
@@ -23,6 +26,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         MeetingEnd = 8
     }
 
+    /// <summary>
+    /// Defines the contract for IHasScheduleAwareness
+    /// </summary>
     public interface IHasScheduleAwareness
     {
         CodecScheduleAwareness CodecSchedule { get; }
@@ -30,6 +36,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         void GetSchedule();
     }
 
+    /// <summary>
+    /// Represents a CodecScheduleAwareness
+    /// </summary>
     public class CodecScheduleAwareness
     {
         List<Meeting> _meetings;
@@ -147,7 +156,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     }
 
     /// <summary>
-    /// Generic class to represent a meeting (Cisco or Polycom OBTP or Fusion)
+    /// Represents a Meeting
     /// </summary>
     public class Meeting
     {
@@ -159,8 +168,14 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         [JsonProperty("organizer")]
         public string Organizer { get; set; }
         [JsonProperty("title")]
+        /// <summary>
+        /// Gets or sets the Title
+        /// </summary>
         public string Title { get; set; }
         [JsonProperty("agenda")]
+        /// <summary>
+        /// Gets or sets the Agenda
+        /// </summary>
         public string Agenda { get; set; }
 
         [JsonProperty("meetingWarningMinutes")]
@@ -185,8 +200,14 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             }
         }
         [JsonProperty("startTime")]
+        /// <summary>
+        /// Gets or sets the StartTime
+        /// </summary>
         public DateTime StartTime { get; set; }
         [JsonProperty("endTime")]
+        /// <summary>
+        /// Gets or sets the EndTime
+        /// </summary>
         public DateTime EndTime { get; set; }
         [JsonProperty("duration")]
         public TimeSpan Duration
@@ -197,6 +218,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             }
         }
         [JsonProperty("privacy")]
+        /// <summary>
+        /// Gets or sets the Privacy
+        /// </summary>
         public eMeetingPrivacy Privacy { get; set; }
         [JsonProperty("joinable")]
         public bool Joinable
@@ -211,21 +235,36 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         }
 
 		[JsonProperty("dialable")]
+  /// <summary>
+  /// Gets or sets the Dialable
+  /// </summary>
 		public bool Dialable { get; set; }
 
         //public string ConferenceNumberToDial { get; set; }
         [JsonProperty("conferencePassword")]
+        /// <summary>
+        /// Gets or sets the ConferencePassword
+        /// </summary>
         public string ConferencePassword { get; set; }
         [JsonProperty("isOneButtonToPushMeeting")]
+        /// <summary>
+        /// Gets or sets the IsOneButtonToPushMeeting
+        /// </summary>
         public bool IsOneButtonToPushMeeting { get; set; }
 
         [JsonProperty("calls")]
+        /// <summary>
+        /// Gets or sets the Calls
+        /// </summary>
         public List<Call> Calls { get; private set; }
 
         /// <summary>
         /// Tracks the change types that have already been notified for
         /// </summary>
         [JsonIgnore]
+        /// <summary>
+        /// Gets or sets the NotifiedChangeTypes
+        /// </summary>
         public eMeetingEventChangeType NotifiedChangeTypes { get; set; }
 
         [JsonIgnore] private readonly int _joinableCooldownSeconds;
@@ -247,6 +286,10 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         #region Overrides of Object
 
+        /// <summary>
+        /// ToString method
+        /// </summary>
+        /// <inheritdoc />
         public override string ToString()
         {
             return String.Format("{0}:{1}: {2}-{3}", Title, Agenda, StartTime, EndTime);
@@ -255,17 +298,41 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         #endregion
     }
 
+    /// <summary>
+    /// Represents a Call
+    /// </summary>
     public class Call
     {
+        /// <summary>
+        /// Gets or sets the Number
+        /// </summary>
         public string Number { get; set; }
+        /// <summary>
+        /// Gets or sets the Protocol
+        /// </summary>
         public string Protocol { get; set; }
+        /// <summary>
+        /// Gets or sets the CallRate
+        /// </summary>
         public string CallRate { get; set; }
+        /// <summary>
+        /// Gets or sets the CallType
+        /// </summary>
         public string CallType { get; set; }
     }
 
+    /// <summary>
+    /// Represents a MeetingEventArgs
+    /// </summary>
     public class MeetingEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the ChangeType
+        /// </summary>
         public eMeetingEventChangeType ChangeType { get; set; }
+        /// <summary>
+        /// Gets or sets the Meeting
+        /// </summary>
         public Meeting Meeting { get; set; }
     }
 

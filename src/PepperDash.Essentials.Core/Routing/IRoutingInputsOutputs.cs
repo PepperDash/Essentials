@@ -1,7 +1,7 @@
 ﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// For devices like RMCs, baluns, other devices with no switching.
+    /// Defines the contract for IRoutingInputsOutputs
     /// </summary>
     public interface IRoutingInputsOutputs : IRoutingInputs, IRoutingOutputs
 	{

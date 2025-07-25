@@ -7,6 +7,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a IHasInputsMessenger
+    /// </summary>
     public class IHasInputsMessenger<TKey> : MessengerBase
     {        
         private readonly IHasInputs<TKey> itemDevice;        
@@ -83,18 +86,30 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a IHasInputsStateMessage
+    /// </summary>
     public class IHasInputsStateMessage<TKey> : DeviceStateMessageBase
     {
         [JsonProperty("inputs")]
+        /// <summary>
+        /// Gets or sets the Inputs
+        /// </summary>
         public Inputs<TKey> Inputs { get; set; }
     }
 
+    /// <summary>
+    /// Represents a Inputs
+    /// </summary>
     public class Inputs<TKey>
     {
         [JsonProperty("items")]
         public Dictionary<TKey, ISelectableItem> Items { get; set; }
 
         [JsonProperty("currentItem")]
+        /// <summary>
+        /// Gets or sets the CurrentItem
+        /// </summary>
         public TKey CurrentItem { get; set; }
     }
 

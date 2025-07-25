@@ -4,7 +4,7 @@
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Defines a class that has a collection of RoutingInputPorts
+    /// Defines the contract for IRoutingInputs
     /// </summary>
     public interface IRoutingInputs : IKeyed
 	{

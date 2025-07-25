@@ -59,6 +59,9 @@ namespace PepperDash.Core.Intersystem.Tokens
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetTokenWithOffset method
+        /// </summary>
         public override XSigToken GetTokenWithOffset(int offset)
         {
             if (offset == 0) return this;
@@ -69,6 +72,10 @@ namespace PepperDash.Core.Intersystem.Tokens
         /// 
         /// </summary>
         /// <returns></returns>
+        /// <summary>
+        /// ToString method
+        /// </summary>
+        /// <inheritdoc />
         public override string ToString()
         {
             return Index + " = 0x" + Value.ToString("X4");
@@ -80,6 +87,9 @@ namespace PepperDash.Core.Intersystem.Tokens
         /// <param name="format"></param>
         /// <param name="formatProvider"></param>
         /// <returns></returns>
+        /// <summary>
+        /// ToString method
+        /// </summary>
         public string ToString(string format, IFormatProvider formatProvider)
         {
             return Value.ToString(format, formatProvider);

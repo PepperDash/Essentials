@@ -27,12 +27,12 @@ namespace PepperDash.Essentials.Core.DeviceInfo
         private static readonly CCriticalSection Lock = new CCriticalSection();
 
         /// <summary>
-        /// Last resolved ARP table - it is recommended to refresh the arp before using this.
+        /// Gets or sets the ArpTable
         /// </summary>
         public static List<ArpEntry> ArpTable { get; private set; }
 
         /// <summary>
-        /// Force recheck of ARP table
+        /// RefreshArp method
         /// </summary>
         public static void RefreshArp()
         {
@@ -98,6 +98,9 @@ namespace PepperDash.Essentials.Core.DeviceInfo
         /// </summary>
         /// <param name="ipAddressIn">Ip Address to Santitize</param>
         /// <returns>Sanitized Ip Address</returns>
+        /// <summary>
+        /// SanitizeIpAddress method
+        /// </summary>
         public static string SanitizeIpAddress(string ipAddressIn)
         {
             try
@@ -117,6 +120,9 @@ namespace PepperDash.Essentials.Core.DeviceInfo
         /// </summary>
         /// <param name="ipAddress">IP Address to resolve from</param>
         /// <returns>Resolved Hostname - on failure to determine hostname, will return IP Address</returns>
+        /// <summary>
+        /// ResolveHostnameFromIp method
+        /// </summary>
         public static string ResolveHostnameFromIp(string ipAddress)
         {
             try
@@ -137,6 +143,9 @@ namespace PepperDash.Essentials.Core.DeviceInfo
         /// </summary>
         /// <param name="hostName">Hostname to resolve from</param>
         /// <returns>Resolved IP Address - on a failure to determine IP Address, will return hostname</returns>
+        /// <summary>
+        /// ResolveIpFromHostname method
+        /// </summary>
         public static string ResolveIpFromHostname(string hostName)
         {
             try
@@ -154,7 +163,7 @@ namespace PepperDash.Essentials.Core.DeviceInfo
     }
 
     /// <summary>
-    /// Object to hold data about an arp entry
+    /// Represents a ArpEntry
     /// </summary>
     public class ArpEntry
     {
@@ -182,7 +191,7 @@ namespace PepperDash.Essentials.Core.DeviceInfo
     }
 
     /// <summary>
-    /// Arguments passed by the ArpTableUpdated event
+    /// Represents a ArpTableEventArgs
     /// </summary>
     public class ArpTableEventArgs : EventArgs
     {

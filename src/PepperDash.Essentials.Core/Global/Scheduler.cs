@@ -115,6 +115,9 @@ Recurrence Days: {evt.Value.Recurrence.RecurrenceDays}
         /// Adds the event group to the global list
         /// </summary>
         /// <returns></returns>
+        /// <summary>
+        /// AddEventGroup method
+        /// </summary>
         public static void AddEventGroup(ScheduledEventGroup eventGroup)
         {
             // Add this group to the global collection
@@ -126,6 +129,9 @@ Recurrence Days: {evt.Value.Recurrence.RecurrenceDays}
         /// Removes the event group from the global list
         /// </summary>
         /// <param name="eventGroup"></param>
+        /// <summary>
+        /// RemoveEventGroup method
+        /// </summary>
         public static void RemoveEventGroup(ScheduledEventGroup eventGroup)
         {
             if(!EventGroups.ContainsKey(eventGroup.Name))
@@ -148,6 +154,9 @@ Recurrence Days: {evt.Value.Recurrence.RecurrenceDays}
         /// <param name="eventTime"></param>
         /// <param name="recurrence"></param>
         /// <returns></returns>
+        /// <summary>
+        /// CheckIfDayOfWeekMatchesRecurrenceDays method
+        /// </summary>
         public static bool CheckIfDayOfWeekMatchesRecurrenceDays(DateTime eventTime, ScheduledEventCommon.eWeekDays recurrence)
         {
             bool isMatch = false;
@@ -206,16 +215,25 @@ Recurrence Days: {evt.Value.Recurrence.RecurrenceDays}
             return isMatch;
         }
 
+        /// <summary>
+        /// CheckEventTimeForMatch method
+        /// </summary>
         public static bool CheckEventTimeForMatch(ScheduledEvent evnt, DateTime time)
         {
             return evnt.DateAndTime.Hour == time.Hour && evnt.DateAndTime.Minute == time.Minute;
         }
 
+        /// <summary>
+        /// CheckEventRecurrenceForMatch method
+        /// </summary>
         public static bool CheckEventRecurrenceForMatch(ScheduledEvent evnt, ScheduledEventCommon.eWeekDays days)
         {
             return evnt.Recurrence.RecurrenceDays == days;
         }
 
+        /// <summary>
+        /// CreateEventFromConfig method
+        /// </summary>
         public static void CreateEventFromConfig(ScheduledEventConfig config, ScheduledEventGroup group, ScheduledEvent.UserEventCallBack handler)
         {
             try

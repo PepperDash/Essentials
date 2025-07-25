@@ -15,13 +15,15 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
 
         public event EventHandler<CodecCallStatusItemChangeEventArgs> CallStatusChange;
 
+        /// <summary>
+        /// Gets or sets the CodecInfo
+        /// </summary>
         public AudioCodecInfo CodecInfo { get; protected set; }
 
         #region IUsageTracking Members
 
         /// <summary>
-        /// This object can be added by outside users of this class to provide usage tracking
-        /// for various services
+        /// Gets or sets the UsageTracker
         /// </summary>
         public UsageTracking UsageTracker { get; set; }
 
@@ -45,6 +47,9 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
         }
 
         // In most cases only a single call can be active
+        /// <summary>
+        /// Gets or sets the ActiveCalls
+        /// </summary>
         public List<CodecActiveCallItem> ActiveCalls { get; set; }
 
         public AudioCodecBase(string key, string name)

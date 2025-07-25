@@ -37,12 +37,18 @@ namespace PepperDash.Essentials.Core
                 Debug.LogMessage(LogEventLevel.Debug, "UshortSigIncrementer has signed values that exceed range of -32768, 32767");
         }
 
+        /// <summary>
+        /// StartUp method
+        /// </summary>
         public void StartUp()
         {
             if (Timer != null) return;
             Go(ChangeAmount);
         }
 
+        /// <summary>
+        /// StartDown method
+        /// </summary>
         public void StartDown()
         {
             if (Timer != null) return;
@@ -85,6 +91,9 @@ namespace PepperDash.Essentials.Core
             return IsAtLimit;
         }
 
+        /// <summary>
+        /// Stop method
+        /// </summary>
         public void Stop()
         {
             if (Timer != null)

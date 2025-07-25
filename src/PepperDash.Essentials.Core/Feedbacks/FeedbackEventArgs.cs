@@ -6,9 +6,18 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a FeedbackEventArgs
+    /// </summary>
     public class FeedbackEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the BoolValue
+        /// </summary>
         public bool BoolValue { get; private set; }
+        /// <summary>
+        /// Gets or sets the IntValue
+        /// </summary>
         public int IntValue { get; private set; }
         public ushort UShortValue
         {
@@ -17,7 +26,13 @@ namespace PepperDash.Essentials.Core
                 return (ushort)IntValue;
             }
         }
+        /// <summary>
+        /// Gets or sets the StringValue
+        /// </summary>
         public string StringValue { get; private set; }
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public eFeedbackEventType Type { get; private set; }
 
         public FeedbackEventArgs(bool value)
@@ -39,6 +54,9 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Enumeration of eFeedbackEventType values
+    /// </summary>
     public enum eFeedbackEventType
     {
         TypeBool,

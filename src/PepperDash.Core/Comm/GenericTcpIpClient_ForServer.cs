@@ -69,7 +69,7 @@ namespace PepperDash.Core
         public string Hostname { get; set; }
 
         /// <summary>
-        /// Port on server
+        /// Gets or sets the Port
         /// </summary>
         public int Port { get; set; }
 
@@ -102,7 +102,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// SharedKey is sent for varification to the server. Shared key can be any text (255 char limit in SIMPL+ Module), but must match the Shared Key on the Server module
+        /// Gets or sets the SharedKey
         /// </summary>
         public string SharedKey { get; set; }
 
@@ -112,7 +112,7 @@ namespace PepperDash.Core
         private bool WaitingForSharedKeyResponse { get; set; }
 
         /// <summary>
-        /// Defaults to 2000
+        /// Gets or sets the BufferSize
         /// </summary>
         public int BufferSize { get; set; }
 
@@ -289,7 +289,7 @@ namespace PepperDash.Core
         #region Methods
 
         /// <summary>
-        /// Just to help S+ set the key
+        /// Initialize method
         /// </summary>
         public void Initialize(string key)
         {
@@ -311,7 +311,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Connect Method. Will return if already connected. Will write errors if missing address, port, or unique key/name.
+        /// Connect method
         /// </summary>
         public void Connect()
         {
@@ -442,7 +442,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// 
+        /// Disconnect method
         /// </summary>
         public void Disconnect()
         {
@@ -669,7 +669,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// General send method
+        /// SendText method
         /// </summary>
         public void SendText(string text)
         {
@@ -698,7 +698,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// 
+        /// SendBytes method
         /// </summary>
         public void SendBytes(byte[] bytes)
         {

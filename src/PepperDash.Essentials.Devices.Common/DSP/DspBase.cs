@@ -47,6 +47,9 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
 	public abstract class DspControlPoint :IKeyed
 	{
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; }
 
         protected DspControlPoint(string key) => Key = key;
@@ -54,7 +57,13 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
     public abstract class DspLevelControlPoint :DspControlPoint, IBasicVolumeWithFeedback
     {
+        /// <summary>
+        /// Gets or sets the MuteFeedback
+        /// </summary>
         public BoolFeedback MuteFeedback { get; }
+        /// <summary>
+        /// Gets or sets the VolumeLevelFeedback
+        /// </summary>
         public IntFeedback VolumeLevelFeedback { get; }
 
         protected DspLevelControlPoint(string key, Func<bool> muteFeedbackFunc, Func<int> volumeLevelFeedbackFunc) : base(key)

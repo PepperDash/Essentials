@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.AppServer
 {
+    /// <summary>
+    /// Represents a MobileControlSIMPLRunDirectRouteActionJoinMap
+    /// </summary>
     public class MobileControlSIMPLRunDirectRouteActionJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("AdvancedSharingModeFb")]

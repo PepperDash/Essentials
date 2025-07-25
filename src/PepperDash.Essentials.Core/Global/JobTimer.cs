@@ -16,6 +16,9 @@ namespace PepperDash.Essentials.Core
 		/// 
 		/// </summary>
 		/// <param name="act"></param>
+  /// <summary>
+  /// AddAction method
+  /// </summary>
 		public static void AddAction(Action act)
 		{
 
@@ -26,6 +29,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="act"></param>
+  /// <summary>
+  /// AddJobTimerItem method
+  /// </summary>
 		public static void AddJobTimerItem(JobTimerItem item)
 		{
 			var existing = Items.FirstOrDefault(i => i.Key == item.Key);
@@ -51,9 +57,9 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
+ /// <summary>
+ /// Represents a JobTimerItem
+ /// </summary>
 	public class JobTimerItem
 	{
 		public string Key { get; private set; }

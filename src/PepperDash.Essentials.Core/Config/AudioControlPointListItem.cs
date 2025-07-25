@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.Config
 {
+    /// <summary>
+    /// Represents a AudioControlPointListItem
+    /// </summary>
     public class AudioControlPointListItem
     {
         [JsonProperty("levelControls")]

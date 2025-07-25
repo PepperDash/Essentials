@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
+    /// <summary>
+    /// Defines the contract for ILanguageDefinition
+    /// </summary>
     public interface ILanguageDefinition
     {
         string LocaleName { get; set; }

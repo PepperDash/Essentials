@@ -40,18 +40,27 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         BoolFeedback CurrentDirectoryResultIsNotDirectoryRoot { get; }
     }
 
+    /// <summary>
+    /// Defines the contract for IHasDirectoryHistoryStack
+    /// </summary>
     public interface IHasDirectoryHistoryStack : IHasDirectory
     {
         Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; } 
     }
 
 
-	/// <summary>
-	/// 
-	/// </summary>
+    /// <summary>
+    /// Represents a DirectoryEventArgs
+    /// </summary>
     public class DirectoryEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the Directory
+        /// </summary>
         public CodecDirectory Directory { get; set; }
+        /// <summary>
+        /// Gets or sets the DirectoryIsOnRoot
+        /// </summary>
         public bool DirectoryIsOnRoot { get; set; }
     }
 
@@ -89,6 +98,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// Used to store the ID of the current folder for CurrentDirectoryResults
         /// </summary>
 		[JsonProperty("resultsFolderId")]
+        /// <summary>
+        /// Gets or sets the ResultsFolderId
+        /// </summary>
         public string ResultsFolderId { get; set; }
 
         public CodecDirectory()
@@ -100,6 +112,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// Adds folders to the directory
         /// </summary>
         /// <param name="folders"></param>
+        /// <summary>
+        /// AddFoldersToDirectory method
+        /// </summary>
         public void AddFoldersToDirectory(List<DirectoryItem> folders)
         {
             if(folders != null)
@@ -112,6 +127,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// Adds contacts to the directory
         /// </summary>
         /// <param name="contacts"></param>
+        /// <summary>
+        /// AddContactsToDirectory method
+        /// </summary>
         public void AddContactsToDirectory(List<DirectoryItem> contacts)
         {
             if(contacts != null)
@@ -124,6 +142,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// Filters the CurrentDirectoryResults by the predicate
         /// </summary>
         /// <param name="predicate"></param>
+        /// <summary>
+        /// FilterContacts method
+        /// </summary>
         public void FilterContacts(Func<DirectoryItem, bool> predicate)
         {
             CurrentDirectoryResults = CurrentDirectoryResults.Where(predicate).ToList();
@@ -156,7 +177,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     }
 
     /// <summary>
-    /// Used to decorate a contact to indicate it can be invided to a meeting
+    /// Defines the contract for IInvitableContact
     /// </summary>
     public interface IInvitableContact
     {
@@ -175,11 +196,14 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         }
     }
 
-	/// <summary>
-	/// Represents an item in the directory
-	/// </summary>
+    /// <summary>
+    /// Represents a DirectoryItem
+    /// </summary>
     public class DirectoryItem : ICloneable
     {
+        /// <summary>
+        /// Clone method
+        /// </summary>
         public object Clone()
         {
             return this.MemberwiseClone();
@@ -189,18 +213,27 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         public string FolderId { get; set; }
 
 		[JsonProperty("name")]	
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
 
         [JsonProperty("parentFolderId")]
+        /// <summary>
+        /// Gets or sets the ParentFolderId
+        /// </summary>
         public string ParentFolderId { get; set; }
     }
 
-	/// <summary>
-	/// Represents a folder type DirectoryItem
-	/// </summary>
+    /// <summary>
+    /// Represents a DirectoryFolder
+    /// </summary>
     public class DirectoryFolder : DirectoryItem
     {
 		[JsonProperty("contacts")]
+        /// <summary>
+        /// Gets or sets the Contacts
+        /// </summary>
         public List<DirectoryContact> Contacts { get; set; }
 
 
@@ -210,12 +243,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         }
     }
 
-	/// <summary>
-	/// Represents a contact type DirectoryItem
-	/// </summary>
+    /// <summary>
+    /// Represents a DirectoryContact
+    /// </summary>
     public class DirectoryContact : DirectoryItem
     {
 		[JsonProperty("contactId")]
+        /// <summary>
+        /// Gets or sets the ContactId
+        /// </summary>
         public string ContactId { get; set; } 
 
 		[JsonProperty("title")]
@@ -230,12 +266,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         }
     }
 
-	/// <summary>
-	/// Represents a method of contact for a contact
-	/// </summary>
+    /// <summary>
+    /// Represents a ContactMethod
+    /// </summary>
     public class ContactMethod
     {
 		[JsonProperty("contactMethodId")]
+        /// <summary>
+        /// Gets or sets the ContactMethodId
+        /// </summary>
         public string ContactMethodId { get; set; }
 
 		[JsonProperty("number")]
@@ -243,16 +282,22 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         
 		[JsonProperty("device")]
 		[JsonConverter(typeof(StringEnumConverter))]
+  /// <summary>
+  /// Gets or sets the Device
+  /// </summary>
 		public eContactMethodDevice Device { get; set; }
 
 		[JsonProperty("callType")]
 		[JsonConverter(typeof(StringEnumConverter))]
+  /// <summary>
+  /// Gets or sets the CallType
+  /// </summary>
 		public eContactMethodCallType CallType { get; set; }
     }
 
-	/// <summary>
-	/// 
-	/// </summary>
+    /// <summary>
+    /// Enumeration of eContactMethodDevice values
+    /// </summary>
     public enum eContactMethodDevice
     {
         Unknown = 0,
@@ -262,9 +307,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         Video
     }
 	
-	/// <summary>
-	/// 
-	/// </summary>
+    /// <summary>
+    /// Enumeration of eContactMethodCallType values
+    /// </summary>
     public enum eContactMethodCallType
     {
         Unknown = 0,

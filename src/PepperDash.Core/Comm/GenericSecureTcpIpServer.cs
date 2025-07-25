@@ -58,7 +58,7 @@ namespace PepperDash.Core
         public ServerHasChokedCallbackDelegate ServerHasChoked { get; set; }
 
         /// <summary>
-        /// 
+        /// Delegate for ServerHasChokedCallbackDelegate
         /// </summary>
         public delegate void ServerHasChokedCallbackDelegate();
 
@@ -104,7 +104,7 @@ namespace PepperDash.Core
         int MonitorClientFailureCount;
 
         /// <summary>
-        /// 3 by default
+        /// Gets or sets the MonitorClientMaxFailureCount
         /// </summary>
         public int MonitorClientMaxFailureCount { get; set; }
 
@@ -190,7 +190,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Port Server should listen on
+        /// Gets or sets the Port
         /// </summary>
         public int Port { get; set; }
 
@@ -223,8 +223,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// SharedKey is sent for varification to the server. Shared key can be any text (255 char limit in SIMPL+ Module), but must match the Shared Key on the Server module. 
-        /// If SharedKey changes while server is listening or clients are connected, disconnect and stop listening will be called
+        /// Gets or sets the SharedKey
         /// </summary>
         public string SharedKey { get; set; }
 
@@ -248,7 +247,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Milliseconds before server expects another heartbeat. Set by property HeartbeatRequiredIntervalInSeconds which is driven from S+
+        /// Gets or sets the HeartbeatRequiredIntervalMs
         /// </summary>
         public int HeartbeatRequiredIntervalMs { get; set; }
 
@@ -258,7 +257,7 @@ namespace PepperDash.Core
         public ushort HeartbeatRequiredIntervalInSeconds { set { HeartbeatRequiredIntervalMs = (value * 1000); } }
 
         /// <summary>
-        /// String to Match for heartbeat. If null or empty any string will reset heartbeat timer
+        /// Gets or sets the HeartbeatStringToMatch
         /// </summary>
         public string HeartbeatStringToMatch { get; set; }
 
@@ -276,7 +275,7 @@ namespace PepperDash.Core
         public List<uint> ConnectedClientsIndexes = new List<uint>();
 
         /// <summary>
-        /// Defaults to 2000
+        /// Gets or sets the BufferSize
         /// </summary>
         public int BufferSize { get; set; }
 
@@ -339,7 +338,7 @@ namespace PepperDash.Core
 
         #region Methods - Server Actions
         /// <summary>
-        /// Disconnects all clients and stops the server
+        /// KillServer method
         /// </summary>
         public void KillServer()
         {
@@ -356,6 +355,9 @@ namespace PepperDash.Core
         /// Initialize Key for device using client name from SIMPL+. Called on Listen from SIMPL+
         /// </summary>
         /// <param name="key"></param>
+        /// <summary>
+        /// Initialize method
+        /// </summary>
         public void Initialize(string key)
         {
             Key = key;
@@ -395,7 +397,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Start listening on the specified port
+        /// Listen method
         /// </summary>
         public void Listen()
         {
@@ -453,7 +455,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Stop Listeneing
+        /// StopListening method
         /// </summary>
         public void StopListening()
         {
@@ -478,6 +480,9 @@ namespace PepperDash.Core
         /// Disconnects Client
         /// </summary>
         /// <param name="client"></param>
+        /// <summary>
+        /// DisconnectClient method
+        /// </summary>
         public void DisconnectClient(uint client)
         {
             try
@@ -491,7 +496,7 @@ namespace PepperDash.Core
             }
         }
         /// <summary>
-        /// Disconnect All Clients
+        /// DisconnectAllClientsForShutdown method
         /// </summary>
         public void DisconnectAllClientsForShutdown()
         {
@@ -533,6 +538,9 @@ namespace PepperDash.Core
         /// Broadcast text from server to all connected clients
         /// </summary>
         /// <param name="text"></param>
+        /// <summary>
+        /// BroadcastText method
+        /// </summary>
         public void BroadcastText(string text)
         {
             CCriticalSection CCBroadcast = new CCriticalSection();
@@ -566,6 +574,9 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="text"></param>
         /// <param name="clientIndex"></param>
+        /// <summary>
+        /// SendTextToClient method
+        /// </summary>
         public void SendTextToClient(string text, uint clientIndex)
         {
             try
@@ -634,6 +645,9 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="clientIndex"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetClientIPAddress method
+        /// </summary>
         public string GetClientIPAddress(uint clientIndex)
         {
             Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "GetClientIPAddress Index: {0}", clientIndex);

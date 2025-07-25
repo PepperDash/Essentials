@@ -15,8 +15,17 @@ namespace PepperDash.Essentials.License
 {
 	public abstract class LicenseManager
 	{
+  /// <summary>
+  /// Gets or sets the LicenseIsValid
+  /// </summary>
 		public BoolFeedback LicenseIsValid { get; protected set; }
+  /// <summary>
+  /// Gets or sets the LicenseMessage
+  /// </summary>
 		public StringFeedback LicenseMessage { get; protected set; }
+  /// <summary>
+  /// Gets or sets the LicenseLog
+  /// </summary>
 		public StringFeedback LicenseLog { get; protected set; }
 
 		protected LicenseManager()
@@ -30,6 +39,9 @@ namespace PepperDash.Essentials.License
 		protected abstract string GetStatusString();
 	}
 
+ /// <summary>
+ /// Represents a MockEssentialsLicenseManager
+ /// </summary>
 	public class MockEssentialsLicenseManager : LicenseManager
 	{
 		/// <summary>

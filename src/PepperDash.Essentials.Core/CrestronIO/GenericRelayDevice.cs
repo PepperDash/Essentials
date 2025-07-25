@@ -115,16 +115,25 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #region Methods
 
+        /// <summary>
+        /// OpenRelay method
+        /// </summary>
         public void OpenRelay()
         {
             RelayOutput.State = false;
         }
 
+        /// <summary>
+        /// CloseRelay method
+        /// </summary>
         public void CloseRelay()
         {
             RelayOutput.State = true;
         }
 
+        /// <summary>
+        /// ToggleRelayState method
+        /// </summary>
         public void ToggleRelayState()
         {
             if (RelayOutput.State == true)
@@ -151,6 +160,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #region Bridge Linking
 
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
+        /// <inheritdoc />
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new GenericRelayControllerJoinMap(joinStart);
@@ -194,6 +207,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #region Factory
 
+        /// <summary>
+        /// Represents a GenericRelayDeviceFactory
+        /// </summary>
         public class GenericRelayDeviceFactory : EssentialsDeviceFactory<GenericRelayDevice>
         {
             public GenericRelayDeviceFactory()
@@ -201,6 +217,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 TypeNames = new List<string>() { "relayoutput" };
             }
 
+            /// <summary>
+            /// BuildDevice method
+            /// </summary>
+            /// <inheritdoc />
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
                 Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Relay Device");

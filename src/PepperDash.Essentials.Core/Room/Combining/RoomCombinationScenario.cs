@@ -21,6 +21,9 @@ namespace PepperDash.Essentials.Core
         public string Name { get; set; }
 
         [JsonProperty("partitionStates")]
+        /// <summary>
+        /// Gets or sets the PartitionStates
+        /// </summary>
         public List<PartitionState> PartitionStates { get; private set; }
 
         [JsonProperty("uiMap")]
@@ -45,6 +48,9 @@ namespace PepperDash.Essentials.Core
         }
 
         [JsonIgnore]
+        /// <summary>
+        /// Gets or sets the IsActiveFeedback
+        /// </summary>
         public BoolFeedback IsActiveFeedback { get; private set; }
 
         private List<DeviceActionWrapper> activationActions;

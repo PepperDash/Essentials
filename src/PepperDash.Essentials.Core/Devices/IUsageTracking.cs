@@ -8,6 +8,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Defines the contract for IUsageTracking
+    /// </summary>
     public interface IUsageTracking
     {
         UsageTracking UsageTracker { get; set; }
@@ -21,18 +24,39 @@ namespace PepperDash.Essentials.Core
     //    }
     //}
 
+    /// <summary>
+    /// Represents a UsageTracking
+    /// </summary>
     public class UsageTracking
     {
         public event EventHandler<DeviceUsageEventArgs> DeviceUsageEnded;
 
+        /// <summary>
+        /// Gets or sets the InUseTracker
+        /// </summary>
         public InUseTracking InUseTracker { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the UsageIsTracked
+        /// </summary>
         public bool UsageIsTracked { get; set; }
 
+        /// <summary>
+        /// Gets or sets the UsageTrackingStarted
+        /// </summary>
         public bool UsageTrackingStarted { get; protected set; }
+        /// <summary>
+        /// Gets or sets the UsageStartTime
+        /// </summary>
         public DateTime UsageStartTime { get; protected set; }
+        /// <summary>
+        /// Gets or sets the UsageEndTime
+        /// </summary>
         public DateTime UsageEndTime { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the Parent
+        /// </summary>
         public Device Parent { get; private set; }
 
         public UsageTracking(Device parent)
@@ -58,7 +82,7 @@ namespace PepperDash.Essentials.Core
 
 
         /// <summary>
-        /// Stores the usage start time
+        /// StartDeviceUsage method
         /// </summary>
         public void StartDeviceUsage()
         {
@@ -97,9 +121,18 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Represents a DeviceUsageEventArgs
+    /// </summary>
     public class DeviceUsageEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the UsageEndTime
+        /// </summary>
         public DateTime UsageEndTime { get; set; }
+        /// <summary>
+        /// Gets or sets the MinutesUsed
+        /// </summary>
         public int MinutesUsed { get; set; }
     }
 }

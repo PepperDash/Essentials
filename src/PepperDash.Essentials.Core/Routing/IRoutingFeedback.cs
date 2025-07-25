@@ -6,7 +6,7 @@ using PepperDash.Core;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Defines an event structure for reporting output route data
+    /// Defines the contract for IRoutingFeedback
     /// </summary>
     public interface IRoutingFeedback : IKeyName
     {

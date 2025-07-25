@@ -12,13 +12,22 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+ /// <summary>
+ /// Represents a CecPortController
+ /// </summary>
 	public class CecPortController : Device, IBasicCommunicationWithStreamDebugging
     {
+  /// <summary>
+  /// Gets or sets the StreamDebugging
+  /// </summary>
 		public CommunicationStreamDebugging StreamDebugging { get; private set; }
 
         public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
         public event EventHandler<GenericCommMethodReceiveTextArgs> TextReceived;
 
+        /// <summary>
+        /// Gets or sets the IsConnected
+        /// </summary>
         public bool IsConnected { get { return true; } }
 
         ICec Port;
@@ -74,6 +83,9 @@ namespace PepperDash.Essentials.Core
 
         #region IBasicCommunication Members
 
+        /// <summary>
+        /// SendText method
+        /// </summary>
         public void SendText(string text)
         {
             if (Port == null)
@@ -83,6 +95,9 @@ namespace PepperDash.Essentials.Core
             Port.StreamCec.Send.StringValue = text;
         }
 
+        /// <summary>
+        /// SendBytes method
+        /// </summary>
         public void SendBytes(byte[] bytes)
         {
             if (Port == null)
@@ -93,10 +108,16 @@ namespace PepperDash.Essentials.Core
             Port.StreamCec.Send.StringValue = text;
         }
 
+        /// <summary>
+        /// Connect method
+        /// </summary>
         public void Connect()
         {
         }
 
+        /// <summary>
+        /// Disconnect method
+        /// </summary>
         public void Disconnect()
         {
         }
@@ -107,6 +128,9 @@ namespace PepperDash.Essentials.Core
         /// 
         /// </summary>
         /// <param name="s"></param>
+        /// <summary>
+        /// SimulateReceive method
+        /// </summary>
         public void SimulateReceive(string s)
         {
             // split out hex chars and build string

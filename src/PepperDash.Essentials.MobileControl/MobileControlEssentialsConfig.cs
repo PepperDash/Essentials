@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials
 {
     /// <summary>
-    /// Used to overlay additional config data from mobile control on
+    /// Represents a MobileControlEssentialsConfig
     /// </summary>
     public class MobileControlEssentialsConfig : EssentialsConfig
     {
@@ -35,11 +35,14 @@ namespace PepperDash.Essentials
     }
 
     /// <summary>
-    /// Used to add any additional runtime information from mobile control to be send to the API
+    /// Represents a MobileControlRuntimeInfo
     /// </summary>
     public class MobileControlRuntimeInfo
     {
         [JsonProperty("pluginVersion")]
+        /// <summary>
+        /// Gets or sets the PluginVersion
+        /// </summary>
         public string PluginVersion { get; set; }
 
         [JsonProperty("essentialsVersion")]
@@ -49,6 +52,9 @@ namespace PepperDash.Essentials
         public string PepperDashCoreVersion { get; set; }
 
         [JsonProperty("essentialsPlugins")]
+        /// <summary>
+        /// Gets or sets the EssentialsPlugins
+        /// </summary>
         public List<LoadedAssembly> EssentialsPlugins { get; set; }
     }
 }

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 namespace PepperDash.Essentials.Services
 {
 
+    /// <summary>
+    /// Represents a MobileControlApiService
+    /// </summary>
     public class MobileControlApiService
     {
         private readonly HttpClient _client;

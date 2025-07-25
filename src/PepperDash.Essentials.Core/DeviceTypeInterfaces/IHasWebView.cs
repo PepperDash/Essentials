@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
+    /// <summary>
+    /// Defines the contract for IHasWebView
+    /// </summary>
     public interface IHasWebView
     {
         bool WebviewIsVisible { get; }
@@ -14,8 +17,14 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         event EventHandler<WebViewStatusChangedEventArgs> WebViewStatusChanged;
     }
 
+    /// <summary>
+    /// Represents a WebViewStatusChangedEventArgs
+    /// </summary>
     public class WebViewStatusChangedEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the Status
+        /// </summary>
         public string Status { get; }
 
         public WebViewStatusChangedEventArgs(string status)

@@ -4,9 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.PageManagers
 {
-	/// <summary>
-	/// A simple class that hides and shows the default subpage for a given source type
-	/// </summary>
+ /// <summary>
+ /// Represents a SinglePageManager
+ /// </summary>
 	public class SinglePageManager : PageManager
 	{
 		BasicTriList TriList;
@@ -18,11 +18,18 @@ namespace PepperDash.Essentials.Core.PageManagers
 			BackingPageJoin = pageJoin;
 		}
 
+  /// <summary>
+  /// Show method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Show()
 		{
 			TriList.BooleanInput[BackingPageJoin].BoolValue = true;
 		}
 
+  /// <summary>
+  /// Hide method
+  /// </summary>
 		public override void Hide()
 		{
 			TriList.BooleanInput[BackingPageJoin].BoolValue = false;

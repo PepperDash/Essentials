@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
+    /// <summary>
+    /// Represents a MockDisplayInputs
+    /// </summary>
     public class MockDisplayInputs : ISelectableItems<string>
     {
         private Dictionary<string, ISelectableItem> _items;
@@ -52,6 +55,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
         public event EventHandler CurrentItemChanged;
     }
 
+    /// <summary>
+    /// Represents a MockDisplayInput
+    /// </summary>
     public class MockDisplayInput : ISelectableItem
     {
         private MockDisplay _parent;
@@ -75,8 +81,14 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             }
         }
 
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; set; }
 
         public event EventHandler ItemUpdated;
@@ -88,6 +100,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             _parent = parent;
         }
 
+        /// <summary>
+        /// Select method
+        /// </summary>
         public void Select()
         {
             if (!_parent.PowerIsOnFeedback.BoolValue) _parent.PowerOn();

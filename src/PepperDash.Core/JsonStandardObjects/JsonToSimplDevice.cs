@@ -58,6 +58,9 @@ namespace PepperDash.Core.JsonStandardObjects
 		/// </summary>
 		/// <param name="uniqueID"></param>
 		/// <param name="deviceKey"></param>
+  /// <summary>
+  /// Initialize method
+  /// </summary>
 		public void Initialize(string uniqueID, string deviceKey)
 		{
 			// S+ set EvaluateFb low

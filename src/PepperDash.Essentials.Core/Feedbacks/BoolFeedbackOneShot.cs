@@ -6,15 +6,24 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 namespace PepperDash.Essentials.Core
 {
+ /// <summary>
+ /// Represents a BoolFeedbackPulse
+ /// </summary>
 	public class BoolFeedbackPulse
 	{
+  /// <summary>
+  /// Gets or sets the TimeoutMs
+  /// </summary>
 		public uint TimeoutMs { get; set; }
 
-		/// <summary>
-		/// Defaults to false
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the CanRetrigger
+  /// </summary>
 		public bool CanRetrigger { get; set; }
 
+  /// <summary>
+  /// Gets or sets the Feedback
+  /// </summary>
 		public BoolFeedback Feedback { get; private set; }
 		CTimer Timer;
 
@@ -42,6 +51,9 @@ namespace PepperDash.Essentials.Core
 		/// Starts the 
 		/// </summary>
 		/// <param name="timeout"></param>
+  /// <summary>
+  /// Start method
+  /// </summary>
 		public void Start()
 		{
 			if (Timer == null)
@@ -60,6 +72,9 @@ namespace PepperDash.Essentials.Core
 				Timer.Reset(TimeoutMs);
 		}
 
+  /// <summary>
+  /// Cancel method
+  /// </summary>
 		public void Cancel()
 		{
 			if(Timer != null)

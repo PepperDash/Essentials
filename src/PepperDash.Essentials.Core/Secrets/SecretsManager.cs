@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core
         public static Dictionary<string, ISecretProvider> Secrets { get; private set; }
 
         /// <summary>
-        /// Initialize the SecretsManager
+        /// Initialize method
         /// </summary>
         public static void Initialize()
         {
@@ -52,6 +52,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key">Dictionary Key for provider</param>
         /// <returns>ISecretProvider</returns>
+        /// <summary>
+        /// GetSecretProviderByKey method
+        /// </summary>
         public static ISecretProvider GetSecretProviderByKey(string key)
         {
             ISecretProvider secret;
@@ -65,6 +68,9 @@ namespace PepperDash.Essentials.Core
             return secret;
         }
 
+        /// <summary>
+        /// GetProviderInfo method
+        /// </summary>
         public static void GetProviderInfo(string cmd)
         {
             string response;
@@ -104,6 +110,9 @@ namespace PepperDash.Essentials.Core
         /// Console Command that returns all valid secrets in the essentials program.
         /// </summary>
         /// <param name="cmd"></param>
+        /// <summary>
+        /// ListProviders method
+        /// </summary>
         public static void ListProviders(string cmd)
         {
             var response = String.Empty;
@@ -143,6 +152,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key">Key of new entry</param>
         /// <param name="provider">New Provider Entry</param>
+        /// <summary>
+        /// AddSecretProvider method
+        /// </summary>
         public static void AddSecretProvider(string key, ISecretProvider provider)
         {
             if (!Secrets.ContainsKey(key))
@@ -160,6 +172,9 @@ namespace PepperDash.Essentials.Core
         /// <param name="key">Key of new entry</param>
         /// <param name="provider">New provider entry</param>
         /// <param name="overwrite">true to overwrite any existing providers in the dictionary</param>
+        /// <summary>
+        /// AddSecretProvider method
+        /// </summary>
         public static void AddSecretProvider(string key, ISecretProvider provider, bool overwrite)
         {
             if (!Secrets.ContainsKey(key))

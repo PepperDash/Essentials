@@ -4,6 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Represents a INumericKeypadMessenger
+    /// </summary>
     public class INumericKeypadMessenger : MessengerBase
     {
         private readonly INumericKeypad keypadDevice;

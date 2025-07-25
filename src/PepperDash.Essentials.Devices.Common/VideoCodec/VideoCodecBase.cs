@@ -59,13 +59,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			ActiveCalls = new List<CodecActiveCallItem>();
 		}
 
+  /// <summary>
+  /// Gets or sets the Communication
+  /// </summary>
 		public IBasicCommunication Communication { get; protected set; }
 
-		/// <summary>
-		/// An internal pseudo-source that is routable and connected to the osd input
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the OsdSource
+  /// </summary>
 		public DummyRoutingInputsDevice OsdSource { get; protected set; }
 
+  /// <summary>
+  /// Gets or sets the StandbyIsOnFeedback
+  /// </summary>
 		public BoolFeedback StandbyIsOnFeedback { get; private set; }
 
 		protected abstract Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
@@ -75,11 +81,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		public List<CodecActiveCallItem> ActiveCalls { get; set; }
 
+  /// <summary>
+  /// Gets or sets the ShowSelfViewByDefault
+  /// </summary>
 		public bool ShowSelfViewByDefault { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the SupportsCameraOff
+        /// </summary>
         public bool SupportsCameraOff { get; protected set; }
+        /// <summary>
+        /// Gets or sets the SupportsCameraAutoMode
+        /// </summary>
         public bool SupportsCameraAutoMode { get; protected set; }
 
+  /// <summary>
+  /// Gets or sets the IsReady
+  /// </summary>
 		public bool IsReady { get; protected set; }
 
 		public virtual List<Feedback> Feedbacks
@@ -102,9 +120,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		public abstract void PrivacyModeOn();
 		public abstract void PrivacyModeOff();
 		public abstract void PrivacyModeToggle();
+  /// <summary>
+  /// Gets or sets the PrivacyModeIsOnFeedback
+  /// </summary>
 		public BoolFeedback PrivacyModeIsOnFeedback { get; private set; }
 
 
+  /// <summary>
+  /// Gets or sets the MuteFeedback
+  /// </summary>
 		public BoolFeedback MuteFeedback { get; private set; }
 
 		public abstract void MuteOff();
@@ -113,6 +137,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		public abstract void SetVolume(ushort level);
 
+  /// <summary>
+  /// Gets or sets the VolumeLevelFeedback
+  /// </summary>
 		public IntFeedback VolumeLevelFeedback { get; private set; }
 
 		public abstract void MuteToggle();
@@ -129,9 +156,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		public abstract void StartSharing();
 		public abstract void StopSharing();
 
+  /// <summary>
+  /// Gets or sets the AutoShareContentWhileInCall
+  /// </summary>
 		public bool AutoShareContentWhileInCall { get; protected set; }
 
+  /// <summary>
+  /// Gets or sets the SharingSourceFeedback
+  /// </summary>
 		public StringFeedback SharingSourceFeedback { get; private set; }
+  /// <summary>
+  /// Gets or sets the SharingContentIsOnFeedback
+  /// </summary>
 		public BoolFeedback SharingContentIsOnFeedback { get; private set; }
 
 		#endregion
@@ -161,24 +197,33 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		public abstract void AcceptCall(CodecActiveCallItem call);
 		public abstract void RejectCall(CodecActiveCallItem call);
 		public abstract void SendDtmf(string s);
+        /// <summary>
+        /// SendDtmf method
+        /// </summary>
+        /// <inheritdoc />
         public virtual void SendDtmf(string s, CodecActiveCallItem call) { }
 
 		#endregion
 
 		#region IRoutingInputsOutputs Members
 
+  /// <summary>
+  /// Gets or sets the InputPorts
+  /// </summary>
 		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the OutputPorts
+  /// </summary>
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
 		#endregion
 
 		#region IUsageTracking Members
 
-		/// <summary>
-		/// This object can be added by outside users of this class to provide usage tracking
-		/// for various services
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the UsageTracker
+  /// </summary>
 		public UsageTracking UsageTracker { get; set; }
 
 		#endregion
@@ -192,6 +237,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		public event EventHandler<EventArgs> IsReadyChange;
 		public abstract void Dial(Meeting meeting);
 
+  /// <summary>
+  /// Dial method
+  /// </summary>
+  /// <inheritdoc />
 		public virtual void Dial(IInvitableContact contact)
 		{
 		}
@@ -258,9 +307,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		}
 
 		// **** DEBUGGING THINGS ****
-		/// <summary>
-		/// 
-		/// </summary>
+  /// <summary>
+  /// ListCalls method
+  /// </summary>
+  /// <inheritdoc />
 		public virtual void ListCalls()
 		{
             Debug.LogMessage(LogEventLevel.Debug, this, "Active Calls:");
@@ -879,6 +929,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 	    }
 
         // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+        /// <summary>
+        /// Gets or sets the MeetingsToDisplayFeedback
+        /// </summary>
         public IntFeedback MeetingsToDisplayFeedback { get; set; }
 
         private string UpdateMeetingsListXSig(List<Meeting> meetings)
@@ -1874,9 +1927,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 	}
 
 
-	/// <summary>
-	/// Used to track the status of syncronizing the phonebook values when connecting to a codec or refreshing the phonebook info
-	/// </summary>
+ /// <summary>
+ /// Represents a CodecPhonebookSyncState
+ /// </summary>
 	public class CodecPhonebookSyncState : IKeyed
 	{
 		private bool _InitialSyncComplete;
@@ -1901,24 +1954,45 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			}
 		}
 
+  /// <summary>
+  /// Gets or sets the InitialPhonebookFoldersWasReceived
+  /// </summary>
 		public bool InitialPhonebookFoldersWasReceived { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the NumberOfContactsWasReceived
+  /// </summary>
 		public bool NumberOfContactsWasReceived { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the PhonebookRootEntriesWasRecieved
+  /// </summary>
 		public bool PhonebookRootEntriesWasRecieved { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the PhonebookHasFolders
+  /// </summary>
 		public bool PhonebookHasFolders { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the NumberOfContacts
+  /// </summary>
 		public int NumberOfContacts { get; private set; }
 
 		#region IKeyed Members
 
+  /// <summary>
+  /// Gets or sets the Key
+  /// </summary>
 		public string Key { get; private set; }
 
 		#endregion
 
 		public event EventHandler<EventArgs> InitialSyncCompleted;
 
+  /// <summary>
+  /// InitialPhonebookFoldersReceived method
+  /// </summary>
 		public void InitialPhonebookFoldersReceived()
 		{
 			InitialPhonebookFoldersWasReceived = true;
@@ -1926,6 +2000,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			CheckSyncStatus();
 		}
 
+  /// <summary>
+  /// PhonebookRootEntriesReceived method
+  /// </summary>
 		public void PhonebookRootEntriesReceived()
 		{
 			PhonebookRootEntriesWasRecieved = true;
@@ -1933,6 +2010,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			CheckSyncStatus();
 		}
 
+  /// <summary>
+  /// SetPhonebookHasFolders method
+  /// </summary>
 		public void SetPhonebookHasFolders(bool value)
 		{
 			PhonebookHasFolders = value;
@@ -1940,6 +2020,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			Debug.LogMessage(LogEventLevel.Debug, this, "Phonebook has folders: {0}", PhonebookHasFolders);
 		}
 
+  /// <summary>
+  /// SetNumberOfContacts method
+  /// </summary>
 		public void SetNumberOfContacts(int contacts)
 		{
 			NumberOfContacts = contacts;
@@ -1950,6 +2033,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			CheckSyncStatus();
 		}
 
+  /// <summary>
+  /// CodecDisconnected method
+  /// </summary>
 		public void CodecDisconnected()
 		{
 			InitialPhonebookFoldersWasReceived = false;
@@ -1972,11 +2058,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		}
 	}
     /// <summary>
-    /// Represents a codec command that might need to have a friendly label applied for UI feedback purposes
+    /// Represents a CodecCommandWithLabel
     /// </summary>
     public class CodecCommandWithLabel
     {
+        /// <summary>
+        /// Gets or sets the Command
+        /// </summary>
         public string Command { get; private set; }
+        /// <summary>
+        /// Gets or sets the Label
+        /// </summary>
         public string Label { get; private set; }
 
         public CodecCommandWithLabel(string command, string label)

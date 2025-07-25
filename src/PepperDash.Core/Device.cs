@@ -5,9 +5,9 @@ using Serilog.Events;
 namespace PepperDash.Core
 {
 	//*********************************************************************************************************
-	/// <summary>
-	/// The core event and status-bearing class that most if not all device and connectors can derive from.
-	/// </summary>
+ /// <summary>
+ /// Represents a Device
+ /// </summary>
 	public class Device : IKeyName
 	{
 
@@ -15,23 +15,23 @@ namespace PepperDash.Core
 		/// Unique Key
 		/// </summary>
 		public string Key { get; protected set; }
-		/// <summary>
-		/// Name of the devie
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Name
+  /// </summary>
 		public string Name { get; protected set; }
 		/// <summary>
 		/// 
 		/// </summary>
 		public bool Enabled { get; protected set; }
 
-		///// <summary>
-		///// A place to store reference to the original config object, if any. These values should 
-		///// NOT be used as properties on the device as they are all publicly-settable values.
-		///// </summary>
+		/// <summary>
+		/// A place to store reference to the original config object, if any. These values should 
+		/// NOT be used as properties on the device as they are all publicly-settable values.
+		/// </summary>
 		//public DeviceConfig Config { get; private set; }
-		///// <summary>
-		///// Helper method to check if Config exists
-		///// </summary>
+		/// <summary>
+		/// Helper method to check if Config exists
+		/// </summary>
 		//public bool HasConfig { get { return Config != null; } }
 
 		List<Action> _PreActivationActions;
@@ -86,6 +86,9 @@ namespace PepperDash.Core
 		/// Adds a post activation action
 		/// </summary>
 		/// <param name="act"></param>
+  /// <summary>
+  /// AddPostActivationAction method
+  /// </summary>
 		public void AddPostActivationAction(Action act)
 		{
 			if (_PostActivationActions == null)
@@ -93,9 +96,9 @@ namespace PepperDash.Core
 			_PostActivationActions.Add(act);
 		}
 
-		/// <summary>
-		/// Executes the preactivation actions
-		/// </summary>
+  /// <summary>
+  /// PreActivate method
+  /// </summary>
 		public void PreActivate()
 		{
 			if (_PreActivationActions != null)
@@ -112,11 +115,9 @@ namespace PepperDash.Core
 				});
 		}
 
-		/// <summary>
-		/// Gets this device ready to be used in the system. Runs any added pre-activation items, and
-		/// all post-activation at end. Classes needing additional logic to 
-		/// run should override CustomActivate()
-		/// </summary>
+  /// <summary>
+  /// Activate method
+  /// </summary>
 		public bool Activate()
 		{
 			//if (_PreActivationActions != null)
@@ -127,9 +128,9 @@ namespace PepperDash.Core
 			return result;
 		}
 
-		/// <summary>
-		/// Executes the postactivation actions
-		/// </summary>
+  /// <summary>
+  /// PostActivate method
+  /// </summary>
 		public void PostActivate()
 		{
 			if (_PostActivationActions != null)
@@ -152,6 +153,9 @@ namespace PepperDash.Core
 		/// do not need to call base.CustomActivate()
 		/// </summary>
 		/// <returns>true if device activated successfully.</returns>
+  /// <summary>
+  /// CustomActivate method
+  /// </summary>
 		public virtual bool CustomActivate() { return true; }
 
 		/// <summary>
@@ -184,6 +188,9 @@ namespace PepperDash.Core
         /// <remarks>The returned string is formatted as "{Key} - {Name}". If the <c>Name</c> property is
         /// null or empty,  "---" is used in place of the name.</remarks>
         /// <returns>A string that represents the object, containing the key and name in the format "{Key} - {Name}".</returns>
+  /// <summary>
+  /// ToString method
+  /// </summary>
 		public override string ToString()
 		{
 			return string.Format("{0} - {1}", Key, string.IsNullOrEmpty(Name) ? "---" : Name);

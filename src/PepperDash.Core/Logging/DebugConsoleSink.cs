@@ -11,10 +11,16 @@ using System.Text;
 
 namespace PepperDash.Core
 {
+    /// <summary>
+    /// Represents a DebugConsoleSink
+    /// </summary>
     public class DebugConsoleSink : ILogEventSink
     {
         private readonly ITextFormatter _textFormatter;
 
+        /// <summary>
+        /// Emit method
+        /// </summary>
         public void Emit(LogEvent logEvent)
         {
             if (!Debug.IsRunningOnAppliance) return;            
@@ -44,6 +50,9 @@ namespace PepperDash.Core
 
     public static class DebugConsoleSinkExtensions
     {
+        /// <summary>
+        /// DebugConsoleSink method
+        /// </summary>
         public static LoggerConfiguration DebugConsoleSink(
                              this LoggerSinkConfiguration loggerConfiguration,
                                               ITextFormatter formatProvider = null)

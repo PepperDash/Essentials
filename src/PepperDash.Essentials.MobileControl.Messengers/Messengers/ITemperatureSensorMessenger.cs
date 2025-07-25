@@ -5,6 +5,9 @@ using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a ITemperatureSensorMessenger
+    /// </summary>
     public class ITemperatureSensorMessenger : MessengerBase
     {
         private readonly ITemperatureSensor device;
@@ -50,12 +53,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a ITemperatureSensorStateMessage
+    /// </summary>
     public class ITemperatureSensorStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("temperature")]
+        /// <summary>
+        /// Gets or sets the Temperature
+        /// </summary>
         public string Temperature { get; set; }
 
         [JsonProperty("temperatureInCelsius")]
+        /// <summary>
+        /// Gets or sets the TemperatureInCelsius
+        /// </summary>
         public bool TemperatureInCelsius { get; set; }
     }
 }

@@ -2,6 +2,9 @@ using System;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a DmChassisControllerJoinMap
+    /// </summary>
     public class DmChassisControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("EnableAudioBreakaway")]

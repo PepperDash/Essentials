@@ -7,6 +7,9 @@ using PepperDash.Essentials.AppServer.Messengers;
 
 namespace PepperDash.Essentials.Touchpanel
 {
+    /// <summary>
+    /// Represents a ITswZoomControlMessenger
+    /// </summary>
     public class ITswZoomControlMessenger : MessengerBase
     {
         private readonly ITswZoomControl _zoomControl;
@@ -62,6 +65,9 @@ namespace PepperDash.Essentials.Touchpanel
         }
     }
 
+    /// <summary>
+    /// Represents a TswZoomStateMessage
+    /// </summary>
     public class TswZoomStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("inCall", NullValueHandling = NullValueHandling.Ignore)]

@@ -52,6 +52,9 @@ namespace PepperDash.Core.Intersystem
         /// </summary>
         /// <param name="xSigSerialization">XSig state resolver.</param>
         /// <returns>Bytes in XSig format for each token within the state representation.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(IXSigSerialization xSigSerialization)
         {
             return GetBytes(xSigSerialization, 0);
@@ -63,6 +66,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="xSigSerialization">XSig state resolver.</param>
         /// <param name="offset">Offset to which the data will be aligned.</param>
         /// <returns>Bytes in XSig format for each token within the state representation.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(IXSigSerialization xSigSerialization, int offset)
         {
             var tokens = xSigSerialization.Serialize();
@@ -82,6 +88,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="index">1-based digital index</param>
         /// <param name="value">Digital data to be encoded</param>
         /// <returns>Bytes in XSig format for digtial information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int index, bool value)
         {
             return GetBytes(index, 0, value);
@@ -94,6 +103,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="offset">Index offset.</param>
         /// <param name="value">Digital data to be encoded</param>
         /// <returns>Bytes in XSig format for digtial information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int index, int offset, bool value)
         {
             return new XSigDigitalToken(index + offset, value).GetBytes();
@@ -105,6 +117,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="startIndex">Starting index of the sequence.</param>
         /// <param name="values">Digital signal value array.</param>
         /// <returns>Byte sequence in XSig format for digital signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int startIndex, bool[] values)
         {
             return GetBytes(startIndex, 0, values);
@@ -117,6 +132,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="offset">Index offset.</param>
         /// <param name="values">Digital signal value array.</param>
         /// <returns>Byte sequence in XSig format for digital signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int startIndex, int offset, bool[] values)
         {
             // Digital XSig data is 2 bytes per value
@@ -134,6 +152,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="index">1-based analog index</param>
         /// <param name="value">Analog data to be encoded</param>
         /// <returns>Bytes in XSig format for analog signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int index, ushort value)
         {
             return GetBytes(index, 0, value);
@@ -146,6 +167,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="offset">Index offset.</param>
         /// <param name="value">Analog data to be encoded</param>
         /// <returns>Bytes in XSig format for analog signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int index, int offset, ushort value)
         {
             return new XSigAnalogToken(index + offset, value).GetBytes();
@@ -157,6 +181,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="startIndex">Starting index of the sequence.</param>
         /// <param name="values">Analog signal value array.</param>
         /// <returns>Byte sequence in XSig format for analog signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int startIndex, ushort[] values)
         {
             return GetBytes(startIndex, 0, values);
@@ -169,6 +196,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="offset">Index offset.</param>
         /// <param name="values">Analog signal value array.</param>
         /// <returns>Byte sequence in XSig format for analog signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int startIndex, int offset, ushort[] values)
         {
             // Analog XSig data is 4 bytes per value
@@ -186,6 +216,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="index">1-based serial index</param>
         /// <param name="value">Serial data to be encoded</param>
         /// <returns>Bytes in XSig format for serial signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int index, string value)
         {
             return GetBytes(index, 0, value);
@@ -198,6 +231,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="offset">Index offset.</param>
         /// <param name="value">Serial data to be encoded</param>
         /// <returns>Bytes in XSig format for serial signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int index, int offset, string value)
         {
             return new XSigSerialToken(index + offset, value).GetBytes();
@@ -209,6 +245,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="startIndex">Starting index of the sequence.</param>
         /// <param name="values">Serial signal value array.</param>
         /// <returns>Byte sequence in XSig format for serial signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int startIndex, string[] values)
         {
             return GetBytes(startIndex, 0, values);
@@ -221,6 +260,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="offset">Index offset.</param>
         /// <param name="values">Serial signal value array.</param>
         /// <returns>Byte sequence in XSig format for serial signal information.</returns>
+        /// <summary>
+        /// GetBytes method
+        /// </summary>
         public static byte[] GetBytes(int startIndex, int offset, string[] values)
         {
             // Serial XSig data is not fixed-length like the other formats

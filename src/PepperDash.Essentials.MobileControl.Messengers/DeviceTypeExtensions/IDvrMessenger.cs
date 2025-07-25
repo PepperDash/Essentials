@@ -4,6 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Represents a IDvrMessenger
+    /// </summary>
     public class IDvrMessenger : MessengerBase
     {
         private readonly IDvr dvrDevice;

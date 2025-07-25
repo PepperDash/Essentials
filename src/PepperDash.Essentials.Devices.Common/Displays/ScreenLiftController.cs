@@ -41,10 +41,22 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         }
 
         private bool _isInUpPosition { get; set; }
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public eScreenLiftControlType Type { get; private set; }
+        /// <summary>
+        /// Gets or sets the Mode
+        /// </summary>
         public eScreenLiftControlMode Mode { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the DisplayDeviceKey
+        /// </summary>
         public string DisplayDeviceKey { get; private set; }
+        /// <summary>
+        /// Gets or sets the IsInUpPosition
+        /// </summary>
         public BoolFeedback IsInUpPosition { get; private set; }
 
         public event EventHandler<EventArgs> PositionChanged;
@@ -97,6 +109,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             }
         }
 
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
         public override bool CustomActivate()
         {
             //Create ISwitchedOutput objects based on props
@@ -131,6 +147,9 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             return base.CustomActivate();
         }
 
+        /// <summary>
+        /// Raise method
+        /// </summary>
         public void Raise()
         {
             if (RaiseRelay == null && LatchedRelay == null) return;
@@ -153,6 +172,9 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             InUpPosition = true;
         }
 
+        /// <summary>
+        /// Lower method
+        /// </summary>
         public void Lower()
         {
             if (LowerRelay == null && LatchedRelay == null) return;
@@ -216,32 +238,56 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
     }
 
+    /// <summary>
+    /// Represents a ScreenLiftControllerConfigProperties
+    /// </summary>
     public class ScreenLiftControllerConfigProperties
     {
         [JsonProperty("displayDeviceKey")]
+        /// <summary>
+        /// Gets or sets the DisplayDeviceKey
+        /// </summary>
         public string DisplayDeviceKey { get; set; }
 
         [JsonProperty("type")]
         [JsonConverter(typeof(StringEnumConverter))]
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public eScreenLiftControlType Type { get; set; }
 
         [JsonProperty("mode")]
         [JsonConverter(typeof(StringEnumConverter))]
+        /// <summary>
+        /// Gets or sets the Mode
+        /// </summary>
         public eScreenLiftControlMode Mode { get; set; }
 
         [JsonProperty("relays")]
         public Dictionary<string,ScreenLiftRelaysConfig> Relays { get; set; }
 
     }
+    /// <summary>
+    /// Represents a ScreenLiftRelaysConfig
+    /// </summary>
     public class ScreenLiftRelaysConfig
     {
         [JsonProperty("deviceKey")]
+        /// <summary>
+        /// Gets or sets the DeviceKey
+        /// </summary>
         public string DeviceKey { get; set; }
 
         [JsonProperty("pulseTimeInMs")]
+        /// <summary>
+        /// Gets or sets the PulseTimeInMs
+        /// </summary>
         public int PulseTimeInMs { get; set; }
     }
 
+    /// <summary>
+    /// Represents a ScreenLiftControllerFactory
+    /// </summary>
     public class ScreenLiftControllerFactory : EssentialsDeviceFactory<RelayControlledShade>
     {
         public ScreenLiftControllerFactory()
@@ -249,6 +295,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             TypeNames = new List<string>() { "screenliftcontroller" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Comm Device");
@@ -258,6 +308,9 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         }
     }
 
+    /// <summary>
+    /// Enumeration of eScreenLiftControlMode values
+    /// </summary>
     public enum eScreenLiftControlMode
     {
         momentary,

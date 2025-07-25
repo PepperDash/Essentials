@@ -6,6 +6,9 @@ using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+ /// <summary>
+ /// Represents a SetDeviceStreamDebugRequestHandler
+ /// </summary>
 	public class SetDeviceStreamDebugRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -195,12 +198,21 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	public class SetDeviceStreamDebugConfig
 	{
 		[JsonProperty("deviceKey", NullValueHandling = NullValueHandling.Include)]
+  /// <summary>
+  /// Gets or sets the DeviceKey
+  /// </summary>
 		public string DeviceKey { get; set; }
 
 		[JsonProperty("setting", NullValueHandling = NullValueHandling.Include)]
+  /// <summary>
+  /// Gets or sets the Setting
+  /// </summary>
 		public string Setting { get; set; }
 
 		[JsonProperty("timeout")]
+  /// <summary>
+  /// Gets or sets the Timeout
+  /// </summary>
 		public int Timeout { get; set; }
 
 		public SetDeviceStreamDebugConfig()

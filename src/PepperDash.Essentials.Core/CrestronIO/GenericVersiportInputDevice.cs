@@ -35,6 +35,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
         }
 
+        /// <summary>
+        /// Gets or sets the PartitionPresentFeedback
+        /// </summary>
         public BoolFeedback PartitionPresentFeedback { get; }
 
         public bool PartitionPresent => !InputStateFeedbackFunc();
@@ -80,6 +83,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #region Bridge Linking
 
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
+        /// <inheritdoc />
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new IDigitalInputJoinMap(joinStart);
@@ -115,6 +122,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
         #endregion
 
 
+        /// <summary>
+        /// GetVersiportDigitalInput method
+        /// </summary>
         public static Versiport GetVersiportDigitalInput(IOPortConfig dc)
         {
          
@@ -157,6 +167,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
     }
 
 
+    /// <summary>
+    /// Represents a GenericVersiportDigitalInputDeviceFactory
+    /// </summary>
     public class GenericVersiportDigitalInputDeviceFactory : EssentialsDeviceFactory<GenericVersiportDigitalInputDevice>
     {
         public GenericVersiportDigitalInputDeviceFactory()
@@ -164,6 +177,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
             TypeNames = new List<string>() { "versiportinput" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Versiport Device");

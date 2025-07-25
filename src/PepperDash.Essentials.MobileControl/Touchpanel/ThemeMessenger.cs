@@ -6,6 +6,9 @@ using PepperDash.Essentials.AppServer.Messengers;
 
 namespace PepperDash.Essentials.Touchpanel
 {
+    /// <summary>
+    /// Represents a ThemeMessenger
+    /// </summary>
     public class ThemeMessenger : MessengerBase
     {
         private readonly ITheme _tpDevice;
@@ -34,9 +37,15 @@ namespace PepperDash.Essentials.Touchpanel
         }
     }
 
+    /// <summary>
+    /// Represents a ThemeUpdateMessage
+    /// </summary>
     public class ThemeUpdateMessage : DeviceStateMessageBase
     {
         [JsonProperty("theme")]
+        /// <summary>
+        /// Gets or sets the Theme
+        /// </summary>
         public string Theme { get; set; }
     }
 }

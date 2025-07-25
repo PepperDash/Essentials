@@ -2,24 +2,45 @@
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a CrestronTouchpanelPropertiesConfig
+    /// </summary>
     public class CrestronTouchpanelPropertiesConfig
     {
         [JsonProperty("control")]
+        /// <summary>
+        /// Gets or sets the ControlProperties
+        /// </summary>
         public EssentialsControlPropertiesConfig ControlProperties { get; set; }
 
         [JsonProperty("ipId", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the IpId
+        /// </summary>
         public string IpId { get; set; }
 
         [JsonProperty("defaultRoomKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the DefaultRoomKey
+        /// </summary>
         public string DefaultRoomKey { get; set; }
         
         [JsonProperty("roomListKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the RoomListKey
+        /// </summary>
         public string RoomListKey { get; set; }
 
         [JsonProperty("sgdFile", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the SgdFile
+        /// </summary>
         public string SgdFile { get; set; }
 
         [JsonProperty("projectName", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the ProjectName
+        /// </summary>
         public string ProjectName { get; set; }
 
         [JsonProperty("showVolumeGauge", NullValueHandling = NullValueHandling.Ignore)]
@@ -35,9 +56,15 @@ namespace PepperDash.Essentials.Core
         public bool? ShowTime { get; set; }
 
         [JsonProperty("setup", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Setup
+        /// </summary>
         public UiSetupPropertiesConfig Setup { get; set; }
 
         [JsonProperty("headerStyle", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the HeaderStyle
+        /// </summary>
         public string HeaderStyle { get; set; }
 
         [JsonProperty("includeInFusionRoomHealth", NullValueHandling = NullValueHandling.Ignore)]
@@ -81,7 +108,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// 
+    /// Represents a UiSetupPropertiesConfig
     /// </summary>
     public class UiSetupPropertiesConfig
     {

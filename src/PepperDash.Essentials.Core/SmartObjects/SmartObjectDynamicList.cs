@@ -12,11 +12,17 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.SmartObjects
 {
+ /// <summary>
+ /// Represents a SmartObjectDynamicList
+ /// </summary>
 	public class SmartObjectDynamicList : SmartObjectHelperBase
 	{
 		public const string SigNameScrollToItem = "Scroll To Item";
 		public const string SigNameSetNumberOfItems = "Set Number of Items";
 
+  /// <summary>
+  /// Gets or sets the NameSigOffset
+  /// </summary>
 		public uint NameSigOffset { get; private set; }
 
 		public ushort Count 
@@ -28,10 +34,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			set { SmartObject.UShortInput[SigNameSetNumberOfItems].UShortValue = value; }
 		}
 
-		/// <summary>
-		/// The limit of the list object, as defined by VTPro settings.  Zero if object
-		/// is not a list
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the MaxCount
+  /// </summary>
 		public int MaxCount { get; private set; }
 
         /// <summary>
@@ -57,9 +62,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			}
 		}
 
-		/// <summary>
-		/// Builds a new list item
-		/// </summary>
+  /// <summary>
+  /// SetItem method
+  /// </summary>
 		public void SetItem(uint index, string mainText, string iconName, Action<bool> action)
 		{
 			SetItemMainText(index, mainText);
@@ -78,6 +83,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			//}
 		}
 
+  /// <summary>
+  /// SetItemMainText method
+  /// </summary>
 		public void SetItemMainText(uint index, string text)
 		{
 			if (index > MaxCount) return;
@@ -85,21 +93,27 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			(SmartObject.Device as BasicTriList).StringInput[NameSigOffset + index].StringValue = text;
 		}
 
+  /// <summary>
+  /// SetItemIcon method
+  /// </summary>
 		public void SetItemIcon(uint index, string iconName)
 		{
 			if (index > MaxCount) return;
 			SmartObject.StringInput[string.Format("Set Item {0} Icon Serial", index)].StringValue = iconName;
 		}
 
+  /// <summary>
+  /// SetItemButtonAction method
+  /// </summary>
 		public void SetItemButtonAction(uint index, Action<bool> action)
 		{
 			if (index > MaxCount) return;
 			SmartObject.BooleanOutput[string.Format("Item {0} Pressed", index)].UserObject = action;
 		}
 
-		/// <summary>
-		/// Sets the feedback on the given line, clearing others when interlocked is set
-		/// </summary>
+  /// <summary>
+  /// SetFeedback method
+  /// </summary>
 		public void SetFeedback(uint index, bool interlocked)
 		{
 			if (interlocked) 
@@ -107,9 +121,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			SmartObject.BooleanInput[string.Format("Item {0} Selected", index)].BoolValue = true;
 		}
 
-		/// <summary>
-		/// Clears all button feedbacks
-		/// </summary>
+  /// <summary>
+  /// ClearFeedbacks method
+  /// </summary>
 		public void ClearFeedbacks()
 		{
 			for(int i = 1; i<= Count; i++)

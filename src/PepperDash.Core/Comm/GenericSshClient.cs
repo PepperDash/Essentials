@@ -36,13 +36,13 @@ namespace PepperDash.Core
         /// </summary>
         public event EventHandler<GenericSocketStatusChageEventArgs> ConnectionChange;
 
-        ///// <summary>
+        /// <summary>
         ///// 
         ///// </summary>
         //public event GenericSocketStatusChangeEventDelegate SocketStatusChange;
 
         /// <summary>
-        /// Address of server
+        /// Gets or sets the Hostname
         /// </summary>
         public string Hostname { get; set; }
 
@@ -52,12 +52,12 @@ namespace PepperDash.Core
         public int Port { get; set; }
 
         /// <summary>
-        /// Username for server
+        /// Gets or sets the Username
         /// </summary>
         public string Username { get; set; }
 
         /// <summary>
-        /// And... Password for server.  That was worth documenting!
+        /// Gets or sets the Password
         /// </summary>
         public string Password { get; set; }
 
@@ -79,7 +79,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// 
+        /// Socket status change event
         /// </summary>
         public SocketStatus ClientStatus
         {
@@ -123,8 +123,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Millisecond value, determines the timeout period in between reconnect attempts.
-        /// Set to 5000 by default
+        /// Gets or sets the AutoReconnectIntervalMs
         /// </summary>
         public int AutoReconnectIntervalMs { get; set; }
 
@@ -147,31 +146,31 @@ namespace PepperDash.Core
             base(key)
         {
             StreamDebugging = new CommunicationStreamDebugging(key);
-			CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
-			Key = key;
-			Hostname = hostname;
-			Port = port;
-			Username = username;
-			Password = password; 
-			AutoReconnectIntervalMs = 5000;
+            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+            Key = key;
+            Hostname = hostname;
+            Port = port;
+            Username = username;
+            Password = password;
+            AutoReconnectIntervalMs = 5000;
 
             ReconnectTimer = new CTimer(o =>
-	            {
+                {
                     if (ConnectEnabled)
                     {
                         Connect();
                     }
-	            }, System.Threading.Timeout.Infinite);
-		}
+                }, System.Threading.Timeout.Infinite);
+        }
 
-		/// <summary>
-		/// S+ Constructor - Must set all properties before calling Connect
-		/// </summary>
-		public GenericSshClient()
-			: base(SPlusKey)
-		{
-			CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
-			AutoReconnectIntervalMs = 5000;
+        /// <summary>
+        /// S+ Constructor - Must set all properties before calling Connect
+        /// </summary>
+        public GenericSshClient()
+            : base(SPlusKey)
+        {
+            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+            AutoReconnectIntervalMs = 5000;
 
             ReconnectTimer = new CTimer(o =>
             {
@@ -180,25 +179,25 @@ namespace PepperDash.Core
                     Connect();
                 }
             }, System.Threading.Timeout.Infinite);
-		}
+        }
 
-		/// <summary>
-		/// Handles closing this up when the program shuts down
-		/// </summary>
-		void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
-		{
-			if (programEventType == eProgramStatusEventType.Stopping)
-			{
-				if (Client != null)
-				{
-					this.LogDebug("Program stopping. Closing connection");
+        /// <summary>
+        /// Handles closing this up when the program shuts down
+        /// </summary>
+        void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+        {
+            if (programEventType == eProgramStatusEventType.Stopping)
+            {
+                if (Client != null)
+                {
+                    this.LogDebug("Program stopping. Closing connection");
                     Disconnect();
                 }
             }
         }
 
         /// <summary>
-        /// Connect to the server, using the provided properties.
+        /// Connect method
         /// </summary>
         public void Connect()
         {
@@ -224,10 +223,7 @@ namespace PepperDash.Core
                     this.LogDebug("Attempting connect");
 
                     // Cancel reconnect if running.
-					if (ReconnectTimer != null)
-					{
-						ReconnectTimer.Stop();
-					}
+                    ReconnectTimer?.Stop();
 
                     // Cleanup the old client if it already exists
                     if (Client != null)
@@ -269,20 +265,26 @@ namespace PepperDash.Core
 
                         if (ie is SocketException)
                         {
-                            this.LogException(ie, "CONNECTION failure: Cannot reach host");                            
+                            this.LogError("CONNECTION failure: Cannot reach host");
+                            this.LogVerbose(ie, "Exception details: ");
                         }
 
                         if (ie is System.Net.Sockets.SocketException socketException)
                         {
-                            this.LogException(ie, "Connection failure: Cannot reach {host} on {port}",
+                            this.LogError("Connection failure: Cannot reach {host} on {port}",
                                 Hostname, Port);
+                            this.LogVerbose(socketException, "SocketException details: ");
                         }
                         if (ie is SshAuthenticationException)
                         {
-                            this.LogException(ie, "Authentication failure for username {userName}", Username);
+                            this.LogError("Authentication failure for username {userName}", Username);
+                            this.LogVerbose(ie, "AuthenticationException details: ");
                         }
                         else
-                            this.LogException(ie, "Error on connect");
+                        {
+                            this.LogError("Error on connect: {error}", ie.Message);
+                            this.LogVerbose(ie, "Exception details: ");
+                        }
 
                         DisconnectLogged = true;
                         KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
@@ -292,7 +294,7 @@ namespace PepperDash.Core
                             ReconnectTimer.Reset(AutoReconnectIntervalMs);
                         }
                     }
-                    catch(SshOperationTimeoutException ex)
+                    catch (SshOperationTimeoutException ex)
                     {
                         this.LogWarning("Connection attempt timed out: {message}", ex.Message);
 
@@ -307,7 +309,8 @@ namespace PepperDash.Core
                     catch (Exception e)
                     {
                         var errorLogLevel = DisconnectLogged == true ? Debug.ErrorLogLevel.None : Debug.ErrorLogLevel.Error;
-                        this.LogException(e, "Unhandled exception on connect");
+                        this.LogError("Unhandled exception on connect: {error}", e.Message);
+                        this.LogVerbose(e, "Exception details: ");
                         DisconnectLogged = true;
                         KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
                         if (AutoReconnect)
@@ -324,18 +327,18 @@ namespace PepperDash.Core
             }
         }
 
-		/// <summary>
-		/// Disconnect the clients and put away it's resources.
-		/// </summary>
-		public void Disconnect()
-		{
-			ConnectEnabled = false;
-			// Stop trying reconnects, if we are
-			if (ReconnectTimer != null)
-			{
-				ReconnectTimer.Stop();
-				// ReconnectTimer = null;
-			}
+        /// <summary>
+        /// Disconnect method
+        /// </summary>
+        public void Disconnect()
+        {
+            ConnectEnabled = false;
+            // Stop trying reconnects, if we are
+            if (ReconnectTimer != null)
+            {
+                ReconnectTimer.Stop();
+                // ReconnectTimer = null;
+            }
 
             KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
         }
@@ -361,7 +364,7 @@ namespace PepperDash.Core
             }
             catch (Exception ex)
             {
-               this.LogException(ex,"Exception in Kill Client");
+                this.LogException(ex, "Exception in Kill Client");
             }
         }
 
@@ -369,7 +372,7 @@ namespace PepperDash.Core
         /// Kills the stream
         /// </summary>
 		void KillStream()
-		{
+        {
             try
             {
                 if (TheStream != null)
@@ -385,59 +388,59 @@ namespace PepperDash.Core
             {
                 this.LogException(ex, "Exception in Kill Stream:{0}");
             }
-		}
+        }
 
-		/// <summary>
-		/// Handles the keyboard interactive authentication, should it be required.
-		/// </summary>
-		void kauth_AuthenticationPrompt(object sender, AuthenticationPromptEventArgs e)
-		{
-			foreach (AuthenticationPrompt prompt in e.Prompts)
-				if (prompt.Request.IndexOf("Password:", StringComparison.InvariantCultureIgnoreCase) != -1)
-					prompt.Response = Password;
-		}
-	
-		/// <summary>
-		/// Handler for data receive on ShellStream.  Passes data across to queue for line parsing.
-		/// </summary>
-		void Stream_DataReceived(object sender, ShellDataEventArgs e)
-		{
+        /// <summary>
+        /// Handles the keyboard interactive authentication, should it be required.
+        /// </summary>
+        void kauth_AuthenticationPrompt(object sender, AuthenticationPromptEventArgs e)
+        {
+            foreach (AuthenticationPrompt prompt in e.Prompts)
+                if (prompt.Request.IndexOf("Password:", StringComparison.InvariantCultureIgnoreCase) != -1)
+                    prompt.Response = Password;
+        }
+
+        /// <summary>
+        /// Handler for data receive on ShellStream.  Passes data across to queue for line parsing.
+        /// </summary>
+        void Stream_DataReceived(object sender, ShellDataEventArgs e)
+        {
             if (((ShellStream)sender).Length <= 0L)
             {
                 return;
             }
-            var response = ((ShellStream)sender).Read(); 
- 
-			var bytesHandler = BytesReceived;
-            
-		    if (bytesHandler != null)
-		    {
+            var response = ((ShellStream)sender).Read();
+
+            var bytesHandler = BytesReceived;
+
+            if (bytesHandler != null)
+            {
                 var bytes = Encoding.UTF8.GetBytes(response);
-		        if (StreamDebugging.RxStreamDebuggingIsEnabled)
-		        {
-		            this.LogInformation("Received {1} bytes: '{0}'", ComTextHelper.GetEscapedText(bytes), bytes.Length);
-		        }
+                if (StreamDebugging.RxStreamDebuggingIsEnabled)
+                {
+                    this.LogInformation("Received {1} bytes: '{0}'", ComTextHelper.GetEscapedText(bytes), bytes.Length);
+                }
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
-		    }
-				
-			var textHandler = TextReceived;
-			if (textHandler != null)
-			{
+            }
+
+            var textHandler = TextReceived;
+            if (textHandler != null)
+            {
                 if (StreamDebugging.RxStreamDebuggingIsEnabled)
                     this.LogInformation("Received: '{0}'", ComTextHelper.GetDebugText(response));
 
                 textHandler(this, new GenericCommMethodReceiveTextArgs(response));
             }
-			
-		}
+
+        }
 
 
-		/// <summary>
-		/// Error event handler for client events - disconnect, etc.  Will forward those events via ConnectionChange
-		/// event
-		/// </summary>
-		void Client_ErrorOccurred(object sender, ExceptionEventArgs e)
-		{
+        /// <summary>
+        /// Error event handler for client events - disconnect, etc.  Will forward those events via ConnectionChange
+        /// event
+        /// </summary>
+        void Client_ErrorOccurred(object sender, ExceptionEventArgs e)
+        {
             CrestronInvoke.BeginInvoke(o =>
             {
                 if (e.Exception is SshConnectionException || e.Exception is System.Net.Sockets.SocketException)
@@ -466,55 +469,54 @@ namespace PepperDash.Core
         /// </summary>
         void OnConnectionChange()
         {
-            if (ConnectionChange != null)
-                ConnectionChange(this, new GenericSocketStatusChageEventArgs(this));
+            ConnectionChange?.Invoke(this, new GenericSocketStatusChageEventArgs(this));
         }
 
         #region IBasicCommunication Members
 
-		/// <summary>
-		/// Sends text to the server
-		/// </summary>
-		/// <param name="text"></param>
-		public void SendText(string text)
-		{
-		    try
-		    {
-		        if (Client != null && TheStream != null && IsConnected)
-		        {
-		            if (StreamDebugging.TxStreamDebuggingIsEnabled)
-		                this.LogInformation(
-		                              "Sending {length} characters of text: '{text}'",
-		                              text.Length,
-		                              ComTextHelper.GetDebugText(text));
-
-		            TheStream.Write(text);
-		            TheStream.Flush();
-		        }
-		        else
-		        {
-		            this.LogDebug("Client is null or disconnected.  Cannot Send Text");
-		        }
-		    }
-		    catch (ObjectDisposedException)
+        /// <summary>
+        /// Sends text to the server
+        /// </summary>
+        /// <param name="text">The text to send</param>
+        public void SendText(string text)
+        {
+            try
             {
-                this.LogError("ObjectDisposedException sending '{message}'. Restarting connection...", text.Trim());                
+                if (Client != null && TheStream != null && IsConnected)
+                {
+                    if (StreamDebugging.TxStreamDebuggingIsEnabled)
+                        this.LogInformation(
+                                      "Sending {length} characters of text: '{text}'",
+                                      text.Length,
+                                      ComTextHelper.GetDebugText(text));
+
+                    TheStream.Write(text);
+                    TheStream.Flush();
+                }
+                else
+                {
+                    this.LogDebug("Client is null or disconnected.  Cannot Send Text");
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+                this.LogError("ObjectDisposedException sending '{message}'. Restarting connection...", text.Trim());
 
                 KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
                 ReconnectTimer.Reset();
-		    }
-			catch (Exception ex)
-			{
+            }
+            catch (Exception ex)
+            {
                 this.LogException(ex, "Exception sending text: '{message}'", text);
-			}
-		}
+            }
+        }
 
         /// <summary>
         /// Sends Bytes to the server
         /// </summary>
-        /// <param name="bytes"></param>
-		public void SendBytes(byte[] bytes)
-		{
+        /// <param name="bytes">The bytes to send</param>
+        public void SendBytes(byte[] bytes)
+        {
             try
             {
                 if (Client != null && TheStream != null && IsConnected)
@@ -540,38 +542,38 @@ namespace PepperDash.Core
             catch (Exception ex)
             {
                 this.LogException(ex, "Exception sending {message}", ComTextHelper.GetEscapedText(bytes));
-            }           
-		}
-    #endregion
+            }
+        }
+        #endregion
 
-}
+    }
 
-//*****************************************************************************************************
-//*****************************************************************************************************
-/// <summary>
-/// Fired when connection changes
-/// </summary>
-public class SshConnectionChangeEventArgs : EventArgs
-	{
+    //*****************************************************************************************************
+    //*****************************************************************************************************
+    /// <summary>
+    /// Represents a SshConnectionChangeEventArgs
+    /// </summary>
+    public class SshConnectionChangeEventArgs : EventArgs
+    {
         /// <summary>
         /// Connection State
         /// </summary>
 		public bool IsConnected { get; private set; }
 
         /// <summary>
-        /// Connection Status represented as a ushort
+        /// Gets or sets the UIsConnected
         /// </summary>
-		public ushort UIsConnected { get { return (ushort)(Client.IsConnected ? 1 : 0); } }
+        public ushort UIsConnected { get { return (ushort)(Client.IsConnected ? 1 : 0); } }
 
         /// <summary>
-        /// The client
+        /// Gets or sets the Client
         /// </summary>
-		public GenericSshClient Client { get; private set; }
+        public GenericSshClient Client { get; private set; }
 
         /// <summary>
-        /// Socket Status as represented by
+        /// Gets or sets the Status
         /// </summary>
-		public ushort Status { get { return Client.UStatus; } }
+        public ushort Status { get { return Client.UStatus; } }
 
         /// <summary>
         ///  S+ Constructor

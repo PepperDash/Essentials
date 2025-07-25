@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a StatusSignControllerJoinMap
+    /// </summary>
     public class StatusSignControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("IsOnline")]

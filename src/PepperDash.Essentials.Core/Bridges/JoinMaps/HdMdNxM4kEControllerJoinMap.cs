@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a HdMdNxM4kEControllerJoinMap
+    /// </summary>
     public class HdMdNxM4kEControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("Name")]

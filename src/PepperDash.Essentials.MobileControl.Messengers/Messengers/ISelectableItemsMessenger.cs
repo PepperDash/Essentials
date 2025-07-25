@@ -7,6 +7,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a ISelectableItemsMessenger
+    /// </summary>
     public class ISelectableItemsMessenger<TKey> : MessengerBase
     {        
         private readonly ISelectableItems<TKey> itemDevice;
@@ -83,12 +86,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a ISelectableItemsStateMessage
+    /// </summary>
     public class ISelectableItemsStateMessage<TKey> : DeviceStateMessageBase
     {
         [JsonProperty("items")]
         public Dictionary<TKey, ISelectableItem> Items { get; set; }
 
         [JsonProperty("currentItem")]
+        /// <summary>
+        /// Gets or sets the CurrentItem
+        /// </summary>
         public TKey CurrentItem { get; set; }
     }
 

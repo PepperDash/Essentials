@@ -3,7 +3,7 @@
 namespace PepperDash.Essentials.Room.MobileControl
 {
     /// <summary>
-    /// Contains all of the default joins that map to API funtions
+    /// Represents a SourceDeviceMapDictionary
     /// </summary>
     public class SourceDeviceMapDictionary : Dictionary<string, uint>
     {

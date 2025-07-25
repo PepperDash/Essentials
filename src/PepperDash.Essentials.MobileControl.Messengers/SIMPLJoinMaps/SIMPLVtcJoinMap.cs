@@ -3,6 +3,9 @@
 
 namespace PepperDash.Essentials.AppServer
 {
+    /// <summary>
+    /// Represents a SIMPLVtcJoinMap
+    /// </summary>
     public class SIMPLVtcJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("EndCall")]

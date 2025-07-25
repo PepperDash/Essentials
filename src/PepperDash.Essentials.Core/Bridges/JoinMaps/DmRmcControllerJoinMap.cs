@@ -2,6 +2,9 @@ using System;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a DmRmcControllerJoinMap
+    /// </summary>
     public class DmRmcControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("IsOnline")]

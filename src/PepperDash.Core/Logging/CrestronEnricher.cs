@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Core.Logging
 {
+    /// <summary>
+    /// Represents a CrestronEnricher
+    /// </summary>
     public class CrestronEnricher : ILogEventEnricher
     {
         static readonly string _appName;
@@ -27,6 +30,9 @@ namespace PepperDash.Core.Logging
         }
             
 
+        /// <summary>
+        /// Enrich method
+        /// </summary>
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
             var property = propertyFactory.CreateProperty("App", _appName);

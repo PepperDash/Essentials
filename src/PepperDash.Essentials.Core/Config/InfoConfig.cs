@@ -22,18 +22,33 @@ namespace PepperDash.Essentials.Core.Config
 		public string Type { get; set; }
 		
 		[JsonProperty("version")]
+  /// <summary>
+  /// Gets or sets the Version
+  /// </summary>
 		public string Version { get; set; }
 
         [JsonProperty("runtimeInfo")]
+        /// <summary>
+        /// Gets or sets the RuntimeInfo
+        /// </summary>
         public RuntimeInfo RuntimeInfo { get; set; } 
 		
 		[JsonProperty("comment")]
+  /// <summary>
+  /// Gets or sets the Comment
+  /// </summary>
 		public string Comment { get; set; }
 
         [JsonProperty("hostname")]
+        /// <summary>
+        /// Gets or sets the HostName
+        /// </summary>
         public string HostName { get; set; }
 
         [JsonProperty("appNumber")]
+        /// <summary>
+        /// Gets or sets the AppNumber
+        /// </summary>
         public uint AppNumber { get; set; }
 
 		public InfoConfig()
@@ -52,7 +67,7 @@ namespace PepperDash.Essentials.Core.Config
 
     
     /// <summary>
-    /// Represents runtime information about the program/processor
+    /// Represents a RuntimeInfo
     /// </summary>
     public class RuntimeInfo
     {

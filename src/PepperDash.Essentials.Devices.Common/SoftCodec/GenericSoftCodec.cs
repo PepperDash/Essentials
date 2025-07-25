@@ -8,10 +8,16 @@ using System.Linq;
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
 {
+    /// <summary>
+    /// Represents a GenericSoftCodec
+    /// </summary>
     public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingSinkWithSwitchingWithInputPort
     {
         private RoutingInputPort _currentInputPort;
 
+        /// <summary>
+        /// Gets or sets the CurrentInputPort
+        /// </summary>
         public RoutingInputPort CurrentInputPort {
             get => _currentInputPort;
             set
@@ -54,9 +60,18 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
             }
         }
 
+        /// <summary>
+        /// Gets or sets the InputPorts
+        /// </summary>
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the OutputPorts
+        /// </summary>
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
+        /// <summary>
+        /// Gets or sets the CurrentSourceInfoKey
+        /// </summary>
         public string CurrentSourceInfoKey { get ; set; }
         public SourceListItem CurrentSourceInfo
         {
@@ -85,6 +100,9 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         public event SourceInfoChangeHandler CurrentSourceChange;
         public event InputChangedEventHandler InputChanged;
 
+        /// <summary>
+        /// ExecuteSwitch method
+        /// </summary>
         public void ExecuteSwitch(object inputSelector)
         {
             var inputPort = InputPorts.FirstOrDefault(p => p.Selector == inputSelector);
@@ -99,21 +117,39 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         }
     }
 
+    /// <summary>
+    /// Represents a GenericSoftCodecProperties
+    /// </summary>
     public class GenericSoftCodecProperties
     {
         [JsonProperty("hasCameraInputs")]
+        /// <summary>
+        /// Gets or sets the HasCameraInputs
+        /// </summary>
         public bool HasCameraInputs { get; set; }
 
         [JsonProperty("cameraInputCount")]
+        /// <summary>
+        /// Gets or sets the CameraInputCount
+        /// </summary>
         public int CameraInputCount { get; set; }
 
         [JsonProperty("contentInputCount")]
+        /// <summary>
+        /// Gets or sets the ContentInputCount
+        /// </summary>
         public int ContentInputCount { get; set; }
 
         [JsonProperty("contentOutputCount")]
+        /// <summary>
+        /// Gets or sets the OutputCount
+        /// </summary>
         public int OutputCount { get; set; }
     }
 
+    /// <summary>
+    /// Represents a GenericSoftCodecFactory
+    /// </summary>
     public class GenericSoftCodecFactory: EssentialsDeviceFactory<GenericSoftCodec>
     {
         public GenericSoftCodecFactory()
@@ -121,6 +157,10 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
             TypeNames = new List<string> { "genericsoftcodec" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Attempting to create new Generic SoftCodec Device");

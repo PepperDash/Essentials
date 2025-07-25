@@ -38,9 +38,9 @@ namespace PepperDash.Core.JsonToSimpl
 		/// </summary>
 		public string Key { get { return UniqueID; } }
 
-        /// <summary>
-        /// A unique ID
-        /// </summary>
+  /// <summary>
+  /// Gets or sets the UniqueID
+  /// </summary>
 		public string UniqueID { get; protected set; }
 
 		/// <summary>
@@ -53,10 +53,9 @@ namespace PepperDash.Core.JsonToSimpl
 		}
 		string _DebugName = "";
 
-		/// <summary>
-		/// This will be prepended to all paths to allow path swapping or for more organized
-		/// sub-paths
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the PathPrefix
+  /// </summary>
 		public string PathPrefix { get; set; }
 
 		/// <summary>
@@ -83,9 +82,9 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
+  /// <summary>
+  /// Gets or sets the JsonObject
+  /// </summary>
 		public JObject JsonObject { get; protected set; }
 
 		/*****************************************************************************************/
@@ -120,6 +119,9 @@ namespace PepperDash.Core.JsonToSimpl
 		/// Adds a child "module" to this master
 		/// </summary>
 		/// <param name="child"></param>
+  /// <summary>
+  /// AddChild method
+  /// </summary>
 		public void AddChild(JsonToSimplChildObjectBase child)
 		{
 			if (!Children.Contains(child))
@@ -128,9 +130,9 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-		/// <summary>
-		/// Called from the child to add changed or new values for saving
-		/// </summary>
+  /// <summary>
+  /// AddUnsavedValue method
+  /// </summary>
 		public void AddUnsavedValue(string path, JValue value)
 		{
 			if (UnsavedValues.ContainsKey(path))
@@ -179,6 +181,9 @@ namespace PepperDash.Core.JsonToSimpl
             /// </summary>
             /// <param name="json"></param>
             /// <returns></returns>
+   /// <summary>
+   /// ParseArray method
+   /// </summary>
 			public static JArray ParseArray(string json)
 			{
 				#if NET6_0

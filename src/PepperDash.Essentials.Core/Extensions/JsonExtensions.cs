@@ -12,6 +12,9 @@ namespace PepperDash.Essentials.Core
 {
     public static class JsonExtensions
     {
+        /// <summary>
+        /// FindTokens method
+        /// </summary>
         public static List<JToken> FindTokens(this JToken containerToken, string name)
         {
             List<JToken> matches = new List<JToken>();

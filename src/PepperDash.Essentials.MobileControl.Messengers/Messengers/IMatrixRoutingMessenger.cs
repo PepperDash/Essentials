@@ -82,6 +82,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a MatrixStateMessage
+    /// </summary>
     public class MatrixStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("outputs")]
@@ -91,6 +94,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public Dictionary<string, RoutingInput> Inputs;
     }
 
+    /// <summary>
+    /// Represents a RoutingInput
+    /// </summary>
     public class RoutingInput
     {
         private IRoutingInputSlot _input;
@@ -124,6 +130,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a RoutingOutput
+    /// </summary>
     public class RoutingOutput
     {
         private IRoutingOutputSlot _output;
@@ -154,15 +163,27 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public string Key => _output.Key;
     }
 
+    /// <summary>
+    /// Represents a MatrixRouteRequest
+    /// </summary>
     public class MatrixRouteRequest
     {
         [JsonProperty("outputKey")]
+        /// <summary>
+        /// Gets or sets the OutputKey
+        /// </summary>
         public string OutputKey { get; set; }
 
         [JsonProperty("inputKey")]
+        /// <summary>
+        /// Gets or sets the InputKey
+        /// </summary>
         public string InputKey { get; set; }
 
         [JsonProperty("routeType")]
+        /// <summary>
+        /// Gets or sets the RouteType
+        /// </summary>
         public eRoutingSignalType RouteType { get; set; }
     }
 }

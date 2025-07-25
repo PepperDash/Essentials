@@ -15,9 +15,9 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Core
 {
     ////*****************************************************************************
-    ///// <summary>
-    ///// Base class for all subpage reference list controllers
-    ///// </summary>
+    /// <summary>
+    /// Base class for all subpage reference list controllers
+    /// </summary>
     //public class SubpageReferenceListController
     //{
     //    public SubpageReferenceList TheList { get; protected set; }
@@ -38,10 +38,22 @@ namespace PepperDash.Essentials.Core
 		}
 		public ushort MaxDefinedItems { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the ScrollToItemSig
+  /// </summary>
 		public UShortInputSig ScrollToItemSig { get; private set; }
 		UShortInputSig SetNumberOfItemsSig;
+  /// <summary>
+  /// Gets or sets the BoolIncrement
+  /// </summary>
 		public uint BoolIncrement { get; protected set; }
+  /// <summary>
+  /// Gets or sets the UShortIncrement
+  /// </summary>
 		public uint UShortIncrement { get; protected set; }
+  /// <summary>
+  /// Gets or sets the StringIncrement
+  /// </summary>
 		public uint StringIncrement { get; protected set; }
 
 		protected readonly SmartObject SRL;
@@ -84,16 +96,17 @@ namespace PepperDash.Essentials.Core
 		/// DOES NOT adjust Count
 		/// </summary>
 		/// <param name="item"></param>
+  /// <summary>
+  /// AddItem method
+  /// </summary>
 		public void AddItem(SubpageReferenceListItem item)
 		{
 			Items.Add(item);
 		}
 
-		/// <summary>
-		/// Items need to be responsible for managing their own deallocation process,
-		/// disconnecting from events, etc.
-		/// 
-		/// </summary>
+  /// <summary>
+  /// Clear method
+  /// </summary>
 		public void Clear()
 		{
 			// If a line item needs to disconnect an CueActionPair or do something to release RAM
@@ -106,10 +119,9 @@ namespace PepperDash.Essentials.Core
 		    ScrollToItemSig.UShortValue = 1;
 		}
 
-		/// <summary>
-		/// Optional call to refresh the signals on the objects in the SRL - this calls Refresh() on
-		/// all SubpageReferenceListItem items
-		/// </summary>
+  /// <summary>
+  /// Refresh method
+  /// </summary>
 		public void Refresh()
 		{
 			foreach (var item in Items) item.Refresh();
@@ -251,6 +263,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="currentDevice"></param>
 		/// <param name="args"></param>
+  /// <summary>
+  /// SRL_SigChange method
+  /// </summary>
 		public static void SRL_SigChange(GenericBase currentDevice, SmartObjectEventArgs args)
 		{
 			var uo = args.Sig.UserObject;

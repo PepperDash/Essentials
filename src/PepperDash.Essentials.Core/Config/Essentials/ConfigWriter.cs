@@ -31,6 +31,9 @@ namespace PepperDash.Essentials.Core.Config
         /// <param name="deviceKey"></param>
         /// <param name="properties"></param>
         /// <returns></returns>
+        /// <summary>
+        /// UpdateDeviceProperties method
+        /// </summary>
         public static bool UpdateDeviceProperties(string deviceKey, JToken properties)
         {
             bool success = false;
@@ -53,6 +56,9 @@ namespace PepperDash.Essentials.Core.Config
             return success;
         }
 
+        /// <summary>
+        /// UpdateDeviceConfig method
+        /// </summary>
         public static bool UpdateDeviceConfig(DeviceConfig config)
         {
             bool success = false;
@@ -73,6 +79,9 @@ namespace PepperDash.Essentials.Core.Config
             return success;
         }
 
+        /// <summary>
+        /// UpdateRoomConfig method
+        /// </summary>
         public static bool UpdateRoomConfig(DeviceConfig config)
         {
             bool success = false;
@@ -124,6 +133,9 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         /// <param name="filepath"></param>
         /// <param name="o"></param>
+        /// <summary>
+        /// WriteFile method
+        /// </summary>
         public static void WriteFile(string filePath, string configData)
         {
             if (WriteTimer != null)

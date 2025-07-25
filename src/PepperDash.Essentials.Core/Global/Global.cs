@@ -24,14 +24,26 @@ namespace PepperDash.Essentials.Core
 {
 	public static class Global
 	{
+  /// <summary>
+  /// Gets or sets the ControlSystem
+  /// </summary>
 		public static CrestronControlSystem ControlSystem { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Platform
+        /// </summary>
         public static eDevicePlatform Platform { get { return CrestronEnvironment.DevicePlatform; } }
 
         public static Dictionary<short, EthernetAdapterInfo> EthernetAdapterInfoCollection { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the LicenseManager
+  /// </summary>
 		public static LicenseManager LicenseManager { get; set; }
 
+        /// <summary>
+        /// Gets or sets the ProcessorSeries
+        /// </summary>
         public static eCrestronSeries ProcessorSeries { get { return CrestronEnvironment.ProgramCompatibility; } }
 
         // TODO: consider making this configurable later
@@ -99,7 +111,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// The file path prefix to the folder containing configuration files
+        /// Gets or sets the FilePathPrefix
         /// </summary>
         public static string FilePathPrefix { get; private set; }
 
@@ -162,6 +174,9 @@ namespace PepperDash.Essentials.Core
         /// Sets the Assembly version to the version of the Essentials Library
         /// </summary>
         /// <param name="assemblyVersion"></param>
+        /// <summary>
+        /// SetAssemblyVersion method
+        /// </summary>
         public static void SetAssemblyVersion(string assemblyVersion)
         {
             AssemblyVersion = assemblyVersion;

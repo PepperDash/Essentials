@@ -5,6 +5,9 @@ using System;
 namespace PepperDash.Essentials.Core
 {
     [Obsolete("Please use the builtin HttpClient class instead: https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines")]
+ /// <summary>
+ /// Represents a GenericHttpClient
+ /// </summary>
 	public class GenericHttpClient : Device, IBasicCommunication
 	{
 		private readonly HttpClient Client;
@@ -25,6 +28,9 @@ namespace PepperDash.Essentials.Core
 		/// 
 		/// </summary>
 		/// <param name="path"></param>
+  /// <summary>
+  /// SendText method
+  /// </summary>
 		public void SendText(string path)
 		{
 			HttpClientRequest request = new HttpClientRequest();
@@ -40,6 +46,9 @@ namespace PepperDash.Essentials.Core
 			HttpClient.DISPATCHASYNC_ERROR error = Client.DispatchAsyncEx(request, Response, request);
 		}
 
+  /// <summary>
+  /// SendTextNoResponse method
+  /// </summary>
 		public void SendTextNoResponse(string format, params object[] items)
 		{
 			HttpClientRequest request = new HttpClientRequest();
@@ -65,6 +74,9 @@ namespace PepperDash.Essentials.Core
 
 		#region IBasicCommunication Members
 
+  /// <summary>
+  /// SendBytes method
+  /// </summary>
 		public void SendBytes(byte[] bytes)
 		{
 			throw new NotImplementedException();
@@ -78,11 +90,17 @@ namespace PepperDash.Essentials.Core
 
 		public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
 
+  /// <summary>
+  /// Connect method
+  /// </summary>
 		public void Connect()
 		{
 			throw new NotImplementedException();
 		}
 
+  /// <summary>
+  /// Disconnect method
+  /// </summary>
 		public void Disconnect()
 		{
 			throw new NotImplementedException();
@@ -97,10 +115,22 @@ namespace PepperDash.Essentials.Core
 
 		#endregion
 	}
+ /// <summary>
+ /// Represents a GenericHttpClientEventArgs
+ /// </summary>
 	public class GenericHttpClientEventArgs : EventArgs
 	{
+  /// <summary>
+  /// Gets or sets the ResponseText
+  /// </summary>
 		public string ResponseText { get; private set; }
+  /// <summary>
+  /// Gets or sets the RequestPath
+  /// </summary>
 		public string RequestPath { get; private set; }
+  /// <summary>
+  /// Gets or sets the Error
+  /// </summary>
 		public HTTP_CALLBACK_ERROR Error { get; set; }
 		public GenericHttpClientEventArgs(string response, string request, HTTP_CALLBACK_ERROR error)
 		{

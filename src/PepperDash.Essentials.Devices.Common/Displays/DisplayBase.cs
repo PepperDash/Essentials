@@ -52,9 +52,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// </summary>
 		public event SourceInfoChangeHandler CurrentSourceChange;
 
-		/// <summary>
-		/// Gets or sets the key of the current source information.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the CurrentSourceInfoKey
+  /// </summary>
 		public string CurrentSourceInfoKey { get; set; }
 
 		/// <summary>
@@ -94,24 +94,24 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// </summary>
 		public BoolFeedback IsCoolingDownFeedback { get; protected set; }
 
-		/// <summary>
-		/// Gets feedback indicating whether the display is currently warming up after being powered on.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the IsWarmingUpFeedback
+  /// </summary>
 		public BoolFeedback IsWarmingUpFeedback { get; private set; }
 
-		/// <summary>
-		/// Gets or sets the usage tracking instance for monitoring display usage statistics.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the UsageTracker
+  /// </summary>
 		public UsageTracking UsageTracker { get; set; }
 
-		/// <summary>
-		/// Gets or sets the warmup time in milliseconds for the display to become ready after power on.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the WarmupTime
+  /// </summary>
 		public uint WarmupTime { get; set; }
 
-		/// <summary>
-		/// Gets or sets the cooldown time in milliseconds for the display to fully power down.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the CooldownTime
+  /// </summary>
 		public uint CooldownTime { get; set; }
 
 		/// <summary>
@@ -189,6 +189,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// <summary>
 		/// Gets the collection of feedback objects for this display device.
 		/// </summary>
+  /// <inheritdoc />
 		public virtual FeedbackCollection<Feedback> Feedbacks
 		{
 			get

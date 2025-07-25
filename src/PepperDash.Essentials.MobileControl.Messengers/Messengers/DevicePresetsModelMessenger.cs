@@ -9,6 +9,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a DevicePresetsModelMessenger
+    /// </summary>
     public class DevicePresetsModelMessenger : MessengerBase
     {
         private readonly ITvPresetsProvider _presetsDevice;
@@ -83,18 +86,33 @@ namespace PepperDash.Essentials.AppServer.Messengers
         #endregion
     }
 
+    /// <summary>
+    /// Represents a PresetChannelMessage
+    /// </summary>
     public class PresetChannelMessage
     {
         [JsonProperty("preset")]
+        /// <summary>
+        /// Gets or sets the Preset
+        /// </summary>
         public PresetChannel Preset;
 
         [JsonProperty("deviceKey")]
+        /// <summary>
+        /// Gets or sets the DeviceKey
+        /// </summary>
         public string DeviceKey;
     }
 
+    /// <summary>
+    /// Represents a PresetStateMessage
+    /// </summary>
     public class PresetStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("favorites", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Favorites
+        /// </summary>
         public List<PresetChannel> Favorites { get; set; } = new List<PresetChannel>();
     }
 }

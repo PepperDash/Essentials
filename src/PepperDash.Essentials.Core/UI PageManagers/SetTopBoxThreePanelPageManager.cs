@@ -9,10 +9,16 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.PageManagers
 {
+ /// <summary>
+ /// Represents a ThreePanelPlusOnePageManager
+ /// </summary>
 	public class ThreePanelPlusOnePageManager : PageManager
 	{
 		protected BasicTriListWithSmartObject TriList;
 		
+  /// <summary>
+  /// Gets or sets the Position5TabsId
+  /// </summary>
 		public uint Position5TabsId { get; set; }
 
 		/// <summary>
@@ -79,6 +85,10 @@ namespace PepperDash.Essentials.Core.PageManagers
                 (uo as Action<bool>)(args.Sig.BoolValue);
         }
 
+  /// <summary>
+  /// Hide method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Hide()
 		{
             var fixedSigs = FixedVisibilityJoins.Select(u => TriList.BooleanInput[u]).ToList();
@@ -109,13 +119,25 @@ namespace PepperDash.Essentials.Core.PageManagers
 
 
 
+ /// <summary>
+ /// Represents a SetTopBoxThreePanelPageManager
+ /// </summary>
 	public class SetTopBoxThreePanelPageManager : ThreePanelPlusOnePageManager
 	{
 		ISetTopBoxControls SetTopBox;
 		DevicePresetsView PresetsView;
 
+  /// <summary>
+  /// Gets or sets the DpadSmartObjectId
+  /// </summary>
 		public uint DpadSmartObjectId { get; set; }
+  /// <summary>
+  /// Gets or sets the NumberPadSmartObjectId
+  /// </summary>
 		public uint NumberPadSmartObjectId { get; set; }
+  /// <summary>
+  /// Gets or sets the PresetsSmartObjectId
+  /// </summary>
 		public uint PresetsSmartObjectId { get; set; }
 
 		/// <summary>
@@ -176,6 +198,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 			}
 		}
 
+  /// <summary>
+  /// Show method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Show()
 		{
 			if(PresetsView != null)
@@ -183,6 +209,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 			base.Show();
 		}
 
+  /// <summary>
+  /// Hide method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Hide()
 		{
             if (PresetsView != null)

@@ -305,7 +305,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Gets the feedback indicating whether the system is currently in auto mode.
+        /// Gets or sets the IsInAutoModeFeedback
         /// </summary>
         public BoolFeedback IsInAutoModeFeedback { get; private set; }
 
@@ -339,6 +339,9 @@ namespace PepperDash.Essentials.Core
         /// <remarks>This method sets the system to manual mode by updating the mode state and propagates 
         /// the change to all partitions. Once in manual mode, automatic operations are disabled  for the system and its
         /// partitions.</remarks>
+        /// <summary>
+        /// SetManualMode method
+        /// </summary>
         public void SetManualMode()
         {
             IsInAutoMode = false;
@@ -354,6 +357,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <remarks>If the current mode is automatic, this method switches to manual mode.  If the
         /// current mode is manual, it switches to automatic mode.</remarks>
+        /// <summary>
+        /// ToggleMode method
+        /// </summary>
         public void ToggleMode()
         {
             if (IsInAutoMode)
@@ -367,7 +373,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Gets the collection of room combination scenarios.
+        /// Gets or sets the RoomCombinationScenarios
         /// </summary>
         public List<IRoomCombinationScenario> RoomCombinationScenarios { get; private set; }
 
@@ -457,6 +463,9 @@ namespace PepperDash.Essentials.Core
     /// <remarks>This factory is responsible for constructing <see cref="EssentialsRoomCombiner"/> devices
     /// based on the provided configuration. It supports the type name "essentialsroomcombiner" for device
     /// creation.</remarks>
+    /// <summary>
+    /// Represents a EssentialsRoomCombinerFactory
+    /// </summary>
     public class EssentialsRoomCombinerFactory : EssentialsDeviceFactory<EssentialsRoomCombiner>
     {
         /// <summary>

@@ -2,9 +2,9 @@
 
 namespace PepperDash.Core.Web.RequestHandlers
 {
-	/// <summary>
-	/// Web API default request handler
-	/// </summary>
+ /// <summary>
+ /// Represents a DefaultRequestHandler
+ /// </summary>
 	public class DefaultRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

@@ -74,6 +74,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("type")]
         [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public eLevelControlType Type { get; set; }
 
 

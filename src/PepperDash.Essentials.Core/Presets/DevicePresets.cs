@@ -91,10 +91,22 @@ namespace PepperDash.Essentials.Core.Presets
         public event PresetRecalledCallback PresetRecalled;
         public event PresetsSavedCallback PresetsSaved;
 
+        /// <summary>
+        /// Gets or sets the PulseTime
+        /// </summary>
         public int PulseTime { get; set; }
+        /// <summary>
+        /// Gets or sets the DigitSpacingMs
+        /// </summary>
         public int DigitSpacingMs { get; set; }
+        /// <summary>
+        /// Gets or sets the PresetsAreLoaded
+        /// </summary>
         public bool PresetsAreLoaded { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the PresetsList
+        /// </summary>
         public List<PresetChannel> PresetsList { get; private set; }
 
         public int Count
@@ -102,13 +114,28 @@ namespace PepperDash.Essentials.Core.Presets
             get { return PresetsList != null ? PresetsList.Count : 0; }
         }
 
+        /// <summary>
+        /// Gets or sets the UseLocalImageStorage
+        /// </summary>
         public bool UseLocalImageStorage { get; set; }
+        /// <summary>
+        /// Gets or sets the ImagesLocalHostPrefix
+        /// </summary>
         public string ImagesLocalHostPrefix { get; set; }
+        /// <summary>
+        /// Gets or sets the ImagesPathPrefix
+        /// </summary>
         public string ImagesPathPrefix { get; set; }
+        /// <summary>
+        /// Gets or sets the ListPathPrefix
+        /// </summary>
         public string ListPathPrefix { get; set; }
         public event EventHandler PresetsLoaded;
 
 
+        /// <summary>
+        /// SetFileName method
+        /// </summary>
         public void SetFileName(string path)
         {
             _filePath = ListPathPrefix + path;
@@ -117,6 +144,9 @@ namespace PepperDash.Essentials.Core.Presets
             LoadChannels();
         }
 
+        /// <summary>
+        /// LoadChannels method
+        /// </summary>
         public void LoadChannels()
         {
             try
@@ -155,6 +185,9 @@ namespace PepperDash.Essentials.Core.Presets
             }
         }
 
+        /// <summary>
+        /// Dial method
+        /// </summary>
         public void Dial(int presetNum)
         {
             if (presetNum <= PresetsList.Count)
@@ -163,6 +196,9 @@ namespace PepperDash.Essentials.Core.Presets
             }
         }
 
+        /// <summary>
+        /// Dial method
+        /// </summary>
         public void Dial(string chanNum)
         {
             if (_dialIsRunning || !_initSuccess)
@@ -199,6 +235,9 @@ namespace PepperDash.Essentials.Core.Presets
             OnPresetRecalled(_setTopBox, chanNum);
         }
 
+        /// <summary>
+        /// Dial method
+        /// </summary>
         public void Dial(int presetNum, ISetTopBoxNumericKeypad setTopBox)
         {
             if (presetNum <= PresetsList.Count)
@@ -207,6 +246,9 @@ namespace PepperDash.Essentials.Core.Presets
             }
         }
 
+        /// <summary>
+        /// Dial method
+        /// </summary>
         public void Dial(string chanNum, ISetTopBoxNumericKeypad setTopBox)
         {
             _dialFunctions = new Dictionary<char, Action<bool>>(10)
@@ -243,6 +285,9 @@ namespace PepperDash.Essentials.Core.Presets
             handler(setTopBox, channel);
         }
 
+        /// <summary>
+        /// UpdatePreset method
+        /// </summary>
         public void UpdatePreset(int index, PresetChannel preset)
         {
             if (index >= PresetsList.Count)
@@ -257,6 +302,9 @@ namespace PepperDash.Essentials.Core.Presets
             OnPresetsSaved();
         }
 
+        /// <summary>
+        /// UpdatePresets method
+        /// </summary>
         public void UpdatePresets(List<PresetChannel> presets)
         {
             PresetsList = presets;

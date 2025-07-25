@@ -44,12 +44,18 @@ namespace PepperDash.Essentials.Core
 
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
         public static IKeyed BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Comm Device");
             return new GenericComm(dc);
         }
 
+        /// <summary>
+        /// SetPortConfig method
+        /// </summary>
         public void SetPortConfig(string portConfig)
         {
             // TODO: Deserialize new EssentialsControlPropertiesConfig and handle as necessary
@@ -71,6 +77,10 @@ namespace PepperDash.Essentials.Core
             ConfigWriter.UpdateDeviceConfig(config);
         }
 
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
+        /// <inheritdoc />
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new IBasicCommunicationJoinMap(joinStart);
@@ -129,6 +139,9 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Represents a GenericCommFactory
+    /// </summary>
     public class GenericCommFactory : EssentialsDeviceFactory<GenericComm>
     {
         public GenericCommFactory()
@@ -136,6 +149,10 @@ namespace PepperDash.Essentials.Core
             TypeNames = new List<string>() { "genericComm" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Comm Device");

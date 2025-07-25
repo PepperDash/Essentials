@@ -1,7 +1,7 @@
 ﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Defines a routing device (<see cref="IRouting"/>) that supports explicitly clearing a route on an output.
+    /// Defines the contract for IRoutingWithClear
     /// </summary>
     public interface IRoutingWithClear : IRouting
     {

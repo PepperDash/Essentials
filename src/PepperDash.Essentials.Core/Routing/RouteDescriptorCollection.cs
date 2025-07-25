@@ -48,9 +48,8 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Gets the RouteDescriptor for a destination
+        /// Gets the RouteDescriptor for a destination. Returns null if no RouteDescriptor for a destination exists.
         /// </summary>
-        /// <returns>null if no RouteDescriptor for a destination exists</returns>
         public RouteDescriptor GetRouteDescriptorForDestination(IRoutingInputs destination)
         {
             Debug.LogMessage(LogEventLevel.Information, "Getting route descriptor for '{destination}'", destination?.Key ?? null);
@@ -65,9 +64,11 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Returns the RouteDescriptor for a given destination AND removes it from collection.
-        /// Returns null if no route with the provided destination exists.
+        /// Removes a RouteDescriptor from the collection based on the specified destination and input port key.
         /// </summary>
+        /// <param name="destination">The destination for which the route descriptor is to be removed.</param>
+        /// <param name="inputPortKey">The key of the input port associated with the route descriptor. If empty, the method will attempt to remove a descriptor based solely on the destination.</param>
+        /// <returns>The removed RouteDescriptor object if a matching descriptor was found; otherwise, null.</returns>
         public RouteDescriptor RemoveRouteDescriptor(IRoutingInputs destination, string inputPortKey = "")
         {
             Debug.LogMessage(LogEventLevel.Information, "Removing route descriptor for '{destination}':'{inputPortKey}'", destination.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
@@ -86,6 +87,9 @@ namespace PepperDash.Essentials.Core
 
     /*/// <summary>
     /// A collection of RouteDescriptors - typically the static DefaultCollection is used
+    /// </summary>
+    /// <summary>
+    /// Represents a RouteDescriptorCollection
     /// </summary>
     public class RouteDescriptorCollection<TInputSelector, TOutputSelector>
 	{
@@ -108,6 +112,9 @@ namespace PepperDash.Essentials.Core
 		/// proper route releasing.
 		/// </summary>
 		/// <param name="descriptor"></param>
+  /// <summary>
+  /// AddRouteDescriptor method
+  /// </summary>
 		public void AddRouteDescriptor(RouteDescriptor descriptor)
 		{
 			if (RouteDescriptors.Any(t => t.Destination == descriptor.Destination))
@@ -123,6 +130,9 @@ namespace PepperDash.Essentials.Core
 		/// Gets the RouteDescriptor for a destination
 		/// </summary>
 		/// <returns>null if no RouteDescriptor for a destination exists</returns>
+  /// <summary>
+  /// GetRouteDescriptorForDestination method
+  /// </summary>
 		public RouteDescriptor GetRouteDescriptorForDestination(IRoutingInputs<TInputSelector> destination)
 		{
 			return RouteDescriptors.FirstOrDefault(rd => rd.Destination == destination);

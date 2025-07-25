@@ -6,7 +6,7 @@ using System;
 namespace PepperDash.Essentials.Room.MobileControl
 {
     /// <summary>
-    /// Represents a generic device connection through to and EISC for SIMPL01
+    /// Represents a MobileControlSimplDeviceBridge
     /// </summary>
     public class MobileControlSimplDeviceBridge : Device, IChannel, INumericKeypad
     {
@@ -24,31 +24,49 @@ namespace PepperDash.Essentials.Room.MobileControl
 
         #region IChannel Members
 
+        /// <summary>
+        /// ChannelUp method
+        /// </summary>
         public void ChannelUp(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// ChannelDown method
+        /// </summary>
         public void ChannelDown(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// LastChannel method
+        /// </summary>
         public void LastChannel(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Guide method
+        /// </summary>
         public void Guide(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Info method
+        /// </summary>
         public void Info(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Exit method
+        /// </summary>
         public void Exit(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
@@ -58,51 +76,81 @@ namespace PepperDash.Essentials.Room.MobileControl
 
         #region INumericKeypad Members
 
+        /// <summary>
+        /// Digit0 method
+        /// </summary>
         public void Digit0(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Digit1 method
+        /// </summary>
         public void Digit1(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Digit2 method
+        /// </summary>
         public void Digit2(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Digit3 method
+        /// </summary>
         public void Digit3(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Digit4 method
+        /// </summary>
         public void Digit4(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Digit5 method
+        /// </summary>
         public void Digit5(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Digit6 method
+        /// </summary>
         public void Digit6(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Digit7 method
+        /// </summary>
         public void Digit7(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Digit8 method
+        /// </summary>
         public void Digit8(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
         }
 
+        /// <summary>
+        /// Digit9 method
+        /// </summary>
         public void Digit9(bool pressRelease)
         {
             _eisc.SetBool(1111, pressRelease);
@@ -118,6 +166,9 @@ namespace PepperDash.Essentials.Room.MobileControl
             get { throw new NotImplementedException(); }
         }
 
+        /// <summary>
+        /// KeypadAccessoryButton1 method
+        /// </summary>
         public void KeypadAccessoryButton1(bool pressRelease)
         {
             throw new NotImplementedException();
@@ -133,6 +184,9 @@ namespace PepperDash.Essentials.Room.MobileControl
             get { throw new NotImplementedException(); }
         }
 
+        /// <summary>
+        /// KeypadAccessoryButton2 method
+        /// </summary>
         public void KeypadAccessoryButton2(bool pressRelease)
         {
             throw new NotImplementedException();

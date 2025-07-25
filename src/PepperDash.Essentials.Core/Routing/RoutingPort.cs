@@ -57,12 +57,30 @@ namespace PepperDash.Essentials.Core
 
     /*public abstract class RoutingPort<TSelector>:IKeyed
     {
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; private set; }
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public eRoutingSignalType Type { get; private set; }
+        /// <summary>
+        /// Gets or sets the ConnectionType
+        /// </summary>
         public eRoutingPortConnectionType ConnectionType { get; private set; }
         public readonly TSelector Selector;
+        /// <summary>
+        /// Gets or sets the IsInternal
+        /// </summary>
         public bool IsInternal { get; private set; }
+        /// <summary>
+        /// Gets or sets the FeedbackMatchObject
+        /// </summary>
         public object FeedbackMatchObject { get; set; }
+        /// <summary>
+        /// Gets or sets the Port
+        /// </summary>
         public object Port { get; set; }
 
         public RoutingPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType, TSelector selector, bool isInternal)

@@ -39,6 +39,10 @@ namespace PepperDash.Essentials.Core.Timers
             }
         }
 
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
         public override bool CustomActivate()
         {
             if (_propertiesConfig.StartTimerOnActivation)
@@ -60,6 +64,9 @@ namespace PepperDash.Essentials.Core.Timers
             _timer = null;
         }
 
+        /// <summary>
+        /// StartTimer method
+        /// </summary>
         public void StartTimer()
         {
              CleanUpTimer();
@@ -68,6 +75,9 @@ namespace PepperDash.Essentials.Core.Timers
              _timer = new CTimer(TimerElapsedCallback, GetActionFromConfig(eRetriggerableTimerEvents.Elapsed), _timerIntervalMs, _timerIntervalMs);
         }
 
+        /// <summary>
+        /// StopTimer method
+        /// </summary>
         public void StopTimer()
         {
             Debug.LogMessage(LogEventLevel.Information, this, "Stopping Timer");
@@ -150,7 +160,7 @@ namespace PepperDash.Essentials.Core.Timers
     }
 
     /// <summary>
-    /// The set of values describing events on the timer
+    /// Enumeration of eRetriggerableTimerEvents values
     /// </summary>
     public enum eRetriggerableTimerEvents
     {

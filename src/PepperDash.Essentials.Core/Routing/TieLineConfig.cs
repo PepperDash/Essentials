@@ -23,29 +23,29 @@ namespace PepperDash.Essentials.Core.Config
 		/// </summary>
 		public string SourceKey { get; set; }
 		
-		/// <summary>
-		/// The key of the source card (if applicable, e.g., in a modular chassis).
-		/// </summary>
+  /// <summary>
+  /// The key of the source card (if applicable, e.g., in a modular chassis).
+  /// </summary>
 		public string SourceCard { get; set; }
 		
-		/// <summary>
-		/// The key of the source output port.
-		/// </summary>
+  /// <summary>
+  /// The key of the source output port, used for routing configurations.
+  /// </summary>
 		public string SourcePort { get; set; }
 		
-		/// <summary>
-		/// The key of the destination device.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the DestinationKey
+  /// </summary>
 		public string DestinationKey { get; set; }
 		
-		/// <summary>
-		/// The key of the destination card (if applicable).
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the DestinationCard
+  /// </summary>
 		public string DestinationCard { get; set; }
 		
-		/// <summary>
-		/// The key of the destination input port.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the DestinationPort
+  /// </summary>
 		public string DestinationPort { get; set; }
 
         /// <summary>

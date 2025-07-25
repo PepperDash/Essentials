@@ -1,7 +1,7 @@
 ﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Defines an IRmcRouting with a feedback event 
+    /// Defines the contract for IRmcRoutingWithFeedback
     /// </summary>
     public interface IRmcRoutingWithFeedback : IRmcRouting
     {

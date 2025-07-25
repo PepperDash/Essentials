@@ -4,6 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Represents a IDPadMessenger
+    /// </summary>
     public class IDPadMessenger : MessengerBase
     {
         private readonly IDPad dpadDevice;

@@ -25,6 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <DefineConstants>TRACE;SERIES4</DefineConstants>
+    <DocumentationFile>bin\$(Configuration)\epi-essentials-mobile-control.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="bin\**" />

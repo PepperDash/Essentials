@@ -14,18 +14,26 @@ namespace PepperDash.Essentials.Core
 	    protected GenericBase Hardware;
 
         /// <summary>
-        /// Returns a list containing the Outputs that we want to expose.
+        /// Gets or sets the Feedbacks
         /// </summary>
         public FeedbackCollection<Feedback> Feedbacks { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the IsOnline
+  /// </summary>
 		public BoolFeedback IsOnline { get; private set; }
+  /// <summary>
+  /// Gets or sets the IsRegistered
+  /// </summary>
 		public BoolFeedback IsRegistered { get; private set; }
+  /// <summary>
+  /// Gets or sets the IpConnectionsText
+  /// </summary>
 		public StringFeedback IpConnectionsText { get; private set; }
 
-		/// <summary>
-		/// Used by implementing classes to prevent registration with Crestron TLDM. For
-		/// devices like RMCs and TXs attached to a chassis.
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the PreventRegistration
+  /// </summary>
 		public bool PreventRegistration { get; protected set; }
 
 	    protected CrestronGenericBaseDevice(string key, string name, GenericBase hardware)
@@ -60,10 +68,10 @@ namespace PepperDash.Essentials.Core
             CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
 	    }
 
-		/// <summary>
-		/// Make sure that overriding classes call this!
-		/// Registers the Crestron device, connects up to the base events, starts communication monitor
-		/// </summary>
+  /// <summary>
+  /// CustomActivate method
+  /// </summary>
+  /// <inheritdoc />
 		public override bool CustomActivate()
 		{
             Debug.LogMessage(LogEventLevel.Information, this, "Activating");
@@ -111,6 +119,10 @@ namespace PepperDash.Essentials.Core
 		/// This disconnects events and unregisters the base hardware device.
 		/// </summary>
 		/// <returns></returns>
+  /// <summary>
+  /// Deactivate method
+  /// </summary>
+  /// <inheritdoc />
 		public override bool Deactivate()
 		{
 			CommunicationMonitor.Stop();
@@ -127,6 +139,9 @@ namespace PepperDash.Essentials.Core
         /// Adds feedback(s) to the list
         /// </summary>
         /// <param name="newFbs"></param>
+        /// <summary>
+        /// AddToFeedbackList method
+        /// </summary>
         public void AddToFeedbackList(params Feedback[] newFbs)
         {
             foreach (var f in newFbs)
@@ -158,11 +173,17 @@ namespace PepperDash.Essentials.Core
 
 		#region IStatusMonitor Members
 
+  /// <summary>
+  /// Gets or sets the CommunicationMonitor
+  /// </summary>
 		public StatusMonitorBase CommunicationMonitor { get; private set; }
 		#endregion
 
         #region IUsageTracking Members
 
+        /// <summary>
+        /// Gets or sets the UsageTracker
+        /// </summary>
         public UsageTracking UsageTracker { get; set; }
 
         #endregion
@@ -185,6 +206,9 @@ namespace PepperDash.Essentials.Core
 
 
 	//***********************************************************************************
+ /// <summary>
+ /// Represents a CrestronGenericBaseDeviceEventIds
+ /// </summary>
 	public class CrestronGenericBaseDeviceEventIds
 	{
 		public const uint IsOnline = 1;
@@ -196,6 +220,9 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public static class GenericBaseExtensions
 	{
+  /// <summary>
+  /// RegisterWithLogging method
+  /// </summary>
 		public static eDeviceRegistrationUnRegistrationResponse RegisterWithLogging(this GenericBase device, string key)
 		{
 		    var result = device.Register();

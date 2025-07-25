@@ -35,6 +35,9 @@ namespace PepperDash.Essentials.Core.Devices
         /// Sets the Config, calls CustomSetConfig and fires the ConfigChanged event
         /// </summary>
         /// <param name="config"></param>
+        /// <summary>
+        /// SetConfig method
+        /// </summary>
         public void SetConfig(DeviceConfig config)
         {
             Config = config;

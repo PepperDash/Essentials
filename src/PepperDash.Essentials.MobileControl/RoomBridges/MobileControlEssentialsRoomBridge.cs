@@ -25,11 +25,20 @@ using ShadeBase = PepperDash.Essentials.Devices.Common.Shades.ShadeBase;
 
 namespace PepperDash.Essentials.RoomBridges
 {
+    /// <summary>
+    /// Represents a MobileControlEssentialsRoomBridge
+    /// </summary>
     public class MobileControlEssentialsRoomBridge : MobileControlBridgeBase
     {
         private List<JoinToken> _touchPanelTokens = new List<JoinToken>();
+        /// <summary>
+        /// Gets or sets the Room
+        /// </summary>
         public IEssentialsRoom Room { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the DefaultRoomKey
+        /// </summary>
         public string DefaultRoomKey { get; private set; }
         /// <summary>
         /// 
@@ -292,6 +301,10 @@ namespace PepperDash.Essentials.RoomBridges
                 /// Override of base: calls base to add parent and then registers actions and events.
                 /// </summary>
                 /// <param name="parent"></param>
+                /// <summary>
+                /// AddParent method
+                /// </summary>
+                /// <inheritdoc />
                 public override void AddParent(MobileControlSystemController parent)
                 {
                     base.AddParent(parent);
@@ -780,9 +793,15 @@ namespace PepperDash.Essentials.RoomBridges
 
     }
 
+    /// <summary>
+    /// Represents a RoomStateMessage
+    /// </summary>
     public class RoomStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("configuration", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Configuration
+        /// </summary>
         public RoomConfiguration Configuration { get; set; }
 
         [JsonProperty("activityMode", NullValueHandling = NullValueHandling.Ignore)]
@@ -796,8 +815,14 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("isCoolingDown", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsCoolingDown { get; set; }
         [JsonProperty("selectedSourceKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the SelectedSourceKey
+        /// </summary>
         public string SelectedSourceKey { get; set; }
         [JsonProperty("share", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Share
+        /// </summary>
         public ShareState Share { get; set; }
 
         [JsonProperty("volumes", NullValueHandling = NullValueHandling.Ignore)]
@@ -807,9 +832,15 @@ namespace PepperDash.Essentials.RoomBridges
         public bool? IsInCall { get; set; }
     }
 
+    /// <summary>
+    /// Represents a ShareState
+    /// </summary>
     public class ShareState
     {
         [JsonProperty("currentShareText", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the CurrentShareText
+        /// </summary>
         public string CurrentShareText { get; set; }
         [JsonProperty("enabled", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Enabled { get; set; }
@@ -818,7 +849,7 @@ namespace PepperDash.Essentials.RoomBridges
     }
 
     /// <summary>
-    /// Represents the capabilities of the room and the associated device info
+    /// Represents a RoomConfiguration
     /// </summary>
     public class RoomConfiguration
     {
@@ -841,32 +872,62 @@ namespace PepperDash.Essentials.RoomBridges
         public bool? HasRoutingControls { get; set; }
 
         [JsonProperty("touchpanelKeys", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the TouchpanelKeys
+        /// </summary>
         public List<string> TouchpanelKeys { get; set; }
 
         [JsonProperty("zoomRoomControllerKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the ZoomRoomControllerKey
+        /// </summary>
         public string ZoomRoomControllerKey { get; set; }
 
         [JsonProperty("ciscoNavigatorKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the CiscoNavigatorKey
+        /// </summary>
         public string CiscoNavigatorKey { get; set; }
 
 
         [JsonProperty("videoCodecKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the VideoCodecKey
+        /// </summary>
         public string VideoCodecKey { get; set; }
         [JsonProperty("audioCodecKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the AudioCodecKey
+        /// </summary>
         public string AudioCodecKey { get; set; }
         [JsonProperty("matrixRoutingKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the MatrixRoutingKey
+        /// </summary>
         public string MatrixRoutingKey { get; set; }
         [JsonProperty("endpointKeys", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the EndpointKeys
+        /// </summary>
         public List<string> EndpointKeys { get; set; }
 
         [JsonProperty("accessoryDeviceKeys", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the AccessoryDeviceKeys
+        /// </summary>
         public List<string> AccessoryDeviceKeys { get; set; }
 
         [JsonProperty("defaultDisplayKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the DefaultDisplayKey
+        /// </summary>
         public string DefaultDisplayKey { get; set; }
         [JsonProperty("destinations", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<eSourceListItemDestinationTypes, string> Destinations { get; set; }
         [JsonProperty("environmentalDevices", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the EnvironmentalDevices
+        /// </summary>
         public List<EnvironmentalDeviceConfiguration> EnvironmentalDevices { get; set; }
         [JsonProperty("sourceList", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, SourceListItem> SourceList { get; set; }
@@ -875,22 +936,37 @@ namespace PepperDash.Essentials.RoomBridges
         public Dictionary<string, DestinationListItem> DestinationList { get; set; }
 
         [JsonProperty("audioControlPointList", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the AudioControlPointList
+        /// </summary>
         public AudioControlPointListItem AudioControlPointList { get; set; }
 
         [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, CameraListItem> CameraList { get; set; }
 
         [JsonProperty("defaultPresentationSourceKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the DefaultPresentationSourceKey
+        /// </summary>
         public string DefaultPresentationSourceKey { get; set; }
 
 
         [JsonProperty("helpMessage", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the HelpMessage
+        /// </summary>
         public string HelpMessage { get; set; }
 
         [JsonProperty("techPassword", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the TechPassword
+        /// </summary>
         public string TechPassword { get; set; }
 
         [JsonProperty("uiBehavior", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the UiBehavior
+        /// </summary>
         public EssentialsRoomUiBehaviorConfig UiBehavior { get; set; }
 
         [JsonProperty("supportsAdvancedSharing", NullValueHandling = NullValueHandling.Ignore)]
@@ -899,6 +975,9 @@ namespace PepperDash.Essentials.RoomBridges
         public bool? UserCanChangeShareMode { get; set; }
 
         [JsonProperty("roomCombinerKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the RoomCombinerKey
+        /// </summary>
         public string RoomCombinerKey { get; set; }
 
         public RoomConfiguration()
@@ -910,13 +989,22 @@ namespace PepperDash.Essentials.RoomBridges
         }
     }
 
+    /// <summary>
+    /// Represents a EnvironmentalDeviceConfiguration
+    /// </summary>
     public class EnvironmentalDeviceConfiguration
     {
         [JsonProperty("deviceKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the DeviceKey
+        /// </summary>
         public string DeviceKey { get; private set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("deviceType", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the DeviceType
+        /// </summary>
         public eEnvironmentalDeviceTypes DeviceType { get; private set; }
 
         public EnvironmentalDeviceConfiguration(string key, eEnvironmentalDeviceTypes type)
@@ -926,6 +1014,9 @@ namespace PepperDash.Essentials.RoomBridges
         }
     }
 
+    /// <summary>
+    /// Enumeration of eEnvironmentalDeviceTypes values
+    /// </summary>
     public enum eEnvironmentalDeviceTypes
     {
         None,
@@ -935,25 +1026,52 @@ namespace PepperDash.Essentials.RoomBridges
         Relay,
     }
 
+    /// <summary>
+    /// Represents a ApiTouchPanelToken
+    /// </summary>
     public class ApiTouchPanelToken
     {
         [JsonProperty("touchPanels", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the TouchPanels
+        /// </summary>
         public List<JoinToken> TouchPanels { get; set; } = new List<JoinToken>();
 
         [JsonProperty("userAppUrl", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the UserAppUrl
+        /// </summary>
         public string UserAppUrl { get; set; } = "";
     }
 
 #if SERIES3
+    /// <summary>
+    /// Represents a SourceSelectMessageContent
+    /// </summary>
     public class SourceSelectMessageContent
     {
+        /// <summary>
+        /// Gets or sets the SourceListItem
+        /// </summary>
         public string SourceListItem { get; set; }
+        /// <summary>
+        /// Gets or sets the SourceListKey
+        /// </summary>
         public string SourceListKey { get; set; }
     }
 
+    /// <summary>
+    /// Represents a DirectRoute
+    /// </summary>
     public class DirectRoute
     {
+        /// <summary>
+        /// Gets or sets the SourceKey
+        /// </summary>
         public string SourceKey { get; set; }
+        /// <summary>
+        /// Gets or sets the DestinationKey
+        /// </summary>
         public string DestinationKey { get; set; }
     }
 
@@ -961,6 +1079,9 @@ namespace PepperDash.Essentials.RoomBridges
     /// 
     /// </summary>
     /// <param name="b"></param>
+    /// <summary>
+    /// Delegate for PressAndHoldAction
+    /// </summary>
     public delegate void PressAndHoldAction(bool b);
 #endif
 }

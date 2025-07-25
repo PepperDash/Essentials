@@ -8,13 +8,31 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.Core.Presets
 {
+ /// <summary>
+ /// Represents a DevicePresetsView
+ /// </summary>
 	public class DevicePresetsView
 	{
+  /// <summary>
+  /// Gets or sets the ShowNumbers
+  /// </summary>
 		public bool ShowNumbers { get; set; }
+  /// <summary>
+  /// Gets or sets the ShowName
+  /// </summary>
 		public bool ShowName { get; set; }
+  /// <summary>
+  /// Gets or sets the ShowIcon
+  /// </summary>
 		public bool ShowIcon { get; set; }
 
+        /// <summary>
+        /// Gets or sets the SRL
+        /// </summary>
         public SubpageReferenceList SRL { get; private set; }
+  /// <summary>
+  /// Gets or sets the Model
+  /// </summary>
 		public DevicePresetsModel Model { get; private set; }
 
 		public DevicePresetsView(BasicTriListWithSmartObject tl, DevicePresetsModel model)
@@ -32,6 +50,9 @@ namespace PepperDash.Essentials.Core.Presets
 			Model.PresetsLoaded += new EventHandler(Model_PresetsLoaded);
 		}
 
+  /// <summary>
+  /// Attach method
+  /// </summary>
 		public void Attach()
 		{
 			if (Model.PresetsAreLoaded)
@@ -46,6 +67,9 @@ namespace PepperDash.Essentials.Core.Presets
 			}
 		}
 
+  /// <summary>
+  /// Detach method
+  /// </summary>
 		public void Detach()
 		{
 			SRL.Clear();

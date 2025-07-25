@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 
 namespace PepperDash.Core.Logging
 {
-    /// <summary>
-    /// Class to persist current Debug settings across program restarts
-    /// </summary>
+ /// <summary>
+ /// Represents a DebugContextCollection
+ /// </summary>
 	public class DebugContextCollection
 	{
         /// <summary>
@@ -39,6 +39,9 @@ namespace PepperDash.Core.Logging
 		/// </summary>
 		/// <param name="contextKey"></param>
 		/// <param name="level"></param>
+  /// <summary>
+  /// SetLevel method
+  /// </summary>
 		public void SetLevel(string contextKey, int level)
 		{
 			if (level < 0 || level > 2)
@@ -51,6 +54,9 @@ namespace PepperDash.Core.Logging
 		/// </summary>
 		/// <param name="contextKey"></param>
 		/// <returns></returns>
+  /// <summary>
+  /// GetOrCreateItem method
+  /// </summary>
 		public DebugContextItem GetOrCreateItem(string contextKey)
 		{
 			if (!_items.ContainsKey(contextKey))
@@ -65,6 +71,9 @@ namespace PepperDash.Core.Logging
         /// <param name="deviceKey"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
+        /// <summary>
+        /// SetDebugSettingsForKey method
+        /// </summary>
         public void SetDebugSettingsForKey(string deviceKey, object settings)
         {
             try
@@ -89,6 +98,9 @@ namespace PepperDash.Core.Logging
         /// </summary>
         /// <param name="deviceKey"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetDebugSettingsForKey method
+        /// </summary>
         public object GetDebugSettingsForKey(string deviceKey)
         {
             return DeviceDebugSettings[deviceKey];

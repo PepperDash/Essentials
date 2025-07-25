@@ -923,7 +923,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     }
 
     /// <summary>
-    /// A class that represents the state data to be sent to the user app
+    /// Represents a VideoCodecBaseStateMessage
     /// </summary>
     public class VideoCodecBaseStateMessage : DeviceStateMessageBase
     {
@@ -938,6 +938,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public bool? CameraSelfViewIsOn { get; set; }
 
         [JsonProperty("cameras", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Cameras
+        /// </summary>
         public CameraStatus Cameras { get; set; }
 
         [JsonProperty("cameraSupportsAutoMode", NullValueHandling = NullValueHandling.Ignore)]
@@ -947,12 +950,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public bool? CameraSupportsOffMode { get; set; }
 
         [JsonProperty("currentDialString", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the CurrentDialString
+        /// </summary>
         public string CurrentDialString { get; set; }
 
         [JsonProperty("currentDirectory", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the CurrentDirectory
+        /// </summary>
         public CodecDirectory CurrentDirectory { get; set; }
 
         [JsonProperty("directorySelectedFolderName", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the DirectorySelectedFolderName
+        /// </summary>
         public string DirectorySelectedFolderName { get; set; }
 
         [JsonProperty("hasCameras", NullValueHandling = NullValueHandling.Ignore)]
@@ -974,6 +986,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public bool? InitialPhonebookSyncComplete { get; set; }
 
         [JsonProperty("info", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Info
+        /// </summary>
         public VideoCodecInfo Info { get; set; }
 
         [JsonProperty("isInCall", NullValueHandling = NullValueHandling.Ignore)]
@@ -986,9 +1001,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public bool? IsZoomRoom { get; set; }
 
         [JsonProperty("meetingInfo", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the MeetingInfo
+        /// </summary>
         public MeetingInfo MeetingInfo { get; set; }
 
         [JsonProperty("presets", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Presets
+        /// </summary>
         public List<CodecRoomPreset> Presets { get; set; }
 
         [JsonProperty("privacyModeIsOn", NullValueHandling = NullValueHandling.Ignore)]
@@ -1004,6 +1025,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public bool? SharingContentIsOn { get; set; }
 
         [JsonProperty("sharingSource", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the SharingSource
+        /// </summary>
         public string SharingSource { get; set; }
 
         [JsonProperty("showCamerasWhenNotInCall", NullValueHandling = NullValueHandling.Ignore)]
@@ -1019,6 +1043,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public bool? SupportsAdHocMeeting { get; set; }
     }
 
+    /// <summary>
+    /// Represents a CameraStatus
+    /// </summary>
     public class CameraStatus
     {
         [JsonProperty("cameraManualSupported", NullValueHandling = NullValueHandling.Ignore)]
@@ -1031,30 +1058,54 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public bool? CameraOffIsSupported { get; set; }
 
         [JsonProperty("cameraMode", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the CameraMode
+        /// </summary>
         public string CameraMode { get; set; }
 
         [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Cameras
+        /// </summary>
         public List<CameraBase> Cameras { get; set; }
 
         [JsonProperty("selectedCamera", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the SelectedCamera
+        /// </summary>
         public Camera SelectedCamera { get; set; }        
     }
 
+    /// <summary>
+    /// Represents a Camera
+    /// </summary>
     public class Camera
     {
         [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; set; }
 
         [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
 
         [JsonProperty("isFarEnd", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsFarEnd { get; set; }
 
         [JsonProperty("capabilities", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Capabilities
+        /// </summary>
         public CameraCapabilities Capabilities { get; set; }
     }
 
+    /// <summary>
+    /// Represents a CameraCapabilities
+    /// </summary>
     public class CameraCapabilities
     {
         [JsonProperty("canPan", NullValueHandling = NullValueHandling.Ignore)]
@@ -1071,22 +1122,40 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
     }
 
+    /// <summary>
+    /// Represents a VideoCodecBaseEventMessage
+    /// </summary>
     public class VideoCodecBaseEventMessage : DeviceEventMessageBase
     {
 
     }
 
+    /// <summary>
+    /// Represents a PasswordPromptEventMessage
+    /// </summary>
     public class PasswordPromptEventMessage : VideoCodecBaseEventMessage
     {
         [JsonProperty("message", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Message
+        /// </summary>
         public string Message { get; set; }
         [JsonProperty("lastAttemptWasIncorrect", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the LastAttemptWasIncorrect
+        /// </summary>
         public bool LastAttemptWasIncorrect { get; set; }
 
         [JsonProperty("loginAttemptFailed", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the LoginAttemptFailed
+        /// </summary>
         public bool LoginAttemptFailed { get; set; }
 
         [JsonProperty("loginAttemptCancelled", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the LoginAttemptCancelled
+        /// </summary>
         public bool LoginAttemptCancelled { get; set; }
     }
 }

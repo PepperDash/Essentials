@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace PepperDash.Essentials.WebApiHandlers
 {
+    /// <summary>
+    /// Represents a ActionPathsHandler
+    /// </summary>
     public class ActionPathsHandler : WebApiBaseRequestHandler
     {
         private readonly MobileControlSystemController mcController;
@@ -26,6 +29,9 @@ namespace PepperDash.Essentials.WebApiHandlers
         }
     }
 
+    /// <summary>
+    /// Represents a ActionPathsResponse
+    /// </summary>
     public class ActionPathsResponse
     {
         [JsonIgnore]
@@ -40,12 +46,21 @@ namespace PepperDash.Essentials.WebApiHandlers
         }
     }
 
+    /// <summary>
+    /// Represents a ActionPath
+    /// </summary>
     public class ActionPath
     {
         [JsonProperty("messengerKey")]
+        /// <summary>
+        /// Gets or sets the MessengerKey
+        /// </summary>
         public string MessengerKey { get; set; }
 
         [JsonProperty("path")]
+        /// <summary>
+        /// Gets or sets the Path
+        /// </summary>
         public string Path { get; set; }
     }
 }

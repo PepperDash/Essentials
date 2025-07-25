@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a ILevelControlsMessenger
+    /// </summary>
     public class ILevelControlsMessenger : MessengerBase
     {
         private ILevelControls levelControlsDevice;
@@ -74,15 +77,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a LevelControlStateMessage
+    /// </summary>
     public class LevelControlStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("levelControls")]
         public Dictionary<string, Volume> Levels { get; set; }
     }
 
+    /// <summary>
+    /// Represents a LevelControlRequestMessage
+    /// </summary>
     public class LevelControlRequestMessage
     {
         [JsonProperty("key")]
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; set; }
 
         [JsonProperty("level", NullValueHandling = NullValueHandling.Ignore)]

@@ -9,28 +9,31 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// HTTP server for serving logo images and files
+    /// </summary>
     public class HttpLogoServer
     {
         /// <summary>
-        /// 
+        /// The HTTP server instance
         /// </summary>
         readonly HttpServer _server;
 
         /// <summary>
-        /// 
+        /// The directory containing files to serve
         /// </summary>
         readonly string _fileDirectory;
 
         /// <summary>
-        /// 
+        /// Dictionary mapping file extensions to content types
         /// </summary>
         public static Dictionary<string, string> ExtensionContentTypes;
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the HttpLogoServer class
         /// </summary>
-        /// <param name="port"></param>
-        /// <param name="directory"></param>
+        /// <param name="port">Port number for the HTTP server</param>
+        /// <param name="directory">Directory containing files to serve</param>
         public HttpLogoServer(int port, string directory)
         {
             ExtensionContentTypes = new Dictionary<string, string>
@@ -57,8 +60,10 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// 
+        /// Handles incoming HTTP requests and serves files from the configured directory
         /// </summary>
+        /// <param name="sender">The HTTP server instance</param>
+        /// <param name="args">HTTP request arguments</param>
         void Server_OnHttpRequest(object sender, OnHttpRequestArgs args)
         {
             var path = args.Request.Path;
@@ -102,8 +107,9 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// 
+        /// Handles program status events and closes the server when the program is stopping
         /// </summary>
+        /// <param name="programEventType">The program status event type</param>
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
             if (programEventType == eProgramStatusEventType.Stopping)
@@ -111,10 +117,13 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// 
+        /// Gets the content type for a file based on its extension
         /// </summary>
-        /// <param name="extension"></param>
-        /// <returns></returns>
+        /// <param name="extension">The file extension</param>
+        /// <returns>The corresponding content type string</returns>
+        /// <summary>
+        /// GetContentType method
+        /// </summary>
         public static string GetContentType(string extension)
         {
             var type = ExtensionContentTypes.ContainsKey(extension) ? ExtensionContentTypes[extension] : "text/plain";

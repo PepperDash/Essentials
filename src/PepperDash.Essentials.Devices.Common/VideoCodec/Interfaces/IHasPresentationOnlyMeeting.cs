@@ -1,5 +1,8 @@
 ﻿namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 {
+    /// <summary>
+    /// Defines the contract for IHasPresentationOnlyMeeting
+    /// </summary>
     public interface IHasPresentationOnlyMeeting
     {
         void StartSharingOnlyMeeting();
@@ -9,6 +12,9 @@
         void StartNormalMeetingFromSharingOnlyMeeting();
     }
 
+    /// <summary>
+    /// Enumeration of eSharingMeetingMode values
+    /// </summary>
     public enum eSharingMeetingMode
     {
         None,

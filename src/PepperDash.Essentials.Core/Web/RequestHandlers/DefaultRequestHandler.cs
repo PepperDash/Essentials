@@ -3,6 +3,9 @@ using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+ /// <summary>
+ /// Represents a DefaultRequestHandler
+ /// </summary>
 	public class DefaultRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

@@ -20,6 +20,9 @@ namespace PepperDash.Essentials.Core.Config
     {
         public static event EventHandler<ConfigStatusEventArgs> ConfigStatusChanged;
 
+        /// <summary>
+        /// GetConfigFromServer method
+        /// </summary>
         public static void GetConfigFromServer(string url)
         {
             Debug.LogMessage(LogEventLevel.Information, "Attempting to get new config from '{0}'", url);
@@ -202,6 +205,9 @@ namespace PepperDash.Essentials.Core.Config
 
     }
 
+        /// <summary>
+        /// Enumeration of eUpdateStatus values
+        /// </summary>
         public enum eUpdateStatus
     {
         UpdateStarted,
@@ -214,8 +220,14 @@ namespace PepperDash.Essentials.Core.Config
         UpdateFailed
     }
 
+    /// <summary>
+    /// Represents a ConfigStatusEventArgs
+    /// </summary>
     public class ConfigStatusEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the UpdateStatus
+        /// </summary>
         public eUpdateStatus UpdateStatus { get; private set; }
 
         public ConfigStatusEventArgs(eUpdateStatus status)

@@ -6,6 +6,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+ /// <summary>
+ /// Represents a ModalDialog
+ /// </summary>
 	public class ModalDialog
 	{
 		/// <summary>
@@ -165,7 +168,7 @@ namespace PepperDash.Essentials.Core
 		}
 
         /// <summary>
-        /// Wakes the panel by turning on the backlight if off
+        /// WakePanel method
         /// </summary>
         public void WakePanel()
         {
@@ -182,9 +185,9 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-        /// <summary>
-        /// Hide dialog from elsewhere, fires CompleteAction
-        /// </summary>
+  /// <summary>
+  /// CancelDialog method
+  /// </summary>
 		public void CancelDialog()
 		{
             OnModalComplete(0);

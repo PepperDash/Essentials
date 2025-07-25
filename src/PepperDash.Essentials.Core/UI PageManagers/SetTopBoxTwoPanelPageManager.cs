@@ -4,10 +4,9 @@ using PepperDash.Essentials.Core.Presets;
 
 namespace PepperDash.Essentials.Core.PageManagers
 {
-	/// <summary>
-	/// A fixed-layout page manager that expects a DPad on the right, fixed portion of the page, and a two/three 
-	/// tab switchable area on the left for presets, numeric and transport controls
-	/// </summary>
+ /// <summary>
+ /// Represents a SetTopBoxMediumPageManager
+ /// </summary>
 	public class SetTopBoxMediumPageManager : MediumLeftSwitchablePageManager
 	{
 		ISetTopBoxControls SetTopBox;
@@ -22,6 +21,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 				PresetsView = new DevicePresetsView(trilist, stb.TvPresets);
 		}
 
+  /// <summary>
+  /// Show method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Show()
 		{
 			if(PresetsView != null)
@@ -51,6 +54,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 			}
 		}
 
+  /// <summary>
+  /// Hide method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Hide()
 		{
 			TriList.BooleanInput[BackingPageJoin].BoolValue = false;

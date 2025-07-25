@@ -6,6 +6,9 @@ using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+ /// <summary>
+ /// Represents a RestartProgramRequestHandler
+ /// </summary>
 	public class RestartProgramRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

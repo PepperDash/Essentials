@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a Hrxxx0WirelessRemoteControllerJoinMap
+    /// </summary>
     public class Hrxxx0WirelessRemoteControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("Power")]

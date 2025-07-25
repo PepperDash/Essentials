@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a DmpsRoutingControllerJoinMap
+    /// </summary>
     public class DmpsRoutingControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("EnableRouting")]

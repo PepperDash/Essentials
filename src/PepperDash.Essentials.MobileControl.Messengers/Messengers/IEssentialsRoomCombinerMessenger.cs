@@ -152,9 +152,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
         private class RoomCombinerRoom : IKeyName
         {
             [JsonProperty("key")]
+            /// <summary>
+            /// Gets or sets the Key
+            /// </summary>
             public string Key { get; set; }
 
             [JsonProperty("name")]
+            /// <summary>
+            /// Gets or sets the Name
+            /// </summary>
             public string Name { get; set; }
         }
     }

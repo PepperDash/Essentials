@@ -4,6 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Represents a ISetTopBoxControlsMessenger
+    /// </summary>
     public class ISetTopBoxControlsMessenger : MessengerBase
     {
         private readonly ISetTopBoxControls stbDevice;

@@ -221,9 +221,10 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-        /// <summary>
-        /// Stop the poll cycle
-        /// </summary>
+  /// <summary>
+  /// Stop method
+  /// </summary>
+  /// <inheritdoc />
 		public override void Stop()
 		{
             if(MonitorBytesReceived)
@@ -280,11 +281,14 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-    /// <summary>
-    /// Communication Monitor Configuration from Essentials Configuration
-    /// </summary>
+ /// <summary>
+ /// Represents a CommunicationMonitorConfig
+ /// </summary>
 	public class CommunicationMonitorConfig
 	{
+  /// <summary>
+  /// Gets or sets the PollInterval
+  /// </summary>
 		public int PollInterval { get; set; }
 		public int TimeToWarning { get; set; }
 		public int TimeToError { get; set; }

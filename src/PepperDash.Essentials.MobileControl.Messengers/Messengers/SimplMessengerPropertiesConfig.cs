@@ -3,7 +3,7 @@
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     /// <summary>
-    /// Properties to configure a SIMPL Messenger
+    /// Represents a SimplMessengerPropertiesConfig
     /// </summary>
     public class SimplMessengerPropertiesConfig : EiscApiPropertiesConfig.ApiDevicePropertiesConfig
     {

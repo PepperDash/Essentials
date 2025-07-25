@@ -74,6 +74,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// Set value of the versiport digital output
         /// </summary>
         /// <param name="state">value to set the output to</param>
+        /// <summary>
+        /// SetOutput method
+        /// </summary>
         public void SetOutput(bool state)
         {
                 if (OutputPort.SupportsDigitalOutput)
@@ -92,6 +95,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #region Bridge Linking
 
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
+        /// <inheritdoc />
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new IDigitalOutputJoinMap(joinStart);
@@ -128,6 +135,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
         #endregion
 
 
+        /// <summary>
+        /// GetVersiportDigitalOutput method
+        /// </summary>
         public static Versiport GetVersiportDigitalOutput(IOPortConfig dc)
         {
 
@@ -169,6 +179,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
     }
 
 
+    /// <summary>
+    /// Represents a GenericVersiportDigitalOutputDeviceFactory
+    /// </summary>
     public class GenericVersiportDigitalOutputDeviceFactory : EssentialsDeviceFactory<GenericVersiportDigitalInputDevice>
     {
         public GenericVersiportDigitalOutputDeviceFactory()
@@ -176,6 +189,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
             TypeNames = new List<string>() { "versiportoutput" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Versiport Device");

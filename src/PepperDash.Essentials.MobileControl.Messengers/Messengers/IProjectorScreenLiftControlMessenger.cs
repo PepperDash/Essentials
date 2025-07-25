@@ -7,6 +7,9 @@ using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a IProjectorScreenLiftControlMessenger
+    /// </summary>
     public class IProjectorScreenLiftControlMessenger : MessengerBase
     {
         private readonly IProjectorScreenLiftControl device;
@@ -63,16 +66,25 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a ScreenLiftStateMessage
+    /// </summary>
     public class ScreenLiftStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("inUpPosition", NullValueHandling = NullValueHandling.Ignore)]
         public bool? InUpPosition { get; set; }
 
         [JsonProperty("displayDeviceKey", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the DisplayDeviceKey
+        /// </summary>
         public string DisplayDeviceKey { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public eScreenLiftControlType Type { get; set; }
     }
 }

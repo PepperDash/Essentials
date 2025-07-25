@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.WebApiHandlers
 {
+    /// <summary>
+    /// Represents a MobileAuthRequestHandler
+    /// </summary>
     public class MobileAuthRequestHandler : WebApiBaseRequestAsyncHandler
     {
         private readonly MobileControlSystemController mcController;

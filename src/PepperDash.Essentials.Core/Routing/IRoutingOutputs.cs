@@ -3,10 +3,10 @@
 
 namespace PepperDash.Essentials.Core
 {
-    /// <summary>
-    /// Defines a class that has a collection of RoutingOutputPorts
-    /// </summary>
 
+    /// <summary>
+    /// Defines the contract for IRoutingOutputs
+    /// </summary>
     public interface IRoutingOutputs : IKeyed
 	{
 		RoutingPortCollection<RoutingOutputPort> OutputPorts { get; }

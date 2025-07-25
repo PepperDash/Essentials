@@ -45,6 +45,9 @@ namespace PepperDash.Essentials.Devices.Common
         }
         SourceListItem _CurrentSourceInfo;
 
+  /// <summary>
+  /// Gets or sets the AnyAudioIn
+  /// </summary>
 		public RoutingInputPort AnyAudioIn { get; private set; }
 
 		public GenericAudioOut(string key, string name)
@@ -65,11 +68,9 @@ namespace PepperDash.Essentials.Devices.Common
 	}
 
 
-	/// <summary>
-	/// Allows a zone-device's audio control to be attached to the endpoint, for easy routing and
-	/// control switching.  Will also set the zone name on attached devices, like SWAMP or other
-	/// hardware with names built in.
-	/// </summary>
+ /// <summary>
+ /// Represents a GenericAudioOutWithVolume
+ /// </summary>
 	public class GenericAudioOutWithVolume : GenericAudioOut, IHasVolumeDevice
 	{
 		public string VolumeDeviceKey { get; private set; }
@@ -109,6 +110,10 @@ namespace PepperDash.Essentials.Devices.Common
             TypeNames = new List<string>() { "genericaudiooutwithvolume" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new GenericAudioOutWithVolumeFactory Device");

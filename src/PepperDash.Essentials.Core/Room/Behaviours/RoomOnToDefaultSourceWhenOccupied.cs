@@ -33,6 +33,9 @@ namespace PepperDash.Essentials.Core
 
         const string FeatureEnableEventName = "EnableRoomOnToDefaultSourceWhenOccupied";
 
+        /// <summary>
+        /// Gets or sets the FeatureDisabledTime
+        /// </summary>
         public DateTime FeatureDisabledTime { get; private set; }
 
         ScheduledEvent FeatureDisableEvent;
@@ -41,6 +44,9 @@ namespace PepperDash.Essentials.Core
 
         ScheduledEventGroup FeatureEventGroup;
 
+        /// <summary>
+        /// Gets or sets the Room
+        /// </summary>
         public IRoomOccupancy Room { get; private set; }
 
         private Fusion.EssentialsHuddleSpaceFusionSystemControllerBase FusionRoom;
@@ -75,6 +81,10 @@ namespace PepperDash.Essentials.Core
             });
         }
 
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
         public override bool CustomActivate()
         {
             SetUpDevice();
@@ -505,42 +515,81 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Represents a RoomOnToDefaultSourceWhenOccupiedConfig
+    /// </summary>
     public class RoomOnToDefaultSourceWhenOccupiedConfig
     {
         [JsonProperty("roomKey")]
+        /// <summary>
+        /// Gets or sets the RoomKey
+        /// </summary>
         public string RoomKey { get; set; }
 
         [JsonProperty("enableRoomOnWhenOccupied")]
+        /// <summary>
+        /// Gets or sets the EnableRoomOnWhenOccupied
+        /// </summary>
         public bool EnableRoomOnWhenOccupied { get; set; }
 
         [JsonProperty("occupancyStartTime")]
+        /// <summary>
+        /// Gets or sets the OccupancyStartTime
+        /// </summary>
         public string OccupancyStartTime { get; set; }
 
         [JsonProperty("occupancyEndTime")]
+        /// <summary>
+        /// Gets or sets the OccupancyEndTime
+        /// </summary>
         public string OccupancyEndTime { get; set; }
 
         [JsonProperty("enableSunday")]
+        /// <summary>
+        /// Gets or sets the EnableSunday
+        /// </summary>
         public bool EnableSunday { get; set; }
 
         [JsonProperty("enableMonday")]
+        /// <summary>
+        /// Gets or sets the EnableMonday
+        /// </summary>
         public bool EnableMonday { get; set; }
 
         [JsonProperty("enableTuesday")]
+        /// <summary>
+        /// Gets or sets the EnableTuesday
+        /// </summary>
         public bool EnableTuesday { get; set; }
 
         [JsonProperty("enableWednesday")]
+        /// <summary>
+        /// Gets or sets the EnableWednesday
+        /// </summary>
         public bool EnableWednesday { get; set; }
 
         [JsonProperty("enableThursday")]
+        /// <summary>
+        /// Gets or sets the EnableThursday
+        /// </summary>
         public bool EnableThursday { get; set; }
 
         [JsonProperty("enableFriday")]
+        /// <summary>
+        /// Gets or sets the EnableFriday
+        /// </summary>
         public bool EnableFriday { get; set; }
 
         [JsonProperty("enableSaturday")]
+        /// <summary>
+        /// Gets or sets the EnableSaturday
+        /// </summary>
         public bool EnableSaturday { get; set; }
     }
 
+    /// <summary>
+    /// Represents a RoomOnToDefaultSourceWhenOccupiedFactory
+    /// </summary>
     public class RoomOnToDefaultSourceWhenOccupiedFactory : EssentialsDeviceFactory<RoomOnToDefaultSourceWhenOccupied>
     {
         public RoomOnToDefaultSourceWhenOccupiedFactory()
@@ -548,6 +597,10 @@ namespace PepperDash.Essentials.Core
             TypeNames = new List<string>() { "roomonwhenoccupancydetectedfeature" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new RoomOnToDefaultSourceWhenOccupied Device");

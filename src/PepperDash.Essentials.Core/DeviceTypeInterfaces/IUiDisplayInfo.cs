@@ -2,9 +2,9 @@
 
 namespace PepperDash.Essentials.Core
 {
-	/// <summary>
-	/// Describes things needed to show on UI
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for IUiDisplayInfo
+ /// </summary>
 	public interface IUiDisplayInfo : IKeyed
 	{
 		uint DisplayUiType { get; }

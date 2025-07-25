@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core
 {
 	public abstract class HandlerBridge
 	{
+  /// <summary>
+  /// Gets or sets the IsAttached
+  /// </summary>
 		public bool IsAttached { get; protected set; }
 
 		/// <summary>

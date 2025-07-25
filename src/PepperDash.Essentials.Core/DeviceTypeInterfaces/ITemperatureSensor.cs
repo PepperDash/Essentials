@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
+    /// <summary>
+    /// Defines the contract for ITemperatureSensor
+    /// </summary>
     public interface ITemperatureSensor
     {
         /// <summary>

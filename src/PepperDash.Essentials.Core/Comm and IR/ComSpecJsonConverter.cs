@@ -34,8 +34,9 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// 
+        /// CanConvert method
         /// </summary>
+        /// <inheritdoc />
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(ComPort.ComPortSpec?);
@@ -44,10 +45,15 @@ namespace PepperDash.Essentials.Core
         public override bool CanRead { get { return true; } }
 
         /// <summary>
-        /// This converter will not be used for writing
+        /// Gets or sets the CanWrite
         /// </summary>
+        /// <inheritdoc />
         public override bool CanWrite { get { return false; } }
 
+        /// <summary>
+        /// WriteJson method
+        /// </summary>
+        /// <inheritdoc />
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             throw new NotImplementedException();
@@ -55,12 +61,11 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// The gist of this converter: The comspec JSON comes in with normal values that need to be converted
-    /// into enum names.  This converter takes the value and applies the appropriate enum's name prefix to the value
-    /// and then returns the enum value using Enum.Parse. NOTE: Does not write
+    /// Represents a ComSpecPropsJsonConverter
     /// </summary>
     public class ComSpecPropsJsonConverter : JsonConverter
     {
+        /// <inheritdoc />
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(ComPort.eComBaudRates)
@@ -72,8 +77,15 @@ namespace PepperDash.Essentials.Core
                 || objectType == typeof(ComPort.eComStopBits);
         }
 
+        /// <summary>
+        /// Gets or sets the CanRead
+        /// </summary>
+        /// <inheritdoc />
         public override bool CanRead { get { return true; } }
 
+        /// <summary>
+        /// ReadJson method
+        /// </summary>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             //Debug.LogMessage(LogEventLevel.Verbose, "ReadJson type: " + objectType.Name);
@@ -94,6 +106,10 @@ namespace PepperDash.Essentials.Core
             return null;
         }
 
+        /// <summary>
+        /// WriteJson method
+        /// </summary>
+        /// <inheritdoc />
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             throw new NotImplementedException();

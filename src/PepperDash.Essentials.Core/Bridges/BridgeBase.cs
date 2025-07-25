@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Core.Bridges
     }
 
     /// <summary>
-    /// Bridge API using EISC
+    /// Represents a EiscApiAdvanced
     /// </summary>
     public class EiscApiAdvanced : BridgeApi, ICommunicationMonitor
     {
@@ -60,12 +60,19 @@ namespace PepperDash.Essentials.Core.Bridges
             AddPostActivationAction(RegisterEisc);
         }
 
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
         public override bool CustomActivate()
         {
             CommunicationMonitor.Start();
             return base.CustomActivate();
         }
 
+        /// <summary>
+        /// Deactivate method
+        /// </summary>
         public override bool Deactivate()
         {
             CommunicationMonitor.Stop();
@@ -123,6 +130,9 @@ namespace PepperDash.Essentials.Core.Bridges
             Debug.LogMessage(LogEventLevel.Debug, this, "EISC registration successful");
         }
 
+        /// <summary>
+        /// LinkRooms method
+        /// </summary>
         public void LinkRooms()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Linking Rooms...");
@@ -153,6 +163,9 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         /// <param name="deviceKey"></param>
         /// <param name="joinMap"></param>
+        /// <summary>
+        /// AddJoinMap method
+        /// </summary>
         public void AddJoinMap(string deviceKey, JoinMapBaseAdvanced joinMap)
         {
             if (!JoinMaps.ContainsKey(deviceKey))
@@ -166,8 +179,9 @@ namespace PepperDash.Essentials.Core.Bridges
         }
 
         /// <summary>
-        /// Prints all the join maps on this bridge
+        /// PrintJoinMaps method
         /// </summary>
+        /// <inheritdoc />
         public virtual void PrintJoinMaps()
         {
             CrestronConsole.ConsoleCommandResponse("Join Maps for EISC IPID: {0}\r\n", Eisc.ID.ToString("X"));
@@ -179,8 +193,9 @@ namespace PepperDash.Essentials.Core.Bridges
             }
         }
         /// <summary>
-        /// Generates markdown for all join maps on this bridge
+        /// MarkdownForBridge method
         /// </summary>
+        /// <inheritdoc />
         public virtual void MarkdownForBridge(string bridgeKey)
         {
             Debug.LogMessage(LogEventLevel.Information, this, "Writing Joinmaps to files for EISC IPID: {0}", Eisc.ID.ToString("X"));
@@ -196,6 +211,9 @@ namespace PepperDash.Essentials.Core.Bridges
         /// Prints the join map for a device by key
         /// </summary>
         /// <param name="deviceKey"></param>
+        /// <summary>
+        /// PrintJoinMapForDevice method
+        /// </summary>
         public void PrintJoinMapForDevice(string deviceKey)
         {
             var joinMap = JoinMaps[deviceKey];
@@ -213,6 +231,9 @@ namespace PepperDash.Essentials.Core.Bridges
         /// Prints the join map for a device by key
         /// </summary>
         /// <param name="deviceKey"></param>
+        /// <summary>
+        /// MarkdownJoinMapForDevice method
+        /// </summary>
         public void MarkdownJoinMapForDevice(string deviceKey, string bridgeKey)
         {
             var joinMap = JoinMaps[deviceKey];
@@ -233,6 +254,9 @@ namespace PepperDash.Essentials.Core.Bridges
         /// <param name="join"></param>
         /// <param name="type"></param>
         /// <param name="state"></param>
+        /// <summary>
+        /// ExecuteJoinAction method
+        /// </summary>
         public void ExecuteJoinAction(uint join, string type, object state)
         {
             try
@@ -318,49 +342,91 @@ namespace PepperDash.Essentials.Core.Bridges
 
         #region Implementation of ICommunicationMonitor
 
+        /// <summary>
+        /// Gets or sets the CommunicationMonitor
+        /// </summary>
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
         #endregion
     }
 
+    /// <summary>
+    /// Represents a EiscApiPropertiesConfig
+    /// </summary>
     public class EiscApiPropertiesConfig
     {
         [JsonProperty("control")]
+        /// <summary>
+        /// Gets or sets the Control
+        /// </summary>
         public EssentialsControlPropertiesConfig Control { get; set; }
 
         [JsonProperty("devices")]
+        /// <summary>
+        /// Gets or sets the Devices
+        /// </summary>
         public List<ApiDevicePropertiesConfig> Devices { get; set; }
 
         [JsonProperty("rooms")]
+        /// <summary>
+        /// Gets or sets the Rooms
+        /// </summary>
         public List<ApiRoomPropertiesConfig> Rooms { get; set; }
 
 
+        /// <summary>
+        /// Represents a ApiDevicePropertiesConfig
+        /// </summary>
         public class ApiDevicePropertiesConfig
         {
             [JsonProperty("deviceKey")]
+            /// <summary>
+            /// Gets or sets the DeviceKey
+            /// </summary>
             public string DeviceKey { get; set; }
 
             [JsonProperty("joinStart")]
+            /// <summary>
+            /// Gets or sets the JoinStart
+            /// </summary>
             public uint JoinStart { get; set; }
 
             [JsonProperty("joinMapKey")]
+            /// <summary>
+            /// Gets or sets the JoinMapKey
+            /// </summary>
             public string JoinMapKey { get; set; }
         }
 
+        /// <summary>
+        /// Represents a ApiRoomPropertiesConfig
+        /// </summary>
         public class ApiRoomPropertiesConfig
         {
             [JsonProperty("roomKey")]
+            /// <summary>
+            /// Gets or sets the RoomKey
+            /// </summary>
             public string RoomKey { get; set; }
 
             [JsonProperty("joinStart")]
+            /// <summary>
+            /// Gets or sets the JoinStart
+            /// </summary>
             public uint JoinStart { get; set; }
 
             [JsonProperty("joinMapKey")]
+            /// <summary>
+            /// Gets or sets the JoinMapKey
+            /// </summary>
             public string JoinMapKey { get; set; }
         }
 
     }
 
+    /// <summary>
+    /// Represents a EiscApiAdvancedFactory
+    /// </summary>
     public class EiscApiAdvancedFactory : EssentialsDeviceFactory<EiscApiAdvanced>
     {
         public EiscApiAdvancedFactory()
@@ -368,6 +434,10 @@ namespace PepperDash.Essentials.Core.Bridges
             TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "eiscapiadvancedserver", "eiscapiadvancedclient", "vceiscapiadv", "vceiscapiadvanced" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new EiscApiAdvanced Device");

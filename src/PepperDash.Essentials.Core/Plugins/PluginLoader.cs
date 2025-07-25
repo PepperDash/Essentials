@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Crestron.SimplSharp;
-// using Crestron.SimplSharp.CrestronIO;
 using System.Reflection;
-
+using Crestron.SimplSharp;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Serilog.Events;
-using Newtonsoft.Json;
-using System.IO;
 
 namespace PepperDash.Essentials
 {
@@ -28,10 +26,19 @@ namespace PepperDash.Essentials
         /// </summary>
         static List<LoadedAssembly> LoadedPluginFolderAssemblies;
 
+        /// <summary>
+        /// The assembly for the Essentials Framework
+        /// </summary>
         public static LoadedAssembly EssentialsAssembly { get; private set; }
 
+        /// <summary>
+        /// The assembly for the PepperDash Core
+        /// </summary>
         public static LoadedAssembly PepperDashCoreAssembly { get; private set; }
 
+        /// <summary>
+        /// The list of assemblies loaded from the Essentials plugins folder
+        /// </summary>
         public static List<LoadedAssembly> EssentialsPluginAssemblies { get; private set; }
 
         /// <summary>
@@ -56,7 +63,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Retrieves all the loaded assemblies from the program directory
+        /// AddProgramAssemblies method
         /// </summary>
         public static void AddProgramAssemblies()
         {
@@ -115,6 +122,9 @@ namespace PepperDash.Essentials
         }
 
 
+        /// <summary>
+        /// SetEssentialsAssembly method
+        /// </summary>
         public static void SetEssentialsAssembly(string name, Assembly assembly)
         {
             var loadedAssembly = LoadedAssemblies.FirstOrDefault(la => la.Name.Equals(name));
@@ -128,7 +138,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Loads an assembly via Reflection and adds it to the list of loaded assemblies
         /// </summary>
-        /// <param name="fileName"></param>
+        /// <param name="filePath"></param>
         static LoadedAssembly LoadAssembly(string filePath)
         {
             try
@@ -150,7 +160,8 @@ namespace PepperDash.Essentials
                 }
 
                 return null;
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Debug.LogMessage(ex, "Error loading assembly from {path}", null, filePath);
                 return null;
@@ -163,6 +174,9 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="assembly"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetAssemblyVersion method
+        /// </summary>
         public static string GetAssemblyVersion(Assembly assembly)
         {
             var ver = assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
@@ -186,6 +200,9 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="filename"></param>
         /// <returns>True if file already matches loaded assembly file.</returns>
+        /// <summary>
+        /// CheckIfAssemblyLoaded method
+        /// </summary>
         public static bool CheckIfAssemblyLoaded(string name)
         {
             Debug.LogMessage(LogEventLevel.Verbose, "Checking if assembly: {0} is loaded...", name);
@@ -204,9 +221,26 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
+        /// Associates the specified assembly with the given name in the loaded assemblies collection.
+        /// </summary>
+        /// <remarks>If an assembly with the specified name already exists in the loaded assemblies collection, 
+        /// this method updates its associated assembly. If no matching name is found, the method does nothing.</remarks>
+        /// <param name="name">The name used to identify the assembly. This value is case-sensitive and must not be null or empty.</param>
+        /// <param name="assembly">The assembly to associate with the specified name. This value must not be null.</param>
+        public static void AddLoadedAssembly(string name, Assembly assembly)
+        {
+            var loadedAssembly = LoadedAssemblies.FirstOrDefault(la => la.Name.Equals(name));
+
+            loadedAssembly?.SetAssembly(assembly);
+        }
+
+        /// <summary>
         /// Used by console command to report the currently loaded assemblies and versions
         /// </summary>
         /// <param name="command"></param>
+        /// <summary>
+        /// ReportAssemblyVersions method
+        /// </summary>
         public static void ReportAssemblyVersions(string command)
         {
             CrestronConsole.ConsoleCommandResponse("Essentials Version: {0}" + CrestronEnvironment.NewLine, Global.AssemblyVersion);
@@ -390,7 +424,7 @@ namespace PepperDash.Essentials
                 try
                 {
                     var assy = loadedAssembly.Assembly;
-                    Type[] types = {};
+                    Type[] types = { };
                     try
                     {
                         types = assy.GetTypes();
@@ -407,8 +441,8 @@ namespace PepperDash.Essentials
                     foreach (var type in types)
                     {
                         try
-                        {                    
-                            if (typeof (IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract)
+                        {
+                            if (typeof(IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract)
                             {
                                 var plugin =
                                     (IPluginDeviceFactory)Activator.CreateInstance(type);
@@ -442,86 +476,64 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Loads a
+        /// Loads a custom plugin and performs a dependency check to ensure compatibility with the required Essentials
+        /// framework version.
         /// </summary>
-        /// <param name="plugin"></param>
-        /// <param name="loadedAssembly"></param>
-        static void LoadCustomPlugin(IPluginDeviceFactory plugin, LoadedAssembly loadedAssembly)
+        /// <remarks>This method verifies that the plugin meets the minimum required Essentials framework version
+        /// before loading it.  If the plugin fails the dependency check, it is skipped, and a log message is generated.  If
+        /// the plugin passes the check, it is loaded, and its type factories are initialized.</remarks>
+        /// <param name="pluginDeviceFactory">The plugin to be loaded, implementing the <see cref="IPluginDeviceFactory"/> interface.  If the plugin also
+        /// implements <see cref="IPluginDevelopmentDeviceFactory"/>, additional checks for development versions are
+        /// performed.</param>
+        /// <param name="loadedAssembly">The assembly associated with the plugin being loaded. This is used for logging and tracking purposes.</param>
+        static void LoadCustomPlugin(IPluginDeviceFactory pluginDeviceFactory, LoadedAssembly loadedAssembly)
         {
-            var developmentPlugin = plugin as IPluginDevelopmentDeviceFactory;
-
-            var passed = developmentPlugin != null ? Global.IsRunningDevelopmentVersion
-                (developmentPlugin.DevelopmentEssentialsFrameworkVersions, developmentPlugin.MinimumEssentialsFrameworkVersion) 
-                : Global.IsRunningMinimumVersionOrHigher(plugin.MinimumEssentialsFrameworkVersion);
+            var passed = pluginDeviceFactory is IPluginDevelopmentDeviceFactory developmentPlugin ? Global.IsRunningDevelopmentVersion
+                (developmentPlugin.DevelopmentEssentialsFrameworkVersions, developmentPlugin.MinimumEssentialsFrameworkVersion)
+                : Global.IsRunningMinimumVersionOrHigher(pluginDeviceFactory.MinimumEssentialsFrameworkVersion);
 
             if (!passed)
             {
                 Debug.LogMessage(LogEventLevel.Information,
                     "\r\n********************\r\n\tPlugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin {1}\r\n********************",
-                    plugin.MinimumEssentialsFrameworkVersion, loadedAssembly.Name);
+                    pluginDeviceFactory.MinimumEssentialsFrameworkVersion, loadedAssembly.Name);
                 return;
             }
             else
             {
-                Debug.LogMessage(LogEventLevel.Information, "Passed plugin passed dependency check (required version {0})", plugin.MinimumEssentialsFrameworkVersion);
+                Debug.LogMessage(LogEventLevel.Information, "Passed plugin passed dependency check (required version {0})", pluginDeviceFactory.MinimumEssentialsFrameworkVersion);
             }
 
-            Debug.LogMessage(LogEventLevel.Information, "Loading plugin: {0}", loadedAssembly.Name);
-            plugin.LoadTypeFactories();
+            Debug.LogMessage(LogEventLevel.Information, "Loading plugin factory: {0}", loadedAssembly.Name);
 
-            if(!EssentialsPluginAssemblies.Contains(loadedAssembly))
+            LoadDeviceFactories(pluginDeviceFactory);
+
+            if (!EssentialsPluginAssemblies.Contains(loadedAssembly))
                 EssentialsPluginAssemblies.Add(loadedAssembly);
         }
 
         /// <summary>
-        /// Loads a a custom plugin via the legacy method
+        /// Loads device factories from the specified plugin device factory and registers them for use.
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="loadPlugin"></param>
-        static void LoadCustomLegacyPlugin(Type type, MethodInfo loadPlugin, LoadedAssembly loadedAssembly)
+        /// <remarks>This method retrieves metadata from the provided <paramref name="deviceFactory"/>, including
+        /// type names, descriptions, and configuration snippets, and registers the factory for each device type. The type
+        /// names are converted to lowercase for registration.</remarks>
+        /// <param name="deviceFactory">The plugin device factory that provides the device types, descriptions, and factory methods to be registered.</param>
+        private static void LoadDeviceFactories(IPluginDeviceFactory deviceFactory)
         {
-            Debug.LogMessage(LogEventLevel.Verbose, "LoadPlugin method found in {0}", type.Name);
-
-            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-
-            var minimumVersion = fields.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
-            if (minimumVersion != null)
+            foreach (var typeName in deviceFactory.TypeNames)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "MinimumEssentialsFrameworkVersion found");
+                string description = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
+                    ? descriptionAttribute[0].Description
+                    : "No description available";
 
-                var minimumVersionString = minimumVersion.GetValue(null) as string;
-
-                if (!string.IsNullOrEmpty(minimumVersionString))
-                {
-                    var passed = Global.IsRunningMinimumVersionOrHigher(minimumVersionString);
-
-                    if (!passed)
-                    {
-                        Debug.LogMessage(LogEventLevel.Information, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", minimumVersionString);
-                        return;
-                    }
-                    else
-                    {
-                        Debug.LogMessage(LogEventLevel.Information, "Passed plugin passed dependency check (required version {0})", minimumVersionString);
-                    }
-                }
-                else
-                {
-                    Debug.LogMessage(LogEventLevel.Information, "MinimumEssentialsFrameworkVersion found but not set.  Loading plugin, but your mileage may vary.");
-                }
+                DeviceFactory.AddFactoryForType(typeName.ToLower(), description, deviceFactory.FactoryType, deviceFactory.BuildDevice);
             }
-            else
-            {
-                Debug.LogMessage(LogEventLevel.Information, "MinimumEssentialsFrameworkVersion not found.  Loading plugin, but your mileage may vary.");
-            }
-
-            Debug.LogMessage(LogEventLevel.Information, "Loading legacy plugin: {0}", loadedAssembly.Name);
-            loadPlugin.Invoke(null, null);
-
         }
 
+
         /// <summary>
-        /// Loads plugins
+        /// LoadPlugins method
         /// </summary>
         public static void LoadPlugins()
         {
@@ -551,17 +563,34 @@ namespace PepperDash.Essentials
     }
 
     /// <summary>
-    /// Represents an assembly loaded at runtime and it's associated metadata
+    /// Represents a LoadedAssembly
     /// </summary>
     public class LoadedAssembly
     {
+        /// <summary>
+        /// Gets the name of the assembly
+        /// </summary>
         [JsonProperty("name")]
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets the version of the assembly
+        /// </summary>
         [JsonProperty("version")]
         public string Version { get; private set; }
+
+        /// <summary>
+        /// Gets the assembly
+        /// </summary>
         [JsonIgnore]
         public Assembly Assembly { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the LoadedAssembly class
+        /// </summary>
+        /// <param name="name">The name of the assembly</param>
+        /// <param name="version">The version of the assembly</param>
+        /// <param name="assembly">The assembly</param>
         public LoadedAssembly(string name, string version, Assembly assembly)
         {
             Name = name;
@@ -569,6 +598,9 @@ namespace PepperDash.Essentials
             Assembly = assembly;
         }
 
+        /// <summary>
+        /// SetAssembly method
+        /// </summary>
         public void SetAssembly(Assembly assembly)
         {
             Assembly = assembly;

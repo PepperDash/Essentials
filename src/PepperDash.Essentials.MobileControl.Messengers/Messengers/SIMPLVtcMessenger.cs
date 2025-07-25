@@ -10,10 +10,16 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     // ReSharper disable once InconsistentNaming
+    /// <summary>
+    /// Represents a SIMPLVtcMessenger
+    /// </summary>
     public class SIMPLVtcMessenger : MessengerBase
     {
         private readonly BasicTriList _eisc;
 
+        /// <summary>
+        /// Gets or sets the JoinMap
+        /// </summary>
         public SIMPLVtcJoinMap JoinMap { get; private set; }
 
         private readonly CodecActiveCallItem _currentCallItem;

@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a IDspPresetsMessenger
+    /// </summary>
     public class IDspPresetsMessenger : MessengerBase
     {
         private readonly IDspPresets device;
@@ -42,6 +45,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a IHasDspPresetsStateMessage
+    /// </summary>
     public class IHasDspPresetsStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("presets")]

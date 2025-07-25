@@ -23,12 +23,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         public string DeviceKey => _device?.Key ?? "";
 
-        /// <summary>
-        /// 
-        /// </summary>
 
+        /// <summary>
+        /// Gets or sets the AppServerController
+        /// </summary>
         public IMobileControl AppServerController { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the MessagePath
+        /// </summary>
         public string MessagePath { get; private set; }
 
         /// <summary>
@@ -104,6 +107,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _actions.Add(path, action);
         }
 
+        /// <summary>
+        /// GetActionPaths method
+        /// </summary>
         public List<string> GetActionPaths()
         {
             return _actions.Keys.ToList();
@@ -243,6 +249,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// The device key
         /// </summary>
         [JsonProperty("key")]
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; set; }
 
         /// <summary>
@@ -258,11 +267,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public string MessageType => GetType().Name;
 
         [JsonProperty("messageBasePath")]
+        /// <summary>
+        /// Gets or sets the MessageBasePath
+        /// </summary>
         public string MessageBasePath { get; set; }
     }
 
     /// <summary>
-    /// Base class for state messages that includes the type of message and the implmented interfaces
+    /// Represents a DeviceStateMessageBase
     /// </summary>
     public class DeviceStateMessageBase : DeviceMessageBase
     {

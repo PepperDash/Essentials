@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a GenericMessenger
+    /// </summary>
     public class GenericMessenger : MessengerBase
     {
         public GenericMessenger(string key, EssentialsDevice device, string messagePath) : base(key, messagePath, device)

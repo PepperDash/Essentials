@@ -24,7 +24,7 @@ namespace PepperDash.Essentials.Core.Queues
         private const Thread.eThreadPriority _defaultPriority = Thread.eThreadPriority.MediumPriority;
 
         /// <summary>
-        /// If the instance has been disposed.
+        /// Gets or sets the Disposed
         /// </summary>
         public bool Disposed { get; private set; }
 
@@ -208,6 +208,9 @@ namespace PepperDash.Essentials.Core.Queues
             return null;
         }
 
+        /// <summary>
+        /// Enqueue method
+        /// </summary>
         public void Enqueue(IQueueMessage item)
         {
             if (Disposed)
@@ -221,8 +224,7 @@ namespace PepperDash.Essentials.Core.Queues
         }
 
         /// <summary>
-        /// Disposes the thread and cleans up resources.  Thread cannot be restarted once
-        /// disposed.
+        /// Dispose method
         /// </summary>
         public void Dispose()
         {

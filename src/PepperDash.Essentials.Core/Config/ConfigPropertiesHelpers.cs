@@ -11,10 +11,13 @@ using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Essentials.Core.Config
 {
+    /// <summary>
+    /// Represents a ConfigPropertiesHelpers
+    /// </summary>
     public class ConfigPropertiesHelpers
     {
         /// <summary>
-        /// Returns the value of properties.hasAudio, or false if not defined
+        /// GetHasAudio method
         /// </summary>
         public static bool GetHasAudio(DeviceConfig deviceConfig)
         {

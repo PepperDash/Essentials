@@ -8,6 +8,9 @@ using DisplayBase = PepperDash.Essentials.Devices.Common.Displays.DisplayBase;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Represents a DisplayBaseMessenger
+    /// </summary>
     public class DisplayBaseMessenger : MessengerBase
     {
         private readonly DisplayBase display;

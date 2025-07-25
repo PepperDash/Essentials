@@ -6,6 +6,9 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
+ /// <summary>
+ /// Defines the contract for IStatusMonitor
+ /// </summary>
 	public interface IStatusMonitor
 	{
 		IKeyed Parent { get; }
@@ -18,9 +21,9 @@ namespace PepperDash.Essentials.Core
 	}
 
 
-	/// <summary>
-	/// Represents a class that has a basic communication monitoring
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for ICommunicationMonitor
+ /// </summary>
 	public interface ICommunicationMonitor
 	{
 		StatusMonitorBase CommunicationMonitor { get; }
@@ -39,7 +42,13 @@ namespace PepperDash.Essentials.Core
 
 	public class MonitorStatusChangeEventArgs : EventArgs
 	{
+  /// <summary>
+  /// Gets or sets the Status
+  /// </summary>
 		public MonitorStatus Status { get; private set; }
+  /// <summary>
+  /// Gets or sets the Message
+  /// </summary>
 		public string Message { get; private set; }
 	
 		public MonitorStatusChangeEventArgs(MonitorStatus status)

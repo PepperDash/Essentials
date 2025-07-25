@@ -79,7 +79,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Port on server
+        /// Gets or sets the Port
         /// </summary>
         public int Port { get; set; }
 
@@ -149,7 +149,7 @@ namespace PepperDash.Core
         public string ConnectionFailure { get { return ClientStatus.ToString(); } }
 
         /// <summary>
-        /// bool to track if auto reconnect should be set on the socket
+        /// Gets or sets the AutoReconnect
         /// </summary>
         public bool AutoReconnect { get; set; }
 
@@ -188,7 +188,7 @@ namespace PepperDash.Core
         #region GenericSecureTcpIpClient properties
 
         /// <summary>
-        /// Bool to show whether the server requires a preshared key. This is used in the DynamicTCPServer class
+        /// Gets or sets the SharedKeyRequired
         /// </summary>
         public bool SharedKeyRequired { get; set; }
 
@@ -207,7 +207,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// SharedKey is sent for varification to the server. Shared key can be any text (255 char limit in SIMPL+ Module), but must match the Shared Key on the Server module
+        /// Gets or sets the SharedKey
         /// </summary>
         public string SharedKey { get; set; }
 
@@ -222,7 +222,7 @@ namespace PepperDash.Core
         bool IsTryingToConnect;
 
         /// <summary>
-        /// Bool showing if socket is ready for communication after shared key exchange
+        /// Gets or sets the IsReadyForCommunication
         /// </summary>
         public bool IsReadyForCommunication { get; set; }
 
@@ -342,7 +342,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Just to help S+ set the key
+        /// Initialize method
         /// </summary>
         public void Initialize(string key)
         {
@@ -421,6 +421,9 @@ namespace PepperDash.Core
         /// Deactivate the client
         /// </summary>
         /// <returns></returns>
+        /// <summary>
+        /// Deactivate method
+        /// </summary>
         public override bool Deactivate()
         {
             if (_client != null)
@@ -432,7 +435,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Connect Method. Will return if already connected. Will write errors if missing address, port, or unique key/name.
+        /// Connect method
         /// </summary>
         public void Connect()
         {
@@ -563,7 +566,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// 
+        /// Disconnect method
         /// </summary>
         public void Disconnect()
         {
@@ -586,7 +589,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Does the actual disconnect business
+        /// DisconnectClient method
         /// </summary>
         public void DisconnectClient()
         {
@@ -846,7 +849,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// General send method
+        /// SendText method
         /// </summary>
         public void SendText(string text)
         {
@@ -875,7 +878,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// 
+        /// SendBytes method
         /// </summary>
         public void SendBytes(byte[] bytes)
         {

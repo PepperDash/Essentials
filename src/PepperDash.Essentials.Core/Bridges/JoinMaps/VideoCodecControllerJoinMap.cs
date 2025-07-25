@@ -2,6 +2,9 @@ using System;
 using PepperDash.Essentials.Core;
 namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
+ /// <summary>
+ /// Represents a VideoCodecControllerJoinMap
+ /// </summary>
 	public class VideoCodecControllerJoinMap : JoinMapBaseAdvanced
 	{
 		#region Digital

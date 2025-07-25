@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a GenericRelayControllerJoinMap
+    /// </summary>
     public class GenericRelayControllerJoinMap : JoinMapBaseAdvanced
     {
 

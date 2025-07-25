@@ -23,6 +23,9 @@ namespace PepperDash.Core.JsonToSimpl
 		/// </summary>
 		/// <param name="master">New master to add</param>
         /// 
+  /// <summary>
+  /// AddMaster method
+  /// </summary>
 		public static void AddMaster(JsonToSimplMaster master)
 		{
 			if (master == null)
@@ -49,9 +52,9 @@ namespace PepperDash.Core.JsonToSimpl
 			}
 		}
 
-		/// <summary>
-		/// Gets a master by its key.  Case-insensitive
-		/// </summary>
+  /// <summary>
+  /// GetMasterByFile method
+  /// </summary>
 		public static JsonToSimplMaster GetMasterByFile(string file)
 		{
 			return Masters.FirstOrDefault(m => m.UniqueID.Equals(file, StringComparison.OrdinalIgnoreCase));

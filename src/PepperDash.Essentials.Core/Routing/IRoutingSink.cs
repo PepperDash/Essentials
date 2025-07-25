@@ -3,7 +3,7 @@
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// For fixed-source endpoint devices
+    /// Defines the contract for IRoutingSink
     /// </summary>
     public interface IRoutingSink : IRoutingInputs, IHasCurrentSourceInfoChange
     {

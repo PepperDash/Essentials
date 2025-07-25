@@ -5,6 +5,9 @@ using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+ /// <summary>
+ /// Represents a GetTypesByFilterRequestHandler
+ /// </summary>
 	public class GetTypesByFilterRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

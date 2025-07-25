@@ -5,6 +5,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a IShutdownPromptTimerMessenger
+    /// </summary>
     public class IShutdownPromptTimerMessenger : MessengerBase
     {
         private readonly IShutdownPromptTimer _room;
@@ -79,15 +82,27 @@ namespace PepperDash.Essentials.AppServer.Messengers
     }
 
 
+    /// <summary>
+    /// Represents a IShutdownPromptTimerStateMessage
+    /// </summary>
     public class IShutdownPromptTimerStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("secondsRemaining")]
+        /// <summary>
+        /// Gets or sets the SecondsRemaining
+        /// </summary>
         public int SecondsRemaining { get; set; }
 
         [JsonProperty("percentageRemaining")]
+        /// <summary>
+        /// Gets or sets the PercentageRemaining
+        /// </summary>
         public int PercentageRemaining { get; set; }
 
         [JsonProperty("shutdownPromptSeconds")]
+        /// <summary>
+        /// Gets or sets the ShutdownPromptSeconds
+        /// </summary>
         public int ShutdownPromptSeconds { get; set; }
     }
 }

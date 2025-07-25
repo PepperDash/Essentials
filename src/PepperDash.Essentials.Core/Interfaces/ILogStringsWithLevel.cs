@@ -7,6 +7,9 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Interfaces
 {
+ /// <summary>
+ /// Defines the contract for ILogStringsWithLevel
+ /// </summary>
 	public interface ILogStringsWithLevel : IKeyed
 	{
 		/// <summary>

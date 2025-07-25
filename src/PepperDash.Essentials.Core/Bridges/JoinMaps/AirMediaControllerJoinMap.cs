@@ -2,6 +2,9 @@ using System;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a AirMediaControllerJoinMap
+    /// </summary>
     public class AirMediaControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("IsOnline")]

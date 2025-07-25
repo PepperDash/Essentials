@@ -12,8 +12,14 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
+    /// <summary>
+    /// Represents a MockDisplay
+    /// </summary>
     public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string>, IRoutingSinkWithSwitchingWithInputPort, IHasPowerControlWithFeedback
 	{
+        /// <summary>
+        /// Gets or sets the Inputs
+        /// </summary>
         public ISelectableItems<string> Inputs { get; private set; }
 
 		bool _PowerIsOn;
@@ -92,6 +98,10 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             CooldownTime = 10000;
 		}
 
+  /// <summary>
+  /// PowerOn method
+  /// </summary>
+  /// <inheritdoc />
 		public override void PowerOn()
 		{
 			if (!PowerIsOnFeedback.BoolValue && !_IsWarmingUp && !_IsCoolingDown)
@@ -109,6 +119,10 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			}
 		}
 
+  /// <summary>
+  /// PowerOff method
+  /// </summary>
+  /// <inheritdoc />
 		public override void PowerOff()
 		{
 			// If a display has unreliable-power off feedback, just override this and
@@ -129,6 +143,10 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			}
 		}		
 		
+  /// <summary>
+  /// PowerToggle method
+  /// </summary>
+  /// <inheritdoc />
 		public override void PowerToggle()
 		{
 			if (PowerIsOnFeedback.BoolValue && !IsWarmingUpFeedback.BoolValue)
@@ -137,6 +155,10 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 				PowerOn();
 		}
 
+  /// <summary>
+  /// ExecuteSwitch method
+  /// </summary>
+  /// <inheritdoc />
 		public override void ExecuteSwitch(object selector)
 		{
             try
@@ -174,6 +196,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             }
         }
 
+        /// <summary>
+        /// SetInput method
+        /// </summary>
         public void SetInput(string selector)
         {
 			ISelectableItem currentInput = null;
@@ -202,26 +227,41 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
         #region IBasicVolumeWithFeedback Members
 
+        /// <summary>
+        /// Gets or sets the VolumeLevelFeedback
+        /// </summary>
         public IntFeedback VolumeLevelFeedback { get; private set; }
 
+  /// <summary>
+  /// SetVolume method
+  /// </summary>
 		public void SetVolume(ushort level)
 		{
 			_FakeVolumeLevel = level;
 			VolumeLevelFeedback.InvokeFireUpdate();
 		}
 
+  /// <summary>
+  /// MuteOn method
+  /// </summary>
 		public void MuteOn()
 		{
 			_IsMuted = true;
 			MuteFeedback.InvokeFireUpdate();
 		}
 
+  /// <summary>
+  /// MuteOff method
+  /// </summary>
 		public void MuteOff()
 		{
 			_IsMuted = false;
 			MuteFeedback.InvokeFireUpdate();
 		}
 
+  /// <summary>
+  /// Gets or sets the MuteFeedback
+  /// </summary>
 		public BoolFeedback MuteFeedback { get; private set; }
 
 
@@ -229,6 +269,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
         #region IBasicVolumeControls Members
 
+        /// <summary>
+        /// VolumeUp method
+        /// </summary>
         public void VolumeUp(bool pressRelease)
 		{
             //while (pressRelease)
@@ -243,6 +286,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             //}
 		}
 
+  /// <summary>
+  /// VolumeDown method
+  /// </summary>
 		public void VolumeDown(bool pressRelease)
 		{
             //while (pressRelease)
@@ -257,6 +303,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             //}
 		}
 
+  /// <summary>
+  /// MuteToggle method
+  /// </summary>
 		public void MuteToggle()
 		{
 			_IsMuted = !_IsMuted;
@@ -265,12 +314,18 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 		#endregion
 
+     /// <summary>
+     /// LinkToApi method
+     /// </summary>
 	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }
     }
 
+ /// <summary>
+ /// Represents a MockDisplayFactory
+ /// </summary>
 	public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
 	{
 		public MockDisplayFactory()
@@ -278,6 +333,10 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			TypeNames = new List<string>() { "mockdisplay" , "mockdisplay2" };
 		}
 
+  /// <summary>
+  /// BuildDevice method
+  /// </summary>
+  /// <inheritdoc />
 		public override EssentialsDevice BuildDevice(DeviceConfig dc)
 		{
 			Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Mock Display Device");

@@ -13,6 +13,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
     public static class MockVideoCodecDirectory
     {
+        /// <summary>
+        /// Enumeration of eFolderId values
+        /// </summary>
         public enum eFolderId
         {
             UnitedStates,

@@ -14,7 +14,7 @@ using System;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// The handler type for a Room's SourceInfoChange
+    /// Delegate for SourceInfoChangeHandler
     /// </summary>
     public delegate void SourceInfoChangeHandler(SourceListItem info, ChangeType type);
     //*******************************************************************************************

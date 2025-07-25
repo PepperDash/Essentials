@@ -14,6 +14,9 @@ namespace PepperDash.Essentials.Core
 	{
 
 		static CCriticalSection fileLock = new CCriticalSection();
+  /// <summary>
+  /// Delegate for GotFileEventHandler
+  /// </summary>
 		public delegate void GotFileEventHandler(object sender, FileEventArgs e);
 		public static event GotFileEventHandler GotFileEvent;
 
@@ -22,6 +25,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
+        /// <summary>
+        /// GetFiles method
+        /// </summary>
         public static FileInfo[] GetFiles(string fileName)
         {
             string fullFilePath = Global.FilePathPrefix + fileName;
@@ -38,6 +44,9 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// GetFile method
+        /// </summary>
         public static FileInfo GetFile(string fileName)
         {
             string fullFilePath = Global.FilePathPrefix + fileName;
@@ -60,6 +69,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
+  /// <summary>
+  /// ReadDataFromFile method
+  /// </summary>
 		public static string ReadDataFromFile(string fileName)
 		{
 			try
@@ -78,6 +90,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
+        /// <summary>
+        /// ReadDataFromFile method
+        /// </summary>
         public static string ReadDataFromFile(FileInfo file)
 		{
 			try
@@ -121,6 +136,9 @@ namespace PepperDash.Essentials.Core
 		}
 
 
+  /// <summary>
+  /// ReadDataFromFileASync method
+  /// </summary>
 		public static void ReadDataFromFileASync(string fileName)
 		{
 			try
@@ -133,6 +151,9 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
+  /// <summary>
+  /// ReadDataFromFileASync method
+  /// </summary>
 		public static void ReadDataFromFileASync(FileInfo file)
 		{
 			try
@@ -247,6 +268,9 @@ namespace PepperDash.Essentials.Core
 		/// 
 		/// </summary>
 		/// <returns></returns>
+  /// <summary>
+  /// FileIoUnitTest method
+  /// </summary>
 		public static bool FileIoUnitTest()
 		{
 			var testData = "Testing FileIO";
@@ -268,9 +292,15 @@ namespace PepperDash.Essentials.Core
 		}
 
 	}
+ /// <summary>
+ /// Represents a FileEventArgs
+ /// </summary>
 	public class FileEventArgs
 	{
 		public FileEventArgs(string data) { Data = data; }
+  /// <summary>
+  /// Gets or sets the Data
+  /// </summary>
 		public string Data { get; private set; } // readonly
 
 	}

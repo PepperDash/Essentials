@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a IDigitalOutputJoinMap
+    /// </summary>
     public class IDigitalOutputJoinMap : JoinMapBaseAdvanced
     {
 

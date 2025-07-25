@@ -6,6 +6,9 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
+    /// <summary>
+    /// Enumeration of eCodecCallStatus values
+    /// </summary>
     public enum eCodecCallStatus
     {
         Unknown = 0,
@@ -23,6 +26,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     }
 
 
+    /// <summary>
+    /// Represents a CodecCallStatus
+    /// </summary>
     public class CodecCallStatus
     {
 
@@ -31,6 +37,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
+        /// <summary>
+        /// ConvertToStatusEnum method
+        /// </summary>
         public static eCodecCallStatus ConvertToStatusEnum(string s)
         {
             switch (s)

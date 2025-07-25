@@ -3,7 +3,7 @@
 namespace PepperDash.Essentials.Core.Bridges
 {
     /// <summary>
-    /// Join map for CameraBase devices
+    /// Represents a CameraControllerJoinMap
     /// </summary>
     public class CameraControllerJoinMap : JoinMapBaseAdvanced
     {

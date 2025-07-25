@@ -11,20 +11,32 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+ /// <summary>
+ /// Represents a ConsoleCommMockDevice
+ /// </summary>
 	public class ConsoleCommMockDevice : EssentialsDevice, ICommunicationMonitor
 	{
+  /// <summary>
+  /// Gets or sets the Communication
+  /// </summary>
 		public IBasicCommunication Communication { get; private set; }
+  /// <summary>
+  /// Gets or sets the PortGather
+  /// </summary>
 		public CommunicationGather PortGather { get; private set; }
+  /// <summary>
+  /// Gets or sets the CommunicationMonitor
+  /// </summary>
 		public StatusMonitorBase CommunicationMonitor { get; private set; }
 
-		/// <summary>
-		/// Defaults to \x0a
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the LineEnding
+  /// </summary>
 		public string LineEnding { get; set; }
 
-		/// <summary>
-		/// Set to true to show responses in full hex
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the ShowHexResponse
+  /// </summary>
 		public bool ShowHexResponse { get; set; }
 
 		public ConsoleCommMockDevice(string key, string name, ConsoleCommMockDevicePropertiesConfig props, IBasicCommunication comm)
@@ -37,6 +49,10 @@ namespace PepperDash.Essentials.Core
 			LineEnding = props.LineEnding;
 		}
 
+  /// <summary>
+  /// CustomActivate method
+  /// </summary>
+  /// <inheritdoc />
 		public override bool CustomActivate()
 		{
 			Communication.Connect();
@@ -56,9 +72,18 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
+ /// <summary>
+ /// Represents a ConsoleCommMockDevicePropertiesConfig
+ /// </summary>
 	public class ConsoleCommMockDevicePropertiesConfig
 	{
+  /// <summary>
+  /// Gets or sets the LineEnding
+  /// </summary>
 		public string LineEnding { get; set; }
+  /// <summary>
+  /// Gets or sets the CommunicationMonitorProperties
+  /// </summary>
 		public CommunicationMonitorConfig CommunicationMonitorProperties { get; set; }
 
 		public ConsoleCommMockDevicePropertiesConfig()
@@ -67,6 +92,9 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
+    /// <summary>
+    /// Represents a ConsoleCommMockDeviceFactory
+    /// </summary>
     public class ConsoleCommMockDeviceFactory : EssentialsDeviceFactory<ConsoleCommMockDevice>
     {
         public ConsoleCommMockDeviceFactory()
@@ -74,6 +102,10 @@ namespace PepperDash.Essentials.Core
             TypeNames = new List<string>() { "commmock" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Comm Mock Device");

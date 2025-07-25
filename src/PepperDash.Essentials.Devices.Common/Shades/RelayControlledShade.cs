@@ -22,6 +22,9 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
         int RelayPulseTime;
 
+        /// <summary>
+        /// Gets or sets the StopOrPresetButtonLabel
+        /// </summary>
         public string StopOrPresetButtonLabel { get; set; }
 
         public RelayControlledShade(string key, string name, RelayControlledShadeConfigProperties config)
@@ -35,6 +38,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
         }
 
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
         public override bool CustomActivate()
         {
             //Create ISwitchedOutput objects based on props
@@ -46,6 +53,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             return base.CustomActivate();
         }
 
+        /// <summary>
+        /// Open method
+        /// </summary>
+        /// <inheritdoc />
         public override void Open()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Opening Shade: '{0}'", this.Name);
@@ -53,6 +64,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             PulseOutput(OpenRelay, RelayPulseTime);
         }
 
+        /// <summary>
+        /// Stop method
+        /// </summary>
+        /// <inheritdoc />
         public override void Stop()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Shade: '{0}'", this.Name);
@@ -60,6 +75,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             PulseOutput(StopOrPresetRelay, RelayPulseTime);
         }
 
+        /// <summary>
+        /// Close method
+        /// </summary>
+        /// <inheritdoc />
         public override void Close()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Closing Shade: '{0}'", this.Name);
@@ -95,20 +114,47 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
     }
 
+    /// <summary>
+    /// Represents a RelayControlledShadeConfigProperties
+    /// </summary>
     public class RelayControlledShadeConfigProperties
     {
+        /// <summary>
+        /// Gets or sets the RelayPulseTime
+        /// </summary>
         public int RelayPulseTime { get; set; }
+        /// <summary>
+        /// Gets or sets the Relays
+        /// </summary>
         public ShadeRelaysConfig Relays { get; set; }
+        /// <summary>
+        /// Gets or sets the StopOrPresetLabel
+        /// </summary>
         public string StopOrPresetLabel { get; set; }
 
+        /// <summary>
+        /// Represents a ShadeRelaysConfig
+        /// </summary>
         public class ShadeRelaysConfig
         {
+            /// <summary>
+            /// Gets or sets the Open
+            /// </summary>
             public IOPortConfig Open { get; set; }
+            /// <summary>
+            /// Gets or sets the StopOrPreset
+            /// </summary>
             public IOPortConfig StopOrPreset { get; set; }
+            /// <summary>
+            /// Gets or sets the Close
+            /// </summary>
             public IOPortConfig Close { get; set; }
         }
     }
 
+    /// <summary>
+    /// Represents a RelayControlledShadeFactory
+    /// </summary>
     public class RelayControlledShadeFactory : EssentialsDeviceFactory<RelayControlledShade>
     {
         public RelayControlledShadeFactory()
@@ -116,6 +162,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             TypeNames = new List<string>() { "relaycontrolledshade" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Comm Device");

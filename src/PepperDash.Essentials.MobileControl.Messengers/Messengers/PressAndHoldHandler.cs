@@ -97,6 +97,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
             return handler;
         }
 
+        /// <summary>
+        /// HandlePressAndHold method
+        /// </summary>
         public static void HandlePressAndHold(string deviceKey, JToken content, Action<bool> action)
         {
             var msg = content.ToObject<MobileControlSimpleContent<string>>();

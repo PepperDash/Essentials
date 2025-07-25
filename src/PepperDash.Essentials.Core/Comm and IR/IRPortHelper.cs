@@ -83,6 +83,9 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
+     /// <summary>
+     /// GetIrOutputPort method
+     /// </summary>
 	    public static IROutputPort GetIrOutputPort(DeviceConfig dc)
 	    {
 	        var irControllerKey = dc.Key + "-ir";
@@ -142,6 +145,9 @@ namespace PepperDash.Essentials.Core
 	        return port;
 	    }
 
+     /// <summary>
+     /// GetIrOutputPortController method
+     /// </summary>
 	    public static IrOutputPortController GetIrOutputPortController(DeviceConfig config)
 	    {
             Debug.LogMessage(LogEventLevel.Debug, "Attempting to create new Ir Port Controller");
@@ -159,8 +165,8 @@ namespace PepperDash.Essentials.Core
 
 	    /*
         /// <summary>
-        /// Returns a ready-to-go IrOutputPortController from a DeviceConfig object.
-        /// </summary>	
+        /// GetIrOutputPortController method
+        /// </summary>
         public static IrOutputPortController GetIrOutputPortController(DeviceConfig devConf)
         {
             var irControllerKey = devConf.Key + "-ir";
@@ -222,12 +228,15 @@ namespace PepperDash.Essentials.Core
         }*/
 	}
 
-	/// <summary>
-	/// Wrapper to help in IR port creation
-	/// </summary>
+ /// <summary>
+ /// Represents a IrOutPortConfig
+ /// </summary>
 	public class IrOutPortConfig
 	{
 		[JsonProperty("port")]
+  /// <summary>
+  /// Gets or sets the Port
+  /// </summary>
 		public IROutputPort Port { get; set; }
 		
 		[JsonProperty("fileName")]

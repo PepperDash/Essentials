@@ -6,6 +6,9 @@ using System.Text;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+    /// <summary>
+    /// Represents a GetTieLinesRequestHandler
+    /// </summary>
     public class GetTieLinesRequestHandler : WebApiBaseRequestHandler
     {
         public GetTieLinesRequestHandler() : base(true) { }

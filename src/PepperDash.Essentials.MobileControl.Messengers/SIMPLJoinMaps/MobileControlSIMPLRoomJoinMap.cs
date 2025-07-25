@@ -4,6 +4,9 @@
 namespace PepperDash.Essentials.AppServer
 {
     // ReSharper disable once InconsistentNaming
+    /// <summary>
+    /// Represents a MobileControlSIMPLRoomJoinMap
+    /// </summary>
     public class MobileControlSIMPLRoomJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("QrCodeUrl")]

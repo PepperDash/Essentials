@@ -5,6 +5,9 @@ using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a IShadesOpenCloseStopMessenger
+    /// </summary>
     public class IShadesOpenCloseStopMessenger : MessengerBase
     {
         private readonly IShadesOpenCloseStop device;
@@ -86,9 +89,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a ShadeBaseStateMessage
+    /// </summary>
     public class ShadeBaseStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("middleButtonLabel", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the MiddleButtonLabel
+        /// </summary>
         public string MiddleButtonLabel { get; set; }
 
         [JsonProperty("isOpen", NullValueHandling = NullValueHandling.Ignore)]

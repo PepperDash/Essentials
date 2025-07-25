@@ -34,6 +34,9 @@ namespace PepperDash.Essentials.Core.Bridges
                 bridge.PrintJoinMaps();
             }
         }
+        /// <summary>
+        /// JoinmapMarkdown method
+        /// </summary>
         public static void JoinmapMarkdown(string command)
         {
             var targets = command.Split(' ');

@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     }
 
     /// <summary>
-    /// Describes a device that has Half Waek Mode capability
+    /// Defines the contract for IHasHalfWakeMode
     /// </summary>
     public interface IHasHalfWakeMode : IHasStandbyMode
     {

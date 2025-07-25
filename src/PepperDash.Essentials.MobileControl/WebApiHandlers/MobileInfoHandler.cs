@@ -10,6 +10,9 @@ using System.Linq;
 
 namespace PepperDash.Essentials.WebApiHandlers
 {
+    /// <summary>
+    /// Represents a MobileInfoHandler
+    /// </summary>
     public class MobileInfoHandler : WebApiBaseRequestHandler
     {
         private readonly MobileControlSystemController mcController;
@@ -39,6 +42,9 @@ namespace PepperDash.Essentials.WebApiHandlers
         }
     }
 
+    /// <summary>
+    /// Represents a InformationResponse
+    /// </summary>
     public class InformationResponse
     {
         [JsonIgnore]
@@ -58,6 +64,9 @@ namespace PepperDash.Essentials.WebApiHandlers
         }
     }
 
+    /// <summary>
+    /// Represents a MobileControlEdgeServer
+    /// </summary>
     public class MobileControlEdgeServer
     {
         [JsonIgnore]
@@ -87,6 +96,9 @@ namespace PepperDash.Essentials.WebApiHandlers
         }
     }
 
+    /// <summary>
+    /// Represents a MobileControlDirectServer
+    /// </summary>
     public class MobileControlDirectServer
     {
         [JsonIgnore]
@@ -113,6 +125,9 @@ namespace PepperDash.Essentials.WebApiHandlers
         }
     }
 
+    /// <summary>
+    /// Represents a MobileControlDirectClient
+    /// </summary>
     public class MobileControlDirectClient
     {
         [JsonIgnore]

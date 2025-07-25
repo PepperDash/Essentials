@@ -5,9 +5,9 @@ using Newtonsoft.Json.Converters;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
-	/// <summary>
-	/// Defines a class that has warm up and cool down
-	/// </summary>
+ /// <summary>
+ /// Defines the contract for IProjectorScreenLiftControl
+ /// </summary>
 	public interface IProjectorScreenLiftControl
 	{
 		void Raise();
@@ -19,6 +19,9 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 		eScreenLiftControlType Type { get; } // screen/lift
 	}
 
+ /// <summary>
+ /// Enumeration of eScreenLiftControlType values
+ /// </summary>
 	public enum eScreenLiftControlType
 	{
 		lift,

@@ -6,6 +6,9 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.Devices.Common.Room
 {
+    /// <summary>
+    /// Defines the contract for IEssentialsHuddleVtc1Room
+    /// </summary>
     public interface IEssentialsHuddleVtc1Room : IEssentialsRoom, IHasCurrentSourceInfoChange, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback,
         IRoomOccupancy, IEmergency, IMicrophonePrivacy
     {

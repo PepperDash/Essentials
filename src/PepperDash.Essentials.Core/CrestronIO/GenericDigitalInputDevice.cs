@@ -17,10 +17,19 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Core.CrestronIO
 {
     [Description("Wrapper class for Digital Input")]
+    /// <summary>
+    /// Represents a GenericDigitalInputDevice
+    /// </summary>
     public class GenericDigitalInputDevice : EssentialsBridgeableDevice, IDigitalInput
     {
+        /// <summary>
+        /// Gets or sets the InputPort
+        /// </summary>
         public DigitalInput InputPort { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the InputStateFeedback
+        /// </summary>
         public BoolFeedback InputStateFeedback { get; private set; }
 
         Func<bool> InputStateFeedbackFunc
@@ -103,6 +112,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #region Bridge Linking
 
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
+        /// <inheritdoc />
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new IDigitalInputJoinMap(joinStart);
@@ -139,6 +152,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #region Factory
 
+        /// <summary>
+        /// Represents a GenericDigitalInputDeviceFactory
+        /// </summary>
         public class GenericDigitalInputDeviceFactory : EssentialsDeviceFactory<GenericDigitalInputDevice>
         {
             public GenericDigitalInputDeviceFactory()
@@ -146,6 +162,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 TypeNames = new List<string>() { "digitalinput" };
             }
 
+            /// <summary>
+            /// BuildDevice method
+            /// </summary>
+            /// <inheritdoc />
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
                 Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Digital Input Device");

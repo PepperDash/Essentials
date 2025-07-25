@@ -22,10 +22,19 @@ namespace PepperDash.Essentials.Devices.Common.Lighting
 
         public event EventHandler<LightingSceneChangeEventArgs> LightingSceneChange;
 
+        /// <summary>
+        /// Gets or sets the LightingScenes
+        /// </summary>
         public List<LightingScene> LightingScenes { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the CurrentLightingScene
+        /// </summary>
         public LightingScene CurrentLightingScene { get; protected set; }
 		
+  /// <summary>
+  /// Gets or sets the CurrentLightingSceneFeedback
+  /// </summary>
 		public IntFeedback CurrentLightingSceneFeedback { get; protected set; }
 
         #endregion
@@ -41,6 +50,9 @@ namespace PepperDash.Essentials.Devices.Common.Lighting
 
         public abstract void SelectScene(LightingScene scene);
 
+        /// <summary>
+        /// SimulateSceneSelect method
+        /// </summary>
         public void SimulateSceneSelect(string sceneName)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Simulating selection of scene '{0}'", sceneName);

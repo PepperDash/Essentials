@@ -9,6 +9,9 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
+    /// <summary>
+    /// Represents a EssentialsHuddleSpaceRoomFusionRoomJoinMap
+    /// </summary>
     public class EssentialsHuddleSpaceRoomFusionRoomJoinMap : JoinMapBaseAdvanced
     {
 

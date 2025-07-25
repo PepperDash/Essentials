@@ -150,6 +150,9 @@ namespace PepperDash.Core
         /// <param name="key"></param>
         /// <param name="address"></param>
         /// <param name="port"></param>
+        /// <summary>
+        /// Initialize method
+        /// </summary>
         public void Initialize(string key, string address, ushort port)
         {
             Key = key;
@@ -185,7 +188,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Enables the UDP Server
+        /// Connect method
         /// </summary>
         public void Connect()
         {
@@ -222,7 +225,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Disabled the UDP Server
+        /// Disconnect method
         /// </summary>
         public void Disconnect()
         {
@@ -292,6 +295,9 @@ namespace PepperDash.Core
         /// General send method
         /// </summary>
         /// <param name="text"></param>
+        /// <summary>
+        /// SendText method
+        /// </summary>
         public void SendText(string text)
         {
             var bytes = Encoding.GetEncoding(28591).GetBytes(text);
@@ -309,6 +315,9 @@ namespace PepperDash.Core
         /// 
         /// </summary>
         /// <param name="bytes"></param>
+        /// <summary>
+        /// SendBytes method
+        /// </summary>
         public void SendBytes(byte[] bytes)
         {
             if (StreamDebugging.TxStreamDebuggingIsEnabled)
@@ -320,9 +329,9 @@ namespace PepperDash.Core
 
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
+ /// <summary>
+ /// Represents a GenericUdpReceiveTextExtraArgs
+ /// </summary>
 	public class GenericUdpReceiveTextExtraArgs : EventArgs
 	{
         /// <summary>

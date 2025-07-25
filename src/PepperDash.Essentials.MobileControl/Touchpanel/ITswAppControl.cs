@@ -3,6 +3,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Touchpanel
 {
+    /// <summary>
+    /// Defines the contract for ITswAppControl
+    /// </summary>
     public interface ITswAppControl : IKeyed
     {
         BoolFeedback AppOpenFeedback { get; }
@@ -14,6 +17,9 @@ namespace PepperDash.Essentials.Touchpanel
         void OpenApp();
     }
 
+    /// <summary>
+    /// Defines the contract for ITswZoomControl
+    /// </summary>
     public interface ITswZoomControl : IKeyed
     {
         BoolFeedback ZoomIncomingCallFeedback { get; }

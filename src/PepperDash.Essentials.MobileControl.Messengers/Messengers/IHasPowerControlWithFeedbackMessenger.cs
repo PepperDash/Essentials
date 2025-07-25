@@ -5,6 +5,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a IHasPowerControlWithFeedbackMessenger
+    /// </summary>
     public class IHasPowerControlWithFeedbackMessenger : MessengerBase
     {
         private readonly IHasPowerControlWithFeedback _powerControl;
@@ -15,6 +18,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _powerControl = powerControl;
         }
 
+        /// <summary>
+        /// SendFullStatus method
+        /// </summary>
         public void SendFullStatus()
         {
             var messageObj = new PowerControlWithFeedbackStateMessage
@@ -44,6 +50,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a PowerControlWithFeedbackStateMessage
+    /// </summary>
     public class PowerControlWithFeedbackStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("powerState", NullValueHandling = NullValueHandling.Ignore)]

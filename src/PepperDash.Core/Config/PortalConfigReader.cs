@@ -67,6 +67,9 @@ namespace PepperDash.Core.Config
 		/// </summary>
 		/// <param name="doubleConfig"></param>
 		/// <returns></returns>
+  /// <summary>
+  /// MergeConfigs method
+  /// </summary>
 		public static JObject MergeConfigs(JObject doubleConfig)
 		{
 			var system = JObject.FromObject(doubleConfig["system"]);

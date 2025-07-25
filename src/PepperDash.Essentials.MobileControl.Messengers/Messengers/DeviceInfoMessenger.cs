@@ -82,6 +82,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <remarks>This class is used to encapsulate the state of a device along with its associated
     /// information. It extends <see cref="DeviceStateMessageBase"/> to provide additional details about the
     /// device.</remarks>
+    /// <summary>
+    /// Represents a DeviceInfoStateMessage
+    /// </summary>
     public class DeviceInfoStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("deviceInfo")]

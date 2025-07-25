@@ -3,7 +3,7 @@
 namespace PepperDash.Essentials.Core.Queues
 {
     /// <summary>
-    /// Message class for processing strings via an IQueue
+    /// Represents a ProcessStringMessage
     /// </summary>
     public class ProcessStringMessage : IQueueMessage
     {
@@ -36,6 +36,10 @@ namespace PepperDash.Essentials.Core.Queues
         /// To string
         /// </summary>
         /// <returns>The current message</returns>
+        /// <summary>
+        /// ToString method
+        /// </summary>
+        /// <inheritdoc />
         public override string ToString()
         {
             return _message ?? String.Empty;

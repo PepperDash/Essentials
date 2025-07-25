@@ -1,36 +1,54 @@
-﻿using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using PepperDash.Core;
-using Serilog.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
+using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Manages the devices in the system
+    /// </summary>
     public static class DeviceManager
     {
+        /// <summary>
+        /// Raised when all devices have been activated
+        /// </summary>
         public static event EventHandler<EventArgs> AllDevicesActivated;
+
+        /// <summary>
+        /// Raised when all devices have been registered
+        /// </summary>
         public static event EventHandler<EventArgs> AllDevicesRegistered;
+
+        /// <summary>
+        /// Raised when all devices have been initialized
+        /// </summary>
         public static event EventHandler<EventArgs> AllDevicesInitialized;
 
         private static readonly CCriticalSection DeviceCriticalSection = new CCriticalSection();
-        private static readonly CEvent AllowAddDevicesCEvent = new CEvent(false, true);
 
-        //public static List<Device> Devices { get { return _Devices; } }
-        //static List<Device> _Devices = new List<Device>();
+        private static readonly CEvent AllowAddDevicesCEvent = new CEvent(false, true);
 
         private static readonly Dictionary<string, IKeyed> Devices = new Dictionary<string, IKeyed>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Returns a copy of all the devices in a list
+        /// Gets or sets the AllDevices
         /// </summary>
         public static List<IKeyed> AllDevices { get { return new List<IKeyed>(Devices.Values); } }
 
+        /// <summary>
+        /// Gets or sets the AddDeviceEnabled
+        /// </summary>
         public static bool AddDeviceEnabled;
 
+        /// <summary>
+        /// Initialize method
+        /// </summary>
         public static void Initialize(CrestronControlSystem cs)
         {
             AddDeviceEnabled = true;
@@ -53,7 +71,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Calls activate steps on all Device class items
+        /// ActivateAll method
         /// </summary>
         public static void ActivateAll()
         {
@@ -68,7 +86,7 @@ namespace PepperDash.Essentials.Core
                 foreach (var d in Devices.Values)
                 {
                     try
-                    { 
+                    {
                         if (d is Device)
                             (d as Device).PreActivate();
                     }
@@ -164,7 +182,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Calls activate on all Device class items
+        /// DeactivateAll method
         /// </summary>
         public static void DeactivateAll()
         {
@@ -181,27 +199,6 @@ namespace PepperDash.Essentials.Core
                 DeviceCriticalSection.Leave();
             }
         }
-
-        //static void ListMethods(string devKey)
-        //{
-        //    var dev = GetDeviceForKey(devKey);
-        //    if(dev != null)
-        //    {
-        //        var type = dev.GetType().GetType();
-        //        var methods = type.GetMethods(BindingFlags.Public|BindingFlags.Instance);
-        //        var sb = new StringBuilder();
-        //        sb.AppendLine(string.Format("{2} methods on [{0}] ({1}):", dev.Key, type.Name, methods.Length));
-        //        foreach (var m in methods)
-        //        {
-        //            sb.Append(string.Format("{0}(", m.Name));
-        //            var pars = m.GetParameters();
-        //            foreach (var p in pars)
-        //                sb.Append(string.Format("({1}){0} ", p.Name, p.ParameterType.Name));
-        //            sb.AppendLine(")");
-        //        }
-        //        CrestronConsole.ConsoleCommandResponse(sb.ToString());
-        //    }
-        //}
 
         private static void ListDevices(string s)
         {
@@ -258,6 +255,9 @@ namespace PepperDash.Essentials.Core
         //    Debug.LogMessage(LogEventLevel.Information, "Not yet implemented.  Stay tuned");
         //}
 
+        /// <summary>
+        /// AddDevice method
+        /// </summary>
         public static void AddDevice(IKeyed newDev)
         {
             try
@@ -296,6 +296,9 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// AddDevice method
+        /// </summary>
         public static void AddDevice(IEnumerable<IKeyed> devicesToAdd)
         {
             try
@@ -332,6 +335,9 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// RemoveDevice method
+        /// </summary>
         public static void RemoveDevice(IKeyed newDev)
         {
             try
@@ -352,18 +358,27 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// GetDeviceKeys method
+        /// </summary>
         public static IEnumerable<string> GetDeviceKeys()
         {
             //return _Devices.Select(d => d.Key).ToList();
             return Devices.Keys;
         }
 
+        /// <summary>
+        /// GetDevices method
+        /// </summary>
         public static IEnumerable<IKeyed> GetDevices()
         {
             //return _Devices.Select(d => d.Key).ToList();
             return Devices.Values;
         }
 
+        /// <summary>
+        /// GetDeviceForKey method
+        /// </summary>
         public static IKeyed GetDeviceForKey(string key)
         {
             //return _Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
@@ -374,9 +389,31 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
+        /// GetDeviceForKey method
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public static T GetDeviceForKey<T>(string key)
+        {
+            //return _Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+            if (key == null || !Devices.ContainsKey(key))
+                return default;
+
+            if (!(Devices[key] is T))
+            {
+                Debug.LogMessage(LogEventLevel.Error, "Device with key '{0}' is not of type '{1}'", key, typeof(T).Name);
+                return default;
+            }
+
+            return (T)Devices[key];
+        }
+
+        /// <summary>
         /// Console handler that simulates com port data receive 
         /// </summary>
         /// <param name="s"></param>
+        /// <summary>
+        /// SimulateComReceiveOnDevice method
+        /// </summary>
         public static void SimulateComReceiveOnDevice(string s)
         {
             // devcomsim:1 xyzabc
@@ -400,6 +437,9 @@ namespace PepperDash.Essentials.Core
         /// Prints a list of routing inputs and outputs by device key.
         /// </summary>
         /// <param name="s">Device key from which to report data</param>
+        /// <summary>
+        /// GetRoutingPorts method
+        /// </summary>
         public static void GetRoutingPorts(string s)
         {
             var device = GetDeviceForKey(s);
@@ -427,6 +467,9 @@ namespace PepperDash.Essentials.Core
         /// Attempts to set the debug level of a device
         /// </summary>
         /// <param name="s"></param>
+        /// <summary>
+        /// SetDeviceStreamDebugging method
+        /// </summary>
         public static void SetDeviceStreamDebugging(string s)
         {
             if (String.IsNullOrEmpty(s) || s.Contains("?"))
@@ -492,7 +535,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Sets stream debugging settings to off for all devices
+        /// DisableAllDeviceStreamDebugging method
         /// </summary>
         public static void DisableAllDeviceStreamDebugging()
         {

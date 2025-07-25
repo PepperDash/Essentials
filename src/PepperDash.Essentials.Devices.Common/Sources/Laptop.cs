@@ -7,19 +7,34 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Sources
 {
+    /// <summary>
+    /// Represents a Laptop
+    /// </summary>
     public class Laptop : EssentialsDevice, IHasFeedback, IRoutingSource, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
+  /// <summary>
+  /// Gets or sets the DisplayUiType
+  /// </summary>
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
+  /// <summary>
+  /// Gets or sets the IconName
+  /// </summary>
 		public string IconName { get; set; }
+  /// <summary>
+  /// Gets or sets the HasPowerOnFeedback
+  /// </summary>
 		public BoolFeedback HasPowerOnFeedback { get; private set; }
 
+  /// <summary>
+  /// Gets or sets the AnyVideoOut
+  /// </summary>
 		public RoutingOutputPort AnyVideoOut { get; private set; }
 
 		#region IRoutingOutputs Members
 
-		/// <summary>
-		/// Options: hdmi
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the OutputPorts
+  /// </summary>
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
 		#endregion
@@ -58,11 +73,17 @@ namespace PepperDash.Essentials.Devices.Common.Sources
 
         #region IUsageTracking Members
 
+        /// <summary>
+        /// Gets or sets the UsageTracker
+        /// </summary>
         public UsageTracking UsageTracker { get; set; }
 
         #endregion
 	}
 
+    /// <summary>
+    /// Represents a LaptopFactory
+    /// </summary>
     public class LaptopFactory : EssentialsDeviceFactory<Laptop>
     {
         public LaptopFactory()
@@ -70,6 +91,10 @@ namespace PepperDash.Essentials.Devices.Common.Sources
             TypeNames = new List<string>() { "laptop" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Laptop Device");

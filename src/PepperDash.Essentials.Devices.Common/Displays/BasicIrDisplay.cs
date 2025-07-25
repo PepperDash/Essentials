@@ -11,9 +11,18 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
+    /// <summary>
+    /// Represents a BasicIrDisplay
+    /// </summary>
     public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
 	{
+  /// <summary>
+  /// Gets or sets the IrPort
+  /// </summary>
 		public IrOutputPortController IrPort { get; private set; }
+  /// <summary>
+  /// Gets or sets the IrPulseTime
+  /// </summary>
 		public ushort IrPulseTime { get; set; }
 
         protected Func<bool> PowerIsOnFeedbackFunc
@@ -61,36 +70,57 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			});
 		}
 
+  /// <summary>
+  /// Hdmi1 method
+  /// </summary>
 		public void Hdmi1()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_HDMI_1, IrPulseTime);
 		}
 
+  /// <summary>
+  /// Hdmi2 method
+  /// </summary>
 		public void Hdmi2()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_HDMI_2, IrPulseTime);
 		}
 
+  /// <summary>
+  /// Hdmi3 method
+  /// </summary>
 		public void Hdmi3()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_HDMI_3, IrPulseTime);
 		}
 
+  /// <summary>
+  /// Hdmi4 method
+  /// </summary>
 		public void Hdmi4()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_HDMI_4, IrPulseTime);
 		}
 
+  /// <summary>
+  /// Component1 method
+  /// </summary>
 		public void Component1()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_COMPONENT_1, IrPulseTime);
 		}
 
+  /// <summary>
+  /// Video1 method
+  /// </summary>
 		public void Video1()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_VIDEO_1, IrPulseTime);
 		}
 
+  /// <summary>
+  /// Antenna method
+  /// </summary>
 		public void Antenna()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_ANTENNA, IrPulseTime);
@@ -98,18 +128,28 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 		#region IPower Members
 
+  /// <summary>
+  /// PowerOn method
+  /// </summary>
+  /// <inheritdoc />
 		public override void PowerOn()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_POWER_ON, IrPulseTime);
             _PowerIsOn = true;
 		}
 
+  /// <summary>
+  /// PowerOff method
+  /// </summary>
 		public override void PowerOff()
 		{
             _PowerIsOn = false;
 			IrPort.Pulse(IROutputStandardCommands.IROut_POWER_OFF, IrPulseTime);
 		}
 
+  /// <summary>
+  /// PowerToggle method
+  /// </summary>
 		public override void PowerToggle()
 		{
             _PowerIsOn = false;
@@ -120,16 +160,25 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 		#region IBasicVolumeControls Members
 
+  /// <summary>
+  /// VolumeUp method
+  /// </summary>
 		public void VolumeUp(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_VOL_PLUS, pressRelease);
 		}
 
+  /// <summary>
+  /// VolumeDown method
+  /// </summary>
 		public void VolumeDown(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_VOL_MINUS, pressRelease);
 		}
 
+  /// <summary>
+  /// MuteToggle method
+  /// </summary>
 		public void MuteToggle()
 		{
 			IrPort.Pulse(IROutputStandardCommands.IROut_MUTE, 200);
@@ -164,6 +213,10 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// Typically called by the discovery routing algorithm.
 		/// </summary>
 		/// <param name="inputSelector">A delegate containing the input selector method to call</param>
+  /// <summary>
+  /// ExecuteSwitch method
+  /// </summary>
+  /// <inheritdoc />
 		public override void ExecuteSwitch(object inputSelector)
 		{
             Debug.LogMessage(LogEventLevel.Verbose, this, "Switching to input '{0}'", (inputSelector as Action).ToString());
@@ -193,12 +246,18 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 		#endregion
 
+     /// <summary>
+     /// LinkToApi method
+     /// </summary>
 	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }
 	}
 
+    /// <summary>
+    /// Represents a BasicIrDisplayFactory
+    /// </summary>
     public class BasicIrDisplayFactory : EssentialsDeviceFactory<BasicIrDisplay>
     {
         public BasicIrDisplayFactory()
@@ -206,6 +265,10 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             TypeNames = new List<string>() { "basicirdisplay" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new BasicIrDisplay Device");

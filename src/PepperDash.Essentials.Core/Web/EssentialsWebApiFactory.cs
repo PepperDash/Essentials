@@ -5,6 +5,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Web
 {
+ /// <summary>
+ /// Represents a EssentialsWebApiFactory
+ /// </summary>
 	public class EssentialsWebApiFactory : EssentialsDeviceFactory<EssentialsWebApi>
 	{
 		public EssentialsWebApiFactory()
@@ -12,6 +15,10 @@ namespace PepperDash.Essentials.Core.Web
 			TypeNames = new List<string> { "EssentialsWebApi" };
 		}
 
+  /// <summary>
+  /// BuildDevice method
+  /// </summary>
+  /// <inheritdoc />
 		public override EssentialsDevice BuildDevice(DeviceConfig dc)
 		{
 			Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Essentials Web API Server");

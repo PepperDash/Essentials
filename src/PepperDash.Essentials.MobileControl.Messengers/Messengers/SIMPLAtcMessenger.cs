@@ -8,10 +8,16 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     // ReSharper disable once InconsistentNaming
+    /// <summary>
+    /// Represents a SIMPLAtcMessenger
+    /// </summary>
     public class SIMPLAtcMessenger : MessengerBase
     {
         private readonly BasicTriList _eisc;
 
+        /// <summary>
+        /// Gets or sets the JoinMap
+        /// </summary>
         public SIMPLAtcJoinMap JoinMap { get; private set; }
 
 

@@ -5,7 +5,7 @@ using System;
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// Represents a basic routing output port on a device.
+    /// Represents a RoutingOutputPort
     /// </summary>
     public class RoutingOutputPort : RoutingPort
     {
@@ -65,10 +65,13 @@ namespace PepperDash.Essentials.Core
     /*public class RoutingOutputPort<TSelector> : RoutingPort<TSelector>
     {
         /// <summary>
-        /// The IRoutingOutputs object this port lives on
+        /// Gets or sets the ParentDevice
         /// </summary>
         public IRoutingOutputs ParentDevice { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the InUseTracker
+        /// </summary>
         public InUseTracking InUseTracker { get; private set; }
 
 
@@ -91,6 +94,10 @@ namespace PepperDash.Essentials.Core
             InUseTracker = new InUseTracking();
         }
 
+        /// <summary>
+        /// ToString method
+        /// </summary>
+        /// <inheritdoc />
         public override string ToString()
         {
             return ParentDevice.Key + ":" + Key;

@@ -6,6 +6,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a ICommunicationMonitorMessenger
+    /// </summary>
     public class ICommunicationMonitorMessenger : MessengerBase
     {
         private readonly ICommunicationMonitor _communicationMonitor;
@@ -46,11 +49,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
     }
 
     /// <summary>
-    /// Represents the state of the communication monitor
+    /// Represents a CommunicationMonitorState
     /// </summary>
     public class CommunicationMonitorState : DeviceStateMessageBase
     {
         [JsonProperty("commMonitor", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the CommunicationMonitor
+        /// </summary>
         public CommunicationMonitorProps CommunicationMonitor { get; set; }
 
     }

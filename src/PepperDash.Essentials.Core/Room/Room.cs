@@ -19,10 +19,24 @@ namespace PepperDash.Essentials.Core
 		public abstract BoolFeedback IsWarmingUpFeedback { get; protected set; }
 
 		// In concrete classes, these should be computed from the relevant devices
+  /// <summary>
+  /// Gets or sets the CooldownTime
+  /// </summary>
+  /// <inheritdoc />
 		public virtual uint CooldownTime { get { return 10000; } }
+  /// <summary>
+  /// Gets or sets the WarmupTime
+  /// </summary>
+  /// <inheritdoc />
 		public virtual uint WarmupTime { get { return 5000; } }
 
+  /// <summary>
+  /// Gets or sets the Description
+  /// </summary>
 		public string Description { get; set; }
+  /// <summary>
+  /// Gets or sets the HelpMessage
+  /// </summary>
 		public string HelpMessage { get; set; }
 
 		public Room(string key, string name)
@@ -32,8 +46,15 @@ namespace PepperDash.Essentials.Core
 			HelpMessage = "";
 		}
 
+  /// <summary>
+  /// RoomOn method
+  /// </summary>
+  /// <inheritdoc />
 		public virtual void RoomOn() { }
 
+  /// <summary>
+  /// RoomOff method
+  /// </summary>
 		public virtual void RoomOff() { }
 
 		#region IDeviceWithOutputs Members

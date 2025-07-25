@@ -8,6 +8,9 @@ using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
+ /// <summary>
+ /// Defines the contract for IHasExternalSourceSwitching
+ /// </summary>
 	public interface IHasExternalSourceSwitching
 	{
 		bool ExternalSourceListEnabled { get; }

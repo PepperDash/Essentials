@@ -4,6 +4,9 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
+    /// <summary>
+    /// Represents a IHasPowerMessenger
+    /// </summary>
     public class IHasPowerMessenger : MessengerBase
     {
         private readonly IHasPowerControl powerDevice;

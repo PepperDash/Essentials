@@ -48,6 +48,9 @@ namespace PepperDash.Core.Intersystem
         /// <param name="stream">Input stream</param>
         /// <param name="value">Result</param>
         /// <returns>True if successful, otherwise false.</returns>
+        /// <summary>
+        /// TryReadUInt16BE method
+        /// </summary>
         public static bool TryReadUInt16BE(Stream stream, out ushort value)
         {
             value = 0;
@@ -65,6 +68,9 @@ namespace PepperDash.Core.Intersystem
         /// </summary>
         /// <returns>XSigToken</returns>
         /// <exception cref="ArgumentOutOfRangeException">Offset is less than 0.</exception>
+        /// <summary>
+        /// ReadXSigToken method
+        /// </summary>
         public XSigToken ReadXSigToken()
         {
             ushort prefix;
@@ -114,6 +120,9 @@ namespace PepperDash.Core.Intersystem
         /// Reads all available XSig tokens from the stream.
         /// </summary>
         /// <returns>XSigToken collection.</returns>
+        /// <summary>
+        /// ReadAllXSigTokens method
+        /// </summary>
         public IEnumerable<XSigToken> ReadAllXSigTokens()
         {
             var tokens = new List<XSigToken>();
