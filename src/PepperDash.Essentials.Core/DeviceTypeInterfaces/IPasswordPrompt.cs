@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     /// <summary>
     /// Describes the functionality required to prompt a user to enter a password

@@ -4,14 +4,11 @@ using System;
 using Crestron.SimplSharpPro;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core.Config;
-
-
-using PepperDash.Core;
 using Serilog.Events;
 using System.IO;
-using PepperDash.Core.Logging;
+using PepperDash.Essentials.Core.Feedbacks;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
 
 	/// <summary>

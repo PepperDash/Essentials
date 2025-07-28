@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Scheduler;
-
-using PepperDash.Core;
-using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Core.Global;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Global
 {
     /// <summary>
     /// Global Scheduler for the system
@@ -155,7 +153,7 @@ Recurrence Days: {evt.Value.Recurrence.RecurrenceDays}
         /// </summary>
         public static bool CheckIfDayOfWeekMatchesRecurrenceDays(DateTime eventTime, ScheduledEventCommon.eWeekDays recurrence)
         {
-            bool isMatch = false;
+            var isMatch = false;
 
             var dayOfWeek = eventTime.DayOfWeek;
 

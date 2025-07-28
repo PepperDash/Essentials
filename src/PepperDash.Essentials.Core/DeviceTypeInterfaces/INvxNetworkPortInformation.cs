@@ -2,7 +2,7 @@ using Crestron.SimplSharpPro.DM.Streaming;
 using System;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     /// <summary>
     /// Represents a collection of network port information and provides notifications when the information changes.

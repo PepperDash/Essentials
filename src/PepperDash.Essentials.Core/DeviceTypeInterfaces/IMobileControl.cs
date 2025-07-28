@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using Crestron.SimplSharpPro;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {

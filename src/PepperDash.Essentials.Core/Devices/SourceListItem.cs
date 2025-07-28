@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Routing;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Defines the type of source list item, which can be a route, off, or other.

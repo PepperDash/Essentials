@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec

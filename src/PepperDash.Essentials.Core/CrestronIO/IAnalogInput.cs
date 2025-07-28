@@ -1,4 +1,6 @@
-﻿namespace PepperDash.Essentials.Core.CrestronIO
+﻿using PepperDash.Essentials.Core.Feedbacks;
+
+namespace PepperDash.Essentials.Core.CrestronIO
 {
     /// <summary>
     /// Defines the contract for IAnalogInput

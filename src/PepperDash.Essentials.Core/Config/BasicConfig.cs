@@ -5,6 +5,8 @@ using System.Linq;
 using Newtonsoft.Json;
 
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core.Config
 {

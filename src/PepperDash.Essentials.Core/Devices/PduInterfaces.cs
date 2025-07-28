@@ -1,5 +1,5 @@
 ﻿using Crestron.SimplSharp;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Core.Devices
 {

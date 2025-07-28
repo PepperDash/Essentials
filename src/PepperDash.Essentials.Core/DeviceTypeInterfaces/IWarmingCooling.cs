@@ -1,4 +1,6 @@
-﻿namespace PepperDash.Essentials.Core
+﻿using PepperDash.Essentials.Core.Feedbacks;
+
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
 	/// <summary>
 	/// Defines a class that has warm up and cool down

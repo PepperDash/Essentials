@@ -1,4 +1,4 @@
-﻿using PepperDash.Essentials.Room.Config;
+﻿using PepperDash.Essentials.Core.Rooms.Config;
 
 namespace PepperDash.Essentials.Devices.Common.Room
 {

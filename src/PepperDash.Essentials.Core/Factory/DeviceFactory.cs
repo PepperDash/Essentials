@@ -7,11 +7,13 @@ using System.Linq;
 using System.Reflection;
 using Crestron.SimplSharp;
 using Newtonsoft.Json.Linq;
-using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Plugins;
+using PepperDash.Essentials.Core.Secrets;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Factory
 {
     /// <summary>
     /// Provides functionality for managing and registering device factories, including loading plugin-based factories and
@@ -92,7 +94,7 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var typeName in deviceFactory.TypeNames)
             {
-                string description = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
+                var description = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
                     ? descriptionAttribute[0].Description
                     : "No description available";
 

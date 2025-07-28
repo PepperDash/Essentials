@@ -6,7 +6,6 @@ using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
@@ -16,6 +15,10 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog.Events;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {

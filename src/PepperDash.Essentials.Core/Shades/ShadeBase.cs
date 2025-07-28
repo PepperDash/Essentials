@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PepperDash.Essentials.Core.Devices;
+using System;
 
 namespace PepperDash.Essentials.Core.Shades
 {

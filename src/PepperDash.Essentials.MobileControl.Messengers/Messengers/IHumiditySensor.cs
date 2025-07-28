@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
 using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
@@ -24,7 +26,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/fullStatus", (id, content) => SendFullStatus());
 
-            device.HumidityFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>((o, a) => SendFullStatus());
+            device.HumidityFeedback.OutputChange += new EventHandler<FeedbackEventArgs>((o, a) => SendFullStatus());
         }
 
         private void SendFullStatus()

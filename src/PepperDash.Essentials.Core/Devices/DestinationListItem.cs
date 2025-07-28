@@ -1,8 +1,9 @@
 ﻿
 
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Routing;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Represents a destination item in a routing system that can receive audio/video signals.

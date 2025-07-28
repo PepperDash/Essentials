@@ -5,11 +5,11 @@ using System.Linq;
 using System.Reflection;
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Factory;
 using Serilog.Events;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.Core.Plugins
 {
     /// <summary>
     /// Deals with loading plugins at runtime
@@ -76,28 +76,28 @@ namespace PepperDash.Essentials
 
             foreach (var fi in assemblyFiles.Where(fi => fi.Name.Contains("Essentials") || fi.Name.Contains("PepperDash")))
             {
-                string version = string.Empty;
+                var version = string.Empty;
                 Assembly assembly = null;
 
                 switch (fi.Name)
                 {
-                    case ("PepperDashEssentials.dll"):
+                    case "PepperDashEssentials.dll":
                         {
                             version = Global.AssemblyVersion;
                             EssentialsAssembly = new LoadedAssembly(fi.Name, version, assembly);
                             break;
                         }
-                    case ("PepperDash_Essentials_Core.dll"):
+                    case "PepperDash_Essentials_Core.dll":
                         {
                             version = Global.AssemblyVersion;
                             break;
                         }
-                    case ("Essentials Devices Common.dll"):
+                    case "Essentials Devices Common.dll":
                         {
                             version = Global.AssemblyVersion;
                             break;
                         }
-                    case ("PepperDashCore.dll"):
+                    case "PepperDashCore.dll":
                         {
                             Debug.LogMessage(LogEventLevel.Verbose, "Found PepperDash_Core.dll");
                             version = Debug.PepperDashCoreVersion;
@@ -183,7 +183,7 @@ namespace PepperDash.Essentials
             if (ver != null && ver.Length > 0)
             {
                 // Get the AssemblyInformationalVersion              
-                AssemblyInformationalVersionAttribute verAttribute = ver[0] as AssemblyInformationalVersionAttribute;
+                var verAttribute = ver[0] as AssemblyInformationalVersionAttribute;
                 return verAttribute.InformationalVersion;
             }
             else
@@ -283,7 +283,7 @@ namespace PepperDash.Essentials
 
                     if (!CheckIfAssemblyLoaded(pluginFile.Name))
                     {
-                        string filePath = string.Empty;
+                        var filePath = string.Empty;
 
                         filePath = _loadedPluginsDirectoryPath + Global.DirectorySeparator + pluginFile.Name;
 
@@ -356,7 +356,7 @@ namespace PepperDash.Essentials
                     {
                         if (!CheckIfAssemblyLoaded(tempFile.Name))
                         {
-                            string filePath = string.Empty;
+                            var filePath = string.Empty;
 
                             filePath = _loadedPluginsDirectoryPath + Global.DirectorySeparator + tempFile.Name;
 
@@ -523,7 +523,7 @@ namespace PepperDash.Essentials
         {
             foreach (var typeName in deviceFactory.TypeNames)
             {
-                string description = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
+                var description = deviceFactory.FactoryType.GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
                     ? descriptionAttribute[0].Description
                     : "No description available";
 

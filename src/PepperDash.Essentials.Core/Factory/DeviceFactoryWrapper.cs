@@ -1,10 +1,9 @@
 
 
 using System;
-using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Factory
 {
   /// <summary>
   /// Wraps a device factory, providing metadata and a factory method for creating devices.

@@ -1,8 +1,9 @@
-﻿using PepperDash.Core;
+﻿using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
 using Serilog.Events;
 using System;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Represents a RouteRequest

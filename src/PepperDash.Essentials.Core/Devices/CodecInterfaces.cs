@@ -1,4 +1,6 @@
-﻿namespace PepperDash.Essentials.Core
+﻿using PepperDash.Essentials.Core.Feedbacks;
+
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Adds control of codec receive volume

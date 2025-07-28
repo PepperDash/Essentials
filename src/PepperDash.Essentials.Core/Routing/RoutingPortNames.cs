@@ -1,4 +1,4 @@
-﻿namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.Routing
 {
 	/// <summary>
 	/// Defines constant string values for common routing port keys.

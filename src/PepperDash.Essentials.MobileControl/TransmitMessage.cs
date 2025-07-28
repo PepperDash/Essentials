@@ -3,6 +3,7 @@ using Newtonsoft.Json.Converters;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.WebSocketServer;
 using Serilog.Events;

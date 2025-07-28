@@ -2,6 +2,7 @@
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Essentials.Core.Feedbacks;
 
 namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
 {

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Crestron.SimplSharp;
-using PepperDash.Core;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Fusion

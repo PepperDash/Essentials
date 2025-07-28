@@ -1,6 +1,6 @@
 ﻿using System;
 using Crestron.SimplSharp;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Communications;
 
 namespace PepperDash.Essentials.Core.Queues
 {

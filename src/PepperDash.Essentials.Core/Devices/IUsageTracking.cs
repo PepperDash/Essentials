@@ -1,8 +1,8 @@
 ﻿using System;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Usage;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Defines the contract for IUsageTracking

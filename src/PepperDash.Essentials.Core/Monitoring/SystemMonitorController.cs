@@ -6,10 +6,14 @@ using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Diagnostics;
-using PepperDash.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Touchpanels;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Monitoring

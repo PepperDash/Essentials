@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.AppServer;
 using PepperDash.Essentials.AppServer.Messengers;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Touchpanel
 {

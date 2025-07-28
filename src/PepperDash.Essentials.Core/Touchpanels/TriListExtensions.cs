@@ -4,7 +4,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Touchpanels
 {
 	/// <summary>
 	/// Extensions used for more-clear attachment of Actions to user objects on sigs
@@ -71,7 +71,7 @@ namespace PepperDash.Essentials.Core
         /// <returns>The sig</returns>
         public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction)
         {
-            return SetSigHeldAction(tl, sigNum, heldMs, heldAction, null);
+            return tl.SetSigHeldAction(sigNum, heldMs, heldAction, null);
         }
 
 		/// <summary>
@@ -81,7 +81,7 @@ namespace PepperDash.Essentials.Core
 		public static BoolOutputSig SetSigHeldAction(this BoolOutputSig sig, uint heldMs, Action heldAction, Action holdReleasedAction, Action releaseAction)
 		{
 			CTimer heldTimer = null;
-			bool wasHeld = false;
+			var wasHeld = false;
 			return sig.SetBoolSigAction(press =>
 			{
 				if (press)
@@ -212,7 +212,7 @@ namespace PepperDash.Essentials.Core
 
 		public static BoolOutputSig ClearBoolSigAction(this BasicTriList tl, uint sigNum)
 		{
-			return ClearSigAction(tl.BooleanOutput[sigNum]) as BoolOutputSig;
+			return tl.BooleanOutput[sigNum].ClearSigAction() as BoolOutputSig;
 		}
 
   /// <summary>
@@ -220,7 +220,7 @@ namespace PepperDash.Essentials.Core
   /// </summary>
 		public static UShortOutputSig ClearUShortSigAction(this BasicTriList tl, uint sigNum)
 		{
-			return ClearSigAction(tl.UShortOutput[sigNum]) as UShortOutputSig;
+			return tl.UShortOutput[sigNum].ClearSigAction() as UShortOutputSig;
 		}
 
   /// <summary>
@@ -228,7 +228,7 @@ namespace PepperDash.Essentials.Core
   /// </summary>
 		public static StringOutputSig ClearStringSigAction(this BasicTriList tl, uint sigNum)
 		{
-			return ClearSigAction(tl.StringOutput[sigNum]) as StringOutputSig;
+			return tl.StringOutput[sigNum].ClearSigAction() as StringOutputSig;
 		}
 
         /// <summary>
@@ -238,17 +238,17 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var sig in t1.BooleanOutput)
             {
-                ClearSigAction(sig);
+                sig.ClearSigAction();
             }
 
             foreach (var sig in t1.UShortOutput)
             {
-                ClearSigAction(sig);
+                sig.ClearSigAction();
             }
 
             foreach (var sig in t1.StringOutput)
             {
-                ClearSigAction(sig);
+                sig.ClearSigAction();
             }
         }
 

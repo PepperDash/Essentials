@@ -3,6 +3,8 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.PartitionSensor;
+using PepperDash.Essentials.Core.Rooms.Combining;
 using System;
 using System.Collections.Generic;
 

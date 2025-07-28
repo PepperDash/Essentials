@@ -4,12 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-
-using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.SmartObjects.SubpageReferencList
 {
     ////*****************************************************************************
     /// <summary>
@@ -222,37 +220,37 @@ namespace PepperDash.Essentials.Core
 		string GetBoolFeedbackSigName(uint index, uint sigNum)
 		{
 			var num = (index - 1) * BoolIncrement + sigNum;
-			return String.Format("press{0}", num);
+			return string.Format("press{0}", num);
 		}
 
 		string GetUShortOutputSigName(uint index, uint sigNum)
 		{
 			var num = (index - 1) * UShortIncrement + sigNum;
-			return String.Format("an_act{0}", num);
+			return string.Format("an_act{0}", num);
 		}
 
 		string GetStringOutputSigName(uint index, uint sigNum)
 		{
 			var num = (index - 1) * StringIncrement + sigNum;
-			return String.Format("text-i{0}", num);
+			return string.Format("text-i{0}", num);
 		}
 
 		string GetBoolInputSigName(uint index, uint sigNum)
 		{
 			var num = (index - 1) * BoolIncrement + sigNum;
-			return String.Format("fb{0}", num);
+			return string.Format("fb{0}", num);
 		}
 
 		string GetUShortInputSigName(uint index, uint sigNum)
 		{
 			var num = (index - 1) * UShortIncrement + sigNum;
-			return String.Format("an_fb{0}", num);
+			return string.Format("an_fb{0}", num);
 		}
 
 		string GetStringInputSigName(uint index, uint sigNum)
 		{
 			var num = (index - 1) * StringIncrement + sigNum;
-			return String.Format("text-o{0}", num);
+			return string.Format("text-o{0}", num);
 		}
 
 		/// <summary>

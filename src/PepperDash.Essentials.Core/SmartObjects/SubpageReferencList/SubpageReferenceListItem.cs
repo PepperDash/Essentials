@@ -1,4 +1,4 @@
-﻿namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.SmartObjects.SubpageReferencList
 {
  /// <summary>
  /// Represents a SubpageReferenceListItem

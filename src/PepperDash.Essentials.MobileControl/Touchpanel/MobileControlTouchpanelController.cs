@@ -10,11 +10,15 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Communications;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Config.Essentials;
 using PepperDash.Essentials.Core.DeviceInfo;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
 using PepperDash.Essentials.Core.UI;
-using Feedback = PepperDash.Essentials.Core.Feedback;
+using Feedback = PepperDash.Essentials.Core.Feedbacks.Feedback;
 
 namespace PepperDash.Essentials.Touchpanel
 {

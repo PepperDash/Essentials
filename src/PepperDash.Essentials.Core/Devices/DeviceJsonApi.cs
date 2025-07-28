@@ -1,6 +1,5 @@
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
-using PepperDash.Core;
 using Serilog.Events;
 using System;
 using System.Collections;
@@ -9,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Represents a DeviceJsonApi
@@ -25,7 +24,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public static void DoDeviceActionWithJson(string json)
         {
-            if (String.IsNullOrEmpty(json))
+            if (string.IsNullOrEmpty(json))
             {
                 CrestronConsole.ConsoleCommandResponse(
                     "Please provide a JSON object matching the format {\"deviceKey\":\"myDevice\", \"methodName\":\"someMethod\", \"params\": [\"param1\", true]}.\r\nIf the method has no parameters, the \"params\" object may be omitted.");
@@ -68,7 +67,7 @@ namespace PepperDash.Essentials.Core
                 action.Params = new object[0];
             }
 
-            Type t = obj.GetType();
+            var t = obj.GetType();
             try
             {
                 var methods = t.GetMethods().Where(m => m.Name == action.MethodName).ToList();
@@ -127,7 +126,7 @@ namespace PepperDash.Essentials.Core
                 action.Params = new object[0];
             }
 
-            Type t = obj.GetType();
+            var t = obj.GetType();
             try
             {
                 var methods = t.GetMethods().Where(m => m.Name == action.MethodName).ToList();
@@ -183,10 +182,10 @@ namespace PepperDash.Essentials.Core
 
             var stringValue = Convert.ToString(value);
 
-            if (String.IsNullOrEmpty(stringValue))
+            if (string.IsNullOrEmpty(stringValue))
             {
                 throw new InvalidCastException(
-                    String.Format("{0} cannot be converted to a string prior to conversion to enum"));
+                    string.Format("{0} cannot be converted to a string prior to conversion to enum"));
             }
             return Enum.Parse(conversionType, stringValue, true);
         }
@@ -205,7 +204,7 @@ namespace PepperDash.Essentials.Core
             if (obj == null)
                 return "{ \"error\":\"No Device\"}";
 
-            Type t = obj.GetType();
+            var t = obj.GetType();
             // get the properties and set them into a new collection of NameType wrappers
             var props = t.GetProperties().Select(p => new PropertyNameType(p, obj));
             return JsonConvert.SerializeObject(props, Formatting.Indented);
@@ -226,7 +225,7 @@ namespace PepperDash.Essentials.Core
             if (dev == null)
                 return "{ \"error\":\"No Device\"}";
 
-            object prop = dev.GetType().GetProperty(propertyName).GetValue(dev, null);
+            var prop = dev.GetType().GetProperty(propertyName).GetValue(dev, null);
 
             // var prop = t.GetProperty(propertyName);
             if (prop != null)
@@ -255,7 +254,7 @@ namespace PepperDash.Essentials.Core
                 return "{ \"error\":\"No Device\"}";
 
             // Package up method names using helper objects
-            Type t = obj.GetType();
+            var t = obj.GetType();
             var methods = t.GetMethods()
                 .Where(m => !m.IsSpecialName)
                 .Select(p => new MethodNameParams(p));
@@ -272,7 +271,7 @@ namespace PepperDash.Essentials.Core
                 return "{ \"error\":\"No Device\"}";
 
             // Package up method names using helper objects
-            Type t = obj.GetType();
+            var t = obj.GetType();
             var methods = t.GetMethods()
                 .Where(m => !m.IsSpecialName)
                 .Where(m => m.GetCustomAttributes(typeof(ApiAttribute), true).Any())
@@ -299,7 +298,7 @@ namespace PepperDash.Essentials.Core
             object obj = dev;
             if (path.Length > 1)
             {
-                for (int i = 1; i < path.Length; i++)
+                for (var i = 1; i < path.Length; i++)
                 {
                     var objName = path[i];
                     string indexStr = null;
@@ -318,7 +317,7 @@ namespace PepperDash.Essentials.Core
                         Debug.LogMessage(LogEventLevel.Information, dev, "  Checking for collection '{0}', index '{1}'", objName, indexStr);
                     }
 
-                    Type oType = obj.GetType();
+                    var oType = obj.GetType();
                     var prop = oType.GetProperty(objName);
                     if (prop == null)
                     {

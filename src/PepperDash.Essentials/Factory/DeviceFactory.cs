@@ -6,6 +6,9 @@ using System.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Factory;
+using PepperDash.Essentials.Core.Plugins;
 
 namespace PepperDash.Essentials
 {
@@ -57,7 +60,7 @@ namespace PepperDash.Essentials
                     ? descriptionAttribute[0].Description
                     : "No description available";
 
-                Core.DeviceFactory.AddFactoryForType(typeName.ToLower(), description, deviceFactory.FactoryType, deviceFactory.BuildDevice);
+                Core.Factory.DeviceFactory.AddFactoryForType(typeName.ToLower(), description, deviceFactory.FactoryType, deviceFactory.BuildDevice);
             }
         }
     }

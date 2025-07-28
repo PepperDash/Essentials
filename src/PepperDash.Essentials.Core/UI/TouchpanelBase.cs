@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
-using PepperDash.Core;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Serilog.Events;
+using PepperDash.Essentials.Core.Touchpanels;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Rooms.Combining;
 
 namespace PepperDash.Essentials.Core.UI
 {

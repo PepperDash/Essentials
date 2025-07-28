@@ -9,9 +9,10 @@ using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Routing.Interfaces
 */
+using PepperDash.Essentials.Core.Devices;
 using System;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Delegate for SourceInfoChangeHandler

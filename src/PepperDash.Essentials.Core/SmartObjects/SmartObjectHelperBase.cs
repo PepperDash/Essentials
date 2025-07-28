@@ -1,7 +1,5 @@
 ﻿using System;
 using Crestron.SimplSharpPro;
-
-using PepperDash.Core;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.SmartObjects

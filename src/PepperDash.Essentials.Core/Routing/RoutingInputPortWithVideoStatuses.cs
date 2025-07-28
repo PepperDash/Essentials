@@ -1,4 +1,6 @@
-﻿namespace PepperDash.Essentials.Core
+﻿using PepperDash.Essentials.Core.VideoStatus;
+
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Represents a RoutingInputPortWithVideoStatuses

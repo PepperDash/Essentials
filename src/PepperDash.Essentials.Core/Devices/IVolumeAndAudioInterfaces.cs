@@ -1,7 +1,9 @@
-﻿using System;
+﻿using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Routing;
+using System;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
 	/// <summary>
 	/// Defines minimal volume and mute control methods

@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Touchpanels;
 
 namespace PepperDash.Essentials.Touchpanel
 {

@@ -1,7 +1,8 @@
 ﻿using Crestron.SimplSharp;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Defines the contract for IHasBatteryStats

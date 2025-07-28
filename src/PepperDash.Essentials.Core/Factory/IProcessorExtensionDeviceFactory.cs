@@ -1,4 +1,4 @@
-﻿namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.Factory
 {
     /// <summary>
     /// Defines the contract for IProcessorExtensionDeviceFactory

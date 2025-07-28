@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Lighting;
 using System;
 using System.Collections.Generic;

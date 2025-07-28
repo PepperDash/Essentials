@@ -4,12 +4,11 @@ using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
-
-using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
 using Newtonsoft.Json;
 using Serilog.Events;
+using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.Core.Utilities
 {

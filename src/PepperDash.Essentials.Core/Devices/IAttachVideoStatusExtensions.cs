@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.VideoStatus;
+using System.Linq;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
 	public static class IAttachVideoStatusExtensions
 	{

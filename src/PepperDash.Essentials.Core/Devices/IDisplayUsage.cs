@@ -1,4 +1,6 @@
-namespace PepperDash.Essentials.Core
+using PepperDash.Essentials.Core.Feedbacks;
+
+namespace PepperDash.Essentials.Core.Devices
 {
   /// <summary>
   /// For display classes that can provide usage data

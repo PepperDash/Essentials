@@ -1,10 +1,8 @@
-﻿
+﻿using PepperDash.Essentials.Core.Feedbacks;
 using System;
 
-using PepperDash.Core;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Monitoring
 {
  /// <summary>
  /// Defines the contract for IStatusMonitor

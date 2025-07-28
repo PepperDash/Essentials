@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Crestron.SimplSharp;
 
 using PepperDash.Core;
 
 
-namespace PepperDash.Core
+namespace PepperDash.Essentials.Core.Communications
 {
 	/// <summary>
 	/// Defines the string event handler for line events on the gather

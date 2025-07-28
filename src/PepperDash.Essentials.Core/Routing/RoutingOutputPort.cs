@@ -2,7 +2,7 @@
 using System;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Represents a RoutingOutputPort

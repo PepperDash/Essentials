@@ -1,9 +1,8 @@
-﻿using System;
-using PepperDash.Core;
+﻿using PepperDash.Essentials.Core.Communications;
+using System;
 using System.Threading;
-using PepperDash.Core.Logging;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Monitoring
 {
 	/// <summary>
 	/// Used for monitoring comms that are IBasicCommunication. Will send a poll string and provide an event when

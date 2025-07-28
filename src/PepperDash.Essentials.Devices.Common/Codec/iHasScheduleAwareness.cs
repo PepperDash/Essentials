@@ -8,6 +8,7 @@ using PepperDash.Core;
 
 using Newtonsoft.Json;
 using Serilog.Events;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {

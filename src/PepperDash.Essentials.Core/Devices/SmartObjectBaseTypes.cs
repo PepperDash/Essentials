@@ -1,5 +1,4 @@
-﻿
-namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.Devices
 {
  /// <summary>
  /// Represents a SmartObjectJoinOffsets

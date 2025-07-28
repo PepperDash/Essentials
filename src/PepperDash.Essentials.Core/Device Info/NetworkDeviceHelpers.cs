@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PepperDash.Core;
 using Crestron.SimplSharp;
+using PepperDash.Essentials.Core.Extensions;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.DeviceInfo

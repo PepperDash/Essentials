@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro;
-
-using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Represents a collection of individual route steps between a Source and a Destination device for a specific signal type.

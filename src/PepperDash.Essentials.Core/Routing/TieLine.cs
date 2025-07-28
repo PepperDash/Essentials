@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Represents a connection between routing ports, linking a source output port to a destination input port.

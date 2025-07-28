@@ -1,7 +1,8 @@
-﻿using System;
+﻿using PepperDash.Essentials.Core.Feedbacks;
+using System;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.VideoStatus
 {
 	/// <summary>
 	/// Use this class to pass in values to RoutingInputPorts.  Unused properties will have default 

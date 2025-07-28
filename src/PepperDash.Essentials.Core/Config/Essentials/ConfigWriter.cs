@@ -6,10 +6,9 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Config
+namespace PepperDash.Essentials.Core.Config.Essentials
 {
     /// <summary>
     /// Responsible for updating config at runtime, and writing the updates out to a local file
@@ -34,7 +33,7 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         public static bool UpdateDeviceProperties(string deviceKey, JToken properties)
         {
-            bool success = false;
+            var success = false;
 
             // Get the current device config
             var deviceConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(deviceKey));
@@ -59,7 +58,7 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         public static bool UpdateDeviceConfig(DeviceConfig config)
         {
-            bool success = false;
+            var success = false;
 
             var deviceConfigIndex = ConfigReader.ConfigObject.Devices.FindIndex(d => d.Key.Equals(config.Key));
 
@@ -82,7 +81,7 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         public static bool UpdateRoomConfig(DeviceConfig config)
         {
-            bool success = false;
+            var success = false;
 
 			var roomConfigIndex = ConfigReader.ConfigObject.Rooms.FindIndex(d => d.Key.Equals(config.Key));
 
@@ -147,7 +146,7 @@ namespace PepperDash.Essentials.Core.Config
             {
                 if (fileLock.TryEnter())
                 {
-                    using (StreamWriter sw = new StreamWriter(filePath))
+                    using (var sw = new StreamWriter(filePath))
                     {
                         sw.Write(configData);
                         sw.Flush();

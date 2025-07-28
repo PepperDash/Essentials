@@ -1,4 +1,5 @@
 ﻿using PepperDash.Core;
+using PepperDash.Essentials.Core.Communications;
 
 namespace PepperDash.Essentials.Devices.Common
 {

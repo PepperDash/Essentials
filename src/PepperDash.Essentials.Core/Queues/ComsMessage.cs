@@ -1,5 +1,5 @@
-﻿using System;
-using PepperDash.Core;
+﻿using PepperDash.Essentials.Core.Communications;
+using System;
 
 namespace PepperDash.Essentials.Core.Queues
 {

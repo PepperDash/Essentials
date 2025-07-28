@@ -2,6 +2,8 @@
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Feedbacks
 {
     /// <summary>
     /// A Feedback whose output is derived from the return value of a provided Func.
@@ -71,7 +71,7 @@ namespace PepperDash.Essentials.Core
         /// <inheritdoc />
         public override void FireUpdate()
         {
-            bool newValue = InTestMode ? TestValue : ValueFunc.Invoke();
+            var newValue = InTestMode ? TestValue : ValueFunc.Invoke();
             if (newValue != _BoolValue)
             {
                 _BoolValue = newValue;

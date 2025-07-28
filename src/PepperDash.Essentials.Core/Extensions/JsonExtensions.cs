@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Extensions
 {
     public static class JsonExtensions
     {
@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public static List<JToken> FindTokens(this JToken containerToken, string name)
         {
-            List<JToken> matches = new List<JToken>();
+            var matches = new List<JToken>();
             FindTokens(containerToken, name, matches);
             return matches;
         }
@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Core
         {
             if (containerToken.Type == JTokenType.Object)
             {
-                foreach (JProperty child in containerToken.Children<JProperty>())
+                foreach (var child in containerToken.Children<JProperty>())
                 {
                     if (child.Name == name)
                     {
@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
             }
             else if (containerToken.Type == JTokenType.Array)
             {
-                foreach (JToken child in containerToken.Children())
+                foreach (var child in containerToken.Children())
                 {
                     FindTokens(child, name, matches);
                 }

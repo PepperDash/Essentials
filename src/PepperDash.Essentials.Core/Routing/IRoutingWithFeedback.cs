@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Delegate for handling route change events on devices implementing <see cref="IRoutingWithFeedback"/>.

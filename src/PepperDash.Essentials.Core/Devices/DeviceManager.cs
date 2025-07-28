@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Communications;
+using PepperDash.Essentials.Core.Monitoring;
+using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Manages the devices in the system
@@ -445,8 +447,8 @@ namespace PepperDash.Essentials.Core
             var device = GetDeviceForKey(s);
 
             if (device == null) return;
-            var inputPorts = ((device as IRoutingInputs) != null) ? (device as IRoutingInputs).InputPorts : null;
-            var outputPorts = ((device as IRoutingOutputs) != null) ? (device as IRoutingOutputs).OutputPorts : null;
+            var inputPorts = device as IRoutingInputs != null ? (device as IRoutingInputs).InputPorts : null;
+            var outputPorts = device as IRoutingOutputs != null ? (device as IRoutingOutputs).OutputPorts : null;
             if (inputPorts != null)
             {
                 CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Input Ports:{2}", s, inputPorts.Count, CrestronEnvironment.NewLine);
@@ -472,7 +474,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public static void SetDeviceStreamDebugging(string s)
         {
-            if (String.IsNullOrEmpty(s) || s.Contains("?"))
+            if (string.IsNullOrEmpty(s) || s.Contains("?"))
             {
                 CrestronConsole.ConsoleCommandResponse(
                     @"SETDEVICESTREAMDEBUG [{deviceKey}] [OFF |TX | RX | BOTH] [timeOutInMinutes]
@@ -486,7 +488,7 @@ namespace PepperDash.Essentials.Core
             var deviceKey = args[0];
             var setting = args[1];
 
-            var timeout = String.Empty;
+            var timeout = string.Empty;
 
             if (args.Length >= 3)
             {

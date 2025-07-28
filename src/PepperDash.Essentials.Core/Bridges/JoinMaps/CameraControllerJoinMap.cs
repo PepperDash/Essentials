@@ -1,6 +1,7 @@
-﻿using System;
+﻿using PepperDash.Essentials.Core.JoinMaps;
+using System;
 
-namespace PepperDash.Essentials.Core.Bridges
+namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
     /// <summary>
     /// Represents a CameraControllerJoinMap

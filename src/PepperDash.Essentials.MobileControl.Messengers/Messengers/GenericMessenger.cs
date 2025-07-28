@@ -1,4 +1,4 @@
-﻿using PepperDash.Essentials.Core;
+﻿using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {

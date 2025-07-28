@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Feedbacks
 {
     /// <summary>
     /// Represents a IntFeedback

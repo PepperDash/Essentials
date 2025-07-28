@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Secrets;
 
 namespace PepperDash.Essentials.WebSocketServer
 {

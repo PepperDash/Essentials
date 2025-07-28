@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
-using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Secrets
 {
     public static class SecretsManager
     {
@@ -76,7 +75,7 @@ namespace PepperDash.Essentials.Core
             string response;
             var args = cmd.Split(' ');
 
-            if (cmd.Length == 0 || (args.Length == 1 && args[0] == "?"))
+            if (cmd.Length == 0 || args.Length == 1 && args[0] == "?")
             {
                 response = "Returns data about secrets provider.  Format 'secretproviderinfo <provider>'";
                 CrestronConsole.ConsoleCommandResponse(response);
@@ -95,7 +94,7 @@ namespace PepperDash.Essentials.Core
                     return;
                 }
 
-                response = String.Format("{0} : {1}", provider.Key, provider.Description);
+                response = string.Format("{0} : {1}", provider.Key, provider.Description);
                 CrestronConsole.ConsoleCommandResponse(response);
                 return;
             }
@@ -115,7 +114,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public static void ListProviders(string cmd)
         {
-            var response = String.Empty;
+            var response = string.Empty;
             var args = cmd.Split(' ');
 
             if (cmd.Length == 0)
@@ -123,7 +122,7 @@ namespace PepperDash.Essentials.Core
                 if (Secrets != null && Secrets.Count > 0)
                 {
                     response = Secrets.Aggregate(response,
-                        (current, secretProvider) => current + (secretProvider.Key + "\n\r"));
+                        (current, secretProvider) => current + secretProvider.Key + "\n\r");
                 }
                 else
                 {
@@ -294,13 +293,13 @@ namespace PepperDash.Essentials.Core
 
             if (!secretPresent)
                 return
-                    String.Format(
+                    string.Format(
                         "Unable to update secret for {0}:{1} - Please use the 'SetSecret' command to modify it");
             var response = provider.SetSecret(key, secret)
-                ? String.Format(
+                ? string.Format(
                     "Secret successfully set for {0}:{1}",
                     provider.Key, key)
-                : String.Format(
+                : string.Format(
                     "Unable to set secret for {0}:{1}",
                     provider.Key, key);
             return response;
@@ -314,13 +313,13 @@ namespace PepperDash.Essentials.Core
 
             if (secretPresent)
                 return
-                    String.Format(
+                    string.Format(
                         "Unable to set secret for {0}:{1} - Please use the 'UpdateSecret' command to modify it");
             var response = provider.SetSecret(key, secret)
-                ? String.Format(
+                ? string.Format(
                     "Secret successfully set for {0}:{1}",
                     provider.Key, key)
-                : String.Format(
+                : string.Format(
                     "Unable to set secret for {0}:{1}",
                     provider.Key, key);
             return response;
@@ -374,10 +373,10 @@ namespace PepperDash.Essentials.Core
 
             provider.SetSecret(key, "");
             response = provider.SetSecret(key, "")
-                ? String.Format(
+                ? string.Format(
                     "Secret successfully deleted for {0}:{1}",
                     provider.Key, key)
-                : String.Format(
+                : string.Format(
                     "Unable to delete secret for {0}:{1}",
                     provider.Key, key);
             CrestronConsole.ConsoleCommandResponse(response);

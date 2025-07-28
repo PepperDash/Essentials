@@ -1,4 +1,6 @@
-﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+﻿using PepperDash.Essentials.Core.Feedbacks;
+
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     /// <summary>
     /// Defines the contract for IHasPhoneDialing

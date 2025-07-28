@@ -4,6 +4,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Shades;
 using Serilog.Events;
 

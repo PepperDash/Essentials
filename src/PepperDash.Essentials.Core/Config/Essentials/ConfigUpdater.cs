@@ -5,11 +5,9 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json.Linq;
 using Crestron.SimplSharp.Net.Http;
-
-using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Config
+namespace PepperDash.Essentials.Core.Config.Essentials
 {
     public static class ConfigUpdater
     {
@@ -141,7 +139,7 @@ namespace PepperDash.Essentials.Core.Config
                 {
                     Debug.LogMessage(LogEventLevel.Information, "{0} Existing files found in archive folder.  Deleting.", archivedConfigFiles.Length);
 
-                    for (int i = 0; i < archivedConfigFiles.Length; i++ )
+                    for (var i = 0; i < archivedConfigFiles.Length; i++ )
                     {
                         var file = archivedConfigFiles[i];
                         Debug.LogMessage(LogEventLevel.Information, "Deleting archived file: '{0}'", file.FullName);
@@ -191,7 +189,7 @@ namespace PepperDash.Essentials.Core.Config
 
             OnStatusUpdate(eUpdateStatus.RestartingProgram);
 
-            string response = string.Empty;
+            var response = string.Empty;
 
             CrestronConsole.SendControlSystemCommand(string.Format("progreset -p:{0}", InitialParametersClass.ApplicationNumber), ref response);
 

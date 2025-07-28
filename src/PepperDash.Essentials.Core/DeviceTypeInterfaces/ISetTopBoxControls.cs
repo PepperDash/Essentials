@@ -1,6 +1,7 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Essentials.Core.Touchpanels;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
  /// <summary>
  /// Defines the contract for ISetTopBoxControls
@@ -28,7 +29,7 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		bool HasDpad { get; }
 
-		PepperDash.Essentials.Core.Presets.DevicePresetsModel TvPresets { get; }
+        Presets.DevicePresetsModel TvPresets { get; }
 		void LoadPresets(string filePath);
 
 		void DvrList(bool pressRelease);

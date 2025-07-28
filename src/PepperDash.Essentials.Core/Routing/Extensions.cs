@@ -1,14 +1,14 @@
-﻿using PepperDash.Essentials.Core.Queues;
-using PepperDash.Essentials.Core.Routing;
+﻿using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Queues;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Debug = PepperDash.Core.Debug;
+using Debug = PepperDash.Essentials.Core.Debug;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
 
     /// <summary>
@@ -203,7 +203,7 @@ namespace PepperDash.Essentials.Core
             var coolingDevice = destination as IWarmingCooling;
 
             //We already have a route request for this device, and it's a cooling device and is cooling
-            if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
+            if (RouteRequests.TryGetValue(destination.Key, out var existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
             {                
                 coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRouteRequest.HandleCooldown;
 
@@ -289,7 +289,7 @@ namespace PepperDash.Essentials.Core
             {
                 Debug.LogMessage(LogEventLevel.Information, "Release route for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
 
-                if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
+                if (RouteRequests.TryGetValue(destination.Key, out var existingRequest) && destination is IWarmingCooling)
                 {
                     var coolingDevice = destination as IWarmingCooling;
 
@@ -343,7 +343,7 @@ namespace PepperDash.Essentials.Core
             }
             else
             {
-                destinationTieLines = TieLineCollection.Default.Where(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && (t.Type.HasFlag(signalType)));
+                destinationTieLines = TieLineCollection.Default.Where(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && t.Type.HasFlag(signalType));
             }
 
             // find the TieLine without a port

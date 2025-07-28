@@ -3,12 +3,18 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Communications;
+using PepperDash.Essentials.Core.Touchpanels;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common
 {

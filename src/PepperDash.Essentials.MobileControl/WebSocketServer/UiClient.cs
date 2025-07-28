@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.AppServer.Messengers;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.RoomBridges;
 using Serilog.Events;
 using System;

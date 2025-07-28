@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Routing
 {
  /// <summary>
  /// Represents a RoutingPortCollection, which is essentially a List with an indexer for case-insensitive lookup of ports by their key names.

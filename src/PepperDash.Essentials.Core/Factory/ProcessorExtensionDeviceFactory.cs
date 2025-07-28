@@ -1,13 +1,14 @@
 ﻿
 using System.Reflection;
-using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PepperDash.Essentials.Core.Secrets;
+using PepperDash.Essentials.Core.Plugins;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Factory
 {
 
     /// <summary>
@@ -55,7 +56,7 @@ namespace PepperDash.Essentials.Core
         public static void AddFactoryForType(string extensionName, Func<DeviceConfig, IKeyed> method)
         {
             //Debug.LogMessage(LogEventLevel.Debug, "Adding factory method for type '{0}'", typeName);
-            ProcessorExtensionDeviceFactory.ProcessorExtensionFactoryMethods.Add(extensionName, new DeviceFactoryWrapper() { FactoryMethod = method });
+            ProcessorExtensionFactoryMethods.Add(extensionName, new DeviceFactoryWrapper() { FactoryMethod = method });
         }
 
         public static void AddFactoryForType(string extensionName, string description, Type Type, Func<DeviceConfig, IKeyed> method)
@@ -69,7 +70,7 @@ namespace PepperDash.Essentials.Core
             }
 
             var wrapper = new DeviceFactoryWrapper() { Type = Type, Description = description, FactoryMethod = method };
-            ProcessorExtensionDeviceFactory.ProcessorExtensionFactoryMethods.Add(extensionName, wrapper);
+            ProcessorExtensionFactoryMethods.Add(extensionName, wrapper);
         }
 
         private static void CheckForSecrets(IEnumerable<Newtonsoft.Json.Linq.JProperty> obj)
@@ -97,7 +98,7 @@ namespace PepperDash.Essentials.Core
             Debug.LogMessage(LogEventLevel.Debug,
                 "Unable to retrieve secret {0}{1} - Make sure you've added it to the secrets provider",
                 data.Provider, data.Key);
-            return String.Empty;
+            return string.Empty;
         }
 
         /// <summary>

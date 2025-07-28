@@ -1,4 +1,5 @@
 ﻿using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;

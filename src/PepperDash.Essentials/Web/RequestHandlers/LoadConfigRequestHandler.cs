@@ -1,0 +1,39 @@
+﻿using Crestron.SimplSharp.WebScripting;
+using PepperDash.Essentials.Core.Config;
+
+namespace PepperDash.Essentials.Core.Web.RequestHandlers
+{
+ /// <summary>
+ /// Represents a LoadConfigRequestHandler
+ /// </summary>
+	public class LoadConfigRequestHandler : WebApiBaseRequestHandler
+	{
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <remarks>
+		/// base(true) enables CORS support by default
+		/// </remarks>		
+		public LoadConfigRequestHandler()
+			: base(true)
+		{
+		}
+		
+		/// <summary>
+		/// Handles POST method requests
+		/// </summary>
+		/// <param name="context"></param>
+		protected override void HandlePost(HttpCwsContext context)
+		{
+			var message = "";
+			var cs = Global.ControlSystem as ILoadConfig;
+			if(cs != null)
+                cs.GoWithLoad();
+            
+            context.Response.StatusCode = 200;
+            context.Response.StatusDescription = "OK";
+			context.Response.Write(message, false);
+            context.Response.End();
+        }
+	}
+}

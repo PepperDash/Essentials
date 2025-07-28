@@ -1,10 +1,9 @@
 ﻿using System;
 using Crestron.SimplSharp;
+using PepperDash.Essentials.Core.Feedbacks;
 
-using PepperDash.Core;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Monitoring
 {
 	public abstract class StatusMonitorBase : IStatusMonitor, IKeyName
 	{

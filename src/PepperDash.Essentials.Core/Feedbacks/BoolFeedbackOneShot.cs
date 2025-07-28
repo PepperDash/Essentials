@@ -1,5 +1,5 @@
 ﻿using Crestron.SimplSharp;
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Feedbacks
 {
  /// <summary>
  /// Represents a BoolFeedbackPulse

@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Devices;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Config
+namespace PepperDash.Essentials.Core.Routing
 {
 	/// <summary>
 	/// Represents the configuration data for a single tie line between two routing ports.

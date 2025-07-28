@@ -2,7 +2,6 @@
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Room.Config;
 using System;
 using System.Collections.Generic;
 

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.PartitionSensor
 {
     /// <summary>
     /// Defines the contract for IPartitionStateProvider

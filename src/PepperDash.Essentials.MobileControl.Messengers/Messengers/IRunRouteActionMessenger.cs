@@ -2,6 +2,9 @@
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Rooms;
+using PepperDash.Essentials.Core.Routing;
 using System;
 
 

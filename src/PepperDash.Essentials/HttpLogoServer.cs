@@ -5,6 +5,7 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using Serilog.Events;
 
 namespace PepperDash.Essentials

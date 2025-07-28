@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using Crestron.SimplSharpPro;
 using Newtonsoft.Json;
-using PepperDash.Core;
-using PepperDash.Core.Logging;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Touchpanels

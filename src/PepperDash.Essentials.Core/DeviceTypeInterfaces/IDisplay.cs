@@ -1,4 +1,5 @@
-﻿using PepperDash.Core;
+﻿using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {

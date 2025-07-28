@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Factory;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
   /// <summary>
   /// Provides the basic needs for a Device Factory

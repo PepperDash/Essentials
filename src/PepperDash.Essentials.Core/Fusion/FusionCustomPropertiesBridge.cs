@@ -4,9 +4,8 @@ using System;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
-using PepperDash.Core;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Rooms;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Fusion

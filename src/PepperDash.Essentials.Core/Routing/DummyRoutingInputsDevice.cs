@@ -1,6 +1,4 @@
-﻿using PepperDash.Core;
-
-namespace PepperDash.Essentials.Core.Routing
+﻿namespace PepperDash.Essentials.Core.Routing
 {
  /// <summary>
  /// Represents a DummyRoutingInputsDevice

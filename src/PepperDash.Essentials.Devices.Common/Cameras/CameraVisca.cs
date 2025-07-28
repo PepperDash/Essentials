@@ -6,12 +6,18 @@ using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
 using Newtonsoft.Json;
 using Serilog.Events;
+using PepperDash.Essentials.Core.Communications;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Monitoring;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {

@@ -1,5 +1,6 @@
-﻿using PepperDash.Core;
-using PepperDash.Essentials.Core.Config;
+﻿using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Rooms;
 using System;
 using System.Linq;
 

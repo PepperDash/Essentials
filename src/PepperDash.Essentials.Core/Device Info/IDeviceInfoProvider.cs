@@ -1,6 +1,4 @@
-﻿using PepperDash.Core;
-
-namespace PepperDash.Essentials.Core.DeviceInfo
+﻿namespace PepperDash.Essentials.Core.DeviceInfo
 {
     /// <summary>
     /// Defines the contract for IDeviceInfoProvider

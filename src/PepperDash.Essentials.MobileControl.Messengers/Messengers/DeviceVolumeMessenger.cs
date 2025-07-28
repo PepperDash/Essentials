@@ -3,6 +3,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
 using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers

@@ -1,11 +1,10 @@
 ﻿using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
-using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Secrets
 {
     /// <summary>
     /// Represents a CrestronLocalSecretsProvider
@@ -26,7 +25,7 @@ namespace PepperDash.Essentials.Core
         public CrestronLocalSecretsProvider(string key)
         {
             Key = key;
-            Description = String.Format("Default secret provider serving Essentials Application {0}", InitialParametersClass.ApplicationNumber);
+            Description = string.Format("Default secret provider serving Essentials Application {0}", InitialParametersClass.ApplicationNumber);
         }
 
         static CrestronLocalSecretsProvider()
@@ -51,7 +50,7 @@ namespace PepperDash.Essentials.Core
             var secret = value as string;
             CrestronDataStore.CDS_ERROR returnCode;
 
-            if (String.IsNullOrEmpty(secret))
+            if (string.IsNullOrEmpty(secret))
             {
                 returnCode = CrestronDataStoreStatic.clearLocal(key);
                 if (returnCode == CrestronDataStore.CDS_ERROR.CDS_SUCCESS)

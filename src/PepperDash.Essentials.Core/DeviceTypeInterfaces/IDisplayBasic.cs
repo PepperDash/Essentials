@@ -1,4 +1,4 @@
-﻿namespace PepperDash.Essentials.Core.Devices.DeviceTypeInterfaces
+﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
  /// <summary>
  /// Defines the contract for IDisplayBasic

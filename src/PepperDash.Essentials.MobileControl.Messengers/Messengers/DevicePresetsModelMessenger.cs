@@ -2,6 +2,7 @@
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Presets;
 using System;

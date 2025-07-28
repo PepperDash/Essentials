@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
 using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
@@ -34,8 +36,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 device.SetTemperatureFormat(false);
             });
 
-            device.TemperatureFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>((o, a) => SendFullStatus());
-            device.TemperatureInCFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>((o, a) => SendFullStatus());
+            device.TemperatureFeedback.OutputChange += new EventHandler<FeedbackEventArgs>((o, a) => SendFullStatus());
+            device.TemperatureInCFeedback.OutputChange += new EventHandler<FeedbackEventArgs>((o, a) => SendFullStatus());
         }
 
         private void SendFullStatus()

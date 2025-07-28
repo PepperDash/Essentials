@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Global
 {
 	public static class JobTimer
 	{

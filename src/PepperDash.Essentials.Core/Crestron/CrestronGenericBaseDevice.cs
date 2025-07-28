@@ -1,11 +1,13 @@
 ﻿using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.Monitoring;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Crestron
 {
 	public abstract class CrestronGenericBaseDevice : EssentialsDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
 	{
@@ -14,7 +16,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Gets or sets the Feedbacks
         /// </summary>
-        public FeedbackCollection<Feedback> Feedbacks { get; private set; }
+        public FeedbackCollection<Feedbacks.Feedback> Feedbacks { get; private set; }
 
   /// <summary>
   /// Gets or sets the IsOnline
@@ -37,7 +39,7 @@ namespace PepperDash.Essentials.Core
 	    protected CrestronGenericBaseDevice(string key, string name, GenericBase hardware)
             : base(key, name)
         {
-            Feedbacks = new FeedbackCollection<Feedback>();
+            Feedbacks = new FeedbackCollection<Feedbacks.Feedback>();
 
             Hardware = hardware;
             IsOnline = new BoolFeedback("IsOnlineFeedback", () => Hardware.IsOnline);
@@ -51,7 +53,7 @@ namespace PepperDash.Essentials.Core
         protected CrestronGenericBaseDevice(string key, string name)
             : base(key, name)
         {
-            Feedbacks = new FeedbackCollection<Feedback>();
+            Feedbacks = new FeedbackCollection<Feedbacks.Feedback>();
 
         }
 
@@ -140,7 +142,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// AddToFeedbackList method
         /// </summary>
-        public void AddToFeedbackList(params Feedback[] newFbs)
+        public void AddToFeedbackList(params Feedbacks.Feedback[] newFbs)
         {
             foreach (var f in newFbs)
             {
@@ -184,8 +186,10 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public UsageTracking UsageTracker { get; set; }
 
+        FeedbackCollection<Feedbacks.Feedback> IHasFeedback.Feedbacks => throw new System.NotImplementedException();
+
         #endregion
-	}
+    }
 
     public abstract class CrestronGenericBridgeableBaseDevice : CrestronGenericBaseDevice, IBridgeAdvanced
     {

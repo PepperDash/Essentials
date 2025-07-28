@@ -1,6 +1,6 @@
 ﻿using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Global
 {
     /// <summary>
     /// Represents a EthernetAdapterInfo

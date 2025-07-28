@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
-
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
  /// <summary>
  /// Defines the contract for IHasFeedback
@@ -24,7 +23,7 @@ namespace PepperDash.Essentials.Core
 	{
 		public static void DumpFeedbacksToConsole(this IHasFeedback source, bool getCurrentStates)
 		{
-            Type t = source.GetType();
+            var t = source.GetType();
             // get the properties and set them into a new collection of NameType wrappers
             var props = t.GetProperties().Select(p => new PropertyNameType(p, t));
 
@@ -34,8 +33,8 @@ namespace PepperDash.Essentials.Core
 				Debug.LogMessage(LogEventLevel.Information, source, "\n\nAvailable feedbacks:");
 				foreach (var f in feedbacks)
 				{
-					string val = "";
-                    string type = "";
+					var val = "";
+                    var type = "";
 					if (getCurrentStates)
 					{
                         if (f is BoolFeedback)
@@ -55,7 +54,7 @@ namespace PepperDash.Essentials.Core
                         }
 					}
 					Debug.LogMessage(LogEventLevel.Information, "{0,-12} {1, -25} {2}", type,
-						(string.IsNullOrEmpty(f.Key) ? "-no key-" : f.Key), val);
+						string.IsNullOrEmpty(f.Key) ? "-no key-" : f.Key, val);
 				}
 			}
 			else

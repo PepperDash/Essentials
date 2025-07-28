@@ -1,6 +1,7 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Essentials.Core.Touchpanels;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
  /// <summary>
  /// Defines the contract for ITransport

@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Plugins;
 using System.Collections.Generic;
 
 

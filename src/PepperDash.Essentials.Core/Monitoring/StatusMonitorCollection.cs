@@ -1,12 +1,11 @@
-﻿using System;
+﻿using PepperDash.Essentials.Core.Feedbacks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using PepperDash.Core;
 
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Monitoring
 {
 	/// <summary>
 	/// 
@@ -60,7 +59,7 @@ namespace PepperDash.Essentials.Core
 
 
 			MonitorStatus initialStatus;
-			string prefix = "0:";
+			var prefix = "0:";
 			if (InError.Count() > 0)
 			{
 				initialStatus = MonitorStatus.InError;
@@ -79,7 +78,7 @@ namespace PepperDash.Essentials.Core
 			// Build the error message string
             if (InError.Count() > 0 || InWarning.Count() > 0)
             {
-                StringBuilder sb = new StringBuilder(prefix);
+                var sb = new StringBuilder(prefix);
                 if (InError.Count() > 0)
                 {
                     // Do string splits and joins 

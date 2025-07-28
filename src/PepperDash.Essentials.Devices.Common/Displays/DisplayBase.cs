@@ -7,10 +7,16 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Feedbacks;
+using PepperDash.Essentials.Core.JoinMaps;
+using PepperDash.Essentials.Core.Monitoring;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Touchpanels;
 using Serilog.Events;
-using Feedback = PepperDash.Essentials.Core.Feedback;
+using Feedback = PepperDash.Essentials.Core.Feedbacks.Feedback;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {

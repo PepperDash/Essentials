@@ -2,8 +2,6 @@
 using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-
-using PepperDash.Core;
 using Serilog.Events;
 
 

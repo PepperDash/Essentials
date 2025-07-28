@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core.Config
+namespace PepperDash.Essentials.Core.Config.Essentials
 {
 	/// <summary>
 	/// Loads the ConfigObject from the file
@@ -27,12 +27,12 @@ namespace PepperDash.Essentials.Core.Config
 				if (SystemUrl.Contains("#"))
 				{
 					var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/#.*");
-					string uuid = result.Groups[1].Value;
+					var uuid = result.Groups[1].Value;
 					return uuid;
 				} else
 				{
                     var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/.*");
-                    string uuid = result.Groups[1].Value;
+                    var uuid = result.Groups[1].Value;
                     return uuid;
                 }
             }
@@ -49,12 +49,12 @@ namespace PepperDash.Essentials.Core.Config
 				if (TemplateUrl.Contains("#"))
 				{
 					var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/templates\/(.*)\/#.*");
-					string uuid = result.Groups[1].Value;
+					var uuid = result.Groups[1].Value;
 					return uuid;
 				} else
 				{
                     var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/system-templates\/(.*)\/system-template-versions\/(.*)\/.*");
-                    string uuid = result.Groups[2].Value;
+                    var uuid = result.Groups[2].Value;
                     return uuid;
                 }
             }

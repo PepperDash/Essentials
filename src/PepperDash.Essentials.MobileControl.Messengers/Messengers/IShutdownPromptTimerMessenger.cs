@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Rooms;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Factory;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
   /// <summary>
   /// Represents a factory for creating processor extension devices.
@@ -25,7 +26,7 @@ namespace PepperDash.Essentials.Core
     {
       foreach (var typeName in TypeNames)
       {
-        string description = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
+        var description = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) is DescriptionAttribute[] descriptionAttribute && descriptionAttribute.Length > 0
             ? descriptionAttribute[0].Description
             : "No description available";
 

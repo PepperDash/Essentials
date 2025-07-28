@@ -1,4 +1,4 @@
-﻿using PepperDash.Essentials.Core;
+﻿using PepperDash.Essentials.Core.Rooms;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec
 {

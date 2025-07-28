@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using Crestron.SimplSharp;
-using PepperDash.Core;
 using Serilog.Events;
 using Thread = Crestron.SimplSharpPro.CrestronThread.Thread;
 

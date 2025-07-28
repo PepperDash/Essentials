@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Factory
 {
     /// <summary>
     /// Defines the contract for IDeviceFactory

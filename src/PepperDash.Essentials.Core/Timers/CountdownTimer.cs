@@ -1,10 +1,9 @@
 ﻿using System;
 using Crestron.SimplSharp;
-
-using PepperDash.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Timers
 {
     /// <summary>
     /// Represents a SecondsCountdownTimer
@@ -82,12 +81,12 @@ namespace PepperDash.Essentials.Core
 
                     if (Math.Floor(timeSpan.TotalSeconds) < 60 && Math.Floor(timeSpan.TotalSeconds) >= 0) //ignore milliseconds
                     {
-                        return String.Format("{0:00}", timeSpan.Seconds);
+                        return string.Format("{0:00}", timeSpan.Seconds);
                     }
 
                     return Math.Floor(timeSpan.TotalSeconds) < 0
                         ? "00"
-                        : String.Format("{0:00}:{1:00}", timeSpan.Minutes, timeSpan.Seconds);
+                        : string.Format("{0:00}:{1:00}", timeSpan.Minutes, timeSpan.Seconds);
                 });
 
             SecondsRemainingFeedback = new IntFeedback(() => (int)(FinishTime - DateTime.Now).TotalSeconds);

@@ -1,4 +1,6 @@
-﻿namespace PepperDash.Essentials.Core.Bridges.JoinMaps
+﻿using PepperDash.Essentials.Core.JoinMaps;
+
+namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
 		public sealed class GenericIrControllerJoinMap : JoinMapBaseAdvanced
 		{

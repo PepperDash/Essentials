@@ -11,7 +11,11 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Config.Essentials;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Plugins;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Secrets;
 using PepperDash.Essentials.Core.Web;
 using Serilog.Events;
 
@@ -110,7 +114,7 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(Core.Factory.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -427,7 +431,7 @@ namespace PepperDash.Essentials
 
 
                     if (newDev == null)
-                        newDev = Core.DeviceFactory.GetDevice(devConf);
+                        newDev = Core.Factory.DeviceFactory.GetDevice(devConf);
 
                     if (newDev != null)
                         DeviceManager.AddDevice(newDev);
@@ -485,7 +489,7 @@ namespace PepperDash.Essentials
             {
                 try
                 {
-                    var room = Core.DeviceFactory.GetDevice(roomConfig);
+                    var room = Core.Factory.DeviceFactory.GetDevice(roomConfig);
 
                     if (room == null)
                     {

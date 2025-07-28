@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Web;
 using System;
 using System.Threading.Tasks;

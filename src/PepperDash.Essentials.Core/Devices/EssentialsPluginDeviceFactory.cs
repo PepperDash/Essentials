@@ -1,4 +1,6 @@
-namespace PepperDash.Essentials.Core
+using PepperDash.Essentials.Core.Plugins;
+
+namespace PepperDash.Essentials.Core.Devices
 {
   /// <summary>
   /// Devices the basic needs for a Device Factory

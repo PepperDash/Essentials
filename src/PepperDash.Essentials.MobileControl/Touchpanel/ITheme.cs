@@ -1,4 +1,5 @@
 ﻿using PepperDash.Core;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Touchpanel
 {

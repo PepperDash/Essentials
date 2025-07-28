@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 using PepperDash.Essentials.Core.Shades;
 using System;
 
@@ -49,12 +51,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             if (device is IShadesOpenClosedFeedback feedbackDevice)
             {
-                feedbackDevice.ShadeIsOpenFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>(ShadeIsOpenFeedback_OutputChange);
-                feedbackDevice.ShadeIsClosedFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>(ShadeIsClosedFeedback_OutputChange);
+                feedbackDevice.ShadeIsOpenFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(ShadeIsOpenFeedback_OutputChange);
+                feedbackDevice.ShadeIsClosedFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(ShadeIsClosedFeedback_OutputChange);
             }
         }
 
-        private void ShadeIsOpenFeedback_OutputChange(object sender, Core.FeedbackEventArgs e)
+        private void ShadeIsOpenFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
             var state = new ShadeBaseStateMessage
             {
@@ -64,7 +66,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostStatusMessage(state);
         }
 
-        private void ShadeIsClosedFeedback_OutputChange(object sender, Core.FeedbackEventArgs e)
+        private void ShadeIsClosedFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
             var state = new ShadeBaseStateMessage
             {

@@ -6,7 +6,7 @@ using System.Linq;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Feedbacks;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.Codec

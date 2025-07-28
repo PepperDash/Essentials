@@ -1,6 +1,7 @@
 ﻿using PepperDash.Core;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {

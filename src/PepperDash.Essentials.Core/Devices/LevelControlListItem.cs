@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Newtonsoft.Json;
-using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Represents a level control item in a list, which can be used to control volume or mute functionality.

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using PepperDash.Core;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// Defines the basic needs for an EssentialsDevice to enable it to be build by an IDeviceFactory class

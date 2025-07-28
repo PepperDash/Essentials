@@ -1,9 +1,7 @@
 ﻿using System;
 using Crestron.SimplSharp;
 
-using PepperDash.Core;
-
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Feedbacks
 {
     /// <summary>
     /// Base class for all feedback types

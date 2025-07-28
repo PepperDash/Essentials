@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceInfo;
 using System.Timers;
 

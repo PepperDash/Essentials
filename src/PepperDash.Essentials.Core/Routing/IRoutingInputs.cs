@@ -1,7 +1,4 @@
-﻿using PepperDash.Core;
-
-
-namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.Routing
 {
     /// <summary>
     /// Defines the contract for IRoutingInputs

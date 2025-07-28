@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Feedbacks
 {
     /// <summary>
     /// To be used for serial data feedback where the event chain / asynchronicity must be maintained

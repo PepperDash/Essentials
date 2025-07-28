@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
-using PepperDash.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Presets;
 using Serilog.Events;
 

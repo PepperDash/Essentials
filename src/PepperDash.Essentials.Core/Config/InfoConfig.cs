@@ -2,6 +2,7 @@
 
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Global;
 using System;
 using System.Collections.Generic;
 
@@ -112,7 +113,7 @@ namespace PepperDash.Essentials.Core.Config
         /// The information gathered by the processor at runtime about it's NICs and their IP addresses.   
         /// </summary>
         [JsonProperty("ipInfo")]
-        public Dictionary<short, EthernetAdapterInfo> IpInfo
+        public Dictionary<short, Core.Global.EthernetAdapterInfo> IpInfo
         {
             get
             {

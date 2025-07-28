@@ -1,4 +1,6 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Touchpanels;
 
 namespace PepperDash.Essentials.Core.PageManagers
 {

@@ -1,6 +1,7 @@
+using PepperDash.Essentials.Core.Plugins;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
   public abstract class EssentialsPluginDevelopmentDeviceFactory<T> : EssentialsDeviceFactory<T>, IPluginDevelopmentDeviceFactory where T : EssentialsDevice
   {

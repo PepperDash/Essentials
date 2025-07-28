@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Devices;
 using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Core.Config

@@ -4,6 +4,7 @@ using System;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Config.Essentials;
 
 namespace PepperDash.Essentials.Core.Devices
 {

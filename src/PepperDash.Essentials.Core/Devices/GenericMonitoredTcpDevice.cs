@@ -1,4 +1,5 @@
-﻿using PepperDash.Core;
+﻿using PepperDash.Essentials.Core.Communications;
+using PepperDash.Essentials.Core.Monitoring;
 using Serilog.Events;
 
 

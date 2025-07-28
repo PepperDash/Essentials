@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Crestron.SimplSharpPro.Fusion;
-
-using PepperDash.Core;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Fusion

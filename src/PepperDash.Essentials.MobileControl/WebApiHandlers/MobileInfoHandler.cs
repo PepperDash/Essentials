@@ -2,7 +2,8 @@
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
-using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config.Essentials;
 using PepperDash.Essentials.WebSocketServer;
 using System;
 using System.Collections.Generic;

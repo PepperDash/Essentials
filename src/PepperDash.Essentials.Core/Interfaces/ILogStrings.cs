@@ -1,6 +1,4 @@
-﻿using PepperDash.Core;
-
-namespace PepperDash.Essentials.Core.Interfaces
+﻿namespace PepperDash.Essentials.Core.Interfaces
 {
  /// <summary>
  /// Defines the contract for ILogStrings

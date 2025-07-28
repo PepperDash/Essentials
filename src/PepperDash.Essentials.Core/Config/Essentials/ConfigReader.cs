@@ -6,11 +6,9 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json.Linq;
-using PepperDash.Core;
-using PepperDash.Core.Config;
 using Serilog.Events;
 
-namespace PepperDash.Essentials.Core.Config
+namespace PepperDash.Essentials.Core.Config.Essentials
 {
 	/// <summary>
 	/// Loads the ConfigObject from the file
@@ -36,7 +34,7 @@ namespace PepperDash.Essentials.Core.Config
                 // Check for local config file first
                 var filePath = Global.FilePathPrefix + ConfigWriter.LocalConfigFolder + Global.DirectorySeparator + Global.ConfigFileName;
 
-                bool localConfigFound = false;
+                var localConfigFound = false;
 
                 Debug.LogMessage(LogEventLevel.Information, "Attempting to load Local config file: '{0}'", filePath);
 
@@ -112,7 +110,7 @@ namespace PepperDash.Essentials.Core.Config
 			    }
 
                 // Read the file
-                using (StreamReader fs = new StreamReader(filePath))
+                using (var fs = new StreamReader(filePath))
                 {
                     Debug.LogMessage(LogEventLevel.Information, "Loading config file: '{0}'", filePath);
 
@@ -212,7 +210,7 @@ namespace PepperDash.Essentials.Core.Config
             {
                 debugStringWidth = 51;
             }
-            var qualifier = (filePathLength % 2 != 0)
+            var qualifier = filePathLength % 2 != 0
                 ? " Using Local Config File "
                 : " Using Local  Config File ";
             var bookend1 = (debugStringWidth - qualifier.Length) / 2;

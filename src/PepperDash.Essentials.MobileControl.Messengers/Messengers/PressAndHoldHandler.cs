@@ -1,6 +1,7 @@
 ﻿using Crestron.SimplSharp;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using System;
 using System.Collections.Generic;
 

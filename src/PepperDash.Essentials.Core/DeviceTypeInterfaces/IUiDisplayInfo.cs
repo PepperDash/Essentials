@@ -1,6 +1,4 @@
-﻿using PepperDash.Core;
-
-namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
  /// <summary>
  /// Defines the contract for IUiDisplayInfo

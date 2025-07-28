@@ -1,6 +1,4 @@
-﻿using PepperDash.Core;
-
-namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
+﻿namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     /// <summary>
     /// Describes a device that has selectable surround sound modes

@@ -9,13 +9,12 @@ using System.Reflection;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp;
 
-using PepperDash.Core;
-using PepperDash.Essentials.Core.Config;
-
 using Newtonsoft.Json;
 using Serilog.Events;
+using PepperDash.Essentials.Core.Extensions;
+using PepperDash.Essentials.Core.Config.Essentials;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.JoinMaps
 {
     public static class JoinMapHelper
     {
@@ -175,7 +174,7 @@ namespace PepperDash.Essentials.Core
                 Joins.Where(j => j.Value.Metadata.JoinType.HasFlag(eJoinType.Serial))
                     .ToDictionary(j => j.Key, j => j.Value);
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Digital join count {digitalCount} Analog join count {analogCount} Serial join count {serialCount}", null, digitals.Count, analogs.Count, serials.Count);
+            Debug.LogMessage(LogEventLevel.Debug, "Digital join count {digitalCount} Analog join count {analogCount} Serial join count {serialCount}", null, digitals.Count, analogs.Count, serials.Count);
 
             // Get the joins of each type and print them
             sb.Append($"# {GetType().Name}\r\n");
@@ -483,7 +482,7 @@ namespace PepperDash.Essentials.Core
                     errorKey = item.Key;
                     break;
                 }
-                Debug.LogMessage(LogEventLevel.Information, "Unable to decode join metadata {1}- {0}", e.Message, !string.IsNullOrEmpty(errorKey) ? (' ' + errorKey) : string.Empty);
+                Debug.LogMessage(LogEventLevel.Information, "Unable to decode join metadata {1}- {0}", e.Message, !string.IsNullOrEmpty(errorKey) ? ' ' + errorKey : string.Empty);
                 return string.Format(stringFormatter,
                     dataArray["joinNumber"],
                     dataArray["joinSpan"],
