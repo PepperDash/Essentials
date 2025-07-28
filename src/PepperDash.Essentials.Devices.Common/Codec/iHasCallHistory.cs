@@ -10,6 +10,9 @@ using Newtonsoft.Json.Converters;
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
 
+    /// <summary>
+    /// Defines the contract for IHasCallHistory
+    /// </summary>
     public interface IHasCallHistory
     {
         CodecCallHistory CallHistory { get; }
@@ -17,6 +20,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry);
     }
 
+    /// <summary>
+    /// Enumeration of eCodecOccurrenceType values
+    /// </summary>
     public enum eCodecOccurrenceType
     {
         Unknown = 0,
@@ -26,12 +32,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     }
 
     /// <summary>
-    /// Represents the recent call history for a codec device
+    /// Represents a CodecCallHistory
     /// </summary>
     public class CodecCallHistory
     {
         public event EventHandler<EventArgs> RecentCallsListHasChanged;
 
+        /// <summary>
+        /// Gets or sets the RecentCalls
+        /// </summary>
         public List<CallHistoryEntry> RecentCalls { get; private set; }
 
         /// <summary>
@@ -57,6 +66,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             }
         }
 
+        /// <summary>
+        /// RemoveEntry method
+        /// </summary>
         public void RemoveEntry(CallHistoryEntry entry)
         {
             RecentCalls.Remove(entry);
@@ -64,12 +76,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         }
 
         /// <summary>
-        /// Generic call history entry, not device specific
+        /// Represents a CallHistoryEntry
         /// </summary>
         public class CallHistoryEntry : CodecActiveCallItem
         {
             [JsonConverter(typeof(IsoDateTimeConverter))]
             [JsonProperty("startTime")]
+            /// <summary>
+            /// Gets or sets the StartTime
+            /// </summary>
             public DateTime StartTime { get; set; }
             [JsonConverter(typeof(StringEnumConverter))]
             [JsonProperty("occurrenceType")]
@@ -83,6 +98,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         /// <param name="entries"></param>
         /// <returns></returns>
+        /// <summary>
+        /// ConvertCiscoCallHistoryToGeneric method
+        /// </summary>
         public void ConvertCiscoCallHistoryToGeneric(List<CiscoCallHistory.Entry> entries)
         {
             var genericEntries = new List<CallHistoryEntry>();
@@ -112,6 +130,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// Takes the Cisco occurence type and converts it to the matching enum
         /// </summary>
         /// <param name="s"></param>
+        /// <summary>
+        /// ConvertToOccurenceTypeEnum method
+        /// </summary>
         public eCodecOccurrenceType ConvertToOccurenceTypeEnum(string s)
         {
             switch (s)

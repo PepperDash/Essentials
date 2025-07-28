@@ -10,6 +10,9 @@ using System.Linq;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// Represents a MobileControlDeviceFactory
+    /// </summary>
     public class MobileControlDeviceFactory : EssentialsDeviceFactory<MobileControlSystemController>
     {
         public MobileControlDeviceFactory()
@@ -17,6 +20,10 @@ namespace PepperDash.Essentials
             TypeNames = new List<string> { "appserver", "mobilecontrol", "webserver" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             try

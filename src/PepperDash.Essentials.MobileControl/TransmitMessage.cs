@@ -12,6 +12,9 @@ using WebSocketSharp;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// Represents a TransmitMessage
+    /// </summary>
     public class TransmitMessage : IQueueMessage
     {
         private readonly WebSocket _ws;
@@ -31,6 +34,9 @@ namespace PepperDash.Essentials
 
         #region Implementation of IQueueMessage
 
+        /// <summary>
+        /// Dispatch method
+        /// </summary>
         public void Dispatch()
         {
             try
@@ -67,6 +73,9 @@ namespace PepperDash.Essentials
 
 
 
+    /// <summary>
+    /// Represents a MessageToClients
+    /// </summary>
     public class MessageToClients : IQueueMessage
     {
         private readonly MobileControlWebsocketServer _server;
@@ -86,6 +95,9 @@ namespace PepperDash.Essentials
 
         #region Implementation of IQueueMessage
 
+        /// <summary>
+        /// Dispatch method
+        /// </summary>
         public void Dispatch()
         {
             try

@@ -6,6 +6,9 @@ using PepperDash.Essentials.AppServer.Messengers;
 
 namespace PepperDash.Essentials.Touchpanel
 {
+    /// <summary>
+    /// Represents a ITswAppControlMessenger
+    /// </summary>
     public class ITswAppControlMessenger : MessengerBase
     {
         private readonly ITswAppControl _appControl;
@@ -51,6 +54,9 @@ namespace PepperDash.Essentials.Touchpanel
         }
     }
 
+    /// <summary>
+    /// Represents a TswAppStateMessage
+    /// </summary>
     public class TswAppStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("appOpen", NullValueHandling = NullValueHandling.Ignore)]

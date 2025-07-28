@@ -4,6 +4,9 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a EssentialsRoomEmergencyContactClosure
+    /// </summary>
     public class EssentialsRoomEmergencyContactClosure : EssentialsRoomEmergencyBase, IEssentialsRoomEmergency
     {
         public event EventHandler<EventArgs> EmergencyStateChange;
@@ -12,6 +15,9 @@ namespace PepperDash.Essentials.Core
         string Behavior;
         bool TriggerOnClose;
 
+        /// <summary>
+        /// Gets or sets the InEmergency
+        /// </summary>
         public bool InEmergency { get; private set; }
 
         public EssentialsRoomEmergencyContactClosure(string key, EssentialsRoomEmergencyConfig config, IEssentialsRoom room) :
@@ -75,7 +81,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// 
+        /// RunEmergencyBehavior method
         /// </summary>
         public void RunEmergencyBehavior()
         {
@@ -85,7 +91,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Describes the functionality of a room emergency contact closure
+    /// Defines the contract for IEssentialsRoomEmergency
     /// </summary>
     public interface IEssentialsRoomEmergency
     {

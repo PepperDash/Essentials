@@ -100,9 +100,9 @@ namespace PepperDash.Core.SystemInfo
 			OnBoolChange(false, 0, SystemInfoConstants.BusyBoolChange);
 		}
 
-		/// <summary>
-		/// Gets the current ethernet info
-		/// </summary>
+  /// <summary>
+  /// GetEthernetInfo method
+  /// </summary>
 		public void GetEthernetInfo()
 		{
 			OnBoolChange(true, 0, SystemInfoConstants.BusyBoolChange);
@@ -161,9 +161,9 @@ namespace PepperDash.Core.SystemInfo
 			OnBoolChange(false, 0, SystemInfoConstants.BusyBoolChange);
 		}
 
-		/// <summary>
-		/// Gets the current control subnet info
-		/// </summary>
+  /// <summary>
+  /// GetControlSubnetInfo method
+  /// </summary>
 		public void GetControlSubnetInfo()
 		{
 			OnBoolChange(true, 0, SystemInfoConstants.BusyBoolChange);
@@ -206,6 +206,9 @@ namespace PepperDash.Core.SystemInfo
 		/// Gets the program info by index
 		/// </summary>
 		/// <param name="index"></param>
+  /// <summary>
+  /// GetProgramInfoByIndex method
+  /// </summary>
 		public void GetProgramInfoByIndex(ushort index)
 		{
 			if (index < 1 || index > 10)
@@ -263,9 +266,9 @@ namespace PepperDash.Core.SystemInfo
 			OnBoolChange(false, 0, SystemInfoConstants.BusyBoolChange);
 		}
 
-		/// <summary>
-		/// Gets the processor uptime and passes it to S+
-		/// </summary>
+  /// <summary>
+  /// RefreshProcessorUptime method
+  /// </summary>
 		public void RefreshProcessorUptime()
 		{
 			try
@@ -287,6 +290,9 @@ namespace PepperDash.Core.SystemInfo
 		/// Gets the program uptime, by index, and passes it to S+
 		/// </summary>
 		/// <param name="index"></param>
+  /// <summary>
+  /// RefreshProgramUptimeByIndex method
+  /// </summary>
 		public void RefreshProgramUptimeByIndex(int index)
 		{
 			try
@@ -308,6 +314,9 @@ namespace PepperDash.Core.SystemInfo
 		/// Sends command to console, passes response back using string change event
 		/// </summary>
 		/// <param name="cmd"></param>
+  /// <summary>
+  /// SendConsoleCommand method
+  /// </summary>
 		public void SendConsoleCommand(string cmd)
 		{
 			if (string.IsNullOrEmpty(cmd))

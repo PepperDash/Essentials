@@ -22,6 +22,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
+    <DocumentationFile>bin\$(Configuration)\PepperDashEssentials.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <None Include="Example Configuration\EssentialsHuddleSpaceRoom\configurationFile-HuddleSpace-2-Source.json">

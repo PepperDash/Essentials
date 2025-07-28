@@ -21,6 +21,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
+    /// <summary>
+    /// Enumeration of eCameraCapabilities values
+    /// </summary>
     public enum eCameraCapabilities
     {
         None = 0,
@@ -33,11 +36,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     public abstract class CameraBase : ReconfigurableDevice, IRoutingOutputs
 	{
         [JsonProperty("controlMode", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the ControlMode
+        /// </summary>
         public eCameraControlMode ControlMode { get; protected set; }
 
         #region IRoutingOutputs Members
 
         [JsonIgnore]
+        /// <summary>
+        /// Gets or sets the OutputPorts
+        /// </summary>
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; protected set; }
 
         #endregion
@@ -271,6 +280,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 	}
 
 
+    /// <summary>
+    /// Represents a CameraPreset
+    /// </summary>
     public class CameraPreset : PresetBase
     {
         public CameraPreset(int id, string description, bool isDefined, bool isDefinable)
@@ -281,19 +293,37 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     }
 
 
+ /// <summary>
+ /// Represents a CameraPropertiesConfig
+ /// </summary>
 	public class CameraPropertiesConfig
 	{
+  /// <summary>
+  /// Gets or sets the CommunicationMonitorProperties
+  /// </summary>
 		public CommunicationMonitorConfig CommunicationMonitorProperties { get; set; }
 
+  /// <summary>
+  /// Gets or sets the Control
+  /// </summary>
 		public ControlPropertiesConfig Control { get; set; }
 
         [JsonProperty("supportsAutoMode")]
+        /// <summary>
+        /// Gets or sets the SupportsAutoMode
+        /// </summary>
         public bool SupportsAutoMode { get; set; }
 
         [JsonProperty("supportsOffMode")]
+        /// <summary>
+        /// Gets or sets the SupportsOffMode
+        /// </summary>
         public bool SupportsOffMode { get; set; }
 
         [JsonProperty("presets")]
+        /// <summary>
+        /// Gets or sets the Presets
+        /// </summary>
         public List<CameraPreset> Presets { get; set; }
 	}
 }

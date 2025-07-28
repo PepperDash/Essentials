@@ -9,6 +9,9 @@ namespace PepperDash.Essentials.Core.Web
 {
 	public static class EssentialsWebApiHelpers
 	{
+  /// <summary>
+  /// GetRequestBody method
+  /// </summary>
 		public static string GetRequestBody(this HttpCwsRequest request)
 		{
 			var bytes = new byte[request.ContentLength];
@@ -18,6 +21,9 @@ namespace PepperDash.Essentials.Core.Web
 			return Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 		}
 
+  /// <summary>
+  /// MapToAssemblyObject method
+  /// </summary>
 		public static object MapToAssemblyObject(LoadedAssembly assembly)
 		{
 			return new
@@ -27,6 +33,9 @@ namespace PepperDash.Essentials.Core.Web
 			};
 		}
 
+  /// <summary>
+  /// MapToDeviceListObject method
+  /// </summary>
 		public static object MapToDeviceListObject(IKeyed device)
 		{
 			return new
@@ -38,6 +47,9 @@ namespace PepperDash.Essentials.Core.Web
 			};
 		}
 
+  /// <summary>
+  /// MapJoinToObject method
+  /// </summary>
 		public static object MapJoinToObject(string key, JoinMapBaseAdvanced join)
 		{
 			var kp = new KeyValuePair<string, JoinMapBaseAdvanced>(key, join);
@@ -45,6 +57,9 @@ namespace PepperDash.Essentials.Core.Web
 			return MapJoinToObject(kp);
 		}
 
+  /// <summary>
+  /// MapJoinToObject method
+  /// </summary>
 		public static object MapJoinToObject(KeyValuePair<string, JoinMapBaseAdvanced> join)
 		{
 			return new
@@ -54,6 +69,9 @@ namespace PepperDash.Essentials.Core.Web
 			};
 		}
 
+  /// <summary>
+  /// MapJoinDataCompleteToObject method
+  /// </summary>
 		public static object MapJoinDataCompleteToObject(KeyValuePair<string, JoinDataComplete> joinData)
 		{
 			return new
@@ -67,6 +85,9 @@ namespace PepperDash.Essentials.Core.Web
 			};
 		}
 
+  /// <summary>
+  /// MapDeviceTypeToObject method
+  /// </summary>
 		public static object MapDeviceTypeToObject(string key, DeviceFactoryWrapper device)
 		{
 			var kp = new KeyValuePair<string, DeviceFactoryWrapper>(key, device);
@@ -74,6 +95,9 @@ namespace PepperDash.Essentials.Core.Web
 			return MapDeviceTypeToObject(kp);
 		}
 
+  /// <summary>
+  /// MapDeviceTypeToObject method
+  /// </summary>
 		public static object MapDeviceTypeToObject(KeyValuePair<string, DeviceFactoryWrapper> device)
 		{
 			return new

@@ -13,6 +13,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="attachDev"></param>
 		/// <returns>Attached VideoStatusOutputs or the default if none attached</returns>
+  /// <summary>
+  /// GetVideoStatuses method
+  /// </summary>
 		public static VideoStatusOutputs GetVideoStatuses(this IAttachVideoStatus attachedDev)
 		{
 			// See if this device is connected to a status-providing port
@@ -29,6 +32,9 @@ namespace PepperDash.Essentials.Core
 			return VideoStatusOutputs.NoStatus;
 		}
 
+  /// <summary>
+  /// HasVideoStatuses method
+  /// </summary>
 		public static bool HasVideoStatuses(this IAttachVideoStatus attachedDev)
 		{
 			return TieLineCollection.Default.FirstOrDefault(t =>

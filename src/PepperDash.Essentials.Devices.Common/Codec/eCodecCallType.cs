@@ -7,6 +7,9 @@ using Crestron.SimplSharp;
 namespace PepperDash.Essentials.Devices.Common.Codec
 
 {
+    /// <summary>
+    /// Enumeration of eCodecCallType values
+    /// </summary>
     public enum eCodecCallType
     {
         Unknown = 0, 
@@ -16,6 +19,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         ForwardAllCall
     }
 
+    /// <summary>
+    /// Represents a CodecCallType
+    /// </summary>
     public class CodecCallType
     {
 
@@ -24,6 +30,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
+        /// <summary>
+        /// ConvertToTypeEnum method
+        /// </summary>
         public static eCodecCallType ConvertToTypeEnum(string s)
         {
             switch (s)

@@ -142,6 +142,9 @@ namespace PepperDash.Core.Web.RequestHandlers
         /// Process request
         /// </summary>
         /// <param name="context"></param>
+        /// <summary>
+        /// ProcessRequest method
+        /// </summary>
         public void ProcessRequest(HttpCwsContext context)
         {
             if (!_handlers.TryGetValue(context.Request.HttpMethod, out Func<HttpCwsContext, Task> handler))

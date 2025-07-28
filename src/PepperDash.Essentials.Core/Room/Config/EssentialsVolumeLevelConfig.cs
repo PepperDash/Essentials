@@ -4,10 +4,13 @@ using PepperDash.Essentials.Core;
 namespace PepperDash.Essentials.Room.Config
 {
     /// <summary>
-    /// 
+    /// Represents a EssentialsRoomVolumesConfig
     /// </summary>
     public class EssentialsRoomVolumesConfig
     {
+        /// <summary>
+        /// Gets or sets the Master
+        /// </summary>
         public EssentialsVolumeLevelConfig Master { get; set; }
         public EssentialsVolumeLevelConfig Program { get; set; }
         public EssentialsVolumeLevelConfig AudioCallRx { get; set; }
@@ -15,12 +18,21 @@ namespace PepperDash.Essentials.Room.Config
     }
 
     /// <summary>
-    /// 
+    /// Represents a EssentialsVolumeLevelConfig
     /// </summary>
     public class EssentialsVolumeLevelConfig
     {
+        /// <summary>
+        /// Gets or sets the DeviceKey
+        /// </summary>
         public string DeviceKey { get; set; }
+        /// <summary>
+        /// Gets or sets the Label
+        /// </summary>
         public string Label { get; set; }
+        /// <summary>
+        /// Gets or sets the Level
+        /// </summary>
         public int Level { get; set; }
 
         /// <summary>

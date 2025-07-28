@@ -70,6 +70,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// Set minimum voltage change for device to update voltage changed method
         /// </summary>
         /// <param name="value">valid values range from 0 - 65535, representing the full 100% range of the processor voltage source.  Check processor documentation for details</param>
+        /// <summary>
+        /// SetMinimumChange method
+        /// </summary>
         public void SetMinimumChange(ushort value)
         {
             InputPort.AnalogMinChange = value;
@@ -88,6 +91,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #region Bridge Linking
 
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
+        /// <inheritdoc />
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new IAnalogInputJoinMap(joinStart);
@@ -139,6 +146,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
         #endregion
 
 
+        /// <summary>
+        /// GetVersiportDigitalInput method
+        /// </summary>
         public static Versiport GetVersiportDigitalInput(IOPortConfig dc)
         {
          
@@ -188,6 +198,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
     }
 
 
+    /// <summary>
+    /// Represents a GenericVersiportAbalogInputDeviceFactory
+    /// </summary>
     public class GenericVersiportAbalogInputDeviceFactory : EssentialsDeviceFactory<GenericVersiportAnalogInputDevice>
     {
         public GenericVersiportAbalogInputDeviceFactory()
@@ -195,6 +208,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
             TypeNames = new List<string>() { "versiportanaloginput" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Versiport Device");

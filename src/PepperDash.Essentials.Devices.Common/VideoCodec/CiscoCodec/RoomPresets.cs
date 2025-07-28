@@ -68,7 +68,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     }
 
     /// <summary>
-    /// Represents a room preset on a video codec.  Typically stores camera position(s) and video routing.  Can be recalled by Far End if enabled.
+    /// Represents a CodecRoomPreset
     /// </summary>
     public class CodecRoomPreset : PresetBase
     {

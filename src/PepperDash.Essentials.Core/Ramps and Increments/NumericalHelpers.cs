@@ -6,6 +6,9 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Represents a NumericalHelpers
+    /// </summary>
     public class NumericalHelpers 
     {  
         /// <summary>

@@ -2,9 +2,9 @@
 
 namespace PepperDash.Core.JsonToSimpl
 {
-    /// <summary>
-    /// 
-    /// </summary>
+ /// <summary>
+ /// Represents a JsonToSimplFixedPathObject
+ /// </summary>
 	public class JsonToSimplFixedPathObject : JsonToSimplChildObjectBase
 	{
         /// <summary>

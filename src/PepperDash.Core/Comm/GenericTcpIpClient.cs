@@ -59,7 +59,7 @@ namespace PepperDash.Core
 		}
 
         /// <summary>
-        /// Port on server
+        /// Gets or sets the Port
         /// </summary>
         public int Port { get; set; }
 
@@ -135,9 +135,9 @@ namespace PepperDash.Core
 		/// </summary>
 		public string ConnectionFailure { get { return ClientStatus.ToString(); } }
 
-		/// <summary>
-		/// bool to track if auto reconnect should be set on the socket
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the AutoReconnect
+  /// </summary>
 		public bool AutoReconnect { get; set; }
 
         /// <summary>
@@ -232,7 +232,7 @@ namespace PepperDash.Core
 		}
 
         /// <summary>
-        /// Just to help S+ set the key
+        /// Initialize method
         /// </summary>
         public void Initialize(string key)
         {
@@ -255,6 +255,9 @@ namespace PepperDash.Core
         /// 
         /// </summary>
         /// <returns></returns>
+  /// <summary>
+  /// Deactivate method
+  /// </summary>
 		public override bool Deactivate()
 		{
             RetryTimer.Stop();
@@ -267,9 +270,9 @@ namespace PepperDash.Core
 			return true;
 		}
 
-        /// <summary>
-        /// Attempts to connect to the server
-        /// </summary>
+  /// <summary>
+  /// Connect method
+  /// </summary>
 		public void Connect()
 		{
             if (string.IsNullOrEmpty(Hostname))
@@ -334,9 +337,9 @@ namespace PepperDash.Core
             }
         }
 
-        /// <summary>
-        /// Attempts to disconnect the client
-        /// </summary>
+  /// <summary>
+  /// Disconnect method
+  /// </summary>
 		public void Disconnect()
 		{
             try
@@ -355,7 +358,7 @@ namespace PepperDash.Core
 		}
 
         /// <summary>
-        /// Does the actual disconnect business
+        /// DisconnectClient method
         /// </summary>
         public void DisconnectClient()
         {
@@ -446,9 +449,9 @@ namespace PepperDash.Core
             }
 		}
 
-		/// <summary>
-		/// General send method
-		/// </summary>
+  /// <summary>
+  /// SendText method
+  /// </summary>
 		public void SendText(string text)
 		{
 			var bytes = Encoding.GetEncoding(28591).GetBytes(text);
@@ -459,9 +462,9 @@ namespace PepperDash.Core
 			    _client.SendData(bytes, bytes.Length);
 		}
 
-		/// <summary>
-		/// This is useful from console and...?
-		/// </summary>
+  /// <summary>
+  /// SendEscapedText method
+  /// </summary>
 		public void SendEscapedText(string text)
 		{
 			var unescapedText = Regex.Replace(text, @"\\x([0-9a-fA-F][0-9a-fA-F])", s =>
@@ -476,6 +479,9 @@ namespace PepperDash.Core
         /// Sends Bytes to the server
         /// </summary>
         /// <param name="bytes"></param>
+  /// <summary>
+  /// SendBytes method
+  /// </summary>
 		public void SendBytes(byte[] bytes)
 		{
             if (StreamDebugging.TxStreamDebuggingIsEnabled)
@@ -508,9 +514,9 @@ namespace PepperDash.Core
 		}
 	}
 
-    /// <summary>
-    /// Configuration properties for TCP/SSH Connections
-    /// </summary>
+ /// <summary>
+ /// Represents a TcpSshPropertiesConfig
+ /// </summary>
 	public class TcpSshPropertiesConfig
 	{
         /// <summary>
@@ -529,9 +535,9 @@ namespace PepperDash.Core
         /// Username credential
         /// </summary>
 		public string Username { get; set; }
-        /// <summary>
-        /// Passord credential
-        /// </summary>
+  /// <summary>
+  /// Gets or sets the Password
+  /// </summary>
 		public string Password { get; set; }
 
 		/// <summary>
@@ -539,14 +545,14 @@ namespace PepperDash.Core
 		/// </summary>
 		public int BufferSize { get; set; }
 
-		/// <summary>
-		/// Defaults to true
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the AutoReconnect
+  /// </summary>
 		public bool AutoReconnect { get; set; }
 
-		/// <summary>
-		/// Defaults to 5000ms
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the AutoReconnectIntervalMs
+  /// </summary>
 		public int AutoReconnectIntervalMs { get; set; }
 
         /// <summary>

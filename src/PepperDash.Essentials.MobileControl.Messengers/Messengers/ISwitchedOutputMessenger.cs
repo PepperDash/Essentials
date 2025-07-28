@@ -5,6 +5,9 @@ using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a ISwitchedOutputMessenger
+    /// </summary>
     public class ISwitchedOutputMessenger : MessengerBase
     {
 
@@ -50,9 +53,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// Represents a ISwitchedOutputStateMessage
+    /// </summary>
     public class ISwitchedOutputStateMessage : DeviceStateMessageBase
     {
         [JsonProperty("isOn")]
+        /// <summary>
+        /// Gets or sets the IsOn
+        /// </summary>
         public bool IsOn { get; set; }
     }
 }

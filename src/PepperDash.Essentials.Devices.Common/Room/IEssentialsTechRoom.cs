@@ -8,6 +8,9 @@ using TwoWayDisplayBase = PepperDash.Essentials.Devices.Common.Displays.TwoWayDi
 
 namespace PepperDash.Essentials.Devices.Common.Room
 {
+    /// <summary>
+    /// Defines the contract for IEssentialsTechRoom
+    /// </summary>
     public interface IEssentialsTechRoom:IEssentialsRoom, ITvPresetsProvider,IBridgeAdvanced,IRunDirectRouteAction
     {
         EssentialsTechRoomConfig PropertiesConfig { get; }

@@ -15,9 +15,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 	{
 		VideoCodecBase VideoCodec { get; }
 
-        ///// <summary>
-        ///// Make this more specific
-        ///// </summary>
+        /// <summary>
+        /// Make this more specific
+        /// </summary>
         //List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem> ActiveCalls { get; }
 
 		/// <summary>

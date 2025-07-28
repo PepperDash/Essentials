@@ -54,6 +54,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         /// <param name="progSlot"></param>
         /// <param name="mac"></param>
+        /// <summary>
+        /// GenerateNewRoomGuid method
+        /// </summary>
         public string GenerateNewRoomGuid(uint progSlot, string mac)
         {
             Guid roomGuid = Guid.NewGuid();
@@ -89,6 +92,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         /// <param name="room"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetNextAvailableAssetNumber method
+        /// </summary>
         public static uint GetNextAvailableAssetNumber(FusionRoom room)
         {
             uint slotNum = 0;
@@ -113,13 +119,28 @@ namespace PepperDash.Essentials.Core.Fusion
 
     }
 
+    /// <summary>
+    /// Represents a FusionOccupancySensorAsset
+    /// </summary>
     public class FusionOccupancySensorAsset
     {
         // SlotNumber fixed at 4
 
+        /// <summary>
+        /// Gets or sets the SlotNumber
+        /// </summary>
         public uint SlotNumber { get { return 4; } }
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get { return "Occupancy Sensor"; } }
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public eAssetType Type { get; set; }
+        /// <summary>
+        /// Gets or sets the InstanceId
+        /// </summary>
         public string InstanceId { get; set; }
 
         public FusionOccupancySensorAsset()
@@ -134,11 +155,26 @@ namespace PepperDash.Essentials.Core.Fusion
         }
     }
 
+    /// <summary>
+    /// Represents a FusionAsset
+    /// </summary>
     public class FusionAsset
     {
+        /// <summary>
+        /// Gets or sets the SlotNumber
+        /// </summary>
         public uint SlotNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
         public string Type { get;  set; }
+        /// <summary>
+        /// Gets or sets the InstanceId
+        /// </summary>
         public string InstanceId { get;set; }
 
         public FusionAsset()
@@ -164,8 +200,14 @@ namespace PepperDash.Essentials.Core.Fusion
 
     //***************************************************************************************************
 
+    /// <summary>
+    /// Represents a RoomSchedule
+    /// </summary>
     public class RoomSchedule
     {
+        /// <summary>
+        /// Gets or sets the Meetings
+        /// </summary>
         public List<Event> Meetings { get; set; }
 
         public RoomSchedule()
@@ -178,7 +220,7 @@ namespace PepperDash.Essentials.Core.Fusion
     // Helper Classes for XML API
 
     /// <summary>
-    /// Data needed to request the local time from the Fusion server
+    /// Represents a LocalTimeRequest
     /// </summary>
     public class LocalTimeRequest
     {
@@ -192,6 +234,9 @@ namespace PepperDash.Essentials.Core.Fusion
     public class RequestSchedule
     {
         //[XmlElement(ElementName = "RequestID")]
+        /// <summary>
+        /// Gets or sets the RequestID
+        /// </summary>
         public string RequestID { get; set; }
         //[XmlElement(ElementName = "RoomID")]
         public string RoomID { get; set; }
@@ -211,15 +256,30 @@ namespace PepperDash.Essentials.Core.Fusion
 
 
     //[XmlRoot(ElementName = "RequestAction")]
+    /// <summary>
+    /// Represents a RequestAction
+    /// </summary>
     public class RequestAction
     {
         //[XmlElement(ElementName = "RequestID")]
+        /// <summary>
+        /// Gets or sets the RequestID
+        /// </summary>
         public string RequestID { get; set; }
         //[XmlElement(ElementName = "RoomID")]
+        /// <summary>
+        /// Gets or sets the RoomID
+        /// </summary>
         public string RoomID { get; set; }
         //[XmlElement(ElementName = "ActionID")]
+        /// <summary>
+        /// Gets or sets the ActionID
+        /// </summary>
         public string ActionID { get; set; }
         //[XmlElement(ElementName = "Parameters")]
+        /// <summary>
+        /// Gets or sets the Parameters
+        /// </summary>
         public List<Parameter> Parameters { get; set; }
 
         public RequestAction(string roomID, string actionID, List<Parameter> parameters)
@@ -231,22 +291,43 @@ namespace PepperDash.Essentials.Core.Fusion
     }
 
     //[XmlRoot(ElementName = "ActionResponse")]
+    /// <summary>
+    /// Represents a ActionResponse
+    /// </summary>
     public class ActionResponse
     {
         //[XmlElement(ElementName = "RequestID")]
+        /// <summary>
+        /// Gets or sets the RequestID
+        /// </summary>
         public string RequestID { get; set; }
         //[XmlElement(ElementName = "ActionID")]
+        /// <summary>
+        /// Gets or sets the ActionID
+        /// </summary>
         public string ActionID { get; set; }
         //[XmlElement(ElementName = "Parameters")]
+        /// <summary>
+        /// Gets or sets the Parameters
+        /// </summary>
         public List<Parameter> Parameters { get; set; }
     }
 
     //[XmlRoot(ElementName = "Parameter")]
+    /// <summary>
+    /// Represents a Parameter
+    /// </summary>
     public class Parameter
     {
         //[XmlAttribute(AttributeName = "ID")]
+        /// <summary>
+        /// Gets or sets the ID
+        /// </summary>
         public string ID { get; set; }
         //[XmlAttribute(AttributeName = "Value")]
+        /// <summary>
+        /// Gets or sets the Value
+        /// </summary>
         public string Value { get; set; }
     }
 
@@ -279,51 +360,120 @@ namespace PepperDash.Essentials.Core.Fusion
     }
 
     //[XmlRoot(ElementName = "Event")]
+    /// <summary>
+    /// Represents a Event
+    /// </summary>
     public class Event
     {
         //[XmlElement(ElementName = "MeetingID")]
+        /// <summary>
+        /// Gets or sets the MeetingID
+        /// </summary>
         public string MeetingID { get; set; }
         //[XmlElement(ElementName = "RVMeetingID")]
+        /// <summary>
+        /// Gets or sets the RVMeetingID
+        /// </summary>
         public string RVMeetingID { get; set; }
         //[XmlElement(ElementName = "Recurring")]
+        /// <summary>
+        /// Gets or sets the Recurring
+        /// </summary>
         public string Recurring { get; set; }
         //[XmlElement(ElementName = "InstanceID")]
+        /// <summary>
+        /// Gets or sets the InstanceID
+        /// </summary>
         public string InstanceID { get; set; }
         //[XmlElement(ElementName = "dtStart")]
+        /// <summary>
+        /// Gets or sets the dtStart
+        /// </summary>
         public DateTime dtStart { get; set; }
         //[XmlElement(ElementName = "dtEnd")]
+        /// <summary>
+        /// Gets or sets the dtEnd
+        /// </summary>
         public DateTime dtEnd { get; set; }
         //[XmlElement(ElementName = "Organizer")]
+        /// <summary>
+        /// Gets or sets the Organizer
+        /// </summary>
         public string Organizer { get; set; }
         //[XmlElement(ElementName = "Attendees")]
+        /// <summary>
+        /// Gets or sets the Attendees
+        /// </summary>
         public Attendees Attendees { get; set; }
         //[XmlElement(ElementName = "Resources")]
+        /// <summary>
+        /// Gets or sets the Resources
+        /// </summary>
         public Resources Resources { get; set; }
         //[XmlElement(ElementName = "IsEvent")]
+        /// <summary>
+        /// Gets or sets the IsEvent
+        /// </summary>
         public string IsEvent { get; set; }
         //[XmlElement(ElementName = "IsRoomViewMeeting")]
+        /// <summary>
+        /// Gets or sets the IsRoomViewMeeting
+        /// </summary>
         public string IsRoomViewMeeting { get; set; }
         //[XmlElement(ElementName = "IsPrivate")]
+        /// <summary>
+        /// Gets or sets the IsPrivate
+        /// </summary>
         public string IsPrivate { get; set; }
         //[XmlElement(ElementName = "IsExchangePrivate")]
+        /// <summary>
+        /// Gets or sets the IsExchangePrivate
+        /// </summary>
         public string IsExchangePrivate { get; set; }
         //[XmlElement(ElementName = "MeetingTypes")]
+        /// <summary>
+        /// Gets or sets the MeetingTypes
+        /// </summary>
         public MeetingTypes MeetingTypes { get; set; }
         //[XmlElement(ElementName = "ParticipantCode")]
+        /// <summary>
+        /// Gets or sets the ParticipantCode
+        /// </summary>
         public string ParticipantCode { get; set; }
         //[XmlElement(ElementName = "PhoneNo")]
+        /// <summary>
+        /// Gets or sets the PhoneNo
+        /// </summary>
         public string PhoneNo { get; set; }
         //[XmlElement(ElementName = "WelcomeMsg")]
+        /// <summary>
+        /// Gets or sets the WelcomeMsg
+        /// </summary>
         public string WelcomeMsg { get; set; }
         //[XmlElement(ElementName = "Subject")]
+        /// <summary>
+        /// Gets or sets the Subject
+        /// </summary>
         public string Subject { get; set; }
         //[XmlElement(ElementName = "LiveMeeting")]
+        /// <summary>
+        /// Gets or sets the LiveMeeting
+        /// </summary>
         public LiveMeeting LiveMeeting { get; set; }
         //[XmlElement(ElementName = "ShareDocPath")]
+        /// <summary>
+        /// Gets or sets the ShareDocPath
+        /// </summary>
         public string ShareDocPath { get; set; }
         //[XmlElement(ElementName = "HaveAttendees")]
+        /// <summary>
+        /// Gets or sets the HaveAttendees
+        /// </summary>
         public string HaveAttendees { get; set; }
         //[XmlElement(ElementName = "HaveResources")]
+        /// <summary>
+        /// Gets or sets the HaveResources
+        /// </summary>
         public string HaveResources { get; set; }
 
         /// <summary>
@@ -415,86 +565,167 @@ namespace PepperDash.Essentials.Core.Fusion
     }
 
     //[XmlRoot(ElementName = "Resources")]
+    /// <summary>
+    /// Represents a Resources
+    /// </summary>
     public class Resources
     {
         //[XmlElement(ElementName = "Rooms")]
+        /// <summary>
+        /// Gets or sets the Rooms
+        /// </summary>
         public Rooms Rooms { get; set; }
     }
 
     //[XmlRoot(ElementName = "Rooms")]
+    /// <summary>
+    /// Represents a Rooms
+    /// </summary>
     public class Rooms
     {
         //[XmlElement(ElementName = "Room")]
+        /// <summary>
+        /// Gets or sets the Room
+        /// </summary>
         public List<Room> Room { get; set; }
     }
 
     //[XmlRoot(ElementName = "Room")]
+    /// <summary>
+    /// Represents a Room
+    /// </summary>
     public class Room
     {
         //[XmlElement(ElementName = "Name")]
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
         //[XmlElement(ElementName = "ID")]
+        /// <summary>
+        /// Gets or sets the ID
+        /// </summary>
         public string ID { get; set; }
         //[XmlElement(ElementName = "MPType")]
+        /// <summary>
+        /// Gets or sets the MPType
+        /// </summary>
         public string MPType { get; set; }
     }
 
     //[XmlRoot(ElementName = "Attendees")]
+    /// <summary>
+    /// Represents a Attendees
+    /// </summary>
     public class Attendees
     {
         //[XmlElement(ElementName = "Required")]
+        /// <summary>
+        /// Gets or sets the Required
+        /// </summary>
         public Required Required { get; set; }
         //[XmlElement(ElementName = "Optional")]
+        /// <summary>
+        /// Gets or sets the Optional
+        /// </summary>
         public Optional Optional { get; set; }
     }
 
     //[XmlRoot(ElementName = "Required")]
+    /// <summary>
+    /// Represents a Required
+    /// </summary>
     public class Required
     {
         //[XmlElement(ElementName = "Attendee")]
+        /// <summary>
+        /// Gets or sets the Attendee
+        /// </summary>
         public List<string> Attendee { get; set; }
     }
 
     //[XmlRoot(ElementName = "Optional")]
+    /// <summary>
+    /// Represents a Optional
+    /// </summary>
     public class Optional
     {
         //[XmlElement(ElementName = "Attendee")]
+        /// <summary>
+        /// Gets or sets the Attendee
+        /// </summary>
         public List<string> Attendee { get; set; }
     }
 
     //[XmlRoot(ElementName = "MeetingType")]
+    /// <summary>
+    /// Represents a MeetingType
+    /// </summary>
     public class MeetingType
     {
         //[XmlAttribute(AttributeName = "ID")]
+        /// <summary>
+        /// Gets or sets the ID
+        /// </summary>
         public string ID { get; set; }
         //[XmlAttribute(AttributeName = "Value")]
+        /// <summary>
+        /// Gets or sets the Value
+        /// </summary>
         public string Value { get; set; }
     }
 
     //[XmlRoot(ElementName = "MeetingTypes")]
+    /// <summary>
+    /// Represents a MeetingTypes
+    /// </summary>
     public class MeetingTypes
     {
         //[XmlElement(ElementName = "MeetingType")]
+        /// <summary>
+        /// Gets or sets the MeetingType
+        /// </summary>
         public List<MeetingType> MeetingType { get; set; }
     }
 
     //[XmlRoot(ElementName = "LiveMeeting")]
+    /// <summary>
+    /// Represents a LiveMeeting
+    /// </summary>
     public class LiveMeeting
     {
         //[XmlElement(ElementName = "URL")]
+        /// <summary>
+        /// Gets or sets the URL
+        /// </summary>
         public string URL { get; set; }
         //[XmlElement(ElementName = "ID")]
+        /// <summary>
+        /// Gets or sets the ID
+        /// </summary>
         public string ID { get; set; }
         //[XmlElement(ElementName = "Key")]
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; set; }
         //[XmlElement(ElementName = "Subject")]
+        /// <summary>
+        /// Gets or sets the Subject
+        /// </summary>
         public string Subject { get; set; }
     }
 
     //[XmlRoot(ElementName = "LiveMeetingURL")]
+    /// <summary>
+    /// Represents a LiveMeetingURL
+    /// </summary>
     public class LiveMeetingURL
     {
         //[XmlElement(ElementName = "LiveMeeting")]
+        /// <summary>
+        /// Gets or sets the LiveMeeting
+        /// </summary>
         public LiveMeeting LiveMeeting { get; set; }
     }
 }

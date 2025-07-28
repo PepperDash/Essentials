@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a IAnalogInputJoinMap
+    /// </summary>
     public class IAnalogInputJoinMap : JoinMapBaseAdvanced
     {
 

@@ -6,6 +6,9 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
+    /// <summary>
+    /// Defines the contract for IHasCallHold
+    /// </summary>
     public interface IHasCallHold
     {
         /// <summary>

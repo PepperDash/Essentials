@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Routing
 {
+    /// <summary>
+    /// Defines the contract for IMatrixRouting
+    /// </summary>
     public interface IMatrixRouting
     {
         Dictionary<string, IRoutingInputSlot> InputSlots { get; }

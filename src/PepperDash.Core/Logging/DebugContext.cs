@@ -19,9 +19,9 @@ namespace PepperDash.Core
         /// </summary>
         public string Key { get; private set; }
 
-        ///// <summary>
-        ///// The name of the file containing the current debug settings.
-        ///// </summary>
+        /// <summary>
+        /// The name of the file containing the current debug settings.
+        /// </summary>
         //string FileName = string.Format(@"\nvram\debug\app{0}Debug.json", InitialParametersClass.ApplicationNumber);
 
         DebugContextSaveData SaveData;
@@ -38,6 +38,9 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetDebugContext method
+        /// </summary>
         public static DebugContext GetDebugContext(string key)
         {
             var context = Contexts.FirstOrDefault(c => c.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
@@ -92,6 +95,9 @@ namespace PepperDash.Core
         /// Callback for console command
         /// </summary>
         /// <param name="levelString"></param>
+        /// <summary>
+        /// SetDebugFromConsole method
+        /// </summary>
         public void SetDebugFromConsole(string levelString)
         {
             try
@@ -114,6 +120,9 @@ namespace PepperDash.Core
         /// Sets the debug level
         /// </summary>
         /// <param name="level"> Valid values 0 (no debug), 1 (critical), 2 (all messages)</param>
+        /// <summary>
+        /// SetDebugLevel method
+        /// </summary>
         public void SetDebugLevel(int level)
         {
             if (level <= 2)
@@ -141,7 +150,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// Appends a device Key to the beginning of a message
+        /// Console method
         /// </summary>
         public void Console(uint level, IKeyed dev, string format, params object[] items)
         {
@@ -191,6 +200,9 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="errorLogLevel"></param>
         /// <param name="str"></param>
+        /// <summary>
+        /// LogError method
+        /// </summary>
         public void LogError(Debug.ErrorLogLevel errorLogLevel, string str)
         {
             string msg = string.Format("App {0}:{1}", InitialParametersClass.ApplicationNumber, str);

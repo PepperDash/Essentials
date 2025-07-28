@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Core;
@@ -27,7 +28,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Represents an item in a source list - can be deserialized into.
+    /// Represents a SourceListItem
     /// </summary>
     public class SourceListItem
     {
@@ -76,6 +77,9 @@ namespace PepperDash.Essentials.Core
         /// A name that will override the source's name on the UI
         /// </summary>
         [JsonProperty("name")]
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
         public string Name { get; set; }
 
         /// <summary>
@@ -245,6 +249,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Defines the valid destination types for SourceListItems in a room
     /// </summary>
+    [Obsolete]
     public enum eSourceListItemDestinationTypes
     {
         /// <summary>

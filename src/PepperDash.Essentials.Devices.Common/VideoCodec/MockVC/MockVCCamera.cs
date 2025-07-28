@@ -11,6 +11,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
+    /// <summary>
+    /// Represents a MockVCCamera
+    /// </summary>
     public class MockVCCamera : CameraBase, IHasCameraPtzControl, IHasCameraFocusControl, IBridgeAdvanced
     {
         protected VideoCodecBase ParentCodec { get; private set; }
@@ -26,6 +29,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraPtzControl Members
 
+        /// <summary>
+        /// PositionHome method
+        /// </summary>
         public void PositionHome()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Resetting to home position");
@@ -35,16 +41,25 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraPanControl Members
 
+        /// <summary>
+        /// PanLeft method
+        /// </summary>
         public void PanLeft()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Panning Left");
         }
 
+        /// <summary>
+        /// PanRight method
+        /// </summary>
         public void PanRight()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Panning Right");
         }
 
+        /// <summary>
+        /// PanStop method
+        /// </summary>
         public void PanStop()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Pan");
@@ -54,16 +69,25 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraTiltControl Members
 
+        /// <summary>
+        /// TiltDown method
+        /// </summary>
         public void TiltDown()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Tilting Down");
         }
 
+        /// <summary>
+        /// TiltUp method
+        /// </summary>
         public void TiltUp()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Tilting Up");
         }
 
+        /// <summary>
+        /// TiltStop method
+        /// </summary>
         public void TiltStop()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Tilt");
@@ -73,16 +97,25 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraZoomControl Members
 
+        /// <summary>
+        /// ZoomIn method
+        /// </summary>
         public void ZoomIn()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Zooming In");
         }
 
+        /// <summary>
+        /// ZoomOut method
+        /// </summary>
         public void ZoomOut()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Zooming Out");
         }
 
+        /// <summary>
+        /// ZoomStop method
+        /// </summary>
         public void ZoomStop()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Zoom");
@@ -92,21 +125,33 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraFocusControl Members
 
+        /// <summary>
+        /// FocusNear method
+        /// </summary>
         public void FocusNear()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Focusing Near");
         }
 
+        /// <summary>
+        /// FocusFar method
+        /// </summary>
         public void FocusFar()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Focusing Far");
         }
 
+        /// <summary>
+        /// FocusStop method
+        /// </summary>
         public void FocusStop()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Focus");
         }
 
+        /// <summary>
+        /// TriggerAutoFocus method
+        /// </summary>
         public void TriggerAutoFocus()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "AutoFocus Triggered");
@@ -114,12 +159,18 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #endregion
 
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
         public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
     }
 
+    /// <summary>
+    /// Represents a MockFarEndVCCamera
+    /// </summary>
     public class MockFarEndVCCamera : CameraBase, IHasCameraPtzControl, IAmFarEndCamera, IBridgeAdvanced
     {
         protected VideoCodecBase ParentCodec { get; private set; }
@@ -135,6 +186,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraPtzControl Members
 
+        /// <summary>
+        /// PositionHome method
+        /// </summary>
         public void PositionHome()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Resetting to home position");
@@ -144,16 +198,25 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraPanControl Members
 
+        /// <summary>
+        /// PanLeft method
+        /// </summary>
         public void PanLeft()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Panning Left");
         }
 
+        /// <summary>
+        /// PanRight method
+        /// </summary>
         public void PanRight()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Panning Right");
         }
 
+        /// <summary>
+        /// PanStop method
+        /// </summary>
         public void PanStop()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Pan");
@@ -163,16 +226,25 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraTiltControl Members
 
+        /// <summary>
+        /// TiltDown method
+        /// </summary>
         public void TiltDown()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Tilting Down");
         }
 
+        /// <summary>
+        /// TiltUp method
+        /// </summary>
         public void TiltUp()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Tilting Up");
         }
 
+        /// <summary>
+        /// TiltStop method
+        /// </summary>
         public void TiltStop()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Tilt");
@@ -182,16 +254,25 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #region IHasCameraZoomControl Members
 
+        /// <summary>
+        /// ZoomIn method
+        /// </summary>
         public void ZoomIn()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Zooming In");
         }
 
+        /// <summary>
+        /// ZoomOut method
+        /// </summary>
         public void ZoomOut()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Zooming Out");
         }
 
+        /// <summary>
+        /// ZoomStop method
+        /// </summary>
         public void ZoomStop()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Stopping Zoom");
@@ -199,6 +280,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #endregion
 
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
         public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);

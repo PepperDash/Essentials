@@ -3,9 +3,15 @@ using System.Collections.Generic;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// Represents a Volumes
+    /// </summary>
     public class Volumes
     {
         [JsonProperty("master", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Master
+        /// </summary>
         public Volume Master { get; set; }
 
         [JsonProperty("auxFaders", NullValueHandling = NullValueHandling.Ignore)]
@@ -19,9 +25,15 @@ namespace PepperDash.Essentials
         }
     }
 
+    /// <summary>
+    /// Represents a Volume
+    /// </summary>
     public class Volume
     {
         [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         public string Key { get; set; }
 
         [JsonProperty("level", NullValueHandling = NullValueHandling.Ignore)]
@@ -31,6 +43,9 @@ namespace PepperDash.Essentials
         public bool? Muted { get; set; }
 
         [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the Label
+        /// </summary>
         public string Label { get; set; }
 
         [JsonProperty("hasMute", NullValueHandling = NullValueHandling.Ignore)]
@@ -44,6 +59,9 @@ namespace PepperDash.Essentials
 
 
         [JsonProperty("muteIcon", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the MuteIcon
+        /// </summary>
         public string MuteIcon { get; set; }
 
         public Volume(string key, int level, bool muted, string label, bool hasMute, string muteIcon)

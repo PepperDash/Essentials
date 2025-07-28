@@ -6,7 +6,7 @@ using Newtonsoft.Json.Converters;
 namespace PepperDash.Core
 {
     /// <summary>
-    /// Config properties that indicate how to communicate with a device for control
+    /// Represents a ControlPropertiesConfig
     /// </summary>
     public class ControlPropertiesConfig
     {

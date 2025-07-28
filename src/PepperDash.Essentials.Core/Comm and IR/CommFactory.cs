@@ -38,6 +38,9 @@ namespace PepperDash.Essentials.Core
 		/// Returns a comm method of either com port, TCP, SSH, and puts this into the DeviceManager
 		/// </summary>
 		/// <param name="deviceConfig">The Device config object</param>
+  /// <summary>
+  /// CreateCommForDevice method
+  /// </summary>
 		public static IBasicCommunication CreateCommForDevice(DeviceConfig deviceConfig)
 		{
 			EssentialsControlPropertiesConfig controlConfig = GetControlPropertiesConfig(deviceConfig);
@@ -110,6 +113,9 @@ namespace PepperDash.Essentials.Core
 			return comm;
 		}
 
+  /// <summary>
+  /// GetComPort method
+  /// </summary>
 		public static ComPort GetComPort(EssentialsControlPropertiesConfig config)
 		{
 			var comPar = config.ComParams;
@@ -125,6 +131,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
+        /// <summary>
+        /// GetCecPort method
+        /// </summary>
         public static ICec GetCecPort(ControlPropertiesConfig config)
         {
 	        try
@@ -182,6 +191,9 @@ namespace PepperDash.Essentials.Core
 		/// return the ControlSystem object from the Global class.
 		/// </summary>
 		/// <returns>IComPorts device or null if the device is not found or does not implement IComPorts</returns>
+  /// <summary>
+  /// GetIComPortsDeviceFromManagedDevice method
+  /// </summary>
 		public static IComPorts GetIComPortsDeviceFromManagedDevice(string ComPortDevKey)
 		{
 			if ((ComPortDevKey.Equals("controlSystem", System.StringComparison.OrdinalIgnoreCase)
@@ -199,7 +211,7 @@ namespace PepperDash.Essentials.Core
 	}
 
     /// <summary>
-    /// 
+    /// Represents a EssentialsControlPropertiesConfig
     /// </summary>
     public class EssentialsControlPropertiesConfig :
         ControlPropertiesConfig
@@ -232,6 +244,9 @@ namespace PepperDash.Essentials.Core
         }
 
         [JsonProperty("infinetId", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the InfinetId
+        /// </summary>
         public string InfinetId { get; set; }
 
         /// <summary>
@@ -254,10 +269,22 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Represents a IrControlSpec
+    /// </summary>
     public class IrControlSpec
     {
+        /// <summary>
+        /// Gets or sets the PortDeviceKey
+        /// </summary>
         public string PortDeviceKey { get; set; }
+        /// <summary>
+        /// Gets or sets the PortNumber
+        /// </summary>
         public uint PortNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the File
+        /// </summary>
         public string File { get; set; }
     }
 }

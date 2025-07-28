@@ -2,6 +2,9 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
+    /// <summary>
+    /// Represents a DmpsMicrophoneControllerJoinMap
+    /// </summary>
     public class DmpsMicrophoneControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("MicGain")]

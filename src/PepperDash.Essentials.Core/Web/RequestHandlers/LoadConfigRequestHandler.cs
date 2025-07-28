@@ -6,6 +6,9 @@ using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
+ /// <summary>
+ /// Represents a LoadConfigRequestHandler
+ /// </summary>
 	public class LoadConfigRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>

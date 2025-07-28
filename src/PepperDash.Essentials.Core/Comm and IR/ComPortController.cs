@@ -12,13 +12,22 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+ /// <summary>
+ /// Represents a ComPortController
+ /// </summary>
 	public class ComPortController : Device, IBasicCommunicationWithStreamDebugging
 	{
+        /// <summary>
+        /// Gets or sets the StreamDebugging
+        /// </summary>
         public CommunicationStreamDebugging StreamDebugging { get; private set; }
 
 		public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
 		public event EventHandler<GenericCommMethodReceiveTextArgs> TextReceived;
 
+  /// <summary>
+  /// Gets or sets the IsConnected
+  /// </summary>
 		public bool IsConnected { get { return true; } }
 
 		ComPort Port;
@@ -116,6 +125,10 @@ namespace PepperDash.Essentials.Core
 			if(!eventSubscribed) Debug.LogMessage(LogEventLevel.Warning, this, "Received data but no handler is registered");
         }
 
+  /// <summary>
+  /// Deactivate method
+  /// </summary>
+  /// <inheritdoc />
 		public override bool Deactivate()
 		{
 			return Port.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
@@ -123,6 +136,9 @@ namespace PepperDash.Essentials.Core
 
 		#region IBasicCommunication Members
 
+  /// <summary>
+  /// SendText method
+  /// </summary>
 		public void SendText(string text)
 		{
 			if (Port == null)
@@ -133,6 +149,9 @@ namespace PepperDash.Essentials.Core
             Port.Send(text);
 		}
 
+  /// <summary>
+  /// SendBytes method
+  /// </summary>
 		public void SendBytes(byte[] bytes)
 		{
 			if (Port == null)
@@ -144,10 +163,16 @@ namespace PepperDash.Essentials.Core
 			Port.Send(text);
 		}
 
+  /// <summary>
+  /// Connect method
+  /// </summary>
 		public void Connect()
 		{		
 		}
 
+  /// <summary>
+  /// Disconnect method
+  /// </summary>
 		public void Disconnect()
 		{
 		}
@@ -158,6 +183,9 @@ namespace PepperDash.Essentials.Core
         /// 
         /// </summary>
         /// <param name="s"></param>
+        /// <summary>
+        /// SimulateReceive method
+        /// </summary>
         public void SimulateReceive(string s)
         {
             // split out hex chars and build string

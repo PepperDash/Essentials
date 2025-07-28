@@ -5,6 +5,9 @@ using PepperDash.Essentials.Devices.Common.Displays;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
+    /// <summary>
+    /// Represents a TwoWayDisplayBaseMessenger
+    /// </summary>
     public class TwoWayDisplayBaseMessenger : MessengerBase
     {
         private readonly TwoWayDisplayBase _display;
@@ -17,6 +20,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         #region Overrides of MessengerBase
 
+        /// <summary>
+        /// SendFullStatus method
+        /// </summary>
         public void SendFullStatus()
         {
             var messageObj = new TwoWayDisplayBaseStateMessage
@@ -82,12 +88,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
         #endregion
     }
 
+    /// <summary>
+    /// Represents a TwoWayDisplayBaseStateMessage
+    /// </summary>
     public class TwoWayDisplayBaseStateMessage : DeviceStateMessageBase
     {
         //[JsonProperty("powerState", NullValueHandling = NullValueHandling.Ignore)]
         //public bool? PowerState { get; set; }
 
         [JsonProperty("currentInput", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Gets or sets the CurrentInput
+        /// </summary>
         public string CurrentInput { get; set; }
     }
 }
