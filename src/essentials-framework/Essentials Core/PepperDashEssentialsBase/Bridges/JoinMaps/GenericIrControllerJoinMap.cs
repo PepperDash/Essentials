@@ -819,6 +819,20 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 
+            [JoinName("EJECT")]
+            public JoinDataComplete Eject = new JoinDataComplete(
+                new JoinData
+                {
+                    JoinNumber = 69,
+                    JoinSpan = 1
+                },
+                new JoinMetadata
+                {
+                    Description = "EJECT",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
 			public GenericIrControllerJoinMap(uint joinStart)
 				: base(joinStart, typeof(GenericIrControllerJoinMap))
 			{
