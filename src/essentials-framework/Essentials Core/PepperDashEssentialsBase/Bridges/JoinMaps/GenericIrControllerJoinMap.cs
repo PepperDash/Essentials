@@ -820,7 +820,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				});
 
             [JoinName("EJECT")]
-            public JoinDataComplete KpBlue = new JoinDataComplete(
+            public JoinDataComplete Eject = new JoinDataComplete(
                 new JoinData
                 {
                     JoinNumber = 69,
