@@ -728,6 +728,8 @@ namespace PepperDash.Essentials
                         var messenger = new CurrentSourcesMessenger($"{device.Key}-currentSources-{Key}", $"/device/{device.Key}", currentSources);
 
                         AddDefaultDeviceMessenger(messenger);
+
+                        messengerAdded = true;
                     }
 
                     if (device is ISwitchedOutput switchedDevice)
