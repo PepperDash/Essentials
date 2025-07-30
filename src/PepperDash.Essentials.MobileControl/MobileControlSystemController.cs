@@ -1,4 +1,10 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharp.WebScripting;
@@ -30,12 +36,6 @@ using PepperDash.Essentials.RoomBridges;
 using PepperDash.Essentials.Services;
 using PepperDash.Essentials.WebApiHandlers;
 using PepperDash.Essentials.WebSocketServer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using WebSocketSharp;
 
 namespace PepperDash.Essentials
@@ -582,7 +582,7 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose(
                             "Adding ISetTopBoxControlMessenger for {deviceKey}"
-                        );                        
+                        );
 
                         var messenger = new ISetTopBoxControlsMessenger(
                             $"{device.Key}-stb-{Key}",
@@ -599,7 +599,7 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose(
                             "Adding IChannelMessenger for {deviceKey}", device.Key
-                        );                        
+                        );
 
                         var messenger = new IChannelMessenger(
                             $"{device.Key}-channel-{Key}",
@@ -614,7 +614,7 @@ namespace PepperDash.Essentials
 
                     if (device is IColor colorDevice)
                     {
-                        this.LogVerbose("Adding IColorMessenger for {deviceKey}", device.Key);                        
+                        this.LogVerbose("Adding IColorMessenger for {deviceKey}", device.Key);
 
                         var messenger = new IColorMessenger(
                             $"{device.Key}-color-{Key}",
@@ -629,7 +629,7 @@ namespace PepperDash.Essentials
 
                     if (device is IDPad dPadDevice)
                     {
-                        this.LogVerbose("Adding IDPadMessenger for {deviceKey}", device.Key);                        
+                        this.LogVerbose("Adding IDPadMessenger for {deviceKey}", device.Key);
 
                         var messenger = new IDPadMessenger(
                             $"{device.Key}-dPad-{Key}",
@@ -644,7 +644,7 @@ namespace PepperDash.Essentials
 
                     if (device is INumericKeypad nkDevice)
                     {
-                        this.LogVerbose("Adding INumericKeyapdMessenger for {deviceKey}", device.Key);                        
+                        this.LogVerbose("Adding INumericKeyapdMessenger for {deviceKey}", device.Key);
 
                         var messenger = new INumericKeypadMessenger(
                             $"{device.Key}-numericKeypad-{Key}",
@@ -659,7 +659,7 @@ namespace PepperDash.Essentials
 
                     if (device is IHasPowerControl pcDevice)
                     {
-                        this.LogVerbose("Adding IHasPowerControlMessenger for {deviceKey}", device.Key);                        
+                        this.LogVerbose("Adding IHasPowerControlMessenger for {deviceKey}", device.Key);
 
                         var messenger = new IHasPowerMessenger(
                             $"{device.Key}-powerControl-{Key}",
@@ -693,7 +693,7 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose(
                             "Adding ITransportMessenger for {deviceKey}", device.Key
-                        );                        
+                        );
 
                         var messenger = new ITransportMessenger(
                             $"{device.Key}-transport-{Key}",
@@ -719,6 +719,15 @@ namespace PepperDash.Essentials
                         AddDefaultDeviceMessenger(messenger);
 
                         messengerAdded = true;
+                    }
+
+                    if (device is ICurrentSources currentSources)
+                    {
+                        this.LogVerbose("Adding CurrentSourcesMessenger for {deviceKey}", device.Key);
+
+                        var messenger = new CurrentSourcesMessenger($"{device.Key}-currentSources-{Key}", $"/device/{device.Key}", currentSources);
+
+                        AddDefaultDeviceMessenger(messenger);
                     }
 
                     if (device is ISwitchedOutput switchedDevice)
@@ -2309,7 +2318,7 @@ Mobile Control Direct Server Infromation:
                         {
                             this.LogInformation("-- Warning: Incoming message has no registered handler {type}", message.Type);
                             break;
-                        }                        
+                        }
 
                         foreach (var handler in handlers)
                         {
