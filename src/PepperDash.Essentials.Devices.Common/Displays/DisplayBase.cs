@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
@@ -384,7 +386,28 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// <inheritdoc />
 		public virtual void SetCurrentSource(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
 		{
-			// Update the current source for the specified signal type
+			foreach (eRoutingSignalType type in Enum.GetValues(typeof(eRoutingSignalType)))
+			{
+				var flagValue = Convert.ToInt32(type);
+				if (flagValue == 0 || (flagValue & (flagValue - 1)) != 0)
+				{
+					this.LogDebug("Skipping {type}", type);
+					continue;
+				}
+
+				this.LogDebug("setting {type}", type);
+
+				if (signalType.HasFlag(type))
+				{
+					UpdateCurrentSources(type, sourceListKey, sourceListItem);
+				}
+			}
+			// Raise the CurrentSourcesChanged event
+			CurrentSourcesChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void UpdateCurrentSources(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
+		{
 			if (CurrentSources.ContainsKey(signalType))
 			{
 				CurrentSources[signalType] = sourceListItem;
@@ -403,9 +426,6 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			{
 				CurrentSourceKeys.Add(signalType, sourceListKey);
 			}
-
-			// Raise the CurrentSourcesChanged event
-			CurrentSourcesChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 	}

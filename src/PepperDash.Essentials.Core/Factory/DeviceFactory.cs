@@ -135,7 +135,7 @@ namespace PepperDash.Essentials.Core
         {
             if (FactoryMethods.ContainsKey(typeName))
             {
-                Debug.LogInformation("Unable to add type: '{typeName}'.  Already exists in DeviceFactory", typeName);
+                Debug.LogInformation("Unable to add type: '{typeName}'. Already exists in DeviceFactory", typeName);
                 return;
             }
 
@@ -217,7 +217,8 @@ namespace PepperDash.Essentials.Core
             }
             catch (Exception ex)
             {
-                Debug.LogError(ex, "Exception occurred while creating device {0}: {1}", null, dc.Key, ex.Message);
+                Debug.LogError(ex, "Exception occurred while creating device {key}: {message}", dc.Key, ex.Message);
+                Debug.LogDebug(ex, "Exception details: {stackTrace}", ex.StackTrace);
                 return null;
             }
         }
