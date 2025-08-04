@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
@@ -19,7 +20,6 @@ using Serilog.Templates;
 namespace PepperDash.Core
 {
     /// <summary>
-    /// Contains debug commands for use in various situations
     /// </summary>
     public static class Debug
     {
@@ -272,6 +272,9 @@ namespace PepperDash.Core
                 if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 {
                     CrestronConsole.Print($"Unable to retrieve stored log level for {levelStoreKey}.\r\nError: {result}.\r\nSetting level to {LogEventLevel.Information}\r\n");
+
+                    CrestronDataStoreStatic.SetLocalIntValue(levelStoreKey, (int)LogEventLevel.Information);
+
                     return LogEventLevel.Information;
                 }
 
