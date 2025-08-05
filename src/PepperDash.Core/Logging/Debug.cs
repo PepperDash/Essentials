@@ -1,4 +1,8 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronLogger;
@@ -11,10 +15,6 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using Serilog.Formatting.Json;
 using Serilog.Templates;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace PepperDash.Core
 {
@@ -48,6 +48,9 @@ namespace PepperDash.Core
 
         private static readonly LoggingLevelSwitch _fileLevelSwitch;
 
+        /// <summary>
+        /// Gets the minimum log level for the websocket sink.
+        /// </summary>
         public static LogEventLevel WebsocketMinimumLogLevel
         {
             get { return _websocketLoggingLevelSwitch.MinimumLevel; }
@@ -55,6 +58,9 @@ namespace PepperDash.Core
 
         private static readonly DebugWebsocketSink _websocketSink;
 
+        /// <summary>
+        /// Gets the websocket sink for debug logging.
+        /// </summary>
         public static DebugWebsocketSink WebsocketSink
         {
             get { return _websocketSink; }
@@ -91,29 +97,33 @@ namespace PepperDash.Core
 
         private const int SaveTimeoutMs = 30000;
 
+        /// <summary>
+        /// Indicates whether the system is running on an appliance.
+        /// </summary>
         public static bool IsRunningOnAppliance = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance;
 
         /// <summary>
         /// Gets or sets the PepperDashCoreVersion
         /// </summary>
-        public static string PepperDashCoreVersion { get; private set; } 
+        public static string PepperDashCoreVersion { get; private set; }
 
         private static CTimer _saveTimer;
 
-		/// <summary>
-		/// When true, the IncludedExcludedKeys dict will contain keys to include. 
-		/// When false (default), IncludedExcludedKeys will contain keys to exclude.
-		/// </summary>
-		private static bool _excludeAllMode;
+        /// <summary>
+        /// When true, the IncludedExcludedKeys dict will contain keys to include. 
+        /// When false (default), IncludedExcludedKeys will contain keys to exclude.
+        /// </summary>
+        private static bool _excludeAllMode;
 
-		//static bool ExcludeNoKeyMessages;
-
-		private static readonly Dictionary<string, object> IncludedExcludedKeys;
+        private static readonly Dictionary<string, object> IncludedExcludedKeys;
 
         private static readonly LoggerConfiguration _defaultLoggerConfiguration;
 
         private static LoggerConfiguration _loggerConfiguration;
 
+        /// <summary>
+        /// Gets the logger configuration for the debug logging.
+        /// </summary>
         public static LoggerConfiguration LoggerConfiguration => _loggerConfiguration;
 
         static Debug()
@@ -128,7 +138,7 @@ namespace PepperDash.Core
 
             var defaultFileLogLevel = GetStoredLogEventLevel(FileLevelStoreKey);
 
-            _consoleLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultConsoleLevel);            
+            _consoleLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultConsoleLevel);
 
             _websocketLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultWebsocketLevel);
 
@@ -144,7 +154,7 @@ namespace PepperDash.Core
 
             CrestronConsole.PrintLine($"Saving log files to {logFilePath}");
 
-            var errorLogTemplate = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance 
+            var errorLogTemplate = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance
                 ? "{@t:fff}ms [{@l:u4}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}"
                 : "[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}";
 
@@ -155,7 +165,7 @@ namespace PepperDash.Core
                 .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: _consoleLoggingLevelSwitch)
                 .WriteTo.Sink(_websocketSink, levelSwitch: _websocketLoggingLevelSwitch)
                 .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: _errorLogLevelSwitch)
-                .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,                                    
+                .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
                     retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 30 : 60,
@@ -193,27 +203,27 @@ namespace PepperDash.Core
 
             CrestronConsole.PrintLine(msg);
 
-            LogMessage(LogEventLevel.Information,msg);
+            LogMessage(LogEventLevel.Information, msg);
 
-			IncludedExcludedKeys = new Dictionary<string, object>();
-            
+            IncludedExcludedKeys = new Dictionary<string, object>();
+
             if (CrestronEnvironment.RuntimeEnvironment == eRuntimeEnvironment.SimplSharpPro)
             {
                 // Add command to console
-                CrestronConsole.AddNewConsoleCommand(SetDoNotLoadOnNextBootFromConsole, "donotloadonnextboot", 
+                CrestronConsole.AddNewConsoleCommand(SetDoNotLoadOnNextBootFromConsole, "donotloadonnextboot",
                     "donotloadonnextboot:P [true/false]: Should the application load on next boot", ConsoleAccessLevelEnum.AccessOperator);
 
                 CrestronConsole.AddNewConsoleCommand(SetDebugFromConsole, "appdebug",
                     "appdebug:P [0-5]: Sets the application's console debug message level",
                     ConsoleAccessLevelEnum.AccessOperator);
                 CrestronConsole.AddNewConsoleCommand(ShowDebugLog, "appdebuglog",
-                    "appdebuglog:P [all] Use \"all\" for full log.", 
+                    "appdebuglog:P [all] Use \"all\" for full log.",
                     ConsoleAccessLevelEnum.AccessOperator);
                 CrestronConsole.AddNewConsoleCommand(s => CrestronLogger.Clear(false), "appdebugclear",
-                    "appdebugclear:P Clears the current custom log", 
+                    "appdebugclear:P Clears the current custom log",
                     ConsoleAccessLevelEnum.AccessOperator);
-				CrestronConsole.AddNewConsoleCommand(SetDebugFilterFromConsole, "appdebugfilter",
-					"appdebugfilter [params]", ConsoleAccessLevelEnum.AccessOperator);
+                CrestronConsole.AddNewConsoleCommand(SetDebugFilterFromConsole, "appdebugfilter",
+                    "appdebugfilter [params]", ConsoleAccessLevelEnum.AccessOperator);
             }
 
             CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
@@ -224,7 +234,7 @@ namespace PepperDash.Core
             Level = context.Level;
             DoNotLoadConfigOnNextBoot = context.DoNotLoadOnNextBoot;
 
-            if(DoNotLoadConfigOnNextBoot)
+            if (DoNotLoadConfigOnNextBoot)
                 CrestronConsole.PrintLine(string.Format("Program {0} will not load config after next boot.  Use console command go:{0} to load the config manually", InitialParametersClass.ApplicationNumber));
 
             _consoleLoggingLevelSwitch.MinimumLevelChanged += (sender, args) =>
@@ -257,7 +267,7 @@ namespace PepperDash.Core
         {
             try
             {
-                var result = CrestronDataStoreStatic.GetLocalIntValue(levelStoreKey, out int logLevel);                
+                var result = CrestronDataStoreStatic.GetLocalIntValue(levelStoreKey, out int logLevel);
 
                 if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 {
@@ -265,14 +275,15 @@ namespace PepperDash.Core
                     return LogEventLevel.Information;
                 }
 
-                if(logLevel < 0 || logLevel > 5)
+                if (logLevel < 0 || logLevel > 5)
                 {
                     CrestronConsole.PrintLine($"Stored Log level not valid for {levelStoreKey}: {logLevel}. Setting level to {LogEventLevel.Information}");
                     return LogEventLevel.Information;
                 }
 
                 return (LogEventLevel)logLevel;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 CrestronConsole.PrintLine($"Exception retrieving log level for {levelStoreKey}: {ex.Message}");
                 return LogEventLevel.Information;
@@ -284,7 +295,7 @@ namespace PepperDash.Core
             var assembly = Assembly.GetExecutingAssembly();
             var ver =
                 assembly
-                    .GetCustomAttributes(typeof (AssemblyInformationalVersionAttribute), false);
+                    .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
 
             if (ver != null && ver.Length > 0)
             {
@@ -351,25 +362,25 @@ namespace PepperDash.Core
                     return;
                 }
 
-                if(int.TryParse(levelString, out var levelInt))
+                if (int.TryParse(levelString, out var levelInt))
                 {
-                    if(levelInt < 0 || levelInt > 5)
+                    if (levelInt < 0 || levelInt > 5)
                     {
                         CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level. If using a number, value must be between 0-5");
                         return;
                     }
-                    SetDebugLevel((uint) levelInt);
+                    SetDebugLevel((uint)levelInt);
                     return;
                 }
 
-                if(Enum.TryParse<LogEventLevel>(levelString, out var levelEnum))
+                if (Enum.TryParse<LogEventLevel>(levelString, out var levelEnum))
                 {
                     SetDebugLevel(levelEnum);
                     return;
                 }
 
                 CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level");
-            }          
+            }
             catch
             {
                 CrestronConsole.ConsoleCommandResponse("Usage: appdebug:P [0-5]");
@@ -385,7 +396,7 @@ namespace PepperDash.Core
         /// </summary>
         public static void SetDebugLevel(uint level)
         {
-            if(!_logLevels.TryGetValue(level, out var logLevel))
+            if (!_logLevels.TryGetValue(level, out var logLevel))
             {
                 logLevel = LogEventLevel.Information;
 
@@ -407,9 +418,9 @@ namespace PepperDash.Core
             CrestronConsole.ConsoleCommandResponse("[Application {0}], Debug level set to {1}\r\n",
                 InitialParametersClass.ApplicationNumber, _consoleLoggingLevelSwitch.MinimumLevel);
 
-            CrestronConsole.ConsoleCommandResponse($"Storing level {level}:{(int) level}");
+            CrestronConsole.ConsoleCommandResponse($"Storing level {level}:{(int)level}");
 
-            var err = CrestronDataStoreStatic.SetLocalIntValue(LevelStoreKey, (int) level);
+            var err = CrestronDataStoreStatic.SetLocalIntValue(LevelStoreKey, (int)level);
 
             CrestronConsole.ConsoleCommandResponse($"Store result: {err}:{(int)level}");
 
@@ -422,9 +433,9 @@ namespace PepperDash.Core
         /// </summary>
         public static void SetWebSocketMinimumDebugLevel(LogEventLevel level)
         {
-            _websocketLoggingLevelSwitch.MinimumLevel = level;            
+            _websocketLoggingLevelSwitch.MinimumLevel = level;
 
-            var err = CrestronDataStoreStatic.SetLocalUintValue(WebSocketLevelStoreKey, (uint) level);
+            var err = CrestronDataStoreStatic.SetLocalUintValue(WebSocketLevelStoreKey, (uint)level);
 
             if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 LogMessage(LogEventLevel.Information, "Error saving websocket debug level setting: {erro}", err);
@@ -491,83 +502,83 @@ namespace PepperDash.Core
         /// Callback for console command
         /// </summary>
         /// <param name="items"></param>
-  /// <summary>
-  /// SetDebugFilterFromConsole method
-  /// </summary>
-		public static void SetDebugFilterFromConsole(string items)
-		{
-			var str = items.Trim();
-			if (str == "?")
-			{
-				CrestronConsole.ConsoleCommandResponse("Usage:\r APPDEBUGFILTER key1 key2 key3....\r " +
-					"+all: at beginning puts filter into 'default include' mode\r" +
-					"      All keys that follow will be excluded from output.\r" +
-					"-all: at beginning puts filter into 'default exclude all' mode.\r" +
-					"      All keys that follow will be the only keys that are shown\r" +
-					"+nokey: Enables messages with no key (default)\r" +
-					"-nokey: Disables messages with no key.\r" +
-					"(nokey settings are independent of all other settings)");
-				return;
-			}
-			var keys = Regex.Split(str, @"\s*");
-			foreach (var keyToken in keys)
-			{
-				var lkey = keyToken.ToLower();
-				if (lkey == "+all")
-				{
-					IncludedExcludedKeys.Clear();
-					_excludeAllMode = false;
-				}
-				else if (lkey == "-all")
-				{
-					IncludedExcludedKeys.Clear();
-					_excludeAllMode = true;
-				}
-				//else if (lkey == "+nokey")
-				//{
-				//    ExcludeNoKeyMessages = false;
-				//}
-				//else if (lkey == "-nokey")
-				//{
-				//    ExcludeNoKeyMessages = true;
-				//}
-				else
-				{
-					string key;
-					if (lkey.StartsWith("-"))
-					{
-						key = lkey.Substring(1);
-						// if in exclude all mode, we need to remove this from the inclusions
-						if (_excludeAllMode)
-						{
-							if (IncludedExcludedKeys.ContainsKey(key))
-								IncludedExcludedKeys.Remove(key);
-						}
-						// otherwise include all mode, add to the exclusions
-						else
-						{
-							IncludedExcludedKeys[key] = new object();
-						}
-					}
-					else if (lkey.StartsWith("+"))
-					{
-						key = lkey.Substring(1);
-						// if in exclude all mode, we need to add this as inclusion
-						if (_excludeAllMode)
-						{
+        /// <summary>
+        /// SetDebugFilterFromConsole method
+        /// </summary>
+        public static void SetDebugFilterFromConsole(string items)
+        {
+            var str = items.Trim();
+            if (str == "?")
+            {
+                CrestronConsole.ConsoleCommandResponse("Usage:\r APPDEBUGFILTER key1 key2 key3....\r " +
+                    "+all: at beginning puts filter into 'default include' mode\r" +
+                    "      All keys that follow will be excluded from output.\r" +
+                    "-all: at beginning puts filter into 'default exclude all' mode.\r" +
+                    "      All keys that follow will be the only keys that are shown\r" +
+                    "+nokey: Enables messages with no key (default)\r" +
+                    "-nokey: Disables messages with no key.\r" +
+                    "(nokey settings are independent of all other settings)");
+                return;
+            }
+            var keys = Regex.Split(str, @"\s*");
+            foreach (var keyToken in keys)
+            {
+                var lkey = keyToken.ToLower();
+                if (lkey == "+all")
+                {
+                    IncludedExcludedKeys.Clear();
+                    _excludeAllMode = false;
+                }
+                else if (lkey == "-all")
+                {
+                    IncludedExcludedKeys.Clear();
+                    _excludeAllMode = true;
+                }
+                //else if (lkey == "+nokey")
+                //{
+                //    ExcludeNoKeyMessages = false;
+                //}
+                //else if (lkey == "-nokey")
+                //{
+                //    ExcludeNoKeyMessages = true;
+                //}
+                else
+                {
+                    string key;
+                    if (lkey.StartsWith("-"))
+                    {
+                        key = lkey.Substring(1);
+                        // if in exclude all mode, we need to remove this from the inclusions
+                        if (_excludeAllMode)
+                        {
+                            if (IncludedExcludedKeys.ContainsKey(key))
+                                IncludedExcludedKeys.Remove(key);
+                        }
+                        // otherwise include all mode, add to the exclusions
+                        else
+                        {
+                            IncludedExcludedKeys[key] = new object();
+                        }
+                    }
+                    else if (lkey.StartsWith("+"))
+                    {
+                        key = lkey.Substring(1);
+                        // if in exclude all mode, we need to add this as inclusion
+                        if (_excludeAllMode)
+                        {
 
-							IncludedExcludedKeys[key] = new object();
-						}
-						// otherwise include all mode, remove this from exclusions
-						else
-						{
-							if (IncludedExcludedKeys.ContainsKey(key))
-								IncludedExcludedKeys.Remove(key);
-						}
-					}
-				}
-			}
-		}
+                            IncludedExcludedKeys[key] = new object();
+                        }
+                        // otherwise include all mode, remove this from exclusions
+                        else
+                        {
+                            if (IncludedExcludedKeys.ContainsKey(key))
+                                IncludedExcludedKeys.Remove(key);
+                        }
+                    }
+                }
+            }
+        }
 
 
 
@@ -595,7 +606,7 @@ namespace PepperDash.Core
         public static object GetDeviceDebugSettingsForKey(string deviceKey)
         {
             return _contexts.GetDebugSettingsForKey(deviceKey);
-        }  
+        }
 
         /// <summary>
         /// Sets the flag to prevent application starting on next boot
@@ -654,9 +665,15 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// Logs a message at the specified log level.
+        /// </summary>
+        /// <param name="level">Level to log at</param>
+        /// <param name="message">Message template</param>
+        /// <param name="args">Args to put into message template</param>
         public static void LogMessage(LogEventLevel level, string message, params object[] args)
         {
-           _logger.Write(level, message, args);
+            _logger.Write(level, message, args);
         }
 
         /// <summary>
@@ -692,7 +709,7 @@ namespace PepperDash.Core
         /// </summary>
         public static void LogVerbose(IKeyed keyed, string message, params object[] args)
         {
-            using(LogContext.PushProperty("Key", keyed?.Key))
+            using (LogContext.PushProperty("Key", keyed?.Key))
             {
                 _logger.Write(LogEventLevel.Verbose, message, args);
             }
@@ -703,7 +720,7 @@ namespace PepperDash.Core
         /// </summary>
         public static void LogVerbose(Exception ex, IKeyed keyed, string message, params object[] args)
         {
-            using(LogContext.PushProperty("Key", keyed?.Key))
+            using (LogContext.PushProperty("Key", keyed?.Key))
             {
                 _logger.Write(LogEventLevel.Verbose, ex, message, args);
             }
@@ -722,7 +739,7 @@ namespace PepperDash.Core
         /// </summary>
         public static void LogVerbose(Exception ex, string message, params object[] args)
         {
-            _logger.Write(LogEventLevel.Verbose, ex, null, message, args);
+            _logger.Write(LogEventLevel.Verbose, ex, message, args);
         }
 
         /// <summary>
@@ -798,7 +815,7 @@ namespace PepperDash.Core
         /// </summary>
         public static void LogInformation(Exception ex, string message, params object[] args)
         {
-            _logger.Write(LogEventLevel.Information, ex, null, message, args);
+            _logger.Write(LogEventLevel.Information, ex, message, args);
         }
 
         /// <summary>
@@ -836,7 +853,7 @@ namespace PepperDash.Core
         /// </summary>
         public static void LogWarning(Exception ex, string message, params object[] args)
         {
-            _logger.Write(LogEventLevel.Warning, ex, null, message, args);
+            _logger.Write(LogEventLevel.Warning, ex, message, args);
         }
 
         /// <summary>
@@ -874,7 +891,7 @@ namespace PepperDash.Core
         /// </summary>
         public static void LogError(Exception ex, string message, params object[] args)
         {
-            _logger.Write(LogEventLevel.Error, ex, null, message, args);
+            _logger.Write(LogEventLevel.Error, ex, message, args);
         }
 
         /// <summary>
@@ -912,7 +929,7 @@ namespace PepperDash.Core
         /// </summary>
         public static void LogFatal(Exception ex, string message, params object[] args)
         {
-            _logger.Write(LogEventLevel.Fatal, ex, null, message, args);
+            _logger.Write(LogEventLevel.Fatal, ex, message, args);
         }
 
         #endregion
@@ -923,7 +940,7 @@ namespace PepperDash.Core
             if (!_logLevels.ContainsKey(level)) return;
 
             var logLevel = _logLevels[level];
-            
+
             LogMessage(logLevel, format, items);
         }
 
@@ -978,7 +995,7 @@ namespace PepperDash.Core
         [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
         public static void Console(uint level, IKeyed dev, ErrorLogLevel errorLogLevel,
             string format, params object[] items)
-        {           
+        {
             LogMessage(level, dev, format, items);
         }
 
@@ -1122,7 +1139,7 @@ namespace PepperDash.Core
                 return string.Format(@"\user\debugSettings\program{0}", InitialParametersClass.ApplicationNumber);
             }
 
-            return string.Format("{0}{1}user{1}debugSettings{1}{2}.json",Directory.GetApplicationRootDirectory(), Path.DirectorySeparatorChar, InitialParametersClass.RoomId);
+            return string.Format("{0}{1}user{1}debugSettings{1}{2}.json", Directory.GetApplicationRootDirectory(), Path.DirectorySeparatorChar, InitialParametersClass.RoomId);
         }
 
         /// <summary>
@@ -1133,15 +1150,15 @@ namespace PepperDash.Core
             /// <summary>
             /// Error
             /// </summary>
-            Error, 
+            Error,
             /// <summary>
             /// Warning
             /// </summary>
-            Warning, 
+            Warning,
             /// <summary>
             /// Notice
             /// </summary>
-            Notice, 
+            Notice,
             /// <summary>
             /// None
             /// </summary>

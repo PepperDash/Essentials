@@ -327,7 +327,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 }
 
                 string ip = processorIp;
-                if (touchpanel.Touchpanel is IMobileControlCrestronTouchpanelController crestronTouchpanel)
+                if (touchpanel.Touchpanel is IMobileControlCrestronTouchpanelController crestronTouchpanel && csIpAddress != null)
                 {
                     ip = crestronTouchpanel.ConnectedIps.Any(ipInfo =>
                     {
