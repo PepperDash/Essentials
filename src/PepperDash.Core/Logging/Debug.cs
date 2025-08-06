@@ -349,13 +349,13 @@ namespace PepperDash.Core
                 if (levelString.Trim() == "?")
                 {
                     CrestronConsole.ConsoleCommandResponse(
-                    $@"Used to set the minimum level of debug messages to be printed to the console:
-{_logLevels[0]} = 0
-{_logLevels[1]} = 1
-{_logLevels[2]} = 2
-{_logLevels[3]} = 3
-{_logLevels[4]} = 4
-{_logLevels[5]} = 5");
+                    "Used to set the minimum level of debug messages to be printed to the console:\r\n" +
+                    $"{_logLevels[0]} = 0\r\n" +
+                    $"{_logLevels[1]} = 1\r\n" +
+                    $"{_logLevels[2]} = 2\r\n" +
+                    $"{_logLevels[3]} = 3\r\n" +
+                    $"{_logLevels[4]} = 4\r\n" +
+                    $"{_logLevels[5]} = 5");
                     return;
                 }
 
