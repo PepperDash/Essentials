@@ -1,11 +1,11 @@
-﻿using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using PepperDash.Core;
-using Serilog.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
+using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core;
@@ -76,7 +76,7 @@ public static class DeviceManager
             foreach (var d in Devices.Values)
             {
                 try
-                { 
+                {
                     if (d is Device)
                         (d as Device).PreActivate();
                 }
@@ -440,9 +440,9 @@ public static class DeviceManager
         if (String.IsNullOrEmpty(s) || s.Contains("?"))
         {
             CrestronConsole.ConsoleCommandResponse(
-                @"SETDEVICESTREAMDEBUG [{deviceKey}] [OFF |TX | RX | BOTH] [timeOutInMinutes]
-    {deviceKey} [OFF | TX | RX | BOTH] - Device to set stream debugging on, and which setting to use
-    timeOutInMinutes - Set timeout for stream debugging. Default is 30 minutes");
+                "SETDEVICESTREAMDEBUG [{deviceKey}] [OFF |TX | RX | BOTH] [timeOutInMinutes]\r\n" +
+                "    {deviceKey} [OFF | TX | RX | BOTH] - Device to set stream debugging on, and which setting to use\r\n" +
+                "    timeOutInMinutes - Set timeout for stream debugging. Default is 30 minutes");
             return;
         }
 

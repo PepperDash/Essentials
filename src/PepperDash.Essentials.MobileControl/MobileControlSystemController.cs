@@ -1,4 +1,10 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharp.WebScripting;
@@ -30,12 +36,6 @@ using PepperDash.Essentials.RoomBridges;
 using PepperDash.Essentials.Services;
 using PepperDash.Essentials.WebApiHandlers;
 using PepperDash.Essentials.WebSocketServer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using WebSocketSharp;
 
 namespace PepperDash.Essentials;
@@ -570,7 +570,7 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
                 {
                     this.LogVerbose(
                         "Adding ISetTopBoxControlMessenger for {deviceKey}"
-                    );                        
+                    );
 
                     var messenger = new ISetTopBoxControlsMessenger(
                         $"{device.Key}-stb-{Key}",
@@ -587,7 +587,7 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
                 {
                     this.LogVerbose(
                         "Adding IChannelMessenger for {deviceKey}", device.Key
-                    );                        
+                    );
 
                     var messenger = new IChannelMessenger(
                         $"{device.Key}-channel-{Key}",
@@ -602,7 +602,7 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
 
                 if (device is IColor colorDevice)
                 {
-                    this.LogVerbose("Adding IColorMessenger for {deviceKey}", device.Key);                        
+                    this.LogVerbose("Adding IColorMessenger for {deviceKey}", device.Key);
 
                     var messenger = new IColorMessenger(
                         $"{device.Key}-color-{Key}",
@@ -617,7 +617,7 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
 
                 if (device is IDPad dPadDevice)
                 {
-                    this.LogVerbose("Adding IDPadMessenger for {deviceKey}", device.Key);                        
+                    this.LogVerbose("Adding IDPadMessenger for {deviceKey}", device.Key);
 
                     var messenger = new IDPadMessenger(
                         $"{device.Key}-dPad-{Key}",
@@ -632,7 +632,7 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
 
                 if (device is INumericKeypad nkDevice)
                 {
-                    this.LogVerbose("Adding INumericKeyapdMessenger for {deviceKey}", device.Key);                        
+                    this.LogVerbose("Adding INumericKeyapdMessenger for {deviceKey}", device.Key);
 
                     var messenger = new INumericKeypadMessenger(
                         $"{device.Key}-numericKeypad-{Key}",
@@ -647,7 +647,7 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
 
                 if (device is IHasPowerControl pcDevice)
                 {
-                    this.LogVerbose("Adding IHasPowerControlMessenger for {deviceKey}", device.Key);                        
+                    this.LogVerbose("Adding IHasPowerControlMessenger for {deviceKey}", device.Key);
 
                     var messenger = new IHasPowerMessenger(
                         $"{device.Key}-powerControl-{Key}",
@@ -681,7 +681,7 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
                 {
                     this.LogVerbose(
                         "Adding ITransportMessenger for {deviceKey}", device.Key
-                    );                        
+                    );
 
                     var messenger = new ITransportMessenger(
                         $"{device.Key}-transport-{Key}",
@@ -1569,15 +1569,14 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
         if (Config.EnableApiServer)
         {
             CrestronConsole.ConsoleCommandResponse(
-                @"Mobile Control Edge Server API Information:
-
-	Server address: {0}
-	System Name: {1}
-    System URL: {2}
-	System UUID: {3}
-	System User code: {4}
-	Connected?: {5}
-    Seconds Since Last Ack: {6}",
+                "Mobile Control Edge Server API Information:\r\n\r\n" +
+                "\tServer address: {0}\r\n" +
+                "\tSystem Name: {1}\r\n" +
+                "\tSystem URL: {2}\r\n" +
+                "\tSystem UUID: {3}\r\n" +
+                "\tSystem User code: {4}\r\n" +
+                "\tConnected?: {5}\r\n" +
+                "\tSeconds Since Last Ack: {6}\r\n",
                 url,
                 name,
                 ConfigReader.ConfigObject.SystemUrl,
@@ -1590,10 +1589,8 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
         else
         {
             CrestronConsole.ConsoleCommandResponse(
-                @"
-Mobile Control Edge Server API Information:
-    Not Enabled in Config.
-"
+                "\r\nMobile Control Edge Server API Information:\r\n" +
+                "    Not Enabled in Config.\r\n"
             );
         }
 
@@ -1604,21 +1601,17 @@ Mobile Control Edge Server API Information:
         )
         {
             CrestronConsole.ConsoleCommandResponse(
-                @"
-Mobile Control Direct Server Information:
-    User App URL: {0}
-    Server port: {1}
-",
+                "\r\nMobile Control Direct Server Information:\r\n" +
+                "    User App URL: {0}\r\n" +
+                "    Server port: {1}\r\n",
                 string.Format("{0}[insert_client_token]", _directServer.UserAppUrlPrefix),
                 _directServer.Port
             );
 
             CrestronConsole.ConsoleCommandResponse(
-                @"
-    UI Client Info:
-    Tokens Defined: {0}
-    Clients Connected: {1}
-",
+                "\r\n    UI Client Info:\r\n" +
+                "    Tokens Defined: {0}\r\n" +
+                "    Clients Connected: {1}\r\n",
                 _directServer.UiClients.Count,
                 _directServer.ConnectedUiClientsCount
             );
@@ -1636,15 +1629,13 @@ Mobile Control Direct Server Information:
                 }
 
                 CrestronConsole.ConsoleCommandResponse(
-                    @"
-Client {0}:
-Room Key: {1}
-Touchpanel Key: {6}
-Token: {2}
-Client URL: {3}
-Connected: {4}
-Duration: {5}
-",
+                    "\r\nClient {0}:\r\n" +
+                    "Room Key: {1}\r\n" +
+                    "Touchpanel Key: {6}\r\n" +
+                    "Token: {2}\r\n" +
+                    "Client URL: {3}\r\n" +
+                    "Connected: {4}\r\n" +
+                    "Duration: {5}\r\n",
                     clientNo,
                     clientContext.Value.Token.RoomKey,
                     clientContext.Key,
@@ -1659,9 +1650,8 @@ Duration: {5}
         else
         {
             CrestronConsole.ConsoleCommandResponse(
-                @"
-Mobile Control Direct Server Infromation:
-    Not Enabled in Config."
+                "\r\nMobile Control Direct Server Information:\r\n" +
+                "    Not Enabled in Config.\r\n"
             );
         }
     }
@@ -2238,7 +2228,7 @@ Mobile Control Direct Server Infromation:
                     {
                         this.LogInformation("-- Warning: Incoming message has no registered handler {type}", message.Type);
                         break;
-                    }                        
+                    }
 
                     foreach (var handler in handlers)
                     {

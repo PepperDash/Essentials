@@ -1,16 +1,16 @@
 ﻿
 
-using Crestron.SimplSharp;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using Crestron.SimplSharp;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
 
 namespace PepperDash.Essentials.Core;
 
@@ -72,14 +72,14 @@ public class DeviceFactory
     /// instantiated, an informational log message is generated, and the process continues with the remaining
     /// types.</remarks>
     public DeviceFactory()
-    {        
+    {
         var programAssemblies = Directory.GetFiles(InitialParametersClass.ProgramDirectory.ToString(), "*.dll");
 
-        foreach(var assembly in programAssemblies)
+        foreach (var assembly in programAssemblies)
         {
             try
             {
-                Assembly.LoadFrom(assembly);                
+                Assembly.LoadFrom(assembly);
             }
             catch (Exception e)
             {
@@ -87,7 +87,7 @@ public class DeviceFactory
             }
         }
 
-        var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();            
+        var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
         // Loop through all loaded assemblies that contain at least 1 type that implements IDeviceFactory
         foreach (var assembly in loadedAssemblies)
@@ -98,7 +98,7 @@ public class DeviceFactory
 
             var types = assembly.GetTypes().Where(ct => typeof(IDeviceFactory).IsAssignableFrom(ct) && !ct.IsInterface && !ct.IsAbstract);
 
-            if(types == null || !types.Any())
+            if (types == null || !types.Any())
             {
                 Debug.LogDebug("No DeviceFactory types found in assembly: {assemblyName}", assembly.GetName().Name);
                 continue;
@@ -116,8 +116,8 @@ public class DeviceFactory
                     Debug.LogError("Unable to load type: '{message}' DeviceFactory: {type}", e.Message, type.Name);
                 }
             }
-            
-        }        
+
+        }
     }
 
     /// <summary>
@@ -146,7 +146,7 @@ public class DeviceFactory
     private static readonly Dictionary<string, DeviceFactoryWrapper> FactoryMethods =
         new(StringComparer.OrdinalIgnoreCase);
 
-	/// <summary>
+    /// <summary>
     /// Registers a factory method for creating instances of a specific type.
     /// </summary>
     /// <remarks>This method associates a type name with a factory method, allowing instances of the type to
@@ -155,10 +155,10 @@ public class DeviceFactory
     /// <param name="typeName">The name of the type for which the factory method is being registered. This value cannot be null or empty.</param>
     /// <param name="method">A delegate that defines the factory method. The delegate takes a <see cref="DeviceConfig"/> parameter and
     /// returns an instance of <see cref="IKeyed"/>.</param>
-	public static void AddFactoryForType(string typeName, Func<DeviceConfig, IKeyed> method) 
-	{    
-        FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method});
-	}
+    public static void AddFactoryForType(string typeName, Func<DeviceConfig, IKeyed> method)
+    {
+        FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method });
+    }
 
     /// <summary>
     /// Registers a factory method for creating instances of a specific device type.
@@ -172,7 +172,7 @@ public class DeviceFactory
     /// cref="IKeyed"/>.</param>
     public static void AddFactoryForType(string typeName, string description, Type Type, Func<DeviceConfig, IKeyed> method)
     {
-        if(FactoryMethods.ContainsKey(typeName))
+        if (FactoryMethods.ContainsKey(typeName))
         {
             Debug.LogInformation("Unable to add type: '{typeName}'.  Already exists in DeviceFactory", typeName);
             return;
@@ -190,7 +190,7 @@ public class DeviceFactory
             if (prop.Name.Equals("secret", StringComparison.CurrentCultureIgnoreCase))
             {
                 var secret = GetSecret(prop.Children().First().ToObject<SecretsPropertiesConfig>());
-                
+
                 prop.Parent.Replace(secret);
             }
             if (prop.Value is not JObject recurseProp) return;
@@ -203,7 +203,7 @@ public class DeviceFactory
         var secretProvider = SecretsManager.GetSecretProviderByKey(data.Provider);
         if (secretProvider == null) return null;
         var secret = secretProvider.GetSecret(data.Key);
-        if (secret != null) return (string) secret.Value;
+        if (secret != null) return (string)secret.Value;
         Debug.LogMessage(LogEventLevel.Debug,
             "Unable to retrieve secret {0}{1} - Make sure you've added it to the secrets provider",
             data.Provider, data.Key);
@@ -224,7 +224,7 @@ public class DeviceFactory
     public static IKeyed GetDevice(DeviceConfig dc)
     {
         try
-        {            
+        {
             var localDc = new DeviceConfig(dc);
 
             var key = localDc.Key;
@@ -286,23 +286,23 @@ public class DeviceFactory
             }
 
             CrestronConsole.ConsoleCommandResponse(
-                @"Type: '{0}' 
-                    Type: '{1}' 
-                    Description: {2}{3}", type.Key, Type, description, CrestronEnvironment.NewLine);
+                "Type: '{0}'\r\n" +
+                "                    Type: '{1}'\r\n" +
+                "                    Description: {2}{3}", type.Key, Type, description, CrestronEnvironment.NewLine);
         }
     }
 
-	/// <summary>
+    /// <summary>
     /// Retrieves a dictionary of device factory wrappers, optionally filtered by a specified string.
     /// </summary>
     /// <param name="filter">A string used to filter the dictionary keys. Only entries with keys containing the specified filter will be
     /// included. If <see langword="null"/> or empty, all entries are returned.</param>
     /// <returns>A dictionary where the keys are strings representing device identifiers and the values are <see
     /// cref="DeviceFactoryWrapper"/> instances. The dictionary may be empty if no entries match the filter.</returns>
-	public static Dictionary<string, DeviceFactoryWrapper> GetDeviceFactoryDictionary(string filter)
-	{
-		return string.IsNullOrEmpty(filter) 
-			? FactoryMethods
-			: FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value);
-	}
+    public static Dictionary<string, DeviceFactoryWrapper> GetDeviceFactoryDictionary(string filter)
+    {
+        return string.IsNullOrEmpty(filter)
+            ? FactoryMethods
+            : FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value);
+    }
 }

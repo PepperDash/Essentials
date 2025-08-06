@@ -1,4 +1,8 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronLogger;
@@ -11,10 +15,6 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using Serilog.Formatting.Json;
 using Serilog.Templates;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace PepperDash.Core;
 
@@ -97,19 +97,19 @@ public static class Debug
     /// <summary>
     /// Version for the currently loaded PepperDashCore dll
     /// </summary>
-    public static string PepperDashCoreVersion { get; private set; } 
+    public static string PepperDashCoreVersion { get; private set; }
 
     private static CTimer _saveTimer;
 
-		/// <summary>
-		/// When true, the IncludedExcludedKeys dict will contain keys to include. 
-		/// When false (default), IncludedExcludedKeys will contain keys to exclude.
-		/// </summary>
-		private static bool _excludeAllMode;
+    /// <summary>
+    /// When true, the IncludedExcludedKeys dict will contain keys to include. 
+    /// When false (default), IncludedExcludedKeys will contain keys to exclude.
+    /// </summary>
+    private static bool _excludeAllMode;
 
-		//static bool ExcludeNoKeyMessages;
+    //static bool ExcludeNoKeyMessages;
 
-		private static readonly Dictionary<string, object> IncludedExcludedKeys;
+    private static readonly Dictionary<string, object> IncludedExcludedKeys;
 
     private static readonly LoggerConfiguration _defaultLoggerConfiguration;
 
@@ -253,7 +253,7 @@ public static class Debug
     {
         try
         {
-            var result = CrestronDataStoreStatic.GetLocalIntValue(levelStoreKey, out int logLevel);                
+            var result = CrestronDataStoreStatic.GetLocalIntValue(levelStoreKey, out int logLevel);
 
             if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
             {
@@ -261,14 +261,15 @@ public static class Debug
                 return LogEventLevel.Information;
             }
 
-            if(logLevel < 0 || logLevel > 5)
+            if (logLevel < 0 || logLevel > 5)
             {
                 CrestronConsole.PrintLine($"Stored Log level not valid for {levelStoreKey}: {logLevel}. Setting level to {LogEventLevel.Information}");
                 return LogEventLevel.Information;
             }
 
             return (LogEventLevel)logLevel;
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             CrestronConsole.PrintLine($"Exception retrieving log level for {levelStoreKey}: {ex.Message}");
             return LogEventLevel.Information;
@@ -280,7 +281,7 @@ public static class Debug
         var assembly = Assembly.GetExecutingAssembly();
         var ver =
             assembly
-                .GetCustomAttributes(typeof (AssemblyInformationalVersionAttribute), false);
+                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
 
         if (ver != null && ver.Length > 0)
         {
@@ -328,13 +329,13 @@ public static class Debug
             if (levelString.Trim() == "?")
             {
                 CrestronConsole.ConsoleCommandResponse(
-                $@"Used to set the minimum level of debug messages to be printed to the console:
-{_logLevels[0]} = 0
-{_logLevels[1]} = 1
-{_logLevels[2]} = 2
-{_logLevels[3]} = 3
-{_logLevels[4]} = 4
-{_logLevels[5]} = 5");
+                "Used to set the minimum level of debug messages to be printed to the console:\r\n" +
+                $"{_logLevels[0]} = 0\r\n" +
+                $"{_logLevels[1]} = 1\r\n" +
+                $"{_logLevels[2]} = 2\r\n" +
+                $"{_logLevels[3]} = 3\r\n" +
+                $"{_logLevels[4]} = 4\r\n" +
+                $"{_logLevels[5]} = 5");
                 return;
             }
 
@@ -344,25 +345,25 @@ public static class Debug
                 return;
             }
 
-            if(int.TryParse(levelString, out var levelInt))
+            if (int.TryParse(levelString, out var levelInt))
             {
-                if(levelInt < 0 || levelInt > 5)
+                if (levelInt < 0 || levelInt > 5)
                 {
                     CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level. If using a number, value must be between 0-5");
                     return;
                 }
-                SetDebugLevel((uint) levelInt);
+                SetDebugLevel((uint)levelInt);
                 return;
             }
 
-            if(Enum.TryParse<LogEventLevel>(levelString, out var levelEnum))
+            if (Enum.TryParse<LogEventLevel>(levelString, out var levelEnum))
             {
                 SetDebugLevel(levelEnum);
                 return;
             }
 
             CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level");
-        }          
+        }
         catch
         {
             CrestronConsole.ConsoleCommandResponse("Usage: appdebug:P [0-5]");
@@ -375,7 +376,7 @@ public static class Debug
     /// <param name="level"> Valid values 0-5</param>
     public static void SetDebugLevel(uint level)
     {
-        if(!_logLevels.TryGetValue(level, out var logLevel))
+        if (!_logLevels.TryGetValue(level, out var logLevel))
         {
             logLevel = LogEventLevel.Information;
 
@@ -394,9 +395,9 @@ public static class Debug
         CrestronConsole.ConsoleCommandResponse("[Application {0}], Debug level set to {1}\r\n",
             InitialParametersClass.ApplicationNumber, _consoleLoggingLevelSwitch.MinimumLevel);
 
-        CrestronConsole.ConsoleCommandResponse($"Storing level {level}:{(int) level}");
+        CrestronConsole.ConsoleCommandResponse($"Storing level {level}:{(int)level}");
 
-        var err = CrestronDataStoreStatic.SetLocalIntValue(LevelStoreKey, (int) level);
+        var err = CrestronDataStoreStatic.SetLocalIntValue(LevelStoreKey, (int)level);
 
         CrestronConsole.ConsoleCommandResponse($"Store result: {err}:{(int)level}");
 
@@ -406,9 +407,9 @@ public static class Debug
 
     public static void SetWebSocketMinimumDebugLevel(LogEventLevel level)
     {
-        _websocketLoggingLevelSwitch.MinimumLevel = level;            
+        _websocketLoggingLevelSwitch.MinimumLevel = level;
 
-        var err = CrestronDataStoreStatic.SetLocalUintValue(WebSocketLevelStoreKey, (uint) level);
+        var err = CrestronDataStoreStatic.SetLocalUintValue(WebSocketLevelStoreKey, (uint)level);
 
         if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
             LogMessage(LogEventLevel.Information, "Error saving websocket debug level setting: {erro}", err);
@@ -466,80 +467,80 @@ public static class Debug
     /// Callback for console command
     /// </summary>
     /// <param name="items"></param>
-		public static void SetDebugFilterFromConsole(string items)
-		{
-			var str = items.Trim();
-			if (str == "?")
-			{
-				CrestronConsole.ConsoleCommandResponse("Usage:\r APPDEBUGFILTER key1 key2 key3....\r " +
-					"+all: at beginning puts filter into 'default include' mode\r" +
-					"      All keys that follow will be excluded from output.\r" +
-					"-all: at beginning puts filter into 'default exclude all' mode.\r" +
-					"      All keys that follow will be the only keys that are shown\r" +
-					"+nokey: Enables messages with no key (default)\r" +
-					"-nokey: Disables messages with no key.\r" +
-					"(nokey settings are independent of all other settings)");
-				return;
-			}
-			var keys = Regex.Split(str, @"\s*");
-			foreach (var keyToken in keys)
-			{
-				var lkey = keyToken.ToLower();
-				if (lkey == "+all")
-				{
-					IncludedExcludedKeys.Clear();
-					_excludeAllMode = false;
-				}
-				else if (lkey == "-all")
-				{
-					IncludedExcludedKeys.Clear();
-					_excludeAllMode = true;
-				}
-				//else if (lkey == "+nokey")
-				//{
-				//    ExcludeNoKeyMessages = false;
-				//}
-				//else if (lkey == "-nokey")
-				//{
-				//    ExcludeNoKeyMessages = true;
-				//}
-				else
-				{
-					string key;
-					if (lkey.StartsWith("-"))
-					{
-						key = lkey.Substring(1);
-						// if in exclude all mode, we need to remove this from the inclusions
-						if (_excludeAllMode)
-						{
-							if (IncludedExcludedKeys.ContainsKey(key))
-								IncludedExcludedKeys.Remove(key);
-						}
-						// otherwise include all mode, add to the exclusions
-						else
-						{
-							IncludedExcludedKeys[key] = new object();
-						}
-					}
-					else if (lkey.StartsWith("+"))
-					{
-						key = lkey.Substring(1);
-						// if in exclude all mode, we need to add this as inclusion
-						if (_excludeAllMode)
-						{
+    public static void SetDebugFilterFromConsole(string items)
+    {
+        var str = items.Trim();
+        if (str == "?")
+        {
+            CrestronConsole.ConsoleCommandResponse("Usage:\r APPDEBUGFILTER key1 key2 key3....\r " +
+                "+all: at beginning puts filter into 'default include' mode\r" +
+                "      All keys that follow will be excluded from output.\r" +
+                "-all: at beginning puts filter into 'default exclude all' mode.\r" +
+                "      All keys that follow will be the only keys that are shown\r" +
+                "+nokey: Enables messages with no key (default)\r" +
+                "-nokey: Disables messages with no key.\r" +
+                "(nokey settings are independent of all other settings)");
+            return;
+        }
+        var keys = Regex.Split(str, @"\s*");
+        foreach (var keyToken in keys)
+        {
+            var lkey = keyToken.ToLower();
+            if (lkey == "+all")
+            {
+                IncludedExcludedKeys.Clear();
+                _excludeAllMode = false;
+            }
+            else if (lkey == "-all")
+            {
+                IncludedExcludedKeys.Clear();
+                _excludeAllMode = true;
+            }
+            //else if (lkey == "+nokey")
+            //{
+            //    ExcludeNoKeyMessages = false;
+            //}
+            //else if (lkey == "-nokey")
+            //{
+            //    ExcludeNoKeyMessages = true;
+            //}
+            else
+            {
+                string key;
+                if (lkey.StartsWith("-"))
+                {
+                    key = lkey.Substring(1);
+                    // if in exclude all mode, we need to remove this from the inclusions
+                    if (_excludeAllMode)
+                    {
+                        if (IncludedExcludedKeys.ContainsKey(key))
+                            IncludedExcludedKeys.Remove(key);
+                    }
+                    // otherwise include all mode, add to the exclusions
+                    else
+                    {
+                        IncludedExcludedKeys[key] = new object();
+                    }
+                }
+                else if (lkey.StartsWith("+"))
+                {
+                    key = lkey.Substring(1);
+                    // if in exclude all mode, we need to add this as inclusion
+                    if (_excludeAllMode)
+                    {
 
-							IncludedExcludedKeys[key] = new object();
-						}
-						// otherwise include all mode, remove this from exclusions
-						else
-						{
-							if (IncludedExcludedKeys.ContainsKey(key))
-								IncludedExcludedKeys.Remove(key);
-						}
-					}
-				}
-			}
-		}
+                        IncludedExcludedKeys[key] = new object();
+                    }
+                    // otherwise include all mode, remove this from exclusions
+                    else
+                    {
+                        if (IncludedExcludedKeys.ContainsKey(key))
+                            IncludedExcludedKeys.Remove(key);
+                    }
+                }
+            }
+        }
+    }
 
 
 
@@ -564,7 +565,7 @@ public static class Debug
     public static object GetDeviceDebugSettingsForKey(string deviceKey)
     {
         return _contexts.GetDebugSettingsForKey(deviceKey);
-    }  
+    }
 
     /// <summary>
     /// Sets the flag to prevent application starting on next boot
@@ -624,7 +625,7 @@ public static class Debug
 
     public static void LogMessage(LogEventLevel level, string message, params object[] args)
     {
-       _logger.Write(level, message, args);
+        _logger.Write(level, message, args);
     }
 
     public static void LogMessage(LogEventLevel level, Exception ex, string message, params object[] args)
@@ -648,7 +649,7 @@ public static class Debug
     #region Explicit methods for logging levels
     public static void LogVerbose(IKeyed keyed, string message, params object[] args)
     {
-        using(LogContext.PushProperty("Key", keyed?.Key))
+        using (LogContext.PushProperty("Key", keyed?.Key))
         {
             _logger.Write(LogEventLevel.Verbose, message, args);
         }
@@ -656,7 +657,7 @@ public static class Debug
 
     public static void LogVerbose(Exception ex, IKeyed keyed, string message, params object[] args)
     {
-        using(LogContext.PushProperty("Key", keyed?.Key))
+        using (LogContext.PushProperty("Key", keyed?.Key))
         {
             _logger.Write(LogEventLevel.Verbose, ex, message, args);
         }
@@ -810,7 +811,7 @@ public static class Debug
         if (!_logLevels.ContainsKey(level)) return;
 
         var logLevel = _logLevels[level];
-        
+
         LogMessage(logLevel, format, items);
     }
 
@@ -847,7 +848,7 @@ public static class Debug
     }
 
     /// <summary>
-		/// Logs to Console when at-level, and all messages to error log, including device key			
+    /// Logs to Console when at-level, and all messages to error log, including device key			
     /// </summary>
     [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
     public static void Console(uint level, IKeyed dev, string format, params object[] items)
@@ -865,7 +866,7 @@ public static class Debug
     [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
     public static void Console(uint level, IKeyed dev, ErrorLogLevel errorLogLevel,
         string format, params object[] items)
-    {           
+    {
         LogMessage(level, dev, format, items);
     }
 
@@ -1003,7 +1004,7 @@ public static class Debug
             return string.Format(@"\user\debugSettings\program{0}", InitialParametersClass.ApplicationNumber);
         }
 
-        return string.Format("{0}{1}user{1}debugSettings{1}{2}.json",Directory.GetApplicationRootDirectory(), Path.DirectorySeparatorChar, InitialParametersClass.RoomId);
+        return string.Format("{0}{1}user{1}debugSettings{1}{2}.json", Directory.GetApplicationRootDirectory(), Path.DirectorySeparatorChar, InitialParametersClass.RoomId);
     }
 
     /// <summary>
@@ -1014,15 +1015,15 @@ public static class Debug
         /// <summary>
         /// Error
         /// </summary>
-        Error, 
+        Error,
         /// <summary>
         /// Warning
         /// </summary>
-        Warning, 
+        Warning,
         /// <summary>
         /// Notice
         /// </summary>
-        Notice, 
+        Notice,
         /// <summary>
         /// None
         /// </summary>
