@@ -55,11 +55,6 @@
     <PackageReference Include="SSH.NET" Version="2025.0.0" />
     <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6'">
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3">
-      <Aliases>global,NewtonsoftJson</Aliases>
-    </PackageReference>
-  </ItemGroup>
   <ItemGroup>
     <Compile Remove="Comm\._GenericSshClient.cs" />
     <Compile Remove="Comm\._GenericTcpIpClient.cs" />
