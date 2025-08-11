@@ -64,14 +64,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Gets or sets the CurrentSourceKey
     /// </summary>
-    [JsonProperty("currentSourceKey", NullValueHandling = NullValueHandling.Ignore)]
+    [JsonProperty("currentSourceKeys", NullValueHandling = NullValueHandling.Ignore)]
     public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; set; }
 
 
     /// <summary>
     /// Gets or sets the CurrentSource
     /// </summary>
-    [JsonProperty("currentSource")]
+    [JsonProperty("currentSources")]
     public Dictionary<eRoutingSignalType, SourceListItem> CurrentSources { get; set; }
   }
 }
