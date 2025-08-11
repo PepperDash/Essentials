@@ -376,7 +376,7 @@ namespace PepperDash.Core
                     return;
                 }
 
-                if (Enum.TryParse<LogEventLevel>(levelString, out var levelEnum))
+                if (Enum.TryParse<LogEventLevel>(levelString, true, out var levelEnum))
                 {
                     SetDebugLevel(levelEnum);
                     return;
