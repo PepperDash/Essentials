@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using Crestron.SimplSharp;
@@ -266,6 +267,8 @@ namespace PepperDash.Essentials
 
                 // _ = new ProcessorExtensionDeviceFactory();
                 // _ = new MobileControlFactory();
+
+                LoadAssets();
 
                 Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 
@@ -566,6 +569,63 @@ namespace PepperDash.Essentials
             {
                 Debug.LogMessage(LogEventLevel.Information, "Unable to find logo information in any room config");
                 return false;
+            }
+        }
+
+        private static void LoadAssets()
+        {
+            var applicationDirectory = new DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
+            Debug.LogMessage(LogEventLevel.Information, "Searching: {applicationDirectory:l} for embedded assets - {Destination}", applicationDirectory.FullName, Global.FilePathPrefix);
+
+            var zipFiles = applicationDirectory.GetFiles("assets*.zip");
+
+            if (zipFiles.Length > 0)
+            {
+                var zipFile = zipFiles[0];
+                Debug.LogMessage(LogEventLevel.Information, "Found assets zip file: {zipFile:l}... Unzipping...", zipFile.FullName);
+
+                // deleting the directory here as the net472 version of unzip doesn't have an overwrite capability
+                // this is the most deterministic mvp
+                if (Directory.Exists(Global.FilePathPrefix))
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Removing existing config directory: {Destination}", Global.FilePathPrefix);
+                    Directory.Delete(Global.FilePathPrefix, true);
+                }
+
+                // recreating the directory
+                Directory.CreateDirectory(Global.FilePathPrefix);
+                ZipFile.ExtractToDirectory(zipFile.FullName, Global.FilePathPrefix);
+                Debug.LogMessage(LogEventLevel.Information, "Unzipped assets to: {Destination}", Global.FilePathPrefix);
+            }
+
+            // cleaning up zip files
+            foreach (var file in zipFiles)
+            {
+                File.Delete(file.FullName);
+            }
+
+            var jsonFiles = applicationDirectory.GetFiles("*configurationFile*.json");
+
+            if (jsonFiles.Length > 0)
+            {
+                var jsonFile = jsonFiles[0];
+                var finalPath = Path.Combine(Global.FilePathPrefix, jsonFile.Name);
+                Debug.LogMessage(LogEventLevel.Information, "Found configuration file: {jsonFile:l}... Moving to: {Destination}", jsonFile, finalPath);
+
+                if (File.Exists(finalPath))
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Removing existing configuration file: {Destination}", finalPath);
+                    File.Delete(finalPath);
+                }
+
+                jsonFile.MoveTo(finalPath);
+            }
+
+            // Remove any old configuration files that weren't moved
+            foreach (var file in Directory.GetFiles(Global.ApplicationDirectoryPathPrefix, "configurationFile*.json"))
+            {
+                Debug.LogMessage(LogEventLevel.Information, "Removing old configuration file: {file:l}", file);
+                File.Delete(file);
             }
         }
     }
