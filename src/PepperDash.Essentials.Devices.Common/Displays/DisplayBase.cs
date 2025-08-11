@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
@@ -389,6 +388,8 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			foreach (eRoutingSignalType type in Enum.GetValues(typeof(eRoutingSignalType)))
 			{
 				var flagValue = Convert.ToInt32(type);
+				// Skip if flagValue is 0 or not a power of two (i.e., not a single-bit flag).
+				// (flagValue & (flagValue - 1)) != 0 checks if more than one bit is set.
 				if (flagValue == 0 || (flagValue & (flagValue - 1)) != 0)
 				{
 					this.LogDebug("Skipping {type}", type);
