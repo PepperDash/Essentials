@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
@@ -579,23 +578,40 @@ namespace PepperDash.Essentials
 
             var zipFiles = applicationDirectory.GetFiles("assets*.zip");
 
-            if (zipFiles.Length > 0)
+            if (zipFiles.Length > 1)
+            {
+                throw new Exception("Multiple assets zip files found. Cannot continue.");
+            }
+
+            if (zipFiles.Length == 1)
             {
                 var zipFile = zipFiles[0];
                 Debug.LogMessage(LogEventLevel.Information, "Found assets zip file: {zipFile:l}... Unzipping...", zipFile.FullName);
-
-                // deleting the directory here as the net472 version of unzip doesn't have an overwrite capability
-                // this is the most deterministic mvp
-                if (Directory.Exists(Global.FilePathPrefix))
+                using (var archive = ZipFile.OpenRead(zipFile.FullName))
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Removing existing config directory: {Destination}", Global.FilePathPrefix);
-                    Directory.Delete(Global.FilePathPrefix, true);
-                }
+                    foreach (var entry in archive.Entries)
+                    {
+                        var destinationPath = Path.Combine(Global.FilePathPrefix, entry.FullName);
 
-                // recreating the directory
-                Directory.CreateDirectory(Global.FilePathPrefix);
-                ZipFile.ExtractToDirectory(zipFile.FullName, Global.FilePathPrefix);
-                Debug.LogMessage(LogEventLevel.Information, "Unzipped assets to: {Destination}", Global.FilePathPrefix);
+                        // If the entry is a directory, ensure it exists and skip extraction
+                        if (string.IsNullOrEmpty(entry.Name))
+                        {
+                            Directory.CreateDirectory(destinationPath);
+                            continue;
+                        }
+
+                        // If a directory exists where a file should go, delete it
+                        if (Directory.Exists(destinationPath))
+                            Directory.Delete(destinationPath, true);
+
+                        // Ensure the parent directory exists
+                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+
+                        entry.ExtractToFile(destinationPath, true);
+
+                        Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
+                    }
+                }
             }
 
             // cleaning up zip files
@@ -606,11 +622,16 @@ namespace PepperDash.Essentials
 
             var jsonFiles = applicationDirectory.GetFiles("*configurationFile*.json");
 
-            if (jsonFiles.Length > 0)
+            if (jsonFiles.Length > 1)
+            {
+                throw new Exception("Multiple configuration files found. Cannot continue.");
+            }
+
+            if (jsonFiles.Length == 1)
             {
                 var jsonFile = jsonFiles[0];
                 var finalPath = Path.Combine(Global.FilePathPrefix, jsonFile.Name);
-                Debug.LogMessage(LogEventLevel.Information, "Found configuration file: {jsonFile:l}... Moving to: {Destination}", jsonFile, finalPath);
+                Debug.LogMessage(LogEventLevel.Information, "Found configuration file: {jsonFile:l}... Moving to: {Destination}", jsonFile.FullName, finalPath);
 
                 if (File.Exists(finalPath))
                 {
@@ -619,13 +640,6 @@ namespace PepperDash.Essentials
                 }
 
                 jsonFile.MoveTo(finalPath);
-            }
-
-            // Remove any old configuration files that weren't moved
-            foreach (var file in Directory.GetFiles(Global.ApplicationDirectoryPathPrefix, "configurationFile*.json"))
-            {
-                Debug.LogMessage(LogEventLevel.Information, "Removing old configuration file: {file:l}", file);
-                File.Delete(file);
             }
         }
     }
