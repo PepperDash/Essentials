@@ -22,38 +22,38 @@ namespace PepperDash.Essentials.Core.Config
 		/// The key of the source device.
 		/// </summary>
 		public string SourceKey { get; set; }
-		
-  /// <summary>
-  /// The key of the source card (if applicable, e.g., in a modular chassis).
-  /// </summary>
+
+		/// <summary>
+		/// The key of the source card (if applicable, e.g., in a modular chassis).
+		/// </summary>
 		public string SourceCard { get; set; }
-		
-  /// <summary>
-  /// The key of the source output port, used for routing configurations.
-  /// </summary>
+
+		/// <summary>
+		/// The key of the source output port, used for routing configurations.
+		/// </summary>
 		public string SourcePort { get; set; }
-		
-  /// <summary>
-  /// Gets or sets the DestinationKey
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the DestinationKey
+		/// </summary>
 		public string DestinationKey { get; set; }
-		
-  /// <summary>
-  /// Gets or sets the DestinationCard
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the DestinationCard
+		/// </summary>
 		public string DestinationCard { get; set; }
-		
-  /// <summary>
-  /// Gets or sets the DestinationPort
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the DestinationPort
+		/// </summary>
 		public string DestinationPort { get; set; }
 
-        /// <summary>
-        /// Optional override for the signal type of the tie line. If set, this overrides the destination port's type for routing calculations.
-        /// </summary>
-        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public eRoutingSignalType? OverrideType { get; set; }
+		/// <summary>
+		/// Optional override for the signal type of the tie line. If set, this overrides the destination port's type for routing calculations.
+		/// </summary>
+		[JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
+		[JsonConverter(typeof(StringEnumConverter))]
+		public eRoutingSignalType? OverrideType { get; set; }
 
 		/// <summary>
 		/// Returns the appropriate tie line for either a card-based device or 
@@ -62,40 +62,39 @@ namespace PepperDash.Essentials.Core.Config
 		/// <returns>null if config data does not match ports, cards or devices</returns>
 		public TieLine GetTieLine()
 		{
-			Debug.LogMessage(LogEventLevel.Information, "Build TieLine: {0}",null, this);
+			Debug.LogInformation("Build TieLine: {config}", ToString());
+
 			// Get the source device
-			var sourceDev = DeviceManager.GetDeviceForKey(SourceKey) as IRoutingOutputs;
-			if (sourceDev == null)
+			if (!(DeviceManager.GetDeviceForKey(SourceKey) is IRoutingOutputs sourceDev))
 			{
 				LogError("Routable source not found");
 				return null;
 			}
 
 			// Get the destination device
-			var destDev = DeviceManager.GetDeviceForKey(DestinationKey) as IRoutingInputs;
-			if (destDev == null)
+			if (!(DeviceManager.GetDeviceForKey(DestinationKey) is IRoutingInputs destDev))
 			{
 				LogError("Routable destination not found");
 				return null;
 			}
 
-            //Get the source port
-            var sourceOutputPort = sourceDev.OutputPorts[SourcePort];
+			//Get the source port
+			var sourceOutputPort = sourceDev.OutputPorts[SourcePort];
 
-            if (sourceOutputPort == null)
+			if (sourceOutputPort == null)
 			{
 				LogError("Source does not contain port");
 				return null;
 			}
 
-            //Get the Destination port
-            var destinationInputPort = destDev.InputPorts[DestinationPort];
+			//Get the Destination port
+			var destinationInputPort = destDev.InputPorts[DestinationPort];
 
-            if (destinationInputPort == null)
-				{
-					LogError("Destination does not contain port");
-					return null;
-				}            
+			if (destinationInputPort == null)
+			{
+				LogError("Destination does not contain port");
+				return null;
+			}
 
 			return new TieLine(sourceOutputPort, destinationInputPort, OverrideType);
 		}
@@ -104,9 +103,9 @@ namespace PepperDash.Essentials.Core.Config
 		/// Logs an error message related to creating this tie line configuration.
 		/// </summary>
 		/// <param name="msg">The specific error message.</param>
-		void LogError(string msg)
+		private void LogError(string msg)
 		{
-			Debug.LogMessage(LogEventLevel.Error, "WARNING: Cannot create tie line: {message}:\r   {tieLineConfig}",null, msg, this);
+			Debug.LogError("Cannot create tie line: {message}", msg);
 		}
 
 		/// <summary>
@@ -115,8 +114,7 @@ namespace PepperDash.Essentials.Core.Config
 		/// <returns>A string describing the source and destination of the configured tie line.</returns>
 		public override string ToString()
 		{
-			return string.Format("{0}.{1}.{2} --> {3}.{4}.{5}", SourceKey, SourceCard, SourcePort,
-				DestinationKey, DestinationCard, DestinationPort);
+			return $"{SourceKey}.{SourceCard}.{SourcePort} --> {DestinationKey}.{DestinationCard}.{DestinationPort}";
 		}
 	}
 }
