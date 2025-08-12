@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Abstractions;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.Factory;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Devices
@@ -16,11 +17,12 @@ namespace PepperDash.Essentials.Core.Devices
 
         public ICrestronControlSystem Processor { get; private set; }
 
-        public CrestronProcessorTestable(string key, ICrestronControlSystem processor)
+        public CrestronProcessorTestable(string key, ICrestronControlSystem processor = null)
             : base(key)
         {
             SwitchedOutputs = new Dictionary<uint, ISwitchedOutput>();
-            Processor = processor ?? throw new ArgumentNullException(nameof(processor));
+            // Use factory if processor not provided
+            Processor = processor ?? CrestronEnvironmentFactory.GetControlSystem();
             GetRelays();
         }
 
