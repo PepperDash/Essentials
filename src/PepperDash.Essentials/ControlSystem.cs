@@ -1,5 +1,5 @@
-﻿
-using System;
+﻿using System;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using Crestron.SimplSharp;
@@ -243,6 +243,8 @@ namespace PepperDash.Essentials
 
                 // _ = new ProcessorExtensionDeviceFactory();
                 // _ = new MobileControlFactory();
+
+                LoadAssets();
 
                 Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 
@@ -543,6 +545,78 @@ namespace PepperDash.Essentials
             {
                 Debug.LogMessage(LogEventLevel.Information, "Unable to find logo information in any room config");
                 return false;
+            }
+        }
+
+        private static void LoadAssets()
+        {
+            var applicationDirectory = new DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
+            Debug.LogMessage(LogEventLevel.Information, "Searching: {applicationDirectory:l} for embedded assets - {Destination}", applicationDirectory.FullName, Global.FilePathPrefix);
+
+            var zipFiles = applicationDirectory.GetFiles("assets*.zip");
+
+            if (zipFiles.Length > 1)
+            {
+                throw new Exception("Multiple assets zip files found. Cannot continue.");
+            }
+
+            if (zipFiles.Length == 1)
+            {
+                var zipFile = zipFiles[0];
+                Debug.LogMessage(LogEventLevel.Information, "Found assets zip file: {zipFile:l}... Unzipping...", zipFile.FullName);
+                using (var archive = ZipFile.OpenRead(zipFile.FullName))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+                        var destinationPath = Path.Combine(Global.FilePathPrefix, entry.FullName);
+
+                        // If the entry is a directory, ensure it exists and skip extraction
+                        if (string.IsNullOrEmpty(entry.Name))
+                        {
+                            Directory.CreateDirectory(destinationPath);
+                            continue;
+                        }
+
+                        // If a directory exists where a file should go, delete it
+                        if (Directory.Exists(destinationPath))
+                            Directory.Delete(destinationPath, true);
+
+                        // Ensure the parent directory exists
+                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+
+                        entry.ExtractToFile(destinationPath, true);
+
+                        Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
+                    }
+                }
+            }
+
+            // cleaning up zip files
+            foreach (var file in zipFiles)
+            {
+                File.Delete(file.FullName);
+            }
+
+            var jsonFiles = applicationDirectory.GetFiles("*configurationFile*.json");
+
+            if (jsonFiles.Length > 1)
+            {
+                throw new Exception("Multiple configuration files found. Cannot continue.");
+            }
+
+            if (jsonFiles.Length == 1)
+            {
+                var jsonFile = jsonFiles[0];
+                var finalPath = Path.Combine(Global.FilePathPrefix, jsonFile.Name);
+                Debug.LogMessage(LogEventLevel.Information, "Found configuration file: {jsonFile:l}... Moving to: {Destination}", jsonFile.FullName, finalPath);
+
+                if (File.Exists(finalPath))
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Removing existing configuration file: {Destination}", finalPath);
+                    File.Delete(finalPath);
+                }
+
+                jsonFile.MoveTo(finalPath);
             }
         }
     }
