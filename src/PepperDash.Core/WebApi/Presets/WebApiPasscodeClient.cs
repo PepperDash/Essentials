@@ -1,11 +1,11 @@
 ﻿using System;
+using System.IO;
 using Crestron.SimplSharp;                                  // For Basic SIMPL# Classes
-using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp.Net.Http;
+using Crestron.SimplSharp.Net.Https;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core.JsonToSimpl;
-using static Crestron.SimplSharp.Net.Http;
-using static Crestron.SimplSharp.Net.Https;
 
 
 namespace PepperDash.Core.WebApi.Presets;

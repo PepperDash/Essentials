@@ -1,34 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Globalization;
 using Crestron.SimplSharp;
-using System.Collections.Generic;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
-
-using PepperDash.Core;
-using PepperDash.Essentials.License;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
+using PepperDash.Core;
+using PepperDash.Essentials.License;
 using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core;
 
-	public static class Global
-	{
-		public static CrestronControlSystem ControlSystem { get; set; }
+public static class Global
+{
+    public static CrestronControlSystem ControlSystem { get; set; }
 
     public static eDevicePlatform Platform { get { return CrestronEnvironment.DevicePlatform; } }
 
     public static Dictionary<short, EthernetAdapterInfo> EthernetAdapterInfoCollection { get; private set; }
 
-		public static LicenseManager LicenseManager { get; set; }
+    public static LicenseManager LicenseManager { get; set; }
 
     public static eCrestronSeries ProcessorSeries { get { return CrestronEnvironment.ProgramCompatibility; } }
 
@@ -43,12 +41,12 @@ namespace PepperDash.Essentials.Core;
     {
         get
         {
-            if(ControlSystem.SystemControl != null)
+            if (ControlSystem.SystemControl != null)
             {
-                if(ControlSystem.SystemControl.SystemControlType > 0)
+                if (ControlSystem.SystemControl.SystemControlType > 0)
                 {
                     return true;
-                }         
+                }
             }
             return false;
         }
@@ -61,37 +59,37 @@ namespace PepperDash.Essentials.Core;
     {
         get
         {
-            if(ControlSystem.SystemControl != null)
+            if (ControlSystem.SystemControl != null)
             {
-                if(ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K150CSystemControl ||
+                if (ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K150CSystemControl ||
                    ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K200CSystemControl ||
                    ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K250CSystemControl ||
                    ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K300CSystemControl ||
                    ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K350CSystemControl)
                 {
                     return true;
-                }         
+                }
             }
             return false;
         }
     }
 
-            /// <summary>
+    /// <summary>
     /// True when the processor type is a DMPS 4K 200/300/250/350 variant
     /// </summary>
     public static bool ControlSystemIsDmps4k3xxType
     {
         get
         {
-            if(ControlSystem.SystemControl != null)
+            if (ControlSystem.SystemControl != null)
             {
-                if(ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K200CSystemControl ||
+                if (ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K200CSystemControl ||
                    ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K250CSystemControl ||
                    ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K300CSystemControl ||
                    ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K350CSystemControl)
                 {
                     return true;
-                }         
+                }
             }
             return false;
         }
@@ -105,11 +103,11 @@ namespace PepperDash.Essentials.Core;
     /// <summary>
     /// The file path prefix to the applciation directory
     /// </summary>
-    public static string ApplicationDirectoryPathPrefix 
+    public static string ApplicationDirectoryPathPrefix
     {
         get
         {
-            return Crestron.SimplSharp.CrestronIO.Directory.GetApplicationDirectory();
+            return Directory.GetCurrentDirectory();
         }
     }
 
@@ -166,37 +164,37 @@ namespace PepperDash.Essentials.Core;
         AssemblyVersion = assemblyVersion;
     }
 
-	    public static bool IsRunningDevelopmentVersion(List<string> developmentVersions, string minimumVersion)
-	    {
-	        if (Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*").Groups[1].Value == "0")
-	        {
+    public static bool IsRunningDevelopmentVersion(List<string> developmentVersions, string minimumVersion)
+    {
+        if (Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*").Groups[1].Value == "0")
+        {
             Debug.LogMessage(LogEventLevel.Verbose, "Running Local Build.  Bypassing Dependency Check.");
             return true;
-	        }
+        }
 
-	        if (developmentVersions == null)
-	        {
-	            Debug.LogMessage(LogEventLevel.Information, 
-                "Development Plugin does not specify a list of versions.  Loading plugin may not work as expected.  Checking Minumum version");
+        if (developmentVersions == null)
+        {
+            Debug.LogMessage(LogEventLevel.Information,
+            "Development Plugin does not specify a list of versions.  Loading plugin may not work as expected.  Checking Minumum version");
             return IsRunningMinimumVersionOrHigher(minimumVersion);
-	        }
+        }
 
         Debug.LogMessage(LogEventLevel.Verbose, "Comparing running version '{0}' to minimum versions '{1}'", AssemblyVersion, developmentVersions);
 
-	        var versionMatch = developmentVersions.FirstOrDefault(x => x == AssemblyVersion);
+        var versionMatch = developmentVersions.FirstOrDefault(x => x == AssemblyVersion);
 
-	        if (String.IsNullOrEmpty(versionMatch))
-	        {
-	            Debug.LogMessage(LogEventLevel.Information, "Essentials Build does not match any builds required for plugin load.  Bypassing Plugin Load.");
-	            return false;
-	        }
+        if (String.IsNullOrEmpty(versionMatch))
+        {
+            Debug.LogMessage(LogEventLevel.Information, "Essentials Build does not match any builds required for plugin load.  Bypassing Plugin Load.");
+            return false;
+        }
 
         Debug.LogMessage(LogEventLevel.Verbose, "Essentials Build {0} matches list of development builds", AssemblyVersion);
-	        return IsRunningMinimumVersionOrHigher(minimumVersion);
+        return IsRunningMinimumVersionOrHigher(minimumVersion);
 
 
 
-	    }
+    }
 
     /// <summary>
     /// Checks to see if the running version meets or exceed the minimum specified version.  For beta versions (0.xx.yy), will always return true.
@@ -209,10 +207,10 @@ namespace PepperDash.Essentials.Core;
 
         if (String.IsNullOrEmpty(minimumVersion))
         {
-            Debug.LogMessage(LogEventLevel.Information,"Plugin does not specify a minimum version. Loading plugin may not work as expected. Proceeding with loading plugin");
+            Debug.LogMessage(LogEventLevel.Information, "Plugin does not specify a minimum version. Loading plugin may not work as expected. Proceeding with loading plugin");
             return true;
         }
-        
+
         var runtimeVersion = Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*");
 
         var runtimeVersionMajor = Int16.Parse(runtimeVersion.Groups[1].Value);
@@ -269,15 +267,15 @@ namespace PepperDash.Essentials.Core;
          */
     }
 
-		static Global()
-		{
-			// Fire up CrestronDataStoreStatic
-			var err = CrestronDataStoreStatic.InitCrestronDataStore();
-			if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
-			{
-				CrestronConsole.PrintLine("Error starting CrestronDataStoreStatic: {0}", err);
-				return;
-			}
+    static Global()
+    {
+        // Fire up CrestronDataStoreStatic
+        var err = CrestronDataStoreStatic.InitCrestronDataStore();
+        if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+        {
+            CrestronConsole.PrintLine("Error starting CrestronDataStoreStatic: {0}", err);
+            return;
+        }
 
         try
         {
@@ -290,6 +288,6 @@ namespace PepperDash.Essentials.Core;
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         }
-		}
+    }
 
-	}
+}

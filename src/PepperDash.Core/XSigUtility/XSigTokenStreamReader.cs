@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Crestron.SimplSharp.CrestronIO;
+using System.IO;
 using PepperDash.Core.Intersystem.Serialization;
 using PepperDash.Core.Intersystem.Tokens;
 
@@ -82,7 +82,7 @@ public sealed class XSigTokenStreamReader : IDisposable
             {
                 if (ch == -1) // Reached end of stream without end of data marker
                     return null;
-                
+
                 chars[n++] = (char)ch;
             }
 

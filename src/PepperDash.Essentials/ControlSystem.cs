@@ -1,6 +1,9 @@
-﻿using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Threading;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Diagnostics;
@@ -9,12 +12,9 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using PepperDash.Essentials.Core.Web;
-using System;
-using System.Linq;
-using Serilog.Events;
 using PepperDash.Essentials.Core.Routing;
-using System.Threading;
+using PepperDash.Essentials.Core.Web;
+using Serilog.Events;
 using Timeout = Crestron.SimplSharp.Timeout;
 
 namespace PepperDash.Essentials;
@@ -59,7 +59,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
         }
         catch (Exception e)
         {
-            Debug.LogError(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");            
+            Debug.LogError(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
         }
     }
 
@@ -78,7 +78,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
         if (preventInitializationComplete)
         {
             Debug.LogMessage(LogEventLevel.Debug, "******************* Initializing System **********************");
-            
+
             _startTimer = new Timer(StartSystem, preventInitializationComplete, StartupTime, Timeout.Infinite);
 
             _initializeEvent = new ManualResetEventSlim(false);
@@ -91,7 +91,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
             _initializeEvent.Wait(30000);
 
             Debug.LogMessage(LogEventLevel.Debug, "******************* System Initialization Complete **********************");
-            
+
             SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
         }
         else
@@ -101,7 +101,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
     }
 
     private void StartSystem(object preventInitialization)
-    {        
+    {
         DeterminePlatform();
 
         // Print .NET runtime version
@@ -154,7 +154,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
 
         CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
             "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
-        
+
 
         if (!Debug.DoNotLoadConfigOnNextBoot)
         {
@@ -183,16 +183,16 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
 
             var dirSeparator = Global.DirectorySeparator;
 
-            string directoryPrefix; 
+            string directoryPrefix;
 
-            directoryPrefix = Directory.GetApplicationRootDirectory();
+            directoryPrefix = Directory.GetCurrentDirectory();
 
             Global.SetAssemblyVersion(PluginLoader.GetAssemblyVersion(Assembly.GetExecutingAssembly()));
 
             if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
             {
                 string userFolder = "user";
-                string nvramFolder = "nvram";    
+                string nvramFolder = "nvram";
 
                 Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on {processorSeries:l} Appliance", Global.AssemblyVersion, "4-series");
                 //Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
@@ -201,8 +201,8 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
                 if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + userFolder
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                 {
-                   
-                    Debug.LogMessage(LogEventLevel.Information, "{userFolder:l}/program{applicationNumber} directory found", userFolder, InitialParametersClass.ApplicationNumber);                        
+
+                    Debug.LogMessage(LogEventLevel.Information, "{userFolder:l}/program{applicationNumber} directory found", userFolder, InitialParametersClass.ApplicationNumber);
                     filePathPrefix = directoryPrefix + dirSeparator + userFolder
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                 }
@@ -211,7 +211,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                 {
                     Debug.LogMessage(LogEventLevel.Information, "{nvramFolder:l}/program{applicationNumber} directory found", nvramFolder, InitialParametersClass.ApplicationNumber);
-                    
+
                     filePathPrefix = directoryPrefix + dirSeparator + nvramFolder
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                 }
@@ -219,7 +219,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
                 else
                 {
                     Debug.LogMessage(LogEventLevel.Information, "{userFolder:l}/program{applicationNumber} directory found", userFolder, InitialParametersClass.ApplicationNumber);
-                    
+
                     filePathPrefix = directoryPrefix + dirSeparator + userFolder
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                 }
@@ -227,7 +227,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
             else   // Handles Linux OS (Virtual Control)
             {
                 //Debug.SetDebugLevel(2);
-                Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on Virtual Control Server", Global.AssemblyVersion);                    
+                Debug.LogMessage(LogEventLevel.Information, "Starting Essentials v{version:l} on Virtual Control Server", Global.AssemblyVersion);
 
                 // Set path to User/
                 filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
@@ -237,7 +237,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
         }
         catch (Exception e)
         {
-            Debug.LogMessage(e, "Unable to determine platform due to exception");                
+            Debug.LogMessage(e, "Unable to determine platform due to exception");
         }
     }
 
@@ -252,7 +252,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
 
             PluginLoader.AddProgramAssemblies();
 
-            _ = new Core.DeviceFactory();            
+            _ = new Core.DeviceFactory();
 
             Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 
@@ -299,7 +299,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
 
     }
 
-   
+
 
     /// <summary>
     /// Verifies filesystem is set up. IR, SGD, and programX folders
@@ -312,54 +312,54 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
         Debug.LogMessage(LogEventLevel.Information, "FilePathPrefix: {filePathPrefix:l}", configDir);
         var configExists = Directory.Exists(configDir);
         if (!configExists)
-            Directory.Create(configDir);
+            Directory.CreateDirectory(configDir);
 
         var irDir = Global.FilePathPrefix + "ir";
         if (!Directory.Exists(irDir))
-            Directory.Create(irDir);
+            Directory.CreateDirectory(irDir);
 
         var sgdDir = Global.FilePathPrefix + "sgd";
-			if (!Directory.Exists(sgdDir))
-				Directory.Create(sgdDir);
+        if (!Directory.Exists(sgdDir))
+            Directory.CreateDirectory(sgdDir);
 
         var pluginDir = Global.FilePathPrefix + "plugins";
         if (!Directory.Exists(pluginDir))
-            Directory.Create(pluginDir);
+            Directory.CreateDirectory(pluginDir);
 
         var joinmapDir = Global.FilePathPrefix + "joinmaps";
-        if(!Directory.Exists(joinmapDir))
-            Directory.Create(joinmapDir);
+        if (!Directory.Exists(joinmapDir))
+            Directory.CreateDirectory(joinmapDir);
 
-			return configExists;
-		}
+        return configExists;
+    }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public void TearDown()
-		{
-			Debug.LogMessage(LogEventLevel.Information, "Tearing down existing system");
-			DeviceManager.DeactivateAll();
+    /// <summary>
+    /// 
+    /// </summary>
+    public void TearDown()
+    {
+        Debug.LogMessage(LogEventLevel.Information, "Tearing down existing system");
+        DeviceManager.DeactivateAll();
 
-			TieLineCollection.Default.Clear();
+        TieLineCollection.Default.Clear();
 
-			foreach (var key in DeviceManager.GetDevices())
-				DeviceManager.RemoveDevice(key);
+        foreach (var key in DeviceManager.GetDevices())
+            DeviceManager.RemoveDevice(key);
 
-			Debug.LogMessage(LogEventLevel.Information, "Tear down COMPLETE");
-		}
+        Debug.LogMessage(LogEventLevel.Information, "Tear down COMPLETE");
+    }
 
-		/// <summary>
-		/// 
-		/// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 
-		void Load()
-		{
-			LoadDevices();
-			LoadRooms();
-			LoadLogoServer();
+    void Load()
+    {
+        LoadDevices();
+        LoadRooms();
+        LoadLogoServer();
 
-			DeviceManager.ActivateAll();
+        DeviceManager.ActivateAll();
 
         LoadTieLines();
 
@@ -368,8 +368,8 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
 		    if (mobileControl == null) return;
 
         mobileControl.LinkSystemMonitorToAppServer();*/
-		    
-		}
+
+    }
 
     /// <summary>
     /// Reads all devices from config and adds them to DeviceManager
@@ -417,14 +417,14 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
                 if (newDev == null)
                     newDev = Core.DeviceFactory.GetDevice(devConf);
 
-					if (newDev != null)
-						DeviceManager.AddDevice(newDev);
-					else
+                if (newDev != null)
+                    DeviceManager.AddDevice(newDev);
+                else
                     Debug.LogMessage(LogEventLevel.Information, "ERROR: Cannot load unknown device type '{deviceType:l}', key '{deviceKey:l}'.", devConf.Type, devConf.Key);
             }
             catch (Exception e)
             {
-                Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.",args: new[] { devConf.Key });
+                Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.", args: new[] { devConf.Key });
             }
         }
         Debug.LogMessage(LogEventLevel.Information, "All Devices Loaded.");
@@ -462,27 +462,28 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
     /// Reads all rooms from config and adds them to DeviceManager
     /// </summary>
     public void LoadRooms()
-    {            
+    {
         if (ConfigReader.ConfigObject.Rooms == null)
         {
             Debug.LogMessage(LogEventLevel.Information, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
             return;
         }
 
-        foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)         
+        foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
         {
             try
             {
                 var room = Core.DeviceFactory.GetDevice(roomConfig);
 
-                if(room == null)
+                if (room == null)
                 {
                     Debug.LogWarning("ERROR: Cannot load unknown room type '{roomType:l}', key '{roomKey:l}'.", roomConfig.Type, roomConfig.Key);
                     continue;
                 }
 
                 DeviceManager.AddDevice(room);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Debug.LogMessage(ex, "Exception loading room {roomKey}:{roomType}", null, roomConfig.Key, roomConfig.Type);
                 continue;
@@ -551,7 +552,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
         }
         catch
         {
-            Debug.LogMessage(LogEventLevel.Information, "Unable to find logo information in any room config");                
+            Debug.LogMessage(LogEventLevel.Information, "Unable to find logo information in any room config");
             return false;
         }
     }

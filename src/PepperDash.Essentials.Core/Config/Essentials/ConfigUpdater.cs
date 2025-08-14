@@ -2,15 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharpPro.Diagnostics;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using Serilog.Events;
 
@@ -71,7 +70,7 @@ public static class ConfigUpdater
     {
         var handler = ConfigStatusChanged;
 
-        if(handler != null)
+        if (handler != null)
         {
             handler(typeof(ConfigUpdater), new ConfigStatusEventArgs(status));
         }
@@ -79,7 +78,7 @@ public static class ConfigUpdater
 
     static void WriteConfigToFile(string configData)
     {
-        var filePath = Global.FilePathPrefix+ "configurationFile-updated.json";
+        var filePath = Global.FilePathPrefix + "configurationFile-updated.json";
 
         try
         {
@@ -94,7 +93,7 @@ public static class ConfigUpdater
             Debug.LogMessage(LogEventLevel.Debug, "Error parsing new config: {0}", e);
 
             OnStatusUpdate(eUpdateStatus.UpdateFailed);
-        }           
+        }
     }
 
     /// <summary>
@@ -132,18 +131,18 @@ public static class ConfigUpdater
         if (!Directory.Exists(archiveDirectoryPath))
         {
             // Directory does not exist, create it
-            Directory.Create(archiveDirectoryPath);
+            Directory.CreateDirectory(archiveDirectoryPath);
         }
         else
         {
             // Directory exists, first clear any contents
             var archivedConfigFiles = ConfigReader.GetConfigFiles(archiveDirectoryPath + Global.DirectorySeparator + Global.ConfigFileName + ".bak");
 
-            if(archivedConfigFiles != null || archivedConfigFiles.Length > 0)
+            if (archivedConfigFiles != null || archivedConfigFiles.Length > 0)
             {
                 Debug.LogMessage(LogEventLevel.Information, "{0} Existing files found in archive folder.  Deleting.", archivedConfigFiles.Length);
 
-                for (int i = 0; i < archivedConfigFiles.Length; i++ )
+                for (int i = 0; i < archivedConfigFiles.Length; i++)
                 {
                     var file = archivedConfigFiles[i];
                     Debug.LogMessage(LogEventLevel.Information, "Deleting archived file: '{0}'", file.FullName);
@@ -160,9 +159,9 @@ public static class ConfigUpdater
 
             // Moves the file and appends the .bak extension
             var fileDest = archiveDirectoryPath + "/" + file.Name + ".bak";
-            if(!File.Exists(fileDest))
+            if (!File.Exists(fileDest))
             {
-              file.MoveTo(fileDest);
+                file.MoveTo(fileDest);
             }
             else
                 Debug.LogMessage(LogEventLevel.Information, "Cannot move file to archive folder.  Existing file already exists with same name: '{0}'", fileDest);
@@ -197,12 +196,12 @@ public static class ConfigUpdater
 
         CrestronConsole.SendControlSystemCommand(string.Format("progreset -p:{0}", InitialParametersClass.ApplicationNumber), ref response);
 
-        Debug.LogMessage(LogEventLevel.Debug, "Console Response: {0}", response);          
+        Debug.LogMessage(LogEventLevel.Debug, "Console Response: {0}", response);
     }
 
 }
 
-    public enum eUpdateStatus
+public enum eUpdateStatus
 {
     UpdateStarted,
     ConfigFileReceived,

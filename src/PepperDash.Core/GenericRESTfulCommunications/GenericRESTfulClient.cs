@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using static Crestron.SimplSharp.Net.Http;
-using static Crestron.SimplSharp.Net.Https;
+using Crestron.SimplSharp.Net.Http;
+using Crestron.SimplSharp.Net.Https;
 
 namespace PepperDash.Core.GenericRESTfulCommunications;
 

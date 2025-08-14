@@ -2,10 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -23,7 +23,7 @@ public class ConfigWriter
     public const long WriteTimeout = 30000;
 
     public static CTimer WriteTimer;
-		static CCriticalSection fileLock = new CCriticalSection();
+    static CCriticalSection fileLock = new CCriticalSection();
 
     /// <summary>
     /// Updates the config properties of a device
@@ -77,9 +77,9 @@ public class ConfigWriter
     {
         bool success = false;
 
-			var roomConfigIndex = ConfigReader.ConfigObject.Rooms.FindIndex(d => d.Key.Equals(config.Key));
+        var roomConfigIndex = ConfigReader.ConfigObject.Rooms.FindIndex(d => d.Key.Equals(config.Key));
 
-			if (roomConfigIndex >= 0)
+        if (roomConfigIndex >= 0)
         {
             ConfigReader.ConfigObject.Rooms[roomConfigIndex] = config;
 

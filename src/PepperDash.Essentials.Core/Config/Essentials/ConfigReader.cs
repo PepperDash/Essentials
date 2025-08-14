@@ -1,10 +1,10 @@
 ﻿
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -13,24 +13,24 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Config;
 
-	/// <summary>
-	/// Loads the ConfigObject from the file
-	/// </summary>
-	public class ConfigReader
-	{
-	    public const string LocalConfigPresent =
-        @"
+/// <summary>
+/// Loads the ConfigObject from the file
+/// </summary>
+public class ConfigReader
+{
+    public const string LocalConfigPresent =
+    @"
 ***************************************************
 ************* Using Local config file *************
 ***************************************************";
 
-		public static EssentialsConfig ConfigObject { get; private set; }
+    public static EssentialsConfig ConfigObject { get; private set; }
 
-		public static bool LoadConfig2()
-		{
-			Debug.LogMessage(LogEventLevel.Information, "Loading unmerged system/template portal configuration file.");
-			try
-			{
+    public static bool LoadConfig2()
+    {
+        Debug.LogMessage(LogEventLevel.Information, "Loading unmerged system/template portal configuration file.");
+        try
+        {
             // Check for local config file first
             var filePath = Global.FilePathPrefix + ConfigWriter.LocalConfigFolder + Global.DirectorySeparator + Global.ConfigFileName;
 
@@ -50,10 +50,10 @@ namespace PepperDash.Essentials.Core.Config;
                         "****Error: Multiple Local Configuration files present. Please ensure only a single file exists and reset program.****");
                     return false;
                 }
-                if(configFiles.Length == 1)
+                if (configFiles.Length == 1)
                 {
                     localConfigFound = true;
-                    
+
                 }
             }
             else
@@ -64,7 +64,7 @@ namespace PepperDash.Essentials.Core.Config;
             }
 
             // Check for Portal Config
-            if(!localConfigFound)
+            if (!localConfigFound)
             {
                 filePath = Global.FilePathPrefix + Global.ConfigFileName;
 
@@ -104,10 +104,10 @@ namespace PepperDash.Essentials.Core.Config;
             filePath = configFiles[0].FullName;
 
             // Generate debug statement if using a local file.
-			    if (localConfigFound)
-			    {
+            if (localConfigFound)
+            {
                 GetLocalFileMessage(filePath);
-			    }
+            }
 
             // Read the file
             using (StreamReader fs = new StreamReader(filePath))
@@ -144,13 +144,13 @@ namespace PepperDash.Essentials.Core.Config;
 
                 return true;
             }
-			}
-			catch (Exception e)
-			{
+        }
+        catch (Exception e)
+        {
             Debug.LogMessage(LogEventLevel.Information, "ERROR: Config load failed: \r{0}", e);
-				return false;
-			}
-		}
+            return false;
+        }
+    }
 
     /// <summary>
     /// Returns all the files from the directory specified.
@@ -184,19 +184,19 @@ namespace PepperDash.Essentials.Core.Config;
         }
     }
 
-		/// <summary>
-		/// Returns the group for a given device key in config
-		/// </summary>
-		/// <param name="key"></param>
-		/// <returns></returns>
+    /// <summary>
+    /// Returns the group for a given device key in config
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
     public static string GetGroupForDeviceKey(string key)
     {
         var dev = ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
         return dev == null ? null : dev.Group;
     }
 
-	    private static void GetLocalFileMessage(string filePath)
-	    {
+    private static void GetLocalFileMessage(string filePath)
+    {
         var filePathLength = filePath.Length + 2;
         var debugStringWidth = filePathLength + 12;
 
@@ -211,46 +211,46 @@ namespace PepperDash.Essentials.Core.Config;
         var bookend2 = (debugStringWidth - filePathLength) / 2;
 
 
-	        var newDebugString = new StringBuilder()
-	            .Append(CrestronEnvironment.NewLine)
+        var newDebugString = new StringBuilder()
+            .Append(CrestronEnvironment.NewLine)
             // Line 1
-	            .Append(new string('*', debugStringWidth))
-	            .Append(CrestronEnvironment.NewLine)
+            .Append(new string('*', debugStringWidth))
+            .Append(CrestronEnvironment.NewLine)
             // Line 2
-	            .Append(new string('*', debugStringWidth))
-	            .Append(CrestronEnvironment.NewLine)
+            .Append(new string('*', debugStringWidth))
+            .Append(CrestronEnvironment.NewLine)
             // Line 3
-	            .Append(new string('*', 2))
-	            .Append(new string(' ', debugStringWidth - 4))
-	            .Append(new string('*', 2))
-	            .Append(CrestronEnvironment.NewLine)
+            .Append(new string('*', 2))
+            .Append(new string(' ', debugStringWidth - 4))
+            .Append(new string('*', 2))
+            .Append(CrestronEnvironment.NewLine)
             // Line 4
-	            .Append(new string('*', 2))
-	            .Append(new string(' ', bookend1 - 2))
-	            .Append(qualifier)
-	            .Append(new string(' ', bookend1 - 2))
-	            .Append(new string('*', 2))
-	            .Append(CrestronEnvironment.NewLine)
+            .Append(new string('*', 2))
+            .Append(new string(' ', bookend1 - 2))
+            .Append(qualifier)
+            .Append(new string(' ', bookend1 - 2))
+            .Append(new string('*', 2))
+            .Append(CrestronEnvironment.NewLine)
             // Line 5
-	            .Append(new string('*', 2))
-	            .Append(new string(' ', bookend2 - 2))
-	            .Append(" " + filePath + " ")
-	            .Append(new string(' ', bookend2 - 2))
-	            .Append(new string('*', 2))
-	            .Append(CrestronEnvironment.NewLine)
+            .Append(new string('*', 2))
+            .Append(new string(' ', bookend2 - 2))
+            .Append(" " + filePath + " ")
+            .Append(new string(' ', bookend2 - 2))
+            .Append(new string('*', 2))
+            .Append(CrestronEnvironment.NewLine)
             // Line 6
-	            .Append(new string('*', 2))
-	            .Append(new string(' ', debugStringWidth - 4))
-	            .Append(new string('*', 2))
-	            .Append(CrestronEnvironment.NewLine)
+            .Append(new string('*', 2))
+            .Append(new string(' ', debugStringWidth - 4))
+            .Append(new string('*', 2))
+            .Append(CrestronEnvironment.NewLine)
             // Line 7
-	            .Append(new string('*', debugStringWidth))
-	            .Append(CrestronEnvironment.NewLine)
+            .Append(new string('*', debugStringWidth))
+            .Append(CrestronEnvironment.NewLine)
             // Line 8
-	            .Append(new string('*', debugStringWidth));
+            .Append(new string('*', debugStringWidth));
 
         Debug.LogMessage(LogEventLevel.Verbose, "Found Local config file: '{0}'", filePath);
         Debug.LogMessage(LogEventLevel.Information, newDebugString.ToString());
-	    }
+    }
 
-	}
+}

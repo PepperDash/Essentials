@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronLogger;
 using Newtonsoft.Json;
 using PepperDash.Core.Logging;
@@ -142,8 +142,8 @@ public static class Debug
             _websocketSink = new DebugWebsocketSink(new JsonFormatter(renderMessage: true));
 
             var logFilePath = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ?
-                $@"{Directory.GetApplicationRootDirectory()}{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}debug{Path.DirectorySeparatorChar}app{InitialParametersClass.ApplicationNumber}{Path.DirectorySeparatorChar}global-log.log" :
-                $@"{Directory.GetApplicationRootDirectory()}{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}debug{Path.DirectorySeparatorChar}room{InitialParametersClass.RoomId}{Path.DirectorySeparatorChar}global-log.log";
+                $@"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}debug{Path.DirectorySeparatorChar}app{InitialParametersClass.ApplicationNumber}{Path.DirectorySeparatorChar}global-log.log" :
+                $@"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}debug{Path.DirectorySeparatorChar}room{InitialParametersClass.RoomId}{Path.DirectorySeparatorChar}global-log.log";
 
             CrestronConsole.PrintLine($"Saving log files to {logFilePath}");
 
@@ -1004,7 +1004,7 @@ public static class Debug
             return string.Format(@"\user\debugSettings\program{0}", InitialParametersClass.ApplicationNumber);
         }
 
-        return string.Format("{0}{1}user{1}debugSettings{1}{2}.json", Directory.GetApplicationRootDirectory(), Path.DirectorySeparatorChar, InitialParametersClass.RoomId);
+        return string.Format("{0}{1}user{1}debugSettings{1}{2}.json", Directory.GetCurrentDirectory(), Path.DirectorySeparatorChar, InitialParametersClass.RoomId);
     }
 
     /// <summary>

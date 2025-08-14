@@ -2,10 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -47,7 +46,7 @@ public class DeviceConfig
         //Properties = JToken.FromObject(dc.Properties);
     }
 
-    public DeviceConfig() {}
+    public DeviceConfig() { }
 }
 
 /// <summary>

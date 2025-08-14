@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
-
 using PepperDash.Core;
 using Serilog.Events;
 
@@ -34,21 +33,21 @@ public class HttpLogoServer
     public HttpLogoServer(int port, string directory)
     {
         ExtensionContentTypes = new Dictionary<string, string>
-			{
+            {
             //{ ".css", "text/css" },
             //{ ".htm", "text/html" },
             //{ ".html", "text/html" },
 				{ ".jpg", "image/jpeg" },
-				{ ".jpeg", "image/jpeg" },
+                { ".jpeg", "image/jpeg" },
             //{ ".js", "application/javascript" },
             //{ ".json", "application/json" },
             //{ ".map", "application/x-navimap" },
 				{ ".pdf", "application/pdf" },
-				{ ".png", "image/png" },
+                { ".png", "image/png" },
             //{ ".txt", "text/plain" },
 			};
 
-        _server = new HttpServer {Port = port};
+        _server = new HttpServer { Port = port };
         _fileDirectory = directory;
         _server.OnHttpRequest += Server_OnHttpRequest;
         _server.Open();
@@ -62,7 +61,7 @@ public class HttpLogoServer
     void Server_OnHttpRequest(object sender, OnHttpRequestArgs args)
     {
         var path = args.Request.Path;
-        Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "HTTP Request with path: '{requestPath:l}'", args.Request.Path);            
+        Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "HTTP Request with path: '{requestPath:l}'", args.Request.Path);
 
         try
         {
@@ -75,7 +74,9 @@ public class HttpLogoServer
                 if (File.Exists(localPath))
                 {
                     args.Response.Header.ContentType = GetContentType(new FileInfo(localPath).Extension);
-                    args.Response.ContentStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
+                    // For .NET 8 migration, read file content as bytes since ContentStream expects Crestron.SimplSharp.CrestronIO.Stream
+                    var fileBytes = File.ReadAllBytes(localPath);
+                    args.Response.ContentBytes = fileBytes;
                 }
                 else
                 {

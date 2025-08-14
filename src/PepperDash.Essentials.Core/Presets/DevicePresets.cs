@@ -1,13 +1,12 @@
-﻿ 
+﻿
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
-
 //using SSMono.IO;
 using PepperDash.Core.WebApi.Presets;
 using Serilog.Events;
@@ -127,7 +126,7 @@ public class DevicePresetsModel : Device
             PresetsAreLoaded = false;
             try
             {
-                var pl = JsonConvert.DeserializeObject<PresetsList>(File.ReadToEnd(_filePath, Encoding.ASCII));
+                var pl = JsonConvert.DeserializeObject<PresetsList>(File.ReadAllText(_filePath, Encoding.ASCII));
                 Name = pl.Name;
                 PresetsList = pl.Channels;
 
@@ -271,19 +270,20 @@ public class DevicePresetsModel : Device
         try
         {
             _fileOps.Enter();
-            var pl = new PresetsList {Channels = PresetsList, Name = Name};
+            var pl = new PresetsList { Channels = PresetsList, Name = Name };
             var json = JsonConvert.SerializeObject(pl, Formatting.Indented);
 
             using (var file = File.Open(_filePath, FileMode.Truncate))
             {
-                file.Write(json, Encoding.UTF8);
+                var bytes = Encoding.UTF8.GetBytes(json);
+                file.Write(bytes, 0, bytes.Length);
             }
         }
         finally
         {
             _fileOps.Leave();
         }
-        
+
     }
 
     private void OnPresetsSaved()

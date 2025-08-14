@@ -3,16 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Reflection;
-using Crestron.SimplSharp.CrestronIO;
+using System.Text;
 using Crestron.SimplSharp;
-
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
-
-using Newtonsoft.Json;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core;
@@ -101,16 +99,16 @@ public abstract class JoinMapBaseAdvanced
         JoinOffset = joinStart - 1;
     }
 
-    protected JoinMapBaseAdvanced(uint joinStart, Type type):this(joinStart)
+    protected JoinMapBaseAdvanced(uint joinStart, Type type) : this(joinStart)
     {
         AddJoins(type);
     }
 
     protected void AddJoins(Type type)
-    {            
+    {
         var fields =
             type.GetFields(BindingFlags.Public | BindingFlags.Instance)
-                .Where(f => f.IsDefined(typeof (JoinNameAttribute), true)).ToList();
+                .Where(f => f.IsDefined(typeof(JoinNameAttribute), true)).ToList();
 
         Debug.LogMessage(LogEventLevel.Debug, "Got {fields} with JoinNameAttribute", fields.Count);
 
@@ -177,16 +175,16 @@ public abstract class JoinMapBaseAdvanced
         sb.Append($"## Digitals{lineEnding}");
         sb.Append(lineEnding);
         // Get the joins of each type and print them
-        
+
         var digitalSb = AppendJoinList(GetSortedJoins(digitals));
         digitalSb.Append($"## Analogs{lineEnding}");
         digitalSb.Append(lineEnding);
-        
+
         var analogSb = AppendJoinList(GetSortedJoins(analogs));
         analogSb.Append($"## Serials{lineEnding}");
         analogSb.Append(lineEnding);
 
-        
+
         var serialSb = AppendJoinList(GetSortedJoins(serials));
 
         sb.EnsureCapacity(sb.Length + digitalSb.Length + analogSb.Length + serialSb.Length);
@@ -244,7 +242,7 @@ public abstract class JoinMapBaseAdvanced
         const int joinSpanLen = 9;
         const int typeLen = 19;
         const int capabilitiesLen = 12;
-        var descriptionLen = (from @join in joins select @join.Value into j select j.Metadata.Description.Length).Concat(new[] {11}).Max();
+        var descriptionLen = (from @join in joins select @join.Value into j select j.Metadata.Description.Length).Concat(new[] { 11 }).Max();
 
         //build header
         sb.Append(string.Format(stringFormatter,
@@ -488,7 +486,7 @@ public class JoinDataComplete
     /// </summary>
     public uint JoinNumber
     {
-        get { return _data.JoinNumber+ _joinOffset; }
+        get { return _data.JoinNumber + _joinOffset; }
         set { _data.JoinNumber = value; }
     }
 
@@ -529,7 +527,7 @@ public class JoinNameAttribute : Attribute
 
     public JoinNameAttribute(string name)
     {
-        Debug.LogMessage(LogEventLevel.Verbose, "Setting Attribute Name: {0}",null, name);
+        Debug.LogMessage(LogEventLevel.Verbose, "Setting Attribute Name: {0}", null, name);
         _Name = name;
     }
 

@@ -1,11 +1,11 @@
-﻿using Crestron.SimplSharp.WebScripting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Crestron.SimplSharp.WebScripting;
 
 namespace PepperDash.Core.Web.RequestHandlers;
 
-public abstract class WebApiBaseRequestAsyncHandler:IHttpCwsHandler
+public abstract class WebApiBaseRequestAsyncHandler : IHttpCwsHandler
 {
     private readonly Dictionary<string, Func<HttpCwsContext, Task>> _handlers;
     protected readonly bool EnableCors;
@@ -47,7 +47,7 @@ public abstract class WebApiBaseRequestAsyncHandler:IHttpCwsHandler
     {
         context.Response.StatusCode = 501;
         context.Response.StatusDescription = "Not Implemented";
-        context.Response.End();            
+        context.Response.End();
     }
 
     /// <summary>

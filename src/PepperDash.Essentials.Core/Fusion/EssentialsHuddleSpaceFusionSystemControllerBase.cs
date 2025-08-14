@@ -1,7 +1,11 @@
 ﻿
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXml.Serialization;
 using Crestron.SimplSharpPro;
@@ -11,10 +15,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PepperDash.Essentials.Core.Fusion;
 
@@ -107,7 +107,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
                     JoinMap.SetCustomJoinData(customJoins);
                 }
             }
-             
+
             Room = room;
 
             _ipId = ipId;
@@ -137,7 +137,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
                 File.Delete(oldGuidFilePath);
             }
 
-            _guidFileExists = File.Exists(guidFilePath); 
+            _guidFileExists = File.Exists(guidFilePath);
 
             // Check if file exists
             if (!_guidFileExists)
@@ -301,7 +301,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
 
             if (File.Exists(filePath))
             {
-                var json = File.ReadToEnd(filePath, Encoding.ASCII);
+                var json = File.ReadAllText(filePath, Encoding.ASCII);
 
                 _guiDs = JsonConvert.DeserializeObject<FusionRoomGuids>(json);
 
@@ -466,7 +466,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
         // Interface 1
 
         if (InitialParametersClass.NumberOfEthernetInterfaces > 1)
-            // Only get these values if the processor has more than 1 NIC
+        // Only get these values if the processor has more than 1 NIC
         {
             _ip2.InputSig.StringValue =
                 CrestronEthernetHelper.GetEthernetParameter(
@@ -490,7 +490,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
             {
                 var join = JoinMap.ProgramNameStart.JoinNumber + i;
                 var progNum = i + 1;
-                _program[i] = FusionRoom.CreateOffsetStringSig((uint) join,
+                _program[i] = FusionRoom.CreateOffsetStringSig((uint)join,
                     string.Format("{0} {1}", JoinMap.ProgramNameStart.AttributeName, progNum), eSigIoMask.InputSigOnly);
             }
         }
@@ -519,7 +519,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
     {
         if (args.DeviceOnLine)
         {
-            CrestronInvoke.BeginInvoke( (o) => 
+            CrestronInvoke.BeginInvoke((o) =>
             {
                 CrestronEnvironment.Sleep(200);
 
@@ -658,7 +658,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
                 var extendTime = _currentMeeting.dtEnd - DateTime.Now;
                 var extendMinutesRaw = extendTime.TotalMinutes;
 
-                extendMinutes += (int) Math.Round(extendMinutesRaw);
+                extendMinutes += (int)Math.Round(extendMinutesRaw);
             }
 
 
@@ -766,11 +766,11 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
                 var parameters = actionResponse["Parameters"];
 
                 foreach (var isRegistered in from XmlElement parameter in parameters
-                    where parameter.HasAttributes
-                    select parameter.Attributes
+                                             where parameter.HasAttributes
+                                             select parameter.Attributes
                     into attributes
-                    where attributes["ID"].Value == "Registered"
-                    select Int32.Parse(attributes["Value"].Value))
+                                             where attributes["ID"].Value == "Registered"
+                                             select Int32.Parse(attributes["Value"].Value))
                 {
                     switch (isRegistered)
                     {
@@ -827,9 +827,9 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
                         Debug.LogMessage(LogEventLevel.Debug, this, "DateTime from Fusion Server: {0}", currentTime);
 
                         // Parse time and date from response and insert values
-                        CrestronEnvironment.SetTimeAndDate((ushort) currentTime.Hour, (ushort) currentTime.Minute,
-                            (ushort) currentTime.Second, (ushort) currentTime.Month, (ushort) currentTime.Day,
-                            (ushort) currentTime.Year);
+                        CrestronEnvironment.SetTimeAndDate((ushort)currentTime.Hour, (ushort)currentTime.Minute,
+                            (ushort)currentTime.Second, (ushort)currentTime.Month, (ushort)currentTime.Day,
+                            (ushort)currentTime.Year);
 
                         Debug.LogMessage(LogEventLevel.Debug, this, "Processor time set to {0}", CrestronEnvironment.GetLocalTime());
                     }
@@ -1093,7 +1093,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
 
             foreach (var usageDevice in dict.Select(kvp => kvp.Value.SourceDevice).OfType<IUsageTracking>())
             {
-                usageDevice.UsageTracker = new UsageTracking(usageDevice as Device) {UsageIsTracked = true};
+                usageDevice.UsageTracker = new UsageTracking(usageDevice as Device) { UsageIsTracked = true };
                 usageDevice.UsageTracker.DeviceUsageEnded += UsageTracker_DeviceUsageEnded;
             }
         }
@@ -1279,7 +1279,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
 
             foreach (var display in displays.Cast<IDisplay>())
             {
-                display.UsageTracker = new UsageTracking(display as Device) {UsageIsTracked = true};
+                display.UsageTracker = new UsageTracking(display as Device) { UsageIsTracked = true };
                 display.UsageTracker.DeviceUsageEnded += UsageTracker_DeviceUsageEnded;
             }
 
@@ -1392,7 +1392,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
 
 
         // Power on
-        var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint) joinOffset, displayName + "Power On",
+        var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint)joinOffset, displayName + "Power On",
             eSigIoMask.InputOutputSig);
         defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b =>
         {
@@ -1403,7 +1403,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
         });
 
         // Power Off
-        var defaultDisplayPowerOff = FusionRoom.CreateOffsetBoolSig((uint) joinOffset + 1, displayName + "Power Off",
+        var defaultDisplayPowerOff = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 1, displayName + "Power Off",
             eSigIoMask.InputOutputSig);
         defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b =>
         {
@@ -1421,7 +1421,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
         }
 
         // Current Source
-        var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint) joinOffset + 8,
+        var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8,
             displayName + "Source None", eSigIoMask.InputOutputSig);
         defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b =>
         {
@@ -1514,7 +1514,7 @@ public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupanc
             occRoom.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
         }
         RoomOccupancyRemoteStringFeedback = new StringFeedback(() => _roomOccupancyRemoteString);
-        
+
         RoomOccupancyRemoteStringFeedback.LinkInputSig(occSensorAsset.RoomOccupancyInfo.InputSig);
 
         //}

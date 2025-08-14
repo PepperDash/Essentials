@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using PepperDash.Essentials.Core;
-using Crestron.SimplSharpPro.DeviceSupport;
-using PepperDash.Core;
-using Crestron.SimplSharpPro.UI;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.UI;
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.UI;
 
-public abstract class TouchpanelBase: EssentialsDevice, IHasBasicTriListWithSmartObject
+public abstract class TouchpanelBase : EssentialsDevice, IHasBasicTriListWithSmartObject
 {
     protected CrestronTouchpanelPropertiesConfig _config;
     public BasicTriListWithSmartObject Panel { get; private set; }
@@ -29,7 +29,7 @@ public abstract class TouchpanelBase: EssentialsDevice, IHasBasicTriListWithSmar
     /// <param name="config">Touchpanel Configuration</param>
     /// <param name="id">IP-ID to use for touch panel</param>
     protected TouchpanelBase(string key, string name, BasicTriListWithSmartObject panel, CrestronTouchpanelPropertiesConfig config)
-        :base(key, name)
+        : base(key, name)
     {
 
         if (panel == null)
@@ -52,9 +52,10 @@ public abstract class TouchpanelBase: EssentialsDevice, IHasBasicTriListWithSmar
             tsw.ButtonStateChange += Tsw_ButtonStateChange;
         }
 
-        _config = config;            
+        _config = config;
 
-        AddPreActivationAction(() => {
+        AddPreActivationAction(() =>
+        {
             if (Panel.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
                 Debug.LogMessage(LogEventLevel.Information, this, "WARNING: Registration failed. Continuing, but panel may not function: {0}", Panel.RegistrationFailureReason);
 
@@ -154,21 +155,21 @@ public abstract class TouchpanelBase: EssentialsDevice, IHasBasicTriListWithSmar
     }
 
     private void Panel_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
-		{
-			Debug.LogMessage(LogEventLevel.Verbose, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
-			var uo = args.Sig.UserObject;
-			if (uo is Action<bool>)
-				(uo as Action<bool>)(args.Sig.BoolValue);
-			else if (uo is Action<ushort>)
-				(uo as Action<ushort>)(args.Sig.UShortValue);
-			else if (uo is Action<string>)
-				(uo as Action<string>)(args.Sig.StringValue);
-		}
-	
-		private void Tsw_ButtonStateChange(GenericBase device, ButtonEventArgs args)
-		{
-			var uo = args.Button.UserObject;
-			if(uo is Action<bool>)
-				(uo as Action<bool>)(args.Button.State == eButtonState.Pressed);
-		}
+    {
+        Debug.LogMessage(LogEventLevel.Verbose, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+        var uo = args.Sig.UserObject;
+        if (uo is Action<bool>)
+            (uo as Action<bool>)(args.Sig.BoolValue);
+        else if (uo is Action<ushort>)
+            (uo as Action<ushort>)(args.Sig.UShortValue);
+        else if (uo is Action<string>)
+            (uo as Action<string>)(args.Sig.StringValue);
+    }
+
+    private void Tsw_ButtonStateChange(GenericBase device, ButtonEventArgs args)
+    {
+        var uo = args.Button.UserObject;
+        if (uo is Action<bool>)
+            (uo as Action<bool>)(args.Button.State == eButtonState.Pressed);
+    }
 }

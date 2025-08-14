@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Core.JsonToSimpl;
@@ -79,7 +79,7 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
                 JsonToSimplConstants.DevicePlatformValueChange);
 
             // get the roomID
-            var roomId = Crestron.SimplSharp.InitialParametersClass.RoomId;                
+            var roomId = Crestron.SimplSharp.InitialParametersClass.RoomId;
             if (!string.IsNullOrEmpty(roomId))
             {
                 OnStringChange(roomId, 0, JsonToSimplConstants.RoomIdChange);
@@ -92,13 +92,13 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
                 OnStringChange(roomName, 0, JsonToSimplConstants.RoomNameChange);
             }
 
-            var rootDirectory = Directory.GetApplicationRootDirectory();
-            OnStringChange(rootDirectory, 0, JsonToSimplConstants.RootDirectoryChange);                
-            
+            var rootDirectory = Directory.GetCurrentDirectory();
+            OnStringChange(rootDirectory, 0, JsonToSimplConstants.RootDirectoryChange);
+
             var splusPath = string.Empty;
             if (Regex.IsMatch(filepath, @"user", RegexOptions.IgnoreCase))
             {
-                if (is4Series) 
+                if (is4Series)
                     splusPath = Regex.Replace(filepath, "user", "user", RegexOptions.IgnoreCase);
                 else if (isServer)
                     splusPath = Regex.Replace(filepath, "user", "User", RegexOptions.IgnoreCase);
@@ -107,10 +107,10 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
             }
 
             filepath = splusPath.Replace(dirSeparatorAlt, dirSeparator);
-            
+
             Filepath = string.Format("{1}{0}{2}", dirSeparator, rootDirectory,
                 filepath.TrimStart(dirSeparator, dirSeparatorAlt));
-            
+
             OnStringChange(string.Format("Attempting to evaluate {0}", Filepath), 0, JsonToSimplConstants.StringValueChange);
 
             if (string.IsNullOrEmpty(Filepath))
@@ -130,10 +130,10 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
             if (Directory.Exists(fileDirectory))
             {
                 // get the directory info                    
-                var directoryInfo = new DirectoryInfo(fileDirectory);                                       
+                var directoryInfo = new DirectoryInfo(fileDirectory);
 
                 // get the file to be read
-                var actualFile = directoryInfo.GetFiles(fileName).FirstOrDefault();                    
+                var actualFile = directoryInfo.GetFiles(fileName).FirstOrDefault();
                 if (actualFile == null)
                 {
                     var msg = string.Format("JSON file not found: {0}", Filepath);
@@ -145,7 +145,7 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
 
                 // \xSE\xR\PDT000-Template_Main_Config-Combined_DSP_v00.02.json
                 // \USER\PDT000-Template_Main_Config-Combined_DSP_v00.02.json
-                ActualFilePath = actualFile.FullName;                    
+                ActualFilePath = actualFile.FullName;
                 OnStringChange(ActualFilePath, 0, JsonToSimplConstants.ActualFilePathChange);
                 OnStringChange(string.Format("Actual JSON file is {0}", ActualFilePath), 0, JsonToSimplConstants.StringValueChange);
                 Debug.Console(1, "Actual JSON file is {0}", ActualFilePath);
@@ -159,9 +159,9 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
                 FilePathName = string.Format(@"{0}{1}", actualFile.DirectoryName, dirSeparator);
                 OnStringChange(string.Format(@"{0}", actualFile.DirectoryName), 0, JsonToSimplConstants.FilePathResolvedChange);
                 OnStringChange(string.Format(@"JSON File Path is {0}", actualFile.DirectoryName), 0, JsonToSimplConstants.StringValueChange);
-                Debug.Console(1, "JSON File Path is {0}", FilePathName);                    
+                Debug.Console(1, "JSON File Path is {0}", FilePathName);
 
-                var json = File.ReadToEnd(ActualFilePath, System.Text.Encoding.ASCII);
+                var json = File.ReadAllText(ActualFilePath, System.Text.Encoding.ASCII);
 
                 JsonObject = JObject.Parse(json);
                 foreach (var child in Children)

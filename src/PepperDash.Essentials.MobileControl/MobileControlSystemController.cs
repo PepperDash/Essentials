@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
@@ -1829,7 +1829,7 @@ public class MobileControlSystemController : EssentialsDevice, IMobileControl
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void HandleError(object sender, ErrorEventArgs e)
+    private void HandleError(object sender, WebSocketSharp.ErrorEventArgs e)
     {
         this.LogError("Websocket error {0}", e.Message);
 
