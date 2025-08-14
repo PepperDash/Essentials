@@ -671,13 +671,14 @@ public class GenericTcpIpServer : Device
     /// Secure Server Socket Status Changed Callback
     /// </summary>
     /// <param name="server"></param>
-    /// <param name="args">Event arguments</param>
-    void TcpServer_SocketStatusChange(TCPServer server, TCPServerWaitingForConnectionsEventArgs args)
+    /// <param name="clientIndex">Index of the client whose socket status has changed</param>
+    /// <param name="status">New socket status</param>
+    void TcpServer_SocketStatusChange(TCPServer server, uint clientIndex, SocketStatus status)
     {
         try
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "TcpServerSocketStatusChange ConnectedClients: {0} ServerState: {1} Port: {2}",
-                myTcpServer.NumberOfClientsConnected, myTcpServer.State, myTcpServer.PortNumber);
+            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "TcpServerSocketStatusChange ConnectedClients: {0} ServerState: {1} Port: {2} ClientIndex: {3} Status: {4}",
+                myTcpServer.NumberOfClientsConnected, myTcpServer.State, myTcpServer.PortNumber, clientIndex, status);
 
             // Handle connection limit and listening state
             if (myTcpServer.MaxNumberOfClientSupported > myTcpServer.NumberOfClientsConnected)
