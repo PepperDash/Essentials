@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectType>Program</ProjectType>
-    <Configurations>Debug;Release;Debug 4.7.2</Configurations>
+    <Configurations>Debug;Release;Debug 4.7.2;Test</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>PepperDash.Essentials</RootNamespace>
@@ -20,14 +20,22 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|AnyCPU'">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 4.7.2|AnyCPU'">
     <DebugType>full</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' != 'Test|AnyCPU' ">
     <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.128" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Test|AnyCPU' ">
+    <ProjectReference Include="../../src/CrestronMock/CrestronMock.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>

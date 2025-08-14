@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectType>Library</ProjectType>
+    <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>PepperDash.Core</RootNamespace>
@@ -24,6 +25,10 @@
     <DebugType>full</DebugType>
     <DefineConstants>TRACE;DEBUG;SERIES4</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DefineConstants>TRACE;DEBUG;SERIES4</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <DocumentationFile>bin\4Series\$(Configuration)\PepperDashCore.xml</DocumentationFile>
@@ -41,9 +46,14 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Test|AnyCPU' ">
+    <ProjectReference Include="../../src/CrestronMock/CrestronMock.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' != 'Test|AnyCPU' ">
+    <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.21.128" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.1" />
-    <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.21.128" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Expressions" Version="5.0.0" />

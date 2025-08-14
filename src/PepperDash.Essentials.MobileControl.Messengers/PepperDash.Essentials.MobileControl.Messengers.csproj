@@ -14,8 +14,13 @@
     <Authors>PepperDash Technology</Authors>
     <PackageId>PepperDash.Essentials.MobileControl.Messengers</PackageId>
     <PackageTags>crestron 4series</PackageTags>
+    <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|AnyCPU'">
     <DebugType>full</DebugType>
     <DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
   </PropertyGroup>

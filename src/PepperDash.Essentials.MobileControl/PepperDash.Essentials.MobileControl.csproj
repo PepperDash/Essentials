@@ -18,8 +18,12 @@
     <Authors>PepperDash Technologies</Authors>
     <PackageId>PepperDash.Essentials.MobileControl</PackageId>
     <PackageTags>crestron 4series</PackageTags>
+    <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>TRACE;DEBUG;SERIES4</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;SERIES4</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
