@@ -93,7 +93,7 @@ public class GenericRESTfulClient
 			if (!string.IsNullOrEmpty(contentType))
 				request.Header.ContentType = contentType;
 
-			request.Url.Parse(url);
+			request.Url = Crestron.SimplSharp.Net.Http.UrlParser.Parse(url);
 			request.RequestType = (Crestron.SimplSharp.Net.Http.RequestType)requestType;
 
 			response = client.Dispatch(request);
@@ -148,7 +148,7 @@ public class GenericRESTfulClient
 			if (!string.IsNullOrEmpty(contentType))
 				request.Header.ContentType = contentType;
 
-			request.Url.Parse(url);
+			request.Url = Crestron.SimplSharp.Net.Https.UrlParser.Parse(url);
 			request.RequestType = (Crestron.SimplSharp.Net.Https.RequestType)requestType;
 
 			response = client.Dispatch(request);

@@ -22,7 +22,9 @@ namespace Crestron.SimplSharp.CrestronSockets
     /// <summary>Socket error</summary>
     SOCKET_STATUS_SOCKET_ERROR = 8,
     /// <summary>Secure connection failed</summary>
-    SOCKET_STATUS_SSL_FAILED = 9
+    SOCKET_STATUS_SSL_FAILED = 9,
+    /// <summary>No connection available</summary>
+    SOCKET_STATUS_NO_CONNECT = 10
   }
 
   /// <summary>Mock ServerState enumeration</summary>
@@ -31,7 +33,9 @@ namespace Crestron.SimplSharp.CrestronSockets
     /// <summary>Server is not listening</summary>
     SERVER_NOT_LISTENING = 0,
     /// <summary>Server is listening</summary>
-    SERVER_LISTENING = 1
+    SERVER_LISTENING = 1,
+    /// <summary>Server is connected</summary>
+    SERVER_CONNECTED = 2
   }
 
   /// <summary>Mock event handler for TCP client status changes</summary>
@@ -42,6 +46,16 @@ namespace Crestron.SimplSharp.CrestronSockets
   /// <summary>Delegate for TCP client connect callback</summary>
   /// <param name="client">TCP client instance</param>
   public delegate void TCPClientConnectCallback(TCPClient client);
+
+  /// <summary>Delegate for TCP client send callback</summary>
+  /// <param name="client">TCP client instance</param>
+  /// <param name="numberOfBytesSent">Number of bytes sent</param>
+  public delegate void TCPClientSendCallback(TCPClient client, int numberOfBytesSent);
+
+  /// <summary>Delegate for TCP client receive callback</summary>
+  /// <param name="client">TCP client instance</param>
+  /// <param name="numberOfBytesReceived">Number of bytes received</param>
+  public delegate void TCPClientReceiveCallback(TCPClient client, int numberOfBytesReceived);
 
   /// <summary>Mock event handler for receiving TCP client data</summary>
   /// <param name="client">The TCP client</param>
@@ -101,7 +115,10 @@ namespace Crestron.SimplSharp.CrestronSockets
     }
 
     /// <summary>Gets the address the client is connected to</summary>
-    public string AddressClientConnectedTo { get; private set; } = string.Empty;
+    public string AddressClientConnectedTo { get; set; } = string.Empty;
+
+    /// <summary>Gets the local port number of the client</summary>
+    public uint LocalPortNumberOfClient { get; private set; } = 0;
 
     /// <summary>Gets the incoming data buffer</summary>
     public byte[] IncomingDataBuffer { get; private set; } = new byte[0];
@@ -251,6 +268,18 @@ namespace Crestron.SimplSharp.CrestronSockets
       return SendData(dataToSend, lengthToSend);
     }
 
+    /// <summary>Sends data to the connected server asynchronously with callback</summary>
+    /// <param name="dataToSend">Data to send as byte array</param>
+    /// <param name="lengthToSend">Number of bytes to send</param>
+    /// <param name="callback">Callback to invoke when send completes</param>
+    /// <returns>Number of bytes sent, or -1 on error</returns>
+    public int SendDataAsync(byte[] dataToSend, int lengthToSend, TCPClientSendCallback callback)
+    {
+      var result = SendData(dataToSend, lengthToSend);
+      callback?.Invoke(this, result);
+      return result;
+    }
+
     /// <summary>Receives data from the server asynchronously</summary>
     /// <returns>Number of bytes received, or -1 on error</returns>
     public int ReceiveDataAsync()
@@ -260,6 +289,16 @@ namespace Crestron.SimplSharp.CrestronSockets
 
       // Mock receive - simulate no data available
       return 0;
+    }
+
+    /// <summary>Receives data from the server asynchronously with callback</summary>
+    /// <param name="callback">Callback to invoke when data is received</param>
+    /// <returns>Number of bytes received, or -1 on error</returns>
+    public int ReceiveDataAsync(TCPClientReceiveCallback callback)
+    {
+      var result = ReceiveDataAsync();
+      callback?.Invoke(this, result);
+      return result;
     }
 
     /// <summary>Simulates receiving data (for testing purposes)</summary>

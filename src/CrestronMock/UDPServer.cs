@@ -20,11 +20,33 @@ namespace Crestron.SimplSharp.CrestronSockets
     /// <summary>Gets the server state</summary>
     public SocketServerState State { get; private set; } = SocketServerState.SERVER_NOT_LISTENING;
 
-    /// <summary>Gets the port number</summary>
-    public int PortNumber { get; private set; }
+    /// <summary>Gets the server status (alias for State)</summary>
+    public SocketServerState ServerStatus => State;
+
+    /// <summary>Gets the client status as SocketStatus</summary>
+    public SocketStatus ClientStatus => State == SocketServerState.SERVER_LISTENING ? SocketStatus.SOCKET_STATUS_CONNECTED : SocketStatus.SOCKET_STATUS_NOT_CONNECTED;
+
+    /// <summary>Gets or sets the port number</summary>
+    public int PortNumber { get; set; }
 
     /// <summary>Gets the buffer size</summary>
     public int BufferSize { get; private set; }
+
+    /// <summary>Gets the IP address of the last message received from</summary>
+    public string IPAddressLastMessageReceivedFrom { get; private set; } = string.Empty;
+
+    /// <summary>Gets the IP port of the last message received from</summary>
+    public int IPPortLastMessageReceivedFrom { get; private set; }
+
+    /// <summary>Gets the incoming data buffer</summary>
+    public byte[] IncomingDataBuffer { get; private set; } = new byte[0];
+
+    /// <summary>Initializes a new instance of UDPServer</summary>
+    public UDPServer()
+    {
+      PortNumber = 0;
+      BufferSize = 1024;
+    }
 
     /// <summary>Initializes a new instance of UDPServer</summary>
     /// <param name="ipAddress">IP address to bind to</param>
@@ -71,6 +93,16 @@ namespace Crestron.SimplSharp.CrestronSockets
       }
     }
 
+    /// <summary>Starts listening for UDP packets on specified hostname and port</summary>
+    /// <param name="hostname">Hostname to bind to</param>
+    /// <param name="port">Port number to listen on</param>
+    /// <returns>SocketErrorCodes indicating success or failure</returns>
+    public SocketErrorCodes EnableUDPServer(string hostname, int port)
+    {
+      PortNumber = port;
+      return EnableUDPServer();
+    }
+
     /// <summary>Stops listening for UDP packets</summary>
     /// <returns>SocketErrorCodes indicating success or failure</returns>
     public SocketErrorCodes DisableUDPServer()
@@ -114,6 +146,34 @@ namespace Crestron.SimplSharp.CrestronSockets
       {
         return SocketErrorCodes.SOCKET_CONNECTION_FAILED;
       }
+    }
+
+    /// <summary>Sends data to the last received endpoint</summary>
+    /// <param name="data">Data to send</param>
+    /// <param name="dataLength">Length of data</param>
+    /// <returns>SocketErrorCodes indicating success or failure</returns>
+    public SocketErrorCodes SendData(byte[] data, int dataLength)
+    {
+      return SendData(data, dataLength, IPAddressLastMessageReceivedFrom, IPPortLastMessageReceivedFrom);
+    }
+
+    /// <summary>Receives data asynchronously</summary>
+    /// <param name="callback">Callback to invoke when data is received</param>
+    /// <returns>SocketErrorCodes indicating success or failure</returns>
+    public SocketErrorCodes ReceiveDataAsync(UDPServerReceiveDataEventHandler callback)
+    {
+      ReceivedData += callback;
+      return SocketErrorCodes.SOCKET_OK;
+    }
+
+    /// <summary>Receives data asynchronously with simple callback</summary>
+    /// <param name="callback">Simple callback to invoke when data is received</param>
+    /// <returns>SocketErrorCodes indicating success or failure</returns>
+    public SocketErrorCodes ReceiveDataAsync(UDPServerReceiveDataSimpleEventHandler callback)
+    {
+      // Convert simple callback to full event handler and subscribe
+      ReceivedData += (server, args) => callback(server, args.DataLength);
+      return SocketErrorCodes.SOCKET_OK;
     }
 
     /// <summary>Sends data to a specific endpoint</summary>
@@ -175,47 +235,9 @@ namespace Crestron.SimplSharp.CrestronSockets
     }
   }
 
-  /// <summary>Mock SecureTCPClient class for secure TCP client operations</summary>
-  public class SecureTCPClient : TCPClient
-  {
-    /// <summary>Initializes a new instance of SecureTCPClient</summary>
-    /// <param name="ipAddress">Server IP address</param>
-    /// <param name="portNumber">Server port number</param>
-    /// <param name="bufferSize">Buffer size for data reception</param>
-    /// <param name="ethernetAdapterToBindTo">Ethernet adapter to bind to</param>
-    public SecureTCPClient(string ipAddress, int portNumber, int bufferSize, EthernetAdapterType ethernetAdapterToBindTo)
-        : base(ipAddress, portNumber, bufferSize, ethernetAdapterToBindTo)
-    {
-    }
-
-    /// <summary>Initializes a new instance of SecureTCPClient</summary>
-    /// <param name="ipAddress">Server IP address</param>
-    /// <param name="portNumber">Server port number</param>
-    /// <param name="bufferSize">Buffer size for data reception</param>
-    public SecureTCPClient(string ipAddress, int portNumber, int bufferSize)
-        : base(ipAddress, portNumber, bufferSize)
-    {
-    }
-
-    /// <summary>Sets the SSL/TLS settings (mock implementation)</summary>
-    /// <param name="context">SSL context</param>
-    public void SetSSLContext(object context)
-    {
-      // Mock implementation - does nothing in test environment
-    }
-
-    /// <summary>Validates server certificate (mock implementation)</summary>
-    /// <param name="certificate">Server certificate</param>
-    /// <returns>Always returns true in mock implementation</returns>
-    public bool ValidateServerCertificate(object certificate)
-    {
-      // Mock implementation - always accept certificate
-      return true;
-    }
-  }
-
   // Event handler delegates for UDP
   public delegate void UDPServerReceiveDataEventHandler(UDPServer server, UDPServerReceiveDataEventArgs args);
+  public delegate void UDPServerReceiveDataSimpleEventHandler(UDPServer server, int numBytes);
 
   // Event argument classes for UDP
   public class UDPServerReceiveDataEventArgs : EventArgs

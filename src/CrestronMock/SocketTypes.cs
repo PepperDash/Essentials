@@ -1,3 +1,6 @@
+using System;
+using System.Net.Sockets;
+
 namespace Crestron.SimplSharp.CrestronSockets
 {
   /// <summary>Mock EthernetAdapterType enumeration</summary>
@@ -45,6 +48,27 @@ namespace Crestron.SimplSharp.CrestronSockets
     /// <summary>Address already in use</summary>
     SOCKET_ADDRESS_IN_USE = 14,
     /// <summary>Invalid parameter</summary>
-    SOCKET_INVALID_PARAMETER = 15
+    SOCKET_INVALID_PARAMETER = 15,
+    /// <summary>Connection in progress</summary>
+    SOCKET_CONNECTION_IN_PROGRESS = 16
+  }
+
+  /// <summary>Mock socket exception</summary>
+  public class SocketException : Exception
+  {
+    /// <summary>Error code</summary>
+    public int ErrorCode { get; }
+
+    /// <summary>Constructor with error code</summary>
+    public SocketException(int errorCode, string message) : base(message)
+    {
+      ErrorCode = errorCode;
+    }
+
+    /// <summary>Constructor with message only</summary>
+    public SocketException(string message) : base(message)
+    {
+      ErrorCode = -1;
+    }
   }
 }

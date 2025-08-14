@@ -416,34 +416,34 @@ public class GenericSecureTcpIpServer : Device
             }
 
 
-					if (SecureServer == null)
-					{
-						SecureServer = new SecureTCPServer(Port, MaxClients);
-						if (HeartbeatRequired)
-							SecureServer.SocketSendOrReceiveTimeOutInMs = (this.HeartbeatRequiredIntervalMs * 5);
-						SecureServer.HandshakeTimeout = 30;
-						SecureServer.SocketStatusChange += new SecureTCPServerSocketStatusChangeEventHandler(SecureServer_SocketStatusChange);
-					}
-					else
-					{
-						SecureServer.PortNumber = Port;
-					}
-					ServerStopped = false;
+            if (SecureServer == null)
+            {
+                SecureServer = new SecureTCPServer(Port, MaxClients);
+                if (HeartbeatRequired)
+                    SecureServer.SocketSendOrReceiveTimeOutInMs = (this.HeartbeatRequiredIntervalMs * 5);
+                SecureServer.HandshakeTimeout = 30;
+                SecureServer.SocketStatusChange += new SecureTCPServerSocketStatusChangeEventHandler(SecureServer_SocketStatusChange);
+            }
+            else
+            {
+                SecureServer.PortNumber = Port;
+            }
+            ServerStopped = false;
 
-					// Start the listner
-					SocketErrorCodes status = SecureServer.WaitForConnectionAsync(IPAddress.Any, SecureConnectCallback);
-					if (status != SocketErrorCodes.SOCKET_OPERATION_PENDING)
-					{
-						Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Error starting WaitForConnectionAsync {0}", status);
-					}
-				else 
-				{
-					ServerStopped = false;
-				} 
-				OnServerStateChange(SecureServer.State);
-				Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Secure Server Status: {0}, Socket Status: {1}", SecureServer.State, SecureServer.ServerSocketStatus);
-				ServerCCSection.Leave();
-			
+            // Start the listner
+            SocketErrorCodes status = SecureServer.WaitForConnectionAsync("0.0.0.0", SecureConnectCallback);
+            if (status != SocketErrorCodes.SOCKET_OPERATION_PENDING)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Error starting WaitForConnectionAsync {0}", status);
+            }
+            else
+            {
+                ServerStopped = false;
+            }
+            OnServerStateChange(SecureServer.State);
+            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Secure Server Status: {0}, Socket Status: {1}", SecureServer.State, SecureServer.ServerSocketStatus);
+            ServerCCSection.Leave();
+
         }
         catch (Exception ex)
         {
@@ -457,21 +457,21 @@ public class GenericSecureTcpIpServer : Device
     /// </summary>
     public void StopListening()
     {
-			try
-			{
-				Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Stopping Listener");
-				if (SecureServer != null)
-				{
-					SecureServer.Stop();
-					Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Server State: {0}", SecureServer.State);
-					OnServerStateChange(SecureServer.State);
-				}
-				ServerStopped = true;
-			}
-			catch (Exception ex)
-			{
-				Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error stopping server. Error: {0}", ex);
-			}
+        try
+        {
+            Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Stopping Listener");
+            if (SecureServer != null)
+            {
+                SecureServer.Stop();
+                Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Server State: {0}", SecureServer.State);
+                OnServerStateChange(SecureServer.State);
+            }
+            ServerStopped = true;
+        }
+        catch (Exception ex)
+        {
+            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error stopping server. Error: {0}", ex);
+        }
     }
 
     /// <summary>
@@ -526,7 +526,7 @@ public class GenericSecureTcpIpServer : Device
             OnServerStateChange(SecureServer.State); //State shows both listening and connected
         }
 
-       // var o = new { };
+        // var o = new { };
     }
 
     /// <summary>
@@ -692,35 +692,18 @@ public class GenericSecureTcpIpServer : Device
     /// Secure Server Socket Status Changed Callback
     /// </summary>
     /// <param name="server"></param>
-    /// <param name="clientIndex"></param>
-    /// <param name="serverSocketStatus"></param>
-    void SecureServer_SocketStatusChange(SecureTCPServer server, uint clientIndex, SocketStatus serverSocketStatus)
+    /// <param name="args">Event arguments</param>
+    void SecureServer_SocketStatusChange(SecureTCPServer server, TCPServerWaitingForConnectionsEventArgs args)
     {
         try
         {
-				
+            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SecureServerSocketStatusChange ConnectedClients: {0} ServerState: {1} Port: {2}",
+                SecureServer.NumberOfClientsConnected, SecureServer.State, SecureServer.PortNumber);
 
-           // Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SecureServerSocketStatusChange Index:{0} status:{1} Port:{2} IP:{3}", clientIndex, serverSocketStatus, this.SecureServer.GetPortNumberServerAcceptedConnectionFromForSpecificClient(clientIndex), this.SecureServer.GetLocalAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
-            if (serverSocketStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
+            // Handle connection limit and listening state
+            if (SecureServer.MaxNumberOfClientSupported > SecureServer.NumberOfClientsConnected)
             {
-					Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SecureServerSocketStatusChange ConnectedCLients: {0} ServerState: {1} Port: {2}", SecureServer.NumberOfClientsConnected, SecureServer.State, SecureServer.PortNumber);
-            
-                if (ConnectedClientsIndexes.Contains(clientIndex))
-                    ConnectedClientsIndexes.Remove(clientIndex);
-                if (HeartbeatRequired && HeartbeatTimerDictionary.ContainsKey(clientIndex))
-                {
-                    HeartbeatTimerDictionary[clientIndex].Stop();
-                    HeartbeatTimerDictionary[clientIndex].Dispose();
-                    HeartbeatTimerDictionary.Remove(clientIndex);
-                }
-                if (ClientReadyAfterKeyExchange.Contains(clientIndex))
-                    ClientReadyAfterKeyExchange.Remove(clientIndex);
-					if (WaitingForSharedKey.Contains(clientIndex))
-						WaitingForSharedKey.Remove(clientIndex);
-					if (SecureServer.MaxNumberOfClientSupported > SecureServer.NumberOfClientsConnected)
-					{
-						Listen();
-					}
+                Listen();
             }
         }
         catch (Exception ex)
@@ -784,7 +767,7 @@ public class GenericSecureTcpIpServer : Device
             }
             else
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Client attempt faulty.");                    
+                Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Client attempt faulty.");
             }
         }
         catch (Exception ex)
@@ -792,19 +775,19 @@ public class GenericSecureTcpIpServer : Device
             Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error in Socket Status Connect Callback. Error: {0}", ex);
         }
 
-			// Rearm the listner 
-			SocketErrorCodes status = server.WaitForConnectionAsync(IPAddress.Any, SecureConnectCallback);
-			if (status != SocketErrorCodes.SOCKET_OPERATION_PENDING)
-			{
-				Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Socket status connect callback status {0}", status);
-				if (status == SocketErrorCodes.SOCKET_CONNECTION_IN_PROGRESS)
-				{
-					// There is an issue where on a failed negotiation we need to stop and start the server. This should still leave connected clients intact. 
-					server.Stop();
-					Listen();
-				}
-			}
-		}
+        // Rearm the listner 
+        SocketErrorCodes status = server.WaitForConnectionAsync("0.0.0.0", SecureConnectCallback);
+        if (status != SocketErrorCodes.SOCKET_OPERATION_PENDING)
+        {
+            Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Socket status connect callback status {0}", status);
+            if (status == SocketErrorCodes.SOCKET_CONNECTION_IN_PROGRESS)
+            {
+                // There is an issue where on a failed negotiation we need to stop and start the server. This should still leave connected clients intact. 
+                server.Stop();
+                Listen();
+            }
+        }
+    }
 
     #endregion
 
@@ -819,7 +802,7 @@ public class GenericSecureTcpIpServer : Device
     {
         if (numberOfBytesReceived > 0)
         {
-				
+
             string received = "Nothing";
             var handler = TextReceivedQueueInvoke;
             try
@@ -836,7 +819,7 @@ public class GenericSecureTcpIpServer : Device
                         Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Client at index {0} Shared key did not match the server, disconnecting client. Key: {1}", clientIndex, received);
                         mySecureTCPServer.SendData(clientIndex, b, b.Length);
                         mySecureTCPServer.Disconnect(clientIndex);
-                        
+
                         return;
                     }
 
@@ -844,7 +827,7 @@ public class GenericSecureTcpIpServer : Device
                     byte[] success = Encoding.GetEncoding(28591).GetBytes("Shared Key Match");
                     mySecureTCPServer.SendDataAsync(clientIndex, success, success.Length, null);
                     OnServerClientReadyForCommunications(clientIndex);
-                    Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Client with index {0} provided the shared key and successfully connected to the server", clientIndex);                        
+                    Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Client with index {0} provided the shared key and successfully connected to the server", clientIndex);
                 }
                 else if (!string.IsNullOrEmpty(checkHeartbeat(clientIndex, received)))
                 {
@@ -859,8 +842,8 @@ public class GenericSecureTcpIpServer : Device
             {
                 Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Receiving data: {0}. Error: {1}", received, ex);
             }
-				if (mySecureTCPServer.GetServerSocketStatusForSpecificClient(clientIndex) == SocketStatus.SOCKET_STATUS_CONNECTED)
-					mySecureTCPServer.ReceiveDataAsync(clientIndex, SecureReceivedDataAsyncCallback);
+            if (mySecureTCPServer.GetServerSocketStatusForSpecificClient(clientIndex) == SocketStatus.SOCKET_STATUS_CONNECTED)
+                mySecureTCPServer.ReceiveDataAsync(clientIndex, SecureReceivedDataAsyncCallback);
 
             //Check to see if there is a subscription to the TextReceivedQueueInvoke event. If there is start the dequeue thread. 
             if (handler != null)
@@ -870,9 +853,9 @@ public class GenericSecureTcpIpServer : Device
                     CrestronInvoke.BeginInvoke((o) => DequeueEvent());
             }
         }
-			else
-			{
-				mySecureTCPServer.Disconnect(clientIndex);
+        else
+        {
+            mySecureTCPServer.Disconnect(clientIndex);
         }
     }
 

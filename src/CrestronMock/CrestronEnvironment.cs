@@ -17,20 +17,49 @@ namespace Crestron.SimplSharp
     // Mock implementation
   }
 
+  /// <summary>Ethernet event handler delegate</summary>
+  public delegate void EthernetEventHandler(EthernetEventArgs args);
+
   /// <summary>Mock CrestronEnvironment for system event handling</summary>
   public static class CrestronEnvironment
   {
     /// <summary>Event fired when program status changes</summary>
-    public static event Action<eProgramStatusEventType>? ProgramStatusEventHandler;
+    public static event ProgramStatusEventHandler? ProgramStatusEventHandler;
 
     /// <summary>Event fired when ethernet status changes</summary>
-    public static event Action<EthernetEventArgs>? EthernetEventHandler;
+    public static event EthernetEventHandler? EthernetEventHandler;
 
     /// <summary>Gets the device platform</summary>
-    public static string DevicePlatform => "Mock";
+    public static eDevicePlatform DevicePlatform => eDevicePlatform.Appliance;
 
     /// <summary>Gets the runtime environment</summary>
-    public static string RuntimeEnvironment => "Test";
+    public static eRuntimeEnvironment RuntimeEnvironment => eRuntimeEnvironment.SimplSharpPro;
+
+    /// <summary>Gets system information</summary>
+    public static string SystemInfo => "Mock System v1.0";
+
+    /// <summary>Gets OS version</summary>
+    public static string OSVersion => "Mock OS 1.0.0";
+
+    /// <summary>Gets new line character sequence</summary>
+    public static string NewLine => Environment.NewLine;
+
+    /// <summary>Gets program compatibility level</summary>
+    public static eProgramCompatibility ProgramCompatibility => eProgramCompatibility.Series3And4;
+
+    /// <summary>Sleep for specified milliseconds</summary>
+    /// <param name="milliseconds">Sleep duration</param>
+    public static void Sleep(int milliseconds)
+    {
+      System.Threading.Thread.Sleep(milliseconds);
+    }
+
+    /// <summary>Gets the time zone</summary>
+    /// <returns>Time zone string</returns>
+    public static string GetTimeZone()
+    {
+      return TimeZoneInfo.Local.Id;
+    }
 
     /// <summary>Triggers a program status event (for testing)</summary>
     /// <param name="eventType">Event type</param>

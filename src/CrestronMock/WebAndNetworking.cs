@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Crestron.SimplSharp.WebScripting;
 
 namespace Crestron.SimplSharp.Net.Http
 {
@@ -24,33 +23,48 @@ namespace Crestron.SimplSharp.Net.Http
   }
 
   /// <summary>Mock HTTP client</summary>
-  public static class HttpClient
+  public class HttpClient
   {
+    /// <summary>Gets or sets the keep-alive setting</summary>
+    public bool KeepAlive { get; set; } = false;
+
+    /// <summary>Gets or sets the port number</summary>
+    public int Port { get; set; } = 80;
+
     /// <summary>Dispatch HTTP request</summary>
     /// <param name="request">HTTP request</param>
     /// <param name="callback">Callback for response</param>
-    public static void Dispatch(HttpClientRequest request, Action<HttpClientResponse> callback)
+    public void Dispatch(HttpClientRequest request, Action<HttpClientResponse> callback)
     {
       // Mock implementation - invoke callback with empty response
       var response = new HttpClientResponse();
       callback?.Invoke(response);
+    }
+
+    /// <summary>Dispatches HTTP request synchronously</summary>
+    /// <param name="request">HTTP request</param>
+    /// <returns>HTTP response</returns>
+    public HttpClientResponse Dispatch(HttpClientRequest request)
+    {
+      // Mock implementation - return empty response
+      return new HttpClientResponse();
     }
   }
 
   /// <summary>Mock HTTP client request</summary>
   public class HttpClientRequest
   {
-    /// <summary>Gets or sets the URL</summary>
-    public string Url { get; set; } = string.Empty;
+    /// <summary>Gets or sets the URL parser</summary>
+    public Crestron.SimplSharp.Net.Http.UrlParserResult Url { get; set; } = new Crestron.SimplSharp.Net.Http.UrlParserResult();
 
     /// <summary>Gets or sets the HTTP method</summary>
-    public string RequestType { get; set; } = "GET";
+    public RequestType RequestType { get; set; } = RequestType.Get;
 
     /// <summary>Gets or sets the content data</summary>
     public string ContentString { get; set; } = string.Empty;
 
     /// <summary>Gets the headers collection</summary>
-    public Dictionary<string, string> Header { get; } = new Dictionary<string, string>();
+    public HttpHeaderCollection Header { get; } = new HttpHeaderCollection();
   }
 
   /// <summary>Mock HTTP client response</summary>
@@ -66,8 +80,39 @@ namespace Crestron.SimplSharp.Net.Http
     public byte[] ContentBytes { get; set; } = Array.Empty<byte>();
 
     /// <summary>Gets the headers collection</summary>
-    public Dictionary<string, string> Header { get; } = new Dictionary<string, string>();
+    public HttpHeaderCollection Header { get; } = new HttpHeaderCollection();
   }
+
+  /// <summary>Mock HTTP header collection</summary>
+  public class HttpHeaderCollection
+  {
+    private readonly Dictionary<string, string> _headers = new Dictionary<string, string>();
+
+    /// <summary>Gets or sets the content type</summary>
+    public string ContentType
+    {
+      get => _headers.TryGetValue("Content-Type", out var value) ? value : string.Empty;
+      set => _headers["Content-Type"] = value;
+    }
+
+    /// <summary>Sets a header value</summary>
+    /// <param name="name">Header name</param>
+    /// <param name="value">Header value</param>
+    public void SetHeaderValue(string name, string value)
+    {
+      _headers[name] = value;
+    }
+
+    /// <summary>Gets a header value</summary>
+    /// <param name="name">Header name</param>
+    /// <returns>Header value or empty string if not found</returns>
+    public string GetHeaderValue(string name)
+    {
+      return _headers.TryGetValue(name, out var value) ? value : string.Empty;
+    }
+  }
+
+
 }
 
 namespace Crestron.SimplSharp.Net.Https
@@ -92,33 +137,51 @@ namespace Crestron.SimplSharp.Net.Https
   }
 
   /// <summary>Mock HTTPS client</summary>
-  public static class HttpsClient
+  public class HttpsClient
   {
+    /// <summary>Gets or sets the keep-alive setting</summary>
+    public bool KeepAlive { get; set; } = false;
+
+    /// <summary>Gets or sets the host verification setting</summary>
+    public bool HostVerification { get; set; } = false;
+
+    /// <summary>Gets or sets the peer verification setting</summary>
+    public bool PeerVerification { get; set; } = false;
+
     /// <summary>Dispatch HTTPS request</summary>
     /// <param name="request">HTTPS request</param>
     /// <param name="callback">Callback for response</param>
-    public static void Dispatch(HttpsClientRequest request, Action<HttpsClientResponse> callback)
+    public void Dispatch(HttpsClientRequest request, Action<HttpsClientResponse> callback)
     {
       // Mock implementation - invoke callback with empty response
       var response = new HttpsClientResponse();
       callback?.Invoke(response);
+    }
+
+    /// <summary>Dispatches HTTPS request synchronously</summary>
+    /// <param name="request">HTTPS request</param>
+    /// <returns>HTTPS response</returns>
+    public HttpsClientResponse Dispatch(HttpsClientRequest request)
+    {
+      // Mock implementation - return empty response
+      return new HttpsClientResponse();
     }
   }
 
   /// <summary>Mock HTTPS client request</summary>
   public class HttpsClientRequest
   {
-    /// <summary>Gets or sets the URL</summary>
-    public string Url { get; set; } = string.Empty;
+    /// <summary>Gets or sets the URL parser</summary>
+    public Crestron.SimplSharp.Net.Https.UrlParserResult Url { get; set; } = new Crestron.SimplSharp.Net.Https.UrlParserResult();
 
     /// <summary>Gets or sets the HTTP method</summary>
-    public string RequestType { get; set; } = "GET";
+    public RequestType RequestType { get; set; } = RequestType.Get;
 
     /// <summary>Gets or sets the content data</summary>
     public string ContentString { get; set; } = string.Empty;
 
     /// <summary>Gets the headers collection</summary>
-    public Dictionary<string, string> Header { get; } = new Dictionary<string, string>();
+    public HttpsHeaderCollection Header { get; } = new HttpsHeaderCollection();
   }
 
   /// <summary>Mock HTTPS client response</summary>
@@ -134,90 +197,42 @@ namespace Crestron.SimplSharp.Net.Https
     public byte[] ContentBytes { get; set; } = Array.Empty<byte>();
 
     /// <summary>Gets the headers collection</summary>
-    public Dictionary<string, string> Header { get; } = new Dictionary<string, string>();
-  }
-}
-
-namespace Crestron.SimplSharp.CrestronDataStore
-{
-  /// <summary>Mock Crestron data store</summary>
-  public static class CrestronDataStore
-  {
-    /// <summary>Mock data store interface</summary>
-    public interface IDataStore
-    {
-      /// <summary>Sets a value</summary>
-      /// <param name="key">Key</param>
-      /// <param name="value">Value</param>
-      void SetValue(string key, string value);
-
-      /// <summary>Gets a value</summary>
-      /// <param name="key">Key</param>
-      /// <returns>Value or null if not found</returns>
-      string? GetValue(string key);
-    }
-
-    /// <summary>Gets the global data store</summary>
-    /// <returns>Mock data store instance</returns>
-    public static IDataStore GetGlobalDataStore()
-    {
-      return new MockDataStore();
-    }
-
-    private class MockDataStore : IDataStore
-    {
-      private readonly Dictionary<string, string> _data = new Dictionary<string, string>();
-
-      public void SetValue(string key, string value)
-      {
-        _data[key] = value;
-      }
-
-      public string? GetValue(string key)
-      {
-        return _data.TryGetValue(key, out var value) ? value : null;
-      }
-    }
+    public HttpsHeaderCollection Header { get; } = new HttpsHeaderCollection();
   }
 
-  /// <summary>Mock HTTPS client request for data store namespace</summary>
-  public class HttpsClientRequest
+  /// <summary>Mock HTTPS header collection</summary>
+  public class HttpsHeaderCollection
   {
-    /// <summary>Gets or sets the request URL</summary>
-    public string Url { get; set; } = string.Empty;
+    private readonly Dictionary<string, string> _headers = new Dictionary<string, string>();
 
-    /// <summary>Gets or sets the HTTP method</summary>
-    public string Method { get; set; } = "GET";
-
-    /// <summary>Gets or sets the request headers</summary>
-    public HttpsHeaderCollection Headers { get; set; }
-
-    /// <summary>Gets or sets the request content</summary>
-    public string Content { get; set; } = string.Empty;
-
-    /// <summary>Initializes a new instance of HttpsClientRequest</summary>
-    public HttpsClientRequest()
+    /// <summary>Gets or sets the content type</summary>
+    public string ContentType
     {
-      Headers = new HttpsHeaderCollection();
+      get => _headers.TryGetValue("Content-Type", out var value) ? value : string.Empty;
+      set => _headers["Content-Type"] = value;
     }
-  }
 
-  /// <summary>Mock HTTPS client response for data store namespace</summary>
-  public class HttpsClientResponse
-  {
-    /// <summary>Gets or sets the response status code</summary>
-    public int StatusCode { get; set; } = 200;
-
-    /// <summary>Gets or sets the response content</summary>
-    public string Content { get; set; } = string.Empty;
-
-    /// <summary>Gets or sets the response headers</summary>
-    public HttpsHeaderCollection Headers { get; set; }
-
-    /// <summary>Initializes a new instance of HttpsClientResponse</summary>
-    public HttpsClientResponse()
+    /// <summary>Sets a header value</summary>
+    /// <param name="name">Header name</param>
+    /// <param name="value">Header value</param>
+    public void SetHeaderValue(string name, string value)
     {
-      Headers = new HttpsHeaderCollection();
+      _headers[name] = value;
+    }
+
+    /// <summary>Adds a header</summary>
+    /// <param name="header">Header to add</param>
+    public void AddHeader(HttpsHeader header)
+    {
+      _headers[header.Name] = header.Value;
+    }
+
+    /// <summary>Gets a header value</summary>
+    /// <param name="name">Header name</param>
+    /// <returns>Header value or empty string if not found</returns>
+    public string GetHeaderValue(string name)
+    {
+      return _headers.TryGetValue(name, out var value) ? value : string.Empty;
     }
   }
 
@@ -235,78 +250,28 @@ namespace Crestron.SimplSharp.CrestronDataStore
     /// <param name="value">Header value</param>
     public HttpsHeader(string name, string value)
     {
-      Name = name;
-      Value = value;
-    }
-  }
-
-  /// <summary>Mock HTTPS header collection</summary>
-  public class HttpsHeaderCollection
-  {
-    private readonly List<HttpsHeader> _headers = new List<HttpsHeader>();
-
-    /// <summary>Adds a header to the collection</summary>
-    /// <param name="header">Header to add</param>
-    public void AddHeader(HttpsHeader header)
-    {
-      _headers.Add(header);
-    }
-
-    /// <summary>Gets all headers</summary>
-    /// <returns>Array of headers</returns>
-    public HttpsHeader[] GetHeaders()
-    {
-      return _headers.ToArray();
-    }
-  }
-
-  /// <summary>Mock HTTPS client for data store namespace</summary>
-  public class HttpsClient
-  {
-    /// <summary>Dispatch HTTPS request</summary>
-    /// <param name="request">HTTPS request</param>
-    /// <param name="callback">Callback for response</param>
-    public void Dispatch(HttpsClientRequest request, Action<HttpsClientResponse> callback)
-    {
-      // Mock implementation - invoke callback with empty response
-      var response = new HttpsClientResponse();
-      callback?.Invoke(response);
-    }
-  }
-
-  /// <summary>Mock URL parser</summary>
-  public class UrlParser
-  {
-    /// <summary>Gets the parsed URL</summary>
-    public string Url { get; private set; }
-
-    /// <summary>Initializes a new instance of UrlParser</summary>
-    /// <param name="url">URL to parse</param>
-    public UrlParser(string url)
-    {
-      Url = url;
-    }
-
-    /// <summary>Implicit conversion to string</summary>
-    /// <param name="parser">URL parser</param>
-    public static implicit operator string(UrlParser parser)
-    {
-      return parser.Url;
+      Name = name ?? string.Empty;
+      Value = value ?? string.Empty;
     }
   }
 
   /// <summary>Mock HTTP exception</summary>
   public class HttpException : Exception
   {
+    /// <summary>Gets the HTTP response</summary>
+    public HttpsClientResponse Response { get; }
+
     /// <summary>Initializes a new instance of HttpException</summary>
     public HttpException() : base()
     {
+      Response = new HttpsClientResponse();
     }
 
     /// <summary>Initializes a new instance of HttpException</summary>
     /// <param name="message">Exception message</param>
     public HttpException(string message) : base(message)
     {
+      Response = new HttpsClientResponse();
     }
 
     /// <summary>Initializes a new instance of HttpException</summary>
@@ -314,6 +279,17 @@ namespace Crestron.SimplSharp.CrestronDataStore
     /// <param name="innerException">Inner exception</param>
     public HttpException(string message, Exception innerException) : base(message, innerException)
     {
+      Response = new HttpsClientResponse();
+    }
+
+    /// <summary>Initializes a new instance of HttpException</summary>
+    /// <param name="message">Exception message</param>
+    /// <param name="response">HTTP response</param>
+    public HttpException(string message, HttpsClientResponse response) : base(message)
+    {
+      Response = response ?? new HttpsClientResponse();
     }
   }
+
+
 }

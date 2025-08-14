@@ -56,6 +56,13 @@ namespace Crestron.SimplSharp
       // Mock implementation
     }
 
+    /// <summary>Initializes a new instance of the CrestronQueue class with specified capacity</summary>
+    /// <param name="capacity">The initial capacity of the queue</param>
+    public CrestronQueue(int capacity)
+    {
+      // Mock implementation - capacity is ignored in this mock
+    }
+
     #endregion
 
     #region Public Methods

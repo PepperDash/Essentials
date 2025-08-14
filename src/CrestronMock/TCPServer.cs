@@ -15,6 +15,8 @@ namespace Crestron.SimplSharp.CrestronSockets
     private readonly List<TCPClientConnection> _clients = new List<TCPClientConnection>();
     private bool _listening;
     private readonly object _lockObject = new object();
+    private int _bufferSize = 4096;
+    private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>Event fired when waiting for connections</summary>
     public event TCPServerWaitingForConnectionsEventHandler? WaitingForConnections;
@@ -28,13 +30,20 @@ namespace Crestron.SimplSharp.CrestronSockets
     /// <summary>Event fired when data is received from a client</summary>
     public event TCPServerReceiveDataEventHandler? ReceivedData;
 
+    /// <summary>Event fired when socket status changes</summary>
+    public event TCPServerWaitingForConnectionsEventHandler? SocketStatusChange;
+
     /// <summary>Gets the server state</summary>
-    public SocketServerState State { get; private set; } = SocketServerState.SERVER_NOT_LISTENING;
+    public ServerState State { get; private set; } = ServerState.SERVER_NOT_LISTENING;
 
-    /// <summary>Gets the port number</summary>
-    public int PortNumber { get; private set; }
+    /// <summary>Gets or sets the port number</summary>
+    public int PortNumber { get; set; }
 
-    /// <summary>Gets the maximum number of clients</summary>
+    /// <summary>Gets or sets the socket send or receive timeout in milliseconds</summary>
+    public int SocketSendOrReceiveTimeOutInMs { get; set; } = 30000;
+
+    /// <summary>Gets the server socket status based on current state</summary>
+    public SocketStatus ServerSocketStatus => State == ServerState.SERVER_LISTENING ? SocketStatus.SOCKET_STATUS_CONNECTED : SocketStatus.SOCKET_STATUS_NOT_CONNECTED;    /// <summary>Gets the maximum number of clients</summary>
     public int MaxNumberOfClientSupported { get; private set; }
 
     /// <summary>Gets the number of connected clients</summary>
@@ -49,26 +58,38 @@ namespace Crestron.SimplSharp.CrestronSockets
       }
     }
 
-    /// <summary>Initializes a new instance of TCPServer</summary>
+    /// <summary>Creates a TCP server with IP address binding</summary>
     /// <param name="ipAddress">IP address to bind to</param>
     /// <param name="portNumber">Port number to listen on</param>
-    /// <param name="bufferSize">Buffer size for data reception</param>
+    /// <param name="bufferSize">Buffer size for incoming data</param>
     /// <param name="ethernetAdapterToBindTo">Ethernet adapter to bind to</param>
     /// <param name="maxNumberOfClientSupported">Maximum number of clients</param>
     public TCPServer(string ipAddress, int portNumber, int bufferSize, EthernetAdapterType ethernetAdapterToBindTo, int maxNumberOfClientSupported)
     {
       PortNumber = portNumber;
       MaxNumberOfClientSupported = maxNumberOfClientSupported;
+      _bufferSize = bufferSize;
     }
 
-    /// <summary>Initializes a new instance of TCPServer</summary>
+    /// <summary>Creates a TCP server</summary>
     /// <param name="portNumber">Port number to listen on</param>
-    /// <param name="bufferSize">Buffer size for data reception</param>
+    /// <param name="bufferSize">Buffer size for incoming data</param>
     /// <param name="maxNumberOfClientSupported">Maximum number of clients</param>
     public TCPServer(int portNumber, int bufferSize, int maxNumberOfClientSupported)
     {
       PortNumber = portNumber;
       MaxNumberOfClientSupported = maxNumberOfClientSupported;
+      _bufferSize = bufferSize;
+    }
+
+    /// <summary>Creates a TCP server with just port and max clients</summary>
+    /// <param name="portNumber">Port number to listen on</param>
+    /// <param name="maxNumberOfClientSupported">Maximum number of clients</param>
+    public TCPServer(int portNumber, int maxNumberOfClientSupported)
+    {
+      PortNumber = portNumber;
+      MaxNumberOfClientSupported = maxNumberOfClientSupported;
+      _bufferSize = 4096; // Default buffer size
     }
 
     /// <summary>Starts listening for client connections</summary>
@@ -83,19 +104,29 @@ namespace Crestron.SimplSharp.CrestronSockets
         _listener = new TcpListener(IPAddress.Any, PortNumber);
         _listener.Start();
         _listening = true;
-        State = SocketServerState.SERVER_LISTENING;
+        State = ServerState.SERVER_LISTENING;
+        _cancellationTokenSource = new CancellationTokenSource();
 
-        WaitingForConnections?.Invoke(this, new TCPServerWaitingForConnectionsEventArgs(0));
-
-        _ = Task.Run(AcceptClientsAsync);
+        // Start accepting clients in background
+        _ = Task.Run(() => AcceptClientsAsync());
 
         return SocketErrorCodes.SOCKET_OK;
       }
       catch (Exception)
       {
-        State = SocketServerState.SERVER_NOT_LISTENING;
+        State = ServerState.SERVER_NOT_LISTENING;
         return SocketErrorCodes.SOCKET_CONNECTION_FAILED;
       }
+    }
+
+    /// <summary>Starts listening for connections asynchronously with callback</summary>
+    /// <param name="ipAddress">IP address to listen on</param>
+    /// <param name="callback">Callback for connection events</param>
+    /// <returns>SocketErrorCodes indicating success or failure</returns>
+    public SocketErrorCodes WaitForConnectionAsync(string ipAddress, TCPServerWaitingForConnectionsEventHandler callback)
+    {
+      SocketStatusChange += callback;
+      return WaitForConnectionAsync();
     }
 
     /// <summary>Stops listening for connections</summary>
@@ -109,7 +140,7 @@ namespace Crestron.SimplSharp.CrestronSockets
       {
         _listening = false;
         _listener?.Stop();
-        State = SocketServerState.SERVER_NOT_LISTENING;
+        State = ServerState.SERVER_NOT_LISTENING;
 
         lock (_lockObject)
         {
@@ -354,6 +385,20 @@ namespace Crestron.SimplSharp.CrestronSockets
         : base(portNumber, bufferSize, maxNumberOfClientSupported)
     {
     }
+
+    /// <summary>Initializes a new instance of SecureTCPServer</summary>
+    /// <param name="portNumber">Port number to listen on</param>
+    /// <param name="maxNumberOfClientSupported">Maximum number of clients</param>
+    public SecureTCPServer(int portNumber, int maxNumberOfClientSupported)
+        : base(portNumber, 4096, maxNumberOfClientSupported) // Default buffer size
+    {
+    }
+
+    /// <summary>Gets or sets the handshake timeout in seconds</summary>
+    public int HandshakeTimeout { get; set; } = 30;
+
+    /// <summary>Event raised when socket status changes with client details</summary>
+    public event SecureTCPServerSocketStatusEventHandler? SocketStatusChangeWithClientDetails;
   }
 
   /// <summary>Internal class representing a client connection</summary>
@@ -458,7 +503,9 @@ namespace Crestron.SimplSharp.CrestronSockets
     /// <summary>Server is not listening</summary>
     SERVER_NOT_LISTENING = 0,
     /// <summary>Server is listening for connections</summary>
-    SERVER_LISTENING = 1
+    SERVER_LISTENING = 1,
+    /// <summary>Server is connected</summary>
+    SERVER_CONNECTED = 2
   }
 
   // Event handler delegates
@@ -466,6 +513,9 @@ namespace Crestron.SimplSharp.CrestronSockets
   public delegate void TCPServerClientConnectEventHandler(TCPServer server, TCPServerClientConnectEventArgs args);
   public delegate void TCPServerClientDisconnectEventHandler(TCPServer server, TCPServerClientDisconnectEventArgs args);
   public delegate void TCPServerReceiveDataEventHandler(TCPServer server, TCPServerReceiveDataEventArgs args);
+  public delegate void SecureTCPServerSocketStatusChangeEventHandler(SecureTCPServer server, TCPServerWaitingForConnectionsEventArgs args);
+  /// <summary>Delegate for secure TCP server socket status changes with client details</summary>
+  public delegate void SecureTCPServerSocketStatusEventHandler(SecureTCPServer server, uint clientIndex, SocketStatus serverSocketStatus);
 
   // Event argument classes
   public class TCPServerWaitingForConnectionsEventArgs : EventArgs

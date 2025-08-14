@@ -48,7 +48,7 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
     /// It is not recommended to use both the TextReceived event and the TextReceivedQueueInvoke event. 
     /// </summary>
     public event EventHandler<GenericTcpServerCommMethodReceiveTextArgs> TextReceivedQueueInvoke;
-    
+
     /// <summary>
     /// For a client with a pre shared key, this will fire after the communication is established and the key exchange is complete. If you require
     /// a key and subscribe to the socket change event and try to send data on a connection the data sent will interfere with the key exchange and disconnect.
@@ -609,7 +609,7 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
         ConnectFailTimer.Dispose();
         ConnectFailTimer = null;
     }
-   
+
     #region Methods
 
     /// <summary>
@@ -898,7 +898,7 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
     /// </summary>
     /// <param name="client"></param>
     /// <param name="clientSocketStatus"></param>
-    void Client_SocketStatusChange(SecureTCPClient client, SocketStatus clientSocketStatus)
+    void Client_SocketStatusChange(TCPClient client, SocketStatus clientSocketStatus)
     {
         if (ProgramIsStopping)
         {
@@ -941,12 +941,12 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
     void OnClientReadyForcommunications(bool isReady)
     {
         IsReadyForCommunication = isReady;
-        if (IsReadyForCommunication) 
+        if (IsReadyForCommunication)
             HeartbeatStart();
 
         var handler = ClientReadyForCommunications;
         if (handler == null) return;
-        
+
         handler(this, new GenericTcpServerClientReadyForcommunicationsEventArgs(IsReadyForCommunication));
     }
     #endregion

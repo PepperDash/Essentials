@@ -400,10 +400,10 @@ public class GenericTcpIpServer : Device
             if (myTcpServer == null)
             {
                 myTcpServer = new TCPServer(Port, MaxClients);
-                if(HeartbeatRequired)
+                if (HeartbeatRequired)
                     myTcpServer.SocketSendOrReceiveTimeOutInMs = (this.HeartbeatRequiredIntervalMs * 5);
-                
-					// myTcpServer.HandshakeTimeout = 30;
+
+                // myTcpServer.HandshakeTimeout = 30;
             }
             else
             {
@@ -415,7 +415,7 @@ public class GenericTcpIpServer : Device
             myTcpServer.SocketStatusChange += TcpServer_SocketStatusChange;
 
             ServerStopped = false;
-            myTcpServer.WaitForConnectionAsync(IPAddress.Any, TcpConnectCallback);
+            myTcpServer.WaitForConnectionAsync("0.0.0.0", TcpConnectCallback);
             OnServerStateChange(myTcpServer.State);
             Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "TCP Server Status: {0}, Socket Status: {1}", myTcpServer.State, myTcpServer.ServerSocketStatus);
 
@@ -443,9 +443,9 @@ public class GenericTcpIpServer : Device
             {
                 myTcpServer.Stop();
                 Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Server State: {0}", myTcpServer.State);
-					OnServerStateChange(myTcpServer.State);
+                OnServerStateChange(myTcpServer.State);
             }
-		        ServerStopped = true;
+            ServerStopped = true;
         }
         catch (Exception ex)
         {
@@ -527,7 +527,7 @@ public class GenericTcpIpServer : Device
                     {
                         SocketErrorCodes error = myTcpServer.SendDataAsync(i, b, b.Length, (x, y, z) => { });
                         if (error != SocketErrorCodes.SOCKET_OK && error != SocketErrorCodes.SOCKET_OPERATION_PENDING)
-                            this.LogError("{error}",error.ToString());
+                            this.LogError("{error}", error.ToString());
                     }
                 }
             }
@@ -671,35 +671,24 @@ public class GenericTcpIpServer : Device
     /// Secure Server Socket Status Changed Callback
     /// </summary>
     /// <param name="server"></param>
-    /// <param name="clientIndex"></param>
-    /// <param name="serverSocketStatus"></param>
-    void TcpServer_SocketStatusChange(TCPServer server, uint clientIndex, SocketStatus serverSocketStatus)
+    /// <param name="args">Event arguments</param>
+    void TcpServer_SocketStatusChange(TCPServer server, TCPServerWaitingForConnectionsEventArgs args)
     {
         try
         {
+            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "TcpServerSocketStatusChange ConnectedClients: {0} ServerState: {1} Port: {2}",
+                myTcpServer.NumberOfClientsConnected, myTcpServer.State, myTcpServer.PortNumber);
 
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SecureServerSocketStatusChange Index:{0} status:{1} Port:{2} IP:{3}", clientIndex, serverSocketStatus, this.myTcpServer.GetPortNumberServerAcceptedConnectionFromForSpecificClient(clientIndex), this.myTcpServer.GetLocalAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
-            if (serverSocketStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
+            // Handle connection limit and listening state
+            if (myTcpServer.MaxNumberOfClientSupported > myTcpServer.NumberOfClientsConnected)
             {
-                if (ConnectedClientsIndexes.Contains(clientIndex))
-                    ConnectedClientsIndexes.Remove(clientIndex);
-                if (HeartbeatRequired && HeartbeatTimerDictionary.ContainsKey(clientIndex))
-                {
-                    HeartbeatTimerDictionary[clientIndex].Stop();
-                    HeartbeatTimerDictionary[clientIndex].Dispose();
-                    HeartbeatTimerDictionary.Remove(clientIndex);
-                }
-                if (ClientReadyAfterKeyExchange.Contains(clientIndex))
-                    ClientReadyAfterKeyExchange.Remove(clientIndex);
-					if (WaitingForSharedKey.Contains(clientIndex))
-						WaitingForSharedKey.Remove(clientIndex);
+                Listen();
             }
         }
         catch (Exception ex)
         {
             Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error in Socket Status Change Callback. Error: {0}", ex);
         }
-        onConnectionChange(clientIndex, server.GetServerSocketStatusForSpecificClient(clientIndex));
     }
 
     #endregion
@@ -756,7 +745,7 @@ public class GenericTcpIpServer : Device
                 Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Client attempt faulty.");
                 if (!ServerStopped)
                 {
-                    server.WaitForConnectionAsync(IPAddress.Any, TcpConnectCallback);
+                    server.WaitForConnectionAsync("0.0.0.0", TcpConnectCallback);
                     return;
                 }
             }
@@ -772,7 +761,7 @@ public class GenericTcpIpServer : Device
         if ((server.State & ServerState.SERVER_LISTENING) != ServerState.SERVER_LISTENING && MaxClients > 1 && !ServerStopped)
         {
             Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Waiting for next connection");
-            server.WaitForConnectionAsync(IPAddress.Any, TcpConnectCallback);
+            server.WaitForConnectionAsync("0.0.0.0", TcpConnectCallback);
 
         }
     }
@@ -788,48 +777,48 @@ public class GenericTcpIpServer : Device
     /// <param name="numberOfBytesReceived"></param>
     void TcpServerReceivedDataAsyncCallback(TCPServer myTCPServer, uint clientIndex, int numberOfBytesReceived)
     {
-			if (numberOfBytesReceived > 0)
-			{
-				string received = "Nothing";
-				try
-				{
-					byte[] bytes = myTCPServer.GetIncomingDataBufferForSpecificClient(clientIndex);
-					received = System.Text.Encoding.GetEncoding(28591).GetString(bytes, 0, numberOfBytesReceived);
-					if (WaitingForSharedKey.Contains(clientIndex))
-					{
-						received = received.Replace("\r", "");
-						received = received.Replace("\n", "");
-						if (received != SharedKey)
-						{
-							byte[] b = Encoding.GetEncoding(28591).GetBytes("Shared key did not match server. Disconnecting");
-							Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Client at index {0} Shared key did not match the server, disconnecting client. Key: {1}", clientIndex, received);
-							myTCPServer.SendData(clientIndex, b, b.Length);
-							myTCPServer.Disconnect(clientIndex);
-							return;
-						}
+        if (numberOfBytesReceived > 0)
+        {
+            string received = "Nothing";
+            try
+            {
+                byte[] bytes = myTCPServer.GetIncomingDataBufferForSpecificClient(clientIndex);
+                received = System.Text.Encoding.GetEncoding(28591).GetString(bytes, 0, numberOfBytesReceived);
+                if (WaitingForSharedKey.Contains(clientIndex))
+                {
+                    received = received.Replace("\r", "");
+                    received = received.Replace("\n", "");
+                    if (received != SharedKey)
+                    {
+                        byte[] b = Encoding.GetEncoding(28591).GetBytes("Shared key did not match server. Disconnecting");
+                        Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Client at index {0} Shared key did not match the server, disconnecting client. Key: {1}", clientIndex, received);
+                        myTCPServer.SendData(clientIndex, b, b.Length);
+                        myTCPServer.Disconnect(clientIndex);
+                        return;
+                    }
 
-						WaitingForSharedKey.Remove(clientIndex);
-						byte[] success = Encoding.GetEncoding(28591).GetBytes("Shared Key Match");
-						myTCPServer.SendDataAsync(clientIndex, success, success.Length, null);
-						OnServerClientReadyForCommunications(clientIndex);
-						Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Client with index {0} provided the shared key and successfully connected to the server", clientIndex);
-					}
+                    WaitingForSharedKey.Remove(clientIndex);
+                    byte[] success = Encoding.GetEncoding(28591).GetBytes("Shared Key Match");
+                    myTCPServer.SendDataAsync(clientIndex, success, success.Length, null);
+                    OnServerClientReadyForCommunications(clientIndex);
+                    Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Client with index {0} provided the shared key and successfully connected to the server", clientIndex);
+                }
 
-					else if (!string.IsNullOrEmpty(checkHeartbeat(clientIndex, received)))
-						onTextReceived(received, clientIndex);
-				}
-				catch (Exception ex)
-				{
-					Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Receiving data: {0}. Error: {1}", received, ex);
-				}
-				if (myTCPServer.GetServerSocketStatusForSpecificClient(clientIndex) == SocketStatus.SOCKET_STATUS_CONNECTED)
-					myTCPServer.ReceiveDataAsync(clientIndex, TcpServerReceivedDataAsyncCallback);
-			}
-			else
-			{
-				// If numberOfBytesReceived <= 0
-				myTCPServer.Disconnect();
-			}
+                else if (!string.IsNullOrEmpty(checkHeartbeat(clientIndex, received)))
+                    onTextReceived(received, clientIndex);
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Receiving data: {0}. Error: {1}", received, ex);
+            }
+            if (myTCPServer.GetServerSocketStatusForSpecificClient(clientIndex) == SocketStatus.SOCKET_STATUS_CONNECTED)
+                myTCPServer.ReceiveDataAsync(clientIndex, TcpServerReceivedDataAsyncCallback);
+        }
+        else
+        {
+            // If numberOfBytesReceived <= 0
+            myTCPServer.Disconnect();
+        }
 
     }
 

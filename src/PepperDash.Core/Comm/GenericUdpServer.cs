@@ -33,7 +33,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
     /// <summary>
     /// This event will fire when a message is dequeued that includes the source IP and Port info if needed to determine the source of the received data.
     /// </summary>
-		public event EventHandler<GenericUdpReceiveTextExtraArgs> DataRecievedExtra;
+    public event EventHandler<GenericUdpReceiveTextExtraArgs> DataRecievedExtra;
 
     /// <summary>
     /// 
@@ -52,7 +52,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
     {
         get
         {
-            return Server.ServerStatus;
+            return Server.ClientStatus;
         }
     }
 
@@ -124,7 +124,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
         CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
         CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
     }
-   
+
     /// <summary>
     /// 
     /// </summary>
@@ -135,7 +135,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
     public GenericUdpServer(string key, string address, int port, int buffefSize)
         : base(key)
     {
-        StreamDebugging = new CommunicationStreamDebugging(key); 
+        StreamDebugging = new CommunicationStreamDebugging(key);
         Hostname = address;
         Port = port;
         BufferSize = buffefSize;
@@ -177,7 +177,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
     /// <param name="programEventType"></param>
     void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
     {
-        if (programEventType != eProgramStatusEventType.Stopping) 
+        if (programEventType != eProgramStatusEventType.Stopping)
             return;
 
         Debug.Console(1, this, "Program stopping. Disabling Server");
@@ -226,7 +226,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
     /// </summary>
     public void Disconnect()
     {
-        if(Server != null)
+        if (Server != null)
             Server.DisableUDPServer();
 
         IsConnected = false;
@@ -248,7 +248,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
 
         try
         {
-            if (numBytes <= 0) 
+            if (numBytes <= 0)
                 return;
 
             var sourceIp = Server.IPAddressLastMessageReceivedFrom;
@@ -323,24 +323,24 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
 /// <summary>
 /// 
 /// </summary>
-	public class GenericUdpReceiveTextExtraArgs : EventArgs
-	{
+public class GenericUdpReceiveTextExtraArgs : EventArgs
+{
     /// <summary>
     /// 
     /// </summary>
-		public string Text { get; private set; }
+    public string Text { get; private set; }
     /// <summary>
     /// 
     /// </summary>
-		public string IpAddress { get; private set; }
+    public string IpAddress { get; private set; }
     /// <summary>
     /// 
     /// </summary>
-		public int	Port { get; private set; }
+    public int Port { get; private set; }
     /// <summary>
     /// 
     /// </summary>
-		public byte[] Bytes { get; private set; }
+    public byte[] Bytes { get; private set; }
 
     /// <summary>
     /// 
@@ -349,19 +349,19 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
     /// <param name="ipAddress"></param>
     /// <param name="port"></param>
     /// <param name="bytes"></param>
-		public GenericUdpReceiveTextExtraArgs(string text, string ipAddress, int port, byte[] bytes)
-		{
-			Text = text;
-			IpAddress = ipAddress;
-			Port = port;
-			Bytes = bytes;
-		}
+    public GenericUdpReceiveTextExtraArgs(string text, string ipAddress, int port, byte[] bytes)
+    {
+        Text = text;
+        IpAddress = ipAddress;
+        Port = port;
+        Bytes = bytes;
+    }
 
-		/// <summary>
-		/// Stupid S+ Constructor
-		/// </summary>
-		public GenericUdpReceiveTextExtraArgs() { }
-	}
+    /// <summary>
+    /// Stupid S+ Constructor
+    /// </summary>
+    public GenericUdpReceiveTextExtraArgs() { }
+}
 
 /// <summary>
 /// 

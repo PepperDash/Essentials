@@ -6,13 +6,13 @@ namespace Crestron.SimplSharp
   public enum eProgramStatusEventType
   {
     /// <summary>Program stopping</summary>
-    eProgramStopping = 0,
+    Stopping = 0,
     /// <summary>Program started</summary>
-    eProgramStarted = 1,
+    Starting = 1,
+    /// <summary>Program running</summary>
+    Running = 2,
     /// <summary>Program paused</summary>
-    eProgramPaused = 2,
-    /// <summary>Program resumed</summary>
-    eProgramResumed = 3
+    Paused = 3
   }
 
   /// <summary>Mock EthernetEventArgs class</summary>
@@ -122,6 +122,10 @@ namespace Crestron.SimplSharp.CrestronIO
       return new System.IO.FileStream(FullName, System.IO.FileMode.Open, System.IO.FileAccess.Read);
     }
   }
+
+  // Event handler delegates
+  /// <summary>Ethernet event handler delegate</summary>
+  public delegate void EthernetEventHandler(EthernetEventArgs args);
 }
 
 
