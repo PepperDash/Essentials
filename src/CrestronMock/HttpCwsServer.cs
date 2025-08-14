@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Crestron.SimplSharp.CrestronWebSocketServer
+namespace Crestron.SimplSharp.WebScripting
 {
   /// <summary>Mock HttpCwsServer class for HTTP web server functionality</summary>
   public class HttpCwsServer : IDisposable
@@ -90,6 +90,13 @@ namespace Crestron.SimplSharp.CrestronWebSocketServer
     public void RemoveRoute(string route)
     {
       _routes.Remove(route.ToLowerInvariant());
+    }
+
+    /// <summary>Unregisters a route handler</summary>
+    /// <param name="route">Route path to unregister</param>
+    public void Unregister(string route)
+    {
+      RemoveRoute(route);
     }
 
     private async Task ProcessRequestsAsync()
@@ -243,6 +250,13 @@ namespace Crestron.SimplSharp.CrestronWebSocketServer
       set => _response.StatusCode = value;
     }
 
+    /// <summary>Gets or sets the status description</summary>
+    public string StatusDescription
+    {
+      get => _response.StatusDescription;
+      set => _response.StatusDescription = value;
+    }
+
     /// <summary>Gets or sets the content type</summary>
     public string? ContentType
     {
@@ -286,6 +300,19 @@ namespace Crestron.SimplSharp.CrestronWebSocketServer
     public void Write(byte[] buffer, int offset, int count)
     {
       OutputStream.Write(buffer, offset, count);
+    }
+
+    /// <summary>Ends the response</summary>
+    public void End()
+    {
+      try
+      {
+        _response.Close();
+      }
+      catch (Exception)
+      {
+        // Ignore exceptions during close
+      }
     }
   }
 

@@ -197,6 +197,71 @@ namespace Crestron.SimplSharp.CrestronSockets
       }
     }
 
+    /// <summary>Gets the socket status for a specific client</summary>
+    /// <param name="clientIndex">Index of client</param>
+    /// <returns>Socket status</returns>
+    public SocketStatus GetServerSocketStatusForSpecificClient(uint clientIndex)
+    {
+      lock (_lockObject)
+      {
+        if (clientIndex >= _clients.Count)
+          return SocketStatus.SOCKET_STATUS_NOT_CONNECTED;
+
+        return _clients[(int)clientIndex].IsConnected ?
+          SocketStatus.SOCKET_STATUS_CONNECTED :
+          SocketStatus.SOCKET_STATUS_NOT_CONNECTED;
+      }
+    }
+
+    /// <summary>Gets the port number the server accepted connection from for a specific client</summary>
+    /// <param name="clientIndex">Index of client</param>
+    /// <returns>Port number</returns>
+    public int GetPortNumberServerAcceptedConnectionFromForSpecificClient(uint clientIndex)
+    {
+      lock (_lockObject)
+      {
+        if (clientIndex >= _clients.Count)
+          return 0;
+
+        return _clients[(int)clientIndex].ClientPort;
+      }
+    }
+
+    /// <summary>Gets the local address the server accepted connection from for a specific client</summary>
+    /// <param name="clientIndex">Index of client</param>
+    /// <returns>Local address</returns>
+    public string GetLocalAddressServerAcceptedConnectionFromForSpecificClient(uint clientIndex)
+    {
+      return "127.0.0.1"; // Mock local address
+    }
+
+    /// <summary>Gets the incoming data buffer for a specific client</summary>
+    /// <param name="clientIndex">Index of client</param>
+    /// <returns>Incoming data buffer</returns>
+    public byte[] GetIncomingDataBufferForSpecificClient(uint clientIndex)
+    {
+      return new byte[0]; // Mock empty buffer
+    }
+
+    /// <summary>Sends data to a specific client asynchronously</summary>
+    /// <param name="data">Data to send</param>
+    /// <param name="dataLength">Length of data to send</param>
+    /// <param name="clientIndex">Index of client</param>
+    /// <returns>SocketErrorCodes indicating success or failure</returns>
+    public SocketErrorCodes SendDataAsync(byte[] data, int dataLength, uint clientIndex)
+    {
+      return SendData(data, dataLength, clientIndex);
+    }
+
+    /// <summary>Receives data from a specific client asynchronously</summary>
+    /// <param name="clientIndex">Index of client</param>
+    /// <returns>SocketErrorCodes indicating success or failure</returns>
+    public SocketErrorCodes ReceiveDataAsync(uint clientIndex)
+    {
+      // Mock implementation - no data to receive
+      return SocketErrorCodes.SOCKET_OK;
+    }
+
     private async Task AcceptClientsAsync()
     {
       while (_listening && _listener != null)
@@ -301,6 +366,8 @@ namespace Crestron.SimplSharp.CrestronSockets
 
     public uint ClientIndex { get; }
     public string ClientIPAddress { get; }
+    public bool IsConnected => _connected;
+    public int ClientPort { get; }
 
     public event EventHandler<TCPClientDataEventArgs>? DataReceived;
     public event EventHandler? Disconnected;
@@ -313,6 +380,7 @@ namespace Crestron.SimplSharp.CrestronSockets
 
       var endpoint = tcpClient.Client.RemoteEndPoint as IPEndPoint;
       ClientIPAddress = endpoint?.Address.ToString() ?? "Unknown";
+      ClientPort = endpoint?.Port ?? 0;
 
       _ = Task.Run(ReceiveDataAsync);
     }

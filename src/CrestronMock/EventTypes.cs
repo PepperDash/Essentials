@@ -30,6 +30,9 @@ namespace Crestron.SimplSharp
     /// <summary>Gets whether it's full duplex</summary>
     public bool FullDuplex { get; private set; }
 
+    /// <summary>Gets the ethernet event type</summary>
+    public eEthernetEventType EthernetEventType { get; private set; }
+
     /// <summary>Initializes a new instance of EthernetEventArgs</summary>
     /// <param name="adapter">Ethernet adapter number</param>
     /// <param name="linkUp">Link status</param>
@@ -41,6 +44,7 @@ namespace Crestron.SimplSharp
       LinkUp = linkUp;
       Speed = speed;
       FullDuplex = fullDuplex;
+      EthernetEventType = linkUp ? eEthernetEventType.LinkUp : eEthernetEventType.LinkDown;
     }
 
     /// <summary>Default constructor</summary>

@@ -39,6 +39,10 @@ namespace Crestron.SimplSharp.CrestronSockets
   /// <param name="clientSocketStatus">The socket status</param>
   public delegate void TCPClientSocketStatusChangeEventHandler(TCPClient client, SocketStatus clientSocketStatus);
 
+  /// <summary>Delegate for TCP client connect callback</summary>
+  /// <param name="client">TCP client instance</param>
+  public delegate void TCPClientConnectCallback(TCPClient client);
+
   /// <summary>Mock event handler for receiving TCP client data</summary>
   /// <param name="client">The TCP client</param>
   /// <param name="numberOfBytesReceived">Number of bytes received</param>
@@ -88,6 +92,19 @@ namespace Crestron.SimplSharp.CrestronSockets
 
     /// <summary>Gets the number of bytes available to read</summary>
     public int BytesAvailable => IncomingDataBufferSize;
+
+    /// <summary>Gets or sets the socket send or receive timeout in milliseconds</summary>
+    public int SocketSendOrReceiveTimeOutInMs
+    {
+      get => SocketSendTimeout;
+      set => SocketSendTimeout = SocketReceiveTimeout = value;
+    }
+
+    /// <summary>Gets the address the client is connected to</summary>
+    public string AddressClientConnectedTo { get; private set; } = string.Empty;
+
+    /// <summary>Gets the incoming data buffer</summary>
+    public byte[] IncomingDataBuffer { get; private set; } = new byte[0];
 
     #endregion
 
@@ -139,8 +156,19 @@ namespace Crestron.SimplSharp.CrestronSockets
 
       // Mock connection - simulate successful connection
       ClientStatus = SocketStatus.SOCKET_STATUS_CONNECTED;
+      AddressClientConnectedTo = AddressToConnectTo;
       SocketStatusChange?.Invoke(this, ClientStatus);
       return ClientStatus;
+    }
+
+    /// <summary>Connects to the remote endpoint asynchronously with callback</summary>
+    /// <param name="callback">Callback to invoke when connection completes</param>
+    /// <returns>Status of the connection attempt</returns>
+    public SocketStatus ConnectToServerAsync(TCPClientConnectCallback callback)
+    {
+      var status = ConnectToServerAsync();
+      callback?.Invoke(this);
+      return status;
     }
 
     /// <summary>Connects to the remote endpoint</summary>
@@ -212,6 +240,26 @@ namespace Crestron.SimplSharp.CrestronSockets
 
       // Mock receive - return empty string (no data available)
       return string.Empty;
+    }
+
+    /// <summary>Sends data to the connected server asynchronously</summary>
+    /// <param name="dataToSend">Data to send as byte array</param>
+    /// <param name="lengthToSend">Number of bytes to send</param>
+    /// <returns>Number of bytes sent, or -1 on error</returns>
+    public int SendDataAsync(byte[] dataToSend, int lengthToSend)
+    {
+      return SendData(dataToSend, lengthToSend);
+    }
+
+    /// <summary>Receives data from the server asynchronously</summary>
+    /// <returns>Number of bytes received, or -1 on error</returns>
+    public int ReceiveDataAsync()
+    {
+      if (_disposed) return -1;
+      if (ClientStatus != SocketStatus.SOCKET_STATUS_CONNECTED) return -1;
+
+      // Mock receive - simulate no data available
+      return 0;
     }
 
     /// <summary>Simulates receiving data (for testing purposes)</summary>

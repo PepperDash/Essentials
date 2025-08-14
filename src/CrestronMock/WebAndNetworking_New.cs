@@ -138,6 +138,51 @@ namespace Crestron.SimplSharp.Net.Https
   }
 }
 
+namespace Crestron.SimplSharp.CrestronLogger
+{
+  /// <summary>Mock Crestron logger</summary>
+  public static class CrestronLogger
+  {
+    /// <summary>Mock log levels</summary>
+    public enum LogLevel
+    {
+      /// <summary>Debug level</summary>
+      Debug = 0,
+      /// <summary>Info level</summary>
+      Info = 1,
+      /// <summary>Warning level</summary>
+      Warning = 2,
+      /// <summary>Error level</summary>
+      Error = 3
+    }
+
+    /// <summary>Mock logger interface</summary>
+    public interface ILogger
+    {
+      /// <summary>Logs a message</summary>
+      /// <param name="level">Log level</param>
+      /// <param name="message">Message to log</param>
+      void Log(LogLevel level, string message);
+    }
+
+    /// <summary>Gets a logger by name</summary>
+    /// <param name="name">Logger name</param>
+    /// <returns>Mock logger instance</returns>
+    public static ILogger GetLogger(string name)
+    {
+      return new MockLogger();
+    }
+
+    private class MockLogger : ILogger
+    {
+      public void Log(LogLevel level, string message)
+      {
+        // Mock implementation - do nothing in test environment
+      }
+    }
+  }
+}
+
 namespace Crestron.SimplSharp.CrestronDataStore
 {
   /// <summary>Mock Crestron data store</summary>
