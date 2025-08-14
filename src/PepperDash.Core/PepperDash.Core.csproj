@@ -35,12 +35,7 @@
     <EmbeddedResource Remove="Properties\**" />
     <None Remove="lib\**" />
     <None Remove="Properties\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
+  </ItemGroup>  
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.1" />
     <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.21.128" />
