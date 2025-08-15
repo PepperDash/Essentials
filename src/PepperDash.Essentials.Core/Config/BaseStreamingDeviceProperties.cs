@@ -19,5 +19,11 @@ namespace PepperDash.Essentials.Core.Config
     /// </summary>
     [JsonProperty("multicastAudioAddress", NullValueHandling = NullValueHandling.Ignore)]
     public string MulticastAudioAddress { get; set; }
+
+    /// <summary>
+    /// The URL for the streaming device's media stream.
+    /// </summary>
+    [JsonProperty("streamUrl", NullValueHandling = NullValueHandling.Ignore)]
+    public string StreamUrl { get; set; }
   }
 }
