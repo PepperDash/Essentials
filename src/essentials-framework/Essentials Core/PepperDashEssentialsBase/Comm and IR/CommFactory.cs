@@ -50,6 +50,9 @@ namespace PepperDash.Essentials.Core
 					case eControlMethod.Com:
 						comm = new ComPortController(deviceConfig.Key + "-com", GetComPort, controlConfig.ComParams, controlConfig);
 						break;
+                    case eControlMethod.ComBridge:
+                        comm = new CommBridge(deviceConfig.Key + "-simpl", deviceConfig.Name + " Simpl");
+                        break;
                     case eControlMethod.Cec:
                         comm = new CecPortController(deviceConfig.Key + "-cec", GetCecPort, controlConfig);
                         break;

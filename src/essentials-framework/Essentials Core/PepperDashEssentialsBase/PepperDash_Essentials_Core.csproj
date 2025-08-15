@@ -165,6 +165,7 @@
     <Compile Include="Comm and IR\ComSpecJsonConverter.cs" />
     <Compile Include="Comm and IR\ConsoleCommMockDevice.cs" />
     <Compile Include="Comm and IR\GenericComm.cs" />
+    <Compile Include="Comm and IR\CommBridge.cs" />
     <Compile Include="Comm and IR\GenericHttpClient.cs" />
     <Compile Include="Comm and IR\IRPortHelper.cs" />
     <Compile Include="Config\Essentials\ConfigUpdater.cs" />
