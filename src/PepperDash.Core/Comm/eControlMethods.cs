@@ -74,6 +74,10 @@ namespace PepperDash.Core
         /// <summary>
         /// Secure TCP/IP
         /// </summary>
-        SecureTcpIp
+        SecureTcpIp,
+        /// <summary>
+        /// Used when comms needs to be handled in SIMPL and bridged opposite the normal direction
+        /// </summary>
+        ComBridge
     }
 }
