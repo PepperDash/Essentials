@@ -37,19 +37,39 @@ namespace PepperDash.Essentials.Core
 
         public void SendBytes(byte[] bytes)
         {
+            if (eisc == null)
+            {
+                Debug.Console(0, this, "EISC not linked. Call LinkToApi before sending bytes.");
+                return;
+            }
             eisc.Eisc.SetString(joinMap.SendText.JoinNumber, Encoding.ASCII.GetString(bytes, 0, bytes.Length));
         }
 
         public void SendText(string text)
         {
+            if (eisc == null)
+            {
+                Debug.Console(0, this, "EISC not linked. Call LinkToApi before sending text.");
+                return;
+            }
             eisc.Eisc.SetString(joinMap.SendText.JoinNumber, text);
         }
 
         public void Connect() {
+            if (eisc == null)
+            {
+                Debug.Console(0, this, "EISC not linked. Call LinkToApi before connecting.");
+                return;
+            }
             eisc.Eisc.SetBool(joinMap.Connect.JoinNumber, true);
         }
 
         public void Disconnect() {
+            if (eisc == null)
+            {
+                Debug.Console(0, this, "EISC not linked. Call LinkToApi before disconnecting.");
+                return;
+            }
             eisc.Eisc.SetBool(joinMap.Connect.JoinNumber, false);
         }
 
