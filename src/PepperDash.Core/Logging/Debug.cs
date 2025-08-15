@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
@@ -19,7 +20,6 @@ using Serilog.Templates;
 namespace PepperDash.Core
 {
     /// <summary>
-    /// Contains debug commands for use in various situations
     /// </summary>
     public static class Debug
     {
@@ -272,6 +272,9 @@ namespace PepperDash.Core
                 if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 {
                     CrestronConsole.Print($"Unable to retrieve stored log level for {levelStoreKey}.\r\nError: {result}.\r\nSetting level to {LogEventLevel.Information}\r\n");
+
+                    CrestronDataStoreStatic.SetLocalIntValue(levelStoreKey, (int)LogEventLevel.Information);
+
                     return LogEventLevel.Information;
                 }
 
@@ -346,13 +349,13 @@ namespace PepperDash.Core
                 if (levelString.Trim() == "?")
                 {
                     CrestronConsole.ConsoleCommandResponse(
-                    $@"Used to set the minimum level of debug messages to be printed to the console:
-{_logLevels[0]} = 0
-{_logLevels[1]} = 1
-{_logLevels[2]} = 2
-{_logLevels[3]} = 3
-{_logLevels[4]} = 4
-{_logLevels[5]} = 5");
+                    "Used to set the minimum level of debug messages to be printed to the console:\r\n" +
+                    $"{_logLevels[0]} = 0\r\n" +
+                    $"{_logLevels[1]} = 1\r\n" +
+                    $"{_logLevels[2]} = 2\r\n" +
+                    $"{_logLevels[3]} = 3\r\n" +
+                    $"{_logLevels[4]} = 4\r\n" +
+                    $"{_logLevels[5]} = 5");
                     return;
                 }
 
@@ -373,7 +376,7 @@ namespace PepperDash.Core
                     return;
                 }
 
-                if (Enum.TryParse<LogEventLevel>(levelString, out var levelEnum))
+                if (Enum.TryParse<LogEventLevel>(levelString, true, out var levelEnum))
                 {
                     SetDebugLevel(levelEnum);
                     return;

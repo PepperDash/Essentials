@@ -244,6 +244,20 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("type")]
         public eRoutingSignalType Type { get; set; }
+
+        /// <summary>
+        /// Key for a destination list item. If BOTH SourceListItemKey AND DestinationListItemKey are defined,
+        /// then the direct route method should be used.
+        /// </summary>
+        [JsonProperty("destinationListItemKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string DestinationListItemKey { get; set; }
+
+        /// <summary>
+        /// Key for a source list item. If BOTH SourceListItemKey AND DestinationListItemKey are defined,
+        /// then the direct route method should be used.
+        /// </summary>
+        [JsonProperty("sourceListItemKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string SourceListItemKey { get; set; }
     }
 
     /// <summary>

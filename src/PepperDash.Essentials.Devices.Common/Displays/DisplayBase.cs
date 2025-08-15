@@ -5,6 +5,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
@@ -52,9 +53,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// </summary>
 		public event SourceInfoChangeHandler CurrentSourceChange;
 
-  /// <summary>
-  /// Gets or sets the CurrentSourceInfoKey
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the CurrentSourceInfoKey
+		/// </summary>
 		public string CurrentSourceInfoKey { get; set; }
 
 		/// <summary>
@@ -89,29 +90,32 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// <inheritdoc/>
 		public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; }
 
+		/// <inheritdoc />
+		public event EventHandler CurrentSourcesChanged;
+
 		/// <summary>
 		/// Gets feedback indicating whether the display is currently cooling down after being powered off.
 		/// </summary>
 		public BoolFeedback IsCoolingDownFeedback { get; protected set; }
 
-  /// <summary>
-  /// Gets or sets the IsWarmingUpFeedback
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the IsWarmingUpFeedback
+		/// </summary>
 		public BoolFeedback IsWarmingUpFeedback { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the UsageTracker
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the UsageTracker
+		/// </summary>
 		public UsageTracking UsageTracker { get; set; }
 
-  /// <summary>
-  /// Gets or sets the WarmupTime
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the WarmupTime
+		/// </summary>
 		public uint WarmupTime { get; set; }
 
-  /// <summary>
-  /// Gets or sets the CooldownTime
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the CooldownTime
+		/// </summary>
 		public uint CooldownTime { get; set; }
 
 		/// <summary>
@@ -189,7 +193,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// <summary>
 		/// Gets the collection of feedback objects for this display device.
 		/// </summary>
-  /// <inheritdoc />
+		/// <inheritdoc />
 		public virtual FeedbackCollection<Feedback> Feedbacks
 		{
 			get
@@ -376,6 +380,53 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMute.JoinNumber]);
 			volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMuteOn.JoinNumber]);
 			volumeDisplayWithFeedback.MuteFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.VolumeMuteOff.JoinNumber]);
+		}
+
+		/// <inheritdoc />
+		public virtual void SetCurrentSource(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
+		{
+			foreach (eRoutingSignalType type in Enum.GetValues(typeof(eRoutingSignalType)))
+			{
+				var flagValue = Convert.ToInt32(type);
+				// Skip if flagValue is 0 or not a power of two (i.e., not a single-bit flag).
+				// (flagValue & (flagValue - 1)) != 0 checks if more than one bit is set.
+				if (flagValue == 0 || (flagValue & (flagValue - 1)) != 0)
+				{
+					this.LogDebug("Skipping {type}", type);
+					continue;
+				}
+
+				this.LogDebug("setting {type}", type);
+
+				if (signalType.HasFlag(type))
+				{
+					UpdateCurrentSources(type, sourceListKey, sourceListItem);
+				}
+			}
+			// Raise the CurrentSourcesChanged event
+			CurrentSourcesChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void UpdateCurrentSources(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
+		{
+			if (CurrentSources.ContainsKey(signalType))
+			{
+				CurrentSources[signalType] = sourceListItem;
+			}
+			else
+			{
+				CurrentSources.Add(signalType, sourceListItem);
+			}
+
+			// Update the current source key for the specified signal type
+			if (CurrentSourceKeys.ContainsKey(signalType))
+			{
+				CurrentSourceKeys[signalType] = sourceListKey;
+			}
+			else
+			{
+				CurrentSourceKeys.Add(signalType, sourceListKey);
+			}
 		}
 
 	}

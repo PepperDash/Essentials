@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Routing
 {
@@ -24,6 +24,20 @@ namespace PepperDash.Essentials.Core.Routing
     /// This dictionary contains the keys for the current source for each signal type, such as audio, video, and control signals.
     /// </summary>
     Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; }
+
+    /// <summary>
+    /// Event raised when the current sources change.
+    /// </summary>
+    event EventHandler CurrentSourcesChanged;
+
+    /// <summary>
+    /// Sets the current source for a specific signal type.
+    /// This method updates the current source for the specified signal type and notifies any subscribers of the change.
+    /// </summary>
+    /// <param name="signalType">The signal type to update.</param>
+    /// <param name="sourceListKey">The key for the source list.</param>
+    /// <param name="sourceListItem">The source list item to set as the current source.</param>
+    void SetCurrentSource(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem);
 
   }
 }

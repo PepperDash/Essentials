@@ -54,16 +54,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class CurrentSourceStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("currentSourceKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the CurrentSourceKey
         /// </summary>
+        [JsonProperty("currentSourceKey", NullValueHandling = NullValueHandling.Ignore)]
         public string CurrentSourceKey { get; set; }
 
-        [JsonProperty("currentSource")]
+
         /// <summary>
         /// Gets or sets the CurrentSource
         /// </summary>
+        [JsonProperty("currentSource")]
         public SourceListItem CurrentSource { get; set; }
     }
 }
