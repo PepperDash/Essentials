@@ -27,6 +27,7 @@ using PepperDash.Essentials.Core.Shades;
 using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Cameras;
+using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.Displays;
 using PepperDash.Essentials.Devices.Common.Lighting;
 using PepperDash.Essentials.Devices.Common.SoftCodec;
@@ -554,6 +555,21 @@ namespace PepperDash.Essentials
                             $"{codec.Key}-videoCodec-{Key}",
                             codec,
                             $"/device/{codec.Key}"
+                        );
+
+                        AddDefaultDeviceMessenger(messenger);
+
+                        messengerAdded = true;
+                    }
+                    else if (device is IHasDialer dialer && !messengerAdded)
+                    {
+                        this.LogVerbose(
+                            "Adding CallStatusMessenger for {deviceKey}", device.Key);
+
+                        var messenger = new CallStatusMessenger(
+                            $"{device.Key}-callStatus-{Key}",
+                            dialer,
+                            $"/device/{device.Key}"
                         );
 
                         AddDefaultDeviceMessenger(messenger);
