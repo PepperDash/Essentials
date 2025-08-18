@@ -158,10 +158,8 @@ namespace PepperDash.Essentials.Core
                 Client.TextReceived += Client_TextReceived;
             }
 
-            if (!IsSocket)
-            {
-                BeginPolling();
-            }
+            BeginPolling();
+            
 		}
 
         void  socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
