@@ -140,17 +140,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             if (Camera is IHasCameraPresets presetsCamera)
             {
-                for (int i = 1; i <= 6; i++)
+                AddAction("/recallPreset", (id, content) =>
                 {
-                    var preset = i;
-                    AddAction("/cameraPreset" + i, (id, content) =>
-                    {
-                        var msg = content.ToObject<MobileControlSimpleContent<int>>();
+                    var msg = content.ToObject<MobileControlSimpleContent<int>>();
 
-                        presetsCamera.PresetSelect(msg.Value);
-                    });
+                    presetsCamera.PresetSelect(msg.Value);
+                });
 
-                }
+                AddAction("/storePreset", (id, content) =>
+                {
+                    var msg = content.ToObject<MobileControlSimpleContent<int>>();
+
+                    presetsCamera.PresetStore(msg.Value, string.Empty);
+                });
             }
         }
 
@@ -164,9 +166,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 return;
             }
 
-            timerHandler(state.Value, cameraAction);
+            timerHandler(Camera.Key, cameraAction);
 
-            cameraAction(state.Value.Equals("true", StringComparison.InvariantCultureIgnoreCase));
+            //cameraAction(state.Value.Equals("true", StringComparison.InvariantCultureIgnoreCase));
         }
 
         /// <summary>
