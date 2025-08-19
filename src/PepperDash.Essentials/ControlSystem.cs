@@ -613,7 +613,7 @@ namespace PepperDash.Essentials
                 var rootDir = userOrNvramDir?.Parent;
                 if (rootDir == null)
                 {
-                    throw new Exception("Unable to determine root directory for html extraction.");
+                    throw new Exception($"Unable to determine root directory for html extraction. Current path: {Global.FilePathPrefix}");
                 }
                 var htmlDir = Path.Combine(rootDir.FullName, "html");
                 Debug.LogMessage(LogEventLevel.Information, "Found htmlassets zip file: {zipFile:l}... Unzipping...", htmlZipFile.FullName);
