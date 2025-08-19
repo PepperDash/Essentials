@@ -597,6 +597,59 @@ namespace PepperDash.Essentials
                 File.Delete(file.FullName);
             }
 
+            var htmlZipFiles = applicationDirectory.GetFiles("htmlassets*.zip");
+
+            if (htmlZipFiles.Length > 1)
+            {
+                throw new Exception("Multiple htmlassets zip files found. Cannot continue.");
+            }
+
+
+            if (htmlZipFiles.Length == 1)
+            {
+                var htmlZipFile = htmlZipFiles[0];
+                var programDir = new DirectoryInfo(Global.FilePathPrefix.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+                var userOrNvramDir = programDir.Parent;
+                var rootDir = userOrNvramDir?.Parent;
+                if (rootDir == null)
+                {
+                    throw new Exception("Unable to determine root directory for html extraction.");
+                }
+                var htmlDir = Path.Combine(rootDir.FullName, "html");
+                Debug.LogMessage(LogEventLevel.Information, "Found htmlassets zip file: {zipFile:l}... Unzipping...", htmlZipFile.FullName);
+                using (var archive = ZipFile.OpenRead(htmlZipFile.FullName))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+                        var destinationPath = Path.Combine(htmlDir, entry.FullName);
+
+                        // If the entry is a directory, ensure it exists and skip extraction
+                        if (string.IsNullOrEmpty(entry.Name))
+                        {
+                            Directory.CreateDirectory(destinationPath);
+                            continue;
+                        }
+
+                        // Only delete the file if it exists and is a file, not a directory
+                        if (File.Exists(destinationPath))
+                            File.Delete(destinationPath);
+
+                        // Ensure the parent directory exists
+                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+
+                        entry.ExtractToFile(destinationPath, true);
+
+                        Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
+                    }
+                }
+            }
+
+            // cleaning up html zip files
+            foreach (var file in htmlZipFiles)
+            {
+                File.Delete(file.FullName);
+            }
+
             var jsonFiles = applicationDirectory.GetFiles("*configurationFile*.json");
 
             if (jsonFiles.Length > 1)
