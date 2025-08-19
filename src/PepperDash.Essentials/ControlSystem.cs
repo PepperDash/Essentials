@@ -601,7 +601,7 @@ namespace PepperDash.Essentials
 
             if (htmlZipFiles.Length > 1)
             {
-                throw new Exception("Multiple htmlassets zip files found. Cannot continue.");
+                throw new Exception("Multiple htmlassets zip files found in application directory. Please ensure only one htmlassets*.zip file is present and retry.");
             }
 
 
