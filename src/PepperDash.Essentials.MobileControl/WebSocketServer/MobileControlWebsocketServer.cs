@@ -327,18 +327,22 @@ namespace PepperDash.Essentials.WebSocketServer
                 }
 
                 string ip = processorIp;
-                if (touchpanel.Touchpanel is IMobileControlCrestronTouchpanelController crestronTouchpanel && csIpAddress != null)
-                {
-                    ip = crestronTouchpanel.ConnectedIps.Any(ipInfo =>
-                    {
-                        if (System.Net.IPAddress.TryParse(ipInfo.DeviceIpAddress, out var parsedIp))
-                        {
-                            return csIpAddress.IsInSameSubnet(parsedIp, csSubnetMask);
-                        }
-                        this.LogWarning("Invalid IP address: {deviceIpAddress}", ipInfo.DeviceIpAddress);
-                        return false;
-                    }) ? csIpAddress.ToString() : processorIp;
-                }
+
+                // Moved to the MobileControlTouchpanelController class in the GetUrlWithCorrectIp method
+                // triggered by the Panel.IpInformationChange event so that we know we have the necessary info
+                // to make the determination of which IP to use.
+                //if (touchpanel.Touchpanel is IMobileControlCrestronTouchpanelController crestronTouchpanel && csIpAddress != null)
+                //{
+                //    ip = crestronTouchpanel.ConnectedIps.Any(ipInfo =>
+                //    {
+                //        if (System.Net.IPAddress.TryParse(ipInfo.DeviceIpAddress, out var parsedIp))
+                //        {
+                //            return csIpAddress.IsInSameSubnet(parsedIp, csSubnetMask);
+                //        }
+                //        this.LogWarning("Invalid IP address: {deviceIpAddress}", ipInfo.DeviceIpAddress);
+                //        return false;
+                //    }) ? csIpAddress.ToString() : processorIp;
+                //}
 
                 var appUrl = $"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
 

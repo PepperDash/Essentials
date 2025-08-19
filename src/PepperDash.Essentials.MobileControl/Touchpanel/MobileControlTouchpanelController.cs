@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.UI;
@@ -106,6 +108,11 @@ namespace PepperDash.Essentials.Touchpanel
 
         public ReadOnlyCollection<ConnectedIpInformation> ConnectedIps => Panel.ConnectedIpList;
 
+        private System.Net.IPAddress csIpAddress;
+
+        private System.Net.IPAddress csSubnetMask;
+
+
         /// <summary>
         /// Initializes a new instance of the MobileControlTouchpanelController class.
         /// </summary>
@@ -182,6 +189,13 @@ namespace PepperDash.Essentials.Touchpanel
             };
 
             RegisterForExtenders();
+
+            var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
+            var csSubnetMask = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, csAdapterId);
+            var csIpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
+            this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
+            this.csIpAddress = System.Net.IPAddress.Parse(csIpAddress);
         }
 
         /// <summary>
@@ -381,17 +395,79 @@ namespace PepperDash.Essentials.Touchpanel
             McServerUrlFeedback.LinkInputSig(Panel.StringInput[3]);
             UserCodeFeedback.LinkInputSig(Panel.StringInput[4]);
 
+            Panel.IpInformationChange += (sender, args) =>
+            {
+                if (args.Connected)
+                {
+                    this.LogVerbose("Connection from IP: {ip}", args.DeviceIpAddress);
+                    this.LogInformation("Sending {appUrl} on join 1", AppUrlFeedback.StringValue);
+
+                    var appUrl = GetUrlWithCorrectIp(_appUrl);
+                    Panel.StringInput[1].StringValue = appUrl;
+
+                    SetAppUrl(appUrl);
+                }
+                else
+                {
+                    this.LogVerbose("Disconnection from IP: {ip}", args.DeviceIpAddress);
+                }
+            };
+
             Panel.OnlineStatusChange += (sender, args) =>
             {
-                UpdateFeedbacks();
-
                 this.LogInformation("Sending {appUrl} on join 1", AppUrlFeedback.StringValue);
 
-                Panel.StringInput[1].StringValue = AppUrlFeedback.StringValue;
+                UpdateFeedbacks();
+                Panel.StringInput[1].StringValue = _appUrl;
                 Panel.StringInput[2].StringValue = QrCodeUrlFeedback.StringValue;
                 Panel.StringInput[3].StringValue = McServerUrlFeedback.StringValue;
                 Panel.StringInput[4].StringValue = UserCodeFeedback.StringValue;
             };
+        }
+
+        /// <summary>
+        /// Gets the URL with the correct IP address based on the connected devices and the Crestron processor's IP address.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        private string GetUrlWithCorrectIp(string url)
+        {
+            var lanAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter);
+
+            var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);
+
+            if(csIpAddress == null || csSubnetMask == null || url == null)
+            {
+                this.LogWarning("CS IP Address Subnet Mask or url is null, cannot determine correct IP for URL");
+                return url;
+            }
+
+            this.LogVerbose("Processor IP: {processorIp}, CS IP: {csIpAddress}, CS Subnet Mask: {csSubnetMask}", processorIp, csIpAddress, csSubnetMask);
+            this.LogVerbose("Connected IP Count: {connectedIps}", ConnectedIps.Count);
+
+            var ip = ConnectedIps.Any(ipInfo =>
+            {
+                if (System.Net.IPAddress.TryParse(ipInfo.DeviceIpAddress, out var parsedIp))
+                {
+                    return csIpAddress.IsInSameSubnet(parsedIp, csSubnetMask);
+                }
+                this.LogWarning("Invalid IP address: {deviceIpAddress}", ipInfo.DeviceIpAddress);
+                return false;
+            }) ? csIpAddress.ToString() : processorIp;
+
+            var match = Regex.Match(url, @"^http://([^:/]+):\d+/mc/app\?token=.+$");
+            if (match.Success)
+            {
+                string ipa = match.Groups[1].Value;
+                // ip will be "192.168.1.100"
+            }
+
+            // replace ipa with ip but leave the rest of the string intact
+            var updatedUrl = Regex.Replace(url, @"^http://[^:/]+", $"http://{ip}");
+
+            this.LogVerbose("Updated URL: {updatedUrl}", updatedUrl);
+
+            return updatedUrl;
         }
 
         private void SubscribeForMobileControlUpdates()
@@ -443,7 +519,8 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public void SetAppUrl(string url)
         {
-            _appUrl = url;
+            _appUrl = GetUrlWithCorrectIp(url);
+
             AppUrlFeedback.FireUpdate();
         }
 
