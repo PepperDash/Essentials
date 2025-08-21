@@ -168,7 +168,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             timerHandler(Camera.Key, cameraAction);
 
-            //cameraAction(state.Value.Equals("true", StringComparison.InvariantCultureIgnoreCase));
         }
 
         /// <summary>
