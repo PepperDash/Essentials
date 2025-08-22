@@ -563,14 +563,21 @@ namespace PepperDash.Essentials
             if (zipFiles.Length == 1)
             {
                 var zipFile = zipFiles[0];
+                var assetsRoot = System.IO.Path.GetFullPath(Global.FilePathPrefix);
+                if (!assetsRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) && !assetsRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+                {
+                    assetsRoot += Path.DirectorySeparatorChar;
+                }
                 Debug.LogMessage(LogEventLevel.Information, "Found assets zip file: {zipFile:l}... Unzipping...", zipFile.FullName);
                 using (var archive = ZipFile.OpenRead(zipFile.FullName))
                 {
                     foreach (var entry in archive.Entries)
                     {
                         var destinationPath = Path.Combine(Global.FilePathPrefix, entry.FullName);
+                        var fullDest = System.IO.Path.GetFullPath(destinationPath);
+                        if (!fullDest.StartsWith(assetsRoot, StringComparison.OrdinalIgnoreCase))
+                            throw new InvalidOperationException($"Entry '{entry.FullName}' is trying to extract outside of the target directory.");
 
-                        // If the entry is a directory, ensure it exists and skip extraction
                         if (string.IsNullOrEmpty(entry.Name))
                         {
                             Directory.CreateDirectory(destinationPath);
@@ -581,11 +588,8 @@ namespace PepperDash.Essentials
                         if (Directory.Exists(destinationPath))
                             Directory.Delete(destinationPath, true);
 
-                        // Ensure the parent directory exists
                         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
-
                         entry.ExtractToFile(destinationPath, true);
-
                         Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
                     }
                 }
@@ -616,14 +620,22 @@ namespace PepperDash.Essentials
                     throw new Exception($"Unable to determine root directory for html extraction. Current path: {Global.FilePathPrefix}");
                 }
                 var htmlDir = Path.Combine(rootDir.FullName, "html");
+                var htmlRoot = System.IO.Path.GetFullPath(htmlDir);
+                if (!htmlRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) &&
+                    !htmlRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+                {
+                    htmlRoot += Path.DirectorySeparatorChar;
+                }
                 Debug.LogMessage(LogEventLevel.Information, "Found htmlassets zip file: {zipFile:l}... Unzipping...", htmlZipFile.FullName);
                 using (var archive = ZipFile.OpenRead(htmlZipFile.FullName))
                 {
                     foreach (var entry in archive.Entries)
                     {
                         var destinationPath = Path.Combine(htmlDir, entry.FullName);
+                        var fullDest = System.IO.Path.GetFullPath(destinationPath);
+                        if (!fullDest.StartsWith(htmlRoot, StringComparison.OrdinalIgnoreCase))
+                            throw new InvalidOperationException($"Entry '{entry.FullName}' is trying to extract outside of the target directory.");
 
-                        // If the entry is a directory, ensure it exists and skip extraction
                         if (string.IsNullOrEmpty(entry.Name))
                         {
                             Directory.CreateDirectory(destinationPath);
@@ -634,13 +646,11 @@ namespace PepperDash.Essentials
                         if (File.Exists(destinationPath))
                             File.Delete(destinationPath);
 
-                        // Ensure the parent directory exists
                         var parentDir = Path.GetDirectoryName(destinationPath);
                         if (!string.IsNullOrEmpty(parentDir))
                             Directory.CreateDirectory(parentDir);
 
                         entry.ExtractToFile(destinationPath, true);
-
                         Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
                     }
                 }
