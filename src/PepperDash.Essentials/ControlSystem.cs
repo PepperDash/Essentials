@@ -635,7 +635,9 @@ namespace PepperDash.Essentials
                             File.Delete(destinationPath);
 
                         // Ensure the parent directory exists
-                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                        var parentDir = Path.GetDirectoryName(destinationPath);
+                        if (!string.IsNullOrEmpty(parentDir))
+                            Directory.CreateDirectory(parentDir);
 
                         entry.ExtractToFile(destinationPath, true);
 
