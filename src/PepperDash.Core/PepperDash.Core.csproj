@@ -4,7 +4,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>PepperDash.Core</RootNamespace>
-    <AssemblyName>PepperDashCore</AssemblyName>
+    <AssemblyName>PepperDashCore-$(Version)</AssemblyName>
     <TargetFramework>net472</TargetFramework>
     <Deterministic>true</Deterministic>
     <NeutralLanguage>en</NeutralLanguage>

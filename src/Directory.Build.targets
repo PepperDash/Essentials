@@ -1,10 +1,10 @@
 <Project>
   <ItemGroup>    
-    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).clz" Condition="$(ProjectType) == 'Library'">
+    <None Include="$(TargetDir)$(TargetName).$(TargetFramework).clz" Condition="$(ProjectType) == 'Library'">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
     </None>
-    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" Condition="$(ProjectType) == 'Program'">
+    <None Include="$(TargetDir)$(TargetName).$(TargetFramework).cpz" Condition="$(ProjectType) == 'Program'">
       <Pack>true</Pack>
       <PackagePath>build;</PackagePath>
     </None>
@@ -14,29 +14,29 @@
     </None>
   </ItemGroup>
   <PropertyGroup Condition="$(ProjectType) == 'Library'">
-    <FileName>$(TargetDir)$(TargetName).$(Version).$(TargetFramework).clz</FileName>
+    <FileName>$(TargetDir)$(TargetName).$(TargetFramework).clz</FileName>
   </PropertyGroup>
   <PropertyGroup Condition="$(ProjectType) == 'ProgramLibrary'">
     <FileName>$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz</FileName>
   </PropertyGroup>
   <PropertyGroup Condition="$(ProjectType) == 'Program'">
-    <FileName>$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz</FileName>
+    <FileName>$(TargetDir)$(TargetName).$(TargetFramework).cpz</FileName>
   </PropertyGroup>
 
   <Target Name="DeleteCLZ" BeforeTargets="PreBuildEvent" Condition="$(ProjectType) == 'Library' And $(TargetDir) != '' And Exists($(FileName))">
-    <Delete Files="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).clz">
+    <Delete Files="$(TargetDir)$(TargetName).$(TargetFramework).clz">
       <Output TaskParameter="DeletedFiles" ItemName="DeletedList"/>
     </Delete>
     <Message Text="Deleted files: '@(DeletedList)'" />
   </Target>
   <Target Name="DeleteCPZ" BeforeTargets="PreBuildEvent" Condition="$(ProjectType) == 'Program' And $(TargetDir) != '' And Exists($(FileName))">
-    <Delete Files="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz">
+    <Delete Files="$(TargetDir)$(TargetName).$(TargetFramework).cpz">
       <Output TaskParameter="DeletedFiles" ItemName="DeletedList"/>
     </Delete>
     <Message Text="Deleted files: '@(DeletedList)'" />
   </Target>
   <Target Name="DeleteCPLZ" BeforeTargets="PreBuildEvent" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != '' And Exists($(FileName))">
-    <Delete Files="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz">
+    <Delete Files="$(TargetDir)$(TargetName).$(TargetFramework).cplz">
       <Output TaskParameter="DeletedFiles" ItemName="DeletedList"/>
     </Delete>
     <Message Text="Deleted files: '@(DeletedList)'" />
@@ -50,12 +50,12 @@
   </Target>  
   <Target Name="Copy CLZ" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Library')">
     <Message Text="Copying CLZ"></Message>
-    <Move SourceFiles="$(TargetDir)\$(TargetName).clz" DestinationFiles="$(TargetDir)\$(TargetName).$(Version).$(TargetFramework).clz"/>
-    <Copy SourceFiles="$(TargetDir)\$(TargetName).$(Version).$(TargetFramework).clz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).clz"/>
+    <Move SourceFiles="$(TargetDir)\$(TargetName).clz" DestinationFiles="$(TargetDir)\$(TargetName).$(TargetFramework).clz"/>
+    <Copy SourceFiles="$(TargetDir)\$(TargetName).$(TargetFramework).clz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(TargetFramework).clz"/>
   </Target>
   <Target Name="Copy CPZ" AfterTargets="SimplSharpPostProcess" Condition="($(ProjectType) == 'Program' And ( '$(TargetFramework)' != 'net6.0' ) And ( '$(TargetFramework)' != 'net8.0' ))">
     <Message Text="Copying CPZ"></Message>
-    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" />
-    <Copy SourceFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cpz" />
+    <Move SourceFiles="$(TargetDir)$(TargetName).cpz" DestinationFiles="$(TargetDir)$(TargetName).$(TargetFramework).cpz" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).$(TargetFramework).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(TargetFramework).cpz" />
   </Target>
 </Project>

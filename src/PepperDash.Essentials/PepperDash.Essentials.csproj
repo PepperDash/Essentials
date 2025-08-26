@@ -5,7 +5,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>PepperDash.Essentials</RootNamespace>
-    <AssemblyName>PepperDashEssentials</AssemblyName>
+    <AssemblyName>PepperDashEssentials-$(Version)</AssemblyName>
     <TargetFramework>net472</TargetFramework>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
