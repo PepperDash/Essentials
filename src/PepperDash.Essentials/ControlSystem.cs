@@ -1,5 +1,5 @@
-﻿
-using System;
+﻿using System;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using Crestron.SimplSharp;
@@ -41,29 +41,6 @@ namespace PepperDash.Essentials
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
 
             Debug.SetErrorLogMinimumDebugLevel(CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? LogEventLevel.Warning : LogEventLevel.Verbose);
-
-            // AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
-        }
-
-        private Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            var assemblyName = new AssemblyName(args.Name).Name;
-            if (assemblyName == "PepperDash_Core")
-            {
-                return Assembly.LoadFrom("PepperDashCore.dll");
-            }
-
-            if (assemblyName == "PepperDash_Essentials_Core")
-            {
-                return Assembly.LoadFrom("PepperDash.Essentials.Core.dll");
-            }
-
-            if (assemblyName == "Essentials Devices Common")
-            {
-                return Assembly.LoadFrom("PepperDash.Essentials.Devices.Common.dll");
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -266,6 +243,8 @@ namespace PepperDash.Essentials
 
                 // _ = new ProcessorExtensionDeviceFactory();
                 // _ = new MobileControlFactory();
+
+                LoadAssets();
 
                 Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 
@@ -566,6 +545,143 @@ namespace PepperDash.Essentials
             {
                 Debug.LogMessage(LogEventLevel.Information, "Unable to find logo information in any room config");
                 return false;
+            }
+        }
+
+        private static void LoadAssets()
+        {
+            var applicationDirectory = new DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
+            Debug.LogMessage(LogEventLevel.Information, "Searching: {applicationDirectory:l} for embedded assets - {Destination}", applicationDirectory.FullName, Global.FilePathPrefix);
+
+            var zipFiles = applicationDirectory.GetFiles("assets*.zip");
+
+            if (zipFiles.Length > 1)
+            {
+                throw new Exception("Multiple assets zip files found. Cannot continue.");
+            }
+
+            if (zipFiles.Length == 1)
+            {
+                var zipFile = zipFiles[0];
+                var assetsRoot = System.IO.Path.GetFullPath(Global.FilePathPrefix);
+                if (!assetsRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) && !assetsRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+                {
+                    assetsRoot += Path.DirectorySeparatorChar;
+                }
+                Debug.LogMessage(LogEventLevel.Information, "Found assets zip file: {zipFile:l}... Unzipping...", zipFile.FullName);
+                using (var archive = ZipFile.OpenRead(zipFile.FullName))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+                        var destinationPath = Path.Combine(Global.FilePathPrefix, entry.FullName);
+                        var fullDest = System.IO.Path.GetFullPath(destinationPath);
+                        if (!fullDest.StartsWith(assetsRoot, StringComparison.OrdinalIgnoreCase))
+                            throw new InvalidOperationException($"Entry '{entry.FullName}' is trying to extract outside of the target directory.");
+
+                        if (string.IsNullOrEmpty(entry.Name))
+                        {
+                            Directory.CreateDirectory(destinationPath);
+                            continue;
+                        }
+
+                        // If a directory exists where a file should go, delete it
+                        if (Directory.Exists(destinationPath))
+                            Directory.Delete(destinationPath, true);
+
+                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                        entry.ExtractToFile(destinationPath, true);
+                        Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
+                    }
+                }
+            }
+
+            // cleaning up zip files
+            foreach (var file in zipFiles)
+            {
+                File.Delete(file.FullName);
+            }
+
+            var htmlZipFiles = applicationDirectory.GetFiles("htmlassets*.zip");
+
+            if (htmlZipFiles.Length > 1)
+            {
+                throw new Exception("Multiple htmlassets zip files found in application directory. Please ensure only one htmlassets*.zip file is present and retry.");
+            }
+
+
+            if (htmlZipFiles.Length == 1)
+            {
+                var htmlZipFile = htmlZipFiles[0];
+                var programDir = new DirectoryInfo(Global.FilePathPrefix.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+                var userOrNvramDir = programDir.Parent;
+                var rootDir = userOrNvramDir?.Parent;
+                if (rootDir == null)
+                {
+                    throw new Exception($"Unable to determine root directory for html extraction. Current path: {Global.FilePathPrefix}");
+                }
+                var htmlDir = Path.Combine(rootDir.FullName, "html");
+                var htmlRoot = System.IO.Path.GetFullPath(htmlDir);
+                if (!htmlRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) &&
+                    !htmlRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+                {
+                    htmlRoot += Path.DirectorySeparatorChar;
+                }
+                Debug.LogMessage(LogEventLevel.Information, "Found htmlassets zip file: {zipFile:l}... Unzipping...", htmlZipFile.FullName);
+                using (var archive = ZipFile.OpenRead(htmlZipFile.FullName))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+                        var destinationPath = Path.Combine(htmlDir, entry.FullName);
+                        var fullDest = System.IO.Path.GetFullPath(destinationPath);
+                        if (!fullDest.StartsWith(htmlRoot, StringComparison.OrdinalIgnoreCase))
+                            throw new InvalidOperationException($"Entry '{entry.FullName}' is trying to extract outside of the target directory.");
+
+                        if (string.IsNullOrEmpty(entry.Name))
+                        {
+                            Directory.CreateDirectory(destinationPath);
+                            continue;
+                        }
+
+                        // Only delete the file if it exists and is a file, not a directory
+                        if (File.Exists(destinationPath))
+                            File.Delete(destinationPath);
+
+                        var parentDir = Path.GetDirectoryName(destinationPath);
+                        if (!string.IsNullOrEmpty(parentDir))
+                            Directory.CreateDirectory(parentDir);
+
+                        entry.ExtractToFile(destinationPath, true);
+                        Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
+                    }
+                }
+            }
+
+            // cleaning up html zip files
+            foreach (var file in htmlZipFiles)
+            {
+                File.Delete(file.FullName);
+            }
+
+            var jsonFiles = applicationDirectory.GetFiles("*configurationFile*.json");
+
+            if (jsonFiles.Length > 1)
+            {
+                throw new Exception("Multiple configuration files found. Cannot continue.");
+            }
+
+            if (jsonFiles.Length == 1)
+            {
+                var jsonFile = jsonFiles[0];
+                var finalPath = Path.Combine(Global.FilePathPrefix, jsonFile.Name);
+                Debug.LogMessage(LogEventLevel.Information, "Found configuration file: {jsonFile:l}... Moving to: {Destination}", jsonFile.FullName, finalPath);
+
+                if (File.Exists(finalPath))
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Removing existing configuration file: {Destination}", finalPath);
+                    File.Delete(finalPath);
+                }
+
+                jsonFile.MoveTo(finalPath);
             }
         }
     }
