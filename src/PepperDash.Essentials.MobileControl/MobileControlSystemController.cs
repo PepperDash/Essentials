@@ -505,6 +505,25 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
+                    if (device is IBasicVideoMuteWithFeedback)
+                    {
+                        var deviceKey = device.Key;
+                        this.LogVerbose(
+                            "Adding IBasicVideoMuteWithFeedback for {deviceKey}",
+                            deviceKey
+                        );
+
+                        var videoMuteControlDevice = device as IBasicVideoMuteWithFeedback;
+                        var messenger = new IBasicVideoMuteWithFeedbackMessenger(
+                            $"{device.Key}-videoMute-{Key}",
+                            string.Format("/device/{0}", deviceKey),
+                            videoMuteControlDevice
+                        );
+                        AddDefaultDeviceMessenger(messenger);
+
+                        messengerAdded = true;
+                    }
+
                     if (device is ILightingScenes || device is LightingBase)
                     {
                         var deviceKey = device.Key;
