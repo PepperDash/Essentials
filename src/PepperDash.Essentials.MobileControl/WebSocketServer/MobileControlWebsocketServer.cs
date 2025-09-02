@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
+using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
@@ -41,8 +43,14 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private HttpServer _server;
 
+        /// <summary>
+        /// Gets the HttpServer instance
+        /// </summary>
         public HttpServer Server => _server;
 
+        /// <summary>
+        /// Gets the collection of UI client contexts
+        /// </summary>
         public Dictionary<string, UiClientContext> UiClients { get; private set; }
 
         private readonly MobileControlSystemController _parent;
@@ -61,17 +69,20 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
-        private string lanIpAddress => CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter));
+        private string LanIpAddress => CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter));
 
-        private System.Net.IPAddress csIpAddress;
+        private readonly System.Net.IPAddress csIpAddress;
 
-        private System.Net.IPAddress csSubnetMask;
+        private readonly System.Net.IPAddress csSubnetMask;
 
         /// <summary>
         /// The path for the WebSocket messaging
         /// </summary>
         private readonly string _wsPath = "/mc/api/ui/join/";
 
+        /// <summary>
+        /// Gets the WebSocket path
+        /// </summary>
         public string WsPath => _wsPath;
 
         /// <summary>
@@ -89,6 +100,9 @@ namespace PepperDash.Essentials.WebSocketServer
         /// </summary>
         public int Port { get; private set; }
 
+        /// <summary>
+        /// Gets the user app URL prefix
+        /// </summary>
         public string UserAppUrlPrefix
         {
             get
@@ -101,6 +115,9 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
+        /// <summary>
+        /// Gets the count of connected UI clients
+        /// </summary>
         public int ConnectedUiClientsCount
         {
             get
@@ -119,6 +136,9 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the MobileControlWebsocketServer class.
+        /// </summary>
         public MobileControlWebsocketServer(string key, int customPort, MobileControlSystemController parent)
             : base(key)
         {
@@ -343,6 +363,11 @@ namespace PepperDash.Essentials.WebSocketServer
                 //        return false;
                 //    }) ? csIpAddress.ToString() : processorIp;
                 //}
+
+                if (_parent.Config.DirectServer.CSLanUiDeviceKeys != null && _parent.Config.DirectServer.CSLanUiDeviceKeys.Any(k => k.Equals(touchpanel.Touchpanel.Key, StringComparison.InvariantCultureIgnoreCase)) && csIpAddress != null)
+                {
+                    ip = csIpAddress.ToString();
+                }
 
                 var appUrl = $"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
 
@@ -625,6 +650,9 @@ namespace PepperDash.Essentials.WebSocketServer
             CrestronConsole.ConsoleCommandResponse($"Token: {token}");
         }
 
+        /// <summary>
+        /// Validates the grant code against the room key
+        /// </summary>
         public (string, string) ValidateGrantCode(string grantCode, string roomKey)
         {
             var bridge = _parent.GetRoomBridge(roomKey);
@@ -638,6 +666,9 @@ namespace PepperDash.Essentials.WebSocketServer
             return ValidateGrantCode(grantCode, bridge);
         }
 
+        /// <summary>
+        /// Validates the grant code against the room key
+        /// </summary>
         public (string, string) ValidateGrantCode(string grantCode, MobileControlBridgeBase bridge)
         {
             // TODO: Authenticate grant code passed in
@@ -659,6 +690,9 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
+        /// <summary>
+        /// Generates a new client token for the specified bridge
+        /// </summary>
         public (string, string) GenerateClientToken(MobileControlBridgeBase bridge, string touchPanelKey = "")
         {
             var key = Guid.NewGuid().ToString();

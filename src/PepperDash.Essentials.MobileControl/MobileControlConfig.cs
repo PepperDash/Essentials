@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials
 {
@@ -9,25 +9,34 @@ namespace PepperDash.Essentials
     /// </summary>
     public class MobileControlConfig
     {
+        /// <summary>
+        /// Gets or sets the ServerUrl
+        /// </summary>
         [JsonProperty("serverUrl")]
         public string ServerUrl { get; set; }
 
+        /// <summary>
+        /// Gets or sets the ClientAppUrl
+        /// </summary>
         [JsonProperty("clientAppUrl")]
         public string ClientAppUrl { get; set; }
 
+        /// <summary>
+        /// Gets or sets the DirectServer
+        /// </summary>
         [JsonProperty("directServer")]
         public MobileControlDirectServerPropertiesConfig DirectServer { get; set; }
 
-        [JsonProperty("applicationConfig")]
         /// <summary>
         /// Gets or sets the ApplicationConfig
         /// </summary>
+        [JsonProperty("applicationConfig")]
         public MobileControlApplicationConfig ApplicationConfig { get; set; } = null;
 
-        [JsonProperty("enableApiServer")]
         /// <summary>
         /// Gets or sets the EnableApiServer
         /// </summary>
+        [JsonProperty("enableApiServer")]
         public bool EnableApiServer { get; set; } = true;
     }
 
@@ -36,27 +45,42 @@ namespace PepperDash.Essentials
     /// </summary>
     public class MobileControlDirectServerPropertiesConfig
     {
-        [JsonProperty("enableDirectServer")]
         /// <summary>
         /// Gets or sets the EnableDirectServer
         /// </summary>
+        [JsonProperty("enableDirectServer")]
         public bool EnableDirectServer { get; set; }
 
-        [JsonProperty("port")]
         /// <summary>
         /// Gets or sets the Port
         /// </summary>
+        [JsonProperty("port")]
         public int Port { get; set; }
 
-        [JsonProperty("logging")]
         /// <summary>
         /// Gets or sets the Logging
         /// </summary>
+        [JsonProperty("logging")]
         public MobileControlLoggingConfig Logging { get; set; }
 
+        /// <summary>
+        /// Gets or sets the AutomaticallyForwardPortToCSLAN
+        /// </summary>
         [JsonProperty("automaticallyForwardPortToCSLAN")]
         public bool? AutomaticallyForwardPortToCSLAN { get; set; }
 
+        /// <summary>
+        /// Gets or sets the CSLanUiDeviceKeys
+        /// </summary>
+        /// <remarks>
+        /// A list of device keys for the CS LAN UI. These devices will get the CS LAN IP address instead of the LAN IP Address
+        /// </remarks>
+        [JsonProperty("csLanUiDeviceKeys")]
+        public List<string> CSLanUiDeviceKeys { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the MobileControlDirectServerPropertiesConfig class.
+        /// </summary>
         public MobileControlDirectServerPropertiesConfig()
         {
             Logging = new MobileControlLoggingConfig();
@@ -68,26 +92,26 @@ namespace PepperDash.Essentials
     /// </summary>
     public class MobileControlLoggingConfig
     {
-        [JsonProperty("enableRemoteLogging")]
+
         /// <summary>
         /// Gets or sets the EnableRemoteLogging
         /// </summary>
+        [JsonProperty("enableRemoteLogging")]
         public bool EnableRemoteLogging { get; set; }
 
-        [JsonProperty("host")]
+
         /// <summary>
         /// Gets or sets the Host
         /// </summary>
+        [JsonProperty("host")]
         public string Host { get; set; }
 
-        [JsonProperty("port")]
+
         /// <summary>
         /// Gets or sets the Port
         /// </summary>
+        [JsonProperty("port")]
         public int Port { get; set; }
-
-
-
     }
 
     /// <summary>
@@ -95,16 +119,16 @@ namespace PepperDash.Essentials
     /// </summary>
     public class MobileControlRoomBridgePropertiesConfig
     {
-        [JsonProperty("key")]
         /// <summary>
         /// Gets or sets the Key
         /// </summary>
+        [JsonProperty("key")]
         public string Key { get; set; }
 
-        [JsonProperty("roomKey")]
         /// <summary>
         /// Gets or sets the RoomKey
         /// </summary>
+        [JsonProperty("roomKey")]
         public string RoomKey { get; set; }
     }
 
@@ -113,53 +137,71 @@ namespace PepperDash.Essentials
     /// </summary>
     public class MobileControlSimplRoomBridgePropertiesConfig
     {
-        [JsonProperty("eiscId")]
         /// <summary>
         /// Gets or sets the EiscId
         /// </summary>
+        [JsonProperty("eiscId")]
         public string EiscId { get; set; }
     }
 
+    /// <summary>
+    /// Represents a MobileControlApplicationConfig
+    /// </summary>
     public class MobileControlApplicationConfig
     {
+        /// <summary>
+        /// Gets or sets the ApiPath
+        /// </summary>
         [JsonProperty("apiPath")]
         public string ApiPath { get; set; }
 
-        [JsonProperty("gatewayAppPath")]
         /// <summary>
         /// Gets or sets the GatewayAppPath
         /// </summary>
+        [JsonProperty("gatewayAppPath")]
         public string GatewayAppPath { get; set; }
 
+        /// <summary>
+        /// Gets or sets the EnableDev
+        /// </summary>
         [JsonProperty("enableDev")]
         public bool? EnableDev { get; set; }
 
-        [JsonProperty("logoPath")]
         /// <summary>
         /// Gets or sets the LogoPath
         /// </summary>
+        [JsonProperty("logoPath")]
         public string LogoPath { get; set; }
 
+        /// <summary>
+        /// Gets or sets the IconSet
+        /// </summary>
         [JsonProperty("iconSet")]
         [JsonConverter(typeof(StringEnumConverter))]
         public MCIconSet? IconSet { get; set; }
 
+        /// <summary>
+        /// Gets or sets the LoginMode
+        /// </summary>
         [JsonProperty("loginMode")]
         public string LoginMode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Modes
+        /// </summary>
         [JsonProperty("modes")]
         public Dictionary<string, McMode> Modes { get; set; }
 
-        [JsonProperty("enableRemoteLogging")]
         /// <summary>
         /// Gets or sets the Logging
         /// </summary>
+        [JsonProperty("enableRemoteLogging")]
         public bool Logging { get; set; }
 
-        [JsonProperty("partnerMetadata", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the PartnerMetadata
         /// </summary>
+        [JsonProperty("partnerMetadata", NullValueHandling = NullValueHandling.Ignore)]
         public List<MobileControlPartnerMetadata> PartnerMetadata { get; set; }
     }
 
@@ -168,22 +210,22 @@ namespace PepperDash.Essentials
     /// </summary>
     public class MobileControlPartnerMetadata
     {
-        [JsonProperty("role")]
         /// <summary>
         /// Gets or sets the Role
         /// </summary>
+        [JsonProperty("role")]
         public string Role { get; set; }
 
-        [JsonProperty("description")]
         /// <summary>
         /// Gets or sets the Description
         /// </summary>
+        [JsonProperty("description")]
         public string Description { get; set; }
 
-        [JsonProperty("logoPath")]
         /// <summary>
         /// Gets or sets the LogoPath
         /// </summary>
+        [JsonProperty("logoPath")]
         public string LogoPath { get; set; }
     }
 
@@ -192,21 +234,22 @@ namespace PepperDash.Essentials
     /// </summary>
     public class McMode
     {
-        [JsonProperty("listPageText")]
         /// <summary>
         /// Gets or sets the ListPageText
         /// </summary>
+        [JsonProperty("listPageText")]
         public string ListPageText { get; set; }
-        [JsonProperty("loginHelpText")]
+
         /// <summary>
         /// Gets or sets the LoginHelpText
         /// </summary>
+        [JsonProperty("loginHelpText")]
         public string LoginHelpText { get; set; }
 
-        [JsonProperty("passcodePageText")]
         /// <summary>
         /// Gets or sets the PasscodePageText
         /// </summary>
+        [JsonProperty("passcodePageText")]
         public string PasscodePageText { get; set; }
     }
 
@@ -215,8 +258,19 @@ namespace PepperDash.Essentials
     /// </summary>
     public enum MCIconSet
     {
+        /// <summary>
+        /// Google icon set
+        /// </summary>
         GOOGLE,
+
+        /// <summary>
+        /// Habanero icon set
+        /// </summary>
         HABANERO,
+
+        /// <summary>
+        /// Neo icon set
+        /// </summary>
         NEO
     }
 }
