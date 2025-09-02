@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
-using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
