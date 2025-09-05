@@ -1,6 +1,7 @@
-using Crestron.SimplSharpPro.DM.Streaming;
 using System;
 using System.Collections.Generic;
+using Crestron.SimplSharpPro.DM.Streaming;
+using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
@@ -11,7 +12,7 @@ namespace PepperDash.Essentials.Core
     /// subscribers when the port information is updated. Implementations of this interface should ensure that the  <see
     /// cref="PortInformationChanged"/> event is raised whenever the <see cref="NetworkPorts"/> collection
     /// changes.</remarks>
-    public interface INvxNetworkPortInformation
+    public interface INvxNetworkPortInformation : IKeyed
     {
         /// <summary>
         /// Occurs when the port information changes.
