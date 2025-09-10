@@ -202,14 +202,15 @@ namespace PepperDash.Essentials.Core
 
         private static void ListDevices(string s)
         {
-            Debug.LogMessage(LogEventLevel.Information, "{0} Devices registered with Device Manager:", Devices.Count);
+            CrestronConsole.ConsoleCommandResponse($"{Devices.Count} Devices registered with Device Manager:");
+
             var sorted = Devices.Values.ToList();
             sorted.Sort((a, b) => a.Key.CompareTo(b.Key));
 
             foreach (var d in sorted)
             {
                 var name = d is IKeyName ? (d as IKeyName).Name : "---";
-                Debug.LogMessage(LogEventLevel.Information, "  [{0}] {1}", d.Key, name);
+                CrestronConsole.ConsoleCommandResponse($"  [{d.Key}] {name}");
             }
         }
 
