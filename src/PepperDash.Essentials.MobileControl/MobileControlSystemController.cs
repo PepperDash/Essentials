@@ -244,13 +244,15 @@ namespace PepperDash.Essentials
             CrestronEnvironment.ProgramStatusEventHandler +=
                 CrestronEnvironment_ProgramStatusEventHandler;
 
-            ApiOnlineAndAuthorized = new BoolFeedback(() =>
+            ApiOnlineAndAuthorized = new BoolFeedback("apiOnlineAndAuthorized", () =>
             {
                 if (_wsClient2 == null)
                     return false;
 
                 return _wsClient2.IsAlive && IsAuthorized;
             });
+
+            Debug.SetFileMinimumDebugLevel(Serilog.Events.LogEventLevel.Debug);
         }
 
         private void SetupDefaultRoomMessengers()
@@ -1917,7 +1919,8 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         private void HandleError(object sender, ErrorEventArgs e)
         {
-            this.LogError("Websocket error {0}", e.Message);
+            this.LogError("Websocket error {message}", e.Message);
+            this.LogError(e.Exception, "Websocket error");
 
             IsAuthorized = false;
             StartServerReconnectTimer();
@@ -1930,7 +1933,7 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         private void HandleClose(object sender, CloseEventArgs e)
         {
-            this.LogDebug(
+            this.LogInformation(
                 "Websocket close {code} {reason}, clean={wasClean}",
                 e.Code,
                 e.Reason,
