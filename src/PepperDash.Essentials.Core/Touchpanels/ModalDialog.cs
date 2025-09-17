@@ -6,9 +6,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
- /// <summary>
- /// Represents a ModalDialog
- /// </summary>
+	/// <summary>
+	/// Represents a ModalDialog
+	/// </summary>
 	public class ModalDialog
 	{
 		/// <summary>
@@ -19,10 +19,10 @@ namespace PepperDash.Essentials.Core
 		/// Bool press 3992
 		/// </summary>
 		public const uint Button2Join = 3992;
-        /// <summary>
-        /// 3993
-        /// </summary>
-        public const uint CancelButtonJoin = 3993;
+		/// <summary>
+		/// 3993
+		/// </summary>
+		public const uint CancelButtonJoin = 3993;
 		/// <summary>
 		///For visibility of single button.  Bool feedback 3994
 		/// </summary>
@@ -35,19 +35,19 @@ namespace PepperDash.Essentials.Core
 		/// Shows the timer guage if in use. Bool feedback 3996
 		/// </summary>
 		public const uint TimerVisibleJoin = 3996;
-        /// <summary>
-        /// Visibility join to show "X" button 3997
-        /// </summary>
-        public const uint CancelVisibleJoin = 3997;
+		/// <summary>
+		/// Visibility join to show "X" button 3997
+		/// </summary>
+		public const uint CancelVisibleJoin = 3997;
 		/// <summary>
 		/// Shows the modal subpage. Boolean feeback join 3999
 		/// </summary>
 		public const uint ModalVisibleJoin = 3999;
 
-		/// <summary>
-		/// The seconds value of the countdown timer. Ushort join 3991
-		/// </summary>
-        //public const uint TimerSecondsJoin = 3991;
+		///// <summary>
+		///// The seconds value of the countdown timer. Ushort join 3991
+		///// </summary>
+		//public const uint TimerSecondsJoin = 3991;
 		/// <summary>
 		/// The full ushort value of the countdown timer for a gauge. Ushort join 3992
 		/// </summary>
@@ -77,15 +77,15 @@ namespace PepperDash.Essentials.Core
 		/// <summary>
 		/// Returns true when modal is showing
 		/// </summary>
-		public bool ModalIsVisible 
-		{ 
-			get { return TriList.BooleanInput[ModalVisibleJoin].BoolValue; } 
+		public bool ModalIsVisible
+		{
+			get { return TriList.BooleanInput[ModalVisibleJoin].BoolValue; }
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool CanCancel { get; private set; }
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool CanCancel { get; private set; }
 
 
 		BasicTriList TriList;
@@ -103,10 +103,10 @@ namespace PepperDash.Essentials.Core
 			TriList = triList;
 			// Attach actions to buttons
 
-            triList.SetSigFalseAction(Button1Join, () => OnModalComplete(1));
+			triList.SetSigFalseAction(Button1Join, () => OnModalComplete(1));
 			triList.SetSigFalseAction(Button2Join, () => OnModalComplete(2));
-            triList.SetSigFalseAction(CancelButtonJoin, () => { if (CanCancel) CancelDialog(); });
-            CanCancel = true;
+			triList.SetSigFalseAction(CancelButtonJoin, () => { if (CanCancel) CancelDialog(); });
+			CanCancel = true;
 		}
 
 		/// <summary>
@@ -117,7 +117,7 @@ namespace PepperDash.Essentials.Core
 		/// <param name="decreasingGauge">If the progress bar gauge needs to count down instead of up</param>
 		/// <param name="completeAction">The action to run when the dialog is dismissed. Parameter will be 1 or 2 if button pressed, or 0 if dialog times out</param>
 		/// <returns>True when modal is created.</returns>
-		public bool PresentModalDialog(uint numberOfButtons, string title, string iconName, 
+		public bool PresentModalDialog(uint numberOfButtons, string title, string iconName,
 			string message, string button1Text,
 			string button2Text, bool showGauge, bool showCancel, Action<uint> completeAction)
 		{
@@ -151,15 +151,15 @@ namespace PepperDash.Essentials.Core
 					TriList.StringInput[Button2TextJoin].StringValue = button2Text;
 				}
 				// Show/hide guage
-                TriList.BooleanInput[TimerVisibleJoin].BoolValue = showGauge;
-                
-                CanCancel = showCancel;
-                TriList.BooleanInput[CancelVisibleJoin].BoolValue = showCancel;
+				TriList.BooleanInput[TimerVisibleJoin].BoolValue = showGauge;
+
+				CanCancel = showCancel;
+				TriList.BooleanInput[CancelVisibleJoin].BoolValue = showCancel;
 
 				//Reveal and activate
 				TriList.BooleanInput[ModalVisibleJoin].BoolValue = true;
 
-                WakePanel();
+				WakePanel();
 
 				return true;
 			}
@@ -167,48 +167,48 @@ namespace PepperDash.Essentials.Core
 			return false;
 		}
 
-        /// <summary>
-        /// WakePanel method
-        /// </summary>
-        public void WakePanel()
-        {
-            try
-            {
-                var panel = TriList as TswFt5Button;
-
-                if (panel != null && panel.ExtenderSystemReservedSigs.BacklightOffFeedback.BoolValue)
-                    panel.ExtenderSystemReservedSigs.BacklightOn();
-            }
-            catch
-            {
-                Debug.LogMessage(LogEventLevel.Debug, "Error Waking Panel.  Maybe testing with Xpanel?");
-            }
-        }
-
-  /// <summary>
-  /// CancelDialog method
-  /// </summary>
-		public void CancelDialog()
+		/// <summary>
+		/// WakePanel method
+		/// </summary>
+		public void WakePanel()
 		{
-            OnModalComplete(0);
+			try
+			{
+				var panel = TriList as TswFt5Button;
+
+				if (panel != null && panel.ExtenderSystemReservedSigs.BacklightOffFeedback.BoolValue)
+					panel.ExtenderSystemReservedSigs.BacklightOn();
+			}
+			catch
+			{
+				Debug.LogMessage(LogEventLevel.Debug, "Error Waking Panel.  Maybe testing with Xpanel?");
+			}
 		}
 
-        /// <summary>
-        /// Hides dialog. Fires no action
-        /// </summary>
-        public void HideDialog()
-        {
-            TriList.BooleanInput[ModalVisibleJoin].BoolValue = false;
-        }
+		/// <summary>
+		/// CancelDialog method
+		/// </summary>
+		public void CancelDialog()
+		{
+			OnModalComplete(0);
+		}
+
+		/// <summary>
+		/// Hides dialog. Fires no action
+		/// </summary>
+		public void HideDialog()
+		{
+			TriList.BooleanInput[ModalVisibleJoin].BoolValue = false;
+		}
 
 		// When the modal is cleared or times out, clean up the various bits
 		void OnModalComplete(uint buttonNum)
 		{
 			TriList.BooleanInput[ModalVisibleJoin].BoolValue = false;
 
-            var action = ModalCompleteAction;
-            if (action != null)
-                action(buttonNum);
+			var action = ModalCompleteAction;
+			if (action != null)
+				action(buttonNum);
 		}
 	}
 
