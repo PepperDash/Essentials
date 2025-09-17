@@ -14,18 +14,40 @@ namespace PepperDash.Essentials.Core
     {
         private RoomCombinationScenarioConfig _config;
 
+        /// <summary>
+        /// Gets or sets the key associated with the object.
+        /// </summary>
         [JsonProperty("key")]
         public string Key { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name associated with the object.
+        /// </summary>
         [JsonProperty("name")]
         public string Name { get; set; }
 
-        [JsonProperty("partitionStates")]
+        /// <summary>
+        /// Gets a value indicating whether to hide this scenario in the UI.
+        /// </summary>
+        ///        
+        [JsonProperty("hideInUi")]
+
+        public bool HideInUi
+        {
+            get { return _config.HideInUi; }
+        }
+
         /// <summary>
         /// Gets or sets the PartitionStates
         /// </summary>
+        ///
+        [JsonProperty("partitionStates")]
+
         public List<PartitionState> PartitionStates { get; private set; }
 
+        /// <summary>
+        /// Determines which UI devices get mapped to which room in this scenario.  The Key should be the key of the UI device and the Value should be the key of the room to map to
+        /// </summary>
         [JsonProperty("uiMap")]
         public Dictionary<string, string> UiMap { get; set; }
 
