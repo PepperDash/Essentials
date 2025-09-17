@@ -25,48 +25,65 @@ namespace PepperDash.Essentials.Core
 	public static class IHasFeedbackExtensions
 	{
 		/// <summary>
+		/// Gets the feedback type name for sorting purposes
+		/// </summary>
+		/// <param name="feedback">The feedback to get the type name for</param>
+		/// <returns>A string representing the feedback type</returns>
+		private static string GetFeedbackTypeName(Feedback feedback)
+		{
+			if (feedback is BoolFeedback)
+				return "boolean";
+			else if (feedback is IntFeedback)
+				return "integer";
+			else if (feedback is StringFeedback)
+				return "string";
+			else
+				return feedback.GetType().Name;
+		}
+
+		/// <summary>
 		/// Dumps the feedbacks to the console
 		/// </summary>
 		/// <param name="source"></param>
 		/// <param name="getCurrentStates"></param>
 		public static void DumpFeedbacksToConsole(this IHasFeedback source, bool getCurrentStates)
 		{
-			Type t = source.GetType();
-			// get the properties and set them into a new collection of NameType wrappers
-			var props = t.GetProperties().Select(p => new PropertyNameType(p, t));
-
 			var feedbacks = source.Feedbacks;
 
-			if (feedbacks == null)
+			if (feedbacks == null || feedbacks.Count == 0)
 			{
-				CrestronConsole.ConsoleCommandResponse("No available outputs\r\n");
+				CrestronConsole.ConsoleCommandResponse("No available feedbacks\r\n");
 				return;
 			}
 
 			CrestronConsole.ConsoleCommandResponse("Available feedbacks:\r\n");
-			foreach (var f in feedbacks)
+
+			// Sort feedbacks by type first, then by key
+			var sortedFeedbacks = feedbacks.OrderBy(f => GetFeedbackTypeName(f)).ThenBy(f => string.IsNullOrEmpty(f.Key) ? "" : f.Key);
+
+			foreach (var feedback in sortedFeedbacks)
 			{
-				string val = "";
+				string value = "";
 				string type = "";
 				if (getCurrentStates)
 				{
-					if (f is BoolFeedback)
+					if (feedback is BoolFeedback)
 					{
-						val = f.BoolValue.ToString();
+						value = feedback.BoolValue.ToString();
 						type = "boolean";
 					}
-					else if (f is IntFeedback)
+					else if (feedback is IntFeedback)
 					{
-						val = f.IntValue.ToString();
+						value = feedback.IntValue.ToString();
 						type = "integer";
 					}
-					else if (f is StringFeedback)
+					else if (feedback is StringFeedback)
 					{
-						val = f.StringValue;
+						value = feedback.StringValue;
 						type = "string";
 					}
 				}
-				CrestronConsole.ConsoleCommandResponse($"{type,-12} {(string.IsNullOrEmpty(f.Key) ? "-no key-" : f.Key),-25} {val}\r\n");
+				CrestronConsole.ConsoleCommandResponse($"  {type,-12} {(string.IsNullOrEmpty(feedback.Key) ? "-no key-" : feedback.Key),-25} {value}\r\n");
 			}
 		}
 	}
