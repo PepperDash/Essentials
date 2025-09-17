@@ -202,7 +202,7 @@ namespace PepperDash.Essentials.Core
 
         private static void ListDevices(string s)
         {
-            CrestronConsole.ConsoleCommandResponse($"{Devices.Count} Devices registered with Device Manager:");
+            CrestronConsole.ConsoleCommandResponse($"{Devices.Count} Devices registered with Device Manager:\r\n");
 
             var sorted = Devices.Values.ToList();
             sorted.Sort((a, b) => a.Key.CompareTo(b.Key));
@@ -210,7 +210,7 @@ namespace PepperDash.Essentials.Core
             foreach (var d in sorted)
             {
                 var name = d is IKeyName ? (d as IKeyName).Name : "---";
-                CrestronConsole.ConsoleCommandResponse($"  [{d.Key}] {name}");
+                CrestronConsole.ConsoleCommandResponse($"  [{d.Key}] {name}\r\n");
             }
         }
 
