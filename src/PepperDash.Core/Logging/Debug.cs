@@ -466,14 +466,14 @@ namespace PepperDash.Core
         /// </summary>
         public static void SetFileMinimumDebugLevel(LogEventLevel level)
         {
-            _errorLogLevelSwitch.MinimumLevel = level;
+            _fileLevelSwitch.MinimumLevel = level;
 
-            var err = CrestronDataStoreStatic.SetLocalUintValue(ErrorLogLevelStoreKey, (uint)level);
+            var err = CrestronDataStoreStatic.SetLocalUintValue(FileLevelStoreKey, (uint)level);
 
             if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 LogMessage(LogEventLevel.Information, "Error saving File debug level setting: {error}", err);
 
-            LogMessage(LogEventLevel.Information, "File debug level set to {0}", _websocketLoggingLevelSwitch.MinimumLevel);
+            LogMessage(LogEventLevel.Information, "File debug level set to {0}", _fileLevelSwitch.MinimumLevel);
         }
 
         /// <summary>
