@@ -14,14 +14,14 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
-    ////*****************************************************************************
-    /// <summary>
-    /// Base class for all subpage reference list controllers
-    /// </summary>
-    //public class SubpageReferenceListController
-    //{
-    //    public SubpageReferenceList TheList { get; protected set; }
-    //}
+	////*****************************************************************************
+	///// <summary>
+	///// Base class for all subpage reference list controllers
+	///// </summary>
+	//public class SubpageReferenceListController
+	//{
+	//    public SubpageReferenceList TheList { get; protected set; }
+	//}
 
 	//*****************************************************************************
 	/// <summary>
@@ -34,26 +34,26 @@ namespace PepperDash.Essentials.Core
 		public ushort Count
 		{
 			get { return SetNumberOfItemsSig.UShortValue; }
-			set { SetNumberOfItemsSig.UShortValue = value;  }
+			set { SetNumberOfItemsSig.UShortValue = value; }
 		}
 		public ushort MaxDefinedItems { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the ScrollToItemSig
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the ScrollToItemSig
+		/// </summary>
 		public UShortInputSig ScrollToItemSig { get; private set; }
 		UShortInputSig SetNumberOfItemsSig;
-  /// <summary>
-  /// Gets or sets the BoolIncrement
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the BoolIncrement
+		/// </summary>
 		public uint BoolIncrement { get; protected set; }
-  /// <summary>
-  /// Gets or sets the UShortIncrement
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the UShortIncrement
+		/// </summary>
 		public uint UShortIncrement { get; protected set; }
-  /// <summary>
-  /// Gets or sets the StringIncrement
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the StringIncrement
+		/// </summary>
 		public uint StringIncrement { get; protected set; }
 
 		protected readonly SmartObject SRL;
@@ -87,8 +87,8 @@ namespace PepperDash.Essentials.Core
 				SRL.SigChange += new SmartObjectSigChangeEventHandler(SRL_SigChange);
 			}
 			else
-				Debug.LogMessage(LogEventLevel.Information, "ERROR: TriList 0x{0:X2} Cannot load smart object {1}. Verify correct SGD file is loaded", 
-                    triList.ID, smartObjectId);
+				Debug.LogMessage(LogEventLevel.Information, "ERROR: TriList 0x{0:X2} Cannot load smart object {1}. Verify correct SGD file is loaded",
+										triList.ID, smartObjectId);
 		}
 
 		/// <summary>
@@ -96,17 +96,17 @@ namespace PepperDash.Essentials.Core
 		/// DOES NOT adjust Count
 		/// </summary>
 		/// <param name="item"></param>
-  /// <summary>
-  /// AddItem method
-  /// </summary>
+		/// <summary>
+		/// AddItem method
+		/// </summary>
 		public void AddItem(SubpageReferenceListItem item)
 		{
 			Items.Add(item);
 		}
 
-  /// <summary>
-  /// Clear method
-  /// </summary>
+		/// <summary>
+		/// Clear method
+		/// </summary>
 		public void Clear()
 		{
 			// If a line item needs to disconnect an CueActionPair or do something to release RAM
@@ -116,12 +116,12 @@ namespace PepperDash.Essentials.Core
 			// Clean up the SRL
 			Count = 1;
 
-		    ScrollToItemSig.UShortValue = 1;
+			ScrollToItemSig.UShortValue = 1;
 		}
 
-  /// <summary>
-  /// Refresh method
-  /// </summary>
+		/// <summary>
+		/// Refresh method
+		/// </summary>
 		public void Refresh()
 		{
 			foreach (var item in Items) item.Refresh();
@@ -157,7 +157,7 @@ namespace PepperDash.Essentials.Core
 		public UShortOutputSig GetUShortOutputSig(uint index, uint sigNum)
 		{
 			if (sigNum > UShortIncrement) return null;
-            return SRL.UShortOutput.FirstOrDefault(s => s.Name.Equals(GetUShortOutputSigName(index, sigNum)));
+			return SRL.UShortOutput.FirstOrDefault(s => s.Name.Equals(GetUShortOutputSigName(index, sigNum)));
 		}
 
 		/// <summary>
@@ -172,7 +172,7 @@ namespace PepperDash.Essentials.Core
 		public StringOutputSig GetStringOutputSig(uint index, uint sigNum)
 		{
 			if (sigNum > StringIncrement) return null;
-            return SRL.StringOutput.FirstOrDefault(s => s.Name.Equals(GetStringOutputSigName(index, sigNum)));
+			return SRL.StringOutput.FirstOrDefault(s => s.Name.Equals(GetStringOutputSigName(index, sigNum)));
 		}
 
 		/// <summary>
@@ -263,9 +263,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="currentDevice"></param>
 		/// <param name="args"></param>
-  /// <summary>
-  /// SRL_SigChange method
-  /// </summary>
+		/// <summary>
+		/// SRL_SigChange method
+		/// </summary>
 		public static void SRL_SigChange(GenericBase currentDevice, SmartObjectEventArgs args)
 		{
 			var uo = args.Sig.UserObject;

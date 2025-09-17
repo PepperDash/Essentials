@@ -9,11 +9,11 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Room.Config
 {
- /// <summary>
- /// Represents a EssentialsRoomConfigHelper
- /// </summary>
-	public class EssentialsRoomConfigHelper
-	{
+    /// <summary>
+    /// Represents a EssentialsRoomConfigHelper
+    /// </summary>
+    public class EssentialsRoomConfigHelper
+    {
         /// <summary>
         /// GetEmergency method
         /// </summary>
@@ -31,100 +31,100 @@ namespace PepperDash.Essentials.Room.Config
             return null;
         }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="props"></param>
-		/// <param name="room"></param>
-		/// <returns></returns>
-  /// <summary>
-  /// GetMicrophonePrivacy method
-  /// </summary>
-		public static MicrophonePrivacyController GetMicrophonePrivacy(
-			EssentialsRoomPropertiesConfig props, IPrivacy room)
-		{
-			var microphonePrivacy = props.MicrophonePrivacy;
-			if (microphonePrivacy == null)
-			{
-				Debug.LogMessage(LogEventLevel.Information, "Cannot create microphone privacy with null properties");
-				return null;
-			}
-			// Get the MicrophonePrivacy device from the device manager
-			var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.DeviceKey) as MicrophonePrivacyController);
-			// Set this room as the IPrivacy device
-			if (mP == null)
-			{
-				Debug.LogMessage(LogEventLevel.Information, "ERROR: Selected device {0} is not MicrophonePrivacyController", props.MicrophonePrivacy.DeviceKey);
-				return null;
-			}
-			mP.SetPrivacyDevice(room);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="props"></param>
+        /// <param name="room"></param>
+        /// <returns></returns>
+        /// <summary>
+        /// GetMicrophonePrivacy method
+        /// </summary>
+        public static MicrophonePrivacyController GetMicrophonePrivacy(
+            EssentialsRoomPropertiesConfig props, IPrivacy room)
+        {
+            var microphonePrivacy = props.MicrophonePrivacy;
+            if (microphonePrivacy == null)
+            {
+                Debug.LogMessage(LogEventLevel.Information, "Cannot create microphone privacy with null properties");
+                return null;
+            }
+            // Get the MicrophonePrivacy device from the device manager
+            var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.DeviceKey) as MicrophonePrivacyController);
+            // Set this room as the IPrivacy device
+            if (mP == null)
+            {
+                Debug.LogMessage(LogEventLevel.Information, "ERROR: Selected device {0} is not MicrophonePrivacyController", props.MicrophonePrivacy.DeviceKey);
+                return null;
+            }
+            mP.SetPrivacyDevice(room);
 
-			var behaviour = props.MicrophonePrivacy.Behaviour.ToLower();
+            var behaviour = props.MicrophonePrivacy.Behaviour.ToLower();
 
-			if (behaviour == null)
-			{
-				Debug.LogMessage(LogEventLevel.Information, "WARNING: No behaviour defined for MicrophonePrivacyController");
-				return null;
-			}
-			if (behaviour == "trackroomstate")
-			{
-				// Tie LED enable to room power state
+            if (behaviour == null)
+            {
+                Debug.LogMessage(LogEventLevel.Information, "WARNING: No behaviour defined for MicrophonePrivacyController");
+                return null;
+            }
+            if (behaviour == "trackroomstate")
+            {
+                // Tie LED enable to room power state
                 var essRoom = room as IEssentialsRoom;
                 essRoom.OnFeedback.OutputChange += (o, a) =>
-				{
+                {
                     if (essRoom.OnFeedback.BoolValue)
-						mP.EnableLeds = true;
-					else
-						mP.EnableLeds = false;
-				};
+                        mP.EnableLeds = true;
+                    else
+                        mP.EnableLeds = false;
+                };
 
                 mP.EnableLeds = essRoom.OnFeedback.BoolValue;
-			}
-			else if (behaviour == "trackcallstate")
-			{
-				// Tie LED enable to room power state
+            }
+            else if (behaviour == "trackcallstate")
+            {
+                // Tie LED enable to room power state
                 var inCallRoom = room as IHasInCallFeedback;
                 inCallRoom.InCallFeedback.OutputChange += (o, a) =>
-				{
+                {
                     if (inCallRoom.InCallFeedback.BoolValue)
-						mP.EnableLeds = true;
-					else
-						mP.EnableLeds = false;
-				};
+                        mP.EnableLeds = true;
+                    else
+                        mP.EnableLeds = false;
+                };
 
                 mP.EnableLeds = inCallRoom.InCallFeedback.BoolValue;
-			}
+            }
 
-			return mP;
-		}
-	
-	}
+            return mP;
+        }
 
- /// <summary>
- /// Represents a EssentialsRoomPropertiesConfig
- /// </summary>
-	public class EssentialsRoomPropertiesConfig
-	{
-		[JsonProperty("addresses")]
-		public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
+    }
 
-		[JsonProperty("description")]
-		public string Description { get; set; }
+    /// <summary>
+    /// Represents a EssentialsRoomPropertiesConfig
+    /// </summary>
+    public class EssentialsRoomPropertiesConfig
+    {
+        [JsonProperty("addresses")]
+        public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
 
-		[JsonProperty("emergency")]
-		public EssentialsRoomEmergencyConfig Emergency { get; set; }
+        [JsonProperty("description")]
+        public string Description { get; set; }
 
-		[JsonProperty("help")]
-  /// <summary>
-  /// Gets or sets the Help
-  /// </summary>
-		public EssentialsHelpPropertiesConfig Help { get; set; }
+        [JsonProperty("emergency")]
+        public EssentialsRoomEmergencyConfig Emergency { get; set; }
 
-		[JsonProperty("helpMessage")]
-  /// <summary>
-  /// Gets or sets the HelpMessage
-  /// </summary>
-		public string HelpMessage { get; set; }
+        /// <summary>
+        /// Gets or sets the Help
+        /// </summary>
+        [JsonProperty("help")]
+        public EssentialsHelpPropertiesConfig Help { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HelpMessage
+        /// </summary>
+        [JsonProperty("helpMessage")]
+        public string HelpMessage { get; set; }
 
         /// <summary>
         /// Read this value to get the help message.  It checks for the old and new config format.
@@ -133,94 +133,94 @@ namespace PepperDash.Essentials.Room.Config
         {
             get
             {
-                if(Help != null && !string.IsNullOrEmpty(Help.Message))
+                if (Help != null && !string.IsNullOrEmpty(Help.Message))
                 {
                     return Help.Message;
                 }
                 else
                 {
-                    return HelpMessage; 
+                    return HelpMessage;
                 }
             }
         }
 
-		[JsonProperty("environment")]
-  /// <summary>
-  /// Gets or sets the Environment
-  /// </summary>
-		public EssentialsEnvironmentPropertiesConfig Environment { get; set; }
+        /// <summary>
+        /// Gets or sets the Environment
+        /// </summary>
+        [JsonProperty("environment")]
+        public EssentialsEnvironmentPropertiesConfig Environment { get; set; }
 
-		[JsonProperty("logo")]
-  /// <summary>
-  /// Gets or sets the LogoLight
-  /// </summary>
-		public EssentialsLogoPropertiesConfig LogoLight { get; set; }
+        /// <summary>
+        /// Gets or sets the LogoLight
+        /// </summary>
+        [JsonProperty("logo")]
+        public EssentialsLogoPropertiesConfig LogoLight { get; set; }
 
-        [JsonProperty("logoDark")]
         /// <summary>
         /// Gets or sets the LogoDark
         /// </summary>
+        [JsonProperty("logoDark")]
         public EssentialsLogoPropertiesConfig LogoDark { get; set; }
-	
-		[JsonProperty("microphonePrivacy")]
-  /// <summary>
-  /// Gets or sets the MicrophonePrivacy
-  /// </summary>
-		public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy { get; set; }
 
-		[JsonProperty("occupancy")]
-  /// <summary>
-  /// Gets or sets the Occupancy
-  /// </summary>
-		public EssentialsRoomOccSensorConfig Occupancy { get; set; }
+        /// <summary>
+        /// Gets or sets the MicrophonePrivacy
+        /// </summary>
+        [JsonProperty("microphonePrivacy")]
+        public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy { get; set; }
 
-		[JsonProperty("oneButtonMeeting")]
-  /// <summary>
-  /// Gets or sets the OneButtonMeeting
-  /// </summary>
-		public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
+        /// <summary>
+        /// Gets or sets the Occupancy
+        /// </summary>
+        [JsonProperty("occupancy")]
+        public EssentialsRoomOccSensorConfig Occupancy { get; set; }
 
-		[JsonProperty("shutdownVacancySeconds")]
-  /// <summary>
-  /// Gets or sets the ShutdownVacancySeconds
-  /// </summary>
-		public int ShutdownVacancySeconds { get; set; }
+        /// <summary>
+        /// Gets or sets the OneButtonMeeting
+        /// </summary>
+        [JsonProperty("oneButtonMeeting")]
+        public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
 
-		[JsonProperty("shutdownPromptSeconds")]
-  /// <summary>
-  /// Gets or sets the ShutdownPromptSeconds
-  /// </summary>
-		public int ShutdownPromptSeconds { get; set; }
+        /// <summary>
+        /// Gets or sets the ShutdownVacancySeconds
+        /// </summary>
+        [JsonProperty("shutdownVacancySeconds")]
+        public int ShutdownVacancySeconds { get; set; }
 
-		[JsonProperty("tech")]
-  /// <summary>
-  /// Gets or sets the Tech
-  /// </summary>
-		public EssentialsRoomTechConfig Tech { get; set; }
+        /// <summary>
+        /// Gets or sets the ShutdownPromptSeconds
+        /// </summary>
+        [JsonProperty("shutdownPromptSeconds")]
+        public int ShutdownPromptSeconds { get; set; }
 
-		[JsonProperty("volumes")]
-  /// <summary>
-  /// Gets or sets the Volumes
-  /// </summary>
-		public EssentialsRoomVolumesConfig Volumes { get; set; }
+        /// <summary>
+        /// Gets or sets the Tech
+        /// </summary>
+        [JsonProperty("tech")]
+        public EssentialsRoomTechConfig Tech { get; set; }
 
-        [JsonProperty("fusion")]
+        /// <summary>
+        /// Gets or sets the Volumes
+        /// </summary>
+        [JsonProperty("volumes")]
+        public EssentialsRoomVolumesConfig Volumes { get; set; }
+
         /// <summary>
         /// Gets or sets the Fusion
         /// </summary>
+        [JsonProperty("fusion")]
         public EssentialsRoomFusionConfig Fusion { get; set; }
 
-        [JsonProperty("essentialsRoomUiBehaviorConfig", NullValueHandling=NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the UiBehavior
         /// </summary>
+        [JsonProperty("essentialsRoomUiBehaviorConfig", NullValueHandling = NullValueHandling.Ignore)]
         public EssentialsRoomUiBehaviorConfig UiBehavior { get; set; }
 
-		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
-  /// <summary>
-  /// Gets or sets the ZeroVolumeWhenSwtichingVolumeDevices
-  /// </summary>
-		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
+        /// <summary>
+        /// Gets or sets the ZeroVolumeWhenSwtichingVolumeDevices
+        /// </summary>
+        [JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
+        public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 
         /// <summary>
         /// Indicates if this room represents a combination of other rooms
@@ -236,7 +236,7 @@ namespace PepperDash.Essentials.Room.Config
             LogoLight = new EssentialsLogoPropertiesConfig();
             LogoDark = new EssentialsLogoPropertiesConfig();
         }
-	}
+    }
 
     /// <summary>
     /// Represents a EssentialsRoomUiBehaviorConfig
@@ -327,15 +327,15 @@ namespace PepperDash.Essentials.Room.Config
 
     }
 
- /// <summary>
- /// Represents a EssentialsEnvironmentPropertiesConfig
- /// </summary>
-	public class EssentialsEnvironmentPropertiesConfig
-	{
-  /// <summary>
-  /// Gets or sets the Enabled
-  /// </summary>
-		public bool Enabled { get; set; }
+    /// <summary>
+    /// Represents a EssentialsEnvironmentPropertiesConfig
+    /// </summary>
+    public class EssentialsEnvironmentPropertiesConfig
+    {
+        /// <summary>
+        /// Gets or sets the Enabled
+        /// </summary>
+        public bool Enabled { get; set; }
 
         [JsonProperty("deviceKeys")]
         /// <summary>
@@ -348,7 +348,7 @@ namespace PepperDash.Essentials.Room.Config
             DeviceKeys = new List<string>();
         }
 
-	}
+    }
 
     /// <summary>
     /// Represents a EssentialsRoomFusionConfig
@@ -359,7 +359,7 @@ namespace PepperDash.Essentials.Room.Config
         {
             get
             {
-                try 
+                try
                 {
                     return Convert.ToUInt32(IpId, 16);
                 }
@@ -367,7 +367,7 @@ namespace PepperDash.Essentials.Room.Config
                 {
                     throw new FormatException(string.Format("ERROR:Unable to convert IP ID: {0} to hex.  Error:\n{1}", IpId));
                 }
-          
+
             }
         }
 
@@ -390,17 +390,17 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsRoomMicrophonePrivacyConfig
     {
-		[JsonProperty("deviceKey")]
-  /// <summary>
-  /// Gets or sets the DeviceKey
-  /// </summary>
-		public string DeviceKey { get; set; }
+        [JsonProperty("deviceKey")]
+        /// <summary>
+        /// Gets or sets the DeviceKey
+        /// </summary>
+        public string DeviceKey { get; set; }
 
-		[JsonProperty("behaviour")]
-  /// <summary>
-  /// Gets or sets the Behaviour
-  /// </summary>
-		public string Behaviour { get; set; }
+        [JsonProperty("behaviour")]
+        /// <summary>
+        /// Gets or sets the Behaviour
+        /// </summary>
+        public string Behaviour { get; set; }
     }
 
     /// <summary>
@@ -408,23 +408,23 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsHelpPropertiesConfig
     {
-		[JsonProperty("message")]
-  /// <summary>
-  /// Gets or sets the Message
-  /// </summary>
-		public string Message { get; set; }
+        [JsonProperty("message")]
+        /// <summary>
+        /// Gets or sets the Message
+        /// </summary>
+        public string Message { get; set; }
 
-		[JsonProperty("showCallButton")]
-		public bool ShowCallButton { get; set; }
-        
-		/// <summary>
+        [JsonProperty("showCallButton")]
+        public bool ShowCallButton { get; set; }
+
+        /// <summary>
         /// Defaults to "Call Help Desk"
         /// </summary>
-		[JsonProperty("callButtonText")]
-  /// <summary>
-  /// Gets or sets the CallButtonText
-  /// </summary>
-		public string CallButtonText { get; set; }
+        [JsonProperty("callButtonText")]
+        /// <summary>
+        /// Gets or sets the CallButtonText
+        /// </summary>
+        public string CallButtonText { get; set; }
 
         public EssentialsHelpPropertiesConfig()
         {
@@ -437,23 +437,23 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsOneButtonMeetingPropertiesConfig
     {
-		[JsonProperty("enable")]
-  /// <summary>
-  /// Gets or sets the Enable
-  /// </summary>
-		public bool Enable { get; set; }
+        [JsonProperty("enable")]
+        /// <summary>
+        /// Gets or sets the Enable
+        /// </summary>
+        public bool Enable { get; set; }
     }
 
     public class EssentialsRoomAddressPropertiesConfig
     {
-		[JsonProperty("phoneNumber")]
-		public string PhoneNumber { get; set; }
+        [JsonProperty("phoneNumber")]
+        public string PhoneNumber { get; set; }
 
-		[JsonProperty("sipAddress")]
-  /// <summary>
-  /// Gets or sets the SipAddress
-  /// </summary>
-		public string SipAddress { get; set; }
+        [JsonProperty("sipAddress")]
+        /// <summary>
+        /// Gets or sets the SipAddress
+        /// </summary>
+        public string SipAddress { get; set; }
     }
 
 
@@ -462,14 +462,14 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsLogoPropertiesConfig
     {
-		[JsonProperty("type")]
-  /// <summary>
-  /// Gets or sets the Type
-  /// </summary>
-		public string Type { get; set; }
+        [JsonProperty("type")]
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
+        public string Type { get; set; }
 
-		[JsonProperty("url")]
-		public string Url { get; set; }
+        [JsonProperty("url")]
+        public string Url { get; set; }
         /// <summary>
         /// GetLogoUrlLight method
         /// </summary>
@@ -478,7 +478,7 @@ namespace PepperDash.Essentials.Room.Config
             if (Type == "url")
                 return Url;
             if (Type == "system")
-                return string.Format("http://{0}:8080/logo.png", 
+                return string.Format("http://{0}:8080/logo.png",
                     CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0));
             return null;
         }
@@ -502,22 +502,22 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsRoomOccSensorConfig
     {
-		[JsonProperty("deviceKey")]
-  /// <summary>
-  /// Gets or sets the DeviceKey
-  /// </summary>
-		public string DeviceKey { get; set; }
+        [JsonProperty("deviceKey")]
+        /// <summary>
+        /// Gets or sets the DeviceKey
+        /// </summary>
+        public string DeviceKey { get; set; }
 
-		[JsonProperty("timeoutMinutes")]
-		public int TimeoutMinutes { get; set; }
+        [JsonProperty("timeoutMinutes")]
+        public int TimeoutMinutes { get; set; }
     }
 
-	public class EssentialsRoomTechConfig
-	{
-		[JsonProperty("password")]
-  /// <summary>
-  /// Gets or sets the Password
-  /// </summary>
-		public string Password { get; set; }
-	}
+    public class EssentialsRoomTechConfig
+    {
+        [JsonProperty("password")]
+        /// <summary>
+        /// Gets or sets the Password
+        /// </summary>
+        public string Password { get; set; }
+    }
 }
