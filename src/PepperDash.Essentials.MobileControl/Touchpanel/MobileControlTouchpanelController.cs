@@ -190,12 +190,25 @@ namespace PepperDash.Essentials.Touchpanel
 
             RegisterForExtenders();
 
-            var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
-            var csSubnetMask = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, csAdapterId);
-            var csIpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Appliance)
+            {
+                this.LogInformation("Not running on processor. Skipping CS LAN Configuration");
+                return;
+            }
 
-            this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
-            this.csIpAddress = System.Net.IPAddress.Parse(csIpAddress);
+            try
+            {
+                var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
+                var csSubnetMask = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, csAdapterId);
+                var csIpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
+                this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
+                this.csIpAddress = System.Net.IPAddress.Parse(csIpAddress);
+            }
+            catch (ArgumentException)
+            {
+                this.LogInformation("This processor does not have a CS LAN");
+            }
         }
 
         /// <summary>
@@ -436,7 +449,7 @@ namespace PepperDash.Essentials.Touchpanel
 
             var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);
 
-            if(csIpAddress == null || csSubnetMask == null || url == null)
+            if (csIpAddress == null || csSubnetMask == null || url == null)
             {
                 this.LogWarning("CS IP Address Subnet Mask or url is null, cannot determine correct IP for URL");
                 return url;
