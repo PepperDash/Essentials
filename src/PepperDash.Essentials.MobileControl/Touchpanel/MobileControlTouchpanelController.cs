@@ -510,7 +510,7 @@ namespace PepperDash.Essentials.Touchpanel
             _bridge.UserCodeChanged += UpdateFeedbacks;
             _bridge.AppUrlChanged += (s, a) =>
             {
-                this.LogInformation("AppURL changed");
+                this.LogInformation("AppURL changed: {appURL}", _bridge.AppUrl);
                 SetAppUrl(_bridge.AppUrl);
                 UpdateFeedbacks(s, a);
             };
