@@ -16,13 +16,21 @@ namespace PepperDash.Essentials.Core.Config
 	/// </summary>
 	public class EssentialsConfig : BasicConfig
 	{
-		[JsonProperty("system_url")]
+        /// <summary>
+        /// Gets or sets the SystemUrl
+        /// </summary>
+        [JsonProperty("system_url")]
         public string SystemUrl { get; set; }
 
-		[JsonProperty("template_url")]
+        /// <summary>
+        /// Gets or sets the TemplateUrl
+        /// </summary>
+        [JsonProperty("template_url")]
         public string TemplateUrl { get; set; }
 
-
+        /// <summary>
+        /// Gets the SystemUuid extracted from the SystemUrl
+        /// </summary>
 		[JsonProperty("systemUuid")]
 		public string SystemUuid
         {
@@ -45,6 +53,9 @@ namespace PepperDash.Essentials.Core.Config
             }
         }
 
+        /// <summary>
+        /// Gets the TemplateUuid extracted from the TemplateUrl
+        /// </summary>
 		[JsonProperty("templateUuid")]
 		public string TemplateUuid
         {
@@ -67,13 +78,16 @@ namespace PepperDash.Essentials.Core.Config
             }
         }
 
-		[JsonProperty("rooms")]
         /// <summary>
         /// Gets or sets the Rooms
         /// </summary>
+        [JsonProperty("rooms")]
+
         public List<DeviceConfig> Rooms { get; set; }
 
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EssentialsConfig"/> class.
+        /// </summary>
         public EssentialsConfig()
             : base()
         {
@@ -86,11 +100,14 @@ namespace PepperDash.Essentials.Core.Config
  /// </summary>
 	public class SystemTemplateConfigs
 	{
-  /// <summary>
-  /// Gets or sets the System
-  /// </summary>
+        /// <summary>
+        /// Gets or sets the System
+        /// </summary>
 		public EssentialsConfig System { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Template
+        /// </summary>
 		public EssentialsConfig Template { get; set; }
 	}
 }
