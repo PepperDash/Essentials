@@ -957,15 +957,24 @@ public static class Debug
         //if (!Directory.Exists(dir))
         //    Directory.Create(dir);
 
-        var fileName = GetMemoryFileName();
-
-        LogMessage(LogEventLevel.Information, "Loading debug settings file from {fileName}", fileName);
-
-        using (var sw = new StreamWriter(fileName))
+        try
         {
-            var json = JsonConvert.SerializeObject(_contexts);
-            sw.Write(json);
-            sw.Flush();
+            var fileName = GetMemoryFileName();
+
+            LogMessage(LogEventLevel.Information, "Loading debug settings file from {fileName}", fileName);
+
+            using (var sw = new StreamWriter(fileName))
+            {
+                var json = JsonConvert.SerializeObject(_contexts);
+                sw.Write(json);
+                sw.Flush();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.Error("Exception saving debug settings: {message}", ex);
+            CrestronConsole.PrintLine("Exception saving debug settings: {message}", ex.Message);
+            return;
         }
     }
 
