@@ -104,6 +104,12 @@ namespace PepperDash.Essentials.Core
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to hide this scenario in the UI.
+        /// </summary>
+        [JsonProperty("hideInUi", NullValueHandling = NullValueHandling.Ignore)]
+        public bool HideInUi { get; set; }
+
+        /// <summary>
         /// Gets or sets the collection of partition states.
         /// </summary>
         [JsonProperty("partitionStates")]
