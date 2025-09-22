@@ -129,10 +129,10 @@ namespace PepperDash.Essentials.Core.Config
                     {
                         var parsedConfig = JObject.Parse(fs.ReadToEnd());
 
-                        // Check if it's a v2 config (missing "system" or "template" nodes)
+                        // Check if it's a v2 config (check for "version" node)
                         // this means it's already merged by the Portal API
                         // from the v2 config tool
-                        var isV2Config = parsedConfig["system"] == null || parsedConfig["template"] == null;
+                        var isV2Config = parsedConfig["versions"] != null;
                         
                         if (isV2Config)
                         {
