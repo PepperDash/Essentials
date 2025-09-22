@@ -86,6 +86,11 @@ namespace PepperDash.Essentials.Core.Config
         public List<DeviceConfig> Rooms { get; set; }
 
         /// <summary>
+        /// Gets or sets the Versions
+        /// </summary>
+        public VersionData Versions { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="EssentialsConfig"/> class.
         /// </summary>
         public EssentialsConfig()
@@ -94,11 +99,55 @@ namespace PepperDash.Essentials.Core.Config
             Rooms = new List<DeviceConfig>();
         }
 	}
-		
- /// <summary>
- /// Represents a SystemTemplateConfigs
- /// </summary>
-	public class SystemTemplateConfigs
+
+    /// <summary>
+    /// Represents version data for Essentials and its packages
+    /// </summary>
+    public class VersionData
+    {
+        /// <summary>
+        /// Gets or sets the Essentials version
+        /// </summary>
+        [JsonProperty("essentials")]
+        public NugetVersion Essentials { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of Packages
+        /// </summary>
+        [JsonProperty("packages")]
+        public List<NugetVersion> Packages { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VersionData"/> class.
+        /// </summary>
+        public VersionData()
+        {
+            Packages = new List<NugetVersion>();
+        }
+    }
+
+    /// <summary>
+    /// Represents a NugetVersion
+    /// </summary>
+    public class NugetVersion
+    {
+        /// <summary>
+        /// Gets or sets the Version
+        /// </summary>
+        [JsonProperty("version")]
+        public string Version { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PackageId
+        /// </summary>
+        [JsonProperty("packageId")]
+        public string PackageId { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a SystemTemplateConfigs
+    /// </summary>
+    public class SystemTemplateConfigs
 	{
         /// <summary>
         /// Gets or sets the System
