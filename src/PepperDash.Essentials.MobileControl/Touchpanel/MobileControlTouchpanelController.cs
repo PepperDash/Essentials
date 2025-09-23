@@ -16,6 +16,7 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.UI;
+using Serilog.Events;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Touchpanel
@@ -190,12 +191,19 @@ namespace PepperDash.Essentials.Touchpanel
 
             RegisterForExtenders();
 
-            var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
-            var csSubnetMask = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, csAdapterId);
-            var csIpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+            try
+            {
+                var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
+                var csSubnetMask = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, csAdapterId);
+                var csIpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
 
-            this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
-            this.csIpAddress = System.Net.IPAddress.Parse(csIpAddress);
+                this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
+                this.csIpAddress = System.Net.IPAddress.Parse(csIpAddress);
+            }
+            catch
+            {
+                Debug.LogInformation("This processor does not have a CS LAN", this);
+            }
         }
 
         /// <summary>
@@ -502,7 +510,7 @@ namespace PepperDash.Essentials.Touchpanel
             _bridge.UserCodeChanged += UpdateFeedbacks;
             _bridge.AppUrlChanged += (s, a) =>
             {
-                this.LogInformation("AppURL changed");
+                this.LogInformation("AppURL changed: {appURL}", _bridge.AppUrl);
                 SetAppUrl(_bridge.AppUrl);
                 UpdateFeedbacks(s, a);
             };
