@@ -34,7 +34,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 PowerState = _powerControl.PowerIsOnFeedback.BoolValue
             };
 
-            PostStatusMessage(messageObj);
+            PostStatusMessage(messageObj, id);
         }
 
         /// <inheritdoc />
