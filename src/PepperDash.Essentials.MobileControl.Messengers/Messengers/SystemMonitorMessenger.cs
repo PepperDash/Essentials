@@ -105,35 +105,35 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Gets or sets the TimeZoneName
         /// </summary>
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("timeZoneName", NullValueHandling = NullValueHandling.Ignore)]
         public string TimeZoneName { get; set; }
 
 
         /// <summary>
         /// Gets or sets the IoControllerVersion
         /// </summary>
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("ioControllerVersion", NullValueHandling = NullValueHandling.Ignore)]
         public string IoControllerVersion { get; set; }
 
 
         /// <summary>
         /// Gets or sets the SnmpVersion
         /// </summary>
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("snmpVersion", NullValueHandling = NullValueHandling.Ignore)]
         public string SnmpVersion { get; set; }
 
 
         /// <summary>
         /// Gets or sets the BacnetVersion
         /// </summary>
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("bacnetVersion", NullValueHandling = NullValueHandling.Ignore)]
         public string BacnetVersion { get; set; }
 
 
         /// <summary>
         /// Gets or sets the ControllerVersion
         /// </summary>
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("controllerVersion", NullValueHandling = NullValueHandling.Ignore)]
         public string ControllerVersion { get; set; }
     }
 }
