@@ -200,9 +200,17 @@ namespace PepperDash.Essentials.Touchpanel
                 this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
                 this.csIpAddress = System.Net.IPAddress.Parse(csIpAddress);
             }
-            catch
+            catch (ArgumentException)
             {
                 Debug.LogInformation("This processor does not have a CS LAN", this);
+            }
+            catch (InvalidOperationException)
+            {
+                Debug.LogInformation("This processor does not have a CS LAN", this);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Unexpected exception when checking CS LAN: {ex}", this);
             }
         }
 
