@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
-using System;
 
 
 namespace PepperDash.Essentials.AppServer.Messengers
@@ -36,7 +36,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         protected override void RegisterActions()
         {
-            AddAction("/fullStatus", (id, content) => SendRoutingFullMessageObject());
+            AddAction("/fullStatus", (id, content) => SendRoutingFullMessageObject(id));
+
+            AddAction("/routingStatus", (id, content) => SendRoutingFullMessageObject(id));
 
             AddAction("/source", (id, content) =>
                 {
@@ -62,7 +64,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Helper method to update full status of the routing device
         /// </summary>
-        private void SendRoutingFullMessageObject()
+        private void SendRoutingFullMessageObject(string id = null)
         {
             if (RoutingDevice is IRoutingSink sinkDevice)
             {
@@ -84,10 +86,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class RoutingStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("selectedSourceKey")]
         /// <summary>
         /// Gets or sets the SelectedSourceKey
         /// </summary>
+        [JsonProperty("selectedSourceKey")]
         public string SelectedSourceKey { get; set; }
     }
 }

@@ -1334,10 +1334,11 @@ namespace PepperDash.Essentials.WebSocketServer
     /// </summary>
     public class JoinResponse
     {
-        [JsonProperty("clientId")]
+
         /// <summary>
         /// Gets or sets the ClientId
         /// </summary>
+        [JsonProperty("clientId")]
         public string ClientId { get; set; }
 
         [JsonProperty("roomKey")]
@@ -1346,40 +1347,46 @@ namespace PepperDash.Essentials.WebSocketServer
         [JsonProperty("systemUUid")]
         public string SystemUuid { get; set; }
 
-        [JsonProperty("roomUUid")]
+
         /// <summary>
         /// Gets or sets the RoomUuid
         /// </summary>
+        [JsonProperty("roomUUid")]
         public string RoomUuid { get; set; }
 
-        [JsonProperty("config")]
+
         /// <summary>
         /// Gets or sets the Config
         /// </summary>
+        [JsonProperty("config")]
         public object Config { get; set; }
 
-        [JsonProperty("codeExpires")]
+
         /// <summary>
         /// Gets or sets the CodeExpires
         /// </summary>
+        [JsonProperty("codeExpires")]
         public DateTime CodeExpires { get; set; }
 
-        [JsonProperty("userCode")]
+
         /// <summary>
         /// Gets or sets the UserCode
         /// </summary>
+        [JsonProperty("userCode")]
         public string UserCode { get; set; }
 
-        [JsonProperty("userAppUrl")]
+
         /// <summary>
         /// Gets or sets the UserAppUrl
         /// </summary>
+        [JsonProperty("userAppUrl")]
         public string UserAppUrl { get; set; }
 
-        [JsonProperty("enableDebug")]
+
         /// <summary>
         /// Gets or sets the EnableDebug
         /// </summary>
+        [JsonProperty("enableDebug")]
         public bool EnableDebug { get; set; }
     }
 }

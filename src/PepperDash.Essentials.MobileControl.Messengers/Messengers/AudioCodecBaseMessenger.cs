@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Codec;
-using System;
-using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -29,12 +29,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
             codec.CallStatusChange += Codec_CallStatusChange;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
 
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendAtcFullMessageObject());
+            AddAction("/fullStatus", (id, content) => SendAtcFullMessageObject(id));
+
+            AddAction("/audioDialerStatus", (id, content) => SendAtcFullMessageObject(id));
+
             AddAction("/dial", (id, content) =>
             {
                 var msg = content.ToObject<MobileControlSimpleContent<string>>();
@@ -97,7 +101,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// Helper method to build call status for vtc
         /// </summary>
         /// <returns></returns>
-        private void SendAtcFullMessageObject()
+        private void SendAtcFullMessageObject(string id = null)
         {
             var info = Codec.CodecInfo;
 
@@ -109,7 +113,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 {
                     phoneNumber = info.PhoneNumber
                 }
-            })
+            }), id
             );
         }
     }

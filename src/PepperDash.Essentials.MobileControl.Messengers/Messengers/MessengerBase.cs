@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -159,13 +159,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 message.Name = _device.Name;
 
-                var token = JToken.FromObject(message);                
-                
+                var token = JToken.FromObject(message);
+
                 PostStatusMessage(token, MessagePath, clientId);
             }
             catch (Exception ex)
             {
-                this.LogError(ex, "Exception posting status message for {messagePath} to {clientId}", MessagePath, clientId ?? "all clients");                
+                this.LogError(ex, "Exception posting status message for {messagePath} to {clientId}", MessagePath, clientId ?? "all clients");
             }
         }
 
@@ -188,7 +188,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception ex)
             {
-                this.LogError(ex, "Exception posting status message for {type} to {clientId}", type, clientId ?? "all clients");                
+                this.LogError(ex, "Exception posting status message for {type} to {clientId}", type, clientId ?? "all clients");
             }
         }
 

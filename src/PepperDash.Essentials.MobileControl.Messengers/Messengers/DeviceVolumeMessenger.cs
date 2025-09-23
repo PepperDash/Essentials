@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -14,13 +14,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly IBasicVolumeWithFeedback _localDevice;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceVolumeMessenger"/> class.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="messagePath">The message path.</param>
+        /// <param name="device">The device.</param>
         public DeviceVolumeMessenger(string key, string messagePath, IBasicVolumeWithFeedback device)
             : base(key, messagePath, device as IKeyName)
         {
             _localDevice = device;
         }
 
-        private void SendStatus()
+        private void SendStatus(string id = null)
         {
             try
             {
@@ -40,7 +46,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     messageObj.Volume.Units = volumeAdvanced.Units;
                 }
 
-                PostStatusMessage(messageObj);
+                PostStatusMessage(messageObj, id);
             }
             catch (Exception ex)
             {
@@ -50,10 +56,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         #region Overrides of MessengerBase
 
-
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
-            AddAction("/fullStatus", (id, content) => SendStatus());
+            AddAction("/fullStatus", (id, content) => SendStatus(id));
+
+            AddAction("/volumeStatus", (id, content) => SendStatus(id));
 
             AddAction("/level", (id, content) =>
             {

@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Config;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -31,7 +31,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 var events = _room.GetScheduledEvents();
 
-                SendFullStatus(events);
+                SendFullStatus(events, id);
+            });
+
+            AddAction("/scheduledEventsStatus", (id, content) =>
+            {
+                var events = _room.GetScheduledEvents();
+
+                SendFullStatus(events, id);
             });
 
             _room.ScheduledEventsChanged += (sender, args) => SendFullStatus(args.ScheduledEvents);
@@ -55,11 +62,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception ex)
             {
-                this.LogException(ex,"Exception saving event");
+                this.LogException(ex, "Exception saving event");
             }
         }
 
-        private void SendFullStatus(List<ScheduledEventConfig> events)
+        private void SendFullStatus(List<ScheduledEventConfig> events, string id = null)
         {
 
             var message = new RoomEventScheduleStateMessage
@@ -67,7 +74,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 ScheduleEvents = events,
             };
 
-            PostStatusMessage(message);
+            PostStatusMessage(message, id);
         }
     }
 

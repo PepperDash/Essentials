@@ -244,7 +244,7 @@ namespace PepperDash.Essentials
             CrestronEnvironment.ProgramStatusEventHandler +=
                 CrestronEnvironment_ProgramStatusEventHandler;
 
-            ApiOnlineAndAuthorized = new BoolFeedback(() =>
+            ApiOnlineAndAuthorized = new BoolFeedback("apiOnlineAndAuthorized", () =>
             {
                 if (_wsClient2 == null)
                     return false;
@@ -1484,7 +1484,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Adds an action to the dictionary
         /// </summary>
-        /// <param name="key">The path of the API command</param>
+        /// <param name="messenger">The messenger for the API command</param>
         /// <param name="action">The action to be triggered by the commmand</param>
         public void AddAction<T>(T messenger, Action<string, string, JToken> action)
             where T : IMobileControlMessenger

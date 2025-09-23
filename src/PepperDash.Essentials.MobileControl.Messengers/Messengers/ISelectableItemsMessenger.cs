@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// Represents a ISelectableItemsMessenger
     /// </summary>
     public class ISelectableItemsMessenger<TKey> : MessengerBase
-    {        
+    {
         private readonly ISelectableItems<TKey> itemDevice;
 
         private readonly string _propName;
@@ -34,9 +34,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             base.RegisterActions();
 
             AddAction("/fullStatus", (id, context) =>
-            {
-                SendFullStatus();
-            });
+                SendFullStatus(id)
+            );
+
+            AddAction("/itemsStatus", (id, content) => SendFullStatus(id));
 
             itemDevice.ItemsUpdated += (sender, args) =>
             {
@@ -65,7 +66,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             try
             {
@@ -77,7 +78,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     CurrentItem = itemDevice.CurrentItem
                 };
 
-                PostStatusMessage(stateObject);
+                PostStatusMessage(stateObject, id);
             }
             catch (Exception e)
             {
@@ -91,13 +92,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class ISelectableItemsStateMessage<TKey> : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the Items
+        /// </summary>
         [JsonProperty("items")]
         public Dictionary<TKey, ISelectableItem> Items { get; set; }
 
-        [JsonProperty("currentItem")]
+
         /// <summary>
         /// Gets or sets the CurrentItem
         /// </summary>
+        [JsonProperty("currentItem")]
         public TKey CurrentItem { get; set; }
     }
 
