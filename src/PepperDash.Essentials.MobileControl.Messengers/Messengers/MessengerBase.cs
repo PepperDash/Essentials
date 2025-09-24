@@ -15,12 +15,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public abstract class MessengerBase : EssentialsDevice, IMobileControlMessenger
     {
+        /// <summary>
+        /// The device this messenger is associated with
+        /// </summary>
         protected IKeyName _device;
 
         private readonly List<string> _deviceInterfaces;
 
         private readonly Dictionary<string, Action<string, JToken>> _actions = new Dictionary<string, Action<string, JToken>>();
 
+        /// <summary>
+        /// Gets the DeviceKey
+        /// </summary>
         public string DeviceKey => _device?.Key ?? "";
 
 
@@ -50,6 +56,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             MessagePath = messagePath;
         }
 
+        /// <summary>
+        /// Constructor for a messenger associated with a device
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="messagePath"></param>
+        /// <param name="device"></param>
         protected MessengerBase(string key, string messagePath, IKeyName device)
             : this(key, messagePath)
         {
@@ -96,6 +108,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             action(id, content);
         }
 
+        /// <summary>
+        /// Adds an action for a given path
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="action"></param>
         protected void AddAction(string path, Action<string, JToken> action)
         {
             if (_actions.ContainsKey(path))
@@ -115,6 +132,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             return _actions.Keys.ToList();
         }
 
+        /// <summary>
+        /// Removes an action for a given path
+        /// </summary>
+        /// <param name="path"></param>
         protected void RemoveAction(string path)
         {
             if (!_actions.ContainsKey(path))
@@ -128,7 +149,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Implemented in extending classes. Wire up API calls and feedback here
         /// </summary>
-        /// <param name="appServerController"></param>
         protected virtual void RegisterActions()
         {
 
@@ -137,8 +157,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Helper for posting status message
         /// </summary>
-        /// <param name="type"></param>
         /// <param name="message"></param>
+        /// <param name="clientId">Optional client id that will direct the message back to only that client</param>
         protected void PostStatusMessage(DeviceStateMessageBase message, string clientId = null)
         {
             try
@@ -169,6 +189,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
+        /// <summary>
+        /// Helper for posting status message
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="deviceState"></param>
+        /// <param name="clientId">Optional client id that will direct the message back to only that client</param>
         protected void PostStatusMessage(string type, DeviceStateMessageBase deviceState, string clientId = null)
         {
             try
@@ -192,6 +218,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
+        /// <summary>
+        /// Helper for posting status message
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="type"></param>
+        /// <param name="clientId">Optional client id that will direct the message back to only that client</param>
         protected void PostStatusMessage(JToken content, string type = "", string clientId = null)
         {
             try
@@ -204,6 +236,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
+        /// <summary>
+        /// Helper for posting event message
+        /// </summary>
+        /// <param name="message"></param>
         protected void PostEventMessage(DeviceEventMessageBase message)
         {
             message.Key = _device.Key;
@@ -217,6 +253,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             });
         }
 
+        /// <summary>
+        /// Helper for posting event message
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="eventType"></param>
         protected void PostEventMessage(DeviceEventMessageBase message, string eventType)
         {
             message.Key = _device.Key;
@@ -232,6 +273,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             });
         }
 
+        /// <summary>
+        /// Helper for posting event message with no content
+        /// </summary>
+        /// <param name="eventType"></param>
         protected void PostEventMessage(string eventType)
         {
             AppServerController?.SendMessageObject(new MobileControlMessage
@@ -243,6 +288,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
     }
 
+    /// <summary>
+    /// Base class for device messages that include the type of message
+    /// </summary>
     public abstract class DeviceMessageBase
     {
         /// <summary>
@@ -266,10 +314,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
         [JsonProperty("messageType")]
         public string MessageType => GetType().Name;
 
-        [JsonProperty("messageBasePath")]
         /// <summary>
         /// Gets or sets the MessageBasePath
         /// </summary>
+        [JsonProperty("messageBasePath")]
+
         public string MessageBasePath { get; set; }
     }
 
@@ -284,6 +333,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
         [JsonProperty("interfaces")]
         public List<string> Interfaces { get; private set; }
 
+        /// <summary>
+        /// Sets the interfaces implemented by the device sending the message
+        /// </summary>
+        /// <param name="interfaces"></param>
         public void SetInterfaces(List<string> interfaces)
         {
             Interfaces = interfaces;

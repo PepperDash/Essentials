@@ -972,6 +972,20 @@ namespace PepperDash.Essentials.WebSocketServer
                     res.StatusCode = 200;
                     res.ContentType = "application/json";
 
+                    var devices = DeviceManager.GetDevices();
+                    Dictionary<string, DeviceInterfaceInfo> deviceInterfaces = new Dictionary<string, DeviceInterfaceInfo>();
+
+                    foreach (var device in devices)
+                    {
+                        var interfaces = device?.GetType().GetInterfaces().Select((i) => i.Name).ToList() ?? new List<string>();
+                        deviceInterfaces.Add(device.Key, new DeviceInterfaceInfo
+                        {
+                            Key = device.Key,
+                            Name = device is IKeyName ? (device as IKeyName).Name : "",
+                            Interfaces = interfaces
+                        });
+                    }
+
                     // Construct the response object
                     JoinResponse jRes = new JoinResponse
                     {
@@ -985,7 +999,8 @@ namespace PepperDash.Essentials.WebSocketServer
                         UserAppUrl = string.Format("http://{0}:{1}/mc/app",
                         CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0),
                         Port),
-                        EnableDebug = false
+                        EnableDebug = false,
+                        DeviceInterfaceSupport = deviceInterfaces
                     };
 
                     // Serialize to JSON and convert to Byte[]
@@ -1361,6 +1376,12 @@ namespace PepperDash.Essentials.WebSocketServer
         [JsonProperty("config")]
         public object Config { get; set; }
 
+        /// <summary>
+        /// Gets or sets the DeviceInterfaceSupport
+        /// </summary>
+        [JsonProperty("deviceInterfaceSupport")]
+        public Dictionary<string, DeviceInterfaceInfo> DeviceInterfaceSupport { get; set; }
+
 
         /// <summary>
         /// Gets or sets the CodeExpires
@@ -1388,5 +1409,29 @@ namespace PepperDash.Essentials.WebSocketServer
         /// </summary>
         [JsonProperty("enableDebug")]
         public bool EnableDebug { get; set; }
+    }
+
+    /// <summary>
+    /// Represents info about a device including supproted interfaces
+    /// </summary>
+    public class DeviceInterfaceInfo : IKeyName
+    {
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
+        [JsonProperty("key")]
+        public string Key { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interfaces
+        /// </summary>
+        [JsonProperty("interfaces")]
+        public List<string> Interfaces { get; set; }
     }
 }
