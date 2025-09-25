@@ -131,7 +131,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             {
                 if (!Global.ControlSystem.SupportsVersiport)
                 {
-                    Debug.LogError("GetVersiportDigitalOuptut: Processor does not support Versiports");
+                    Debug.LogError("GetVersiportDigitalOutput: Processor does not support Versiports");
                     return null;
                 }
                 return Global.ControlSystem.VersiPorts[dc.PortNumber];

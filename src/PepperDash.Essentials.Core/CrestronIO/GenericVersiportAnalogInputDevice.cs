@@ -171,7 +171,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
 
     /// <summary>
-    /// Represents a GenericVersiportAnalogInputDeviceFactory
+    /// Factory for creating GenericVersiportAnalogInputDevice devices
     /// </summary>
     public class GenericVersiportAnalogInputDeviceFactory : EssentialsDeviceFactory<GenericVersiportAnalogInputDevice>
     {
