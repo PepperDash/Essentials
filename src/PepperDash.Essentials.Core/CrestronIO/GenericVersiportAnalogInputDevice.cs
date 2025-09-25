@@ -2,66 +2,64 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-
-using PepperDash.Core;
-using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Bridges;
-
-
 using Newtonsoft.Json;
-using Serilog.Events;
+using PepperDash.Core;
+using PepperDash.Core.Logging;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
     /// <summary>
     /// Represents a generic digital input deviced tied to a versiport
     /// </summary>
-    public class GenericVersiportAnalogInputDevice : EssentialsBridgeableDevice, IAnalogInput
+    public class GenericVersiportAnalogInputDevice : EssentialsBridgeableDevice, IAnalogInput, IHasFeedback
     {
-        public Versiport InputPort { get; private set; }
+        private Versiport inputPort;
 
+        /// <inheritdoc />
         public IntFeedback InputValueFeedback { get; private set; }
+
+        /// <summary>
+        /// Get the InputMinimumChangeFeedback
+        /// </summary>
+        /// <remarks>
+        /// Updates when the analog input minimum change value changes
+        /// </remarks>
         public IntFeedback InputMinimumChangeFeedback { get; private set; }
 
-        Func<int> InputValueFeedbackFunc
-        {
-            get
-            {
-                return () => InputPort.AnalogIn;
-            }
-        }
+        /// <inheritdoc />
+        public FeedbackCollection<Feedback> Feedbacks { get; private set; } = new FeedbackCollection<Feedback>();
 
-        Func<int> InputMinimumChangeFeedbackFunc
-        {
-            get { return () => InputPort.AnalogMinChange; }
-        } 
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenericVersiportAnalogInputDevice"/> class.
+        /// </summary>
+        /// <param name="key">key for the device</param>
+        /// <param name="name">name for the device</param>
+        /// <param name="postActivationFunc">function to call after activation</param>
+        /// <param name="config">IO port configuration</param>
         public GenericVersiportAnalogInputDevice(string key, string name, Func<IOPortConfig, Versiport> postActivationFunc, IOPortConfig config) :
             base(key, name)
         {
-            InputValueFeedback = new IntFeedback(InputValueFeedbackFunc);
-            InputMinimumChangeFeedback = new IntFeedback(InputMinimumChangeFeedbackFunc);
+            InputValueFeedback = new IntFeedback("inputValue", () => inputPort.AnalogIn);
+            InputMinimumChangeFeedback = new IntFeedback("inputMinimumChange", () => inputPort.AnalogMinChange);
 
             AddPostActivationAction(() =>
             {
-                InputPort = postActivationFunc(config);
+                inputPort = postActivationFunc(config);
 
-                InputPort.Register();
+                inputPort.Register();
 
-                InputPort.SetVersiportConfiguration(eVersiportConfiguration.AnalogInput);
-                InputPort.AnalogMinChange = (ushort)(config.MinimumChange > 0 ? config.MinimumChange : 655);
+                inputPort.SetVersiportConfiguration(eVersiportConfiguration.AnalogInput);
+                inputPort.AnalogMinChange = (ushort)(config.MinimumChange > 0 ? config.MinimumChange : 655);
                 if (config.DisablePullUpResistor)
-                    InputPort.DisablePullUpResistor = true;
+                    inputPort.DisablePullUpResistor = true;
 
-                InputPort.VersiportChange += InputPort_VersiportChange;
+                inputPort.VersiportChange += InputPort_VersiportChange;
 
-                Debug.LogMessage(LogEventLevel.Debug, this, "Created GenericVersiportAnalogInputDevice on port '{0}'.  DisablePullUpResistor: '{1}'", config.PortNumber, InputPort.DisablePullUpResistor);
-
+                this.LogDebug("Created GenericVersiportAnalogInputDevice on port {port}.  DisablePullUpResistor: {pullUpResistorDisabled}", config.PortNumber, inputPort.DisablePullUpResistor);
             });
 
         }
@@ -69,20 +67,17 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// <summary>
         /// Set minimum voltage change for device to update voltage changed method
         /// </summary>
-        /// <param name="value">valid values range from 0 - 65535, representing the full 100% range of the processor voltage source.  Check processor documentation for details</param>
-        /// <summary>
-        /// SetMinimumChange method
-        /// </summary>
+        /// <param name="value">valid values range from 0 - 65535, representing the full 100% range of the processor voltage source.  Check processor documentation for details</param>        
         public void SetMinimumChange(ushort value)
         {
-            InputPort.AnalogMinChange = value;
+            inputPort.AnalogMinChange = value;
         }
 
         void InputPort_VersiportChange(Versiport port, VersiportEventArgs args)
         {
-			Debug.LogMessage(LogEventLevel.Debug, this, "Versiport change: {0}", args.Event);
+            this.LogDebug("Versiport change: {event}", args.Event);
 
-            if(args.Event == eVersiportEvent.AnalogInChange)
+            if (args.Event == eVersiportEvent.AnalogInChange)
                 InputValueFeedback.FireUpdate();
             if (args.Event == eVersiportEvent.AnalogMinChangeChange)
                 InputMinimumChangeFeedback.FireUpdate();
@@ -91,9 +86,6 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #region Bridge Linking
 
-        /// <summary>
-        /// LinkToApi method
-        /// </summary>
         /// <inheritdoc />
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
@@ -110,12 +102,12 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
             else
             {
-                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                this.LogWarning("Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
             try
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+                this.LogDebug("Linking to Trilist '{trilistId}'", trilist.ID.ToString("X"));
 
                 // Link feedback for input state
                 InputValueFeedback.LinkInputSig(trilist.UShortInput[joinMap.InputValue.JoinNumber]);
@@ -125,8 +117,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
             catch (Exception e)
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, "Unable to link device '{0}'.  Input is null", Key);
-                Debug.LogMessage(LogEventLevel.Debug, this, "Error: {0}", e);
+                this.LogError("Unable to link device {key}: {message}", Key, e.Message);
+                this.LogDebug(e, "Stack Trace: ");
             }
 
             trilist.OnlineStatusChange += (d, args) =>
@@ -138,11 +130,6 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         }
 
-        void trilist_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
 
 
@@ -151,70 +138,55 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// </summary>
         public static Versiport GetVersiportDigitalInput(IOPortConfig dc)
         {
-         
-            IIOPorts ioPortDevice;
-
             if (dc.PortDeviceKey.Equals("processor"))
             {
                 if (!Global.ControlSystem.SupportsVersiport)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Processor does not support Versiports");
+                    Debug.LogError("GetVersiportAnalogInput: Processor does not support Versiports");
                     return null;
                 }
-                ioPortDevice = Global.ControlSystem;
+                return Global.ControlSystem.VersiPorts[dc.PortNumber];
             }
-            else
+
+            if (!(DeviceManager.GetDeviceForKey(dc.PortDeviceKey) is IIOPorts ioPortDevice))
             {
-                var ioPortDev = DeviceManager.GetDeviceForKey(dc.PortDeviceKey) as IIOPorts;
-                if (ioPortDev == null)
-                {
-                    Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Device {0} is not a valid device", dc.PortDeviceKey);
-                    return null;
-                }
-                ioPortDevice = ioPortDev;
-            }
-            if (ioPortDevice == null)
-            {
-                Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Device '0' is not a valid IIOPorts Device", dc.PortDeviceKey);
+                Debug.LogError("GetVersiportAnalogInput: Device {key} is not a valid device", dc.PortDeviceKey);
                 return null;
             }
 
             if (dc.PortNumber > ioPortDevice.NumberOfVersiPorts)
             {
-                Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
+                Debug.LogError("GetVersiportAnalogInput: Device {key} does not contain a port {port}", dc.PortDeviceKey, dc.PortNumber);
                 return null;
             }
-            if(!ioPortDevice.VersiPorts[dc.PortNumber].SupportsAnalogInput)
+            if (!ioPortDevice.VersiPorts[dc.PortNumber].SupportsAnalogInput)
             {
-                Debug.LogMessage(LogEventLevel.Information, "GetVersiportAnalogInput: Device {0} does not support AnalogInput on port {1}", dc.PortDeviceKey, dc.PortNumber);
+                Debug.LogError("GetVersiportAnalogInput: Device {key} does not support AnalogInput on port {port}", dc.PortDeviceKey, dc.PortNumber);
                 return null;
             }
-
 
             return ioPortDevice.VersiPorts[dc.PortNumber];
-
-
         }
     }
 
 
     /// <summary>
-    /// Represents a GenericVersiportAbalogInputDeviceFactory
+    /// Factory for creating GenericVersiportAnalogInputDevice devices
     /// </summary>
-    public class GenericVersiportAbalogInputDeviceFactory : EssentialsDeviceFactory<GenericVersiportAnalogInputDevice>
+    public class GenericVersiportAnalogInputDeviceFactory : EssentialsDeviceFactory<GenericVersiportAnalogInputDevice>
     {
-        public GenericVersiportAbalogInputDeviceFactory()
+        /// <summary>
+        /// Constructor for GenericVersiportAnalogInputDeviceFactory
+        /// </summary>
+        public GenericVersiportAnalogInputDeviceFactory()
         {
             TypeNames = new List<string>() { "versiportanaloginput" };
         }
 
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
         /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Versiport Device");
+            Debug.LogDebug("Factory Attempting to create new Generic Versiport Device");
 
             var props = JsonConvert.DeserializeObject<IOPortConfig>(dc.Properties.ToString());
 
