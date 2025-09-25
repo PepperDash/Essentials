@@ -20,9 +20,9 @@ namespace PepperDash.Core.Logging
 
         private Dictionary<LogEventLevel, Action<string>> _errorLogMap = new Dictionary<LogEventLevel, Action<string>>
         {
-            { LogEventLevel.Verbose, (msg) => ErrorLog.Notice(msg) },
-            {LogEventLevel.Debug, (msg) => ErrorLog.Notice(msg) },
-            {LogEventLevel.Information, (msg) => ErrorLog.Notice(msg) },
+            //{ LogEventLevel.Verbose, (msg) => ErrorLog.Notice(msg) },
+            //{LogEventLevel.Debug, (msg) => ErrorLog.Notice(msg) },
+            //{LogEventLevel.Information, (msg) => ErrorLog.Notice(msg) },
             {LogEventLevel.Warning, (msg) => ErrorLog.Warn(msg) },
             {LogEventLevel.Error, (msg) => ErrorLog.Error(msg) },
             {LogEventLevel.Fatal, (msg) => ErrorLog.Error(msg) }
