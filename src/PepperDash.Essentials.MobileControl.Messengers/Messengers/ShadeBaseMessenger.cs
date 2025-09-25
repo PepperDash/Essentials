@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Shades;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -22,7 +22,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+            AddAction("/shadesStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/shadeUp", (id, content) =>
                 {
@@ -75,7 +76,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var state = new ShadeBaseStateMessage();
 
@@ -85,7 +86,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 state.IsClosed = feedbackDevice.ShadeIsClosedFeedback.BoolValue;
             }
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, id);
         }
     }
 
@@ -94,10 +95,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class ShadeBaseStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("middleButtonLabel", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the MiddleButtonLabel
         /// </summary>
+        [JsonProperty("middleButtonLabel", NullValueHandling = NullValueHandling.Ignore)]
         public string MiddleButtonLabel { get; set; }
 
         [JsonProperty("isOpen", NullValueHandling = NullValueHandling.Ignore)]

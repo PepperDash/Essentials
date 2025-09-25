@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -22,7 +22,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+
+            AddAction("/temperatureStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/setTemperatureUnitsToCelcius", (id, content) =>
             {
@@ -38,7 +40,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             device.TemperatureInCFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>((o, a) => SendFullStatus());
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             // format the temperature to a string with one decimal place
             var tempString = string.Format("{0}.{1}", device.TemperatureFeedback.UShortValue / 10, device.TemperatureFeedback.UShortValue % 10);
@@ -49,7 +51,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 TemperatureInCelsius = device.TemperatureInCFeedback.BoolValue
             };
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, id);
         }
     }
 
@@ -58,16 +60,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class ITemperatureSensorStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("temperature")]
         /// <summary>
         /// Gets or sets the Temperature
         /// </summary>
+        [JsonProperty("temperature")]
         public string Temperature { get; set; }
 
-        [JsonProperty("temperatureInCelsius")]
         /// <summary>
         /// Gets or sets the TemperatureInCelsius
         /// </summary>
+        [JsonProperty("temperatureInCelsius")]
         public bool TemperatureInCelsius { get; set; }
     }
 }

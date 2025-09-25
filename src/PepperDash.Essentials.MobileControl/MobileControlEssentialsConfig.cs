@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using PepperDash.Essentials.Core.Config;
-using System.Collections.Generic;
 
 
 namespace PepperDash.Essentials
@@ -39,10 +39,11 @@ namespace PepperDash.Essentials
     /// </summary>
     public class MobileControlRuntimeInfo
     {
-        [JsonProperty("pluginVersion")]
+
         /// <summary>
         /// Gets or sets the PluginVersion
         /// </summary>
+        [JsonProperty("pluginVersion")]
         public string PluginVersion { get; set; }
 
         [JsonProperty("essentialsVersion")]
@@ -51,10 +52,11 @@ namespace PepperDash.Essentials
         [JsonProperty("pepperDashCoreVersion")]
         public string PepperDashCoreVersion { get; set; }
 
-        [JsonProperty("essentialsPlugins")]
+
         /// <summary>
         /// Gets or sets the EssentialsPlugins
         /// </summary>
+        [JsonProperty("essentialsPlugins")]
         public List<LoadedAssembly> EssentialsPlugins { get; set; }
     }
 }

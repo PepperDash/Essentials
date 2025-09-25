@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System.Timers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceInfo;
-using System.Timers;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -67,12 +67,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 debounceTimer.Start();
             };
 
-            AddAction("/fullStatus", (id, context) => PostStatusMessage(new DeviceInfoStateMessage
-            {
-                DeviceInfo = _deviceInfoProvider.DeviceInfo
-            }));
+            AddAction("/fullStatus", (id, context) => SendFullStatus(id));
+
+            AddAction("/deviceInfo", (id, content) => SendFullStatus(id));
 
             AddAction("/update", (id, context) => _deviceInfoProvider.UpdateDeviceInfo());
+        }
+
+        private void SendFullStatus(string id = null)
+        {
+            PostStatusMessage(new DeviceInfoStateMessage
+            {
+                DeviceInfo = _deviceInfoProvider.DeviceInfo
+            }, id);
         }
     }
 

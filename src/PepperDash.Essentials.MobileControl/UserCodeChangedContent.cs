@@ -7,16 +7,18 @@ namespace PepperDash.Essentials
     /// </summary>
     public class UserCodeChangedContent
     {
-        [JsonProperty("userCode")]
+
         /// <summary>
         /// Gets or sets the UserCode
         /// </summary>
+        [JsonProperty("userCode")]
         public string UserCode { get; set; }
 
-        [JsonProperty("qrChecksum", NullValueHandling = NullValueHandling.Include)]
+
         /// <summary>
         /// Gets or sets the QrChecksum
         /// </summary>
+        [JsonProperty("qrChecksum", NullValueHandling = NullValueHandling.Include)]
         public string QrChecksum { get; set; }
     }
 }

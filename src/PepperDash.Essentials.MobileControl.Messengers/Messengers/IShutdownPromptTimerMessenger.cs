@@ -20,10 +20,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         protected override void RegisterActions()
         {
-            AddAction("/status", (id, content) =>
-            {
-                SendFullStatus();
-            });
+            AddAction("/status", (id, content) => SendFullStatus(id));
+
+            AddAction("/shutdownPromptStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/setShutdownPromptSeconds", (id, content) =>
             {
@@ -68,7 +67,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             };
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var status = new IShutdownPromptTimerStateMessage
             {
@@ -77,7 +76,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 PercentageRemaining = _room.ShutdownPromptTimer.PercentFeedback.UShortValue
             };
 
-            PostStatusMessage(status);
+            PostStatusMessage(status, id);
         }
     }
 
@@ -87,22 +86,22 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class IShutdownPromptTimerStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("secondsRemaining")]
         /// <summary>
         /// Gets or sets the SecondsRemaining
         /// </summary>
+        [JsonProperty("secondsRemaining")]
         public int SecondsRemaining { get; set; }
 
-        [JsonProperty("percentageRemaining")]
         /// <summary>
         /// Gets or sets the PercentageRemaining
         /// </summary>
+        [JsonProperty("percentageRemaining")]
         public int PercentageRemaining { get; set; }
 
-        [JsonProperty("shutdownPromptSeconds")]
         /// <summary>
         /// Gets or sets the ShutdownPromptSeconds
         /// </summary>
+        [JsonProperty("shutdownPromptSeconds")]
         public int ShutdownPromptSeconds { get; set; }
     }
 }

@@ -24,14 +24,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/fullStatus", (id, content) =>
             {
-                PostStatusMessage(new CommunicationMonitorState
-                {
-                    CommunicationMonitor = new CommunicationMonitorProps
-                    {
-                        IsOnline = _communicationMonitor.CommunicationMonitor.IsOnline,
-                        Status = _communicationMonitor.CommunicationMonitor.Status
-                    }
-                });
+                SendFullStatus(id);
+            });
+
+            AddAction("/commStatus", (id, content) =>
+            {
+                SendFullStatus(id);
             });
 
             _communicationMonitor.CommunicationMonitor.StatusChange += (sender, args) =>
@@ -45,6 +43,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     }
                 }));
             };
+        }
+
+        private void SendFullStatus(string id = null)
+        {
+            PostStatusMessage(new CommunicationMonitorState
+            {
+                CommunicationMonitor = new CommunicationMonitorProps
+                {
+                    IsOnline = _communicationMonitor.CommunicationMonitor.IsOnline,
+                    Status = _communicationMonitor.CommunicationMonitor.Status
+                },
+            }, id);
         }
     }
 

@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using PepperDash.Essentials.Devices.Common.Cameras;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="cameraController"></param>
         /// <param name="messagePath"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public IHasCamerasMessenger(string key, string messagePath , IHasCameras cameraController)
+        public IHasCamerasMessenger(string key, string messagePath, IHasCameras cameraController)
             : base(key, messagePath, cameraController)
         {
             CameraController = cameraController ?? throw new ArgumentNullException("cameraController");
@@ -49,10 +49,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, context) =>
-            {
-                SendFullStatus(id);
-            });
+            AddAction("/fullStatus", (id, context) => SendFullStatus(id));
+
+            AddAction("/cameraListStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/selectCamera", (id, content) =>
             {

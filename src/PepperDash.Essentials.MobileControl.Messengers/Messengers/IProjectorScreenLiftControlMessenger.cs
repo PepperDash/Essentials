@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -14,17 +14,28 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly IProjectorScreenLiftControl device;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IProjectorScreenLiftControlMessenger"/> class.
+        /// </summary>
+        /// <param name="key">message key</param>
+        /// <param name="messagePath">message path</param>
+        /// <param name="screenLiftDevice">screen lift device</param>
         public IProjectorScreenLiftControlMessenger(string key, string messagePath, IProjectorScreenLiftControl screenLiftDevice)
             : base(key, messagePath, screenLiftDevice as IKeyName)
         {
             device = screenLiftDevice;
         }
 
+        /// <summary>
+        /// Registers the actions for the messenger.
+        /// </summary>
         protected override void RegisterActions()
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+
+            AddAction("/screenliftStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/raise", (id, content) =>
             {
@@ -53,7 +64,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostStatusMessage(JToken.FromObject(state));
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var state = new ScreenLiftStateMessage
             {
@@ -62,7 +73,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 DisplayDeviceKey = device.DisplayDeviceKey
             };
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, id);
         }
     }
 
@@ -71,20 +82,23 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class ScreenLiftStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the InUpPosition
+        /// </summary>
         [JsonProperty("inUpPosition", NullValueHandling = NullValueHandling.Ignore)]
         public bool? InUpPosition { get; set; }
 
-        [JsonProperty("displayDeviceKey", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the DisplayDeviceKey
         /// </summary>
+        [JsonProperty("displayDeviceKey", NullValueHandling = NullValueHandling.Ignore)]
         public string DisplayDeviceKey { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the Type
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
         public eScreenLiftControlType Type { get; set; }
     }
 }

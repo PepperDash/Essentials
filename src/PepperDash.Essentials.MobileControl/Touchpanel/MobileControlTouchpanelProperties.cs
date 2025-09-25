@@ -8,28 +8,32 @@ namespace PepperDash.Essentials.Touchpanel
     /// </summary>
     public class MobileControlTouchpanelProperties : CrestronTouchpanelPropertiesConfig
     {
-        [JsonProperty("useDirectServer")]
+
         /// <summary>
         /// Gets or sets the UseDirectServer
         /// </summary>
+        [JsonProperty("useDirectServer")]
         public bool UseDirectServer { get; set; } = false;
 
-        [JsonProperty("zoomRoomController")]
+
         /// <summary>
         /// Gets or sets the ZoomRoomController
         /// </summary>
+        [JsonProperty("zoomRoomController")]
         public bool ZoomRoomController { get; set; } = false;
 
-        [JsonProperty("buttonToolbarTimeoutInS")]
+
         /// <summary>
         /// Gets or sets the ButtonToolbarTimoutInS
         /// </summary>
+        [JsonProperty("buttonToolbarTimeoutInS")]
         public ushort ButtonToolbarTimoutInS { get; set; } = 0;
 
-        [JsonProperty("theme")]
+
         /// <summary>
         /// Gets or sets the Theme
         /// </summary>
+        [JsonProperty("theme")]
         public string Theme { get; set; } = "light";
     }
 }

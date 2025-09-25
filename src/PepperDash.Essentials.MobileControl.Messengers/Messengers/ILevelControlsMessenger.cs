@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -13,6 +13,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     public class ILevelControlsMessenger : MessengerBase
     {
         private ILevelControls levelControlsDevice;
+
         public ILevelControlsMessenger(string key, string messagePath, ILevelControls device) : base(key, messagePath, device as IKeyName)
         {
             levelControlsDevice = device;
@@ -22,15 +23,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, context) =>
-            {
-                var message = new LevelControlStateMessage
-                {
-                    Levels = levelControlsDevice.LevelControlPoints.ToDictionary(kv => kv.Key, kv => new Volume { Level = kv.Value.VolumeLevelFeedback.IntValue, Muted = kv.Value.MuteFeedback.BoolValue })
-                };
+            AddAction("/fullStatus", (id, context) => SendFullStatus(id));
 
-                PostStatusMessage(message);
-            });
+            AddAction("/levelStats", (id, content) => SendFullStatus(id));
 
             foreach (var levelControl in levelControlsDevice.LevelControlPoints)
             {
@@ -74,6 +69,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     }
                 }));
             }
+        }
+
+        private void SendFullStatus(string id = null)
+        {
+            var message = new LevelControlStateMessage
+            {
+                Levels = levelControlsDevice.LevelControlPoints.ToDictionary(kv => kv.Key, kv => new Volume { Level = kv.Value.VolumeLevelFeedback.IntValue, Muted = kv.Value.MuteFeedback.BoolValue })
+            };
+
+            PostStatusMessage(message, id);
         }
     }
 

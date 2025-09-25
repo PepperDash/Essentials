@@ -12,6 +12,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly IHasPowerControlWithFeedback _powerControl;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IHasPowerControlWithFeedbackMessenger"/> class.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="messagePath">The message path.</param>
+        /// <param name="powerControl">The power control device</param>
         public IHasPowerControlWithFeedbackMessenger(string key, string messagePath, IHasPowerControlWithFeedback powerControl)
             : base(key, messagePath, powerControl as IKeyName)
         {
@@ -21,21 +27,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// SendFullStatus method
         /// </summary>
-        public void SendFullStatus()
+        public void SendFullStatus(string id = null)
         {
             var messageObj = new PowerControlWithFeedbackStateMessage
             {
                 PowerState = _powerControl.PowerIsOnFeedback.BoolValue
             };
 
-            PostStatusMessage(messageObj);
+            PostStatusMessage(messageObj, id);
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+
+            AddAction("/powerStatus", (id, content) => SendFullStatus(id));
 
             _powerControl.PowerIsOnFeedback.OutputChange += PowerIsOnFeedback_OutputChange; ;
         }
@@ -55,6 +64,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class PowerControlWithFeedbackStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Power State
+        /// </summary>
         [JsonProperty("powerState", NullValueHandling = NullValueHandling.Ignore)]
         public bool? PowerState { get; set; }
     }

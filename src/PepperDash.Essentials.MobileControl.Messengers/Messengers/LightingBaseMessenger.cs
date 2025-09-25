@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Lighting;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -35,7 +35,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+
+            AddAction("/lightingStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/selectScene", (id, content) =>
             {
@@ -43,14 +45,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 lightingScenesDevice.SelectScene(s);
             });
 
-            if(!(lightingScenesDevice is ILightingScenesDynamic lightingScenesDynamic))
+            if (!(lightingScenesDevice is ILightingScenesDynamic lightingScenesDynamic))
                 return;
 
             lightingScenesDynamic.LightingScenesUpdated += (s, e) => SendFullStatus();
         }
 
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var state = new LightingBaseStateMessage
             {
@@ -58,7 +60,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 CurrentLightingScene = lightingScenesDevice.CurrentLightingScene
             };
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, id);
         }
     }
 
@@ -67,16 +69,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class LightingBaseStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("scenes", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the Scenes
         /// </summary>
+        [JsonProperty("scenes", NullValueHandling = NullValueHandling.Ignore)]
         public List<LightingScene> Scenes { get; set; }
 
-        [JsonProperty("currentLightingScene", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the CurrentLightingScene
         /// </summary>
+        [JsonProperty("currentLightingScene", NullValueHandling = NullValueHandling.Ignore)]
         public LightingScene CurrentLightingScene { get; set; }
     }
 }

@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -46,7 +46,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// partition states.</remarks>
         protected override void RegisterActions()
         {
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+
+            AddAction("/combinerStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/setAutoMode", (id, content) =>
             {
@@ -120,7 +122,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             try
             {
@@ -141,7 +143,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     Partitions = _roomCombiner.Partitions
                 };
 
-                PostStatusMessage(message);
+                PostStatusMessage(message, id);
             }
             catch (Exception e)
             {

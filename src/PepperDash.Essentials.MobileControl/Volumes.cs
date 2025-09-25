@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials
 {
@@ -8,10 +8,11 @@ namespace PepperDash.Essentials
     /// </summary>
     public class Volumes
     {
-        [JsonProperty("master", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Master
         /// </summary>
+        [JsonProperty("master", NullValueHandling = NullValueHandling.Ignore)]
         public Volume Master { get; set; }
 
         [JsonProperty("auxFaders", NullValueHandling = NullValueHandling.Ignore)]
@@ -30,10 +31,11 @@ namespace PepperDash.Essentials
     /// </summary>
     public class Volume
     {
-        [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Key
         /// </summary>
+        [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
         public string Key { get; set; }
 
         [JsonProperty("level", NullValueHandling = NullValueHandling.Ignore)]
@@ -42,10 +44,11 @@ namespace PepperDash.Essentials
         [JsonProperty("muted", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Muted { get; set; }
 
-        [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Label
         /// </summary>
+        [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
         public string Label { get; set; }
 
         [JsonProperty("hasMute", NullValueHandling = NullValueHandling.Ignore)]
@@ -58,10 +61,11 @@ namespace PepperDash.Essentials
         public bool? PrivacyMuted { get; set; }
 
 
-        [JsonProperty("muteIcon", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the MuteIcon
         /// </summary>
+        [JsonProperty("muteIcon", NullValueHandling = NullValueHandling.Ignore)]
         public string MuteIcon { get; set; }
 
         public Volume(string key, int level, bool muted, string label, bool hasMute, string muteIcon)
