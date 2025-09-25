@@ -65,7 +65,10 @@ namespace PepperDash.Essentials.WebSocketServer
     [JsonProperty("enableDebug")]
     public bool EnableDebug { get; set; }
 
-    ///  
+    /// <summary>
+    /// Gets or sets the DeviceInterfaceSupport
+    /// </summary>
+    [JsonProperty("deviceInterfaceSupport")]
     public Dictionary<string, DeviceInterfaceInfo> DeviceInterfaceSupport { get; set; }
   }
 }
