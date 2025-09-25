@@ -16,8 +16,8 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.UI;
-using Serilog.Events;
 using Feedback = PepperDash.Essentials.Core.Feedback;
+using IPAddress = System.Net.IPAddress;
 
 namespace PepperDash.Essentials.Touchpanel
 {
@@ -107,11 +107,14 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public DeviceInfo DeviceInfo => new DeviceInfo();
 
+        /// <summary>
+        /// Gets the list of connected IPs for this IpId
+        /// </summary>
         public ReadOnlyCollection<ConnectedIpInformation> ConnectedIps => Panel.ConnectedIpList;
 
-        private System.Net.IPAddress csIpAddress;
+        private readonly IPAddress csIpAddress;
 
-        private System.Net.IPAddress csSubnetMask;
+        private readonly IPAddress csSubnetMask;
 
 
         /// <summary>
@@ -197,8 +200,8 @@ namespace PepperDash.Essentials.Touchpanel
                 var csSubnetMask = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, csAdapterId);
                 var csIpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
 
-                this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
-                this.csIpAddress = System.Net.IPAddress.Parse(csIpAddress);
+                this.csSubnetMask = IPAddress.Parse(csSubnetMask);
+                this.csIpAddress = IPAddress.Parse(csIpAddress);
             }
             catch
             {
@@ -234,7 +237,7 @@ namespace PepperDash.Essentials.Touchpanel
             {
                 x70Panel.ExtenderApplicationControlReservedSigs.DeviceExtenderSigChange += (e, a) =>
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"X70 App Control Device Extender args: {a.Event}:{a.Sig}:{a.Sig.Type}:{a.Sig.BoolValue}:{a.Sig.UShortValue}:{a.Sig.StringValue}");
+                    this.LogVerbose("X70 App Control Device Extender args: {event}:{sig}:{type}:{boolValue}:{ushortValue}:{stringValue}", a.Event, a.Sig, a.Sig.Type, a.Sig.BoolValue, a.Sig.UShortValue, a.Sig.StringValue);
 
                     UpdateZoomFeedbacks();
 
@@ -253,7 +256,7 @@ namespace PepperDash.Essentials.Touchpanel
 
                 x70Panel.ExtenderZoomRoomAppReservedSigs.DeviceExtenderSigChange += (e, a) =>
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"X70 Zoom Room Ap Device Extender args: {a.Event}:{a.Sig}:{a.Sig.Type}:{a.Sig.BoolValue}:{a.Sig.UShortValue}:{a.Sig.StringValue}");
+                    this.LogVerbose("X70 Zoom Room App Device Extender args: {event}:{sig}:{type}:{boolValue}:{ushortValue}:{stringValue}", a.Event, a.Sig, a.Sig.Type, a.Sig.BoolValue, a.Sig.UShortValue, a.Sig.StringValue);
 
                     if (a.Sig.Number == x70Panel.ExtenderZoomRoomAppReservedSigs.ZoomRoomIncomingCallFeedback.Number)
                     {
@@ -271,7 +274,7 @@ namespace PepperDash.Essentials.Touchpanel
                     DeviceInfo.MacAddress = x70Panel.ExtenderEthernetReservedSigs.MacAddressFeedback.StringValue;
                     DeviceInfo.IpAddress = x70Panel.ExtenderEthernetReservedSigs.IpAddressFeedback.StringValue;
 
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, $"MAC: {DeviceInfo.MacAddress} IP: {DeviceInfo.IpAddress}");
+                    this.LogDebug("MAC: {macAddress} IP: {ipAddress}", DeviceInfo.MacAddress, DeviceInfo.IpAddress);
 
                     var handler = DeviceInfoChanged;
 
@@ -301,7 +304,7 @@ namespace PepperDash.Essentials.Touchpanel
             {
                 x60withZoomApp.ExtenderApplicationControlReservedSigs.DeviceExtenderSigChange += (e, a) =>
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"X60 App Control Device Extender args: {a.Event}:{a.Sig}:{a.Sig.Type}:{a.Sig.BoolValue}:{a.Sig.UShortValue}:{a.Sig.StringValue}");
+                    this.LogVerbose("X60 App Control Device Extender args: {event}:{sig}:{type}:{boolValue}:{ushortValue}:{stringValue}", a.Event, a.Sig, a.Sig.Type, a.Sig.BoolValue, a.Sig.UShortValue, a.Sig.StringValue);
 
                     if (a.Sig.Number == x60withZoomApp.ExtenderApplicationControlReservedSigs.HideOpenApplicationFeedback.Number)
                     {
@@ -310,7 +313,7 @@ namespace PepperDash.Essentials.Touchpanel
                 };
                 x60withZoomApp.ExtenderZoomRoomAppReservedSigs.DeviceExtenderSigChange += (e, a) =>
                 {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"X60 Zoom Room App Device Extender args: {a.Event}:{a.Sig}:{a.Sig.Type}:{a.Sig.BoolValue}:{a.Sig.UShortValue}:{a.Sig.StringValue}");
+                    this.LogVerbose("X60 Zoom Room App Device Extender args: {event}:{sig}:{type}:{boolValue}:{ushortValue}:{stringValue}", a.Event, a.Sig, a.Sig.Type, a.Sig.BoolValue, a.Sig.UShortValue, a.Sig.StringValue);
 
                     if (a.Sig.Number == x60withZoomApp.ExtenderZoomRoomAppReservedSigs.ZoomRoomIncomingCallFeedback.Number)
                     {
@@ -327,7 +330,7 @@ namespace PepperDash.Essentials.Touchpanel
                     DeviceInfo.MacAddress = x60withZoomApp.ExtenderEthernetReservedSigs.MacAddressFeedback.StringValue;
                     DeviceInfo.IpAddress = x60withZoomApp.ExtenderEthernetReservedSigs.IpAddressFeedback.StringValue;
 
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, $"MAC: {DeviceInfo.MacAddress} IP: {DeviceInfo.IpAddress}");
+                    this.LogDebug("MAC: {macAddress} IP: {ipAddress}", DeviceInfo.MacAddress, DeviceInfo.IpAddress);
 
                     var handler = DeviceInfoChanged;
 
@@ -389,7 +392,7 @@ namespace PepperDash.Essentials.Touchpanel
         /// <param name="args">The signal event arguments containing the changed signal information.</param>
         protected override void ExtenderSystemReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
         {
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"System Device Extender args: ${args.Event}:${args.Sig}");
+            this.LogVerbose("System Device Extender args: {event}:{sig}", args.Event, args.Sig);
         }
 
         /// <summary>
@@ -444,7 +447,7 @@ namespace PepperDash.Essentials.Touchpanel
 
             var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);
 
-            if(csIpAddress == null || csSubnetMask == null || url == null)
+            if (csIpAddress == null || csSubnetMask == null || url == null)
             {
                 this.LogWarning("CS IP Address Subnet Mask or url is null, cannot determine correct IP for URL");
                 return url;
@@ -455,7 +458,7 @@ namespace PepperDash.Essentials.Touchpanel
 
             var ip = ConnectedIps.Any(ipInfo =>
             {
-                if (System.Net.IPAddress.TryParse(ipInfo.DeviceIpAddress, out var parsedIp))
+                if (IPAddress.TryParse(ipInfo.DeviceIpAddress, out var parsedIp))
                 {
                     return csIpAddress.IsInSameSubnet(parsedIp, csSubnetMask);
                 }
@@ -489,7 +492,7 @@ namespace PepperDash.Essentials.Touchpanel
 
             if (mcList.Count == 0)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, $"No Mobile Control controller found");
+                this.LogError("No Mobile Control controller found");
 
                 return;
             }
@@ -501,7 +504,7 @@ namespace PepperDash.Essentials.Touchpanel
 
             if (bridge == null)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, $"No Mobile Control bridge for {_config.DefaultRoomKey} found ");
+                this.LogInformation("No Mobile Control bridge for {roomKey} found", _config.DefaultRoomKey);
                 return;
             }
 
@@ -546,7 +549,7 @@ namespace PepperDash.Essentials.Touchpanel
         {
             foreach (var feedback in ZoomFeedbacks)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, $"Updating {feedback.Key}");
+                this.LogDebug("Updating {feedbackKey}", feedback.Key);
                 feedback.FireUpdate();
             }
         }
@@ -582,7 +585,7 @@ namespace PepperDash.Essentials.Touchpanel
 
             if (Panel is TswX60WithZoomRoomAppReservedSigs)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, $"X60 panel does not support zoom app");
+                this.LogInformation("X60 panel does not support zoom app");
                 return;
             }
         }
@@ -658,7 +661,16 @@ namespace PepperDash.Essentials.Touchpanel
                 handler(this, new DeviceInfoEventArgs(DeviceInfo));
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, $"MAC: {DeviceInfo.MacAddress} IP: {DeviceInfo.IpAddress}");
+            this.LogDebug("MAC: {macAddress} IP: {ipAddress}", DeviceInfo.MacAddress, DeviceInfo.IpAddress);
+        }
+
+        /// <summary>
+        /// Force a reload of the iframe on the panel connected to this IP ID
+        /// </summary>
+        public void ReloadIframe()
+        {
+            this.LogInformation("Pulsing join 1");
+            Panel.PulseBool(1, 100);
         }
     }
 
@@ -667,6 +679,8 @@ namespace PepperDash.Essentials.Touchpanel
     /// </summary>
     public class MobileControlTouchpanelControllerFactory : EssentialsPluginDeviceFactory<MobileControlTouchpanelController>
     {
+        private Dictionary<string, Func<uint, CrestronControlSystem, string, BasicTriListWithSmartObject>> factories;
+
         /// <summary>
         /// Initializes a new instance of the MobileControlTouchpanelControllerFactory class.
         /// Sets up supported device type names and minimum framework version requirements.
@@ -675,6 +689,31 @@ namespace PepperDash.Essentials.Touchpanel
         {
             TypeNames = new List<string>() { "mccrestronapp", "mctsw550", "mctsw750", "mctsw1050", "mctsw560", "mctsw760", "mctsw1060", "mctsw570", "mctsw770", "mcts770", "mctsw1070", "mcts1070", "mcxpanel", "mcdge1000" };
             MinimumEssentialsFrameworkVersion = "2.0.0";
+
+            factories = new Dictionary<string, Func<uint, CrestronControlSystem, string, BasicTriListWithSmartObject>>
+            {
+                {"crestronapp", (id, controlSystem, projectName) => {
+                    var app = new CrestronApp(id, Global.ControlSystem);
+                    app.ParameterProjectName.Value = projectName;
+                    return app;
+                }},
+                {"xpanel", (id, controlSystem, projectName) => new XpanelForHtml5(id, controlSystem)},
+                {"tsw550", (id, controlSystem, projectName) => new Tsw550(id, controlSystem)},
+                {"tsw552", (id, controlSystem, projectName) => new Tsw552(id, controlSystem)},
+                {"tsw560", (id, controlSystem, projectName) => new Tsw560(id, controlSystem)},
+                {"tsw750", (id, controlSystem, projectName) => new Tsw750(id, controlSystem)},
+                {"tsw752", (id, controlSystem, projectName) => new Tsw752(id, controlSystem)},
+                {"tsw760", (id, controlSystem, projectName) => new Tsw760(id, controlSystem)},
+                {"tsw1050", (id, controlSystem, projectName) => new Tsw1050(id, controlSystem)},
+                {"tsw1052", (id, controlSystem, projectName) => new Tsw1052(id, controlSystem)},
+                {"tsw1060", (id, controlSystem, projectName) => new Tsw1060(id, controlSystem)},
+                {"tsw570", (id, controlSystem, projectName) => new Tsw570(id, controlSystem)},
+                {"tsw770", (id, controlSystem, projectName) => new Tsw770(id, controlSystem)},
+                {"ts770", (id, controlSystem, projectName) => new Ts770(id, controlSystem)},
+                {"tsw1070", (id, controlSystem, projectName) => new Tsw1070(id, controlSystem)},
+                {"ts1070", (id, controlSystem, projectName) => new Ts1070(id, controlSystem)},
+                {"dge1000", (id, controlSystem, projectName) => new Dge1000(id, controlSystem)}
+            };
         }
 
         /// <summary>
@@ -694,10 +733,10 @@ namespace PepperDash.Essentials.Touchpanel
 
             if (panel == null)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Unable to create Touchpanel for type {0}. Touchpanel Controller WILL NOT function correctly", dc.Type);
+                Debug.LogError("Unable to create Touchpanel for type {type}. Touchpanel Controller WILL NOT function correctly", dc.Type);
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Factory Attempting to create new MobileControlTouchpanelController");
+            Debug.LogDebug("Factory Attempting to create new MobileControlTouchpanelController");
 
             var panelController = new MobileControlTouchpanelController(dc.Key, dc.Name, panel, props);
 
@@ -707,56 +746,21 @@ namespace PepperDash.Essentials.Touchpanel
         private BasicTriListWithSmartObject GetPanelForType(string type, uint id, string projectName)
         {
             type = type.ToLower().Replace("mc", "");
+
             try
             {
-                if (type == "crestronapp")
+                if (!factories.TryGetValue(type, out var buildCrestronHardwareDevice))
                 {
-                    var app = new CrestronApp(id, Global.ControlSystem);
-                    app.ParameterProjectName.Value = projectName;
-                    return app;
-                }
-                else if (type == "xpanel")
-                    return new XpanelForHtml5(id, Global.ControlSystem);
-                else if (type == "tsw550")
-                    return new Tsw550(id, Global.ControlSystem);
-                else if (type == "tsw552")
-                    return new Tsw552(id, Global.ControlSystem);
-                else if (type == "tsw560")
-                    return new Tsw560(id, Global.ControlSystem);
-                else if (type == "tsw750")
-                    return new Tsw750(id, Global.ControlSystem);
-                else if (type == "tsw752")
-                    return new Tsw752(id, Global.ControlSystem);
-                else if (type == "tsw760")
-                    return new Tsw760(id, Global.ControlSystem);
-                else if (type == "tsw1050")
-                    return new Tsw1050(id, Global.ControlSystem);
-                else if (type == "tsw1052")
-                    return new Tsw1052(id, Global.ControlSystem);
-                else if (type == "tsw1060")
-                    return new Tsw1060(id, Global.ControlSystem);
-                else if (type == "tsw570")
-                    return new Tsw570(id, Global.ControlSystem);
-                else if (type == "tsw770")
-                    return new Tsw770(id, Global.ControlSystem);
-                else if (type == "ts770")
-                    return new Ts770(id, Global.ControlSystem);
-                else if (type == "tsw1070")
-                    return new Tsw1070(id, Global.ControlSystem);
-                else if (type == "ts1070")
-                    return new Ts1070(id, Global.ControlSystem);
-                else if (type == "dge1000")
-                    return new Dge1000(id, Global.ControlSystem);
-                else
-
-                {
-                    Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "WARNING: Cannot create TSW controller with type '{0}'", type);
+                    Debug.LogError("Cannot create TSW controller with type {type}", type);
                     return null;
                 }
+
+                return buildCrestronHardwareDevice(id, Global.ControlSystem, projectName);
             }
             catch (Exception e)
             {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Warning, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
+                Debug.LogError("Cannot create TSW base class. Panel will not function: {message}", e.Message);
+                Debug.LogDebug(e, "Stack Trace: ");
                 return null;
             }
         }
