@@ -2420,33 +2420,4 @@ namespace PepperDash.Essentials
             CrestronConsole.ConsoleCommandResponse("Usage: mobilehttprequest:N get/post url\r");
         }
     }
-
-    /// <summary>
-    /// Represents a ClientSpecificUpdateRequest
-    /// </summary>
-    public class ClientSpecificUpdateRequest
-    {
-        public ClientSpecificUpdateRequest(Action<string> action)
-        {
-            ResponseMethod = action;
-        }
-
-        /// <summary>
-        /// Gets or sets the ResponseMethod
-        /// </summary>
-        public Action<string> ResponseMethod { get; private set; }
-    }
-
-    /// <summary>
-    /// Represents a UserCodeChanged
-    /// </summary>
-    public class UserCodeChanged
-    {
-        public Action<string, string> UpdateUserCode { get; private set; }
-
-        public UserCodeChanged(Action<string, string> updateMethod)
-        {
-            UpdateUserCode = updateMethod;
-        }
-    }
 }
