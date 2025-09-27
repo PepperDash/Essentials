@@ -326,6 +326,12 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
+        public void SetWebsocketLogLevel(LogLevel level)
+        {
+            CrestronConsole.ConsoleCommandResponse($"Setting direct server debug level to {level}", level.ToString());
+            _server.Log.Level = level;
+        }
+
         private void AddClientsForTouchpanels()
         {
             var touchpanels = DeviceManager.AllDevices
