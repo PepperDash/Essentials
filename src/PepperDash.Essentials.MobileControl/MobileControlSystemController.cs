@@ -54,7 +54,10 @@ namespace PepperDash.Essentials
                 StringComparer.InvariantCultureIgnoreCase
             );
 
-        public Dictionary<string, List<IMobileControlAction>> ActionDictionary => _actionDictionary;
+        /// <summary>
+        /// Actions
+        /// </summary>
+        public ReadOnlyDictionary<string, List<IMobileControlAction>> ActionDictionary => new ReadOnlyDictionary<string, List<IMobileControlAction>>(_actionDictionary);
 
         private readonly GenericQueue _receiveQueue;
         private readonly List<MobileControlBridgeBase> _roomBridges =
@@ -65,6 +68,16 @@ namespace PepperDash.Essentials
 
         private readonly Dictionary<string, IMobileControlMessenger> _defaultMessengers =
             new Dictionary<string, IMobileControlMessenger>();
+
+        /// <summary>
+        /// Get the custom messengers with subscriptions
+        /// </summary>
+        public ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions> Messengers => new ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions>(_messengers.Values.OfType<IMobileControlMessengerWithSubscriptions>().ToDictionary(k => k.Key, v => v));
+
+        /// <summary>
+        /// Get the default messengers
+        /// </summary>
+        public ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions> DefaultMessengers => new ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions>(_defaultMessengers.Values.OfType<IMobileControlMessengerWithSubscriptions>().ToDictionary(k => k.Key, v => v));
 
         private readonly GenericQueue _transmitToServerQueue;
 
@@ -1199,8 +1212,7 @@ namespace PepperDash.Essentials
 
             if (_initialized)
             {
-                this.LogDebug("Registering messenger {messengerKey} AFTER initialization", messenger.Key);
-                messenger.RegisterWithAppServer(this);
+                RegisterMessengerWithServer(messenger);
             }
         }
 
@@ -1240,6 +1252,12 @@ namespace PepperDash.Essentials
                 messenger.Key,
                 messenger.MessagePath
             );
+
+            if (messenger is IMobileControlMessengerWithSubscriptions subMessenger)
+            {
+                subMessenger.RegisterWithAppServer(this, Config.EnableMessengerSubscriptions);
+                return;
+            }
 
             messenger.RegisterWithAppServer(this);
         }

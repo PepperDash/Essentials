@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using Crestron.SimplSharp.Net;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
@@ -13,12 +13,25 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Provides a messaging bridge
     /// </summary>
-    public abstract class MessengerBase : EssentialsDevice, IMobileControlMessenger
+    public abstract class MessengerBase : EssentialsDevice, IMobileControlMessengerWithSubscriptions
     {
         /// <summary>
         /// The device this messenger is associated with
         /// </summary>
         protected IKeyName _device;
+
+        /// <summary>
+        /// Enable subscriptions
+        /// </summary>
+        protected bool enableMessengerSubscriptions;
+
+        /// <summary>
+        /// List of clients subscribed to this messenger
+        /// </summary>
+        /// <remarks>
+        /// Unsoliciited feedback from a device in a messenger will ONLY be sent to devices in this subscription list. When a client disconnects, it's ID will be removed from the collection.
+        /// </remarks>
+        protected HashSet<string> SubscriberIds = new HashSet<string>();
 
         private readonly List<string> _deviceInterfaces;
 
@@ -93,6 +106,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
             RegisterActions();
         }
 
+        /// <summary>
+        /// Register this messenger with appserver controller
+        /// </summary>
+        /// <param name="appServerController">Parent controller for this messenger</param>
+        /// <param name="enableMessengerSubscriptions">Enable subscriptions</param>
+        public void RegisterWithAppServer(IMobileControl appServerController, bool enableMessengerSubscriptions)
+        {
+            this.enableMessengerSubscriptions = enableMessengerSubscriptions;
+            AppServerController = appServerController ?? throw new ArgumentNullException("appServerController");
+
+            AppServerController.AddAction(this, HandleMessage);
+
+            RegisterActions();
+        }
+
         private void HandleMessage(string path, string id, JToken content)
         {
             // replace base path with empty string. Should leave something like /fullStatus
@@ -103,7 +131,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Executing action for path {path}", this, path);
+            this.LogDebug("Executing action for path {path}", path);
 
             action(id, content);
         }
@@ -117,7 +145,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             if (_actions.ContainsKey(path))
             {
-                //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Messenger {Key} already has action registered at {path}", this);
                 return;
             }
 
@@ -152,6 +179,52 @@ namespace PepperDash.Essentials.AppServer.Messengers
         protected virtual void RegisterActions()
         {
 
+        }
+
+        /// <summary>
+        /// Add client to the susbscription list for unsolicited feedback
+        /// </summary>
+        /// <param name="clientId">Client ID to add</param>
+        protected void SubscribeClient(string clientId)
+        {
+            if (!enableMessengerSubscriptions)
+            {
+                this.LogWarning("Messenger subscriptions not enabled");
+                return;
+            }
+
+            if (SubscriberIds.Any(id => id == clientId))
+            {
+                this.LogVerbose("Client {clientId} already subscribed", clientId);
+                return;
+            }
+
+            SubscriberIds.Add(clientId);
+
+            this.LogDebug("Client {clientId} subscribed", clientId);
+        }
+
+        /// <summary>
+        /// Remove a client from the subscription list
+        /// </summary>
+        /// <param name="clientId">Client ID to remove</param>
+        public void UnsubscribeClient(string clientId)
+        {
+            if (!enableMessengerSubscriptions)
+            {
+                this.LogWarning("Messenger subscriptions not enabled");
+                return;
+            }
+
+            if (!SubscriberIds.Any(i => i == clientId))
+            {
+                this.LogVerbose("Client with ID {clientId} is not subscribed", clientId);
+                return;
+            }
+
+            SubscriberIds.RemoveWhere((i) => i == clientId);
+
+            this.LogInformation("Client with ID {clientId} unsubscribed", clientId);
         }
 
         /// <summary>
@@ -228,11 +301,33 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             try
             {
+                // Allow for legacy method to continue without subscriptions
+                if (!enableMessengerSubscriptions)
+                {
+                    AppServerController?.SendMessageObject(new MobileControlMessage { Type = !string.IsNullOrEmpty(type) ? type : MessagePath, ClientId = clientId, Content = content });
+                    return;
+                }
+
+                // handle subscription feedback
+                // If client is null or empty, this message is unsolicited feedback. Iterate through the subscriber list and send to all interested parties
+                if (string.IsNullOrEmpty(clientId))
+                {
+                    foreach (var client in SubscriberIds)
+                    {
+                        AppServerController?.SendMessageObject(new MobileControlMessage { Type = !string.IsNullOrEmpty(type) ? type : MessagePath, ClientId = client, Content = content });
+                    }
+
+                    return;
+                }
+
+                SubscribeClient(clientId);
+
                 AppServerController?.SendMessageObject(new MobileControlMessage { Type = !string.IsNullOrEmpty(type) ? type : MessagePath, ClientId = clientId, Content = content });
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Exception posting status message", this);
+                this.LogError("Exception posting status message: {message}", ex.Message);
+                this.LogDebug(ex, "Stack Trace: ");
             }
         }
 

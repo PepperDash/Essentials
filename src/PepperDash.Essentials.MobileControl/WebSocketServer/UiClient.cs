@@ -22,14 +22,29 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <inheritdoc />
         public string Key { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the mobile control system controller that handles this client's messages
+        /// </summary>
         public MobileControlSystemController Controller { get; set; }
 
+        /// <summary>
+        /// Gets or sets the room key that this client is associated with
+        /// </summary>
         public string RoomKey { get; set; }
 
+        /// <summary>
+        /// The unique identifier for this client instance
+        /// </summary>
         private string _clientId;
 
+        /// <summary>
+        /// The timestamp when this client connection was established
+        /// </summary>
         private DateTime _connectionTime;
 
+        /// <summary>
+        /// Gets the duration that this client has been connected. Returns zero if not currently connected.
+        /// </summary>
         public TimeSpan ConnectedDuration
         {
             get
@@ -45,6 +60,10 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the UiClient class with the specified key
+        /// </summary>
+        /// <param name="key">The unique key to identify this client</param>
         public UiClient(string key)
         {
             Key = key;
@@ -99,11 +118,21 @@ namespace PepperDash.Essentials.WebSocketServer
             // TODO: Future: Check token to see if there's already an open session using that token and reject/close the session 
         }
 
+        /// <summary>
+        /// Handles the UserCodeChanged event from a room bridge and sends the updated user code to the client
+        /// </summary>
+        /// <param name="sender">The room bridge that raised the event</param>
+        /// <param name="e">Event arguments</param>
         private void Bridge_UserCodeChanged(object sender, EventArgs e)
         {
             SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, _clientId);
         }
 
+        /// <summary>
+        /// Sends the current user code and QR code URL to the specified client
+        /// </summary>
+        /// <param name="bridge">The room bridge containing the user code information</param>
+        /// <param name="clientId">The ID of the client to send the information to</param>
         private void SendUserCodeToClient(MobileControlBridgeBase bridge, string clientId)
         {
             var content = new
@@ -140,6 +169,16 @@ namespace PepperDash.Essentials.WebSocketServer
             base.OnClose(e);
 
             this.LogInformation("WebSocket UiClient Closing: {code} reason: {reason}", e.Code, e.Reason);
+
+            foreach (var messenger in Controller.Messengers)
+            {
+                messenger.Value.UnsubscribeClient(_clientId);
+            }
+
+            foreach (var messenger in Controller.DefaultMessengers)
+            {
+                messenger.Value.UnsubscribeClient(_clientId);
+            }
         }
 
         /// <inheritdoc />

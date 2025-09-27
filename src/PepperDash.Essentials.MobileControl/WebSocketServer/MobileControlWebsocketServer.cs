@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
@@ -34,6 +36,10 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private readonly string appConfigFileName = "_config.local.json";
         private readonly string appConfigCsFileName = "_config.cs.json";
+
+        private const string certificateName = "selfCres";
+
+        private const string certificatePassword = "cres12345";
 
         /// <summary>
         /// Where the key is the join token and the value is the room key
@@ -260,7 +266,41 @@ namespace PepperDash.Essentials.WebSocketServer
                     _server.OnPost += Server_OnPost;
                 }
 
-                _server.Log.Output = (data, level) => this.LogInformation("WebSocket Server Log [{level}]: {data}", level, data);
+                if (_parent.Config.DirectServer.Secure)
+                {
+                    this.LogInformation("Adding SSL Configuration to server");
+                    _server.SslConfiguration = new ServerSslConfiguration(new X509Certificate2($"\\user\\{certificateName}.pfx", certificatePassword))
+                    {
+                        ClientCertificateRequired = false,
+                        CheckCertificateRevocation = false,
+                        EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11
+                    };
+                }
+
+                _server.Log.Output = (data, message) =>
+                {
+                    switch (data.Level)
+                    {
+                        case LogLevel.Trace:
+                            this.LogVerbose(data.Message);
+                            break;
+                        case LogLevel.Debug:
+                            this.LogDebug(data.Message);
+                            break;
+                        case LogLevel.Info:
+                            this.LogInformation(data.Message);
+                            break;
+                        case LogLevel.Warn:
+                            this.LogWarning(data.Message);
+                            break;
+                        case LogLevel.Error:
+                            this.LogError(data.Message);
+                            break;
+                        case LogLevel.Fatal:
+                            this.LogFatal(data.Message);
+                            break;
+                    }
+                };
 
                 CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
 
