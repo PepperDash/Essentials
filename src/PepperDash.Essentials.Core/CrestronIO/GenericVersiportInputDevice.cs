@@ -2,78 +2,82 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-
-using PepperDash.Core;
-using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Bridges;
-
-
 using Newtonsoft.Json;
-using Serilog.Events;
+using PepperDash.Core;
+using PepperDash.Core.Logging;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
     /// <summary>
     /// Represents a generic digital input deviced tied to a versiport
     /// </summary>
-    public class GenericVersiportDigitalInputDevice : EssentialsBridgeableDevice, IDigitalInput, IPartitionStateProvider
+    public class GenericVersiportDigitalInputDevice : EssentialsBridgeableDevice, IDigitalInput, IPartitionStateProvider, IHasFeedback
     {
-        public Versiport InputPort { get; private set; }
+        private Versiport inputPort;
 
+        /// <summary>
+        /// Gets or sets the InputStateFeedback
+        /// </summary>
         public BoolFeedback InputStateFeedback { get; private set; }
 
-        Func<bool> InputStateFeedbackFunc
-        {
-            get
-            {
-                return () => InputPort.DigitalIn;
-            }
-        }
+        /// <inheritdoc />
+        public FeedbackCollection<Feedback> Feedbacks { get; private set; } = new FeedbackCollection<Feedback>();
 
         /// <summary>
         /// Gets or sets the PartitionPresentFeedback
         /// </summary>
         public BoolFeedback PartitionPresentFeedback { get; }
 
-        public bool PartitionPresent => !InputStateFeedbackFunc();
+        /// <summary>
+        /// Get partition state
+        /// </summary>
+        public bool PartitionPresent => !inputPort.DigitalIn;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenericVersiportDigitalInputDevice"/> class.
+        /// </summary>
+        /// <param name="key">key for device</param>
+        /// <param name="name">name for device</param>
+        /// <param name="postActivationFunc">function to call after activation. Should return the Versiport</param>
+        /// <param name="config">config for device</param>
         public GenericVersiportDigitalInputDevice(string key, string name, Func<IOPortConfig, Versiport> postActivationFunc, IOPortConfig config) :
             base(key, name)
         {
-            InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
-            PartitionPresentFeedback = new BoolFeedback(() => !InputStateFeedbackFunc());
+            InputStateFeedback = new BoolFeedback("inputState", () => inputPort.DigitalIn);
+            PartitionPresentFeedback = new BoolFeedback("partitionPresent", () => !inputPort.DigitalIn);
 
             AddPostActivationAction(() =>
             {
-                InputPort = postActivationFunc(config);
+                inputPort = postActivationFunc(config);
 
-                InputPort.Register();
+                inputPort.Register();
 
-                InputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);
+                inputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);
                 if (config.DisablePullUpResistor)
-                    InputPort.DisablePullUpResistor = true;
+                    inputPort.DisablePullUpResistor = true;
 
-                InputPort.VersiportChange += InputPort_VersiportChange;
+                inputPort.VersiportChange += InputPort_VersiportChange;
 
                 InputStateFeedback.FireUpdate();
                 PartitionPresentFeedback.FireUpdate();
 
-                Debug.LogMessage(LogEventLevel.Debug, this, "Created GenericVersiportDigitalInputDevice on port '{0}'.  DisablePullUpResistor: '{1}'", config.PortNumber, InputPort.DisablePullUpResistor);
+                this.LogDebug("Created GenericVersiportDigitalInputDevice for port {port}.  DisablePullUpResistor: {pullUpResistorDisable}", config.PortNumber, inputPort.DisablePullUpResistor);
 
             });
 
+            Feedbacks.Add(InputStateFeedback);
+            Feedbacks.Add(PartitionPresentFeedback);
         }
 
         void InputPort_VersiportChange(Versiport port, VersiportEventArgs args)
         {
-			Debug.LogMessage(LogEventLevel.Debug, this, "Versiport change: {0}", args.Event);
+            this.LogDebug("Versiport change: {0}", args.Event);
 
-            if(args.Event == eVersiportEvent.DigitalInChange)
+            if (args.Event == eVersiportEvent.DigitalInChange)
             {
                 InputStateFeedback.FireUpdate();
                 PartitionPresentFeedback.FireUpdate();
@@ -102,20 +106,20 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
             else
             {
-                Debug.LogMessage(LogEventLevel.Information, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                this.LogWarning("Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
             try
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+                this.LogDebug("Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
                 // Link feedback for input state
                 InputStateFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputState.JoinNumber]);
             }
             catch (Exception e)
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, "Unable to link device '{0}'.  Input is null", Key);
-                Debug.LogMessage(LogEventLevel.Debug, this, "Error: {0}", e);
+                this.LogError("Unable to link device {key}.  Input is null. {message}", Key, e.Message);
+                this.LogDebug(e, "Stack Trace: ");
             }
         }
 
@@ -127,63 +131,50 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// </summary>
         public static Versiport GetVersiportDigitalInput(IOPortConfig dc)
         {
-         
-            IIOPorts ioPortDevice;
-
             if (dc.PortDeviceKey.Equals("processor"))
             {
                 if (!Global.ControlSystem.SupportsVersiport)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "GetVersiportDigitalInput: Processor does not support Versiports");
+                    Debug.LogError("GetVersiportDigitalInput: Processor does not support Versiports");
                     return null;
                 }
-                ioPortDevice = Global.ControlSystem;
+                return Global.ControlSystem.VersiPorts[dc.PortNumber];
             }
-            else
+
+            if (!(DeviceManager.GetDeviceForKey(dc.PortDeviceKey) is IIOPorts ioPortDevice))
             {
-                var ioPortDev = DeviceManager.GetDeviceForKey(dc.PortDeviceKey) as IIOPorts;
-                if (ioPortDev == null)
-                {
-                    Debug.LogMessage(LogEventLevel.Information, "GetVersiportDigitalInput: Device {0} is not a valid device", dc.PortDeviceKey);
-                    return null;
-                }
-                ioPortDevice = ioPortDev;
-            }
-            if (ioPortDevice == null)
-            {
-                Debug.LogMessage(LogEventLevel.Information, "GetVersiportDigitalInput: Device '0' is not a valid IIOPorts Device", dc.PortDeviceKey);
+                Debug.LogError("GetVersiportDigitalInput: Device {key} is not a valid device", dc.PortDeviceKey);
                 return null;
             }
 
             if (dc.PortNumber > ioPortDevice.NumberOfVersiPorts)
             {
-                Debug.LogMessage(LogEventLevel.Information, "GetVersiportDigitalInput: Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
+                Debug.LogError("GetVersiportDigitalInput: Device {key} does not contain versiport {port}", dc.PortDeviceKey, dc.PortNumber);
+                return null;
             }
 
             return ioPortDevice.VersiPorts[dc.PortNumber];
-
-
         }
     }
 
 
     /// <summary>
-    /// Represents a GenericVersiportDigitalInputDeviceFactory
+    /// Factory class for GenericVersiportDigitalInputDevice
     /// </summary>
     public class GenericVersiportDigitalInputDeviceFactory : EssentialsDeviceFactory<GenericVersiportDigitalInputDevice>
     {
+        /// <summary>
+        /// Constructor for GenericVersiportDigitalInputDeviceFactory
+        /// </summary>
         public GenericVersiportDigitalInputDeviceFactory()
         {
             TypeNames = new List<string>() { "versiportinput" };
         }
 
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
         /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Versiport Device");
+            Debug.LogDebug("Factory Attempting to create new Generic Versiport Device");
 
             var props = JsonConvert.DeserializeObject<IOPortConfig>(dc.Properties.ToString());
 

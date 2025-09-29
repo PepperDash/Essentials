@@ -16,6 +16,7 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.UI;
+using Serilog.Events;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Touchpanel
@@ -190,12 +191,6 @@ namespace PepperDash.Essentials.Touchpanel
 
             RegisterForExtenders();
 
-            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Appliance)
-            {
-                this.LogInformation("Not running on processor. Skipping CS LAN Configuration");
-                return;
-            }
-
             try
             {
                 var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
@@ -205,11 +200,6 @@ namespace PepperDash.Essentials.Touchpanel
                 this.csSubnetMask = System.Net.IPAddress.Parse(csSubnetMask);
                 this.csIpAddress = System.Net.IPAddress.Parse(csIpAddress);
             }
-            catch (ArgumentException)
-            {
-                this.LogInformation("This processor does not have a CS LAN");
-            }
-        }
 
         /// <summary>
         /// Updates the theme setting for this touchpanel controller and persists the change to configuration.
@@ -515,7 +505,7 @@ namespace PepperDash.Essentials.Touchpanel
             _bridge.UserCodeChanged += UpdateFeedbacks;
             _bridge.AppUrlChanged += (s, a) =>
             {
-                this.LogInformation("AppURL changed");
+                this.LogInformation("AppURL changed: {appURL}", _bridge.AppUrl);
                 SetAppUrl(_bridge.AppUrl);
                 UpdateFeedbacks(s, a);
             };
