@@ -23,9 +23,8 @@ namespace PepperDash.Essentials.Touchpanel
     /// <summary>
     /// Mobile Control touchpanel controller that provides app control, Zoom integration, 
     /// and mobile control functionality for Crestron touchpanels.
-    /// This is the main partial class containing core properties, constructor, and basic functionality.
     /// </summary>
-    public partial class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlCrestronTouchpanelController, ITheme
+    public class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlCrestronTouchpanelController, ITheme
     {
         private readonly MobileControlTouchpanelProperties localConfig;
         private IMobileControlRoomMessenger _bridge;
@@ -234,6 +233,123 @@ namespace PepperDash.Essentials.Touchpanel
             ConfigWriter.UpdateDeviceConfig(deviceConfig);
         }
 
+        private void RegisterForExtenders()
+        {
+            if (Panel is TswXX70Base x70Panel)
+            {
+                x70Panel.ExtenderApplicationControlReservedSigs.DeviceExtenderSigChange += (e, a) =>
+                {
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"X70 App Control Device Extender args: {a.Event}:{a.Sig}:{a.Sig.Type}:{a.Sig.BoolValue}:{a.Sig.UShortValue}:{a.Sig.StringValue}");
+
+                    UpdateZoomFeedbacks();
+
+                    if (!x70Panel.ExtenderApplicationControlReservedSigs.HideOpenedApplicationFeedback.BoolValue)
+                    {
+                        x70Panel.ExtenderButtonToolbarReservedSigs.ShowButtonToolbar();
+                        x70Panel.ExtenderButtonToolbarReservedSigs.Button2On();
+                    }
+                    else
+                    {
+                        x70Panel.ExtenderButtonToolbarReservedSigs.HideButtonToolbar();
+                        x70Panel.ExtenderButtonToolbarReservedSigs.Button2Off();
+                    }
+                };
+
+
+                x70Panel.ExtenderZoomRoomAppReservedSigs.DeviceExtenderSigChange += (e, a) =>
+                {
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"X70 Zoom Room Ap Device Extender args: {a.Event}:{a.Sig}:{a.Sig.Type}:{a.Sig.BoolValue}:{a.Sig.UShortValue}:{a.Sig.StringValue}");
+
+                    if (a.Sig.Number == x70Panel.ExtenderZoomRoomAppReservedSigs.ZoomRoomIncomingCallFeedback.Number)
+                    {
+                        ZoomIncomingCallFeedback.FireUpdate();
+                    }
+                    else if (a.Sig.Number == x70Panel.ExtenderZoomRoomAppReservedSigs.ZoomRoomActiveFeedback.Number)
+                    {
+                        ZoomInCallFeedback.FireUpdate();
+                    }
+                };
+
+
+                x70Panel.ExtenderEthernetReservedSigs.DeviceExtenderSigChange += (e, a) =>
+                {
+                    DeviceInfo.MacAddress = x70Panel.ExtenderEthernetReservedSigs.MacAddressFeedback.StringValue;
+                    DeviceInfo.IpAddress = x70Panel.ExtenderEthernetReservedSigs.IpAddressFeedback.StringValue;
+
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, $"MAC: {DeviceInfo.MacAddress} IP: {DeviceInfo.IpAddress}");
+
+                    var handler = DeviceInfoChanged;
+
+                    if (handler == null)
+                    {
+                        return;
+                    }
+
+                    handler(this, new DeviceInfoEventArgs(DeviceInfo));
+                };
+
+                x70Panel.ExtenderApplicationControlReservedSigs.Use();
+                x70Panel.ExtenderZoomRoomAppReservedSigs.Use();
+                x70Panel.ExtenderEthernetReservedSigs.Use();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Use();
+
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button1Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button3Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button4Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button5Off();
+                x70Panel.ExtenderButtonToolbarReservedSigs.Button6Off();
+
+                return;
+            }
+
+            if (Panel is TswX60WithZoomRoomAppReservedSigs x60withZoomApp)
+            {
+                x60withZoomApp.ExtenderApplicationControlReservedSigs.DeviceExtenderSigChange += (e, a) =>
+                {
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"X60 App Control Device Extender args: {a.Event}:{a.Sig}:{a.Sig.Type}:{a.Sig.BoolValue}:{a.Sig.UShortValue}:{a.Sig.StringValue}");
+
+                    if (a.Sig.Number == x60withZoomApp.ExtenderApplicationControlReservedSigs.HideOpenApplicationFeedback.Number)
+                    {
+                        AppOpenFeedback.FireUpdate();
+                    }
+                };
+                x60withZoomApp.ExtenderZoomRoomAppReservedSigs.DeviceExtenderSigChange += (e, a) =>
+                {
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, this, $"X60 Zoom Room App Device Extender args: {a.Event}:{a.Sig}:{a.Sig.Type}:{a.Sig.BoolValue}:{a.Sig.UShortValue}:{a.Sig.StringValue}");
+
+                    if (a.Sig.Number == x60withZoomApp.ExtenderZoomRoomAppReservedSigs.ZoomRoomIncomingCallFeedback.Number)
+                    {
+                        ZoomIncomingCallFeedback.FireUpdate();
+                    }
+                    else if (a.Sig.Number == x60withZoomApp.ExtenderZoomRoomAppReservedSigs.ZoomRoomActiveFeedback.Number)
+                    {
+                        ZoomInCallFeedback.FireUpdate();
+                    }
+                };
+
+                x60withZoomApp.ExtenderEthernetReservedSigs.DeviceExtenderSigChange += (e, a) =>
+                {
+                    DeviceInfo.MacAddress = x60withZoomApp.ExtenderEthernetReservedSigs.MacAddressFeedback.StringValue;
+                    DeviceInfo.IpAddress = x60withZoomApp.ExtenderEthernetReservedSigs.IpAddressFeedback.StringValue;
+
+                    Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, $"MAC: {DeviceInfo.MacAddress} IP: {DeviceInfo.IpAddress}");
+
+                    var handler = DeviceInfoChanged;
+
+                    if (handler == null)
+                    {
+                        return;
+                    }
+
+                    handler(this, new DeviceInfoEventArgs(DeviceInfo));
+                };
+
+                x60withZoomApp.ExtenderZoomRoomAppReservedSigs.Use();
+                x60withZoomApp.ExtenderApplicationControlReservedSigs.Use();
+                x60withZoomApp.ExtenderEthernetReservedSigs.Use();
+            }
+        }
+
         /// <summary>
         /// Performs custom activation setup for the touchpanel controller, including 
         /// registering messengers and linking to mobile control.
@@ -323,25 +439,231 @@ namespace PepperDash.Essentials.Touchpanel
         }
 
         /// <summary>
-        /// Updates feedbacks in response to state changes.
+        /// Gets the URL with the correct IP address based on the connected devices and the Crestron processor's IP address.
         /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="args">The event arguments.</param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        private string GetUrlWithCorrectIp(string url)
+        {
+            var lanAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter);
+
+            var processorIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId);
+
+            if (csIpAddress == null || csSubnetMask == null || url == null)
+            {
+                this.LogWarning("CS IP Address Subnet Mask or url is null, cannot determine correct IP for URL");
+                return url;
+            }
+
+            this.LogVerbose("Processor IP: {processorIp}, CS IP: {csIpAddress}, CS Subnet Mask: {csSubnetMask}", processorIp, csIpAddress, csSubnetMask);
+            this.LogVerbose("Connected IP Count: {connectedIps}", ConnectedIps.Count);
+
+            var ip = ConnectedIps.Any(ipInfo =>
+            {
+                if (System.Net.IPAddress.TryParse(ipInfo.DeviceIpAddress, out var parsedIp))
+                {
+                    return csIpAddress.IsInSameSubnet(parsedIp, csSubnetMask);
+                }
+                this.LogWarning("Invalid IP address: {deviceIpAddress}", ipInfo.DeviceIpAddress);
+                return false;
+            }) ? csIpAddress.ToString() : processorIp;
+
+            var match = Regex.Match(url, @"^http://([^:/]+):\d+/mc/app\?token=.+$");
+            if (match.Success)
+            {
+                string ipa = match.Groups[1].Value;
+                // ip will be "192.168.1.100"
+            }
+
+            // replace ipa with ip but leave the rest of the string intact
+            var updatedUrl = Regex.Replace(url, @"^http://[^:/]+", $"http://{ip}");
+
+            this.LogVerbose("Updated URL: {updatedUrl}", updatedUrl);
+
+            return updatedUrl;
+        }
+
+        private void SubscribeForMobileControlUpdates()
+        {
+            foreach (var dev in DeviceManager.AllDevices)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, $"{dev.Key}:{dev.GetType().Name}");
+            }
+
+            var mcList = DeviceManager.AllDevices.OfType<MobileControlSystemController>().ToList();
+
+            if (mcList.Count == 0)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, $"No Mobile Control controller found");
+
+                return;
+            }
+
+            // use first in list, since there should only be one.
+            var mc = mcList[0];
+
+            var bridge = mc.GetRoomBridge(_config.DefaultRoomKey);
+
+            if (bridge == null)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, $"No Mobile Control bridge for {_config.DefaultRoomKey} found ");
+                return;
+            }
+
+            _bridge = bridge;
+
+            _bridge.UserCodeChanged += UpdateFeedbacks;
+            _bridge.AppUrlChanged += (s, a) =>
+            {
+                this.LogInformation("AppURL changed");
+                SetAppUrl(_bridge.AppUrl);
+                UpdateFeedbacks(s, a);
+            };
+
+            SetAppUrl(_bridge.AppUrl);
+        }
+
+        /// <summary>
+        /// Sets the application URL and updates the corresponding feedback.
+        /// </summary>
+        /// <param name="url">The new application URL to set.</param>
+        /// <summary>
+        /// SetAppUrl method
+        /// </summary>
+        public void SetAppUrl(string url)
+        {
+            _appUrl = GetUrlWithCorrectIp(url);
+
+            AppUrlFeedback.FireUpdate();
+        }
+
         private void UpdateFeedbacks(object sender, EventArgs args)
         {
             UpdateFeedbacks();
         }
 
-        /// <summary>
-        /// Updates all feedback values to reflect current state.
-        /// </summary>
         private void UpdateFeedbacks()
         {
-            foreach (var feedback in Feedbacks)
+            foreach (var feedback in Feedbacks) { this.LogDebug("Updating {feedbackKey}", feedback.Key); feedback.FireUpdate(); }
+        }
+
+        private void UpdateZoomFeedbacks()
+        {
+            foreach (var feedback in ZoomFeedbacks)
             {
-                this.LogDebug("Updating {feedbackKey}", feedback.Key);
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, $"Updating {feedback.Key}");
                 feedback.FireUpdate();
             }
+        }
+
+        /// <summary>
+        /// HideOpenApp method
+        /// </summary>
+        public void HideOpenApp()
+        {
+            if (Panel is TswX70Base x70Panel)
+            {
+                x70Panel.ExtenderApplicationControlReservedSigs.HideOpenedApplication();
+                return;
+            }
+
+            if (Panel is TswX60BaseClass x60Panel)
+            {
+                x60Panel.ExtenderApplicationControlReservedSigs.HideOpenApplication();
+                return;
+            }
+        }
+
+        /// <summary>
+        /// OpenApp method
+        /// </summary>
+        public void OpenApp()
+        {
+            if (Panel is TswX70Base x70Panel)
+            {
+                x70Panel.ExtenderApplicationControlReservedSigs.OpenApplication();
+                return;
+            }
+
+            if (Panel is TswX60WithZoomRoomAppReservedSigs)
+            {
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, this, $"X60 panel does not support zoom app");
+                return;
+            }
+        }
+
+        /// <summary>
+        /// CloseOpenApp method
+        /// </summary>
+        public void CloseOpenApp()
+        {
+            if (Panel is TswX70Base x70Panel)
+            {
+                x70Panel.ExtenderApplicationControlReservedSigs.CloseOpenedApplication();
+                return;
+            }
+
+            if (Panel is TswX60WithZoomRoomAppReservedSigs x60Panel)
+            {
+                x60Panel.ExtenderApplicationControlReservedSigs.CloseOpenedApplication();
+                return;
+            }
+        }
+
+        /// <summary>
+        /// EndZoomCall method
+        /// </summary>
+        public void EndZoomCall()
+        {
+            if (Panel is TswX70Base x70Panel)
+            {
+                x70Panel.ExtenderZoomRoomAppReservedSigs.ZoomRoomEndCall();
+                return;
+            }
+
+            if (Panel is TswX60WithZoomRoomAppReservedSigs x60Panel)
+            {
+                x60Panel.ExtenderZoomRoomAppReservedSigs.ZoomRoomEndCall();
+                return;
+            }
+        }
+
+        /// <summary>
+        /// UpdateDeviceInfo method
+        /// </summary>
+        public void UpdateDeviceInfo()
+        {
+            if (Panel is TswXX70Base x70Panel)
+            {
+                DeviceInfo.MacAddress = x70Panel.ExtenderEthernetReservedSigs.MacAddressFeedback.StringValue;
+                DeviceInfo.IpAddress = x70Panel.ExtenderEthernetReservedSigs.IpAddressFeedback.StringValue;
+
+                var handler = DeviceInfoChanged;
+
+                if (handler == null)
+                {
+                    return;
+                }
+
+                handler(this, new DeviceInfoEventArgs(DeviceInfo));
+            }
+
+            if (Panel is TswX60WithZoomRoomAppReservedSigs x60Panel)
+            {
+                DeviceInfo.MacAddress = x60Panel.ExtenderEthernetReservedSigs.MacAddressFeedback.StringValue;
+                DeviceInfo.IpAddress = x60Panel.ExtenderEthernetReservedSigs.IpAddressFeedback.StringValue;
+
+                var handler = DeviceInfoChanged;
+
+                if (handler == null)
+                {
+                    return;
+                }
+
+                handler(this, new DeviceInfoEventArgs(DeviceInfo));
+            }
+
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, this, $"MAC: {DeviceInfo.MacAddress} IP: {DeviceInfo.IpAddress}");
         }
     }
 
