@@ -252,7 +252,7 @@ namespace PepperDash.Essentials
                 return _wsClient2.IsAlive && IsAuthorized;
             });
 
-            Debug.SetFileMinimumDebugLevel(Serilog.Events.LogEventLevel.Debug);
+            Debug.SetFileMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
         }
 
         private void SetupDefaultRoomMessengers()
@@ -1338,12 +1338,37 @@ namespace PepperDash.Essentials
                 Log =
                 {
                     Output = (data, s) =>
-                        this.LogDebug(
-                            "Message from websocket: {message}",
-                            data
-                        )
+                        {
+                            switch (data.Level)
+                            {
+                                case LogLevel.Trace:
+                                    this.LogVerbose(data.Message);
+                                    break;
+                                case LogLevel.Debug:
+                                    this.LogDebug(data.Message);
+                                    break;
+                                case LogLevel.Info:
+                                    this.LogInformation(data.Message);
+                                    break;
+                                case LogLevel.Warn:
+                                    this.LogWarning(data.Message);
+                                    break;
+                                case LogLevel.Error:
+                                    this.LogError(data.Message);
+                                    break;
+                                case LogLevel.Fatal:
+                                    this.LogFatal(data.Message);
+                                    break;
+                            }
+                        }
                 }
             };
+
+            // if Essentials is running on a server, set the log level to the lowest level to get the most detail in the logs
+            if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Server)
+            {
+                _wsClient2.Log.Level = LogLevel.Trace;
+            }
 
             _wsClient2.SslConfiguration.EnabledSslProtocols =
                 System.Security.Authentication.SslProtocols.Tls11
