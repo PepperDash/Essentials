@@ -499,15 +499,15 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is IBasicVolumeWithFeedback)
+                    if (device is IBasicVolumeControls)
                     {
                         var deviceKey = device.Key;
                         this.LogVerbose(
-                            "Adding IBasicVolumeControlWithFeedback for {deviceKey}",
+                            "Adding IBasicVolumeControls for {deviceKey}",
                             deviceKey
                         );
 
-                        var volControlDevice = device as IBasicVolumeWithFeedback;
+                        var volControlDevice = device as IBasicVolumeControls;
                         var messenger = new DeviceVolumeMessenger(
                             $"{device.Key}-volume-{Key}",
                             string.Format("/device/{0}", deviceKey),
