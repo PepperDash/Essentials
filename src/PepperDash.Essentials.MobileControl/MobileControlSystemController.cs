@@ -2233,8 +2233,21 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            if (_roomCombiner.CurrentScenario == null)
+            {
+                var message = new MobileControlMessage
+                {
+                    Type = "/system/roomKey",
+                    ClientId = clientId,
+                    Content = roomKey
+                };
+                SendMessageObject(message);
+                return;
+            }
+
             if (!_roomCombiner.CurrentScenario.UiMap.ContainsKey(roomKey))
             {
+
                 this.LogWarning(
                     "Unable to find correct roomKey for {roomKey} in current scenario. Returning {roomKey} as roomKey", roomKey);
 
