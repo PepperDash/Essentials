@@ -54,7 +54,10 @@ namespace PepperDash.Essentials
                 StringComparer.InvariantCultureIgnoreCase
             );
 
-        public Dictionary<string, List<IMobileControlAction>> ActionDictionary => _actionDictionary;
+        /// <summary>
+        /// Actions
+        /// </summary>
+        public ReadOnlyDictionary<string, List<IMobileControlAction>> ActionDictionary => new ReadOnlyDictionary<string, List<IMobileControlAction>>(_actionDictionary);
 
         private readonly GenericQueue _receiveQueue;
         private readonly List<MobileControlBridgeBase> _roomBridges =
@@ -65,6 +68,16 @@ namespace PepperDash.Essentials
 
         private readonly Dictionary<string, IMobileControlMessenger> _defaultMessengers =
             new Dictionary<string, IMobileControlMessenger>();
+
+        /// <summary>
+        /// Get the custom messengers with subscriptions
+        /// </summary>
+        public ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions> Messengers => new ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions>(_messengers.Values.OfType<IMobileControlMessengerWithSubscriptions>().ToDictionary(k => k.Key, v => v));
+
+        /// <summary>
+        /// Get the default messengers
+        /// </summary>
+        public ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions> DefaultMessengers => new ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions>(_defaultMessengers.Values.OfType<IMobileControlMessengerWithSubscriptions>().ToDictionary(k => k.Key, v => v));
 
         private readonly GenericQueue _transmitToServerQueue;
 
@@ -244,7 +257,7 @@ namespace PepperDash.Essentials
             CrestronEnvironment.ProgramStatusEventHandler +=
                 CrestronEnvironment_ProgramStatusEventHandler;
 
-            ApiOnlineAndAuthorized = new BoolFeedback(() =>
+            ApiOnlineAndAuthorized = new BoolFeedback("apiOnlineAndAuthorized", () =>
             {
                 if (_wsClient2 == null)
                     return false;
@@ -1199,8 +1212,7 @@ namespace PepperDash.Essentials
 
             if (_initialized)
             {
-                this.LogDebug("Registering messenger {messengerKey} AFTER initialization", messenger.Key);
-                messenger.RegisterWithAppServer(this);
+                RegisterMessengerWithServer(messenger);
             }
         }
 
@@ -1240,6 +1252,12 @@ namespace PepperDash.Essentials
                 messenger.Key,
                 messenger.MessagePath
             );
+
+            if (messenger is IMobileControlMessengerWithSubscriptions subMessenger)
+            {
+                subMessenger.RegisterWithAppServer(this, Config.EnableMessengerSubscriptions);
+                return;
+            }
 
             messenger.RegisterWithAppServer(this);
         }
@@ -1335,11 +1353,30 @@ namespace PepperDash.Essentials
             {
                 Log =
                 {
-                    Output = (data, s) =>
-                        this.LogDebug(
-                            "Message from websocket: {message}",
-                            data
-                        )
+                    Output = (data, message) =>
+                            {
+                                switch (data.Level)
+                                {
+                                    case LogLevel.Trace:
+                                        this.LogVerbose(data.Message);
+                                        break;
+                                    case LogLevel.Debug:
+                                        this.LogDebug(data.Message);
+                                        break;
+                                    case LogLevel.Info:
+                                        this.LogInformation(data.Message);
+                                        break;
+                                    case LogLevel.Warn:
+                                        this.LogWarning(data.Message);
+                                        break;
+                                    case LogLevel.Error:
+                                        this.LogError(data.Message);
+                                        break;
+                                    case LogLevel.Fatal:
+                                        this.LogFatal(data.Message);
+                                        break;
+                                }
+                            }
                 }
             };
 
@@ -1383,13 +1420,13 @@ namespace PepperDash.Essentials
 
         private void SetWebsocketDebugLevel(string cmdparameters)
         {
-            if (CrestronEnvironment.ProgramCompatibility == eCrestronSeries.Series4)
-            {
-                this.LogInformation(
-                    "Setting websocket log level not currently allowed on 4 series."
-                );
-                return; // Web socket log level not currently allowed in series4
-            }
+            // if (CrestronEnvironment.ProgramCompatibility == eCrestronSeries.Series4)
+            // {
+            //     this.LogInformation(
+            //         "Setting websocket log level not currently allowed on 4 series."
+            //     );
+            //     return; // Web socket log level not currently allowed in series4
+            // }
 
             if (string.IsNullOrEmpty(cmdparameters))
             {
@@ -1414,6 +1451,8 @@ namespace PepperDash.Essentials
                 {
                     _wsClient2.Log.Level = _wsLogLevel;
                 }
+
+                _directServer?.SetWebsocketLogLevel(_wsLogLevel);
 
                 CrestronConsole.ConsoleCommandResponse($"Websocket log level set to {debugLevel}");
             }
@@ -1484,7 +1523,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Adds an action to the dictionary
         /// </summary>
-        /// <param name="key">The path of the API command</param>
+        /// <param name="messenger">The messenger for the API command</param>
         /// <param name="action">The action to be triggered by the commmand</param>
         public void AddAction<T>(T messenger, Action<string, string, JToken> action)
             where T : IMobileControlMessenger
@@ -2194,8 +2233,21 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            if (_roomCombiner.CurrentScenario == null)
+            {
+                var message = new MobileControlMessage
+                {
+                    Type = "/system/roomKey",
+                    ClientId = clientId,
+                    Content = roomKey
+                };
+                SendMessageObject(message);
+                return;
+            }
+
             if (!_roomCombiner.CurrentScenario.UiMap.ContainsKey(roomKey))
             {
+
                 this.LogWarning(
                     "Unable to find correct roomKey for {roomKey} in current scenario. Returning {roomKey} as roomKey", roomKey);
 
@@ -2418,35 +2470,6 @@ namespace PepperDash.Essentials
         private void PrintTestHttpRequestUsage()
         {
             CrestronConsole.ConsoleCommandResponse("Usage: mobilehttprequest:N get/post url\r");
-        }
-    }
-
-    /// <summary>
-    /// Represents a ClientSpecificUpdateRequest
-    /// </summary>
-    public class ClientSpecificUpdateRequest
-    {
-        public ClientSpecificUpdateRequest(Action<string> action)
-        {
-            ResponseMethod = action;
-        }
-
-        /// <summary>
-        /// Gets or sets the ResponseMethod
-        /// </summary>
-        public Action<string> ResponseMethod { get; private set; }
-    }
-
-    /// <summary>
-    /// Represents a UserCodeChanged
-    /// </summary>
-    public class UserCodeChanged
-    {
-        public Action<string, string> UpdateUserCode { get; private set; }
-
-        public UserCodeChanged(Action<string, string> updateMethod)
-        {
-            UpdateUserCode = updateMethod;
         }
     }
 }

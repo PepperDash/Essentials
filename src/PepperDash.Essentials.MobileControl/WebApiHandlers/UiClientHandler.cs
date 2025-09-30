@@ -148,22 +148,25 @@ namespace PepperDash.Essentials.WebApiHandlers
     /// </summary>
     public class ClientRequest
     {
-        [JsonProperty("roomKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the RoomKey
         /// </summary>
+        [JsonProperty("roomKey", NullValueHandling = NullValueHandling.Ignore)]
         public string RoomKey { get; set; }
 
-        [JsonProperty("grantCode", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the GrantCode
         /// </summary>
+        [JsonProperty("grantCode", NullValueHandling = NullValueHandling.Ignore)]
         public string GrantCode { get; set; }
 
-        [JsonProperty("token", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Token
         /// </summary>
+        [JsonProperty("token", NullValueHandling = NullValueHandling.Ignore)]
         public string Token { get; set; }
     }
 
@@ -172,22 +175,25 @@ namespace PepperDash.Essentials.WebApiHandlers
     /// </summary>
     public class ClientResponse
     {
-        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Error
         /// </summary>
+        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
         public string Error { get; set; }
 
-        [JsonProperty("token", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Token
         /// </summary>
+        [JsonProperty("token", NullValueHandling = NullValueHandling.Ignore)]
         public string Token { get; set; }
 
-        [JsonProperty("path", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Path
         /// </summary>
+        [JsonProperty("path", NullValueHandling = NullValueHandling.Ignore)]
         public string Path { get; set; }
     }
 }

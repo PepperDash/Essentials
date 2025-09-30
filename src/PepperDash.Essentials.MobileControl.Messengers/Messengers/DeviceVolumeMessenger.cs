@@ -62,7 +62,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         #region Overrides of MessengerBase
 
-
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             AddAction("/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>

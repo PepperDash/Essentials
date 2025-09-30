@@ -55,7 +55,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendCameraFullMessageObject());
+            AddAction("/fullStatus", (id, content) => SendCameraFullMessageObject(id));
+
+            AddAction("/cameraStatus", (id, content) => SendCameraFullMessageObject(id));
 
 
             if (Camera is IHasCameraPtzControl ptzCamera)
@@ -173,7 +175,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Helper method to update the full status of the camera
         /// </summary>
-        private void SendCameraFullMessageObject()
+        private void SendCameraFullMessageObject(string id = null)
         {
             var presetList = new List<CameraPreset>();
 
@@ -188,7 +190,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 cameraMode = GetCameraMode(),
                 hasPresets = Camera is IHasCameraPresets,
                 presets = presetList
-            })
+            }), id
             );
         }
 

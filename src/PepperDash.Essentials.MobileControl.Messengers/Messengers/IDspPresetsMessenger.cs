@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -22,15 +22,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) =>
-            {
-                var message = new IHasDspPresetsStateMessage
-                {
-                    Presets = device.Presets
-                };
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
-                PostStatusMessage(message);
-            });
+            AddAction("/dspPresetStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/recallPreset", (id, content) =>
             {
@@ -42,6 +36,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     device.RecallPreset(presetKey);
                 }
             });
+        }
+
+        private void SendFullStatus(string id = null)
+        {
+            var message = new IHasDspPresetsStateMessage
+            {
+                Presets = device.Presets
+            };
+
+            PostStatusMessage(message, id);
         }
     }
 
