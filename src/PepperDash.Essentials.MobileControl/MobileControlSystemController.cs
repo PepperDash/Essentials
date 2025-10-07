@@ -975,6 +975,19 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
+                    if (device is IHasCamerasWithControls cameras2)
+                    {
+                        this.LogVerbose("Adding IHasCamerasMessenger for {deviceKey}", device.Key
+                        );
+                        var messenger = new IHasCamerasWithControlMessenger(
+                            $"{device.Key}-cameras-{Key}",
+                            $"/device/{device.Key}",
+                            cameras2
+                        );
+                        AddDefaultDeviceMessenger(messenger);
+                        messengerAdded = true;
+                    }
+
                     this.LogVerbose("Trying to cast to generic device for device: {key}", device.Key);
 
                     if (device is EssentialsDevice)

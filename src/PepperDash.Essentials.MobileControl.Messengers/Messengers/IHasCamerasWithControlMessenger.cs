@@ -8,13 +8,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Messenger for devices that implement the IHasCameras interface.
     /// </summary>
-    [Obsolete("Use IHasCamerasWithControlsMessenger instead. This class will be removed in a future version")]
-    public class IHasCamerasMessenger : MessengerBase
+    public class IHasCamerasWithControlMessenger : MessengerBase
     {
         /// <summary>
         /// Device being bridged that implements IHasCameras interface.
         /// </summary>
-        public IHasCameras CameraController { get; private set; }
+        public IHasCamerasWithControls CameraController { get; private set; }
 
         /// <summary>
         /// Messenger for devices that implement IHasCameras interface.
@@ -23,16 +22,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="cameraController"></param>
         /// <param name="messagePath"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public IHasCamerasMessenger(string key, string messagePath, IHasCameras cameraController)
+        public IHasCamerasWithControlMessenger(string key, string messagePath, IHasCamerasWithControls cameraController)
             : base(key, messagePath, cameraController)
         {
             CameraController = cameraController ?? throw new ArgumentNullException("cameraController");
             CameraController.CameraSelected += CameraController_CameraSelected;
         }
 
-        private void CameraController_CameraSelected(object sender, CameraSelectedEventArgs e)
+        private void CameraController_CameraSelected(object sender, CameraSelectedEventArgs<IHasCameraControls> e)
         {
-            PostStatusMessage(new IHasCamerasStateMessage
+            PostStatusMessage(new IHasCamerasWithControlsStateMessage
             {
                 SelectedCamera = e.SelectedCamera
             });
@@ -67,7 +66,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void SendFullStatus(string clientId)
         {
-            var state = new IHasCamerasStateMessage
+            var state = new IHasCamerasWithControlsStateMessage
             {
                 CameraList = CameraController.Cameras,
                 SelectedCamera = CameraController.SelectedCamera
@@ -82,19 +81,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// State message for devices that implement the IHasCameras interface.
     /// </summary>
-    public class IHasCamerasStateMessage : DeviceStateMessageBase
+    public class IHasCamerasWithControlsStateMessage : DeviceStateMessageBase
     {
         /// <summary>
         /// List of cameras available in the device.
         /// </summary>
         [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
-        public List<CameraBase> CameraList { get; set; }
+        public List<IHasCameraControls> CameraList { get; set; }
 
         /// <summary>
         /// The currently selected camera on the device.
         /// </summary>
         [JsonProperty("selectedCamera", NullValueHandling = NullValueHandling.Ignore)]
-        public CameraBase SelectedCamera { get; set; }
+        public IHasCameraControls SelectedCamera { get; set; }
 
     }
 }
