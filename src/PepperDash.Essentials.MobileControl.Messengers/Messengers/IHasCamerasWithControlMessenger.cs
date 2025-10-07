@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
+using PepperDash.Core;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -68,14 +70,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             var state = new IHasCamerasWithControlsStateMessage
             {
-                CameraList = CameraController.Cameras,
-                SelectedCamera = CameraController.SelectedCamera
+                CameraList = CameraController.Cameras.Cast<IKeyName>().ToList(),
+                SelectedCamera = CameraController.SelectedCamera as IKeyName
             };
 
             PostStatusMessage(state, clientId);
         }
-
-
     }
 
     /// <summary>
@@ -87,13 +87,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// List of cameras available in the device.
         /// </summary>
         [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
-        public List<IHasCameraControls> CameraList { get; set; }
+        public List<IKeyName> CameraList { get; set; }
 
         /// <summary>
         /// The currently selected camera on the device.
         /// </summary>
         [JsonProperty("selectedCamera", NullValueHandling = NullValueHandling.Ignore)]
-        public IHasCameraControls SelectedCamera { get; set; }
-
+        public IKeyName SelectedCamera { get; set; }
     }
+
+
 }

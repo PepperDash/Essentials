@@ -13,6 +13,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         /// <summary>
         /// List of cameras on the device. This should be a list of IHasCameraControls objects
         /// </summary>
+        
         List<IHasCameraControls> Cameras { get; }
 
         /// <summary>

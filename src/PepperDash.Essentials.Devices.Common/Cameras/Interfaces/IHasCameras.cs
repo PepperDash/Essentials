@@ -1,4 +1,5 @@
-﻿using PepperDash.Core;
+﻿using Newtonsoft.Json;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using System;
 using System.Collections.Generic;
