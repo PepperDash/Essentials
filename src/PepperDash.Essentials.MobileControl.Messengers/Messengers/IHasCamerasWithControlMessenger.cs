@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using System;
 using System.Collections.Generic;
@@ -33,9 +35,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void CameraController_CameraSelected(object sender, CameraSelectedEventArgs<IHasCameraControls> e)
         {
+            var selectedCamera = new KeyName
+            {
+                Key = e.SelectedCamera.Key,
+                Name = e.SelectedCamera.Name
+            };
+
             PostStatusMessage(new IHasCamerasWithControlsStateMessage
             {
-                SelectedCamera = e.SelectedCamera
+                SelectedCamera = selectedCamera
             });
         }
 
@@ -68,10 +76,30 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void SendFullStatus(string clientId)
         {
+            var cameraList = new List<IKeyName>();
+            KeyName selectedCamera = null;
+
+            foreach (var cam in CameraController.Cameras)
+            {
+                cameraList.Add(new KeyName{
+                    Key = cam.Key,
+                    Name = cam.Name
+                });
+            }
+
+            if (CameraController.SelectedCamera != null)
+            {
+                selectedCamera = new KeyName
+                {
+                    Key = CameraController.SelectedCamera.Key,
+                    Name = CameraController.SelectedCamera.Name
+                };
+            }
+
             var state = new IHasCamerasWithControlsStateMessage
             {
-                CameraList = CameraController.Cameras.Cast<IKeyName>().ToList(),
-                SelectedCamera = CameraController.SelectedCamera as IKeyName
+                CameraList = cameraList,
+                SelectedCamera = selectedCamera
             };
 
             PostStatusMessage(state, clientId);
@@ -96,5 +124,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public IKeyName SelectedCamera { get; set; }
     }
 
-
+    class KeyName : IKeyName
+    {
+        public string Key { get; set; }
+        public string Name { get; set; }
+        public KeyName()
+        {
+            Key = "";
+            Name = "";
+        }
+    }
 }
