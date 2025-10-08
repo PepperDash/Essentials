@@ -16,6 +16,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private readonly string _propName;
 
+        private List<string> _itemKeys = new List<string>();
+
         /// <summary>
         /// Constructs a messenger for a device that implements ISelectableItems<typeparamref name="TKey"/>
         /// </summary>
@@ -41,13 +43,29 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             itemDevice.ItemsUpdated += (sender, args) =>
             {
-                SendFullStatus();
+                SetItems();
             };
 
             itemDevice.CurrentItemChanged += (sender, args) =>
             {
                 SendFullStatus();
             };
+
+            SetItems();
+        }
+
+        /// <summary>
+        /// Sets the items and registers their update events
+        /// </summary>
+        private void SetItems()
+        {
+            /// Clear out any existing item actions
+            foreach (var item in _itemKeys)
+            {
+                RemoveAction($"/{item}");
+            }
+
+            _itemKeys.Clear();
 
             foreach (var input in itemDevice.Items)
             {
@@ -59,11 +77,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     localItem.Select();
                 });
 
-                localItem.ItemUpdated += (sender, args) =>
-                {
-                    SendFullStatus();
-                };
+                _itemKeys.Add(key.ToString());
+
+                localItem.ItemUpdated -= LocalItem_ItemUpdated;
+                localItem.ItemUpdated += LocalItem_ItemUpdated;
             }
+        }
+
+        private void LocalItem_ItemUpdated(object sender, EventArgs e)
+        {
+            SendFullStatus();
         }
 
         private void SendFullStatus(string id = null)
