@@ -14,8 +14,17 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     {
         ShadeControllerConfigProperties Config;
 
+        /// <summary>
+        /// Gets the collection of shades controlled by this controller
+        /// </summary>
         public List<IShadesOpenCloseStop> Shades { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the ShadeController class
+        /// </summary>
+        /// <param name="key">The device key</param>
+        /// <param name="name">The device name</param>
+        /// <param name="config">The shade controller configuration</param>
         public ShadeController(string key, string name, ShadeControllerConfigProperties config)
             : base(key, name)
         {
@@ -76,6 +85,9 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     /// </summary>
     public class ShadeControllerFactory : EssentialsDeviceFactory<ShadeController>
     {
+        /// <summary>
+        /// Initializes a new instance of the ShadeControllerFactory class
+        /// </summary>
         public ShadeControllerFactory()
         {
             TypeNames = new List<string>() { "shadecontroller" };

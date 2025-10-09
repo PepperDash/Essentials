@@ -1,5 +1,4 @@
-﻿using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Devices.Common.VideoCodec;
+﻿using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
@@ -8,10 +7,19 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// </summary>
     public interface IHasSelfviewPosition
     {
+        /// <summary>
+        /// Gets the SelfviewPipPositionFeedback
+        /// </summary>
         StringFeedback SelfviewPipPositionFeedback { get; }
 
+        /// <summary>
+        /// Sets the selfview position
+        /// </summary>
         void SelfviewPipPositionSet(CodecCommandWithLabel position);
 
+        /// <summary>
+        /// Toggles the selfview position
+        /// </summary>
         void SelfviewPipPositionToggle();
     }
 }

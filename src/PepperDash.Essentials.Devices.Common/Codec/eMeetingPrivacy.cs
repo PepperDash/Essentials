@@ -1,18 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-namespace PepperDash.Essentials.Devices.Common.Codec
+﻿namespace PepperDash.Essentials.Devices.Common.Codec
 {
     /// <summary>
     /// Enumeration of eMeetingPrivacy values
     /// </summary>
     public enum eMeetingPrivacy
     {
+        /// <summary>
+        /// Unknown meeting privacy level
+        /// </summary>
         Unknown = 0,
+
+        /// <summary>
+        /// Public meeting
+        /// </summary>
         Public,
+
+        /// <summary>
+        /// Private meeting
+        /// </summary>
         Private
     }
 

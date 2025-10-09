@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DeviceSupport;
+﻿using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
@@ -16,9 +11,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     /// </summary>
     public class MockVCCamera : CameraBase, IHasCameraPtzControl, IHasCameraFocusControl, IBridgeAdvanced
     {
+        /// <summary>
+        /// Gets the parent video codec
+        /// </summary>
         protected VideoCodecBase ParentCodec { get; private set; }
 
-
+        /// <summary>
+        /// Initializes a new instance of the MockVCCamera class
+        /// </summary>
+        /// <param name="key">The device key</param>
+        /// <param name="name">The device name</param>
+        /// <param name="codec">The parent video codec</param>
         public MockVCCamera(string key, string name, VideoCodecBase codec)
             : base(key, name)
         {
@@ -173,9 +176,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     /// </summary>
     public class MockFarEndVCCamera : CameraBase, IHasCameraPtzControl, IAmFarEndCamera, IBridgeAdvanced
     {
+        /// <summary>
+        /// Gets the parent video codec
+        /// </summary>
         protected VideoCodecBase ParentCodec { get; private set; }
 
-
+        /// <summary>
+        /// Initializes a new instance of the MockFarEndVCCamera class
+        /// </summary>
+        /// <param name="key">The device key</param>
+        /// <param name="name">The device name</param>
+        /// <param name="codec">The parent video codec</param>
         public MockFarEndVCCamera(string key, string name, VideoCodecBase codec)
             : base(key, name)
         {
