@@ -194,7 +194,21 @@ namespace PepperDash.Core
         {
             if (Server == null)
             {
-                Server = new UDPServer();
+                try
+                {
+                    var address = IPAddress.Parse(Hostname);
+
+                    Server = new UDPServer(address, Port, BufferSize);
+
+                }
+                catch (Exception ex)
+                {
+                    this.LogError("Error parsing IP Address '{ipAddress}': message: {message}", Hostname, ex.Message);
+                    this.LogInformation("Creating UDPServer with default buffersize");
+
+                    Server = new UDPServer();
+                }
+
             }
 
             if (string.IsNullOrEmpty(Hostname))
