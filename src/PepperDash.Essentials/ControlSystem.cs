@@ -39,8 +39,6 @@ namespace PepperDash.Essentials
             DeviceManager.Initialize(this);
             SecretsManager.Initialize();
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
-
-            Debug.SetErrorLogMinimumDebugLevel(CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? LogEventLevel.Warning : LogEventLevel.Verbose);
         }
 
         /// <summary>
@@ -75,8 +73,6 @@ namespace PepperDash.Essentials
 
         private void StartSystem(object preventInitialization)
         {
-            Debug.SetErrorLogMinimumDebugLevel(LogEventLevel.Verbose);
-
             DeterminePlatform();
 
             if (Debug.DoNotLoadConfigOnNextBoot)
