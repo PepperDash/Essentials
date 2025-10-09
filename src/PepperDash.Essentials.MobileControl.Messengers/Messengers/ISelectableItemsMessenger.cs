@@ -16,6 +16,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private readonly string _propName;
 
+        private List<string> _itemKeys = new List<string>();
+
         /// <summary>
         /// Constructs a messenger for a device that implements ISelectableItems<typeparamref name="TKey"/>
         /// </summary>
@@ -39,9 +41,35 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/itemsStatus", (id, content) => SendFullStatus(id));
 
+            AddAction("/selectItem", (id, content) =>
+            {
+                try
+                {
+                    var key = content.ToObject<TKey>();
+
+                    if (key == null)
+                    {
+                        this.LogError("No key specified to select");
+                        return;
+                    }
+                    if (itemDevice.Items.ContainsKey((TKey)Convert.ChangeType(key, typeof(TKey))))
+                    {
+                        itemDevice.Items[(TKey)Convert.ChangeType(key, typeof(TKey))].Select();
+                    }
+                    else
+                    {
+                        this.LogError("Key {0} not found in items", key);
+                    }
+                }
+                catch (Exception e)
+                {
+                    this.LogError("Error selecting item: {0}", e.Message);
+                }
+            });
+
             itemDevice.ItemsUpdated += (sender, args) =>
             {
-                SendFullStatus();
+                SetItems();
             };
 
             itemDevice.CurrentItemChanged += (sender, args) =>
@@ -49,21 +77,45 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 SendFullStatus();
             };
 
-            foreach (var input in itemDevice.Items)
+            SetItems();
+        }
+
+        /// <summary>
+        /// Sets the items and registers their update events
+        /// </summary>
+        private void SetItems()
+        {
+            if (_itemKeys != null && _itemKeys.Count > 0)
             {
-                var key = input.Key;
-                var localItem = input.Value;
+                /// Clear out any existing item actions
+                foreach (var item in _itemKeys)
+                {
+                    RemoveAction($"/{item}");
+                }
+
+                _itemKeys.Clear();
+            }
+
+            foreach (var item in itemDevice.Items)
+            {
+                var key = item.Key;
+                var localItem = item.Value;
 
                 AddAction($"/{key}", (id, content) =>
                 {
                     localItem.Select();
                 });
 
-                localItem.ItemUpdated += (sender, args) =>
-                {
-                    SendFullStatus();
-                };
+                _itemKeys.Add(key.ToString());
+
+                localItem.ItemUpdated -= LocalItem_ItemUpdated;
+                localItem.ItemUpdated += LocalItem_ItemUpdated;
             }
+        }
+
+        private void LocalItem_ItemUpdated(object sender, EventArgs e)
+        {
+            SendFullStatus();
         }
 
         private void SendFullStatus(string id = null)

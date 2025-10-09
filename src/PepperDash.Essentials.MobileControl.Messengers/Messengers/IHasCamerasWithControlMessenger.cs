@@ -1,20 +1,23 @@
 ﻿using Newtonsoft.Json;
+using PepperDash.Core;
+using PepperDash.Core.Logging;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     /// <summary>
     /// Messenger for devices that implement the IHasCameras interface.
     /// </summary>
-    [Obsolete("Use IHasCamerasWithControlsMessenger instead. This class will be removed in a future version")]
-    public class IHasCamerasMessenger : MessengerBase
+    public class IHasCamerasWithControlMessenger : MessengerBase
     {
         /// <summary>
         /// Device being bridged that implements IHasCameras interface.
         /// </summary>
-        public IHasCameras CameraController { get; private set; }
+        public IHasCamerasWithControls CameraController { get; private set; }
 
         /// <summary>
         /// Messenger for devices that implement IHasCameras interface.
@@ -23,18 +26,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="cameraController"></param>
         /// <param name="messagePath"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public IHasCamerasMessenger(string key, string messagePath, IHasCameras cameraController)
+        public IHasCamerasWithControlMessenger(string key, string messagePath, IHasCamerasWithControls cameraController)
             : base(key, messagePath, cameraController)
         {
             CameraController = cameraController ?? throw new ArgumentNullException("cameraController");
             CameraController.CameraSelected += CameraController_CameraSelected;
         }
 
-        private void CameraController_CameraSelected(object sender, CameraSelectedEventArgs e)
+        private void CameraController_CameraSelected(object sender, CameraSelectedEventArgs<IHasCameraControls> e)
         {
-            PostStatusMessage(new IHasCamerasStateMessage
+            var selectedCamera = new KeyName
             {
-                SelectedCamera = e.SelectedCamera
+                Key = e.SelectedCamera.Key,
+                Name = e.SelectedCamera.Name
+            };
+
+            PostStatusMessage(new IHasCamerasWithControlsStateMessage
+            {
+                SelectedCamera = selectedCamera
             });
         }
 
@@ -67,34 +76,62 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void SendFullStatus(string clientId)
         {
-            var state = new IHasCamerasStateMessage
+            var cameraList = new List<IKeyName>();
+            KeyName selectedCamera = null;
+
+            foreach (var cam in CameraController.Cameras)
             {
-                CameraList = CameraController.Cameras,
-                SelectedCamera = CameraController.SelectedCamera
+                cameraList.Add(new KeyName{
+                    Key = cam.Key,
+                    Name = cam.Name
+                });
+            }
+
+            if (CameraController.SelectedCamera != null)
+            {
+                selectedCamera = new KeyName
+                {
+                    Key = CameraController.SelectedCamera.Key,
+                    Name = CameraController.SelectedCamera.Name
+                };
+            }
+
+            var state = new IHasCamerasWithControlsStateMessage
+            {
+                CameraList = cameraList,
+                SelectedCamera = selectedCamera
             };
 
             PostStatusMessage(state, clientId);
         }
-
-
     }
 
     /// <summary>
     /// State message for devices that implement the IHasCameras interface.
     /// </summary>
-    public class IHasCamerasStateMessage : DeviceStateMessageBase
+    public class IHasCamerasWithControlsStateMessage : DeviceStateMessageBase
     {
         /// <summary>
         /// List of cameras available in the device.
         /// </summary>
         [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
-        public List<CameraBase> CameraList { get; set; }
+        public List<IKeyName> CameraList { get; set; }
 
         /// <summary>
         /// The currently selected camera on the device.
         /// </summary>
         [JsonProperty("selectedCamera", NullValueHandling = NullValueHandling.Ignore)]
-        public CameraBase SelectedCamera { get; set; }
+        public IKeyName SelectedCamera { get; set; }
+    }
 
+    class KeyName : IKeyName
+    {
+        public string Key { get; set; }
+        public string Name { get; set; }
+        public KeyName()
+        {
+            Key = "";
+            Name = "";
+        }
     }
 }
