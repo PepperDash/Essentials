@@ -41,6 +41,32 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/itemsStatus", (id, content) => SendFullStatus(id));
 
+            AddAction("/selectItem", (id, content) =>
+            {
+                try
+                {
+                    var key = content.ToObject<TKey>();
+
+                    if (key == null)
+                    {
+                        this.LogError("No key specified to select");
+                        return;
+                    }
+                    if (itemDevice.Items.ContainsKey((TKey)Convert.ChangeType(key, typeof(TKey))))
+                    {
+                        itemDevice.Items[(TKey)Convert.ChangeType(key, typeof(TKey))].Select();
+                    }
+                    else
+                    {
+                        this.LogError("Key {0} not found in items", key);
+                    }
+                }
+                catch (Exception e)
+                {
+                    this.LogError("Error selecting item: {0}", e.Message);
+                }
+            });
+
             itemDevice.ItemsUpdated += (sender, args) =>
             {
                 SetItems();
@@ -59,18 +85,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         private void SetItems()
         {
-            /// Clear out any existing item actions
-            foreach (var item in _itemKeys)
+            if (_itemKeys != null && _itemKeys.Count > 0)
             {
-                RemoveAction($"/{item}");
+                /// Clear out any existing item actions
+                foreach (var item in _itemKeys)
+                {
+                    RemoveAction($"/{item}");
+                }
+
+                _itemKeys.Clear();
             }
 
-            _itemKeys.Clear();
-
-            foreach (var input in itemDevice.Items)
+            foreach (var item in itemDevice.Items)
             {
-                var key = input.Key;
-                var localItem = input.Value;
+                var key = item.Key;
+                var localItem = item.Value;
 
                 AddAction($"/{key}", (id, content) =>
                 {
