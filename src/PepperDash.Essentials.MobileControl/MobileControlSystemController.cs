@@ -405,14 +405,15 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is CameraBase cameraDevice)
+                    // Default to IHasCameraControls if CameraBase and IHasCameraControls
+                    if (device is CameraBase cameraDevice && !(device is IHasCameraControls))
                     {
                         this.LogVerbose(
                             "Adding CameraBaseMessenger for {deviceKey}",
                             device.Key
                         );
 
-                        var cameraMessenger = new CameraBaseMessenger(
+                        var cameraMessenger = new CameraBaseMessenger<CameraBase>(
                             $"{device.Key}-cameraBase-{Key}",
                             cameraDevice,
                             $"/device/{device.Key}"
@@ -420,6 +421,21 @@ namespace PepperDash.Essentials
 
                         AddDefaultDeviceMessenger(cameraMessenger);
 
+                        messengerAdded = true;
+                    }
+
+                    if (device is IHasCameraControls cameraControlDev)
+                    {
+                        this.LogVerbose(
+                            "Adding IHasCamerasWithControlMessenger for {deviceKey}",
+                            device.Key
+                        );
+                        var cameraControlMessenger = new CameraBaseMessenger<IHasCameraControls>(
+                            $"{device.Key}-hasCamerasWithControls-{Key}",
+                            cameraControlDev,
+                            $"/device/{device.Key}"
+                        );
+                        AddDefaultDeviceMessenger(cameraControlMessenger);
                         messengerAdded = true;
                     }
 
@@ -970,6 +986,19 @@ namespace PepperDash.Essentials
                             $"{device.Key}-cameras-{Key}",
                             $"/device/{device.Key}",
                             cameras
+                        );
+                        AddDefaultDeviceMessenger(messenger);
+                        messengerAdded = true;
+                    }
+
+                    if (device is IHasCamerasWithControls cameras2)
+                    {
+                        this.LogVerbose("Adding IHasCamerasWithControlsMessenger for {deviceKey}", device.Key
+                        );
+                        var messenger = new IHasCamerasWithControlMessenger(
+                            $"{device.Key}-cameras-{Key}",
+                            $"/device/{device.Key}",
+                            cameras2
                         );
                         AddDefaultDeviceMessenger(messenger);
                         messengerAdded = true;

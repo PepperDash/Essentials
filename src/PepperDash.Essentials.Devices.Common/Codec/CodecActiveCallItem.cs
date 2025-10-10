@@ -1,10 +1,6 @@
 ﻿
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -17,55 +13,55 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public class CodecActiveCallItem
     {
-		[JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the Name
         /// </summary>
+		[JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; set; }
 
-        [JsonProperty("number", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the Number
         /// </summary>
+        [JsonProperty("number", NullValueHandling = NullValueHandling.Ignore)]
         public string Number { get; set; }
 
-        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
-		[JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// Gets or sets the Type
         /// </summary>
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public eCodecCallType Type { get; set; }
 
-        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
-		[JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// Gets or sets the Status
         /// </summary>
+        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public eCodecCallStatus Status { get; set; }
 
-        [JsonProperty("direction", NullValueHandling = NullValueHandling.Ignore)]
-		[JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// Gets or sets the Direction
         /// </summary>
+        [JsonProperty("direction", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public eCodecCallDirection Direction { get; set; }
 
-        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the Id
         /// </summary>
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public string Id { get; set; }
 
-        [JsonProperty("isOnHold", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the IsOnHold
         /// </summary>
+        [JsonProperty("isOnHold", NullValueHandling = NullValueHandling.Ignore)]
         public bool IsOnHold { get; set; }
 
-        [JsonProperty("duration", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the Duration
         /// </summary>
+        [JsonProperty("duration", NullValueHandling = NullValueHandling.Ignore)]
         public TimeSpan Duration { get; set; }
 
         //public object CallMetaData { get; set; }
@@ -81,7 +77,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             {
                 return !(Status == eCodecCallStatus.Disconnected
                     || Status == eCodecCallStatus.Disconnecting
-					|| Status == eCodecCallStatus.Idle
+                    || Status == eCodecCallStatus.Idle
                     || Status == eCodecCallStatus.Unknown);
             }
         }
@@ -97,6 +93,10 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         public CodecActiveCallItem CallItem { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the CodecCallStatusItemChangeEventArgs class
+        /// </summary>
+        /// <param name="item">The call item that changed</param>
         public CodecCallStatusItemChangeEventArgs(CodecActiveCallItem item)
         {
             CallItem = item;

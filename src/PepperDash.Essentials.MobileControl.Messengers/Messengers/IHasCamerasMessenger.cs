@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 using PepperDash.Essentials.Devices.Common.Cameras;
+using System;
+using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     /// <summary>
     /// Messenger for devices that implement the IHasCameras interface.
     /// </summary>
+    [Obsolete("Use IHasCamerasWithControlsMessenger instead. This class will be removed in a future version")]
     public class IHasCamerasMessenger : MessengerBase
     {
         /// <summary>

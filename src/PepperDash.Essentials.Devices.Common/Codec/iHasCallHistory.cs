@@ -2,10 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using PepperDash.Essentials.Devices.Common.VideoCodec;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
@@ -15,8 +14,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public interface IHasCallHistory
     {
+        /// <summary>
+        /// Gets the call history for this device
+        /// </summary>
         CodecCallHistory CallHistory { get; }
 
+        /// <summary>
+        /// Removes the specified call history entry
+        /// </summary>
+        /// <param name="entry">The call history entry to remove</param>
         void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry);
     }
 
@@ -25,9 +31,24 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public enum eCodecOccurrenceType
     {
+        /// <summary>
+        /// Unknown occurrence type
+        /// </summary>
         Unknown = 0,
+
+        /// <summary>
+        /// Call was placed (outgoing)
+        /// </summary>
         Placed = 1,
+
+        /// <summary>
+        /// Call was received (incoming)
+        /// </summary>
         Received = 2,
+
+        /// <summary>
+        /// Call received no answer
+        /// </summary>
         NoAnswer = 3,
     }
 
@@ -36,6 +57,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public class CodecCallHistory
     {
+        /// <summary>
+        /// Event that is raised when the recent calls list has changed
+        /// </summary>
         public event EventHandler<EventArgs> RecentCallsListHasChanged;
 
         /// <summary>
@@ -48,6 +72,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         CallHistoryEntry ListEmptyEntry;
 
+        /// <summary>
+        /// Initializes a new instance of the CodecCallHistory class
+        /// </summary>
         public CodecCallHistory()
         {
             ListEmptyEntry = new CallHistoryEntry() { Name = "No Recent Calls" };
@@ -80,15 +107,22 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         public class CallHistoryEntry : CodecActiveCallItem
         {
-            [JsonConverter(typeof(IsoDateTimeConverter))]
-            [JsonProperty("startTime")]
             /// <summary>
             /// Gets or sets the StartTime
             /// </summary>
+            [JsonConverter(typeof(IsoDateTimeConverter))]
+            [JsonProperty("startTime")]
             public DateTime StartTime { get; set; }
+            /// <summary>
+            /// Gets or sets the occurrence type for this call history entry
+            /// </summary>
             [JsonConverter(typeof(StringEnumConverter))]
             [JsonProperty("occurrenceType")]
             public eCodecOccurrenceType OccurrenceType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the occurrence history identifier
+            /// </summary>
             [JsonProperty("occurrenceHistoryId")]
             public string OccurrenceHistoryId { get; set; }
         }
@@ -119,7 +153,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             }
 
             // Check if list is empty and if so, add an item to display No Recent Calls
-            if(genericEntries.Count == 0)
+            if (genericEntries.Count == 0)
                 genericEntries.Add(ListEmptyEntry);
 
             RecentCalls = genericEntries;

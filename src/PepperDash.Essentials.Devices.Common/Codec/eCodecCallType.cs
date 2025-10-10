@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-namespace PepperDash.Essentials.Devices.Common.Codec
+﻿namespace PepperDash.Essentials.Devices.Common.Codec
 
 {
     /// <summary>
@@ -12,10 +6,29 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public enum eCodecCallType
     {
-        Unknown = 0, 
-        Audio, 
-        Video, 
-        AudioCanEscalate, 
+        /// <summary>
+        /// Unknown call type
+        /// </summary>
+        Unknown = 0,
+
+        /// <summary>
+        /// Audio-only call type
+        /// </summary>
+        Audio,
+
+        /// <summary>
+        /// Video call type
+        /// </summary>
+        Video,
+
+        /// <summary>
+        /// Audio call that can be escalated to video
+        /// </summary>
+        AudioCanEscalate,
+
+        /// <summary>
+        /// Forward all call type
+        /// </summary>
         ForwardAllCall
     }
 

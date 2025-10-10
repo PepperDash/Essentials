@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-namespace PepperDash.Essentials.Devices.Common.Codec
+﻿namespace PepperDash.Essentials.Devices.Common.Codec
 
 {
     /// <summary>
@@ -12,7 +6,20 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public enum eCodecCallDirection
     {
-        Unknown = 0, Incoming, Outgoing
+        /// <summary>
+        /// Unknown call direction
+        /// </summary>
+        Unknown = 0,
+
+        /// <summary>
+        /// Incoming call direction
+        /// </summary>
+        Incoming,
+
+        /// <summary>
+        /// Outgoing call direction
+        /// </summary>
+        Outgoing
     }
 
     /// <summary>
