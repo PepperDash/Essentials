@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec
 {
+    /// <summary>
+    /// Abstract base class for audio codec devices
+    /// </summary>
     public abstract class AudioCodecBase : EssentialsDevice, IHasDialer, IUsageTracking, IAudioCodecInfo
     {
 
+        /// <summary>
+        /// Event fired when call status changes
+        /// </summary>
         public event EventHandler<CodecCallStatusItemChangeEventArgs> CallStatusChange;
 
         /// <summary>
@@ -52,6 +54,11 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
         /// </summary>
         public List<CodecActiveCallItem> ActiveCalls { get; set; }
 
+        /// <summary>
+        /// Constructor for AudioCodecBase
+        /// </summary>
+        /// <param name="key">Device key</param>
+        /// <param name="name">Device name</param>
         public AudioCodecBase(string key, string name)
             : base(key, name)
         {
@@ -70,11 +77,9 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
         }
 
         /// <summary>
-        /// 
+        /// Handles call status change events
         /// </summary>
-        /// <param name="previousStatus"></param>
-        /// <param name="newStatus"></param>
-        /// <param name="item"></param>
+        /// <param name="item">The call item that changed status</param>
         protected void OnCallStatusChange(CodecActiveCallItem item)
         {
             var handler = CallStatusChange;
@@ -92,16 +97,22 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
 
         #region IHasDialer Members
 
+        /// <inheritdoc />
         public abstract void Dial(string number);
 
+        /// <inheritdoc />
         public abstract void EndCall(CodecActiveCallItem activeCall);
 
+        /// <inheritdoc />
         public abstract void EndAllCalls();
 
+        /// <inheritdoc />
         public abstract void AcceptCall(CodecActiveCallItem item);
 
+        /// <inheritdoc />
         public abstract void RejectCall(CodecActiveCallItem item);
 
+        /// <inheritdoc />
         public abstract void SendDtmf(string digit);
 
         #endregion

@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -17,9 +20,6 @@ using PepperDash.Essentials.Devices.Common.Room;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.WebSocketServer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using IShades = PepperDash.Essentials.Core.Shades.IShades;
 using ShadeBase = PepperDash.Essentials.Devices.Common.Shades.ShadeBase;
 
@@ -485,6 +485,7 @@ namespace PepperDash.Essentials.RoomBridges
         /// Sends the full status of the room to the server
         /// </summary>
         /// <param name="room"></param>
+        /// <param name="id"></param>
         private void SendFullStatusForClientId(string id, IEssentialsRoom room)
         {
             //Parent.SendMessageObject(GetFullStatus(room));
@@ -554,6 +555,7 @@ namespace PepperDash.Essentials.RoomBridges
 
         /// <summary>
         /// Determines the configuration of the room and the details about the devices associated with the room
+        /// </summary>
         /// <param name="room"></param>
         /// <returns></returns>
         private RoomConfiguration GetRoomConfiguration(IEssentialsRoom room)
@@ -798,31 +800,38 @@ namespace PepperDash.Essentials.RoomBridges
     /// </summary>
     public class RoomStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("configuration", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Configuration
         /// </summary>
+        [JsonProperty("configuration", NullValueHandling = NullValueHandling.Ignore)]
         public RoomConfiguration Configuration { get; set; }
 
         [JsonProperty("activityMode", NullValueHandling = NullValueHandling.Ignore)]
         public int? ActivityMode { get; set; }
+
         [JsonProperty("advancedSharingActive", NullValueHandling = NullValueHandling.Ignore)]
         public bool? AdvancedSharingActive { get; set; }
+
         [JsonProperty("isOn", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsOn { get; set; }
+
         [JsonProperty("isWarmingUp", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsWarmingUp { get; set; }
+
         [JsonProperty("isCoolingDown", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsCoolingDown { get; set; }
-        [JsonProperty("selectedSourceKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the SelectedSourceKey
         /// </summary>
+        [JsonProperty("selectedSourceKey", NullValueHandling = NullValueHandling.Ignore)]
         public string SelectedSourceKey { get; set; }
-        [JsonProperty("share", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Share
         /// </summary>
+        [JsonProperty("share", NullValueHandling = NullValueHandling.Ignore)]
         public ShareState Share { get; set; }
 
         [JsonProperty("volumes", NullValueHandling = NullValueHandling.Ignore)]
@@ -837,13 +846,16 @@ namespace PepperDash.Essentials.RoomBridges
     /// </summary>
     public class ShareState
     {
-        [JsonProperty("currentShareText", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the CurrentShareText
         /// </summary>
+        [JsonProperty("currentShareText", NullValueHandling = NullValueHandling.Ignore)]
         public string CurrentShareText { get; set; }
+
         [JsonProperty("enabled", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Enabled { get; set; }
+
         [JsonProperty("isSharing", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsSharing { get; set; }
     }
@@ -853,131 +865,156 @@ namespace PepperDash.Essentials.RoomBridges
     /// </summary>
     public class RoomConfiguration
     {
-        //[JsonProperty("shutdownPromptSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        //public int? ShutdownPromptSeconds { get; set; }
-
         [JsonProperty("hasVideoConferencing", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasVideoConferencing { get; set; }
+
         [JsonProperty("videoCodecIsZoomRoom", NullValueHandling = NullValueHandling.Ignore)]
         public bool? VideoCodecIsZoomRoom { get; set; }
+
         [JsonProperty("hasAudioConferencing", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasAudioConferencing { get; set; }
+
         [JsonProperty("hasEnvironmentalControls", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasEnvironmentalControls { get; set; }
+
         [JsonProperty("hasCameraControls", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasCameraControls { get; set; }
+
         [JsonProperty("hasSetTopBoxControls", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasSetTopBoxControls { get; set; }
+
         [JsonProperty("hasRoutingControls", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasRoutingControls { get; set; }
 
-        [JsonProperty("touchpanelKeys", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the TouchpanelKeys
         /// </summary>
+        [JsonProperty("touchpanelKeys", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> TouchpanelKeys { get; set; }
 
-        [JsonProperty("zoomRoomControllerKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the ZoomRoomControllerKey
         /// </summary>
+        [JsonProperty("zoomRoomControllerKey", NullValueHandling = NullValueHandling.Ignore)]
         public string ZoomRoomControllerKey { get; set; }
 
-        [JsonProperty("ciscoNavigatorKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the CiscoNavigatorKey
         /// </summary>
+        [JsonProperty("ciscoNavigatorKey", NullValueHandling = NullValueHandling.Ignore)]
         public string CiscoNavigatorKey { get; set; }
 
 
-        [JsonProperty("videoCodecKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the VideoCodecKey
         /// </summary>
+        [JsonProperty("videoCodecKey", NullValueHandling = NullValueHandling.Ignore)]
         public string VideoCodecKey { get; set; }
-        [JsonProperty("audioCodecKey", NullValueHandling = NullValueHandling.Ignore)]
+
+
         /// <summary>
         /// Gets or sets the AudioCodecKey
         /// </summary>
+        [JsonProperty("audioCodecKey", NullValueHandling = NullValueHandling.Ignore)]
         public string AudioCodecKey { get; set; }
-        [JsonProperty("matrixRoutingKey", NullValueHandling = NullValueHandling.Ignore)]
+
+
         /// <summary>
         /// Gets or sets the MatrixRoutingKey
         /// </summary>
+        [JsonProperty("matrixRoutingKey", NullValueHandling = NullValueHandling.Ignore)]
         public string MatrixRoutingKey { get; set; }
-        [JsonProperty("endpointKeys", NullValueHandling = NullValueHandling.Ignore)]
+
+
         /// <summary>
         /// Gets or sets the EndpointKeys
         /// </summary>
+        [JsonProperty("endpointKeys", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> EndpointKeys { get; set; }
 
-        [JsonProperty("accessoryDeviceKeys", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the AccessoryDeviceKeys
         /// </summary>
+        [JsonProperty("accessoryDeviceKeys", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> AccessoryDeviceKeys { get; set; }
 
-        [JsonProperty("defaultDisplayKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the DefaultDisplayKey
         /// </summary>
+        [JsonProperty("defaultDisplayKey", NullValueHandling = NullValueHandling.Ignore)]
         public string DefaultDisplayKey { get; set; }
+
         [JsonProperty("destinations", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<eSourceListItemDestinationTypes, string> Destinations { get; set; }
-        [JsonProperty("environmentalDevices", NullValueHandling = NullValueHandling.Ignore)]
+
+
         /// <summary>
         /// Gets or sets the EnvironmentalDevices
         /// </summary>
+        [JsonProperty("environmentalDevices", NullValueHandling = NullValueHandling.Ignore)]
         public List<EnvironmentalDeviceConfiguration> EnvironmentalDevices { get; set; }
+
         [JsonProperty("sourceList", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, SourceListItem> SourceList { get; set; }
 
         [JsonProperty("destinationList", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, DestinationListItem> DestinationList { get; set; }
 
-        [JsonProperty("audioControlPointList", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the AudioControlPointList
         /// </summary>
+        [JsonProperty("audioControlPointList", NullValueHandling = NullValueHandling.Ignore)]
         public AudioControlPointListItem AudioControlPointList { get; set; }
 
         [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, CameraListItem> CameraList { get; set; }
 
-        [JsonProperty("defaultPresentationSourceKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the DefaultPresentationSourceKey
         /// </summary>
+        [JsonProperty("defaultPresentationSourceKey", NullValueHandling = NullValueHandling.Ignore)]
         public string DefaultPresentationSourceKey { get; set; }
 
 
-        [JsonProperty("helpMessage", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the HelpMessage
         /// </summary>
+        [JsonProperty("helpMessage", NullValueHandling = NullValueHandling.Ignore)]
         public string HelpMessage { get; set; }
 
-        [JsonProperty("techPassword", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the TechPassword
         /// </summary>
+        [JsonProperty("techPassword", NullValueHandling = NullValueHandling.Ignore)]
         public string TechPassword { get; set; }
 
-        [JsonProperty("uiBehavior", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the UiBehavior
         /// </summary>
+        [JsonProperty("uiBehavior", NullValueHandling = NullValueHandling.Ignore)]
         public EssentialsRoomUiBehaviorConfig UiBehavior { get; set; }
 
         [JsonProperty("supportsAdvancedSharing", NullValueHandling = NullValueHandling.Ignore)]
         public bool? SupportsAdvancedSharing { get; set; }
+
         [JsonProperty("userCanChangeShareMode", NullValueHandling = NullValueHandling.Ignore)]
         public bool? UserCanChangeShareMode { get; set; }
 
-        [JsonProperty("roomCombinerKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the RoomCombinerKey
         /// </summary>
+        [JsonProperty("roomCombinerKey", NullValueHandling = NullValueHandling.Ignore)]
         public string RoomCombinerKey { get; set; }
 
         public RoomConfiguration()
@@ -994,17 +1031,19 @@ namespace PepperDash.Essentials.RoomBridges
     /// </summary>
     public class EnvironmentalDeviceConfiguration
     {
-        [JsonProperty("deviceKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the DeviceKey
         /// </summary>
+        [JsonProperty("deviceKey", NullValueHandling = NullValueHandling.Ignore)]
         public string DeviceKey { get; private set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        [JsonProperty("deviceType", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the DeviceType
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty("deviceType", NullValueHandling = NullValueHandling.Ignore)]
         public eEnvironmentalDeviceTypes DeviceType { get; private set; }
 
         public EnvironmentalDeviceConfiguration(string key, eEnvironmentalDeviceTypes type)
@@ -1031,57 +1070,18 @@ namespace PepperDash.Essentials.RoomBridges
     /// </summary>
     public class ApiTouchPanelToken
     {
-        [JsonProperty("touchPanels", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the TouchPanels
         /// </summary>
+        [JsonProperty("touchPanels", NullValueHandling = NullValueHandling.Ignore)]
         public List<JoinToken> TouchPanels { get; set; } = new List<JoinToken>();
 
-        [JsonProperty("userAppUrl", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the UserAppUrl
         /// </summary>
+        [JsonProperty("userAppUrl", NullValueHandling = NullValueHandling.Ignore)]
         public string UserAppUrl { get; set; } = "";
     }
-
-#if SERIES3
-    /// <summary>
-    /// Represents a SourceSelectMessageContent
-    /// </summary>
-    public class SourceSelectMessageContent
-    {
-        /// <summary>
-        /// Gets or sets the SourceListItem
-        /// </summary>
-        public string SourceListItem { get; set; }
-        /// <summary>
-        /// Gets or sets the SourceListKey
-        /// </summary>
-        public string SourceListKey { get; set; }
-    }
-
-    /// <summary>
-    /// Represents a DirectRoute
-    /// </summary>
-    public class DirectRoute
-    {
-        /// <summary>
-        /// Gets or sets the SourceKey
-        /// </summary>
-        public string SourceKey { get; set; }
-        /// <summary>
-        /// Gets or sets the DestinationKey
-        /// </summary>
-        public string DestinationKey { get; set; }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="b"></param>
-    /// <summary>
-    /// Delegate for PressAndHoldAction
-    /// </summary>
-    public delegate void PressAndHoldAction(bool b);
-#endif
 }

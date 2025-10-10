@@ -20,10 +20,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         protected override void RegisterActions()
         {
 
-            AddAction("/status", (id, content) =>
-            {
-                SendFullStatus();
-            });
+            AddAction("/status", (id, content) => SendFullStatus(id));
+
+            AddAction("/techPasswordStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/validateTechPassword", (id, content) =>
             {
@@ -55,14 +54,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
             };
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var status = new ITechPasswordStateMessage
             {
                 TechPasswordLength = _room.TechPasswordLength
             };
 
-            PostStatusMessage(status);
+            PostStatusMessage(status, id);
         }
 
     }

@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -11,8 +11,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// Represents a IHasInputsMessenger
     /// </summary>
     public class IHasInputsMessenger<TKey> : MessengerBase
-    {        
-        private readonly IHasInputs<TKey> itemDevice;        
+    {
+        private readonly IHasInputs<TKey> itemDevice;
 
 
         /// <summary>
@@ -23,17 +23,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="device"></param>
         public IHasInputsMessenger(string key, string messagePath, IHasInputs<TKey> device) : base(key, messagePath, device)
         {
-            itemDevice = device;            
+            itemDevice = device;
         }
 
         protected override void RegisterActions()
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, context) =>
-            {
-                SendFullStatus();
-            });
+            AddAction("/fullStatus", (id, context) => SendFullStatus(id));
+
+            AddAction("/inputStatus", (id, content) => SendFullStatus(id));
 
             itemDevice.Inputs.ItemsUpdated += (sender, args) =>
             {
@@ -62,7 +61,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             try
             {
@@ -77,7 +76,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     }
                 };
 
-                PostStatusMessage(stateObject);
+                PostStatusMessage(stateObject, id);
             }
             catch (Exception e)
             {

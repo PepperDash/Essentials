@@ -1,10 +1,10 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Threading.Tasks;
+using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Monitoring;
-using System;
-using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -56,36 +56,37 @@ namespace PepperDash.Essentials.AppServer.Messengers
             SendSystemMonitorStatusMessage();
         }
 
-        private void SendFullStatusMessage()
+        private void SendFullStatusMessage(string id = null)
         {
-            SendSystemMonitorStatusMessage();
+            SendSystemMonitorStatusMessage(id);
 
             foreach (var p in systemMonitor.ProgramStatusFeedbackCollection)
             {
-                PostStatusMessage(JToken.FromObject(p.Value.ProgramInfo));
+                PostStatusMessage(JToken.FromObject(p.Value.ProgramInfo), id);
             }
         }
 
-        private void SendSystemMonitorStatusMessage()
+        private void SendSystemMonitorStatusMessage(string id = null)
         {
             // This takes a while, launch a new thread
-           
+
             Task.Run(() => PostStatusMessage(JToken.FromObject(new SystemMonitorStateMessage
             {
-
                 TimeZone = systemMonitor.TimeZoneFeedback.IntValue,
                 TimeZoneName = systemMonitor.TimeZoneTextFeedback.StringValue,
                 IoControllerVersion = systemMonitor.IoControllerVersionFeedback.StringValue,
                 SnmpVersion = systemMonitor.SnmpVersionFeedback.StringValue,
                 BacnetVersion = systemMonitor.BaCnetAppVersionFeedback.StringValue,
                 ControllerVersion = systemMonitor.ControllerVersionFeedback.StringValue
-            })
+            }), id
             ));
         }
 
         protected override void RegisterActions()
         {
-            AddAction("/fullStatus", (id, content) => SendFullStatusMessage());
+            AddAction("/fullStatus", (id, content) => SendFullStatusMessage(id));
+
+            AddAction("/systemStatus", (id, content) => SendFullStatusMessage(id));
         }
     }
 
@@ -94,40 +95,45 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class SystemMonitorStateMessage
     {
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the TimeZone
         /// </summary>
+        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
         public int TimeZone { get; set; }
 
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the TimeZoneName
         /// </summary>
+        [JsonProperty("timeZoneName", NullValueHandling = NullValueHandling.Ignore)]
         public string TimeZoneName { get; set; }
 
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the IoControllerVersion
         /// </summary>
+        [JsonProperty("ioControllerVersion", NullValueHandling = NullValueHandling.Ignore)]
         public string IoControllerVersion { get; set; }
 
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the SnmpVersion
         /// </summary>
+        [JsonProperty("snmpVersion", NullValueHandling = NullValueHandling.Ignore)]
         public string SnmpVersion { get; set; }
 
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the BacnetVersion
         /// </summary>
+        [JsonProperty("bacnetVersion", NullValueHandling = NullValueHandling.Ignore)]
         public string BacnetVersion { get; set; }
 
-        [JsonProperty("timeZone", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the ControllerVersion
         /// </summary>
+        [JsonProperty("controllerVersion", NullValueHandling = NullValueHandling.Ignore)]
         public string ControllerVersion { get; set; }
     }
 }

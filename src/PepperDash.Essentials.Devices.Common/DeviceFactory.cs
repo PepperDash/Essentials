@@ -14,7 +14,9 @@ namespace PepperDash.Essentials.Devices.Common
     /// </summary>
     public class DeviceFactory
     {
-
+        /// <summary>
+        /// Initializes a new instance of the DeviceFactory class
+        /// </summary>
         public DeviceFactory()
         {
             var assy = Assembly.GetExecutingAssembly();

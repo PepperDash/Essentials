@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
@@ -22,6 +21,9 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         /// </summary>
         public RoutingInputPort AnyVideoIn { get; private set; }
 
+        /// <summary>
+        /// Gets the CurrentInputPort
+        /// </summary>
         public RoutingInputPort CurrentInputPort => AnyVideoIn;
 
         #region IRoutingInputs Members
@@ -33,6 +35,11 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlueJeansPc"/> class
+        /// </summary>
+        /// <param name="key">The device key</param>
+        /// <param name="name">The device name</param>
         public BlueJeansPc(string key, string name)
             : base(key, name)
         {
@@ -177,30 +184,12 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
         }
         SourceListItem _CurrentSourceInfo;
 
+        /// <summary>
+        /// Event fired when the current source changes
+        /// </summary>
         public event SourceInfoChangeHandler CurrentSourceChange;
 
         #endregion
-    }
-
-    /// <summary>
-    /// Represents a BlueJeansPcFactory
-    /// </summary>
-    public class BlueJeansPcFactory : EssentialsDeviceFactory<BlueJeansPc>
-    {
-        public BlueJeansPcFactory()
-        {
-            TypeNames = new List<string>() { "bluejeanspc" };
-        }
-
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
-        /// <inheritdoc />
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new BlueJeansPc Device");
-            return new SoftCodec.BlueJeansPc(dc.Key, dc.Name);
-        }
     }
 
 }

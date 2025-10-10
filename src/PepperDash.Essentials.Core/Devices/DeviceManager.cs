@@ -202,14 +202,15 @@ namespace PepperDash.Essentials.Core
 
         private static void ListDevices(string s)
         {
-            Debug.LogMessage(LogEventLevel.Information, "{0} Devices registered with Device Manager:", Devices.Count);
+            CrestronConsole.ConsoleCommandResponse($"{Devices.Count} Devices registered with Device Manager:\r\n");
+
             var sorted = Devices.Values.ToList();
             sorted.Sort((a, b) => a.Key.CompareTo(b.Key));
 
             foreach (var d in sorted)
             {
                 var name = d is IKeyName ? (d as IKeyName).Name : "---";
-                Debug.LogMessage(LogEventLevel.Information, "  [{0}] {1}", d.Key, name);
+                CrestronConsole.ConsoleCommandResponse($"  [{d.Key}] {name}\r\n");
             }
         }
 
@@ -218,27 +219,16 @@ namespace PepperDash.Essentials.Core
             var dev = GetDeviceForKey(devKey);
             if (dev == null)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Device '{0}' not found", devKey);
+                CrestronConsole.ConsoleCommandResponse($"Device '{devKey}' not found\r\n");
                 return;
             }
             if (!(dev is IHasFeedback statusDev))
             {
-                Debug.LogMessage(LogEventLevel.Information, "Device '{0}' does not have visible feedbacks", devKey);
+                CrestronConsole.ConsoleCommandResponse($"Device '{devKey}' does not have visible feedbacks\r\n");
                 return;
             }
             statusDev.DumpFeedbacksToConsole(true);
         }
-
-        //static void ListDeviceCommands(string devKey)
-        //{
-        //    var dev = GetDeviceForKey(devKey);
-        //    if (dev == null)
-        //    {
-        //        Debug.LogMessage(LogEventLevel.Information, "Device '{0}' not found", devKey);
-        //        return;
-        //    }
-        //    Debug.LogMessage(LogEventLevel.Information, "This needs to be reworked.  Stay tuned.", devKey);
-        //}
 
         private static void ListDeviceCommStatuses(string input)
         {
@@ -248,12 +238,6 @@ namespace PepperDash.Essentials.Core
                 CrestronConsole.ConsoleCommandResponse($"{dev}: {dev.CommunicationMonitor.Status}\r\n");
             }
         }
-
-
-        //static void DoDeviceCommand(string command)
-        //{
-        //    Debug.LogMessage(LogEventLevel.Information, "Not yet implemented.  Stay tuned");
-        //}
 
         /// <summary>
         /// AddDevice method

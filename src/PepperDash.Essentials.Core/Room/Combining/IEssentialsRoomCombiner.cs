@@ -110,6 +110,12 @@ namespace PepperDash.Essentials.Core
         bool IsActive { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this scenario should be hidden in the UI.
+        /// </summary>
+        [JsonProperty("hideInUi")]
+        bool HideInUi { get; }
+
+        /// <summary>
         /// Activates this room combination scenario
         /// </summary>
         Task Activate();

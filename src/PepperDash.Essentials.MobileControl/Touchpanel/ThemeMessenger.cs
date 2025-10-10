@@ -42,10 +42,11 @@ namespace PepperDash.Essentials.Touchpanel
     /// </summary>
     public class ThemeUpdateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("theme")]
+
         /// <summary>
         /// Gets or sets the Theme
         /// </summary>
+        [JsonProperty("theme")]
         public string Theme { get; set; }
     }
 }

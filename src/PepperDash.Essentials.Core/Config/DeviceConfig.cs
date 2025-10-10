@@ -18,41 +18,41 @@ namespace PepperDash.Essentials.Core.Config
     /// </summary>
     public class DeviceConfig
     {
-        [JsonProperty("key")]
         /// <summary>
         /// Gets or sets the Key
         /// </summary>
+        [JsonProperty("key")]
         public string Key { get; set; }
 
-        [JsonProperty("uid")]
         /// <summary>
         /// Gets or sets the Uid
         /// </summary>
+        [JsonProperty("uid")]
         public int Uid { get; set; }
 
-        [JsonProperty("name")]
         /// <summary>
         /// Gets or sets the Name
         /// </summary>
+        [JsonProperty("name")]
         public string Name { get; set; }
 
-        [JsonProperty("group")]
         /// <summary>
         /// Gets or sets the Group
         /// </summary>
+        [JsonProperty("group")]
         public string Group { get; set; }
 
-        [JsonProperty("type")]
         /// <summary>
         /// Gets or sets the Type
         /// </summary>
+        [JsonProperty("type")]
         public string Type { get; set; }
 
-        [JsonProperty("properties")]
-        [JsonConverter(typeof(DevicePropertiesConverter))]
         /// <summary>
         /// Gets or sets the Properties
         /// </summary>
+        [JsonProperty("properties")]
+        [JsonConverter(typeof(DevicePropertiesConverter))]
         public JToken Properties { get; set; }
 
         public DeviceConfig(DeviceConfig dc)
@@ -68,7 +68,7 @@ namespace PepperDash.Essentials.Core.Config
             //Properties = JToken.FromObject(dc.Properties);
         }
 
-        public DeviceConfig() {}
+        public DeviceConfig() { }
     }
 
     /// <summary>

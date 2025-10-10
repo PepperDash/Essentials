@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Presets;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -16,18 +16,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly ITvPresetsProvider _presetsDevice;
 
+        /// <summary>
+        /// Constructor for DevicePresetsModelMessenger
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="messagePath">The message path.</param>
+        /// <param name="presetsDevice">The presets device.</param>
         public DevicePresetsModelMessenger(string key, string messagePath, ITvPresetsProvider presetsDevice)
             : base(key, messagePath, presetsDevice as Device)
         {
             _presetsDevice = presetsDevice;
         }
 
-        private void SendPresets()
+        private void SendPresets(string id = null)
         {
             PostStatusMessage(new PresetStateMessage
             {
                 Favorites = _presetsDevice.TvPresets.PresetsList
-            });
+            }, id);
         }
 
         private void RecallPreset(ISetTopBoxNumericKeypad device, string channel)
@@ -43,6 +49,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         #region Overrides of MessengerBase
 
+        /// <inheritdoc />
         protected override void RegisterActions()
 
         {
@@ -51,13 +58,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 this.LogInformation("getting full status for client {id}", id);
                 try
                 {
-                    SendPresets();
+                    SendPresets(id);
                 }
                 catch (Exception ex)
                 {
                     Debug.LogMessage(ex, "Exception sending preset full status", this);
                 }
             });
+
+            AddAction("/presetsStatus", (id, content) => SendPresets(id));
 
             AddAction("/recall", (id, content) =>
             {
@@ -91,16 +100,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class PresetChannelMessage
     {
-        [JsonProperty("preset")]
         /// <summary>
         /// Gets or sets the Preset
         /// </summary>
+        [JsonProperty("preset")]
         public PresetChannel Preset;
 
-        [JsonProperty("deviceKey")]
         /// <summary>
         /// Gets or sets the DeviceKey
         /// </summary>
+        [JsonProperty("deviceKey")]
         public string DeviceKey;
     }
 
@@ -109,10 +118,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class PresetStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("favorites", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Favorites
         /// </summary>
+        [JsonProperty("favorites", NullValueHandling = NullValueHandling.Ignore)]
         public List<PresetChannel> Favorites { get; set; } = new List<PresetChannel>();
     }
 }

@@ -1,8 +1,8 @@
-﻿using Crestron.SimplSharp.WebScripting;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PepperDash.Essentials.WebApiHandlers
 {
@@ -51,16 +51,18 @@ namespace PepperDash.Essentials.WebApiHandlers
     /// </summary>
     public class ActionPath
     {
-        [JsonProperty("messengerKey")]
+
         /// <summary>
         /// Gets or sets the MessengerKey
         /// </summary>
+        [JsonProperty("messengerKey")]
         public string MessengerKey { get; set; }
 
-        [JsonProperty("path")]
+
         /// <summary>
         /// Gets or sets the Path
         /// </summary>
+        [JsonProperty("path")]
         public string Path { get; set; }
     }
 }

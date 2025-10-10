@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -17,6 +13,12 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
     /// </summary>
     public class MockAC : AudioCodecBase
     {
+        /// <summary>
+        /// Constructor for MockAC
+        /// </summary>
+        /// <param name="key">Device key</param>
+        /// <param name="name">Device name</param>
+        /// <param name="props">MockAC properties configuration</param>
         public MockAC(string key, string name, MockAcPropertiesConfig props)
             : base(key, name)
         {
@@ -110,12 +112,9 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="url"></param>
-        /// <summary>
         /// TestIncomingAudioCall method
         /// </summary>
+        /// <param name="number">Phone number to call from</param>
         public void TestIncomingAudioCall(string number)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "TestIncomingAudioCall from {0}", number);
@@ -133,6 +132,7 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
     {
         string _phoneNumber;
 
+        /// <inheritdoc />
         public override string PhoneNumber
         {
             get
@@ -151,6 +151,9 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
     /// </summary>
     public class MockACFactory : EssentialsDeviceFactory<MockAC>
     {
+        /// <summary>
+        /// Constructor for MockACFactory
+        /// </summary>
         public MockACFactory()
         {
             TypeNames = new List<string>() { "mockac" };
