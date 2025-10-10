@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using PepperDash.Essentials.Core;
+﻿using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
@@ -34,6 +28,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         void ToggleDoNotDisturbMode();
     }
 
+    /// <summary>
+    /// Defines the contract for devices that support Do Not Disturb mode with timeout functionality
+    /// </summary>
     public interface IHasDoNotDisturbModeWithTimeout : IHasDoNotDisturbMode
     {
         /// <summary>

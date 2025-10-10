@@ -2,14 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using Crestron.SimplSharp;
 using System.Reflection;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.EthernetCommunication;
-
 using Newtonsoft.Json;
-
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
@@ -355,22 +353,22 @@ namespace PepperDash.Essentials.Core.Bridges
     /// </summary>
     public class EiscApiPropertiesConfig
     {
-        [JsonProperty("control")]
         /// <summary>
         /// Gets or sets the Control
         /// </summary>
+        [JsonProperty("control")]
         public EssentialsControlPropertiesConfig Control { get; set; }
 
-        [JsonProperty("devices")]
         /// <summary>
         /// Gets or sets the Devices
         /// </summary>
+        [JsonProperty("devices")]
         public List<ApiDevicePropertiesConfig> Devices { get; set; }
 
-        [JsonProperty("rooms")]
         /// <summary>
         /// Gets or sets the Rooms
         /// </summary>
+        [JsonProperty("rooms")]
         public List<ApiRoomPropertiesConfig> Rooms { get; set; }
 
 
@@ -379,22 +377,22 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         public class ApiDevicePropertiesConfig
         {
-            [JsonProperty("deviceKey")]
             /// <summary>
             /// Gets or sets the DeviceKey
             /// </summary>
+            [JsonProperty("deviceKey")]
             public string DeviceKey { get; set; }
 
-            [JsonProperty("joinStart")]
             /// <summary>
             /// Gets or sets the JoinStart
             /// </summary>
+            [JsonProperty("joinStart")]
             public uint JoinStart { get; set; }
 
-            [JsonProperty("joinMapKey")]
             /// <summary>
             /// Gets or sets the JoinMapKey
             /// </summary>
+            [JsonProperty("joinMapKey")]
             public string JoinMapKey { get; set; }
         }
 
@@ -403,22 +401,22 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         public class ApiRoomPropertiesConfig
         {
-            [JsonProperty("roomKey")]
             /// <summary>
             /// Gets or sets the RoomKey
             /// </summary>
+            [JsonProperty("roomKey")]
             public string RoomKey { get; set; }
 
-            [JsonProperty("joinStart")]
             /// <summary>
             /// Gets or sets the JoinStart
             /// </summary>
+            [JsonProperty("joinStart")]
             public uint JoinStart { get; set; }
 
-            [JsonProperty("joinMapKey")]
             /// <summary>
             /// Gets or sets the JoinMapKey
             /// </summary>
+            [JsonProperty("joinMapKey")]
             public string JoinMapKey { get; set; }
         }
 

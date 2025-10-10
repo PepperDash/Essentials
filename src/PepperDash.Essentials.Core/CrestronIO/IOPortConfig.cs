@@ -14,25 +14,28 @@ namespace PepperDash.Essentials.Core.CrestronIO
     /// </summary>
     public class IOPortConfig
     {
-        [JsonProperty("portDeviceKey")]
         /// <summary>
         /// Gets or sets the PortDeviceKey
         /// </summary>
+        [JsonProperty("portDeviceKey")]
         public string PortDeviceKey { get; set; }
-        [JsonProperty("portNumber")]
+
         /// <summary>
         /// Gets or sets the PortNumber
         /// </summary>
+        [JsonProperty("portNumber")]
         public uint PortNumber { get; set; }
-        [JsonProperty("disablePullUpResistor")]
+
         /// <summary>
         /// Gets or sets the DisablePullUpResistor
         /// </summary>
+        [JsonProperty("disablePullUpResistor")]
         public bool DisablePullUpResistor { get; set; }
-        [JsonProperty("minimumChange")]
+
         /// <summary>
         /// Gets or sets the MinimumChange
         /// </summary>
+        [JsonProperty("minimumChange")]
         public int MinimumChange { get; set; }
     }
 }

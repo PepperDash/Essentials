@@ -1,24 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using PepperDash.Essentials.Core;
+﻿using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
 	/// <summary>
 	/// For rooms that have video codec
 	/// </summary>
-	public interface IHasVideoCodec:IHasInCallFeedback,IPrivacy
+	public interface IHasVideoCodec : IHasInCallFeedback, IPrivacy
 	{
+		/// <summary>
+		/// Gets the VideoCodecBase instance
+		/// </summary>
 		VideoCodecBase VideoCodec { get; }
-
-        /// <summary>
-        /// Make this more specific
-        /// </summary>
-        //List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem> ActiveCalls { get; }
 
 		/// <summary>
 		/// States: 0 for on hook, 1 for video, 2 for audio, 3 for telekenesis

@@ -131,14 +131,14 @@ namespace PepperDash.Core
         /// <param name="key"></param>
         /// <param name="address"></param>
         /// <param name="port"></param>
-        /// <param name="buffefSize"></param>
-        public GenericUdpServer(string key, string address, int port, int buffefSize)
+        /// <param name="bufferSize"></param>
+        public GenericUdpServer(string key, string address, int port, int bufferSize)
             : base(key)
         {
             StreamDebugging = new CommunicationStreamDebugging(key); 
             Hostname = address;
             Port = port;
-            BufferSize = buffefSize;
+            BufferSize = bufferSize;
 
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
             CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
@@ -194,7 +194,21 @@ namespace PepperDash.Core
         {
             if (Server == null)
             {
-                Server = new UDPServer();
+                try
+                {
+                    var address = IPAddress.Parse(Hostname);
+
+                    Server = new UDPServer(address, Port, BufferSize);
+
+                }
+                catch (Exception ex)
+                {
+                    this.LogError("Error parsing IP Address '{ipAddress}': message: {message}", Hostname, ex.Message);
+                    this.LogInformation("Creating UDPServer with default buffersize");
+
+                    Server = new UDPServer();
+                }
+
             }
 
             if (string.IsNullOrEmpty(Hostname))
