@@ -1382,32 +1382,12 @@ namespace PepperDash.Essentials
             {
                 Log =
                 {
-                    Output = (data, message) =>
-                            {
-                                switch (data.Level)
-                                {
-                                    case LogLevel.Trace:
-                                        this.LogVerbose(data.Message);
-                                        break;
-                                    case LogLevel.Debug:
-                                        this.LogDebug(data.Message);
-                                        break;
-                                    case LogLevel.Info:
-                                        this.LogInformation(data.Message);
-                                        break;
-                                    case LogLevel.Warn:
-                                        this.LogWarning(data.Message);
-                                        break;
-                                    case LogLevel.Error:
-                                        this.LogError(data.Message);
-                                        break;
-                                    case LogLevel.Fatal:
-                                        this.LogFatal(data.Message);
-                                        break;
-                                }
-                            }
+                    Output = (data, message) => Utilities.ConvertWebsocketLog(data, message, this)
                 }
             };
+
+            // setting to trace to let level be controlled by appdebug
+            _wsClient2.Log.Level = LogLevel.Trace;
 
             _wsClient2.SslConfiguration.EnabledSslProtocols =
                 System.Security.Authentication.SslProtocols.Tls11

@@ -6,6 +6,10 @@ namespace PepperDash.Essentials.WebSocketServer
   public class JoinToken
   {
     /// <summary>
+    /// Unique client ID for a client that is joining
+    /// </summary>
+    public string Id { get; set; }
+    /// <summary>
     /// Gets or sets the Code
     /// </summary>
     public string Code { get; set; }

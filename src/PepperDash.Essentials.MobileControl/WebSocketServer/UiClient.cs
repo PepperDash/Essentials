@@ -64,9 +64,11 @@ namespace PepperDash.Essentials.WebSocketServer
         /// Initializes a new instance of the UiClient class with the specified key
         /// </summary>
         /// <param name="key">The unique key to identify this client</param>
-        public UiClient(string key)
+        /// <param name="id">The client ID used by the client for this connection</param>
+        public UiClient(string key, string id)
         {
             Key = key;
+            Id = id;
         }
 
         /// <inheritdoc />
@@ -74,19 +76,33 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             base.OnOpen();
 
-            var url = Context.WebSocket.Url;
-            this.LogInformation("New WebSocket Connection from: {url}", url);
+            Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message);
+            Log.Level = LogLevel.Trace;
 
-            var match = Regex.Match(url.AbsoluteUri, "(?:ws|wss):\\/\\/.*(?:\\/mc\\/api\\/ui\\/join\\/)(.*)");
-
-            if (!match.Success)
+            try
             {
-                _connectionTime = DateTime.Now;
-                return;
+                this.LogDebug("Current session count on open {count}", Sessions.Count);
+                this.LogDebug("Current WebsocketServiceCount on open: {count}", Controller.DirectServer.WebsocketServiceCount);
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Error getting service count: {message}", ex.Message);
+                this.LogDebug(ex, "Stack Trace: ");
             }
 
-            var clientId = match.Groups[1].Value;
-            _clientId = clientId;
+            // var url = Context.WebSocket.Url;
+            // this.LogInformation("New WebSocket Connection from: {url}", url);
+
+            // var match = Regex.Match(url.AbsoluteUri, "(?:ws|wss):\\/\\/.*(?:\\/mc\\/api\\/ui\\/join\\/)(.*)");
+
+            // if (!match.Success)
+            // {
+            //     _connectionTime = DateTime.Now;
+            //     return;
+            // }
+
+            // var clientId = match.Groups[1].Value;
+            // _clientId = clientId;
 
             if (Controller == null)
             {
@@ -99,7 +115,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 Type = "/system/clientJoined",
                 Content = JToken.FromObject(new
                 {
-                    clientId,
+                    clientId = Id,
                     roomKey = RoomKey,
                 })
             };
@@ -110,7 +126,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
             if (bridge == null) return;
 
-            SendUserCodeToClient(bridge, clientId);
+            SendUserCodeToClient(bridge, Id);
 
             bridge.UserCodeChanged -= Bridge_UserCodeChanged;
             bridge.UserCodeChanged += Bridge_UserCodeChanged;
@@ -168,17 +184,30 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             base.OnClose(e);
 
+            try
+            {
+                this.LogDebug("Current session count on close {count}", Sessions.Count);
+                this.LogDebug("Current WebsocketServiceCount on close: {count}", Controller.DirectServer.WebsocketServiceCount);
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Error getting service count: {message}", ex.Message);
+                this.LogDebug(ex, "Stack Trace: ");
+            }
+
             this.LogInformation("WebSocket UiClient Closing: {code} reason: {reason}", e.Code, e.Reason);
 
             foreach (var messenger in Controller.Messengers)
             {
-                messenger.Value.UnsubscribeClient(_clientId);
+                messenger.Value.UnsubscribeClient(Id);
             }
 
             foreach (var messenger in Controller.DefaultMessengers)
             {
-                messenger.Value.UnsubscribeClient(_clientId);
+                messenger.Value.UnsubscribeClient(Id);
             }
+
+            ConnectionClosed?.Invoke(this, new ConnectionClosedEventArgs(Id));
         }
 
         /// <inheritdoc />
