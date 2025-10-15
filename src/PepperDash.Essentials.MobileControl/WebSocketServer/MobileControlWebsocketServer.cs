@@ -861,11 +861,11 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             if (programEventType == eProgramStatusEventType.Stopping)
             {
-                foreach (var client in UiClientContexts.Values)
+                foreach (var client in UiClients.Values)
                 {
-                    if (client.Client != null && client.Client.Context.WebSocket.IsAlive)
+                    if (client != null && client.Context.WebSocket.IsAlive)
                     {
-                        client.Client.Context.WebSocket.Close(CloseStatusCode.Normal, "Server Shutting Down");
+                        client.Context.WebSocket.Close(CloseStatusCode.Normal, "Server Shutting Down");
                     }
                 }
 
