@@ -13,25 +13,28 @@ namespace PepperDash.Essentials.WebSocketServer
     }
 
     /// <summary>
-    /// Represents a WebSocketServerSecret
+    /// Stores a secret value using the provided secret store provider
     /// </summary>
     public class WebSocketServerSecret : ISecret
     {
         /// <summary>
-        /// Gets or sets the Provider
+        /// Gets the Secret Provider associated with this secret
         /// </summary>
         public ISecretProvider Provider { get; private set; }
 
         /// <summary>
-        /// Gets or sets the Key
+        /// Gets the Key associated with this secret
         /// </summary>
         public string Key { get; private set; }
 
         /// <summary>
-        /// Gets or sets the Value
+        /// Gets the Value associated with this secret
         /// </summary>
         public object Value { get; private set; }
 
+        /// <summary>
+        /// Initialize and instance of the <see cref="WebSocketServerSecret"/> class
+        /// </summary>
         public WebSocketServerSecret(string key, object value, ISecretProvider provider)
         {
             Key = key;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -23,6 +22,16 @@ namespace PepperDash.Essentials.WebSocketServer
         public string Key { get; private set; }
 
         /// <summary>
+        /// Client ID used by client for this connection
+        /// </summary>
+        public string Id { get; private set; }
+
+        /// <summary>
+        /// Token associated with this client
+        /// </summary>
+        public string Token { get; private set; }
+
+        /// <summary>
         /// Gets or sets the mobile control system controller that handles this client's messages
         /// </summary>
         public MobileControlSystemController Controller { get; set; }
@@ -31,11 +40,6 @@ namespace PepperDash.Essentials.WebSocketServer
         /// Gets or sets the room key that this client is associated with
         /// </summary>
         public string RoomKey { get; set; }
-
-        /// <summary>
-        /// The unique identifier for this client instance
-        /// </summary>
-        private string _clientId;
 
         /// <summary>
         /// The timestamp when this client connection was established
@@ -61,12 +65,21 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
         /// <summary>
+        /// Triggered when this client closes it's connection
+        /// </summary>
+        public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
+
+        /// <summary>
         /// Initializes a new instance of the UiClient class with the specified key
         /// </summary>
         /// <param name="key">The unique key to identify this client</param>
-        public UiClient(string key)
+        /// <param name="id">The client ID used by the client for this connection</param>
+        /// <param name="token">The token associated with this client</param>
+        public UiClient(string key, string id, string token)
         {
             Key = key;
+            Id = id;
+            Token = token;
         }
 
         /// <inheritdoc />
@@ -74,19 +87,10 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             base.OnOpen();
 
-            var url = Context.WebSocket.Url;
-            this.LogInformation("New WebSocket Connection from: {url}", url);
+            _connectionTime = DateTime.Now;
 
-            var match = Regex.Match(url.AbsoluteUri, "(?:ws|wss):\\/\\/.*(?:\\/mc\\/api\\/ui\\/join\\/)(.*)");
-
-            if (!match.Success)
-            {
-                _connectionTime = DateTime.Now;
-                return;
-            }
-
-            var clientId = match.Groups[1].Value;
-            _clientId = clientId;
+            Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message, this);
+            Log.Level = LogLevel.Trace;
 
             if (Controller == null)
             {
@@ -99,7 +103,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 Type = "/system/clientJoined",
                 Content = JToken.FromObject(new
                 {
-                    clientId,
+                    clientId = Id,
                     roomKey = RoomKey,
                 })
             };
@@ -110,7 +114,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
             if (bridge == null) return;
 
-            SendUserCodeToClient(bridge, clientId);
+            SendUserCodeToClient(bridge, Id);
 
             bridge.UserCodeChanged -= Bridge_UserCodeChanged;
             bridge.UserCodeChanged += Bridge_UserCodeChanged;
@@ -125,7 +129,7 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <param name="e">Event arguments</param>
         private void Bridge_UserCodeChanged(object sender, EventArgs e)
         {
-            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, _clientId);
+            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, Id);
         }
 
         /// <summary>
@@ -172,13 +176,15 @@ namespace PepperDash.Essentials.WebSocketServer
 
             foreach (var messenger in Controller.Messengers)
             {
-                messenger.Value.UnsubscribeClient(_clientId);
+                messenger.Value.UnsubscribeClient(Id);
             }
 
             foreach (var messenger in Controller.DefaultMessengers)
             {
-                messenger.Value.UnsubscribeClient(_clientId);
+                messenger.Value.UnsubscribeClient(Id);
             }
+
+            ConnectionClosed?.Invoke(this, new ConnectionClosedEventArgs(Id));
         }
 
         /// <inheritdoc />

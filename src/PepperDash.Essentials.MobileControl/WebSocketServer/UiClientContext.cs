@@ -14,6 +14,10 @@ namespace PepperDash.Essentials.WebSocketServer
     /// </summary>
     public JoinToken Token { get; private set; }
 
+    /// <summary>
+    /// Initialize an instance of the <see cref="UiClientContext"/> class with the provided token
+    /// </summary>
+    /// <param name="token">token for this client</param>
     public UiClientContext(JoinToken token)
     {
       Token = token;
