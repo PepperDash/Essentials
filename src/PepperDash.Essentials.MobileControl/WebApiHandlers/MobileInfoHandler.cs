@@ -117,7 +117,11 @@ namespace PepperDash.Essentials.WebApiHandlers
         public int ClientsConnected => directServer.ConnectedUiClientsCount;
 
         [JsonProperty("clients")]
-        public List<MobileControlDirectClient> Clients => directServer.UiClientContexts.Select((c, i) => { return new MobileControlDirectClient(c, i, directServer.UserAppUrlPrefix); }).ToList();
+        public List<MobileControlDirectClient> Clients => directServer.UiClientContexts
+            .Select(context => (context, clients: directServer.UiClients.Where(client => client.Value.Token == context.Value.Token.Token).Select(c => c.Value).ToList()))
+            .Select((clientTuple, i) => new MobileControlDirectClient(clientTuple.clients, clientTuple.context, i, directServer.UserAppUrlPrefix))
+            .ToList();
+
 
         public MobileControlDirectServer(MobileControlWebsocketServer server)
         {
@@ -157,18 +161,39 @@ namespace PepperDash.Essentials.WebApiHandlers
         [JsonProperty("token")]
         public string Token => Key;
 
-        [JsonProperty("connected")]
-        public bool Connected => context.Client != null && context.Client.Context.WebSocket.IsAlive;
+        private readonly List<UiClient> clients;
 
-        [JsonProperty("duration")]
-        public double Duration => context.Client == null ? 0 : context.Client.ConnectedDuration.TotalSeconds;
+        [JsonProperty("clientStatus")]
+        public List<ClientStatus> ClientStatus => clients.Select(c => new ClientStatus(c)).ToList();
 
-        public MobileControlDirectClient(KeyValuePair<string, UiClientContext> clientContext, int index, string urlPrefix)
+        /// <summary>
+        /// Create an instance of the <see cref="MobileControlDirectClient"/> class.
+        /// </summary>
+        /// <param name="clients">List of Websocket Clients</param>
+        /// <param name="context">Context for the client</param>
+        /// <param name="index">Index of the client</param>
+        /// <param name="urlPrefix">URL prefix for the client</param>
+        public MobileControlDirectClient(List<UiClient> clients, KeyValuePair<string, UiClientContext> context, int index, string urlPrefix)
         {
-            context = clientContext.Value;
-            Key = clientContext.Key;
+            this.context = context.Value;
+            Key = context.Key;
             clientNumber = index;
             this.urlPrefix = urlPrefix;
+            this.clients = clients;
+        }
+    }
+
+    public class ClientStatus
+    {
+        private readonly UiClient client;
+
+        public bool Connected => client != null && client.Context.WebSocket.IsAlive;
+
+        public double Duration => client == null ? 0 : client.ConnectedDuration.TotalSeconds;
+
+        public ClientStatus(UiClient client)
+        {
+            this.client = client;
         }
     }
 }

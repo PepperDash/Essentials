@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -23,6 +22,16 @@ namespace PepperDash.Essentials.WebSocketServer
         public string Key { get; private set; }
 
         /// <summary>
+        /// Client ID used by client for this connection
+        /// </summary>
+        public string Id { get; private set; }
+
+        /// <summary>
+        /// Token associated with this client
+        /// </summary>
+        public string Token { get; private set; }
+
+        /// <summary>
         /// Gets or sets the mobile control system controller that handles this client's messages
         /// </summary>
         public MobileControlSystemController Controller { get; set; }
@@ -31,11 +40,6 @@ namespace PepperDash.Essentials.WebSocketServer
         /// Gets or sets the room key that this client is associated with
         /// </summary>
         public string RoomKey { get; set; }
-
-        /// <summary>
-        /// The unique identifier for this client instance
-        /// </summary>
-        private string _clientId;
 
         /// <summary>
         /// The timestamp when this client connection was established
@@ -61,14 +65,21 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
         /// <summary>
+        /// Triggered when this client closes it's connection
+        /// </summary>
+        public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
+
+        /// <summary>
         /// Initializes a new instance of the UiClient class with the specified key
         /// </summary>
         /// <param name="key">The unique key to identify this client</param>
         /// <param name="id">The client ID used by the client for this connection</param>
-        public UiClient(string key, string id)
+        /// <param name="token"></param>
+        public UiClient(string key, string id, string token)
         {
             Key = key;
             Id = id;
+            Token = token;
         }
 
         /// <inheritdoc />
@@ -76,33 +87,10 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             base.OnOpen();
 
+            _connectionTime = DateTime.Now;
+
             Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message);
             Log.Level = LogLevel.Trace;
-
-            try
-            {
-                this.LogDebug("Current session count on open {count}", Sessions.Count);
-                this.LogDebug("Current WebsocketServiceCount on open: {count}", Controller.DirectServer.WebsocketServiceCount);
-            }
-            catch (Exception ex)
-            {
-                this.LogError("Error getting service count: {message}", ex.Message);
-                this.LogDebug(ex, "Stack Trace: ");
-            }
-
-            // var url = Context.WebSocket.Url;
-            // this.LogInformation("New WebSocket Connection from: {url}", url);
-
-            // var match = Regex.Match(url.AbsoluteUri, "(?:ws|wss):\\/\\/.*(?:\\/mc\\/api\\/ui\\/join\\/)(.*)");
-
-            // if (!match.Success)
-            // {
-            //     _connectionTime = DateTime.Now;
-            //     return;
-            // }
-
-            // var clientId = match.Groups[1].Value;
-            // _clientId = clientId;
 
             if (Controller == null)
             {
@@ -141,7 +129,7 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <param name="e">Event arguments</param>
         private void Bridge_UserCodeChanged(object sender, EventArgs e)
         {
-            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, _clientId);
+            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, Id);
         }
 
         /// <summary>
@@ -183,17 +171,6 @@ namespace PepperDash.Essentials.WebSocketServer
         protected override void OnClose(CloseEventArgs e)
         {
             base.OnClose(e);
-
-            try
-            {
-                this.LogDebug("Current session count on close {count}", Sessions.Count);
-                this.LogDebug("Current WebsocketServiceCount on close: {count}", Controller.DirectServer.WebsocketServiceCount);
-            }
-            catch (Exception ex)
-            {
-                this.LogError("Error getting service count: {message}", ex.Message);
-                this.LogDebug(ex, "Stack Trace: ");
-            }
 
             this.LogInformation("WebSocket UiClient Closing: {code} reason: {reason}", e.Code, e.Reason);
 

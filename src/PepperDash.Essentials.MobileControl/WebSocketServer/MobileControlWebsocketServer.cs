@@ -61,6 +61,11 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private readonly Dictionary<string, UiClient> uiClients = new Dictionary<string, UiClient>();
 
+        /// <summary>
+        /// Gets the collection of UI clients
+        /// </summary>
+        public ReadOnlyDictionary<string, UiClient> UiClients => new ReadOnlyDictionary<string, UiClient>(uiClients);
+
         private readonly MobileControlSystemController _parent;
 
         private WebSocketServerSecretProvider _secretProvider;
@@ -130,17 +135,7 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             get
             {
-                var count = 0;
-
-                foreach (var client in UiClientContexts)
-                {
-                    if (client.Value.Client != null && client.Value.Client.Context.WebSocket.IsAlive)
-                    {
-                        count++;
-                    }
-                }
-
-                return count;
+                return uiClients.Values.Where(c => c.Context.WebSocket.IsAlive).Count();
             }
         }
 
@@ -736,7 +731,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private UiClient BuildUiClient(string roomKey, JoinToken token, string key)
         {
-            var c = new UiClient($"uiclient-{key}-{roomKey}-{token.Id}", token.Id);
+            var c = new UiClient($"uiclient-{key}-{roomKey}-{token.Id}", token.Id, token.Token);
             this.LogInformation("Constructing UiClient with key {key} and ID {id}", key, token.Id);
             c.Controller = _parent;
             c.RoomKey = roomKey;

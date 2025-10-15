@@ -1746,38 +1746,40 @@ namespace PepperDash.Essentials
                     "\r\n    UI Client Info:\r\n" +
                     "    Tokens Defined: {0}\r\n" +
                     "    Clients Connected: {1}\r\n",
-                    _directServer.UiClients.Count,
+                    _directServer.UiClientContexts.Count,
                     _directServer.ConnectedUiClientsCount
                 );
 
                 var clientNo = 1;
-                foreach (var clientContext in _directServer.UiClients)
+                foreach (var clientContext in _directServer.UiClientContexts)
                 {
                     var isAlive = false;
                     var duration = "Not Connected";
 
-                    if (clientContext.Value.Client != null)
-                    {
-                        isAlive = clientContext.Value.Client.Context.WebSocket.IsAlive;
-                        duration = clientContext.Value.Client.ConnectedDuration.ToString();
-                    }
+                    var clients = _directServer.UiClients.Values.Where(c => c.Token == clientContext.Value.Token.Token);
 
                     CrestronConsole.ConsoleCommandResponse(
-                        "\r\nClient {0}:\r\n" +
-                        "Room Key: {1}\r\n" +
-                        "Touchpanel Key: {6}\r\n" +
-                        "Token: {2}\r\n" +
-                        "Client URL: {3}\r\n" +
-                        "Connected: {4}\r\n" +
-                        "Duration: {5}\r\n",
-                        clientNo,
-                        clientContext.Value.Token.RoomKey,
-                        clientContext.Key,
-                        string.Format("{0}{1}", _directServer.UserAppUrlPrefix, clientContext.Key),
-                        isAlive,
-                        duration,
-                        clientContext.Value.Token.TouchpanelKey
+                        $"\r\nClient {clientNo}:\r\n" +
+                        $"  Room Key: {clientContext.Value.Token.RoomKey}\r\n" +
+                        $"  Touchpanel Key: {clientContext.Value.Token.TouchpanelKey}\r\n" +
+                        $"  Token: {clientContext.Key}\r\n" +
+                        $"  Client URL: {_directServer.UserAppUrlPrefix}{clientContext.Key}\r\n" +
+                        $"  Clients:\r\n"
                     );
+
+                    if (!clients.Any())
+                    {
+                        CrestronConsole.ConsoleCommandResponse("    No clients connected");
+                    }
+                    foreach (var client in clients)
+                    {
+                        CrestronConsole.ConsoleCommandResponse(
+                            $"    ID: {client.Id}\r\n" +
+                            $"    Connected: {client.Context.WebSocket.IsAlive}\r\n" +
+                            $"    Duration: {(client.Context.WebSocket.IsAlive ? client.ConnectedDuration.TotalSeconds.ToString() : "Not Connected")}\r\n"
+                        );
+                    }
+
                     clientNo++;
                 }
             }
