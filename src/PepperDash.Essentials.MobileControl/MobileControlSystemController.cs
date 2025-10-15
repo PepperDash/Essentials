@@ -2337,10 +2337,33 @@ namespace PepperDash.Essentials
 
                         foreach (var handler in handlers)
                         {
-                            Task.Run(
-                                () =>
-                                    handler.Action(message.Type, message.ClientId, message.Content)
-                            );
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    handler.Action(message.Type, message.ClientId, message.Content);
+                                }
+                                catch (Exception ex)
+                                {
+                                    this.LogError(
+                                        "Exception in handler for message type {type}, ClientId {clientId}",
+                                        message.Type,
+                                        message.ClientId
+                                    );
+                                    this.LogDebug(ex, "Stack Trace: ");
+                                }
+                            }).ContinueWith(task =>
+                            {
+                                if (task.IsFaulted && task.Exception != null)
+                                {
+                                    this.LogError(
+                                        "Unhandled exception in Task for message type {type}, ClientId {clientId}",
+                                        message.Type,
+                                        message.ClientId
+                                    );
+                                    this.LogDebug(task.Exception.GetBaseException(), "Stack Trace: ");
+                                }
+                            }, TaskContinuationOptions.OnlyOnFaulted);
                         }
 
                         break;
