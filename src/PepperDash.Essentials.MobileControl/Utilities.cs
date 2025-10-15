@@ -12,9 +12,9 @@ namespace PepperDash.Essentials
     private static int nextClientId = 0;
 
     /// <summary>
-    /// Get
+    /// Get the next unique client ID
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Client ID</returns>
     public static int GetNextClientId()
     {
       nextClientId++;

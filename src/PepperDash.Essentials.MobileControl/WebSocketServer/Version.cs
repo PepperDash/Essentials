@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.WebSocketServer
     /// Initialize an instance of the <see cref="Version"/> class
     /// </summary>
     /// <remarks>
-    /// the <see cref="ServerIsRunningOnProcessorHardware"/> property is set to true by default.
+    /// The <see cref="ServerIsRunningOnProcessorHardware"/> property is set to true by default.
     /// </remarks>
     public Version()
     {

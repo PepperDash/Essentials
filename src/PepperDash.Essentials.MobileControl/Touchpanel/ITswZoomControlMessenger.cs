@@ -8,14 +8,14 @@ using PepperDash.Essentials.AppServer.Messengers;
 namespace PepperDash.Essentials.Touchpanel
 {
     /// <summary>
-    /// Messenger to handle 
+    /// Messenger to handle Zoom status and control for a TSW panel that supports the Zoom Application
     /// </summary>
     public class ITswZoomControlMessenger : MessengerBase
     {
         private readonly ITswZoomControl _zoomControl;
 
         /// <summary>
-        /// Create in instance of the <see cref="ITswZoomControlMessenger"/> class for the given device
+        /// Create an instance of the <see cref="ITswZoomControlMessenger"/> class for the given device
         /// </summary>
         /// <param name="key">The key for this messenger</param>
         /// <param name="messagePath">The message path for this messenger</param>

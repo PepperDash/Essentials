@@ -110,7 +110,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public string SystemUrl; //set only from SIMPL Bridge!
 
-        ///
+        /// <summary>
+        /// True if the Mobile Control Edge Server Websocket is connected
+        /// </summary>
         public bool Connected => _wsClient2 != null && _wsClient2.IsAlive;
 
         private IEssentialsRoomCombiner _roomCombiner;

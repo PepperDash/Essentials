@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.WebSocketServer
     public string ClientId { get; private set; }
 
     /// <summary>
-    /// Initalize an instance of the <see cref="ConnectionClosedEventArgs"/> class.
+    /// Initialize an instance of the <see cref="ConnectionClosedEventArgs"/> class.
     /// </summary>
     /// <param name="clientId">client that's closing</param>
     public ConnectionClosedEventArgs(string clientId)

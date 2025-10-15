@@ -74,7 +74,7 @@ namespace PepperDash.Essentials.WebSocketServer
         /// </summary>
         /// <param name="key">The unique key to identify this client</param>
         /// <param name="id">The client ID used by the client for this connection</param>
-        /// <param name="token"></param>
+        /// <param name="token">The token associated with this client</param>
         public UiClient(string key, string id, string token)
         {
             Key = key;

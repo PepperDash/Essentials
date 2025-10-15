@@ -72,7 +72,7 @@ namespace PepperDash.Essentials.WebApiHandlers
         public MobileControlDirectServer DirectServer => mcController.Config.DirectServer.EnableDirectServer ? new MobileControlDirectServer(mcController.DirectServer) : null;
 
         /// <summary>
-        /// Create in instace of the <see cref="InformationResponse"/> class.
+        /// Create an instance of the <see cref="InformationResponse"/> class.
         /// </summary>
         /// <param name="controller"></param>
         public InformationResponse(MobileControlSystemController controller)
