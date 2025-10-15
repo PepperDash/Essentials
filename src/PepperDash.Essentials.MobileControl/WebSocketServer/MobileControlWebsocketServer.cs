@@ -275,18 +275,7 @@ namespace PepperDash.Essentials.WebSocketServer
                     };
                 }
 
-                _server.Log.Output = (data, message) =>
-            {
-                switch (data.Level)
-                {
-                    case LogLevel.Trace: this.LogVerbose(message); break;
-                    case LogLevel.Debug: this.LogDebug(message); break;
-                    case LogLevel.Info: this.LogInformation(message); break;
-                    case LogLevel.Warn: this.LogWarning(message); break;
-                    case LogLevel.Error: this.LogError(message); break;
-                    case LogLevel.Fatal: this.LogFatal(message); break;
-                }
-            };
+                _server.Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message, this);
 
                 // setting to trace to allow logging level to be controlled by appdebug
                 _server.Log.Level = LogLevel.Trace;

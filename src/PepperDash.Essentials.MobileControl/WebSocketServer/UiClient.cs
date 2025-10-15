@@ -89,7 +89,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
             _connectionTime = DateTime.Now;
 
-            Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message);
+            Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message, this);
             Log.Level = LogLevel.Trace;
 
             if (Controller == null)
