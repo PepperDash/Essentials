@@ -41,24 +41,37 @@ namespace PepperDash.Essentials.RoomBridges
         /// </summary>
         public string DefaultRoomKey { get; private set; }
         /// <summary>
-        /// 
+        /// Gets the name of the room
         /// </summary>
         public override string RoomName
         {
             get { return Room.Name; }
         }
 
+        /// <summary>
+        /// Gets the key of the room
+        /// </summary>
         public override string RoomKey
         {
             get { return Room.Key; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MobileControlEssentialsRoomBridge"/> class with the specified room
+        /// </summary>
+        /// <param name="room">The essentials room to bridge</param>
         public MobileControlEssentialsRoomBridge(IEssentialsRoom room) :
             this($"mobileControlBridge-{room.Key}", room.Key, room)
         {
             Room = room;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MobileControlEssentialsRoomBridge"/> class with the specified parameters
+        /// </summary>
+        /// <param name="key">The unique key for this bridge</param>
+        /// <param name="roomKey">The key of the room to bridge</param>
+        /// <param name="room">The essentials room to bridge</param>
         public MobileControlEssentialsRoomBridge(string key, string roomKey, IEssentialsRoom room) : base(key, $"/room/{room.Key}", room as Device)
         {
             DefaultRoomKey = roomKey;
@@ -66,7 +79,9 @@ namespace PepperDash.Essentials.RoomBridges
             AddPreActivationAction(GetRoom);
         }
 
-
+        /// <summary>
+        /// Registers all message handling actions with the AppServer for this room bridge
+        /// </summary>
         protected override void RegisterActions()
         {
             // we add actions to the messaging system with a path, and a related action. Custom action
@@ -284,6 +299,9 @@ namespace PepperDash.Essentials.RoomBridges
             Room = tempRoom;
         }
 
+        /// <summary>
+        /// Handles user code changes and generates QR code URL
+        /// </summary>
         protected override void UserCodeChange()
         {
             Debug.LogMessage(Serilog.Events.LogEventLevel.Debug, "Server user code changed: {userCode}", this, UserCode);
@@ -807,18 +825,33 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("configuration", NullValueHandling = NullValueHandling.Ignore)]
         public RoomConfiguration Configuration { get; set; }
 
+        /// <summary>
+        /// Gets or sets the activity mode of the room
+        /// </summary>
         [JsonProperty("activityMode", NullValueHandling = NullValueHandling.Ignore)]
         public int? ActivityMode { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether advanced sharing is active
+        /// </summary>
         [JsonProperty("advancedSharingActive", NullValueHandling = NullValueHandling.Ignore)]
         public bool? AdvancedSharingActive { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room is powered on
+        /// </summary>
         [JsonProperty("isOn", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsOn { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room is warming up
+        /// </summary>
         [JsonProperty("isWarmingUp", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsWarmingUp { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room is cooling down
+        /// </summary>
         [JsonProperty("isCoolingDown", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsCoolingDown { get; set; }
 
@@ -834,9 +867,15 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("share", NullValueHandling = NullValueHandling.Ignore)]
         public ShareState Share { get; set; }
 
+        /// <summary>
+        /// Gets or sets the volume controls collection
+        /// </summary>
         [JsonProperty("volumes", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, Volume> Volumes { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room is in a call
+        /// </summary>
         [JsonProperty("isInCall", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsInCall { get; set; }
     }
@@ -853,9 +892,15 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("currentShareText", NullValueHandling = NullValueHandling.Ignore)]
         public string CurrentShareText { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether sharing is enabled
+        /// </summary>
         [JsonProperty("enabled", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Enabled { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether content is currently being shared
+        /// </summary>
         [JsonProperty("isSharing", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsSharing { get; set; }
     }
@@ -865,24 +910,45 @@ namespace PepperDash.Essentials.RoomBridges
     /// </summary>
     public class RoomConfiguration
     {
+        /// <summary>
+        /// Gets or sets whether the room has video conferencing capabilities
+        /// </summary>
         [JsonProperty("hasVideoConferencing", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasVideoConferencing { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the video codec is a Zoom Room
+        /// </summary>
         [JsonProperty("videoCodecIsZoomRoom", NullValueHandling = NullValueHandling.Ignore)]
         public bool? VideoCodecIsZoomRoom { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room has audio conferencing capabilities
+        /// </summary>
         [JsonProperty("hasAudioConferencing", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasAudioConferencing { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room has environmental controls (lighting, shades, etc.)
+        /// </summary>
         [JsonProperty("hasEnvironmentalControls", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasEnvironmentalControls { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room has camera controls
+        /// </summary>
         [JsonProperty("hasCameraControls", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasCameraControls { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room has set-top box controls
+        /// </summary>
         [JsonProperty("hasSetTopBoxControls", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasSetTopBoxControls { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room has routing controls
+        /// </summary>
         [JsonProperty("hasRoutingControls", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasRoutingControls { get; set; }
 
@@ -949,6 +1015,9 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("defaultDisplayKey", NullValueHandling = NullValueHandling.Ignore)]
         public string DefaultDisplayKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets the destinations dictionary keyed by destination type
+        /// </summary>
         [JsonProperty("destinations", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<eSourceListItemDestinationTypes, string> Destinations { get; set; }
 
@@ -959,9 +1028,15 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("environmentalDevices", NullValueHandling = NullValueHandling.Ignore)]
         public List<EnvironmentalDeviceConfiguration> EnvironmentalDevices { get; set; }
 
+        /// <summary>
+        /// Gets or sets the source list for the room
+        /// </summary>
         [JsonProperty("sourceList", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, SourceListItem> SourceList { get; set; }
 
+        /// <summary>
+        /// Gets or sets the destination list for the room
+        /// </summary>
         [JsonProperty("destinationList", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, DestinationListItem> DestinationList { get; set; }
 
@@ -972,6 +1047,9 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("audioControlPointList", NullValueHandling = NullValueHandling.Ignore)]
         public AudioControlPointListItem AudioControlPointList { get; set; }
 
+        /// <summary>
+        /// Gets or sets the camera list for the room
+        /// </summary>
         [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, CameraListItem> CameraList { get; set; }
 
@@ -1004,9 +1082,15 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("uiBehavior", NullValueHandling = NullValueHandling.Ignore)]
         public EssentialsRoomUiBehaviorConfig UiBehavior { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the room supports advanced sharing features
+        /// </summary>
         [JsonProperty("supportsAdvancedSharing", NullValueHandling = NullValueHandling.Ignore)]
         public bool? SupportsAdvancedSharing { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the user can change the share mode
+        /// </summary>
         [JsonProperty("userCanChangeShareMode", NullValueHandling = NullValueHandling.Ignore)]
         public bool? UserCanChangeShareMode { get; set; }
 
@@ -1017,6 +1101,9 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("roomCombinerKey", NullValueHandling = NullValueHandling.Ignore)]
         public string RoomCombinerKey { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RoomConfiguration"/> class
+        /// </summary>
         public RoomConfiguration()
         {
             Destinations = new Dictionary<eSourceListItemDestinationTypes, string>();
@@ -1046,6 +1133,11 @@ namespace PepperDash.Essentials.RoomBridges
         [JsonProperty("deviceType", NullValueHandling = NullValueHandling.Ignore)]
         public eEnvironmentalDeviceTypes DeviceType { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnvironmentalDeviceConfiguration"/> class
+        /// </summary>
+        /// <param name="key">The device key</param>
+        /// <param name="type">The environmental device type</param>
         public EnvironmentalDeviceConfiguration(string key, eEnvironmentalDeviceTypes type)
         {
             DeviceKey = key;
@@ -1054,14 +1146,29 @@ namespace PepperDash.Essentials.RoomBridges
     }
 
     /// <summary>
-    /// Enumeration of eEnvironmentalDeviceTypes values
+    /// Enumeration of environmental device types
     /// </summary>
     public enum eEnvironmentalDeviceTypes
     {
+        /// <summary>
+        /// No environmental device type specified
+        /// </summary>
         None,
+        /// <summary>
+        /// Lighting device type
+        /// </summary>
         Lighting,
+        /// <summary>
+        /// Shade device type
+        /// </summary>
         Shade,
+        /// <summary>
+        /// Shade controller device type
+        /// </summary>
         ShadeController,
+        /// <summary>
+        /// Relay device type
+        /// </summary>
         Relay,
     }
 

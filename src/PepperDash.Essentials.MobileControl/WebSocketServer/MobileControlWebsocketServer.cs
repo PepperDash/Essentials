@@ -315,6 +315,9 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
+        /// <summary>
+        /// Set the internal logging level for the Websocket Server
+        /// </summary>
         public void SetWebsocketLogLevel(LogLevel level)
         {
             CrestronConsole.ConsoleCommandResponse($"Setting direct server debug level to {level}", level.ToString());

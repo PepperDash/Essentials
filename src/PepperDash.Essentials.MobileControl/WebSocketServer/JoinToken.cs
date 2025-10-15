@@ -14,10 +14,19 @@ namespace PepperDash.Essentials.WebSocketServer
     /// </summary>
     public string Code { get; set; }
 
+    /// <summary>
+    /// Room Key this token is associated with
+    /// </summary>
     public string RoomKey { get; set; }
 
+    /// <summary>
+    /// Unique ID for this token
+    /// </summary>
     public string Uuid { get; set; }
 
+    /// <summary>
+    /// Touchpanel Key this token is associated with, if this is a touch panel token
+    /// </summary>
     public string TouchpanelKey { get; set; } = "";
 
     /// <summary>

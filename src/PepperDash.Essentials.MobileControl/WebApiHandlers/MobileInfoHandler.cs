@@ -11,16 +11,25 @@ using PepperDash.Essentials.WebSocketServer;
 namespace PepperDash.Essentials.WebApiHandlers
 {
     /// <summary>
-    /// Represents a MobileInfoHandler
+    /// Represents a MobileInfoHandler. Used with the Essentials CWS API
     /// </summary>
     public class MobileInfoHandler : WebApiBaseRequestHandler
     {
         private readonly MobileControlSystemController mcController;
+
+        /// <summary>
+        /// Create an instance of the <see cref="MobileInfoHandler"/> class.
+        /// </summary>
+        /// <param name="controller"></param>
         public MobileInfoHandler(MobileControlSystemController controller) : base(true)
         {
             mcController = controller;
         }
 
+        /// <summary>
+        /// Get Mobile Control Information
+        /// </summary>
+        /// <param name="context"></param>
         protected override void HandleGet(HttpCwsContext context)
         {
             try
@@ -50,14 +59,22 @@ namespace PepperDash.Essentials.WebApiHandlers
         [JsonIgnore]
         private readonly MobileControlSystemController mcController;
 
+        /// <summary>
+        /// Edge Server. Null if edge server is disabled
+        /// </summary>
         [JsonProperty("edgeServer", NullValueHandling = NullValueHandling.Ignore)]
         public MobileControlEdgeServer EdgeServer => mcController.Config.EnableApiServer ? new MobileControlEdgeServer(mcController) : null;
 
-
+        /// <summary>
+        /// Direct server. Null if the direct server is disabled
+        /// </summary>
         [JsonProperty("directServer", NullValueHandling = NullValueHandling.Ignore)]
         public MobileControlDirectServer DirectServer => mcController.Config.DirectServer.EnableDirectServer ? new MobileControlDirectServer(mcController.DirectServer) : null;
 
-
+        /// <summary>
+        /// Create in instace of the <see cref="InformationResponse"/> class.
+        /// </summary>
+        /// <param name="controller"></param>
         public InformationResponse(MobileControlSystemController controller)
         {
             mcController = controller;
@@ -72,24 +89,46 @@ namespace PepperDash.Essentials.WebApiHandlers
         [JsonIgnore]
         private readonly MobileControlSystemController mcController;
 
+        /// <summary>
+        /// Mobile Control Edge Server address for this system
+        /// </summary>
         [JsonProperty("serverAddress")]
         public string ServerAddress => mcController.Config == null ? "No Config" : mcController.Host;
 
+        /// <summary>
+        /// System Name for this system
+        /// </summary>
         [JsonProperty("systemName")]
         public string SystemName => mcController.RoomBridges.Count > 0 ? mcController.RoomBridges[0].RoomName : "No Config";
 
+        /// <summary>
+        /// System URL for this system
+        /// </summary>
         [JsonProperty("systemUrl")]
         public string SystemUrl => ConfigReader.ConfigObject.SystemUrl;
 
+        /// <summary>
+        /// User code to use in MC UI for this system
+        /// </summary>
         [JsonProperty("userCode")]
         public string UserCode => mcController.RoomBridges.Count > 0 ? mcController.RoomBridges[0].UserCode : "Not available";
 
+        /// <summary>
+        /// True if connected to edge server
+        /// </summary>
         [JsonProperty("connected")]
         public bool Connected => mcController.Connected;
 
+        /// <summary>
+        /// Seconds since last comms with edge server
+        /// </summary>
         [JsonProperty("secondsSinceLastAck")]
         public int SecondsSinceLastAck => (DateTime.Now - mcController.LastAckMessage).Seconds;
 
+        /// <summary>
+        /// Create an instance of the <see cref="MobileControlEdgeServer"/> class.
+        /// </summary>
+        /// <param name="controller">controller to use for this</param>
         public MobileControlEdgeServer(MobileControlSystemController controller)
         {
             mcController = controller;
@@ -104,25 +143,43 @@ namespace PepperDash.Essentials.WebApiHandlers
         [JsonIgnore]
         private readonly MobileControlWebsocketServer directServer;
 
+        /// <summary>
+        /// URL to use to interact with this server
+        /// </summary>
         [JsonProperty("userAppUrl")]
         public string UserAppUrl => $"{directServer.UserAppUrlPrefix}/[insert_client_token]";
 
+        /// <summary>
+        /// TCP/IP Port this server is configured to use
+        /// </summary>
         [JsonProperty("serverPort")]
         public int ServerPort => directServer.Port;
 
+        /// <summary>
+        /// Count of defined tokens for this server
+        /// </summary>
         [JsonProperty("tokensDefined")]
         public int TokensDefined => directServer.UiClientContexts.Count;
 
+        /// <summary>
+        /// Count of connected clients
+        /// </summary>
         [JsonProperty("clientsConnected")]
         public int ClientsConnected => directServer.ConnectedUiClientsCount;
 
+        /// <summary>
+        /// List of tokens and connected clients for this server
+        /// </summary>
         [JsonProperty("clients")]
         public List<MobileControlDirectClient> Clients => directServer.UiClientContexts
             .Select(context => (context, clients: directServer.UiClients.Where(client => client.Value.Token == context.Value.Token.Token).Select(c => c.Value).ToList()))
             .Select((clientTuple, i) => new MobileControlDirectClient(clientTuple.clients, clientTuple.context, i, directServer.UserAppUrlPrefix))
             .ToList();
 
-
+        /// <summary>
+        /// Create an instance of the <see cref="MobileControlDirectServer"/> class.
+        /// </summary>
+        /// <param name="server"></param>
         public MobileControlDirectServer(MobileControlWebsocketServer server)
         {
             directServer = server;
@@ -146,23 +203,41 @@ namespace PepperDash.Essentials.WebApiHandlers
         [JsonIgnore]
         private readonly string urlPrefix;
 
+        /// <summary>
+        /// Client number for this client
+        /// </summary>
         [JsonProperty("clientNumber")]
         public string ClientNumber => $"{clientNumber}";
 
+        /// <summary>
+        /// Room Key for this client
+        /// </summary>
         [JsonProperty("roomKey")]
         public string RoomKey => context.Token.RoomKey;
 
+        /// <summary>
+        /// Touchpanel Key, if defined, for this client
+        /// </summary>
         [JsonProperty("touchpanelKey")]
         public string TouchpanelKey => context.Token.TouchpanelKey;
 
+        /// <summary>
+        /// URL for this client
+        /// </summary>
         [JsonProperty("url")]
         public string Url => $"{urlPrefix}{Key}";
 
+        /// <summary>
+        /// Token for this client
+        /// </summary>
         [JsonProperty("token")]
         public string Token => Key;
 
         private readonly List<UiClient> clients;
 
+        /// <summary>
+        /// List of status for all connected UI Clients
+        /// </summary>
         [JsonProperty("clientStatus")]
         public List<ClientStatus> ClientStatus => clients.Select(c => new ClientStatus(c)).ToList();
 
@@ -183,14 +258,27 @@ namespace PepperDash.Essentials.WebApiHandlers
         }
     }
 
+    /// <summary>
+    /// Report the status of a UiClient
+    /// </summary>
     public class ClientStatus
     {
         private readonly UiClient client;
 
+        /// <summary>
+        /// True if client is connected
+        /// </summary>
         public bool Connected => client != null && client.Context.WebSocket.IsAlive;
 
+        /// <summary>
+        /// Get the time this client has been connected
+        /// </summary>
         public double Duration => client == null ? 0 : client.ConnectedDuration.TotalSeconds;
 
+        /// <summary>
+        /// Create an instance of the <see cref="ClientStatus"/> class for the specified client
+        /// </summary>
+        /// <param name="client">client to report on</param>
         public ClientStatus(UiClient client)
         {
             this.client = client;

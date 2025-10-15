@@ -12,11 +12,20 @@ namespace PepperDash.Essentials.WebApiHandlers
     public class ActionPathsHandler : WebApiBaseRequestHandler
     {
         private readonly MobileControlSystemController mcController;
+
+        /// <summary>
+        /// Create an instance of the <see cref="ActionPathsHandler"/> class.
+        /// </summary>
+        /// <param name="controller"></param>
         public ActionPathsHandler(MobileControlSystemController controller) : base(true)
         {
             mcController = controller;
         }
 
+        /// <summary>
+        /// Handle a request to get the action paths
+        /// </summary>
+        /// <param name="context">Request Context</param>
         protected override void HandleGet(HttpCwsContext context)
         {
             var response = JsonConvert.SerializeObject(new ActionPathsResponse(mcController));
@@ -37,9 +46,16 @@ namespace PepperDash.Essentials.WebApiHandlers
         [JsonIgnore]
         private readonly MobileControlSystemController mcController;
 
+        /// <summary>
+        /// Registered action paths for this system
+        /// </summary>
         [JsonProperty("actionPaths")]
         public List<ActionPath> ActionPaths => mcController.GetActionDictionaryPaths().Select((path) => new ActionPath { MessengerKey = path.Item1, Path = path.Item2 }).ToList();
 
+        /// <summary>
+        /// Create an instance of the <see cref="ActionPathsResponse"/> class.
+        /// </summary>
+        /// <param name="mcController"></param>
         public ActionPathsResponse(MobileControlSystemController mcController)
         {
             this.mcController = mcController;
