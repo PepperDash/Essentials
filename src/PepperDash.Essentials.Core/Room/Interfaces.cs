@@ -28,7 +28,7 @@ namespace PepperDash.Essentials.Core
     [Obsolete("Will be removed in a future version")]
     public interface IHasMultipleDisplays
     {
-        Dictionary<eSourceListItemDestinationTypes, IRoutingSink> Displays { get; }
+        Dictionary<string, IRoutingSink> Displays { get; }
     }
 
     /// <summary>
