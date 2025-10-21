@@ -2185,6 +2185,8 @@ namespace PepperDash.Essentials
                 };
 
                 SendMessageObject(message);
+
+                SendDeviceInterfaces(clientId);
                 return;
             }
 
@@ -2196,7 +2198,10 @@ namespace PepperDash.Essentials
                     ClientId = clientId,
                     Content = roomKey
                 };
+
                 SendMessageObject(message);
+
+                SendDeviceInterfaces(clientId);
                 return;
             }
 
@@ -2214,6 +2219,8 @@ namespace PepperDash.Essentials
                 };
 
                 SendMessageObject(message);
+
+                SendDeviceInterfaces(clientId);
                 return;
             }
 
@@ -2227,6 +2234,36 @@ namespace PepperDash.Essentials
             };
 
             SendMessageObject(newMessage);
+
+            SendDeviceInterfaces(clientId);
+        }
+
+        private void SendDeviceInterfaces(string clientId)
+        {
+            this.LogDebug("Sending Device interfaces");
+            var devices = DeviceManager.GetDevices();
+            Dictionary<string, DeviceInterfaceInfo> deviceInterfaces = new Dictionary<string, DeviceInterfaceInfo>();
+
+            foreach (var device in devices)
+            {
+                var interfaces = device?.GetType().GetInterfaces().Select((i) => i.Name).ToList() ?? new List<string>();
+
+                deviceInterfaces.Add(device.Key, new DeviceInterfaceInfo
+                {
+                    Key = device.Key,
+                    Name = (device as IKeyName)?.Name ?? "",
+                    Interfaces = interfaces
+                });
+            }
+
+            var message = new MobileControlMessage
+            {
+                Type = "/system/deviceInterfaces",
+                ClientId = clientId,
+                Content = JToken.FromObject(new { deviceInterfaces })
+            };
+
+            SendMessageObject(message);
         }
 
         private void HandleUserCode(JToken content, Action<string, string> action = null)
