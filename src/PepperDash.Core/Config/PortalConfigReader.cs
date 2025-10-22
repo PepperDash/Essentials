@@ -247,7 +247,7 @@ namespace PepperDash.Core.Config
 					}
 					catch (Exception e)
 					{
-						Debug.LogError("Cannot merge items at path {propPath}: \r{e}", propPath, e);
+						Debug.LogError($"Cannot merge items at path {propPath}: \r{e}");
 					}
 				}
 			}
