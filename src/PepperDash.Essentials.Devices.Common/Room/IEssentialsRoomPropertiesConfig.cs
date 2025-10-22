@@ -1,9 +1,4 @@
 ﻿using PepperDash.Essentials.Room.Config;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Devices.Common.Room
 {
@@ -12,6 +7,9 @@ namespace PepperDash.Essentials.Devices.Common.Room
     /// </summary>
     public interface IEssentialsRoomPropertiesConfig
     {
+        /// <summary>
+        /// Gets the PropertiesConfig
+        /// </summary>
         EssentialsRoomPropertiesConfig PropertiesConfig { get; }
     }
 }

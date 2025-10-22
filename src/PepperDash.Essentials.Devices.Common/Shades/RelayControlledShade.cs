@@ -27,6 +27,12 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         /// </summary>
         public string StopOrPresetButtonLabel { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the RelayControlledShade class
+        /// </summary>
+        /// <param name="key">The device key</param>
+        /// <param name="name">The device name</param>
+        /// <param name="config">The relay controlled shade configuration</param>
         public RelayControlledShade(string key, string name, RelayControlledShadeConfigProperties config)
             : base(key, name)
         {
@@ -157,6 +163,9 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     /// </summary>
     public class RelayControlledShadeFactory : EssentialsDeviceFactory<RelayControlledShade>
     {
+        /// <summary>
+        /// Initializes a new instance of the RelayControlledShadeFactory class
+        /// </summary>
         public RelayControlledShadeFactory()
         {
             TypeNames = new List<string>() { "relaycontrolledshade" };

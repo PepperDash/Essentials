@@ -14,11 +14,20 @@ namespace PepperDash.Essentials.WebApiHandlers
     public class UiClientHandler : WebApiBaseRequestHandler
     {
         private readonly MobileControlWebsocketServer server;
+
+        /// <summary>
+        /// Essentials CWS API handler for the MC Direct Server
+        /// </summary>
+        /// <param name="directServer">Direct Server instance</param>
         public UiClientHandler(MobileControlWebsocketServer directServer) : base(true)
         {
             server = directServer;
         }
 
+        /// <summary>
+        /// Create a client for the Direct Server
+        /// </summary>
+        /// <param name="context">HTTP Context for this request</param>
         protected override void HandlePost(HttpCwsContext context)
         {
             var req = context.Request;
@@ -65,6 +74,10 @@ namespace PepperDash.Essentials.WebApiHandlers
             res.End();
         }
 
+        /// <summary>
+        /// Handle DELETE request for a Client
+        /// </summary>
+        /// <param name="context"></param>
         protected override void HandleDelete(HttpCwsContext context)
         {
             var req = context.Request;
@@ -93,7 +106,7 @@ namespace PepperDash.Essentials.WebApiHandlers
 
 
 
-            if (!server.UiClients.TryGetValue(request.Token, out UiClientContext clientContext))
+            if (!server.UiClientContexts.TryGetValue(request.Token, out UiClientContext clientContext))
             {
                 var response = new ClientResponse
                 {
@@ -134,7 +147,7 @@ namespace PepperDash.Essentials.WebApiHandlers
                 return;
             }
 
-            server.UiClients.Remove(request.Token);
+            server.UiClientContexts.Remove(request.Token);
 
             server.UpdateSecret();
 
@@ -148,22 +161,25 @@ namespace PepperDash.Essentials.WebApiHandlers
     /// </summary>
     public class ClientRequest
     {
-        [JsonProperty("roomKey", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the RoomKey
         /// </summary>
+        [JsonProperty("roomKey", NullValueHandling = NullValueHandling.Ignore)]
         public string RoomKey { get; set; }
 
-        [JsonProperty("grantCode", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the GrantCode
         /// </summary>
+        [JsonProperty("grantCode", NullValueHandling = NullValueHandling.Ignore)]
         public string GrantCode { get; set; }
 
-        [JsonProperty("token", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Token
         /// </summary>
+        [JsonProperty("token", NullValueHandling = NullValueHandling.Ignore)]
         public string Token { get; set; }
     }
 
@@ -172,22 +188,25 @@ namespace PepperDash.Essentials.WebApiHandlers
     /// </summary>
     public class ClientResponse
     {
-        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Error
         /// </summary>
+        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
         public string Error { get; set; }
 
-        [JsonProperty("token", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Token
         /// </summary>
+        [JsonProperty("token", NullValueHandling = NullValueHandling.Ignore)]
         public string Token { get; set; }
 
-        [JsonProperty("path", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Path
         /// </summary>
+        [JsonProperty("path", NullValueHandling = NullValueHandling.Ignore)]
         public string Path { get; set; }
     }
 }

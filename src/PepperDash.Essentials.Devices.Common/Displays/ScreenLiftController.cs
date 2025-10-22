@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using PepperDash.Essentials.Devices.Common;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Shades
@@ -28,6 +25,9 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         ISwitchedOutput LowerRelay;
         ISwitchedOutput LatchedRelay;
 
+        /// <summary>
+        /// Gets or sets the InUpPosition
+        /// </summary>
         public bool InUpPosition
         {
             get { return _isInUpPosition; }
@@ -41,10 +41,12 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         }
 
         private bool _isInUpPosition { get; set; }
+
         /// <summary>
         /// Gets or sets the Type
         /// </summary>
         public eScreenLiftControlType Type { get; private set; }
+
         /// <summary>
         /// Gets or sets the Mode
         /// </summary>
@@ -54,13 +56,20 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         /// Gets or sets the DisplayDeviceKey
         /// </summary>
         public string DisplayDeviceKey { get; private set; }
+
         /// <summary>
         /// Gets or sets the IsInUpPosition
         /// </summary>
         public BoolFeedback IsInUpPosition { get; private set; }
 
+        /// <summary>
+        /// Event that fires when the position changes
+        /// </summary>
         public event EventHandler<EventArgs> PositionChanged;
 
+        /// <summary>
+        /// Constructor for ScreenLiftController
+        /// </summary>
         public ScreenLiftController(string key, string name, ScreenLiftControllerConfigProperties config)
             : base(key, name)
         {
@@ -69,7 +78,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             Mode = Config.Mode;
             Type = Config.Type;
 
-            IsInUpPosition = new BoolFeedback(() => _isInUpPosition);
+            IsInUpPosition = new BoolFeedback("isInUpPosition", () => _isInUpPosition);
 
             switch (Mode)
             {
@@ -206,14 +215,14 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         /// <summary>
         /// Attempts to get the port on teh specified device from config
         /// </summary>
-        /// <param name="relayConfig"></param>
+        /// <param name="relayKey"></param>
         /// <returns></returns>
         ISwitchedOutput GetSwitchedOutputFromDevice(string relayKey)
         {
             var portDevice = DeviceManager.GetDeviceForKey(relayKey);
             if (portDevice != null)
             {
-                return (portDevice as ISwitchedOutput);
+                return portDevice as ISwitchedOutput;
             }
             else
             {
@@ -239,57 +248,13 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     }
 
     /// <summary>
-    /// Represents a ScreenLiftControllerConfigProperties
-    /// </summary>
-    public class ScreenLiftControllerConfigProperties
-    {
-        [JsonProperty("displayDeviceKey")]
-        /// <summary>
-        /// Gets or sets the DisplayDeviceKey
-        /// </summary>
-        public string DisplayDeviceKey { get; set; }
-
-        [JsonProperty("type")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        /// <summary>
-        /// Gets or sets the Type
-        /// </summary>
-        public eScreenLiftControlType Type { get; set; }
-
-        [JsonProperty("mode")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        /// <summary>
-        /// Gets or sets the Mode
-        /// </summary>
-        public eScreenLiftControlMode Mode { get; set; }
-
-        [JsonProperty("relays")]
-        public Dictionary<string,ScreenLiftRelaysConfig> Relays { get; set; }
-
-    }
-    /// <summary>
-    /// Represents a ScreenLiftRelaysConfig
-    /// </summary>
-    public class ScreenLiftRelaysConfig
-    {
-        [JsonProperty("deviceKey")]
-        /// <summary>
-        /// Gets or sets the DeviceKey
-        /// </summary>
-        public string DeviceKey { get; set; }
-
-        [JsonProperty("pulseTimeInMs")]
-        /// <summary>
-        /// Gets or sets the PulseTimeInMs
-        /// </summary>
-        public int PulseTimeInMs { get; set; }
-    }
-
-    /// <summary>
     /// Represents a ScreenLiftControllerFactory
     /// </summary>
     public class ScreenLiftControllerFactory : EssentialsDeviceFactory<RelayControlledShade>
     {
+        /// <summary> 
+        /// Constructor for ScreenLiftControllerFactory
+        /// </summary>
         public ScreenLiftControllerFactory()
         {
             TypeNames = new List<string>() { "screenliftcontroller" };
@@ -306,14 +271,5 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
             return new ScreenLiftController(dc.Key, dc.Name, props);
         }
-    }
-
-    /// <summary>
-    /// Enumeration of eScreenLiftControlMode values
-    /// </summary>
-    public enum eScreenLiftControlMode
-    {
-        momentary,
-        latched
     }
 }

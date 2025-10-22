@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
 
 namespace PepperDash.Essentials
 {
@@ -10,12 +10,20 @@ namespace PepperDash.Essentials
     public class MobileControlAction : IMobileControlAction
     {
         /// <summary>
-        /// Gets or sets the Messenger
+        /// Gets the Messenger
         /// </summary>
         public IMobileControlMessenger Messenger { get; private set; }
 
+        /// <summary>
+        /// Action to execute when this path is matched
+        /// </summary>
         public Action<string, string, JToken> Action { get; private set; }
 
+        /// <summary>
+        /// Initialize an instance of the <see cref="MobileControlAction"/> class
+        /// </summary>
+        /// <param name="messenger">Messenger associated with this action</param>
+        /// <param name="handler">Action to take when this path is matched</param>
         public MobileControlAction(IMobileControlMessenger messenger, Action<string, string, JToken> handler)
         {
             Messenger = messenger;

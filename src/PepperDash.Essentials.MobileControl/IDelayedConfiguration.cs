@@ -7,8 +7,9 @@ namespace PepperDash.Essentials
     /// </summary>
     public interface IDelayedConfiguration
     {
-
-
+        /// <summary>
+        /// Event triggered when the configuration is ready. Used when Mobile Control is interacting with a SIMPL program.
+        /// </summary>
         event EventHandler<EventArgs> ConfigurationIsReady;
     }
 }

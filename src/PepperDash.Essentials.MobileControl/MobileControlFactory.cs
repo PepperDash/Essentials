@@ -7,10 +7,13 @@ using PepperDash.Essentials.Core;
 namespace PepperDash.Essentials
 {
     /// <summary>
-    /// Represents a MobileControlFactory
+    /// Factory class for the Mobile Control App Controller
     /// </summary>
     public class MobileControlFactory
     {
+        /// <summary>
+        /// Create an instance of the <see cref="MobileControlFactory"/> class.
+        /// </summary>
         public MobileControlFactory()
         {
             var assembly = Assembly.GetExecutingAssembly();

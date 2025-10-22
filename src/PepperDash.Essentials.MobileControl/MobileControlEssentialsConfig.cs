@@ -1,34 +1,40 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using PepperDash.Essentials.Core.Config;
-using System.Collections.Generic;
 
 
 namespace PepperDash.Essentials
 {
     /// <summary>
-    /// Represents a MobileControlEssentialsConfig
+    /// Configuration class for sending data to Mobile Control Edge or a client using the Direct Server
     /// </summary>
     public class MobileControlEssentialsConfig : EssentialsConfig
     {
+        /// <summary>
+        /// Current versions for the system
+        /// </summary>
         [JsonProperty("runtimeInfo")]
         public MobileControlRuntimeInfo RuntimeInfo { get; set; }
 
+        /// <summary>
+        /// Create Configuration for Mobile Control. Used as part of the data sent to a client
+        /// </summary>
+        /// <param name="config">The base configuration</param>
         public MobileControlEssentialsConfig(EssentialsConfig config)
             : base()
         {
-            // TODO: Consider using Reflection to iterate properties
-            this.Devices = config.Devices;
-            this.Info = config.Info;
-            this.JoinMaps = config.JoinMaps;
-            this.Rooms = config.Rooms;
-            this.SourceLists = config.SourceLists;
-            this.DestinationLists = config.DestinationLists;
-            this.SystemUrl = config.SystemUrl;
-            this.TemplateUrl = config.TemplateUrl;
-            this.TieLines = config.TieLines;
+            Devices = config.Devices;
+            Info = config.Info;
+            JoinMaps = config.JoinMaps;
+            Rooms = config.Rooms;
+            SourceLists = config.SourceLists;
+            DestinationLists = config.DestinationLists;
+            SystemUrl = config.SystemUrl;
+            TemplateUrl = config.TemplateUrl;
+            TieLines = config.TieLines;
 
-            if (this.Info == null)
-                this.Info = new InfoConfig();
+            if (Info == null)
+                Info = new InfoConfig();
 
             RuntimeInfo = new MobileControlRuntimeInfo();
         }
@@ -39,22 +45,30 @@ namespace PepperDash.Essentials
     /// </summary>
     public class MobileControlRuntimeInfo
     {
-        [JsonProperty("pluginVersion")]
+
         /// <summary>
         /// Gets or sets the PluginVersion
         /// </summary>
+        [JsonProperty("pluginVersion")]
         public string PluginVersion { get; set; }
 
+        /// <summary>
+        /// Essentials Version
+        /// </summary>
         [JsonProperty("essentialsVersion")]
         public string EssentialsVersion { get; set; }
 
+        /// <summary>
+        /// PepperDash Core Version
+        /// </summary>
         [JsonProperty("pepperDashCoreVersion")]
         public string PepperDashCoreVersion { get; set; }
 
-        [JsonProperty("essentialsPlugins")]
+
         /// <summary>
-        /// Gets or sets the EssentialsPlugins
+        /// List of Plugins loaded on this system
         /// </summary>
+        [JsonProperty("essentialsPlugins")]
         public List<LoadedAssembly> EssentialsPlugins { get; set; }
     }
 }
