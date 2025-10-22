@@ -82,7 +82,6 @@ namespace PepperDash.Essentials.Core.Config
         /// Gets or sets the Rooms
         /// </summary>
         [JsonProperty("rooms")]
-
         public List<DeviceConfig> Rooms { get; set; }
 
         /// <summary>
