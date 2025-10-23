@@ -112,7 +112,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 {
                     clientId = Id,
                     roomKey = RoomKey,
-                    touchpanelKey = string.IsNullOrEmpty(TouchpanelKey) ? TouchpanelKey : string.Empty,
+                    touchpanelKey = string.IsNullOrEmpty(TouchpanelKey) ? string.Empty : TouchpanelKey,
                 })
             };
 
