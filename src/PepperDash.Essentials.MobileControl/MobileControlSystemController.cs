@@ -2174,6 +2174,7 @@ namespace PepperDash.Essentials
         {
             var clientId = content["clientId"].Value<string>();
             var roomKey = content["roomKey"].Value<string>();
+            var touchpanelKey = content.SelectToken("touchpanelKey");
 
             if (_roomCombiner == null)
             {
@@ -2236,6 +2237,20 @@ namespace PepperDash.Essentials
             SendMessageObject(newMessage);
 
             SendDeviceInterfaces(clientId);
+
+            SendTouchpanelKey(clientId, touchpanelKey);
+        }
+
+        private void SendTouchpanelKey(string clientId, JToken touchpanelKeyToken)
+        {
+            if (touchpanelKeyToken == null) { return; }
+
+            SendMessageObject(new MobileControlMessage
+            {
+                Type = "/system/touchpanelKey",
+                ClientId = clientId,
+                Content = touchpanelKeyToken.Value<string>()
+            });
         }
 
         private void SendDeviceInterfaces(string clientId)
