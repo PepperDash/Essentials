@@ -9,40 +9,59 @@ using Serilog.Events;
 
 namespace PepperDash.Core.Config
 {
+
+
     /// <summary>
     /// Reads a Portal formatted config file
     /// </summary>
 	public class PortalConfigReader
 	{
-		/// <summary>
-		/// Reads the config file, checks if it needs a merge, merges and saves, then returns the merged Object.
-		/// </summary>
-		/// <returns>JObject of config file</returns>
-		public static void ReadAndMergeFileIfNecessary(string filePath, string savePath)
+        const string template = "template";
+        const string system = "system";
+		const string systemUrl = "system_url";
+        const string templateUrl = "template_url";
+		const string info = "info";
+        const string devices = "devices";
+        const string rooms = "rooms";
+        const string sourceLists = "sourceLists";
+        const string destinationLists = "destinationLists";
+        const string cameraLists = "cameraLists";
+        const string audioControlPointLists = "audioControlPointLists";
+
+		const string tieLines = "tieLines";
+        const string joinMaps = "joinMaps";
+		const string global = "global";
+
+
+        /// <summary>
+        /// Reads the config file, checks if it needs a merge, merges and saves, then returns the merged Object.
+        /// </summary>
+        /// <returns>JObject of config file</returns>
+        public static void ReadAndMergeFileIfNecessary(string filePath, string savePath)
 		{
 			try
 			{
 				if (!File.Exists(filePath))
 				{
-					Debug.Console(1, Debug.ErrorLogLevel.Error,
+					Debug.LogError(
 						"ERROR: Configuration file not present. Please load file to {0} and reset program", filePath);
 				}
 
 				using (StreamReader fs = new StreamReader(filePath))
 				{
 					var jsonObj = JObject.Parse(fs.ReadToEnd());
-					if(jsonObj["template"] != null && jsonObj["system"] != null)
+					if(jsonObj[template] != null && jsonObj[system] != null)
 					{
 						// it's a double-config, merge it.
 						var merged = MergeConfigs(jsonObj);
-						if (jsonObj["system_url"] != null)
+						if (jsonObj[systemUrl] != null)
 						{
-							merged["systemUrl"] = jsonObj["system_url"].Value<string>();
+							merged[systemUrl] = jsonObj[systemUrl].Value<string>();
 						}
 
-						if (jsonObj["template_url"] != null)
+						if (jsonObj[templateUrl] != null)
 						{
-							merged["templateUrl"] = jsonObj["template_url"].Value<string>();
+							merged[templateUrl] = jsonObj[templateUrl].Value<string>();
 						}
 
 						jsonObj = merged;
@@ -77,62 +96,62 @@ namespace PepperDash.Core.Config
 			var merged = new JObject();
 
 			// Put together top-level objects
-			if (system["info"] != null)
-				merged.Add("info", Merge(template["info"], system["info"], "infO"));
+			if (system[info] != null)
+				merged.Add(info, Merge(template[info], system[info], info));
 			else
-				merged.Add("info", template["info"]);
+				merged.Add(info, template[info]);
 
-			merged.Add("devices", MergeArraysOnTopLevelProperty(template["devices"] as JArray,
-				system["devices"] as JArray, "key", "devices"));
+			merged.Add(devices, MergeArraysOnTopLevelProperty(template[devices] as JArray,
+				system[devices] as JArray, "key", devices));
 
-			if (system["rooms"] == null)
-				merged.Add("rooms", template["rooms"]);
+			if (system[rooms] == null)
+				merged.Add(rooms, template[rooms]);
 			else
-				merged.Add("rooms", MergeArraysOnTopLevelProperty(template["rooms"] as JArray,
-					system["rooms"] as JArray, "key", "rooms"));
+				merged.Add(rooms, MergeArraysOnTopLevelProperty(template[rooms] as JArray,
+					system[rooms] as JArray, "key", rooms));
 
-			if (system["sourceLists"] == null)
-				merged.Add("sourceLists", template["sourceLists"]);
+			if (system[sourceLists] == null)
+				merged.Add(sourceLists, template[sourceLists]);
 			else
-				merged.Add("sourceLists", Merge(template["sourceLists"], system["sourceLists"], "sourceLists"));
+				merged.Add(sourceLists, Merge(template[sourceLists], system[sourceLists], sourceLists));
 
-		    if (system["destinationLists"] == null)
-		        merged.Add("destinationLists", template["destinationLists"]);
+		    if (system[destinationLists] == null)
+		        merged.Add(destinationLists, template[destinationLists]);
 		    else
-		        merged.Add("destinationLists",
-		            Merge(template["destinationLists"], system["destinationLists"], "destinationLists"));
+		        merged.Add(destinationLists,
+		            Merge(template[destinationLists], system[destinationLists], destinationLists));
 
 
-            if (system["cameraLists"] == null)
-                merged.Add("cameraLists", template["cameraLists"]);
+            if (system[cameraLists] == null)
+                merged.Add(cameraLists, template[cameraLists]);
             else
-                merged.Add("cameraLists", Merge(template["cameraLists"], system["cameraLists"], "cameraLists"));
+                merged.Add(cameraLists, Merge(template[cameraLists], system[cameraLists], cameraLists));
 
-            if (system["audioControlPointLists"] == null)
-                merged.Add("audioControlPointLists", template["audioControlPointLists"]);
+            if (system[audioControlPointLists] == null)
+                merged.Add(audioControlPointLists, template[audioControlPointLists]);
             else
-                merged.Add("audioControlPointLists",
-                    Merge(template["audioControlPointLists"], system["audioControlPointLists"], "audioControlPointLists"));
+                merged.Add(audioControlPointLists,
+                    Merge(template[audioControlPointLists], system[audioControlPointLists], audioControlPointLists));
 
 
             // Template tie lines take precedence.  Config tool doesn't do them at system
             // level anyway...
-            if (template["tieLines"] != null)
-				merged.Add("tieLines", template["tieLines"]);
-			else if (system["tieLines"] != null)
-				merged.Add("tieLines", system["tieLines"]);
+            if (template[tieLines] != null)
+				merged.Add(tieLines, template[tieLines]);
+			else if (system[tieLines] != null)
+				merged.Add(tieLines, system[tieLines]);
 			else
-				merged.Add("tieLines", new JArray());
+				merged.Add(tieLines, new JArray());
 
-            if (template["joinMaps"] != null)
-                merged.Add("joinMaps", template["joinMaps"]);
+            if (template[joinMaps] != null)
+                merged.Add(joinMaps, template[joinMaps]);
             else
-                merged.Add("joinMaps", new JObject());
+                merged.Add(joinMaps, new JObject());
 
-			if (system["global"] != null)
-				merged.Add("global", Merge(template["global"], system["global"], "global"));
+			if (system[global] != null)
+				merged.Add(global, Merge(template[global], system[global], global));
 			else
-				merged.Add("global", template["global"]);
+				merged.Add(global, template[global]);
 
 			//Debug.Console(2, "MERGED CONFIG RESULT: \x0d\x0a{0}", merged);
 			return merged;
@@ -228,7 +247,7 @@ namespace PepperDash.Core.Config
 					}
 					catch (Exception e)
 					{
-						Debug.Console(1, Debug.ErrorLogLevel.Warning, "Cannot merge items at path {0}: \r{1}", propPath, e);
+						Debug.LogError($"Cannot merge items at path {propPath}: \r{e}");
 					}
 				}
 			}
