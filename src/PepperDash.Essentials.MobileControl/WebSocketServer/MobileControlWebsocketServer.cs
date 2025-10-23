@@ -723,7 +723,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private UiClient BuildUiClient(string roomKey, JoinToken token, string key)
         {
-            var c = new UiClient($"uiclient-{key}-{roomKey}-{token.Id}", token.Id, token.Token);
+            var c = new UiClient($"uiclient-{key}-{roomKey}-{token.Id}", token.Id, token.Token, token.TouchpanelKey);
             this.LogInformation("Constructing UiClient with key {key} and ID {id}", key, token.Id);
             c.Controller = _parent;
             c.RoomKey = roomKey;

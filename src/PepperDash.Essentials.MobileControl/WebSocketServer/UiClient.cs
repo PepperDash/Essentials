@@ -32,6 +32,11 @@ namespace PepperDash.Essentials.WebSocketServer
         public string Token { get; private set; }
 
         /// <summary>
+        /// Touchpanel Key associated with this client
+        /// </summary>
+        public string TouchpanelKey { get; private set; }
+
+        /// <summary>
         /// Gets or sets the mobile control system controller that handles this client's messages
         /// </summary>
         public MobileControlSystemController Controller { get; set; }
@@ -75,11 +80,13 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <param name="key">The unique key to identify this client</param>
         /// <param name="id">The client ID used by the client for this connection</param>
         /// <param name="token">The token associated with this client</param>
-        public UiClient(string key, string id, string token)
+        /// <param name="touchpanelKey">The touchpanel key associated with this client</param>
+        public UiClient(string key, string id, string token, string touchpanelKey = "")
         {
             Key = key;
             Id = id;
             Token = token;
+            TouchpanelKey = touchpanelKey;
         }
 
         /// <inheritdoc />
@@ -105,6 +112,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 {
                     clientId = Id,
                     roomKey = RoomKey,
+                    touchpanelKey = string.IsNullOrEmpty(TouchpanelKey) ? TouchpanelKey : string.Empty,
                 })
             };
 
