@@ -2188,6 +2188,8 @@ namespace PepperDash.Essentials
                 SendMessageObject(message);
 
                 SendDeviceInterfaces(clientId);
+
+                SendTouchpanelKey(clientId, touchpanelKey);
                 return;
             }
 
@@ -2203,6 +2205,8 @@ namespace PepperDash.Essentials
                 SendMessageObject(message);
 
                 SendDeviceInterfaces(clientId);
+
+                SendTouchpanelKey(clientId, touchpanelKey);
                 return;
             }
 
@@ -2222,6 +2226,8 @@ namespace PepperDash.Essentials
                 SendMessageObject(message);
 
                 SendDeviceInterfaces(clientId);
+
+                SendTouchpanelKey(clientId, touchpanelKey);
                 return;
             }
 
@@ -2243,7 +2249,11 @@ namespace PepperDash.Essentials
 
         private void SendTouchpanelKey(string clientId, JToken touchpanelKeyToken)
         {
-            if (touchpanelKeyToken == null) { return; }
+            if (touchpanelKeyToken == null)
+            {
+                this.LogWarning("Touchpanel key not found for client {clientId}", clientId);
+                return;
+            }
 
             SendMessageObject(new MobileControlMessage
             {
