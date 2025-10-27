@@ -73,7 +73,7 @@ namespace PepperDash.Essentials.Core
 				Debug.LogMessage(LogEventLevel.Information, this, "Configured com Port for this device does not exist.");
 				return;
 			}
-			// TODO [ ] - Verify nothing blows up without the `if` check
+			// TODO [ ] - Verify nothing blows up without the `if` check || if there is a property identifying the parent/device is either registerable or notRegisterable
 			//if (Port.Parent is CrestronControlSystem || Port.Parent is CenIoCom102)
 			//{
 			var result = Port.Register();
