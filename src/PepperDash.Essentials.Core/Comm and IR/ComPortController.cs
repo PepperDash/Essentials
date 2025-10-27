@@ -94,35 +94,35 @@ namespace PepperDash.Essentials.Core
 
 
 			// TODO [ ] - Remove debug logging once verified working
-			if (Port.Parent is CenIoCom102)
-			{				
-				Port.PropertyChanged += (s, e) =>
-				{					
-					this.LogInformation($@"RegisterAndConfigureComPort: PropertyChanged Fired >> 
-						comPort-'{Port.ID}', 
-						Property Changed-'{e.Property}', 
-						Value Changed-'{e.Value}',
-						deviceName-'{Port.DeviceName}', 
-						parentDevice-'{Port.ParentDevice}', 
-						parent-`{Port.Parent}`, 
-						online-`{Port.IsOnline}`, 
-						present-`{Port.Present}`, 
-						supportedBaudRates-'{Port.SupportedBaudRates}'");
-				};
-				Port.ExtendedInformationChanged += (s, e) =>
-				{
+			// if (Port.Parent is CenIoCom102)
+			// {				
+			// 	Port.PropertyChanged += (s, e) =>
+			// 	{					
+			// 		this.LogInformation($@"RegisterAndConfigureComPort: PropertyChanged Fired >> 
+			// 			comPort-'{Port.ID}', 
+			// 			Property Changed-'{e.Property}', 
+			// 			Value Changed-'{e.Value}',
+			// 			deviceName-'{Port.DeviceName}', 
+			// 			parentDevice-'{Port.ParentDevice}', 
+			// 			parent-`{Port.Parent}`, 
+			// 			online-`{Port.IsOnline}`, 
+			// 			present-`{Port.Present}`, 
+			// 			supportedBaudRates-'{Port.SupportedBaudRates}'");
+			// 	};
+			// 	Port.ExtendedInformationChanged += (s, e) =>
+			// 	{
 					
-					this.LogInformation($@"RegisterAndConfigureComPort: ExtendedInformationChanged Fired >> 
-						comPort-'{Port.ID}', 
-						{e.Protocol},
-						{e.BaudRate},
-						{e.Parity},
-						{e.DataBits},
-						{e.StopBits}, 
-						HW Handshake-'{e.HardwareHandshakeSetting}', 
-						SW Handshake-'{e.SoftwareHandshakeSetting}'");
-				};
-			}
+			// 		this.LogInformation($@"RegisterAndConfigureComPort: ExtendedInformationChanged Fired >> 
+			// 			comPort-'{Port.ID}', 
+			// 			{e.Protocol},
+			// 			{e.BaudRate},
+			// 			{e.Parity},
+			// 			{e.DataBits},
+			// 			{e.StopBits}, 
+			// 			HW Handshake-'{e.HardwareHandshakeSetting}', 
+			// 			SW Handshake-'{e.SoftwareHandshakeSetting}'");
+			// 	};
+			// }
 
 			Port.SerialDataReceived += Port_SerialDataReceived;
 		}
