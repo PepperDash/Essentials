@@ -73,56 +73,56 @@ namespace PepperDash.Essentials.Core
 				Debug.LogMessage(LogEventLevel.Information, this, "Configured com Port for this device does not exist.");
 				return;
 			}
-			if (Port.Parent is CrestronControlSystem || Port.Parent is CenIoCom102)
+			// TODO [ ] - Verify nothing blows up without the `if` check
+			//if (Port.Parent is CrestronControlSystem || Port.Parent is CenIoCom102)
+			//{
+			var result = Port.Register();
+			if (result != eDeviceRegistrationUnRegistrationResponse.Success)
 			{
-				var result = Port.Register();
-				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
-				{
-					Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Com port: {0}", result);
-					return; // false
-				}
+				Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Com port: {0}", result);
+				return; // false
 			}
+			//}
 
 			var specResult = Port.SetComPortSpec(Spec);
 			if (specResult != 0)
 			{
-				Debug.LogMessage(LogEventLevel.Information, this, "WARNING: Cannot set comspec");
+				this.LogInformation("WARNING: Cannot set comspec");
 				return;
 			}
-
-			//this.LogInformation($"RegisterAndConfigureComPort: Port.Parent-'{Port.Parent}', Port.ParentDevice-'{Port.ParentDevice}'");
-
-			// if (Port.Parent is CenIoCom102)
-			// {
-			// 	this.LogInformation($"RegisterAndConfigureComPort: ");
-			// 	Port.Register();
-
-			// 	Port.PropertyChanged += (s, e) =>
-			// 	{
-			// 		this.LogInformation($"RegisterAndConfigureComPort: PropertyChanged Fired >> comPort-'{Port.ID}', Property Changed-'{e.Property}', Value Changed-'{e.Value}'");
-			// 		this.LogInformation($"RegisterAndConfigureComPort: deviceName-'{Port.DeviceName}', parentDevice-'{Port.ParentDevice}', parent-`{Port.Parent}`, online-`{Port.IsOnline}`, preset-`{Port.Present}`, supportedBaudRates-'{Port.SupportedBaudRates}'");
-			// 	};
-			// 	Port.ExtendedInformationChanged += (s, e) =>
-			// 	{
-			// 		this.LogInformation($@"RegisterAndConfigureComPort: ExtendedInformationChanged Fired >> comPort-'{Port.ID}', {e.Protocol} using `
-			// 		{e.BaudRate},
-			// 		{e.Parity},
-			// 		{e.DataBits},
-			// 		{e.StopBits}, 
-			// 		HW Handshake-'{e.HardwareHandshakeSetting}', 
-			// 		SW Handshake-'{e.SoftwareHandshakeSetting}'");
-			// 	};
-
-			// 	this.LogInformation($@"RegisterAndConfigureComPort: Configuring comPort-'{Port.ID}' using Spec 
-			// 	{Spec.BaudRate},
-			// 	{Spec.DataBits},
-			// 	{Spec.Parity},
-			// 	{Spec.StopBits}, 
-			// 	HW Handshake-'{Spec.HardwareHandShake}', 
-			// 	SW Handshake-'{Spec.SoftwareHandshake}'");
+			this.LogDebug($"ComPort comspec successfully set (specResult == {specResult})");
 
 
-			// }
+			// TODO [ ] - Remove debug logging once verified working
+			if (Port.Parent is CenIoCom102)
+			{				
+				Port.PropertyChanged += (s, e) =>
+				{					
+					this.LogInformation($@"RegisterAndConfigureComPort: PropertyChanged Fired >> 
+						comPort-'{Port.ID}', 
+						Property Changed-'{e.Property}', 
+						Value Changed-'{e.Value}',
+						deviceName-'{Port.DeviceName}', 
+						parentDevice-'{Port.ParentDevice}', 
+						parent-`{Port.Parent}`, 
+						online-`{Port.IsOnline}`, 
+						present-`{Port.Present}`, 
+						supportedBaudRates-'{Port.SupportedBaudRates}'");
+				};
+				Port.ExtendedInformationChanged += (s, e) =>
+				{
+					
+					this.LogInformation($@"RegisterAndConfigureComPort: ExtendedInformationChanged Fired >> 
+						comPort-'{Port.ID}', 
+						{e.Protocol},
+						{e.BaudRate},
+						{e.Parity},
+						{e.DataBits},
+						{e.StopBits}, 
+						HW Handshake-'{e.HardwareHandshakeSetting}', 
+						SW Handshake-'{e.SoftwareHandshakeSetting}'");
+				};
+			}
 
 			Port.SerialDataReceived += Port_SerialDataReceived;
 		}
