@@ -97,11 +97,11 @@ namespace PepperDash.Essentials.Core
 			//if (Port.Parent is CrestronControlSystem || Port.Parent is CenIoCom102)
 			if (Port.Parent is GenericBase genericDevice && genericDevice.Registerable)
 			{
-				this.LogInformation($"INFO: Attempting to register {Port.Parent.GetType().Name}-comport-{Port.ID} using GenericBase");
+				//this.LogInformation($"INFO: Attempting to register {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID}");
 				var result = genericDevice.Register();
 				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
 				{
-					this.LogError($"ERROR: Cannot register comport: {result}");
+					this.LogError($"ERROR: Cannot register {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
 					return; // false
 				}
 			}
@@ -109,10 +109,10 @@ namespace PepperDash.Essentials.Core
 			var specResult = Port.SetComPortSpec(Spec);
 			if (specResult != 0)
 			{
-				this.LogError("ERROR: Cannot set comspec");
+				this.LogError($"ERROR: Cannot set comspec for {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {specResult})");
 				return;
 			}
-			this.LogInformation($"INFO: Comspec successfully set (result == {specResult})");
+			//this.LogInformation($"INFO: Successfully set comspec for {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {specResult})");
 
 
 			// TODO [ ] - Remove debug logging once verified working
