@@ -12,14 +12,29 @@ namespace PepperDash.Essentials.Core.Fusion
     public interface IFusionHelpRequest
     {
         /// <summary>
-        /// Gets the HelpRequstResponseFeedback
+        /// Feedback containing the response to a help request
         /// </summary>
         StringFeedback HelpRequestResponseFeedback { get; }
+
+        /// <summary>
+        /// Indicates whether a help request has been sent
+        /// </summary>
+        BoolFeedback HelpRequestSentFeedback { get; }
 
         /// <summary>
         /// Sends a help request
         /// </summary>
         /// <param name="isHtml"></param>
         void SendHelpRequest(bool isHtml);
+
+        /// <summary>
+        /// Clears the current help request status
+        /// </summary>
+        void CancelHelpRequest();
+
+        /// <summary>
+        /// Toggles between sending and cancelling a help request
+        /// </summary>
+        void ToggleHelpRequest(bool isHtml);
     }
 }

@@ -19,12 +19,12 @@ namespace PepperDash.Essentials.Core.Fusion
     /// <summary>
     /// Represents a EssentialsHuddleSpaceFusionSystemControllerBase
     /// </summary>
-    public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupancyStatusProvider, IFusionHelpRequest
+    public class IEssentialsRoomFusionController : EssentialsDevice, IOccupancyStatusProvider, IFusionHelpRequest
     {
-        private readonly EssentialsHuddleSpaceRoomFusionRoomJoinMap JoinMap;
+        private EssentialsHuddleSpaceRoomFusionRoomJoinMap JoinMap;
 
         private const string RemoteOccupancyXml = "<Occupancy><Type>Local</Type><State>{0}</State></Occupancy>";
-        private readonly bool _guidFileExists;
+        private bool _guidFileExists;
 
         private readonly Dictionary<Device, BoolInputSig> _sourceToFeedbackSigs =
             new Dictionary<Device, BoolInputSig>();
@@ -52,7 +52,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         protected Dictionary<int, FusionAsset> FusionStaticAssets;
         private readonly long PushNotificationTimeout = 5000;
-        private readonly IEssentialsRoom Room;
+        private IEssentialsRoom Room;
         private readonly long SchedulePollInterval = 300000;
 
         private Event _currentMeeting;
@@ -74,7 +74,11 @@ namespace PepperDash.Essentials.Core.Fusion
 
         private bool _helpRequestSent;
 
+        /// <inheritdoc />
         public StringFeedback HelpRequestResponseFeedback { get; private set; }
+
+        /// <inheritdoc />
+        public BoolFeedback HelpRequestSentFeedback { get; private set; }
 
         #region System Info Sigs
 
@@ -110,13 +114,47 @@ namespace PepperDash.Essentials.Core.Fusion
         #endregion
 
         /// <summary>
+        /// Constructor
+        /// </summary>
+        public IEssentialsRoomFusionController(IEssentialsRoomFusionControllerPropertiesConfig config)
+            : base("FusionRoomController")
+        {
+            AddPostActivationAction(() =>
+            {
+                var room = DeviceManager.GetDeviceForKey<IEssentialsRoom>(config.RoomKey);
+
+                if (room == null)
+                {
+                    Debug.LogMessage(LogEventLevel.Error, this,
+                        "Error Creating Fusion Room Controller.  No room found with key '{0}'", config.RoomKey);
+                    return;
+                }
+
+                ConstructorHelper(room, config.IpId, config.JoinMapKey);
+
+                var guidFilePath = GetGuidFilePath(config.IpId);
+
+                PostActivate(guidFilePath);
+            });
+        }
+
+        /// <summary>
         ///     
         /// </summary>
         /// <param name="room"></param>
         /// <param name="ipId"></param>
         /// <param name="joinMapKey"></param>
-        public EssentialsHuddleSpaceFusionSystemControllerBase(IEssentialsRoom room, uint ipId, string joinMapKey)
+        public IEssentialsRoomFusionController(IEssentialsRoom room, uint ipId, string joinMapKey)
             : base(room.Key + "-fusion")
+        {
+            ConstructorHelper(room, ipId, joinMapKey);
+
+            var guidFilePath = GetGuidFilePath(ipId);
+
+            AddPostActivationAction(() => PostActivate(guidFilePath));
+        }
+
+        private void ConstructorHelper(IEssentialsRoom room, uint ipId, string joinMapKey)
         {
             try
             {
@@ -132,7 +170,7 @@ namespace PepperDash.Essentials.Core.Fusion
                         JoinMap.SetCustomJoinData(customJoins);
                     }
                 }
-                 
+
                 Room = room;
 
                 _ipId = ipId;
@@ -141,41 +179,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 _guiDs = new FusionRoomGuids();
 
-                var mac =
-                    CrestronEthernetHelper.GetEthernetParameter(
-                        CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
 
-                var slot = Global.ControlSystem.ProgramNumber;
-
-                var guidFilePath = Global.FilePathPrefix +
-                                   string.Format(@"{0}-FusionGuids-{1:X2}.json", InitialParametersClass.ProgramIDTag, _ipId);
-
-                var oldGuidFilePath = Global.FilePathPrefix +
-                                      string.Format(@"{0}-FusionGuids.json", InitialParametersClass.ProgramIDTag);
-
-                if (File.Exists(oldGuidFilePath))
-                {
-                    Debug.LogMessage(LogEventLevel.Information, this, "Migrating from old Fusion GUID file to new Fusion GUID File");
-
-                    File.Copy(oldGuidFilePath, guidFilePath);
-
-                    File.Delete(oldGuidFilePath);
-                }
-
-                _guidFileExists = File.Exists(guidFilePath); 
-
-                // Check if file exists
-                if (!_guidFileExists)
-                {
-                    // Does not exist. Create GUIDs
-                    _guiDs = new FusionRoomGuids(Room.Name, ipId, _guiDs.GenerateNewRoomGuid(slot, mac),
-                        FusionStaticAssets);
-                }
-                else
-                {
-                    // Exists. Read GUIDs
-                    ReadGuidFile(guidFilePath);
-                }
 
 
                 if (Room is IRoomOccupancy occupancyRoom)
@@ -197,12 +201,52 @@ namespace PepperDash.Essentials.Core.Fusion
                 HelpRequestResponseFeedback.LinkInputSig(FusionRoom.Help.InputSig);
 
 
-                AddPostActivationAction(() => PostActivate(guidFilePath));
             }
             catch (Exception e)
             {
                 Debug.LogMessage(LogEventLevel.Information, this, "Error Building Fusion System Controller: {0}", e);
             }
+        }
+        
+        private string GetGuidFilePath(uint ipId)
+        {
+                var mac =
+                    CrestronEthernetHelper.GetEthernetParameter(
+                        CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
+
+                var slot = Global.ControlSystem.ProgramNumber;
+
+                var guidFilePath = Global.FilePathPrefix +
+                                   string.Format(@"{0}-FusionGuids-{1:X2}.json", InitialParametersClass.ProgramIDTag, _ipId);
+
+                var oldGuidFilePath = Global.FilePathPrefix +
+                                      string.Format(@"{0}-FusionGuids.json", InitialParametersClass.ProgramIDTag);
+
+                if (File.Exists(oldGuidFilePath))
+                {
+                    Debug.LogMessage(LogEventLevel.Information, this, "Migrating from old Fusion GUID file to new Fusion GUID File");
+
+                    File.Copy(oldGuidFilePath, guidFilePath);
+
+                    File.Delete(oldGuidFilePath);
+                }
+
+                _guidFileExists = File.Exists(guidFilePath);
+
+            // Check if file exists
+            if (!_guidFileExists)
+            {
+                // Does not exist. Create GUIDs
+                _guiDs = new FusionRoomGuids(Room.Name, ipId, _guiDs.GenerateNewRoomGuid(slot, mac),
+                    FusionStaticAssets);
+            }
+            else
+            {
+                // Exists. Read GUIDs
+                ReadGuidFile(guidFilePath);
+            }
+                
+            return guidFilePath;
         }
 
         private void PostActivate(string guidFilePath)
@@ -1721,11 +1765,8 @@ namespace PepperDash.Essentials.Core.Fusion
             }
         }
 
-        /// <summary>
-        /// Sends a help request to Fusion with room name and timestamp
-        /// </summary>
-        /// <param name="isHtml"></param>
-        public void SendHelpRequest(bool isHtml)
+        /// <inheritdoc />
+        public void SendHelpRequest(bool isHtml = false)
         {
             var now = DateTime.Now;
 
@@ -1740,6 +1781,7 @@ namespace PepperDash.Essentials.Core.Fusion
             _helpRequestSent = true;
         }
 
+        /// <inheritdoc />
         public void CancelHelpRequest()
         {
             if (_helpRequestSent)
@@ -1747,6 +1789,19 @@ namespace PepperDash.Essentials.Core.Fusion
                 FusionRoom.Help.InputSig.StringValue = "";
                 _helpRequestSent = false;
                 Debug.LogMessage(LogEventLevel.Information, this, "Help request cancelled in Fusion for room '{0}'", Room.Name);
+            }
+        }
+
+        /// <inheritdoc />
+        public void ToggleHelpRequest(bool isHtml = false)
+        {
+            if (_helpRequestSent)
+            {
+                CancelHelpRequest();
+            }
+            else
+            {
+                SendHelpRequest(isHtml);
             }
         }
     }
