@@ -24,7 +24,14 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public CommunicationStreamDebugging StreamDebugging { get; private set; }
 
+		/// <summary>
+		/// Event fired when bytes are received
+		/// </summary>
 		public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
+		
+		/// <summary>
+        /// Event fired when text is received
+        /// </summary>
 		public event EventHandler<GenericCommMethodReceiveTextArgs> TextReceived;
 
 		/// <summary>
@@ -35,6 +42,13 @@ namespace PepperDash.Essentials.Core
 		ComPort Port;
 		ComPort.ComPortSpec Spec;
 
+		/// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="postActivationFunc"></param>
+        /// <param name="spec"></param>
+        /// <param name="config"></param>
 		public ComPortController(string key, Func<EssentialsControlPropertiesConfig, ComPort> postActivationFunc,
 			ComPort.ComPortSpec spec, EssentialsControlPropertiesConfig config) : base(key)
 		{
@@ -50,6 +64,12 @@ namespace PepperDash.Essentials.Core
 			});
 		}
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="key">Device key</param>
+		/// <param name="port">COM port instance</param>
+		/// <param name="spec">COM port specification</param>
 		public ComPortController(string key, ComPort port, ComPort.ComPortSpec spec)
 			: base(key)
 		{
@@ -73,24 +93,26 @@ namespace PepperDash.Essentials.Core
 				Debug.LogMessage(LogEventLevel.Information, this, "Configured com Port for this device does not exist.");
 				return;
 			}
-			// TODO [ ] - Verify nothing blows up without the `if` check || if there is a property identifying the parent/device is either registerable or notRegisterable
+			// TODO [ ] - Remove commented out code once verified working
 			//if (Port.Parent is CrestronControlSystem || Port.Parent is CenIoCom102)
-			//{
-			var result = Port.Register();
-			if (result != eDeviceRegistrationUnRegistrationResponse.Success)
+			if (Port.Parent is GenericBase genericDevice && genericDevice.Registerable)
 			{
-				Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Com port: {0}", result);
-				return; // false
+				this.LogInformation($"INFO: Attempting to register {Port.Parent.GetType().Name}-comport-{Port.ID} using GenericBase");
+				var result = genericDevice.Register();
+				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
+				{
+					this.LogError($"ERROR: Cannot register comport: {result}");
+					return; // false
+				}
 			}
-			//}
-
+			
 			var specResult = Port.SetComPortSpec(Spec);
 			if (specResult != 0)
 			{
-				this.LogInformation("WARNING: Cannot set comspec");
+				this.LogError("ERROR: Cannot set comspec");
 				return;
 			}
-			this.LogDebug($"ComPort comspec successfully set (specResult == {specResult})");
+			this.LogInformation($"INFO: Comspec successfully set (result == {specResult})");
 
 
 			// TODO [ ] - Remove debug logging once verified working
@@ -111,7 +133,7 @@ namespace PepperDash.Essentials.Core
 			// 	};
 			// 	Port.ExtendedInformationChanged += (s, e) =>
 			// 	{
-					
+
 			// 		this.LogInformation($@"RegisterAndConfigureComPort: ExtendedInformationChanged Fired >> 
 			// 			comPort-'{Port.ID}', 
 			// 			{e.Protocol},
@@ -127,6 +149,9 @@ namespace PepperDash.Essentials.Core
 			Port.SerialDataReceived += Port_SerialDataReceived;
 		}
 
+		/// <summary>
+		/// Destructor
+		/// </summary>
 		~ComPortController()
 		{
 			Port.SerialDataReceived -= Port_SerialDataReceived;
