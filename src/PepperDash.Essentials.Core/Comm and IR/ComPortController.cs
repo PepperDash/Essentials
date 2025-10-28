@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-
 using PepperDash.Core;
-using Serilog.Events;
 using PepperDash.Core.Logging;
-using Crestron.SimplSharpPro.GeneralIO;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
