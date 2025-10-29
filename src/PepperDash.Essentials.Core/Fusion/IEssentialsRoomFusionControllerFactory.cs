@@ -28,6 +28,6 @@ public class IEssentialsRoomFusionControllerFactory : EssentialsDeviceFactory<IE
 
         var properties = dc.Properties.ToObject<IEssentialsRoomFusionControllerPropertiesConfig>();
 
-        return new IEssentialsRoomFusionController(properties);
+        return new IEssentialsRoomFusionController(dc.Key, dc.Name, properties);
     }
 }

@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// Sends a help request
         /// </summary>
         /// <param name="isHtml"></param>
-        void SendHelpRequest(bool isHtml);
+        void SendHelpRequest();
 
         /// <summary>
         /// Clears the current help request status
@@ -35,6 +35,6 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <summary>
         /// Toggles between sending and cancelling a help request
         /// </summary>
-        void ToggleHelpRequest(bool isHtml);
+        void ToggleHelpRequest();
     }
 }

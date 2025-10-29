@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using PepperDash.Core;
 
 /// <summary>
 /// Config properties for an IEssentialsRoomFusionController device
@@ -9,7 +10,28 @@ public class IEssentialsRoomFusionControllerPropertiesConfig
     /// Gets or sets the IP ID of the Fusion Room Controller
     /// </summary>
     [JsonProperty("ipId")]
-    public uint IpId { get; set; }
+    public string IpId { get; set; }
+
+    /// <summary>
+    /// Gets the IP ID as a UInt16
+    /// </summary>
+    [JsonIgnore]
+    public uint IpIdInt
+    {
+        get
+        {
+            // Try to parse the IpId string to UInt16 as hex
+            if (ushort.TryParse(IpId, System.Globalization.NumberStyles.HexNumber, null, out ushort result))
+            {
+                return result;
+            }
+            else
+            {
+                Debug.LogWarning( "Failed to parse IpId '{0}' as UInt16", IpId);
+                return 0;
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets the join map key
@@ -22,4 +44,16 @@ public class IEssentialsRoomFusionControllerPropertiesConfig
     /// </summary>
     [JsonProperty("roomKey")]
     public string RoomKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to use HTML format for help requests
+    /// </summary>
+    [JsonProperty("useHtmlFormatForHelpRequests")]
+    public bool UseHtmlFormatForHelpRequests { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets whether to use 24-hour time format
+    /// </summary>
+    [JsonProperty("use24HourTimeFormat")]
+    public bool Use24HourTimeFormat { get; set; } = false;
 }
