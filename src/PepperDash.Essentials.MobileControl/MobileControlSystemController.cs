@@ -2399,7 +2399,7 @@ namespace PepperDash.Essentials
 
                         foreach (var handler in handlers)
                         {
-                            Task.Run(async () =>
+                            Task.Run(() =>
                             {
                                 try
                                 {
