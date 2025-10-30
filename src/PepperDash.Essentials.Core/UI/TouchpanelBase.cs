@@ -118,15 +118,6 @@ namespace PepperDash.Essentials.Core.UI
         /// <param name="roomKey">Room Key for this panel</param>
         protected abstract void SetupPanelDrivers(string roomKey);
 
-        /// <inheritdoc />
-        public override void Initialize()
-        {
-            base.Initialize();
-
-
-        }
-
-
         /// <summary>
         /// Event handler for System Extender Events
         /// </summary>

@@ -37,7 +37,7 @@ namespace PepperDash.Essentials.Touchpanel
             {
                 var theme = content.ToObject<MobileControlSimpleContent<string>>();
 
-                this.LogInformation("Setting theme to {theme}", this, theme.Value);
+                this.LogInformation("Setting theme to {theme}", theme.Value);
                 _tpDevice.UpdateTheme(theme.Value);
 
                 PostStatusMessage(JToken.FromObject(new { theme = theme.Value }), id);
