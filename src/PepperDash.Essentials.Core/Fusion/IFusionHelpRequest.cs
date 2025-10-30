@@ -22,9 +22,13 @@ namespace PepperDash.Essentials.Core.Fusion
         BoolFeedback HelpRequestSentFeedback { get; }
 
         /// <summary>
+        /// Feedback containing the current status of the help request
+        /// </summary>
+        StringFeedback HelpRequestStatusFeedback { get; }
+
+        /// <summary>
         /// Sends a help request
         /// </summary>
-        /// <param name="isHtml"></param>
         void SendHelpRequest();
 
         /// <summary>

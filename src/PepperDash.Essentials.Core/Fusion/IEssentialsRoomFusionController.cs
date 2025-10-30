@@ -76,11 +76,17 @@ namespace PepperDash.Essentials.Core.Fusion
 
         private bool _helpRequestSent;
 
+        private eFusionHelpResponse _helpRequestStatus;
+
         /// <inheritdoc />
         public StringFeedback HelpRequestResponseFeedback { get; private set; }
 
         /// <inheritdoc />
         public BoolFeedback HelpRequestSentFeedback { get; private set; }
+
+        /// <inheritdoc />
+        public StringFeedback HelpRequestStatusFeedback { get; private set; }
+
 
         #region System Info Sigs
 
@@ -297,11 +303,10 @@ namespace PepperDash.Essentials.Core.Fusion
 
             FusionRVI.GenerateFileForAllFusionDevices();
 
-            HelpRequestResponseFeedback = new StringFeedback("HelpRequestResponse", () => FusionRoom.Help.InputSig.StringValue);
-            HelpRequestResponseFeedback.LinkInputSig(FusionRoom.Help.InputSig);
+            HelpRequestResponseFeedback = new StringFeedback("HelpRequestResponse", () => FusionRoom.Help.OutputSig.StringValue);
 
             HelpRequestSentFeedback = new BoolFeedback("HelpRequestSent", () => _helpRequestSent);
-
+            HelpRequestStatusFeedback = new StringFeedback("HelpRequestStatus", () => _helpRequestStatus.ToString());
         }
 
         /// <summary>
@@ -1767,10 +1772,59 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             if (args.EventId == FusionEventIds.HelpMessageReceivedEventId)
             {
-                Debug.LogMessage(LogEventLevel.Information, this, "Help message received from Fusion for room '{0}'",
+                this.LogInformation( "Help message received from Fusion for room '{0}'",
              Room.Name);
+
+                this.LogDebug("Help message content: {0}", FusionRoom.Help.OutputSig.StringValue);
                 // Fire help request event
                 HelpRequestResponseFeedback.FireUpdate();
+
+                if (!string.IsNullOrEmpty(FusionRoom.Help.OutputSig.StringValue))
+                {
+                    switch (FusionRoom.Help.OutputSig.StringValue)
+                    {
+                        case "Please wait, a technician is on his / her way.":
+                            this.LogInformation("Please wait, a technician is on his / her way.",
+                             Room.Name);
+
+                            _helpRequestStatus = eFusionHelpResponse.HelpOnTheWay;
+                            break;
+                        case "Please call the helpdesk.":
+                            this.LogInformation("Please call the helpdesk.");
+                            _helpRequestStatus = eFusionHelpResponse.CallHelpDesk;
+                            break;
+                        case "Please wait, I will reschedule your meeting to a different room.":
+                            this.LogInformation("Please wait, I will reschedule your meeting to a different room.",
+                             Room.Name);
+
+                            _helpRequestStatus = eFusionHelpResponse.ReschedulingMeeting;
+                            break;
+                        case "I will be taking control of your system. Please be patient while I adjust the settings.":
+                            this.LogInformation("I will be taking control of your system. Please be patient while I adjust the settings.",
+                             Room.Name);
+
+                            _helpRequestStatus = eFusionHelpResponse.TakingControl;
+                            break;
+                        default:
+                            this.LogInformation("Unknown help request code received from Fusion for room '{0}'",
+                             Room.Name);
+
+                            _helpRequestStatus = eFusionHelpResponse.None;
+                            break;
+                    }
+                }
+                else
+                {
+                    _helpRequestStatus = eFusionHelpResponse.None;
+                }
+
+                if(_helpRequestStatus == eFusionHelpResponse.None)
+                {
+                    _helpRequestSent = false;
+                    HelpRequestSentFeedback.FireUpdate();
+                }
+                
+                HelpRequestStatusFeedback.FireUpdate();
             }
 
 
@@ -1835,9 +1889,14 @@ namespace PepperDash.Essentials.Core.Fusion
 
             FusionRoom.Help.InputSig.StringValue = requestString;
 
-            Debug.LogMessage(LogEventLevel.Information, this, "Help request sent to Fusion from room '{0}'", Room.Name);
+            this.LogInformation("Help request sent to Fusion from room '{0}'", Room.Name);
+            this.LogDebug("Help request content: {0}", FusionRoom.Help.InputSig.StringValue);
 
             _helpRequestSent = true;
+            HelpRequestSentFeedback.FireUpdate();
+
+            _helpRequestStatus = eFusionHelpResponse.HelpRequested;
+            HelpRequestStatusFeedback.FireUpdate();
         }
 
         /// <inheritdoc />
@@ -1847,6 +1906,9 @@ namespace PepperDash.Essentials.Core.Fusion
             {
                 FusionRoom.Help.InputSig.StringValue = "";
                 _helpRequestSent = false;
+                HelpRequestSentFeedback.FireUpdate();
+                _helpRequestStatus = eFusionHelpResponse.None;
+                HelpRequestStatusFeedback.FireUpdate();
                 Debug.LogMessage(LogEventLevel.Information, this, "Help request cancelled in Fusion for room '{0}'", Room.Name);
             }
         }
