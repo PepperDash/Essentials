@@ -1784,30 +1784,30 @@ namespace PepperDash.Essentials.Core.Fusion
                     switch (FusionRoom.Help.OutputSig.StringValue)
                     {
                         case "Please wait, a technician is on his / her way.":
-                            this.LogInformation("Please wait, a technician is on his / her way.",
-                             Room.Name);
+                            // this.LogInformation("Please wait, a technician is on his / her way.",
+                            //  Room.Name);
 
                             _helpRequestStatus = eFusionHelpResponse.HelpOnTheWay;
                             break;
                         case "Please call the helpdesk.":
-                            this.LogInformation("Please call the helpdesk.");
-                            _helpRequestStatus = eFusionHelpResponse.CallHelpDesk;
+                            // this.LogInformation("Please call the helpdesk.");
+                            // _helpRequestStatus = eFusionHelpResponse.CallHelpDesk;
                             break;
                         case "Please wait, I will reschedule your meeting to a different room.":
-                            this.LogInformation("Please wait, I will reschedule your meeting to a different room.",
-                             Room.Name);
+                            // this.LogInformation("Please wait, I will reschedule your meeting to a different room.",
+                            //  Room.Name);
 
                             _helpRequestStatus = eFusionHelpResponse.ReschedulingMeeting;
                             break;
                         case "I will be taking control of your system. Please be patient while I adjust the settings.":
-                            this.LogInformation("I will be taking control of your system. Please be patient while I adjust the settings.",
-                             Room.Name);
+                            // this.LogInformation("I will be taking control of your system. Please be patient while I adjust the settings.",
+                            //  Room.Name);
 
                             _helpRequestStatus = eFusionHelpResponse.TakingControl;
                             break;
                         default:
-                            this.LogInformation("Unknown help request code received from Fusion for room '{0}'",
-                             Room.Name);
+                            // this.LogInformation("Unknown help request code received from Fusion for room '{0}'",
+                            //  Room.Name);
 
                             _helpRequestStatus = eFusionHelpResponse.None;
                             break;
