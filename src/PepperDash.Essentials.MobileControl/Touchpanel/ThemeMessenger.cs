@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer;
 using PepperDash.Essentials.AppServer.Messengers;
 
@@ -29,17 +30,17 @@ namespace PepperDash.Essentials.Touchpanel
         {
             AddAction("/fullStatus", (id, content) =>
             {
-                PostStatusMessage(new ThemeUpdateMessage { Theme = _tpDevice.Theme });
+                PostStatusMessage(new ThemeUpdateMessage { Theme = _tpDevice.Theme }, id);
             });
 
             AddAction("/saveTheme", (id, content) =>
             {
                 var theme = content.ToObject<MobileControlSimpleContent<string>>();
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Setting theme to {theme}", this, theme.Value);
+                this.LogInformation("Setting theme to {theme}", theme.Value);
                 _tpDevice.UpdateTheme(theme.Value);
 
-                PostStatusMessage(JToken.FromObject(new { theme = theme.Value }));
+                PostStatusMessage(JToken.FromObject(new { theme = theme.Value }), id);
             });
         }
     }
