@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.Touchpanel
                 return;
             }
 
-            AddAction($"/fullStatus", (id, context) => SendFullStatus());
+            AddAction($"/fullStatus", (id, context) => SendFullStatus(id));
 
             AddAction($"/openApp", (id, context) => _appControl.OpenApp());
 
