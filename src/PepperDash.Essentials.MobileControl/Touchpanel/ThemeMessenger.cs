@@ -40,7 +40,7 @@ namespace PepperDash.Essentials.Touchpanel
                 this.LogInformation("Setting theme to {theme}", theme.Value);
                 _tpDevice.UpdateTheme(theme.Value);
 
-                PostStatusMessage(JToken.FromObject(new { theme = theme.Value }), id);
+                PostStatusMessage(JToken.FromObject(new { theme = theme.Value }), clientId: id);
             });
         }
     }
