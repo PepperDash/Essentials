@@ -19,6 +19,6 @@ namespace PepperDash.Core
     /// <summary>
     /// Debug data in both byte and text formats
     /// </summary>
-    Both = Bytes | Text,
+    Both = Bytes | Text
   }
 }

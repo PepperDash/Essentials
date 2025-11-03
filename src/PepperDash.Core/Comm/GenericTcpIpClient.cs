@@ -477,8 +477,7 @@ namespace PepperDash.Core
         /// </summary>
         public void SendBytes(byte[] bytes)
         {
-            if (StreamDebugging.TxStreamDebuggingIsEnabled)
-                Debug.Console(0, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+            this.PrintSentBytes(bytes);
             if (_client != null)
                 _client.SendData(bytes, bytes.Length);
         }

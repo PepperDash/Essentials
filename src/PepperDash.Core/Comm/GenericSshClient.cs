@@ -278,7 +278,7 @@ namespace PepperDash.Core
                         if (shellStream.DataAvailable)
                         {
                             // empty the buffer if there is data
-                            string str = shellStream.Read();
+                            shellStream.Read();
                         }
                         shellStream.DataReceived += Stream_DataReceived;
                         this.LogInformation("Connected");
@@ -287,8 +287,7 @@ namespace PepperDash.Core
                     }
                     catch (SshConnectionException e)
                     {
-                        var ie = e.InnerException; // The details are inside!!
-                        var errorLogLevel = disconnectLogged == true ? Debug.ErrorLogLevel.None : Debug.ErrorLogLevel.Error;
+                        var ie = e.InnerException; // The details are inside!!                        
 
                         if (ie is SocketException)
                         {
@@ -335,7 +334,6 @@ namespace PepperDash.Core
                     }
                     catch (Exception e)
                     {
-                        var errorLogLevel = disconnectLogged == true ? Debug.ErrorLogLevel.None : Debug.ErrorLogLevel.Error;
                         this.LogError("Unhandled exception on connect: {error}", e.Message);
                         this.LogVerbose(e, "Exception details: ");
                         disconnectLogged = true;
@@ -518,7 +516,7 @@ namespace PepperDash.Core
                 this.LogError("ObjectDisposedException sending '{message}'. Restarting connection...", text.Trim());
 
                 KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                StopReconnectTimer();
+                StartReconnectTimer();
             }
             catch (Exception ex)
             {
@@ -551,7 +549,7 @@ namespace PepperDash.Core
                 this.LogException(ex, "ObjectDisposedException sending {message}", ComTextHelper.GetEscapedText(bytes));
 
                 KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                StopReconnectTimer();
+                StartReconnectTimer();
             }
             catch (Exception ex)
             {
