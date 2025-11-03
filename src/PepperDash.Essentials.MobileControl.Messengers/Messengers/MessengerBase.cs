@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <remarks>
         /// Unsoliciited feedback from a device in a messenger will ONLY be sent to devices in this subscription list. When a client disconnects, it's ID will be removed from the collection.
         /// </remarks>
-        protected HashSet<string> SubscriberIds = new HashSet<string>();
+        private readonly HashSet<string> subscriberIds = new HashSet<string>();
 
         /// <summary>
         /// Lock object for thread-safe access to SubscriberIds
@@ -200,13 +200,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             lock (_subscriberLock)
             {
-                if (SubscriberIds.Contains(clientId))
+                if (!subscriberIds.Add(clientId))
                 {
                     this.LogVerbose("Client {clientId} already subscribed", clientId);
                     return;
                 }
-
-                SubscriberIds.Add(clientId);
             }
 
             this.LogDebug("Client {clientId} subscribed", clientId);
@@ -227,10 +225,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             bool wasSubscribed;
             lock (_subscriberLock)
             {
-                wasSubscribed = SubscriberIds.Contains(clientId);
+                wasSubscribed = subscriberIds.Contains(clientId);
                 if (wasSubscribed)
                 {
-                    SubscriberIds.Remove(clientId);
+                    subscriberIds.Remove(clientId);
                 }
             }
 
@@ -332,7 +330,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     List<string> subscriberSnapshot;
                     lock (_subscriberLock)
                     {
-                        subscriberSnapshot = new List<string>(SubscriberIds);
+                        subscriberSnapshot = new List<string>(subscriberIds);
                     }
 
                     foreach (var client in subscriberSnapshot)
