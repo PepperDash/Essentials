@@ -287,7 +287,7 @@ namespace PepperDash.Core
                     }
                     catch (SshConnectionException e)
                     {
-                        var ie = e.InnerException; // The details are inside!!                        
+                        var ie = e.InnerException; // The details are inside!!
 
                         if (ie is SocketException)
                         {

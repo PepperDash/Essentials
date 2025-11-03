@@ -3,7 +3,7 @@ using System;
 namespace PepperDash.Core
 {
   /// <summary>
-  /// The available settings for stream debugging response types
+  /// The available settings for stream debugging data format types
   /// </summary>
   [Flags]
   public enum eStreamDebuggingDataTypeSettings

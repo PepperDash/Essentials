@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace PepperDash.Core
 {
   /// <summary>
-  /// 
+  /// Helper class for formatting communication text and byte data for debugging purposes.
   /// </summary>
   public class ComTextHelper
   {
