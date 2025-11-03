@@ -549,6 +549,12 @@ namespace PepperDash.Core
         public int AutoReconnectIntervalMs { get; set; }
 
         /// <summary>
+        /// When true, turns off echo for the SSH session
+        /// </summary>
+        [JsonProperty("disableSshEcho")]
+        public bool DisableSshEcho { get; set; }
+
+        /// <summary>
         /// Default constructor
         /// </summary>
 		public TcpSshPropertiesConfig()
@@ -558,8 +564,7 @@ namespace PepperDash.Core
             AutoReconnectIntervalMs = 5000;
             Username = "";
             Password = "";
+            DisableSshEcho = false;
         }
-
     }
-
 }
