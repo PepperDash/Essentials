@@ -23,10 +23,10 @@ namespace PepperDash.Essentials.Core
 		/// Event fired when bytes are received
 		/// </summary>
 		public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
-		
+
 		/// <summary>
-        /// Event fired when text is received
-        /// </summary>
+		/// Event fired when text is received
+		/// </summary>
 		public event EventHandler<GenericCommMethodReceiveTextArgs> TextReceived;
 
 		/// <summary>
@@ -38,12 +38,12 @@ namespace PepperDash.Essentials.Core
 		ComPort.ComPortSpec Spec;
 
 		/// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="postActivationFunc"></param>
-        /// <param name="spec"></param>
-        /// <param name="config"></param>
+		/// Constructor
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="postActivationFunc"></param>
+		/// <param name="spec"></param>
+		/// <param name="config"></param>
 		public ComPortController(string key, Func<EssentialsControlPropertiesConfig, ComPort> postActivationFunc,
 			ComPort.ComPortSpec spec, EssentialsControlPropertiesConfig config) : base(key)
 		{
@@ -100,7 +100,7 @@ namespace PepperDash.Essentials.Core
 					return; // false
 				}
 			}
-			
+
 			var specResult = Port.SetComPortSpec(Spec);
 			if (specResult != 0)
 			{
@@ -165,16 +165,14 @@ namespace PepperDash.Essentials.Core
 			if (bytesHandler != null)
 			{
 				var bytes = Encoding.GetEncoding(28591).GetBytes(s);
-				if (StreamDebugging.RxStreamDebuggingIsEnabled)
-					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", ComTextHelper.GetEscapedText(bytes));
+				this.PrintReceivedBytes(bytes);
 				bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
 				eventSubscribed = true;
 			}
 			var textHandler = TextReceived;
 			if (textHandler != null)
 			{
-				if (StreamDebugging.RxStreamDebuggingIsEnabled)
-					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", s);
+				this.PrintReceivedText(s);
 				textHandler(this, new GenericCommMethodReceiveTextArgs(s));
 				eventSubscribed = true;
 			}
@@ -201,8 +199,7 @@ namespace PepperDash.Essentials.Core
 			if (Port == null)
 				return;
 
-			if (StreamDebugging.TxStreamDebuggingIsEnabled)
-				Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} characters of text: '{1}'", text.Length, text);
+			this.PrintSentText(text);
 			Port.Send(text);
 		}
 
@@ -214,8 +211,7 @@ namespace PepperDash.Essentials.Core
 			if (Port == null)
 				return;
 			var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
-			if (StreamDebugging.TxStreamDebuggingIsEnabled)
-				Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+			this.PrintSentBytes(bytes);
 
 			Port.Send(text);
 		}

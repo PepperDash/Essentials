@@ -124,7 +124,7 @@ namespace PepperDash.Core
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
             CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
         }
-       
+
         /// <summary>
         /// 
         /// </summary>
@@ -135,7 +135,7 @@ namespace PepperDash.Core
         public GenericUdpServer(string key, string address, int port, int bufferSize)
             : base(key)
         {
-            StreamDebugging = new CommunicationStreamDebugging(key); 
+            StreamDebugging = new CommunicationStreamDebugging(key);
             Hostname = address;
             Port = port;
             BufferSize = bufferSize;
@@ -180,7 +180,7 @@ namespace PepperDash.Core
         /// <param name="programEventType"></param>
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
-            if (programEventType != eProgramStatusEventType.Stopping) 
+            if (programEventType != eProgramStatusEventType.Stopping)
                 return;
 
             Debug.Console(1, this, "Program stopping. Disabling Server");
@@ -243,7 +243,7 @@ namespace PepperDash.Core
         /// </summary>
         public void Disconnect()
         {
-            if(Server != null)
+            if (Server != null)
                 Server.DisableUDPServer();
 
             IsConnected = false;
@@ -265,7 +265,7 @@ namespace PepperDash.Core
 
             try
             {
-                if (numBytes <= 0) 
+                if (numBytes <= 0)
                     return;
 
                 var sourceIp = Server.IPAddressLastMessageReceivedFrom;
@@ -281,17 +281,13 @@ namespace PepperDash.Core
                 var bytesHandler = BytesReceived;
                 if (bytesHandler != null)
                 {
-                    if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                    {
-                        Debug.Console(0, this, "Received {1} bytes: '{0}'", ComTextHelper.GetEscapedText(bytes), bytes.Length);
-                    }
+                    this.PrintReceivedBytes(bytes);
                     bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
                 }
                 var textHandler = TextReceived;
                 if (textHandler != null)
                 {
-                    if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                        Debug.Console(0, this, "Received {1} characters of text: '{0}'", ComTextHelper.GetDebugText(str), str.Length);
+                    this.PrintReceivedText(str);
                     textHandler(this, new GenericCommMethodReceiveTextArgs(str));
                 }
             }
@@ -318,8 +314,7 @@ namespace PepperDash.Core
 
             if (IsConnected && Server != null)
             {
-                if (StreamDebugging.TxStreamDebuggingIsEnabled)
-                    Debug.Console(0, this, "Sending {0} characters of text: '{1}'", text.Length, ComTextHelper.GetDebugText(text));
+                this.PrintSentText(text);
 
                 Server.SendData(bytes, bytes.Length);
             }
@@ -334,8 +329,7 @@ namespace PepperDash.Core
         /// </summary>
         public void SendBytes(byte[] bytes)
         {
-            if (StreamDebugging.TxStreamDebuggingIsEnabled)
-                Debug.Console(0, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+            this.PrintSentBytes(bytes);
 
             if (IsConnected && Server != null)
                 Server.SendData(bytes, bytes.Length);
@@ -343,11 +337,11 @@ namespace PepperDash.Core
 
     }
 
- /// <summary>
- /// Represents a GenericUdpReceiveTextExtraArgs
- /// </summary>
-	public class GenericUdpReceiveTextExtraArgs : EventArgs
-	{
+    /// <summary>
+    /// Represents a GenericUdpReceiveTextExtraArgs
+    /// </summary>
+    public class GenericUdpReceiveTextExtraArgs : EventArgs
+    {
         /// <summary>
         /// 
         /// </summary>
@@ -359,7 +353,7 @@ namespace PepperDash.Core
         /// <summary>
         /// 
         /// </summary>
-		public int	Port { get; private set; }
+		public int Port { get; private set; }
         /// <summary>
         /// 
         /// </summary>
@@ -373,18 +367,18 @@ namespace PepperDash.Core
         /// <param name="port"></param>
         /// <param name="bytes"></param>
 		public GenericUdpReceiveTextExtraArgs(string text, string ipAddress, int port, byte[] bytes)
-		{
-			Text = text;
-			IpAddress = ipAddress;
-			Port = port;
-			Bytes = bytes;
-		}
+        {
+            Text = text;
+            IpAddress = ipAddress;
+            Port = port;
+            Bytes = bytes;
+        }
 
-		/// <summary>
-		/// Stupid S+ Constructor
-		/// </summary>
-		public GenericUdpReceiveTextExtraArgs() { }
-	}
+        /// <summary>
+        /// Stupid S+ Constructor
+        /// </summary>
+        public GenericUdpReceiveTextExtraArgs() { }
+    }
 
     /// <summary>
     /// 

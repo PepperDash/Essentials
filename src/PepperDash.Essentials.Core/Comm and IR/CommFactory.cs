@@ -64,8 +64,11 @@ namespace PepperDash.Essentials.Core
 						break;
 					case eControlMethod.Ssh:
 						{
-							var ssh = new GenericSshClient(deviceConfig.Key + "-ssh", c.Address, c.Port, c.Username, c.Password);
-							ssh.AutoReconnect = c.AutoReconnect;
+							var ssh = new GenericSshClient(deviceConfig.Key + "-ssh", c.Address, c.Port, c.Username, c.Password)
+							{
+								AutoReconnect = c.AutoReconnect,
+								DisableEcho = c.DisableSshEcho
+							};
 							if (ssh.AutoReconnect)
 								ssh.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
 							comm = ssh;
@@ -73,8 +76,10 @@ namespace PepperDash.Essentials.Core
 						}
 					case eControlMethod.Tcpip:
 						{
-							var tcp = new GenericTcpIpClient(deviceConfig.Key + "-tcp", c.Address, c.Port, c.BufferSize);
-							tcp.AutoReconnect = c.AutoReconnect;
+							var tcp = new GenericTcpIpClient(deviceConfig.Key + "-tcp", c.Address, c.Port, c.BufferSize)
+							{
+								AutoReconnect = c.AutoReconnect
+							};
 							if (tcp.AutoReconnect)
 								tcp.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
 							comm = tcp;
@@ -90,8 +95,10 @@ namespace PepperDash.Essentials.Core
 						break;
 					case eControlMethod.SecureTcpIp:
 						{
-							var secureTcp = new GenericSecureTcpIpClient(deviceConfig.Key + "-secureTcp", c.Address, c.Port, c.BufferSize);
-							secureTcp.AutoReconnect = c.AutoReconnect;
+							var secureTcp = new GenericSecureTcpIpClient(deviceConfig.Key + "-secureTcp", c.Address, c.Port, c.BufferSize)
+							{
+								AutoReconnect = c.AutoReconnect
+							};
 							if (secureTcp.AutoReconnect)
 								secureTcp.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
 							comm = secureTcp;
