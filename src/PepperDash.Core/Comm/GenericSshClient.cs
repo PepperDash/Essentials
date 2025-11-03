@@ -416,18 +416,14 @@ namespace PepperDash.Core
             if (bytesHandler != null)
             {
                 var bytes = Encoding.UTF8.GetBytes(response);
-                if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                {
-                    this.LogInformation("Received {1} bytes: '{0}'", ComTextHelper.GetEscapedText(bytes), bytes.Length);
-                }
+                this.PrintReceivedBytes(bytes);
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
             }
 
             var textHandler = TextReceived;
             if (textHandler != null)
             {
-                if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                    this.LogInformation("Received: '{0}'", ComTextHelper.GetDebugText(response));
+                this.PrintReceivedText(response);
 
                 textHandler(this, new GenericCommMethodReceiveTextArgs(response));
             }
@@ -484,11 +480,7 @@ namespace PepperDash.Core
             {
                 if (Client != null && TheStream != null && IsConnected)
                 {
-                    if (StreamDebugging.TxStreamDebuggingIsEnabled)
-                        this.LogInformation(
-                                      "Sending {length} characters of text: '{text}'",
-                                      text.Length,
-                                      ComTextHelper.GetDebugText(text));
+                    this.PrintSentText(text);
 
                     TheStream.Write(text);
                     TheStream.Flush();
@@ -521,8 +513,7 @@ namespace PepperDash.Core
             {
                 if (Client != null && TheStream != null && IsConnected)
                 {
-                    if (StreamDebugging.TxStreamDebuggingIsEnabled)
-                        this.LogInformation("Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+                    this.PrintSentBytes(bytes);
 
                     TheStream.Write(bytes, 0, bytes.Length);
                     TheStream.Flush();
