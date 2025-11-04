@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Text;
 using System.Text.RegularExpressions;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using Serilog.Events;
@@ -85,36 +87,32 @@ namespace PepperDash.Essentials.Core
 		{
 			if (Port == null)
 			{
-				Debug.LogMessage(LogEventLevel.Information, this, "Configured com Port for this device does not exist.");
+				this.LogInformation($"Configured {Port.Parent.GetType().Name}-comport-{Port.ID} for {Key} does not exist.");
 				return;
 			}
-			// TODO [ ] - Remove commented out code once verified working
-			//if (Port.Parent is CrestronControlSystem || Port.Parent is CenIoCom102)
-			if (Port.Parent is GenericBase genericDevice && genericDevice.Registerable)
+
+			var result = Port.Register();
+			if (result != eDeviceRegistrationUnRegistrationResponse.Success)
 			{
-				//this.LogInformation($"INFO: Attempting to register {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID}");
-				var result = genericDevice.Register();
-				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
-				{
-					this.LogError($"ERROR: Cannot register {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
-					return; // false
-				}
+				this.LogError($"Cannot register {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
+				return;
 			}
+			this.LogInformation($"Successfully registered {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
 
 			var specResult = Port.SetComPortSpec(Spec);
 			if (specResult != 0)
 			{
-				this.LogError($"ERROR: Cannot set comspec for {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {specResult})");
+				this.LogError($"Cannot set comspec for {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {specResult})");
 				return;
 			}
-			//this.LogInformation($"INFO: Successfully set comspec for {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {specResult})");
+			this.LogInformation($"Successfully set comspec for {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {specResult})");
 
 
 			// TODO [ ] - Remove debug logging once verified working
 			// if (Port.Parent is CenIoCom102)
-			// {				
+			// {
 			// 	Port.PropertyChanged += (s, e) =>
-			// 	{					
+			// 	{
 			// 		this.LogInformation($@"RegisterAndConfigureComPort: PropertyChanged Fired >> 
 			// 			comPort-'{Port.ID}', 
 			// 			Property Changed-'{e.Property}', 
