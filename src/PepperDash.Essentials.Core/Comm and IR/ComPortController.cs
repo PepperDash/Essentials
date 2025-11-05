@@ -91,13 +91,17 @@ namespace PepperDash.Essentials.Core
 				return;
 			}
 
-			var result = Port.Register();
-			if (result != eDeviceRegistrationUnRegistrationResponse.Success)
+
+			if (Port.Parent is CrestronControlSystem || Port.Parent is CenIoCom102)
 			{
-				this.LogError($"Cannot register {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
-				return;
+				var result = Port.Register();
+				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
+				{
+					this.LogError($"Cannot register {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
+					return;
+				}
+				this.LogInformation($"Successfully registered {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
 			}
-			this.LogInformation($"Successfully registered {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
 
 			var specResult = Port.SetComPortSpec(Spec);
 			if (specResult != 0)
@@ -106,38 +110,6 @@ namespace PepperDash.Essentials.Core
 				return;
 			}
 			this.LogInformation($"Successfully set comspec for {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {specResult})");
-
-
-			// TODO [ ] - Remove debug logging once verified working
-			// if (Port.Parent is CenIoCom102)
-			// {
-			// 	Port.PropertyChanged += (s, e) =>
-			// 	{
-			// 		this.LogInformation($@"RegisterAndConfigureComPort: PropertyChanged Fired >> 
-			// 			comPort-'{Port.ID}', 
-			// 			Property Changed-'{e.Property}', 
-			// 			Value Changed-'{e.Value}',
-			// 			deviceName-'{Port.DeviceName}', 
-			// 			parentDevice-'{Port.ParentDevice}', 
-			// 			parent-`{Port.Parent}`, 
-			// 			online-`{Port.IsOnline}`, 
-			// 			present-`{Port.Present}`, 
-			// 			supportedBaudRates-'{Port.SupportedBaudRates}'");
-			// 	};
-			// 	Port.ExtendedInformationChanged += (s, e) =>
-			// 	{
-
-			// 		this.LogInformation($@"RegisterAndConfigureComPort: ExtendedInformationChanged Fired >> 
-			// 			comPort-'{Port.ID}', 
-			// 			{e.Protocol},
-			// 			{e.BaudRate},
-			// 			{e.Parity},
-			// 			{e.DataBits},
-			// 			{e.StopBits}, 
-			// 			HW Handshake-'{e.HardwareHandshakeSetting}', 
-			// 			SW Handshake-'{e.SoftwareHandshakeSetting}'");
-			// 	};
-			// }
 
 			Port.SerialDataReceived += Port_SerialDataReceived;
 		}
