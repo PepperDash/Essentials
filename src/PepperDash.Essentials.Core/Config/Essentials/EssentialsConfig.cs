@@ -11,11 +11,11 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Config
 {
-	/// <summary>
-	/// Loads the ConfigObject from the file
-	/// </summary>
-	public class EssentialsConfig : BasicConfig
-	{
+    /// <summary>
+    /// Loads the ConfigObject from the file
+    /// </summary>
+    public class EssentialsConfig : BasicConfig
+    {
         /// <summary>
         /// Gets or sets the SystemUrl
         /// </summary>
@@ -32,21 +32,22 @@ namespace PepperDash.Essentials.Core.Config
         /// Gets the SystemUuid extracted from the SystemUrl
         /// </summary>
 		[JsonProperty("systemUuid")]
-		public string SystemUuid
+        public string SystemUuid
         {
             get
             {
-				if (string.IsNullOrEmpty(SystemUrl))
-					return "missing url";
+                if (string.IsNullOrEmpty(SystemUrl))
+                    return "missing url";
 
-				if (SystemUrl.Contains("#"))
-				{
-					var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/#.*");
-					string uuid = result.Groups[1].Value;
-					return uuid;
-				} else
-				{
-                    var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/.*");
+                if (SystemUrl.Contains("#"))
+                {
+                    var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/#.*");
+                    string uuid = result.Groups[1].Value;
+                    return uuid;
+                }
+                else
+                {
+                    var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/detail\/(.*)\/.*");
                     string uuid = result.Groups[1].Value;
                     return uuid;
                 }
@@ -57,21 +58,22 @@ namespace PepperDash.Essentials.Core.Config
         /// Gets the TemplateUuid extracted from the TemplateUrl
         /// </summary>
 		[JsonProperty("templateUuid")]
-		public string TemplateUuid
+        public string TemplateUuid
         {
             get
             {
-				if (string.IsNullOrEmpty(TemplateUrl))
-					return "missing template url";
+                if (string.IsNullOrEmpty(TemplateUrl))
+                    return "missing template url";
 
-				if (TemplateUrl.Contains("#"))
-				{
-					var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/templates\/(.*)\/#.*");
-					string uuid = result.Groups[1].Value;
-					return uuid;
-				} else
-				{
-                    var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/system-templates\/(.*)\/system-template-versions\/(.*)\/.*");
+                if (TemplateUrl.Contains("#"))
+                {
+                    var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/templates\/(.*)\/#.*");
+                    string uuid = result.Groups[1].Value;
+                    return uuid;
+                }
+                else
+                {
+                    var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/system-templates\/detail\/(.*)\/system-template-versions\/detail\/(.*)\/.*");
                     string uuid = result.Groups[2].Value;
                     return uuid;
                 }
@@ -97,7 +99,7 @@ namespace PepperDash.Essentials.Core.Config
         {
             Rooms = new List<DeviceConfig>();
         }
-	}
+    }
 
     /// <summary>
     /// Represents version data for Essentials and its packages
@@ -147,7 +149,7 @@ namespace PepperDash.Essentials.Core.Config
     /// Represents a SystemTemplateConfigs
     /// </summary>
     public class SystemTemplateConfigs
-	{
+    {
         /// <summary>
         /// Gets or sets the System
         /// </summary>
@@ -157,5 +159,5 @@ namespace PepperDash.Essentials.Core.Config
         /// Gets or sets the Template
         /// </summary>
 		public EssentialsConfig Template { get; set; }
-	}
+    }
 }
