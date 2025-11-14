@@ -194,7 +194,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             if (!enableMessengerSubscriptions)
             {
-                this.LogWarning("Messenger subscriptions not enabled");
                 return;
             }
 
@@ -218,7 +217,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             if (!enableMessengerSubscriptions)
             {
-                this.LogWarning("Messenger subscriptions not enabled");
                 return;
             }
 
@@ -238,7 +236,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 return;
             }
 
-            this.LogInformation("Client with ID {clientId} unsubscribed", clientId);
+            this.LogDebug("Client with ID {clientId} unsubscribed", clientId);
         }
 
         /// <summary>
@@ -272,7 +270,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception ex)
             {
-                this.LogError(ex, "Exception posting status message for {messagePath} to {clientId}", MessagePath, clientId ?? "all clients");
+                this.LogError("Exception posting status message for {messagePath} to {clientId}: {message}", MessagePath, clientId ?? "all clients", ex.Message);
+                this.LogDebug(ex, "Stack trace: ");
             }
         }
 
@@ -301,7 +300,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception ex)
             {
-                this.LogError(ex, "Exception posting status message for {type} to {clientId}", type, clientId ?? "all clients");
+                this.LogError("Exception posting status message for {type} to {clientId}: {message}", type, clientId ?? "all clients", ex.Message);
+                this.LogDebug(ex, "Stack trace: ");
             }
         }
 

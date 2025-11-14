@@ -1312,6 +1312,11 @@ namespace PepperDash.Essentials
         /// <inheritdoc />
         public override void Initialize()
         {
+            if (!Config.EnableMessengerSubscriptions)
+            {
+                this.LogWarning("Messenger subscriptions disabled. add \"enableMessengerSubscriptions\": true to config for {key} to enable.", Key);
+            }
+
             foreach (var messenger in _messengers)
             {
                 try
