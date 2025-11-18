@@ -36,21 +36,29 @@ namespace PepperDash.Essentials.Core.Config
         {
             get
             {
-                if (string.IsNullOrEmpty(SystemUrl))
-                    return "missing url";
+                string uuid;
 
-                if (SystemUrl.Contains("#"))
+                if (string.IsNullOrEmpty(SystemUrl))
+                {
+                    uuid = "missing url";
+                }
+                else if (SystemUrl.Contains("#"))
                 {
                     var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/#.*");
-                    string uuid = result.Groups[1].Value;
-                    return uuid;
+                    uuid = result.Groups[1].Value;
+                }
+                else if (SystemUrl.Contains("detail"))
+                {
+                    var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/detail\/(.*)\/.*");
+                    uuid = result.Groups[1].Value;
                 }
                 else
                 {
-                    var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/detail\/(.*)\/.*");
-                    string uuid = result.Groups[1].Value;
-                    return uuid;
+                    var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/.*");
+                    uuid = result.Groups[1].Value;
                 }
+
+                return uuid;
             }
         }
 
@@ -62,21 +70,29 @@ namespace PepperDash.Essentials.Core.Config
         {
             get
             {
-                if (string.IsNullOrEmpty(TemplateUrl))
-                    return "missing template url";
+                string uuid;
 
-                if (TemplateUrl.Contains("#"))
+                if (string.IsNullOrEmpty(TemplateUrl))
+                {
+                    uuid = "missing template url";
+                }
+                else if (TemplateUrl.Contains("#"))
                 {
                     var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/templates\/(.*)\/#.*");
-                    string uuid = result.Groups[1].Value;
-                    return uuid;
+                    uuid = result.Groups[1].Value;
+                }
+                else if (TemplateUrl.Contains("detail"))
+                {
+                    var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/system-templates\/detail\/(.*)\/system-template-versions\/detail\/(.*)\/.*");
+                    uuid = result.Groups[2].Value;
                 }
                 else
                 {
-                    var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/system-templates\/detail\/(.*)\/system-template-versions\/detail\/(.*)\/.*");
-                    string uuid = result.Groups[2].Value;
-                    return uuid;
+                    var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/system-templates\/(.*)\/system-template-versions\/(.*)\/.*");
+                    uuid = result.Groups[2].Value;
                 }
+
+                return uuid;
             }
         }
 
