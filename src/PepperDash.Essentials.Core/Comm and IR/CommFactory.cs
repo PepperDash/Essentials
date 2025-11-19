@@ -104,6 +104,12 @@ namespace PepperDash.Essentials.Core
 							comm = secureTcp;
 							break;
 						}
+					case eControlMethod.TcpIpServer:
+						{
+							var tcpServer = new GenericTcpIpServer(deviceConfig.Key + "-tcpServer", c.Address, c.Port, c.BufferSize);
+							comm = tcpServer;
+							break;
+						}
 					default:
 						break;
 				}
