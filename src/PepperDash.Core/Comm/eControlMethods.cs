@@ -82,6 +82,10 @@ namespace PepperDash.Core
         /// <summary>
         /// InfinetEX control
         /// </summary>
-        InfinetEx
+        InfinetEx,
+        /// <summary>
+        /// TCP/IP Server
+        /// </summary>
+        TcpServer
     }
 }
