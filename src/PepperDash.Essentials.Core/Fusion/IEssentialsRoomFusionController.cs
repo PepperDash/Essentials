@@ -248,9 +248,10 @@ namespace PepperDash.Essentials.Core.Fusion
                 Feedbacks.Add(HelpRequestResponseFeedback);
                 Feedbacks.Add(HelpRequestSentFeedback);
                 Feedbacks.Add(HelpRequestStatusFeedback);
-                Feedbacks.Add(RoomOccupancyRemoteStringFeedback);
-                Feedbacks.Add(RoomIsOccupiedFeedback);
-            
+                if (RoomOccupancyRemoteStringFeedback != null)
+                    Feedbacks.Add(RoomOccupancyRemoteStringFeedback);
+                if (RoomIsOccupiedFeedback != null)
+                    Feedbacks.Add(RoomIsOccupiedFeedback);
 
             }
             catch (Exception e)
