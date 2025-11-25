@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
@@ -73,7 +74,7 @@ namespace PepperDash.Essentials.Devices.Common.Generic
         /// <inheritdoc />
         public void ExecuteSwitch(object inputSelector)
         {
-            throw new System.NotImplementedException();
+            this.LogDebug("GenericSink Executing Switch to: {inputSelector}", inputSelector);
         }
     }
 
