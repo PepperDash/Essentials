@@ -31,7 +31,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <remarks>
         /// Unsoliciited feedback from a device in a messenger will ONLY be sent to devices in this subscription list. When a client disconnects, it's ID will be removed from the collection.
         /// </remarks>
-        protected HashSet<string> SubscriberIds = new HashSet<string>();
+        private readonly HashSet<string> subscriberIds = new HashSet<string>();
+
+        /// <summary>
+        /// Lock object for thread-safe access to SubscriberIds
+        /// </summary>
+        private readonly object _subscriberLock = new object();
 
         private readonly List<string> _deviceInterfaces;
 
@@ -189,17 +194,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             if (!enableMessengerSubscriptions)
             {
-                this.LogWarning("Messenger subscriptions not enabled");
                 return;
             }
 
-            if (SubscriberIds.Any(id => id == clientId))
+            lock (_subscriberLock)
             {
-                this.LogVerbose("Client {clientId} already subscribed", clientId);
-                return;
+                if (!subscriberIds.Add(clientId))
+                {
+                    this.LogVerbose("Client {clientId} already subscribed", clientId);
+                    return;
+                }
             }
-
-            SubscriberIds.Add(clientId);
 
             this.LogDebug("Client {clientId} subscribed", clientId);
         }
@@ -212,19 +217,26 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             if (!enableMessengerSubscriptions)
             {
-                this.LogWarning("Messenger subscriptions not enabled");
                 return;
             }
 
-            if (!SubscriberIds.Any(i => i == clientId))
+            bool wasSubscribed;
+            lock (_subscriberLock)
+            {
+                wasSubscribed = subscriberIds.Contains(clientId);
+                if (wasSubscribed)
+                {
+                    subscriberIds.Remove(clientId);
+                }
+            }
+
+            if (!wasSubscribed)
             {
                 this.LogVerbose("Client with ID {clientId} is not subscribed", clientId);
                 return;
             }
 
-            SubscriberIds.RemoveWhere((i) => i == clientId);
-
-            this.LogInformation("Client with ID {clientId} unsubscribed", clientId);
+            this.LogDebug("Client with ID {clientId} unsubscribed", clientId);
         }
 
         /// <summary>
@@ -258,7 +270,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception ex)
             {
-                this.LogError(ex, "Exception posting status message for {messagePath} to {clientId}", MessagePath, clientId ?? "all clients");
+                this.LogError("Exception posting status message for {messagePath} to {clientId}: {message}", MessagePath, clientId ?? "all clients", ex.Message);
+                this.LogDebug(ex, "Stack trace: ");
             }
         }
 
@@ -287,7 +300,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
             catch (Exception ex)
             {
-                this.LogError(ex, "Exception posting status message for {type} to {clientId}", type, clientId ?? "all clients");
+                this.LogError("Exception posting status message for {type} to {clientId}: {message}", type, clientId ?? "all clients", ex.Message);
+                this.LogDebug(ex, "Stack trace: ");
             }
         }
 
@@ -312,7 +326,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 // If client is null or empty, this message is unsolicited feedback. Iterate through the subscriber list and send to all interested parties
                 if (string.IsNullOrEmpty(clientId))
                 {
-                    foreach (var client in SubscriberIds)
+                    // Create a snapshot of subscribers to avoid collection modification during iteration
+                    List<string> subscriberSnapshot;
+                    lock (_subscriberLock)
+                    {
+                        subscriberSnapshot = new List<string>(subscriberIds);
+                    }
+
+                    foreach (var client in subscriberSnapshot)
                     {
                         AppServerController?.SendMessageObject(new MobileControlMessage { Type = !string.IsNullOrEmpty(type) ? type : MessagePath, ClientId = client, Content = content });
                     }

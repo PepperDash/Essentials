@@ -104,7 +104,7 @@ namespace PepperDash.Essentials
                 CrestronConsole.ConsoleCommandResponse
                     ("Current running configuration. This is the merged system and template configuration" + CrestronEnvironment.NewLine);
                 CrestronConsole.ConsoleCommandResponse(Newtonsoft.Json.JsonConvert.SerializeObject
-                    (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
+                    (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented).Replace(Environment.NewLine, "\r\n"));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>

@@ -3,10 +3,15 @@ using System;
 namespace PepperDash.Essentials
 {
   /// <summary>
-  /// Represents a ClientSpecificUpdateRequest
+  /// Send an update request for a specific client
   /// </summary>
+  [Obsolete]
   public class ClientSpecificUpdateRequest
   {
+    /// <summary>
+    /// Initialize an instance of the <see cref="ClientSpecificUpdateRequest"/> class.
+    /// </summary>
+    /// <param name="action"></param>
     public ClientSpecificUpdateRequest(Action<string> action)
     {
       ResponseMethod = action;

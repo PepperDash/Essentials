@@ -91,10 +91,16 @@ namespace PepperDash.Essentials
         /// </summary>
         public MobileControlApiService ApiService { get; private set; }
 
+        /// <summary>
+        /// Get Room Bridges associated with this controller
+        /// </summary>
         public List<MobileControlBridgeBase> RoomBridges => _roomBridges;
 
         private readonly MobileControlWebsocketServer _directServer;
 
+        /// <summary>
+        /// Get the Direct Server instance associated with this controller
+        /// </summary>
         public MobileControlWebsocketServer DirectServer => _directServer;
 
         private readonly CCriticalSection _wsCriticalSection = new CCriticalSection();
@@ -104,10 +110,16 @@ namespace PepperDash.Essentials
         /// </summary>
         public string SystemUrl; //set only from SIMPL Bridge!
 
+        /// <summary>
+        /// True if the Mobile Control Edge Server Websocket is connected
+        /// </summary>
         public bool Connected => _wsClient2 != null && _wsClient2.IsAlive;
 
         private IEssentialsRoomCombiner _roomCombiner;
 
+        /// <summary>
+        /// Gets the SystemUuid from configuration or SIMPL Bridge
+        /// </summary>
         public string SystemUuid
         {
             get
@@ -169,6 +181,9 @@ namespace PepperDash.Essentials
 
         private DateTime _lastAckMessage;
 
+        /// <summary>
+        /// Gets the LastAckMessage timestamp
+        /// </summary>
         public DateTime LastAckMessage => _lastAckMessage;
 
         private CTimer _pingTimer;
@@ -177,11 +192,11 @@ namespace PepperDash.Essentials
         private LogLevel _wsLogLevel = LogLevel.Error;
 
         /// <summary>
-        ///
+        /// Initializes a new instance of the <see cref="MobileControlSystemController"/> class.
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="name"></param>
-        /// <param name="config"></param>
+        /// <param name="key">The unique key for this controller.</param>
+        /// <param name="name">The name of the controller.</param>
+        /// <param name="config">The configuration settings for the controller.</param>
         public MobileControlSystemController(string key, string name, MobileControlConfig config)
             : base(key, name)
         {
@@ -1192,6 +1207,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public string Host { get; private set; }
 
+        /// <summary>
+        /// Gets the configured Client App URL
+        /// </summary>
         public string ClientAppUrl => Config.ClientAppUrl;
 
         private void OnRoomCombinationScenarioChanged(
@@ -1203,7 +1221,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// CheckForDeviceMessenger method
+        /// Checks if a device messenger exists for the given key.
         /// </summary>
         public bool CheckForDeviceMessenger(string key)
         {
@@ -1211,13 +1229,13 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// AddDeviceMessenger method
+        /// Add the provided messenger to the messengers collection
         /// </summary>
         public void AddDeviceMessenger(IMobileControlMessenger messenger)
         {
             if (_messengers.ContainsKey(messenger.Key))
             {
-                this.LogWarning("Messenger with key {messengerKey) already added", messenger.Key);
+                this.LogWarning("Messenger with key {messengerKey} already added", messenger.Key);
                 return;
             }
 
@@ -1291,12 +1309,14 @@ namespace PepperDash.Essentials
             messenger.RegisterWithAppServer(this);
         }
 
-        /// <summary>
-        /// Initialize method
-        /// </summary>
         /// <inheritdoc />
         public override void Initialize()
         {
+            if (!Config.EnableMessengerSubscriptions)
+            {
+                this.LogWarning("Messenger subscriptions disabled. add \"enableMessengerSubscriptions\": true to config for {key} to enable.", Key);
+            }
+
             foreach (var messenger in _messengers)
             {
                 try
@@ -1338,7 +1358,7 @@ namespace PepperDash.Essentials
         #region IMobileControl Members
 
         /// <summary>
-        /// GetAppServer method
+        /// Gets the App Server instance
         /// </summary>
         public static IMobileControl GetAppServer()
         {
@@ -1356,16 +1376,10 @@ namespace PepperDash.Essentials
             }
         }
 
-        /// <summary>
-        /// Generates the url and creates the websocket client
-        /// </summary>
         private bool CreateWebsocket()
         {
-            if (_wsClient2 != null)
-            {
-                _wsClient2.Close();
-                _wsClient2 = null;
-            }
+            _wsClient2?.Close();
+            _wsClient2 = null;
 
             if (string.IsNullOrEmpty(SystemUuid))
             {
@@ -1382,32 +1396,12 @@ namespace PepperDash.Essentials
             {
                 Log =
                 {
-                    Output = (data, message) =>
-                            {
-                                switch (data.Level)
-                                {
-                                    case LogLevel.Trace:
-                                        this.LogVerbose(data.Message);
-                                        break;
-                                    case LogLevel.Debug:
-                                        this.LogDebug(data.Message);
-                                        break;
-                                    case LogLevel.Info:
-                                        this.LogInformation(data.Message);
-                                        break;
-                                    case LogLevel.Warn:
-                                        this.LogWarning(data.Message);
-                                        break;
-                                    case LogLevel.Error:
-                                        this.LogError(data.Message);
-                                        break;
-                                    case LogLevel.Fatal:
-                                        this.LogFatal(data.Message);
-                                        break;
-                                }
-                            }
+                    Output = (data, message) => Utilities.ConvertWebsocketLog(data, message, this)
                 }
             };
+
+            // setting to trace to let level be controlled by appdebug
+            _wsClient2.Log.Level = LogLevel.Trace;
 
             _wsClient2.SslConfiguration.EnabledSslProtocols =
                 System.Security.Authentication.SslProtocols.Tls11
@@ -1422,7 +1416,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// LinkSystemMonitorToAppServer method
+        /// Link the System Monitor to this App server
         /// </summary>
         public void LinkSystemMonitorToAppServer()
         {
@@ -1449,14 +1443,6 @@ namespace PepperDash.Essentials
 
         private void SetWebsocketDebugLevel(string cmdparameters)
         {
-            // if (CrestronEnvironment.ProgramCompatibility == eCrestronSeries.Series4)
-            // {
-            //     this.LogInformation(
-            //         "Setting websocket log level not currently allowed on 4 series."
-            //     );
-            //     return; // Web socket log level not currently allowed in series4
-            // }
-
             if (string.IsNullOrEmpty(cmdparameters))
             {
                 this.LogInformation("Current Websocket debug level: {webSocketDebugLevel}", _wsLogLevel);
@@ -1494,10 +1480,6 @@ namespace PepperDash.Essentials
             }
         }
 
-        /// <summary>
-        /// Sends message to server to indicate the system is shutting down
-        /// </summary>
-        /// <param name="programEventType"></param>
         private void CrestronEnvironment_ProgramStatusEventHandler(
             eProgramStatusEventType programEventType
         )
@@ -1530,6 +1512,9 @@ namespace PepperDash.Essentials
             }
         }
 
+        /// <summary>
+        /// Get action paths for the current actions
+        /// </summary>
         public List<(string, string)> GetActionDictionaryPaths()
         {
             var paths = new List<(string, string)>();
@@ -1602,24 +1587,24 @@ namespace PepperDash.Essentials
             }
         }
 
+        /// <summary>
+        /// Get the room bridge with the provided key
+        /// </summary>
+        /// <param name="key">The key of the room bridge</param>
         public MobileControlBridgeBase GetRoomBridge(string key)
         {
             return _roomBridges.FirstOrDefault((r) => r.RoomKey.Equals(key));
         }
 
         /// <summary>
-        /// GetRoomMessenger method
+        /// Get the room messenger with the provided key
         /// </summary>
+        /// <param name="key">The Key of the rooom messenger</param>
         public IMobileControlRoomMessenger GetRoomMessenger(string key)
         {
             return _roomBridges.FirstOrDefault((r) => r.RoomKey.Equals(key));
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void Bridge_ConfigurationIsReady(object sender, EventArgs e)
         {
             this.LogDebug("Bridge ready.  Registering");
@@ -1640,10 +1625,6 @@ namespace PepperDash.Essentials
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="o"></param>
         private void ReconnectToServerTimerCallback(object o)
         {
             this.LogDebug("Attempting to reconnect to server...");
@@ -1651,9 +1632,6 @@ namespace PepperDash.Essentials
             ConnectWebsocketClient();
         }
 
-        /// <summary>
-        /// Verifies system connection with servers
-        /// </summary>
         private void AuthorizeSystem(string code)
         {
             if (
@@ -1698,9 +1676,6 @@ namespace PepperDash.Essentials
             });
         }
 
-        /// <summary>
-        /// Dumps info in response to console command.
-        /// </summary>
         private void ShowInfo()
         {
             var url = Config != null ? Host : "No config";
@@ -1766,38 +1741,37 @@ namespace PepperDash.Essentials
                     "\r\n    UI Client Info:\r\n" +
                     "    Tokens Defined: {0}\r\n" +
                     "    Clients Connected: {1}\r\n",
-                    _directServer.UiClients.Count,
+                    _directServer.UiClientContexts.Count,
                     _directServer.ConnectedUiClientsCount
                 );
 
                 var clientNo = 1;
-                foreach (var clientContext in _directServer.UiClients)
+                foreach (var clientContext in _directServer.UiClientContexts)
                 {
-                    var isAlive = false;
-                    var duration = "Not Connected";
-
-                    if (clientContext.Value.Client != null)
-                    {
-                        isAlive = clientContext.Value.Client.Context.WebSocket.IsAlive;
-                        duration = clientContext.Value.Client.ConnectedDuration.ToString();
-                    }
+                    var clients = _directServer.UiClients.Values.Where(c => c.Token == clientContext.Value.Token.Token);
 
                     CrestronConsole.ConsoleCommandResponse(
-                        "\r\nClient {0}:\r\n" +
-                        "Room Key: {1}\r\n" +
-                        "Touchpanel Key: {6}\r\n" +
-                        "Token: {2}\r\n" +
-                        "Client URL: {3}\r\n" +
-                        "Connected: {4}\r\n" +
-                        "Duration: {5}\r\n",
-                        clientNo,
-                        clientContext.Value.Token.RoomKey,
-                        clientContext.Key,
-                        string.Format("{0}{1}", _directServer.UserAppUrlPrefix, clientContext.Key),
-                        isAlive,
-                        duration,
-                        clientContext.Value.Token.TouchpanelKey
+                        $"\r\nClient {clientNo}:\r\n" +
+                        $"  Room Key: {clientContext.Value.Token.RoomKey}\r\n" +
+                        $"  Touchpanel Key: {clientContext.Value.Token.TouchpanelKey}\r\n" +
+                        $"  Token: {clientContext.Key}\r\n" +
+                        $"  Client URL: {_directServer.UserAppUrlPrefix}{clientContext.Key}\r\n" +
+                        $"  Clients:\r\n"
                     );
+
+                    if (!clients.Any())
+                    {
+                        CrestronConsole.ConsoleCommandResponse("    No clients connected");
+                    }
+                    foreach (var client in clients)
+                    {
+                        CrestronConsole.ConsoleCommandResponse(
+                            $"    ID: {client.Id}\r\n" +
+                            $"    Connected: {client.Context.WebSocket.IsAlive}\r\n" +
+                            $"    Duration: {(client.Context.WebSocket.IsAlive ? client.ConnectedDuration.TotalSeconds.ToString() : "Not Connected")}\r\n"
+                        );
+                    }
+
                     clientNo++;
                 }
             }
@@ -1811,7 +1785,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// RegisterSystemToServer method
+        /// Register this system to the Mobile Control Edge Server
         /// </summary>
         public void RegisterSystemToServer()
         {
@@ -1835,9 +1809,6 @@ namespace PepperDash.Essentials
             ConnectWebsocketClient();
         }
 
-        /// <summary>
-        /// Connects the Websocket Client
-        /// </summary>
         private void ConnectWebsocketClient()
         {
             try
@@ -1878,9 +1849,6 @@ namespace PepperDash.Essentials
             }
         }
 
-        /// <summary>
-        /// Attempts to connect the websocket
-        /// </summary>
         private void TryConnect()
         {
             try
@@ -1910,9 +1878,6 @@ namespace PepperDash.Essentials
             }
         }
 
-        /// <summary>
-        /// Gracefully handles conect failures by reconstructing the ws client and starting the reconnect timer
-        /// </summary>
         private void HandleConnectFailure()
         {
             _wsClient2 = null;
@@ -1944,11 +1909,6 @@ namespace PepperDash.Essentials
             StartServerReconnectTimer();
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void HandleOpen(object sender, EventArgs e)
         {
             StopServerReconnectTimer();
@@ -1957,11 +1917,6 @@ namespace PepperDash.Essentials
             SendMessageObject(new MobileControlMessage { Type = "hello" });
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void HandleMessage(object sender, MessageEventArgs e)
         {
             if (e.IsPing)
@@ -1978,11 +1933,6 @@ namespace PepperDash.Essentials
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void HandleError(object sender, ErrorEventArgs e)
         {
             this.LogError("Websocket error {0}", e.Message);
@@ -1991,11 +1941,6 @@ namespace PepperDash.Essentials
             StartServerReconnectTimer();
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void HandleClose(object sender, CloseEventArgs e)
         {
             this.LogDebug(
@@ -2016,9 +1961,6 @@ namespace PepperDash.Essentials
             StartServerReconnectTimer();
         }
 
-        /// <summary>
-        /// After a "hello" from the server, sends config and stuff
-        /// </summary>
         private void SendInitialMessage()
         {
             this.LogInformation("Sending initial join message");
@@ -2045,7 +1987,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// GetConfigWithPluginVersion method
+        /// Get the Essentials configuration with version data
         /// </summary>
         public MobileControlEssentialsConfig GetConfigWithPluginVersion()
         {
@@ -2080,8 +2022,13 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// SetClientUrl method
+        /// Set the Client URL for a given room
         /// </summary>
+        /// <param name="path">new App URL</param>
+        /// <param name="roomKey">room key. Default is null</param>
+        /// <remarks>
+        /// If roomKey is null, the URL will be set for the entire system.
+        /// </remarks>
         public void SetClientUrl(string path, string roomKey = null)
         {
             var message = new MobileControlMessage
@@ -2097,9 +2044,6 @@ namespace PepperDash.Essentials
         /// Sends any object type to server
         /// </summary>
         /// <param name="o"></param>
-        /// <summary>
-        /// SendMessageObject method
-        /// </summary>
         public void SendMessageObject(IMobileControlMessage o)
         {
 
@@ -2123,8 +2067,9 @@ namespace PepperDash.Essentials
 
 
         /// <summary>
-        /// SendMessageObjectToDirectClient method
+        /// Send a message to a client using the Direct Server
         /// </summary>
+        /// <param name="o">object to send</param>
         public void SendMessageObjectToDirectClient(object o)
         {
             if (
@@ -2137,10 +2082,6 @@ namespace PepperDash.Essentials
             }
         }
 
-
-        /// <summary>
-        /// Disconnects the Websocket Client and stops the heartbeat timer
-        /// </summary>
         private void CleanUpWebsocketClient()
         {
             if (_wsClient2 == null)
@@ -2198,9 +2139,6 @@ namespace PepperDash.Essentials
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
         private void StartServerReconnectTimer()
         {
             StopServerReconnectTimer();
@@ -2211,9 +2149,6 @@ namespace PepperDash.Essentials
             this.LogDebug("Reconnect Timer Started.");
         }
 
-        /// <summary>
-        /// Does what it says
-        /// </summary>
         private void StopServerReconnectTimer()
         {
             if (_serverReconnectTimer == null)
@@ -2224,10 +2159,6 @@ namespace PepperDash.Essentials
             _serverReconnectTimer = null;
         }
 
-        /// <summary>
-        /// Resets reconnect timer and updates usercode
-        /// </summary>
-        /// <param name="content"></param>
         private void HandleHeartBeat(JToken content)
         {
             SendMessageObject(new MobileControlMessage { Type = "/system/heartbeatAck" });
@@ -2248,6 +2179,7 @@ namespace PepperDash.Essentials
         {
             var clientId = content["clientId"].Value<string>();
             var roomKey = content["roomKey"].Value<string>();
+            var touchpanelKey = content.SelectToken("touchpanelKey");
 
             if (_roomCombiner == null)
             {
@@ -2259,6 +2191,10 @@ namespace PepperDash.Essentials
                 };
 
                 SendMessageObject(message);
+
+                SendDeviceInterfaces(clientId);
+
+                SendTouchpanelKey(clientId, touchpanelKey);
                 return;
             }
 
@@ -2270,7 +2206,12 @@ namespace PepperDash.Essentials
                     ClientId = clientId,
                     Content = roomKey
                 };
+
                 SendMessageObject(message);
+
+                SendDeviceInterfaces(clientId);
+
+                SendTouchpanelKey(clientId, touchpanelKey);
                 return;
             }
 
@@ -2288,6 +2229,10 @@ namespace PepperDash.Essentials
                 };
 
                 SendMessageObject(message);
+
+                SendDeviceInterfaces(clientId);
+
+                SendTouchpanelKey(clientId, touchpanelKey);
                 return;
             }
 
@@ -2301,6 +2246,54 @@ namespace PepperDash.Essentials
             };
 
             SendMessageObject(newMessage);
+
+            SendDeviceInterfaces(clientId);
+
+            SendTouchpanelKey(clientId, touchpanelKey);
+        }
+
+        private void SendTouchpanelKey(string clientId, JToken touchpanelKeyToken)
+        {
+            if (touchpanelKeyToken == null)
+            {
+                this.LogWarning("Touchpanel key not found for client {clientId}", clientId);
+                return;
+            }
+
+            SendMessageObject(new MobileControlMessage
+            {
+                Type = "/system/touchpanelKey",
+                ClientId = clientId,
+                Content = touchpanelKeyToken.Value<string>()
+            });
+        }
+
+        private void SendDeviceInterfaces(string clientId)
+        {
+            this.LogDebug("Sending Device interfaces");
+            var devices = DeviceManager.GetDevices();
+            Dictionary<string, DeviceInterfaceInfo> deviceInterfaces = new Dictionary<string, DeviceInterfaceInfo>();
+
+            foreach (var device in devices)
+            {
+                var interfaces = device?.GetType().GetInterfaces().Select((i) => i.Name).ToList() ?? new List<string>();
+
+                deviceInterfaces.Add(device.Key, new DeviceInterfaceInfo
+                {
+                    Key = device.Key,
+                    Name = (device as IKeyName)?.Name ?? "",
+                    Interfaces = interfaces
+                });
+            }
+
+            var message = new MobileControlMessage
+            {
+                Type = "/system/deviceInterfaces",
+                ClientId = clientId,
+                Content = JToken.FromObject(new { deviceInterfaces })
+            };
+
+            SendMessageObject(message);
         }
 
         private void HandleUserCode(JToken content, Action<string, string> action = null)
@@ -2337,16 +2330,13 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// HandleClientMessage method
+        /// Enqueue an incoming message for processing
         /// </summary>
         public void HandleClientMessage(string message)
         {
             _receiveQueue.Enqueue(new ProcessStringMessage(message, ParseStreamRx));
         }
 
-        /// <summary>
-        ///
-        /// </summary>
         private void ParseStreamRx(string messageText)
         {
             if (string.IsNullOrEmpty(messageText))
@@ -2414,10 +2404,33 @@ namespace PepperDash.Essentials
 
                         foreach (var handler in handlers)
                         {
-                            Task.Run(
-                                () =>
-                                    handler.Action(message.Type, message.ClientId, message.Content)
-                            );
+                            Task.Run(() =>
+                            {
+                                try
+                                {
+                                    handler.Action(message.Type, message.ClientId, message.Content);
+                                }
+                                catch (Exception ex)
+                                {
+                                    this.LogError(
+                                        "Exception in handler for message type {type}, ClientId {clientId}",
+                                        message.Type,
+                                        message.ClientId
+                                    );
+                                    this.LogDebug(ex, "Stack Trace: ");
+                                }
+                            }).ContinueWith(task =>
+                            {
+                                if (task.IsFaulted && task.Exception != null)
+                                {
+                                    this.LogError(
+                                        "Unhandled exception in Task for message type {type}, ClientId {clientId}",
+                                        message.Type,
+                                        message.ClientId
+                                    );
+                                    this.LogDebug(task.Exception.GetBaseException(), "Stack Trace: ");
+                                }
+                            }, TaskContinuationOptions.OnlyOnFaulted);
                         }
 
                         break;
@@ -2433,10 +2446,6 @@ namespace PepperDash.Essentials
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="s"></param>
         private void TestHttpRequest(string s)
         {
             {

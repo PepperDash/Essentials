@@ -1,28 +1,25 @@
-﻿using PepperDash.Core;
-using PepperDash.Core.Logging;
+﻿using System;
+using System.Collections.Generic;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 
 namespace PepperDash.Essentials
 {
     /// <summary>
-    /// Represents a MobileControlDeviceFactory
+    /// Factory to create a Mobile Control System Controller
     /// </summary>
     public class MobileControlDeviceFactory : EssentialsDeviceFactory<MobileControlSystemController>
     {
+        /// <summary>
+        /// Create the factory for a Mobile Control System Controller
+        /// </summary>
         public MobileControlDeviceFactory()
         {
             TypeNames = new List<string> { "appserver", "mobilecontrol", "webserver" };
         }
 
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
         /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {

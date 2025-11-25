@@ -13,8 +13,15 @@ namespace PepperDash.Essentials.WebSocketServer
     /// </summary>
     public string GrantCode { get; set; }
 
+    /// <summary>
+    /// Gets or sets the Tokens for this server
+    /// </summary>
     public Dictionary<string, JoinToken> Tokens { get; set; }
 
+    /// <summary>
+    /// Initialize a new instance of the <see cref="ServerTokenSecrets"/> class with the provided grant code
+    /// </summary>
+    /// <param name="grantCode">The grant code for this server</param>
     public ServerTokenSecrets(string grantCode)
     {
       GrantCode = grantCode;

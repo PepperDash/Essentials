@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
@@ -9,7 +10,7 @@ namespace PepperDash.Essentials.Devices.Common.Generic
     /// <summary>
     /// Represents a GenericSink
     /// </summary>
-    public class GenericSink : EssentialsDevice, IRoutingSinkWithInputPort
+    public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputPort
     {
         /// <summary>
         /// Initializes a new instance of the GenericSink class
@@ -20,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Common.Generic
         {
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-            var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
+            var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio, eRoutingPortConnectionType.Hdmi, null, this);
 
             InputPorts.Add(inputPort);
         }
@@ -66,6 +67,15 @@ namespace PepperDash.Essentials.Devices.Common.Generic
         /// Event fired when the current source changes
         /// </summary>
         public event SourceInfoChangeHandler CurrentSourceChange;
+
+        /// <inheritdoc />
+        public event InputChangedEventHandler InputChanged;
+
+        /// <inheritdoc />
+        public void ExecuteSwitch(object inputSelector)
+        {
+            this.LogDebug("GenericSink Executing Switch to: {inputSelector}", inputSelector);
+        }
     }
 
     /// <summary>

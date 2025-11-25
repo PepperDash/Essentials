@@ -8,17 +8,24 @@ using PepperDash.Essentials.AppServer.Messengers;
 namespace PepperDash.Essentials.Touchpanel
 {
     /// <summary>
-    /// Represents a ITswZoomControlMessenger
+    /// Messenger to handle Zoom status and control for a TSW panel that supports the Zoom Application
     /// </summary>
     public class ITswZoomControlMessenger : MessengerBase
     {
         private readonly ITswZoomControl _zoomControl;
 
+        /// <summary>
+        /// Create an instance of the <see cref="ITswZoomControlMessenger"/> class for the given device
+        /// </summary>
+        /// <param name="key">The key for this messenger</param>
+        /// <param name="messagePath">The message path for this messenger</param>
+        /// <param name="device">The device for this messenger</param>
         public ITswZoomControlMessenger(string key, string messagePath, Device device) : base(key, messagePath, device)
         {
             _zoomControl = device as ITswZoomControl;
         }
 
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
             if (_zoomControl == null)
@@ -27,7 +34,9 @@ namespace PepperDash.Essentials.Touchpanel
                 return;
             }
 
-            AddAction($"/fullStatus", (id, context) => SendFullStatus());
+            AddAction($"/fullStatus", (id, context) => SendFullStatus(id));
+
+            AddAction($"/zoomStatus", (id, content) => SendFullStatus(id));
 
 
             AddAction($"/endCall", (id, context) => _zoomControl.EndZoomCall());
@@ -53,7 +62,7 @@ namespace PepperDash.Essentials.Touchpanel
             };
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var message = new TswZoomStateMessage
             {
@@ -61,7 +70,7 @@ namespace PepperDash.Essentials.Touchpanel
                 IncomingCall = _zoomControl?.ZoomIncomingCallFeedback.BoolValue
             };
 
-            PostStatusMessage(message);
+            PostStatusMessage(message, id);
         }
     }
 
@@ -70,8 +79,15 @@ namespace PepperDash.Essentials.Touchpanel
     /// </summary>
     public class TswZoomStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// True if the panel is in a Zoom call
+        /// </summary>
         [JsonProperty("inCall", NullValueHandling = NullValueHandling.Ignore)]
         public bool? InCall { get; set; }
+
+        /// <summary>
+        /// True if there is an incoming Zoom call
+        /// </summary>
 
         [JsonProperty("incomingCall", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IncomingCall { get; set; }

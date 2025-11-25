@@ -17,9 +17,15 @@ namespace PepperDash.Essentials.WebSocketServer
     [JsonProperty("clientId")]
     public string ClientId { get; set; }
 
+    /// <summary>
+    /// Room Key for this client
+    /// </summary>
     [JsonProperty("roomKey")]
     public string RoomKey { get; set; }
 
+    /// <summary>
+    /// System UUID for this system
+    /// </summary>
     [JsonProperty("systemUUid")]
     public string SystemUuid { get; set; }
 

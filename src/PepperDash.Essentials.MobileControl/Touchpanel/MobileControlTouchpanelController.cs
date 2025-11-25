@@ -252,6 +252,7 @@ namespace PepperDash.Essentials.Touchpanel
                     if (!x70Panel.ExtenderApplicationControlReservedSigs.HideOpenedApplicationFeedback.BoolValue)
                     {
                         x70Panel.ExtenderButtonToolbarReservedSigs.ShowButtonToolbar();
+
                         x70Panel.ExtenderButtonToolbarReservedSigs.Button2On();
                     }
                     else
@@ -294,16 +295,15 @@ namespace PepperDash.Essentials.Touchpanel
                     handler(this, new DeviceInfoEventArgs(DeviceInfo));
                 };
 
+                x70Panel.ExtenderButtonToolbarReservedSigs.DeviceExtenderSigChange += (o, a) =>
+                {
+                    this.LogVerbose("X70 Button Toolbar Device Extender args: {event}:{sig}:{name}:{type}:{boolValue}:{ushortValue}:{stringValue}", a.Event, a.Sig, a.Sig.Name, a.Sig.Type, a.Sig.BoolValue, a.Sig.UShortValue, a.Sig.StringValue);
+                };
+
                 x70Panel.ExtenderApplicationControlReservedSigs.Use();
                 x70Panel.ExtenderZoomRoomAppReservedSigs.Use();
                 x70Panel.ExtenderEthernetReservedSigs.Use();
                 x70Panel.ExtenderButtonToolbarReservedSigs.Use();
-
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button1Off();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button3Off();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button4Off();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button5Off();
-                x70Panel.ExtenderButtonToolbarReservedSigs.Button6Off();
 
                 return;
             }
@@ -414,34 +414,79 @@ namespace PepperDash.Essentials.Touchpanel
             McServerUrlFeedback.LinkInputSig(Panel.StringInput[3]);
             UserCodeFeedback.LinkInputSig(Panel.StringInput[4]);
 
-            Panel.IpInformationChange += (sender, args) =>
+            Panel.IpInformationChange -= Panel_IpInformationChange;
+            Panel.IpInformationChange += Panel_IpInformationChange;
+
+            Panel.OnlineStatusChange -= Panel_OnlineChange;
+            Panel.OnlineStatusChange += Panel_OnlineChange;
+        }
+
+        private void Panel_OnlineChange(GenericBase sender, OnlineOfflineEventArgs args)
+        {
+            try
             {
-                if (args.Connected)
+                if (!args.DeviceOnLine)
                 {
-                    this.LogVerbose("Connection from IP: {ip}", args.DeviceIpAddress);
-                    this.LogInformation("Sending {appUrl} on join 1", AppUrlFeedback.StringValue);
-
-                    var appUrl = GetUrlWithCorrectIp(_appUrl);
-                    Panel.StringInput[1].StringValue = appUrl;
-
-                    SetAppUrl(appUrl);
+                    this.LogInformation("panel is offline");
+                    return;
                 }
-                else
-                {
-                    this.LogVerbose("Disconnection from IP: {ip}", args.DeviceIpAddress);
-                }
-            };
 
-            Panel.OnlineStatusChange += (sender, args) =>
-            {
-                this.LogInformation("Sending {appUrl} on join 1", AppUrlFeedback.StringValue);
+                this.LogDebug("panel is online");
 
                 UpdateFeedbacks();
                 Panel.StringInput[1].StringValue = _appUrl;
                 Panel.StringInput[2].StringValue = QrCodeUrlFeedback.StringValue;
                 Panel.StringInput[3].StringValue = McServerUrlFeedback.StringValue;
                 Panel.StringInput[4].StringValue = UserCodeFeedback.StringValue;
-            };
+
+                if (Panel is TswXX70Base x70Panel)
+                {
+                    this.LogDebug("setting buttons off");
+
+                    x70Panel.ExtenderButtonToolbarReservedSigs.Button1Off();
+                    x70Panel.ExtenderButtonToolbarReservedSigs.Button3Off();
+                    x70Panel.ExtenderButtonToolbarReservedSigs.Button4Off();
+                    x70Panel.ExtenderButtonToolbarReservedSigs.Button5Off();
+                    x70Panel.ExtenderButtonToolbarReservedSigs.Button6Off();
+                }
+
+                SendUrlToPanel();
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Exception in panel online: {message}", ex.Message);
+                this.LogDebug(ex, "Stack Trace: ");
+            }
+        }
+
+        private void SendUrlToPanel()
+        {
+            var appUrl = GetUrlWithCorrectIp(_appUrl);
+
+            this.LogInformation("Sending {appUrl} on join 1", AppUrlFeedback.StringValue);
+
+            if (Panel.StringInput[1].StringValue == appUrl)
+            {
+                this.LogInformation("App URL already set to {appUrl}, no update needed", AppUrlFeedback.StringValue);
+                return;
+            }
+
+            Panel.StringInput[1].StringValue = appUrl;
+
+            SetAppUrl(appUrl);
+        }
+
+        private void Panel_IpInformationChange(GenericBase sender, ConnectedIpEventArgs args)
+        {
+            if (args.Connected)
+            {
+                this.LogVerbose("Connection from IP: {ip}", args.DeviceIpAddress);
+                SendUrlToPanel();
+            }
+            else
+            {
+                this.LogVerbose("Disconnection from IP: {ip}", args.DeviceIpAddress);
+            }
         }
 
         /// <summary>

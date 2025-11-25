@@ -1,18 +1,22 @@
-﻿using PepperDash.Core;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using PepperDash.Core;
 
 namespace PepperDash.Essentials.Services
 {
 
     /// <summary>
-    /// Represents a MobileControlApiService
+    /// Service for interacting with a Mobile Control Edge server instance
     /// </summary>
     public class MobileControlApiService
     {
         private readonly HttpClient _client;
 
+        /// <summary>
+        /// Create an instance of the <see cref="MobileControlApiService"/> class.
+        /// </summary>
+        /// <param name="apiUrl">Mobile Control Edge API URL</param>
         public MobileControlApiService(string apiUrl)
         {
             var handler = new HttpClientHandler
@@ -24,6 +28,13 @@ namespace PepperDash.Essentials.Services
             _client = new HttpClient(handler);
         }
 
+        /// <summary>
+        /// Send authorization request to Mobile Control Edge Server
+        /// </summary>
+        /// <param name="apiUrl">Mobile Control Edge API URL</param>
+        /// <param name="grantCode">Grant code for authorization</param>
+        /// <param name="systemUuid">System UUID for authorization</param>
+        /// <returns>Authorization response</returns>
         public async Task<AuthorizationResponse> SendAuthorizationRequest(string apiUrl, string grantCode, string systemUuid)
         {
             try

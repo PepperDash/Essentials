@@ -168,7 +168,7 @@ namespace PepperDash.Core
                 .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
-                    retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 30 : 60,
+                    retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 7 : 14,
                     levelSwitch: _fileLogLevelSwitch
                 );
 
@@ -1081,9 +1081,6 @@ namespace PepperDash.Core
         /// Logs to Console when at-level, and all messages to error log
         /// </summary>
         [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-        /// <summary>
-        /// Console method
-        /// </summary>
         public static void Console(uint level, ErrorLogLevel errorLogLevel,
             string format, params object[] items)
         {
@@ -1096,9 +1093,6 @@ namespace PepperDash.Core
         /// it will only be written to the log.
         /// </summary>
         [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-        /// <summary>
-        /// ConsoleWithLog method
-        /// </summary>
         public static void ConsoleWithLog(uint level, string format, params object[] items)
         {
             LogMessage(level, format, items);
