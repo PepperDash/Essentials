@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core.Fusion
     /// <summary>
     /// Represents a EssentialsHuddleSpaceFusionSystemControllerBase
     /// </summary>
-    public class IEssentialsRoomFusionController : EssentialsDevice, IOccupancyStatusProvider, IFusionHelpRequest
+    public class IEssentialsRoomFusionController : EssentialsDevice, IOccupancyStatusProvider, IFusionHelpRequest, IHasFeedback
     {
         private IEssentialsRoomFusionControllerPropertiesConfig _config;
 
@@ -240,6 +240,19 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 this.LogDebug("Occupancy setup complete");
 
+                HelpRequestResponseFeedback = new StringFeedback("HelpRequestResponse", () => FusionRoom.Help.OutputSig.StringValue);
+
+                HelpRequestSentFeedback = new BoolFeedback("HelpRequestSent", () => _helpRequestSent);
+                HelpRequestStatusFeedback = new StringFeedback("HelpRequestStatus", () => _helpRequestStatus.ToString());
+
+                Feedbacks.Add(HelpRequestResponseFeedback);
+                Feedbacks.Add(HelpRequestSentFeedback);
+                Feedbacks.Add(HelpRequestStatusFeedback);
+                if (RoomOccupancyRemoteStringFeedback != null)
+                    Feedbacks.Add(RoomOccupancyRemoteStringFeedback);
+                if (RoomIsOccupiedFeedback != null)
+                    Feedbacks.Add(RoomIsOccupiedFeedback);
+
             }
             catch (Exception e)
             {
@@ -303,10 +316,6 @@ namespace PepperDash.Essentials.Core.Fusion
 
             FusionRVI.GenerateFileForAllFusionDevices();
 
-            HelpRequestResponseFeedback = new StringFeedback("HelpRequestResponse", () => FusionRoom.Help.OutputSig.StringValue);
-
-            HelpRequestSentFeedback = new BoolFeedback("HelpRequestSent", () => _helpRequestSent);
-            HelpRequestStatusFeedback = new StringFeedback("HelpRequestStatus", () => _helpRequestStatus.ToString());
         }
 
         /// <summary>
@@ -338,6 +347,11 @@ namespace PepperDash.Essentials.Core.Fusion
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
         #endregion
+
+
+        /// <inheritdoc />
+        public FeedbackCollection<Feedback> Feedbacks { get; private set; } = new FeedbackCollection<Feedback>();
+
 
         /// <summary>
         /// ScheduleChange event
@@ -1772,7 +1786,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             if (args.EventId == FusionEventIds.HelpMessageReceivedEventId)
             {
-                this.LogInformation( "Help message received from Fusion for room '{0}'",
+                this.LogInformation("Help message received from Fusion for room '{0}'",
              Room.Name);
 
                 this.LogDebug("Help message content: {0}", FusionRoom.Help.OutputSig.StringValue);
@@ -1818,12 +1832,12 @@ namespace PepperDash.Essentials.Core.Fusion
                     _helpRequestStatus = eFusionHelpResponse.None;
                 }
 
-                if(_helpRequestStatus == eFusionHelpResponse.None)
+                if (_helpRequestStatus == eFusionHelpResponse.None)
                 {
                     _helpRequestSent = false;
                     HelpRequestSentFeedback.FireUpdate();
                 }
-                
+
                 HelpRequestStatusFeedback.FireUpdate();
             }
 
