@@ -256,7 +256,6 @@ namespace PepperDash.Essentials.Room.Config
         /// Gets or sets the DisableActivityButtonsWhileWarmingCooling
         /// </summary>
         [JsonProperty("disableActivityButtonsWhileWarmingCooling")]
-
         public bool DisableActivityButtonsWhileWarmingCooling { get; set; }
     }
 
