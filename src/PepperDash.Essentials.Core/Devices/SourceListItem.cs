@@ -77,7 +77,6 @@ namespace PepperDash.Essentials.Core
         /// A name that will override the source's name on the UI
         /// </summary>
         [JsonProperty("name")]
-
         public string Name { get; set; }
 
         /// <summary>
