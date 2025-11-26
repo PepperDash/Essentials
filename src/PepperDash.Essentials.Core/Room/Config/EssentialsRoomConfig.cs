@@ -470,8 +470,8 @@ namespace PepperDash.Essentials.Room.Config
         /// <summary>
         /// Gets or sets the Enable
         /// </summary>
-         [JsonProperty("enable")]
-       public bool Enable { get; set; }
+        [JsonProperty("enable")]
+        public bool Enable { get; set; }
     }
 
     /// <summary>
