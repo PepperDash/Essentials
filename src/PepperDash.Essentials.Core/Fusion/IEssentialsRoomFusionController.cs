@@ -1968,7 +1968,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 _helpRequestTimeoutTimer = null;
 
                 this.LogDebug("Help request timeout timer stopped for room '{0}'.",
-    Room.Name); 
+    Room.Name);
             }
         }
 
