@@ -557,7 +557,7 @@ namespace PepperDash.Essentials.Room.Config
     }
 
     /// <summary>
-    /// Represents a EssentialsRoomVolumesConfig
+    /// Represents a EssentialsRoomTechConfig
     /// </summary>
     public class EssentialsRoomTechConfig
     {
