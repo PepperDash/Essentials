@@ -67,5 +67,5 @@ public class IEssentialsRoomFusionControllerPropertiesConfig
     /// Gets or sets the timeout duration for help requests in milliseconds
     /// </summary>
     [JsonProperty("helpRequestTimeoutMs")]
-    public int HelpRequestTimeoutMs{ get; set; } = 30000;
+    public int HelpRequestTimeoutMs { get; set; } = 30000;
 }

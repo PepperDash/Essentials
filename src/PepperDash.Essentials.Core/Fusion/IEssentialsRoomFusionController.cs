@@ -1846,6 +1846,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 if (_helpRequestTimeoutTimer != null)
                 {
                     _helpRequestTimeoutTimer.Stop();
+                    _helpRequestTimeoutTimer.Elapsed -= OnTimedEvent;
                     _helpRequestTimeoutTimer.Dispose();
                     _helpRequestTimeoutTimer = null;
                 }
@@ -1943,13 +1944,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            this.LogInformation("Help request timeout reached for room '{0}'. Cancelling help request.",
-    Room.Name);
-
             CancelHelpRequest();
-            _helpRequestTimeoutTimer.Stop();
-            _helpRequestTimeoutTimer.Dispose();
-            _helpRequestTimeoutTimer = null;
         }
 
         /// <inheritdoc />
@@ -1963,6 +1958,17 @@ namespace PepperDash.Essentials.Core.Fusion
                 _helpRequestStatus = eFusionHelpResponse.None;
                 HelpRequestStatusFeedback.FireUpdate();
                 Debug.LogMessage(LogEventLevel.Information, this, "Help request cancelled for room '{0}'", Room.Name);
+            }
+
+            if(_helpRequestTimeoutTimer != null)
+            {
+                _helpRequestTimeoutTimer.Stop();
+                _helpRequestTimeoutTimer.Elapsed -= OnTimedEvent;
+                _helpRequestTimeoutTimer.Dispose();
+                _helpRequestTimeoutTimer = null;
+
+                this.LogDebug("Help request timeout timer stopped for room '{0}'.",
+    Room.Name); 
             }
         }
 
