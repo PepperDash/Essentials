@@ -1960,7 +1960,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 Debug.LogMessage(LogEventLevel.Information, this, "Help request cancelled for room '{0}'", Room.Name);
             }
 
-            if(_helpRequestTimeoutTimer != null)
+            if (_helpRequestTimeoutTimer != null)
             {
                 _helpRequestTimeoutTimer.Stop();
                 _helpRequestTimeoutTimer.Elapsed -= OnTimedEvent;
