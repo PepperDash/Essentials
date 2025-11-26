@@ -510,7 +510,6 @@ namespace PepperDash.Essentials.Room.Config
         [JsonProperty("url")]
         public string Url { get; set; }
 
-
         /// <summary>
         /// GetLogoUrlLight method
         /// </summary>
