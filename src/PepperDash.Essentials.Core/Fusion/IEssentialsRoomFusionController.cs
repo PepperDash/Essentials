@@ -1944,6 +1944,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
+            this.LogInformation("Help request timeout reached for room '{0}'. Cancelling help request.", Room.Name);
             CancelHelpRequest();
         }
 
@@ -1966,9 +1967,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 _helpRequestTimeoutTimer.Elapsed -= OnTimedEvent;
                 _helpRequestTimeoutTimer.Dispose();
                 _helpRequestTimeoutTimer = null;
-
-                this.LogDebug("Help request timeout timer stopped for room '{0}'.",
-    Room.Name);
+                this.LogDebug("Help request timeout timer stopped for room '{0}'.", Room.Name);
             }
         }
 
