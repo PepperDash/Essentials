@@ -282,9 +282,9 @@ namespace PepperDash.Essentials.Room.Config
         [JsonProperty("defaultOffDspPresetKey")]
         public string DefaultOffDspPresetKey { get; set; }
 
-
         /// <summary>
         /// Gets or sets the SourceListKey
+        /// </summary>
         /// </summary>
         [JsonProperty("sourceListKey")]
         public string SourceListKey { get; set; }
