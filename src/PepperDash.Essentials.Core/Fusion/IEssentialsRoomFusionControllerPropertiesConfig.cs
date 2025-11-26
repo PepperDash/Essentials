@@ -56,4 +56,16 @@ public class IEssentialsRoomFusionControllerPropertiesConfig
     /// </summary>
     [JsonProperty("use24HourTimeFormat")]
     public bool Use24HourTimeFormat { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets whether to use a timeout for help requests
+    /// </summary>
+    [JsonProperty("useTimeoutForHelpRequests")]
+    public bool UseTimeoutForHelpRequests { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the timeout duration for help requests in milliseconds
+    /// </summary>
+    [JsonProperty("helpRequestTimeoutMs")]
+    public int HelpRequestTimeoutMs { get; set; } = 30000;
 }
