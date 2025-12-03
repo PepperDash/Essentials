@@ -1,11 +1,11 @@
-﻿using Crestron.SimplSharpPro.Keypads;
-using PepperDash.Essentials.Core.Queues;
-using PepperDash.Essentials.Core.Routing;
-using Serilog.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Crestron.SimplSharpPro.Keypads;
+using PepperDash.Essentials.Core.Queues;
+using PepperDash.Essentials.Core.Routing;
+using Serilog.Events;
 using Debug = PepperDash.Core.Debug;
 
 
@@ -115,7 +115,7 @@ namespace PepperDash.Essentials.Core
         public static (RouteDescriptor, RouteDescriptor) GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort, RoutingOutputPort sourcePort)
         {
             // if it's a single signal type, find the route
-            if (!signalType.HasFlag(eRoutingSignalType.AudioVideo) && 
+            if (!signalType.HasFlag(eRoutingSignalType.AudioVideo) &&
                 !(signalType.HasFlag(eRoutingSignalType.Video) && signalType.HasFlag(eRoutingSignalType.SecondaryAudio)))
             {
                 var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, signalType);
@@ -134,14 +134,15 @@ namespace PepperDash.Essentials.Core
             }
             // otherwise, audioVideo needs to be handled as two steps.
 
-            Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key);
+            Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
 
             RouteDescriptor audioRouteDescriptor;
 
             if (signalType.HasFlag(eRoutingSignalType.SecondaryAudio))
             {
                 audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.SecondaryAudio);
-            } else
+            }
+            else
             {
                 audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
             }
@@ -199,13 +200,13 @@ namespace PepperDash.Essentials.Core
                 Source = source,
                 SourcePort = sourcePort,
                 SignalType = signalType
-            };            
+            };
 
             var coolingDevice = destination as IWarmingCooling;
 
             //We already have a route request for this device, and it's a cooling device and is cooling
             if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-            {                
+            {
                 coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRouteRequest.HandleCooldown;
 
                 coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
@@ -219,7 +220,7 @@ namespace PepperDash.Essentials.Core
 
             //New Request
             if (coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-            {               
+            {
                 coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
 
                 RouteRequests.Add(destination.Key, routeRequest);
@@ -239,9 +240,9 @@ namespace PepperDash.Essentials.Core
                 Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
             }
 
-            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination,destinationPort?.Key ?? string.Empty, false));
+            routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, destinationPort?.Key ?? string.Empty, false));
 
-            routeRequestQueue.Enqueue(new RouteRequestQueueItem(RunRouteRequest, routeRequest));            
+            routeRequestQueue.Enqueue(new RouteRequestQueueItem(RunRouteRequest, routeRequest));
         }
 
         /// <summary>
@@ -272,7 +273,8 @@ namespace PepperDash.Essentials.Core
 
                 audioOrSingleRoute.ExecuteRoutes();
                 videoRoute?.ExecuteRoutes();
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Debug.LogMessage(ex, "Exception Running Route Request {request}", null, request);
             }
@@ -305,9 +307,10 @@ namespace PepperDash.Essentials.Core
                     Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
                     current.ReleaseRoutes(clearRoute);
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'",null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+                Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'", null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
             }
         }
 
