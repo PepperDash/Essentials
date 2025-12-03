@@ -33,7 +33,7 @@
     <Compile Remove="Messengers\SIMPLVtcMessenger.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.157" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.171" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />

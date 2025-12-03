@@ -48,7 +48,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.157" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.171" />
     <PackageReference Include="System.IO.Compression" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>

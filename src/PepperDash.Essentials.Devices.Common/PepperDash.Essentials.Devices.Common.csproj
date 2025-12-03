@@ -29,6 +29,6 @@
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.157" />
+    <PackageReference Include="Crestron.SimplSharp.SDK.ProgramLibrary" Version="2.21.171" />
   </ItemGroup>
 </Project>
