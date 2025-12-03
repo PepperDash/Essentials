@@ -35,6 +35,18 @@ namespace PepperDash.Essentials.Devices.Common.Generic
             var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio, eRoutingPortConnectionType.Hdmi, null, this);
 
             InputPorts.Add(inputPort);
+
+            CurrentSources = new Dictionary<eRoutingSignalType, SourceListItem>
+            {
+                { eRoutingSignalType.Audio, null },
+                { eRoutingSignalType.Video, null },
+            };
+
+            CurrentSourceKeys = new Dictionary<eRoutingSignalType, string>
+            {
+                { eRoutingSignalType.Audio, string.Empty },
+                { eRoutingSignalType.Video, string.Empty },
+            };
         }
 
         /// <inheritdoc />
