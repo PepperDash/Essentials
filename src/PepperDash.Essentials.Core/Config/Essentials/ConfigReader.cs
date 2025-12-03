@@ -124,22 +124,35 @@ namespace PepperDash.Essentials.Core.Config
                         Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded Local Config");
 
                         return true;
-                    }
+                    }                   
                     else
                     {
-                        var doubleObj = JObject.Parse(fs.ReadToEnd());
-                        ConfigObject = PortalConfigReader.MergeConfigs(doubleObj).ToObject<EssentialsConfig>();
+                        var parsedConfig = JObject.Parse(fs.ReadToEnd());
 
-                        // Extract SystemUrl and TemplateUrl into final config output
-
-                        if (doubleObj["system_url"] != null)
+                        // Check if it's a v2 config (check for "version" node)
+                        // this means it's already merged by the Portal API
+                        // from the v2 config tool
+                        var isV2Config = parsedConfig["versions"] != null;
+                        
+                        if (isV2Config)
                         {
-                            ConfigObject.SystemUrl = doubleObj["system_url"].Value<string>();
+                            Debug.LogMessage(LogEventLevel.Information, "Config file is a v2 format, no merge necessary.");
+                            ConfigObject = parsedConfig.ToObject<EssentialsConfig>();
+                            Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded v2 Config");
+                            return true;
                         }
 
-                        if (doubleObj["template_url"] != null)
+                        // Extract SystemUrl and TemplateUrl into final config output
+                        ConfigObject = PortalConfigReader.MergeConfigs(parsedConfig).ToObject<EssentialsConfig>();
+
+                        if (parsedConfig["system_url"] != null)
                         {
-                            ConfigObject.TemplateUrl = doubleObj["template_url"].Value<string>();
+                            ConfigObject.SystemUrl = parsedConfig["system_url"].Value<string>();
+                        }
+
+                        if (parsedConfig["template_url"] != null)
+                        {
+                            ConfigObject.TemplateUrl = parsedConfig["template_url"].Value<string>();
                         }
                     }
 

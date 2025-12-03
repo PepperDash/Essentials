@@ -1,12 +1,4 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec
 {
@@ -15,10 +7,10 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
     /// </summary>
     public class MockAcPropertiesConfig
     {
-        [JsonProperty("phoneNumber")]
         /// <summary>
         /// Gets or sets the PhoneNumber
         /// </summary>
+        [JsonProperty("phoneNumber")]
         public string PhoneNumber { get; set; }
     }
 }

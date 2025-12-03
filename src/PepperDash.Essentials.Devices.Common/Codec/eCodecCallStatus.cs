@@ -1,27 +1,68 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-namespace PepperDash.Essentials.Devices.Common.Codec
+﻿namespace PepperDash.Essentials.Devices.Common.Codec
 {
     /// <summary>
     /// Enumeration of eCodecCallStatus values
     /// </summary>
     public enum eCodecCallStatus
     {
+        /// <summary>
+        /// Unknown call status
+        /// </summary>
         Unknown = 0,
-        Connected, 
-        Connecting, 
-        Dialing, 
+
+        /// <summary>
+        /// Call is connected
+        /// </summary>
+        Connected,
+
+        /// <summary>
+        /// Call is connecting
+        /// </summary>
+        Connecting,
+
+        /// <summary>
+        /// Call is dialing
+        /// </summary>
+        Dialing,
+
+        /// <summary>
+        /// Call is disconnected
+        /// </summary>
         Disconnected,
-        Disconnecting, 
-        EarlyMedia, 
+
+        /// <summary>
+        /// Call is disconnecting
+        /// </summary>
+        Disconnecting,
+
+        /// <summary>
+        /// Early media is being sent/received
+        /// </summary>
+        EarlyMedia,
+
+        /// <summary>
+        /// Call is idle
+        /// </summary>
         Idle,
-        OnHold, 
-        Ringing, 
-        Preserved, 
+
+        /// <summary>
+        /// Call is on hold
+        /// </summary>
+        OnHold,
+
+        /// <summary>
+        /// Call is ringing
+        /// </summary>
+        Ringing,
+
+        /// <summary>
+        /// Call is preserved
+        /// </summary>
+        Preserved,
+
+        /// <summary>
+        /// Call is remote preserved
+        /// </summary>
         RemotePreserved,
     }
 

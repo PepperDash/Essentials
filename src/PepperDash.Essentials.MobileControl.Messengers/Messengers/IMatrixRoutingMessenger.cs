@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -25,25 +25,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) =>
-            {
-                try
-                {
-                    Debug.LogMessage(LogEventLevel.Verbose, "InputCount: {inputCount}, OutputCount: {outputCount}", this, matrixDevice.InputSlots.Count, matrixDevice.OutputSlots.Count);
-                    var message = new MatrixStateMessage
-                    {
-                        Outputs = matrixDevice.OutputSlots.ToDictionary(kvp => kvp.Key, kvp => new RoutingOutput(kvp.Value)),
-                        Inputs = matrixDevice.InputSlots.ToDictionary(kvp => kvp.Key, kvp => new RoutingInput(kvp.Value)),
-                    };
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
-
-                    PostStatusMessage(message);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogMessage(e, "Exception Getting full status: {@exception}", this, e);
-                }
-            });
+            AddAction("/matrixStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/route", (id, content) =>
             {
@@ -78,6 +62,26 @@ namespace PepperDash.Essentials.AppServer.Messengers
                         inputs = matrixDevice.InputSlots.ToDictionary(kvp => kvp.Key, kvp => new RoutingInput(kvp.Value))
                     }));
                 };
+            }
+        }
+
+        private void SendFullStatus(string id = null)
+        {
+            try
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "InputCount: {inputCount}, OutputCount: {outputCount}", this, matrixDevice.InputSlots.Count, matrixDevice.OutputSlots.Count);
+                var message = new MatrixStateMessage
+                {
+                    Outputs = matrixDevice.OutputSlots.ToDictionary(kvp => kvp.Key, kvp => new RoutingOutput(kvp.Value)),
+                    Inputs = matrixDevice.InputSlots.ToDictionary(kvp => kvp.Key, kvp => new RoutingInput(kvp.Value)),
+                };
+
+
+                PostStatusMessage(message, id);
+            }
+            catch (Exception e)
+            {
+                Debug.LogMessage(e, "Exception Getting full status: {@exception}", this, e);
             }
         }
     }

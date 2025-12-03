@@ -11,6 +11,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     public class IHasCurrentSourceInfoMessenger : MessengerBase
     {
         private readonly IHasCurrentSourceInfoChange sourceDevice;
+
         public IHasCurrentSourceInfoMessenger(string key, string messagePath, IHasCurrentSourceInfoChange device) : base(key, messagePath, device as IKeyName)
         {
             sourceDevice = device;
@@ -20,16 +21,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) =>
-            {
-                var message = new CurrentSourceStateMessage
-                {
-                    CurrentSourceKey = sourceDevice.CurrentSourceInfoKey,
-                    CurrentSource = sourceDevice.CurrentSourceInfo
-                };
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
-                PostStatusMessage(message);
-            });
+            AddAction("/currentSourceInfoStatus", (id, content) => SendFullStatus(id));
 
             sourceDevice.CurrentSourceChange += (sender, e) =>
             {
@@ -46,6 +40,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
                         }
                 }
             };
+        }
+
+        private void SendFullStatus(string id = null)
+        {
+            var message = new CurrentSourceStateMessage
+            {
+                CurrentSourceKey = sourceDevice.CurrentSourceInfoKey,
+                CurrentSource = sourceDevice.CurrentSourceInfo
+            };
+
+            PostStatusMessage(message, id);
         }
     }
 

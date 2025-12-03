@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -17,48 +13,68 @@ namespace PepperDash.Essentials.Devices.Common
 	/// </summary>
 	public class GenericAudioOut : EssentialsDevice, IRoutingSink
 	{
-        public RoutingInputPort CurrentInputPort => AnyAudioIn;
+		/// <summary>
+		/// Gets the current input port
+		/// </summary>
+		public RoutingInputPort CurrentInputPort => AnyAudioIn;
 
-        public event SourceInfoChangeHandler CurrentSourceChange;
+		/// <summary>
+		/// Event fired when the current source changes
+		/// </summary>
+		public event SourceInfoChangeHandler CurrentSourceChange;
 
-        public string CurrentSourceInfoKey { get; set; }
-        public SourceListItem CurrentSourceInfo
-        {
-            get
-            {
-                return _CurrentSourceInfo;
-            }
-            set
-            {
-                if (value == _CurrentSourceInfo) return;
+		/// <summary>
+		/// Gets or sets the current source info key
+		/// </summary>
+		public string CurrentSourceInfoKey { get; set; }
+		/// <summary>
+		/// Gets or sets the current source info
+		/// </summary>
+		public SourceListItem CurrentSourceInfo
+		{
+			get
+			{
+				return _CurrentSourceInfo;
+			}
+			set
+			{
+				if (value == _CurrentSourceInfo) return;
 
-                var handler = CurrentSourceChange;
+				var handler = CurrentSourceChange;
 
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.WillChange);
+				if (handler != null)
+					handler(_CurrentSourceInfo, ChangeType.WillChange);
 
-                _CurrentSourceInfo = value;
+				_CurrentSourceInfo = value;
 
-                if (handler != null)
-                    handler(_CurrentSourceInfo, ChangeType.DidChange);
-            }
-        }
-        SourceListItem _CurrentSourceInfo;
+				if (handler != null)
+					handler(_CurrentSourceInfo, ChangeType.DidChange);
+			}
+		}
+		SourceListItem _CurrentSourceInfo;
 
-  /// <summary>
-  /// Gets or sets the AnyAudioIn
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the AnyAudioIn
+		/// </summary>
 		public RoutingInputPort AnyAudioIn { get; private set; }
 
+		/// <summary>
+		/// Constructor for GenericAudioOut
+		/// </summary>
+		/// <param name="key">Device key</param>
+		/// <param name="name">Device name</param>
 		public GenericAudioOut(string key, string name)
 			: base(key, name)
 		{
-			AnyAudioIn = new RoutingInputPort(RoutingPortNames.AnyAudioIn, eRoutingSignalType.Audio, 
+			AnyAudioIn = new RoutingInputPort(RoutingPortNames.AnyAudioIn, eRoutingSignalType.Audio,
 				eRoutingPortConnectionType.LineAudio, null, this);
 		}
 
 		#region IRoutingInputs Members
 
+		/// <summary>
+		/// Gets the collection of input ports
+		/// </summary>
 		public RoutingPortCollection<RoutingInputPort> InputPorts
 		{
 			get { return new RoutingPortCollection<RoutingInputPort> { AnyAudioIn }; }
@@ -68,23 +84,32 @@ namespace PepperDash.Essentials.Devices.Common
 	}
 
 
- /// <summary>
- /// Represents a GenericAudioOutWithVolume
- /// </summary>
+	/// <summary>
+	/// Represents a GenericAudioOutWithVolume
+	/// </summary>
 	public class GenericAudioOutWithVolume : GenericAudioOut, IHasVolumeDevice
 	{
+		/// <summary>
+		/// Gets the volume device key
+		/// </summary>
 		public string VolumeDeviceKey { get; private set; }
+		/// <summary>
+		/// Gets the volume zone
+		/// </summary>
 		public uint VolumeZone { get; private set; }
 
+		/// <summary>
+		/// Gets the volume device
+		/// </summary>
 		public IBasicVolumeControls VolumeDevice
-		{ 
+		{
 			get
 			{
 				var dev = DeviceManager.GetDeviceForKey(VolumeDeviceKey);
 				if (dev is IAudioZones)
 					return (dev as IAudioZones).Zone[VolumeZone];
 				else return dev as IBasicVolumeControls;
-			} 
+			}
 		}
 
 		/// <summary>
@@ -103,24 +128,30 @@ namespace PepperDash.Essentials.Devices.Common
 
 	}
 
-    public class GenericAudioOutWithVolumeFactory : EssentialsDeviceFactory<GenericAudioOutWithVolume>
-    {
-        public GenericAudioOutWithVolumeFactory()
-        {
-            TypeNames = new List<string>() { "genericaudiooutwithvolume" };
-        }
+	/// <summary>
+	/// Factory for creating GenericAudioOutWithVolume devices
+	/// </summary>
+	public class GenericAudioOutWithVolumeFactory : EssentialsDeviceFactory<GenericAudioOutWithVolume>
+	{
+		/// <summary>
+		/// Constructor for GenericAudioOutWithVolumeFactory
+		/// </summary>
+		public GenericAudioOutWithVolumeFactory()
+		{
+			TypeNames = new List<string>() { "genericaudiooutwithvolume" };
+		}
 
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
-        /// <inheritdoc />
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new GenericAudioOutWithVolumeFactory Device");
-            var zone = dc.Properties.Value<uint>("zone");
-            return new GenericAudioOutWithVolume(dc.Key, dc.Name,
-                dc.Properties.Value<string>("volumeDeviceKey"), zone);
-        }
-    }
+		/// <summary>
+		/// BuildDevice method
+		/// </summary>
+		/// <inheritdoc />
+		public override EssentialsDevice BuildDevice(DeviceConfig dc)
+		{
+			Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new GenericAudioOutWithVolumeFactory Device");
+			var zone = dc.Properties.Value<uint>("zone");
+			return new GenericAudioOutWithVolume(dc.Key, dc.Name,
+					dc.Properties.Value<string>("volumeDeviceKey"), zone);
+		}
+	}
 
 }

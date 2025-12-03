@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Core
     public List<string> TypeNames { get; protected set; }
 
     /// <summary>
-    /// The method that will build the device
+    /// Build the device using the configuration
     /// </summary>
     /// <param name="dc">The device config</param>
     /// <returns>An instance of the device</returns>

@@ -7,16 +7,18 @@ namespace PepperDash.Essentials
     /// </summary>
     public class AuthorizationResponse
     {
-        [JsonProperty("authorized")]
+
         /// <summary>
         /// Gets or sets the Authorized
         /// </summary>
+        [JsonProperty("authorized")]
         public bool Authorized { get; set; }
 
-        [JsonProperty("reason", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Reason
         /// </summary>
+        [JsonProperty("reason", NullValueHandling = NullValueHandling.Ignore)]
         public string Reason { get; set; } = null;
     }
 
@@ -25,10 +27,11 @@ namespace PepperDash.Essentials
     /// </summary>
     public class AuthorizationRequest
     {
-        [JsonProperty("grantCode")]
+
         /// <summary>
         /// Gets or sets the GrantCode
         /// </summary>
+        [JsonProperty("grantCode")]
         public string GrantCode { get; set; }
     }
 }

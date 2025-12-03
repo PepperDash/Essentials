@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
 namespace PepperDash.Core
@@ -42,7 +39,7 @@ namespace PepperDash.Core
     /// Defines the contract for IBasicCommunication
     /// </summary>
     public interface IBasicCommunication : ICommunicationReceiver
-	{
+    {
         /// <summary>
         /// Send text to the device
         /// </summary>
@@ -54,7 +51,7 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="bytes"></param>
 		void SendBytes(byte[] bytes);
-	}
+    }
 
     /// <summary>
     /// Represents a device that implements IBasicCommunication and IStreamDebugging
@@ -67,7 +64,7 @@ namespace PepperDash.Core
     /// <summary>
     /// Represents a device with stream debugging capablities
     /// </summary>
-    public interface IStreamDebugging
+    public interface IStreamDebugging : IKeyed
     {
         /// <summary>
         /// Object to enable stream debugging
@@ -76,12 +73,12 @@ namespace PepperDash.Core
         CommunicationStreamDebugging StreamDebugging { get; }
     }
 
-	/// <summary>
-	/// For IBasicCommunication classes that have SocketStatus. GenericSshClient,
-	/// GenericTcpIpClient
-	/// </summary>
-	public interface ISocketStatus : IBasicCommunication
-	{
+    /// <summary>
+    /// For IBasicCommunication classes that have SocketStatus. GenericSshClient,
+    /// GenericTcpIpClient
+    /// </summary>
+    public interface ISocketStatus : IBasicCommunication
+    {
         /// <summary>
         /// Notifies of socket status changes
         /// </summary>
@@ -93,7 +90,7 @@ namespace PepperDash.Core
         [JsonProperty("clientStatus")]
         [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         SocketStatus ClientStatus { get; }
-	}
+    }
 
     /// <summary>
     /// Describes a device that implements ISocketStatus and IStreamDebugging
@@ -107,24 +104,24 @@ namespace PepperDash.Core
     /// Describes a device that can automatically attempt to reconnect
     /// </summary>
 	public interface IAutoReconnect
-	{
+    {
         /// <summary>
         /// Enable automatic recconnect
         /// </summary>
         [JsonProperty("autoReconnect")]
-		bool AutoReconnect { get; set; }
+        bool AutoReconnect { get; set; }
         /// <summary>
         /// Interval in ms to attempt automatic recconnections
         /// </summary>
         [JsonProperty("autoReconnectIntervalMs")]
-		int AutoReconnectIntervalMs { get; set; }
-	}
+        int AutoReconnectIntervalMs { get; set; }
+    }
 
-	/// <summary>
-	/// 
-	/// </summary>
-	public enum eGenericCommMethodStatusChangeType
-	{
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum eGenericCommMethodStatusChangeType
+    {
         /// <summary>
         /// Connected
         /// </summary>
@@ -133,45 +130,45 @@ namespace PepperDash.Core
         /// Disconnected
         /// </summary>
         Disconnected
-	}
+    }
 
-	/// <summary>
-	/// This delegate defines handler for IBasicCommunication status changes
-	/// </summary>
-	/// <param name="comm">Device firing the status change</param>
-	/// <param name="status"></param>
-	public delegate void GenericCommMethodStatusHandler(IBasicCommunication comm, eGenericCommMethodStatusChangeType status);
+    /// <summary>
+    /// This delegate defines handler for IBasicCommunication status changes
+    /// </summary>
+    /// <param name="comm">Device firing the status change</param>
+    /// <param name="status"></param>
+    public delegate void GenericCommMethodStatusHandler(IBasicCommunication comm, eGenericCommMethodStatusChangeType status);
 
-	/// <summary>
-	/// 
-	/// </summary>
-	public class GenericCommMethodReceiveBytesArgs : EventArgs
-	{
-  /// <summary>
-  /// Gets or sets the Bytes
-  /// </summary>
-		public byte[] Bytes { get; private set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class GenericCommMethodReceiveBytesArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets or sets the Bytes
+        /// </summary>
+        public byte[] Bytes { get; private set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="bytes"></param>
 		public GenericCommMethodReceiveBytesArgs(byte[] bytes)
-		{
-			Bytes = bytes;
-		}
+        {
+            Bytes = bytes;
+        }
 
-		/// <summary>
-		/// S+ Constructor
-		/// </summary>
-		public GenericCommMethodReceiveBytesArgs() { }
-	}
+        /// <summary>
+        /// S+ Constructor
+        /// </summary>
+        public GenericCommMethodReceiveBytesArgs() { }
+    }
 
-	/// <summary>
-	/// 
-	/// </summary>
-	public class GenericCommMethodReceiveTextArgs : EventArgs
-	{
+    /// <summary>
+    /// 
+    /// </summary>
+    public class GenericCommMethodReceiveTextArgs : EventArgs
+    {
         /// <summary>
         /// 
         /// </summary>
@@ -185,9 +182,9 @@ namespace PepperDash.Core
         /// </summary>
         /// <param name="text"></param>
 		public GenericCommMethodReceiveTextArgs(string text)
-		{
-			Text = text;
-		}
+        {
+            Text = text;
+        }
 
         /// <summary>
         /// 
@@ -195,59 +192,14 @@ namespace PepperDash.Core
         /// <param name="text"></param>
         /// <param name="delimiter"></param>
         public GenericCommMethodReceiveTextArgs(string text, string delimiter)
-            :this(text)
+            : this(text)
         {
             Delimiter = delimiter;
         }
 
-		/// <summary>
-		/// S+ Constructor
-		/// </summary>
-		public GenericCommMethodReceiveTextArgs() { }
-	}
-
-
-
-	/// <summary>
-	/// 
-	/// </summary>
-	public class ComTextHelper
-	{
         /// <summary>
-        /// Gets escaped text for a byte array
+        /// S+ Constructor
         /// </summary>
-        /// <param name="bytes"></param>
-        /// <returns></returns>
-		public static string GetEscapedText(byte[] bytes)
-		{
-			return String.Concat(bytes.Select(b => string.Format(@"[{0:X2}]", (int)b)).ToArray());
-		}
-
-        /// <summary>
-        /// Gets escaped text for a string
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-  /// <summary>
-  /// GetEscapedText method
-  /// </summary>
-		public static string GetEscapedText(string text)
-		{
-			var bytes = Encoding.GetEncoding(28591).GetBytes(text);
-			return String.Concat(bytes.Select(b => string.Format(@"[{0:X2}]", (int)b)).ToArray());
-		}
-
-        /// <summary>
-        /// Gets debug text for a string
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        /// <summary>
-        /// GetDebugText method
-        /// </summary>
-        public static string GetDebugText(string text)
-        {
-            return Regex.Replace(text, @"[^\u0020-\u007E]", a => GetEscapedText(a.Value));
-        }
-	}
+        public GenericCommMethodReceiveTextArgs() { }
+    }
 }

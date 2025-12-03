@@ -33,16 +33,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
       base.RegisterActions();
 
-      AddAction("/fullStatus", (id, content) =>
-      {
-        var message = new CurrentSourcesStateMessage
-        {
-          CurrentSourceKeys = sourceDevice.CurrentSourceKeys,
-          CurrentSources = sourceDevice.CurrentSources
-        };
+      AddAction("/fullStatus", (id, content) => SendCurrentSourceStatus(id));
 
-        PostStatusMessage(message);
-      });
+      AddAction("/currentSourceStatus", (id, content) => SendCurrentSourceStatus(id));
 
       sourceDevice.CurrentSourcesChanged += (sender, e) =>
       {
@@ -52,6 +45,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
           currentSources = sourceDevice.CurrentSources
         }));
       };
+    }
+
+    private void SendCurrentSourceStatus(string id = null)
+    {
+      var message = new CurrentSourcesStateMessage
+      {
+        CurrentSourceKeys = sourceDevice.CurrentSourceKeys,
+        CurrentSources = sourceDevice.CurrentSources
+      };
+
+      PostStatusMessage(message, id);
     }
   }
 

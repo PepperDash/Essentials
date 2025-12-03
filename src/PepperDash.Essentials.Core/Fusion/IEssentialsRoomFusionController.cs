@@ -1,6 +1,4 @@
-﻿
-
-using Crestron.SimplSharp;
+﻿using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXml.Serialization;
@@ -8,6 +6,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Fusion;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
@@ -15,32 +14,49 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Timers;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
     /// <summary>
     /// Represents a EssentialsHuddleSpaceFusionSystemControllerBase
     /// </summary>
-    public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupancyStatusProvider
+    public class IEssentialsRoomFusionController : EssentialsDevice, IOccupancyStatusProvider, IFusionHelpRequest, IHasFeedback
     {
-        private readonly EssentialsHuddleSpaceRoomFusionRoomJoinMap JoinMap;
+        private IEssentialsRoomFusionControllerPropertiesConfig _config;
+
+        private EssentialsHuddleSpaceRoomFusionRoomJoinMap JoinMap;
 
         private const string RemoteOccupancyXml = "<Occupancy><Type>Local</Type><State>{0}</State></Occupancy>";
-        private readonly bool _guidFileExists;
+        private bool _guidFileExists;
 
         private readonly Dictionary<Device, BoolInputSig> _sourceToFeedbackSigs =
             new Dictionary<Device, BoolInputSig>();
 
+        /// <summary>
+        /// Gets or sets the CurrentRoomSourceNameSig
+        /// </summary>
         protected StringSigData CurrentRoomSourceNameSig;
 
         private readonly FusionCustomPropertiesBridge CustomPropertiesBridge = new FusionCustomPropertiesBridge();
+
+        /// <summary>
+        /// Gets or sets the FusionOccSensor
+        /// </summary>
         protected FusionOccupancySensorAsset FusionOccSensor;
         private readonly FusionRemoteOccupancySensor FusionRemoteOccSensor;
 
+        /// <summary>
+        /// Gets or sets the FusionRoom
+        /// </summary>
         protected FusionRoom FusionRoom;
+
+        /// <summary>
+        /// Gets or sets the FusionStaticAssets
+        /// </summary>
         protected Dictionary<int, FusionAsset> FusionStaticAssets;
         private readonly long PushNotificationTimeout = 5000;
-        private readonly IEssentialsRoom Room;
+        private IEssentialsRoom Room;
         private readonly long SchedulePollInterval = 300000;
 
         private Event _currentMeeting;
@@ -48,8 +64,7 @@ namespace PepperDash.Essentials.Core.Fusion
         private CTimer _dailyTimeRequestTimer;
         private StatusMonitorCollection _errorMessageRollUp;
 
-        private FusionRoomGuids _guiDs;
-        private uint _ipId;
+        private FusionRoomGuids _guids;
 
         private bool _isRegisteredForSchedulePushNotifications;
         private Event _nextMeeting;
@@ -60,14 +75,30 @@ namespace PepperDash.Essentials.Core.Fusion
 
         private string _roomOccupancyRemoteString;
 
-        #region System Info Sigs
+        private bool _helpRequestSent;
 
-        //StringSigData SystemName;
-        //StringSigData Model;
-        //StringSigData SerialNumber;
-        //StringSigData Uptime;
+        private eFusionHelpResponse _helpRequestStatus;
 
-        #endregion
+        /// <inheritdoc />
+        public StringFeedback HelpRequestResponseFeedback { get; private set; }
+
+        /// <inheritdoc />
+        public BoolFeedback HelpRequestSentFeedback { get; private set; }
+
+        /// <inheritdoc />
+        public StringFeedback HelpRequestStatusFeedback { get; private set; }
+
+        private Timer _helpRequestTimeoutTimer;
+
+        /// <summary>
+        /// Gets the DefaultHelpRequestTimeoutMs
+        /// </summary>
+        public int HelpRequestTimeoutMs => _config.HelpRequestTimeoutMs;
+
+        /// <summary>
+        /// Gets whether to use a timer for help requests
+        /// </summary>
+        public bool UseHelpRequestTimer => _config.UseTimeoutForHelpRequests;
 
         #region Processor Info Sigs
 
@@ -93,71 +124,110 @@ namespace PepperDash.Essentials.Core.Fusion
 
         #endregion
 
-        public EssentialsHuddleSpaceFusionSystemControllerBase(IEssentialsRoom room, uint ipId, string joinMapKey)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public IEssentialsRoomFusionController(string key, string name, IEssentialsRoomFusionControllerPropertiesConfig config)
+            : base(key, name)
+        {
+            _config = config;
+
+            AddPostActivationAction(() =>
+            {
+                var room = DeviceManager.GetDeviceForKey<IEssentialsRoom>(_config.RoomKey);
+
+                if (room == null)
+                {
+                    this.LogError("Error Creating Fusion Room Controller.  No room found with key '{0}'", _config.RoomKey);
+                    return;
+                }
+
+                this.LogInformation("Creating Fusion Room Controller for room '{0}' at IPID: {1:X2}", room.Key, _config.IpIdInt);
+
+                ConstructorHelper(room, _config.IpIdInt, _config.JoinMapKey);
+
+            });
+        }
+
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="room"></param>
+        /// <param name="ipId"></param>
+        /// <param name="joinMapKey"></param>
+        public IEssentialsRoomFusionController(IEssentialsRoom room, string ipId, string joinMapKey)
             : base(room.Key + "-fusion")
+        {
+            _config = new IEssentialsRoomFusionControllerPropertiesConfig()
+            {
+                IpId = ipId,
+                RoomKey = room.Key,
+                JoinMapKey = joinMapKey
+            };
+
+            ConstructorHelper(room, _config.IpIdInt, joinMapKey);
+        }
+
+        private void ConstructorHelper(IEssentialsRoom room, uint ipId, string joinMapKey)
         {
             try
             {
+                this.LogDebug("ConstructorHelper called for Fusion Room Controller for room '{0}' with IPID {1:X2}", room.Key, ipId);
+
+                this.LogDebug("JoinMap Key: {0}", joinMapKey);
+
                 JoinMap = new EssentialsHuddleSpaceRoomFusionRoomJoinMap(1);
 
-                CrestronConsole.AddNewConsoleCommand((o) => JoinMap.PrintJoinMapInfo(), string.Format("ptjnmp-{0}", Key), "Prints Attribute Join Map", ConsoleAccessLevelEnum.AccessOperator);
+                this.LogDebug("JoinMap created");
+
+                CrestronConsole.AddNewConsoleCommand((o) =>
+                {
+                    if (o is string deviceKey)
+                    {
+                        if (string.IsNullOrEmpty(deviceKey) || deviceKey == "?")
+                        {
+                            CrestronConsole.ConsoleCommandResponse("Please provide a device key for a Fusion Room instance");
+                            return;
+                        }
+                        else if (deviceKey != this.Key)
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        CrestronConsole.ConsoleCommandResponse("Invalid parameter.  Please provide a device key for a Fusion Room instance");
+                        return;
+                    }
+
+                    JoinMap.PrintJoinMapInfo();
+                }, "printfusionjoinmap", "Prints Attribute Join Map", ConsoleAccessLevelEnum.AccessOperator);
 
                 if (!string.IsNullOrEmpty(joinMapKey))
                 {
+                    // this.LogDebug("Attempting to get custom join map for key: {0}", joinMapKey);
                     var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
                     if (customJoins != null)
                     {
                         JoinMap.SetCustomJoinData(customJoins);
                     }
                 }
-                 
+
                 Room = room;
 
-                _ipId = ipId;
+                this.LogDebug("Room found: {0}", Room.Key);
 
                 FusionStaticAssets = new Dictionary<int, FusionAsset>();
 
-                _guiDs = new FusionRoomGuids();
+                this.LogDebug("FusionStaticAssets dictionary created");
 
-                var mac =
-                    CrestronEthernetHelper.GetEthernetParameter(
-                        CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
+                _guids = new FusionRoomGuids();
 
-                var slot = Global.ControlSystem.ProgramNumber;
-
-                var guidFilePath = Global.FilePathPrefix +
-                                   string.Format(@"{0}-FusionGuids-{1:X2}.json", InitialParametersClass.ProgramIDTag, _ipId);
-
-                var oldGuidFilePath = Global.FilePathPrefix +
-                                      string.Format(@"{0}-FusionGuids.json", InitialParametersClass.ProgramIDTag);
-
-                if (File.Exists(oldGuidFilePath))
-                {
-                    Debug.LogMessage(LogEventLevel.Information, this, "Migrating from old Fusion GUID file to new Fusion GUID File");
-
-                    File.Copy(oldGuidFilePath, guidFilePath);
-
-                    File.Delete(oldGuidFilePath);
-                }
-
-                _guidFileExists = File.Exists(guidFilePath); 
-
-                // Check if file exists
-                if (!_guidFileExists)
-                {
-                    // Does not exist. Create GUIDs
-                    _guiDs = new FusionRoomGuids(Room.Name, ipId, _guiDs.GenerateNewRoomGuid(slot, mac),
-                        FusionStaticAssets);
-                }
-                else
-                {
-                    // Exists. Read GUIDs
-                    ReadGuidFile(guidFilePath);
-                }
-
+                this.LogDebug("FusionRoomGuids created");
 
                 if (Room is IRoomOccupancy occupancyRoom)
                 {
+                    Debug.LogDebug(this, "Room '{0}' supports IRoomOccupancy", Room.Key);
                     if (occupancyRoom.RoomOccupancy != null)
                     {
                         if (occupancyRoom.OccupancyStatusProviderIsRemote)
@@ -171,8 +241,21 @@ namespace PepperDash.Essentials.Core.Fusion
                     }
                 }
 
+                this.LogDebug("Occupancy setup complete");
 
-                AddPostActivationAction(() => PostActivate(guidFilePath));
+                HelpRequestResponseFeedback = new StringFeedback("HelpRequestResponse", () => FusionRoom.Help.OutputSig.StringValue);
+
+                HelpRequestSentFeedback = new BoolFeedback("HelpRequestSent", () => _helpRequestSent);
+                HelpRequestStatusFeedback = new StringFeedback("HelpRequestStatus", () => _helpRequestStatus.ToString());
+
+                Feedbacks.Add(HelpRequestResponseFeedback);
+                Feedbacks.Add(HelpRequestSentFeedback);
+                Feedbacks.Add(HelpRequestStatusFeedback);
+                if (RoomOccupancyRemoteStringFeedback != null)
+                    Feedbacks.Add(RoomOccupancyRemoteStringFeedback);
+                if (RoomIsOccupiedFeedback != null)
+                    Feedbacks.Add(RoomIsOccupiedFeedback);
+
             }
             catch (Exception e)
             {
@@ -180,9 +263,54 @@ namespace PepperDash.Essentials.Core.Fusion
             }
         }
 
-        private void PostActivate(string guidFilePath)
+        private string GetGuidFilePath(uint ipId)
         {
-            CreateSymbolAndBasicSigs(_ipId);
+            var mac =
+                CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
+
+            var slot = Global.ControlSystem.ProgramNumber;
+
+            var guidFilePath = Global.FilePathPrefix +
+                               string.Format(@"{0}-FusionGuids-{1:X2}.json", InitialParametersClass.ProgramIDTag, _config.IpIdInt);
+
+            var oldGuidFilePath = Global.FilePathPrefix +
+                                  string.Format(@"{0}-FusionGuids.json", InitialParametersClass.ProgramIDTag);
+
+            if (File.Exists(oldGuidFilePath))
+            {
+                Debug.LogMessage(LogEventLevel.Information, this, "Migrating from old Fusion GUID file to new Fusion GUID File");
+
+                File.Copy(oldGuidFilePath, guidFilePath);
+
+                File.Delete(oldGuidFilePath);
+            }
+
+            _guidFileExists = File.Exists(guidFilePath);
+
+            // Check if file exists
+            if (!_guidFileExists)
+            {
+                // Does not exist. Create GUIDs
+                _guids = new FusionRoomGuids(Room.Name, ipId, _guids.GenerateNewRoomGuid(slot, mac),
+                    FusionStaticAssets);
+            }
+            else
+            {
+                // Exists. Read GUIDs
+                ReadGuidFile(guidFilePath);
+            }
+
+            return guidFilePath;
+        }
+
+        /// <inheritdoc />
+        public override void Initialize()
+        {
+
+            GenerateGuidFile(GetGuidFilePath(_config.IpIdInt));
+
+            CreateSymbolAndBasicSigs(_config.IpIdInt);
             SetUpSources();
             SetUpCommunitcationMonitors();
             SetUpDisplay();
@@ -191,12 +319,14 @@ namespace PepperDash.Essentials.Core.Fusion
 
             FusionRVI.GenerateFileForAllFusionDevices();
 
-            GenerateGuidFile(guidFilePath);
         }
 
+        /// <summary>
+        /// Gets the RoomGuid
+        /// </summary>
         protected string RoomGuid
         {
-            get { return _guiDs.RoomGuid; }
+            get { return _guids.RoomGuid; }
         }
 
         /// <summary>
@@ -204,6 +334,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         public StringFeedback RoomOccupancyRemoteStringFeedback { get; private set; }
 
+        /// <summary>
+        /// Gets the RoomIsOccupiedFeedbackFunc
+        /// </summary>
         protected Func<bool> RoomIsOccupiedFeedbackFunc
         {
             get { return () => FusionRemoteOccSensor.RoomOccupied.OutputSig.BoolValue; }
@@ -218,10 +351,21 @@ namespace PepperDash.Essentials.Core.Fusion
 
         #endregion
 
+
+        /// <inheritdoc />
+        public FeedbackCollection<Feedback> Feedbacks { get; private set; } = new FeedbackCollection<Feedback>();
+
+
+        /// <summary>
+        /// ScheduleChange event
+        /// </summary>
         public event EventHandler<ScheduleChangeEventArgs> ScheduleChange;
         //public event EventHandler<MeetingChangeEventArgs> MeetingEndWarning;
         //public event EventHandler<MeetingChangeEventArgs> NextMeetingBeginWarning;
 
+        /// <summary>
+        /// RoomInfoChange event
+        /// </summary>
         public event EventHandler<EventArgs> RoomInfoChange;
 
         //ScheduleResponseEvent NextMeeting;
@@ -258,11 +402,11 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 Debug.LogMessage(LogEventLevel.Debug, this, "Writing GUIDs to file");
 
-                _guiDs = FusionOccSensor == null
-                    ? new FusionRoomGuids(Room.Name, _ipId, RoomGuid, FusionStaticAssets)
-                    : new FusionRoomGuids(Room.Name, _ipId, RoomGuid, FusionStaticAssets, FusionOccSensor);
+                _guids = FusionOccSensor == null
+                    ? new FusionRoomGuids(Room.Name, _config.IpIdInt, RoomGuid, FusionStaticAssets)
+                    : new FusionRoomGuids(Room.Name, _config.IpIdInt, RoomGuid, FusionStaticAssets, FusionOccSensor);
 
-                var json = JsonConvert.SerializeObject(_guiDs, Newtonsoft.Json.Formatting.Indented);
+                var json = JsonConvert.SerializeObject(_guids, Newtonsoft.Json.Formatting.Indented);
 
                 using (var sw = new StreamWriter(filePath))
                 {
@@ -312,17 +456,17 @@ namespace PepperDash.Essentials.Core.Fusion
                 {
                     var json = File.ReadToEnd(filePath, Encoding.ASCII);
 
-                    _guiDs = JsonConvert.DeserializeObject<FusionRoomGuids>(json);
+                    _guids = JsonConvert.DeserializeObject<FusionRoomGuids>(json);
 
-                    _ipId = _guiDs.IpId;
+                    // _config.IpId = _guids.IpId;
 
-                    FusionStaticAssets = _guiDs.StaticAssets;
+                    FusionStaticAssets = _guids.StaticAssets;
                 }
 
                 Debug.LogMessage(LogEventLevel.Information, this, "Fusion Guids successfully read from file: {0}",
                     filePath);
 
-                Debug.LogMessage(LogEventLevel.Debug, this, "\r\n********************\r\n\tRoom Name: {0}\r\n\tIPID: {1:X}\r\n\tRoomGuid: {2}\r\n*******************", Room.Name, _ipId, RoomGuid);
+                Debug.LogMessage(LogEventLevel.Debug, this, "\r\n********************\r\n\tRoom Name: {0}\r\n\tIPID: {1:X}\r\n\tRoomGuid: {2}\r\n*******************", Room.Name, _config.IpIdInt, RoomGuid);
 
                 foreach (var item in FusionStaticAssets)
                 {
@@ -343,6 +487,10 @@ namespace PepperDash.Essentials.Core.Fusion
             }
         }
 
+        /// <summary>
+        /// CreateSymbolAndBasicSigs method
+        /// </summary>
+        /// <param name="ipId"></param>
         protected virtual void CreateSymbolAndBasicSigs(uint ipId)
         {
             Debug.LogMessage(LogEventLevel.Information, this, "Creating Fusion Room symbol with GUID: {0} and IP-ID {1:X2}", RoomGuid, ipId);
@@ -405,6 +553,10 @@ namespace PepperDash.Essentials.Core.Fusion
             CrestronEnvironment.EthernetEventHandler += CrestronEnvironment_EthernetEventHandler;
         }
 
+        /// <summary>
+        /// CrestronEnvironment_EthernetEventHandler method
+        /// </summary>
+        /// <param name="ethernetEventArgs"></param>
         protected void CrestronEnvironment_EthernetEventHandler(EthernetEventArgs ethernetEventArgs)
         {
             if (ethernetEventArgs.EthernetEventType == eEthernetEventType.LinkUp)
@@ -413,6 +565,9 @@ namespace PepperDash.Essentials.Core.Fusion
             }
         }
 
+        /// <summary>
+        /// GetSystemInfo method
+        /// </summary>
         protected void GetSystemInfo()
         {
             //SystemName.InputSig.StringValue = Room.Name;
@@ -426,6 +581,9 @@ namespace PepperDash.Essentials.Core.Fusion
                 () => CrestronConsole.SendControlSystemCommand("reboot", ref response));
         }
 
+        /// <summary>
+        /// SetUpEthernetValues method
+        /// </summary>
         protected void SetUpEthernetValues()
         {
             _ip1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorIp1.JoinNumber, JoinMap.ProcessorIp1.AttributeName, eSigIoMask.InputSigOnly);
@@ -441,6 +599,9 @@ namespace PepperDash.Essentials.Core.Fusion
             _netMask2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorNetMask2.JoinNumber, JoinMap.ProcessorNetMask2.AttributeName, eSigIoMask.InputSigOnly);
         }
 
+        /// <summary>
+        /// GetProcessorEthernetValues method
+        /// </summary>
         protected void GetProcessorEthernetValues()
         {
             _ip1.InputSig.StringValue =
@@ -475,7 +636,7 @@ namespace PepperDash.Essentials.Core.Fusion
             // Interface 1
 
             if (InitialParametersClass.NumberOfEthernetInterfaces > 1)
-                // Only get these values if the processor has more than 1 NIC
+            // Only get these values if the processor has more than 1 NIC
             {
                 _ip2.InputSig.StringValue =
                     CrestronEthernetHelper.GetEthernetParameter(
@@ -489,6 +650,9 @@ namespace PepperDash.Essentials.Core.Fusion
             }
         }
 
+        /// <summary>
+        /// GetProcessorInfo method
+        /// </summary>
         protected void GetProcessorInfo()
         {
             _firmware = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorFirmware.JoinNumber, JoinMap.ProcessorFirmware.AttributeName, eSigIoMask.InputSigOnly);
@@ -499,7 +663,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 {
                     var join = JoinMap.ProgramNameStart.JoinNumber + i;
                     var progNum = i + 1;
-                    _program[i] = FusionRoom.CreateOffsetStringSig((uint) join,
+                    _program[i] = FusionRoom.CreateOffsetStringSig((uint)join,
                         string.Format("{0} {1}", JoinMap.ProgramNameStart.AttributeName, progNum), eSigIoMask.InputSigOnly);
                 }
             }
@@ -507,6 +671,9 @@ namespace PepperDash.Essentials.Core.Fusion
             _firmware.InputSig.StringValue = InitialParametersClass.FirmwareVersion;
         }
 
+        /// <summary>
+        /// GetCustomProperties method
+        /// </summary>
         protected void GetCustomProperties()
         {
             if (FusionRoom.IsOnline)
@@ -524,11 +691,16 @@ namespace PepperDash.Essentials.Core.Fusion
             // TODO: Get IP and Project Name from TP
         }
 
+        /// <summary>
+        /// FusionRoom_OnlineStatusChange method
+        /// </summary>
+        /// <param name="currentDevice"></param>
+        /// <param name="args"></param>
         protected void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
             if (args.DeviceOnLine)
             {
-                CrestronInvoke.BeginInvoke( (o) => 
+                CrestronInvoke.BeginInvoke((o) =>
                 {
                     CrestronEnvironment.Sleep(200);
 
@@ -676,7 +848,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     var extendTime = _currentMeeting.dtEnd - DateTime.Now;
                     var extendMinutesRaw = extendTime.TotalMinutes;
 
-                    extendMinutes += (int) Math.Round(extendMinutesRaw);
+                    extendMinutes += (int)Math.Round(extendMinutesRaw);
                 }
 
 
@@ -784,11 +956,11 @@ namespace PepperDash.Essentials.Core.Fusion
                     var parameters = actionResponse["Parameters"];
 
                     foreach (var isRegistered in from XmlElement parameter in parameters
-                        where parameter.HasAttributes
-                        select parameter.Attributes
+                                                 where parameter.HasAttributes
+                                                 select parameter.Attributes
                         into attributes
-                        where attributes["ID"].Value == "Registered"
-                        select Int32.Parse(attributes["Value"].Value))
+                                                 where attributes["ID"].Value == "Registered"
+                                                 select Int32.Parse(attributes["Value"].Value))
                     {
                         switch (isRegistered)
                         {
@@ -845,9 +1017,9 @@ namespace PepperDash.Essentials.Core.Fusion
                             Debug.LogMessage(LogEventLevel.Debug, this, "DateTime from Fusion Server: {0}", currentTime);
 
                             // Parse time and date from response and insert values
-                            CrestronEnvironment.SetTimeAndDate((ushort) currentTime.Hour, (ushort) currentTime.Minute,
-                                (ushort) currentTime.Second, (ushort) currentTime.Month, (ushort) currentTime.Day,
-                                (ushort) currentTime.Year);
+                            CrestronEnvironment.SetTimeAndDate((ushort)currentTime.Hour, (ushort)currentTime.Minute,
+                                (ushort)currentTime.Second, (ushort)currentTime.Month, (ushort)currentTime.Day,
+                                (ushort)currentTime.Year);
 
                             Debug.LogMessage(LogEventLevel.Debug, this, "Processor time set to {0}", CrestronEnvironment.GetLocalTime());
                         }
@@ -1065,6 +1237,9 @@ namespace PepperDash.Essentials.Core.Fusion
             }
         }
 
+        /// <summary>
+        /// SetUpSources method
+        /// </summary>
         protected virtual void SetUpSources()
         {
             // Sources
@@ -1074,10 +1249,10 @@ namespace PepperDash.Essentials.Core.Fusion
                 // NEW PROCESS:
                 // Make these lists and insert the fusion attributes by iterating these
                 var setTopBoxes = dict.Where(d => d.Value.SourceDevice is ISetTopBoxControls);
-                uint i = 1;
+                uint i = 0;
                 foreach (var kvp in setTopBoxes)
                 {
-                    TryAddRouteActionSigs(JoinMap.Display1SetTopBoxSourceStart.AttributeName + " " + i, JoinMap.Display1SetTopBoxSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1SetTopBoxSourceStart.AttributeName + " " + (i + 1), JoinMap.Display1SetTopBoxSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
                     if (i > JoinMap.Display1SetTopBoxSourceStart.JoinSpan) // We only have five spots
                     {
@@ -1086,10 +1261,10 @@ namespace PepperDash.Essentials.Core.Fusion
                 }
 
                 var discPlayers = dict.Where(d => d.Value.SourceDevice is IDiscPlayerControls);
-                i = 1;
+                i = 0;
                 foreach (var kvp in discPlayers)
                 {
-                    TryAddRouteActionSigs(JoinMap.Display1DiscPlayerSourceStart.AttributeName + " " + i, JoinMap.Display1DiscPlayerSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1DiscPlayerSourceStart.AttributeName + " " + (i + 1), JoinMap.Display1DiscPlayerSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
                     if (i > JoinMap.Display1DiscPlayerSourceStart.JoinSpan) // We only have five spots
                     {
@@ -1098,10 +1273,10 @@ namespace PepperDash.Essentials.Core.Fusion
                 }
 
                 var laptops = dict.Where(d => d.Value.SourceDevice is IRoutingSource);
-                i = 1;
+                i = 0;
                 foreach (var kvp in laptops)
                 {
-                    TryAddRouteActionSigs(JoinMap.Display1LaptopSourceStart.AttributeName + " " + i, JoinMap.Display1LaptopSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1LaptopSourceStart.AttributeName + " " + (i + 1), JoinMap.Display1LaptopSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
                     if (i > JoinMap.Display1LaptopSourceStart.JoinSpan) // We only have ten spots???
                     {
@@ -1111,7 +1286,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 foreach (var usageDevice in dict.Select(kvp => kvp.Value.SourceDevice).OfType<IUsageTracking>())
                 {
-                    usageDevice.UsageTracker = new UsageTracking(usageDevice as Device) {UsageIsTracked = true};
+                    usageDevice.UsageTracker = new UsageTracking(usageDevice as Device) { UsageIsTracked = true };
                     usageDevice.UsageTracker.DeviceUsageEnded += UsageTracker_DeviceUsageEnded;
                 }
             }
@@ -1157,17 +1332,31 @@ namespace PepperDash.Essentials.Core.Fusion
             Debug.LogMessage(LogEventLevel.Debug, this, "Device usage string: {0}", deviceUsage);
         }
 
-
+        /// <summary>
+        /// Tries to add route action sigs for a source
+        /// </summary>
+        /// <param name="attrName"></param>
+        /// <param name="attrNum"></param>
+        /// <param name="routeKey"></param>
+        /// <param name="pSrc"></param>
         protected void TryAddRouteActionSigs(string attrName, uint attrNum, string routeKey, Device pSrc)
         {
-            Debug.LogMessage(LogEventLevel.Verbose, this, "Creating attribute '{0}' with join {1} for source {2}",
+            this.LogVerbose("Creating attribute '{0}' with join {1} for source {2}",
                 attrName, attrNum, pSrc.Key);
             try
             {
                 var sigD = FusionRoom.CreateOffsetBoolSig(attrNum, attrName, eSigIoMask.InputOutputSig);
                 // Need feedback when this source is selected
                 // Event handler, added below, will compare source changes with this sig dict
-                _sourceToFeedbackSigs.Add(pSrc, sigD.InputSig);
+                if (!_sourceToFeedbackSigs.ContainsKey(pSrc))
+                {
+                    _sourceToFeedbackSigs.Add(pSrc, sigD.InputSig);
+                }
+                else
+                {
+                    this.LogWarning("Source '{0}' already has a feedback sig mapped. Overwriting.", pSrc.Key);
+                    _sourceToFeedbackSigs[pSrc] = sigD.InputSig;
+                }
 
                 // And respond to selection in Fusion
                 sigD.OutputSig.SetSigFalseAction(() =>
@@ -1180,14 +1369,12 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (Exception)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, this, "Error creating Fusion signal {0} {1} for device '{2}'. THIS NEEDS REWORKING",
+                this.LogVerbose("Error creating Fusion signal {0} {1} for device '{2}'. THIS NEEDS REWORKING",
                     attrNum, attrName, pSrc.Key);
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+
         private void SetUpCommunitcationMonitors()
         {
             uint displayNum = 0;
@@ -1274,6 +1461,8 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 if (attrName != null)
                 {
+                    this.LogDebug("Linking communication monitor for device '{0}' to Fusion attribute '{1}' at join {2}",
+                        dev.Key, attrName, attrNum);
                     // Link comm status to sig and update
                     var sigD = FusionRoom.CreateOffsetBoolSig(attrNum, attrName, eSigIoMask.InputSigOnly);
                     var smd = dev as ICommunicationMonitor;
@@ -1285,6 +1474,9 @@ namespace PepperDash.Essentials.Core.Fusion
             }
         }
 
+        /// <summary>
+        /// SetUpDisplay method
+        /// </summary>
         protected virtual void SetUpDisplay()
         {
             try
@@ -1297,7 +1489,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 foreach (var display in displays.Cast<IDisplay>())
                 {
-                    display.UsageTracker = new UsageTracking(display as Device) {UsageIsTracked = true};
+                    display.UsageTracker = new UsageTracking(display as Device) { UsageIsTracked = true };
                     display.UsageTracker.DeviceUsageEnded += UsageTracker_DeviceUsageEnded;
                 }
 
@@ -1410,7 +1602,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
 
             // Power on
-            var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint) joinOffset, displayName + "Power On",
+            var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint)joinOffset, displayName + "Power On",
                 eSigIoMask.InputOutputSig);
             defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b =>
             {
@@ -1421,7 +1613,7 @@ namespace PepperDash.Essentials.Core.Fusion
             });
 
             // Power Off
-            var defaultDisplayPowerOff = FusionRoom.CreateOffsetBoolSig((uint) joinOffset + 1, displayName + "Power Off",
+            var defaultDisplayPowerOff = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 1, displayName + "Power Off",
                 eSigIoMask.InputOutputSig);
             defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b =>
             {
@@ -1439,7 +1631,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
 
             // Current Source
-            var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint) joinOffset + 8,
+            var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8,
                 displayName + "Source None", eSigIoMask.InputOutputSig);
             defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b =>
             {
@@ -1507,7 +1699,7 @@ namespace PepperDash.Essentials.Core.Fusion
             //if (Room.OccupancyObj != null)
             //{ 
 
-            var tempOccAsset = _guiDs.OccupancyAsset;
+            var tempOccAsset = _guids.OccupancyAsset;
 
             if (tempOccAsset == null)
             {
@@ -1532,7 +1724,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 occRoom.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
             }
             RoomOccupancyRemoteStringFeedback = new StringFeedback(() => _roomOccupancyRemoteString);
-            
+
             RoomOccupancyRemoteStringFeedback.LinkInputSig(occSensorAsset.RoomOccupancyInfo.InputSig);
 
             //}
@@ -1588,11 +1780,81 @@ namespace PepperDash.Essentials.Core.Fusion
             }
         }
 
+        /// <summary>
+        /// Event handler for Fusion state changes
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="args"></param>
         protected void FusionRoom_FusionStateChange(FusionBase device, FusionStateEventArgs args)
         {
+            if (args.EventId == FusionEventIds.HelpMessageReceivedEventId)
+            {
+                this.LogInformation("Help message received from Fusion for room '{0}'",
+             Room.Name);
+
+                this.LogDebug("Help message content: {0}", FusionRoom.Help.OutputSig.StringValue);
+                // Fire help request event
+                HelpRequestResponseFeedback.FireUpdate();
+
+                if (!string.IsNullOrEmpty(FusionRoom.Help.OutputSig.StringValue))
+                {
+                    switch (FusionRoom.Help.OutputSig.StringValue)
+                    {
+                        case "Please wait, a technician is on his / her way.":
+                            // this.LogInformation("Please wait, a technician is on his / her way.",
+                            //  Room.Name);
+
+                            _helpRequestStatus = eFusionHelpResponse.HelpOnTheWay;
+                            break;
+                        case "Please call the helpdesk.":
+                            // this.LogInformation("Please call the helpdesk.");
+                            _helpRequestStatus = eFusionHelpResponse.CallHelpDesk;
+                            break;
+                        case "Please wait, I will reschedule your meeting to a different room.":
+                            // this.LogInformation("Please wait, I will reschedule your meeting to a different room.",
+                            //  Room.Name);
+
+                            _helpRequestStatus = eFusionHelpResponse.ReschedulingMeeting;
+                            break;
+                        case "I will be taking control of your system. Please be patient while I adjust the settings.":
+                            // this.LogInformation("I will be taking control of your system. Please be patient while I adjust the settings.",
+                            //  Room.Name);
+
+                            _helpRequestStatus = eFusionHelpResponse.TakingControl;
+                            break;
+                        default:
+                            // this.LogInformation("Unknown help request code received from Fusion for room '{0}'",
+                            //  Room.Name);
+
+                            _helpRequestStatus = eFusionHelpResponse.None;
+                            break;
+                    }
+                }
+                else
+                {
+                    _helpRequestStatus = eFusionHelpResponse.None;
+                }
+
+                if (_helpRequestStatus == eFusionHelpResponse.None)
+                {
+                    _helpRequestSent = false;
+                    HelpRequestSentFeedback.FireUpdate();
+                }
+
+                HelpRequestStatusFeedback.FireUpdate();
+
+                if (_helpRequestTimeoutTimer != null)
+                {
+                    _helpRequestTimeoutTimer.Stop();
+                    _helpRequestTimeoutTimer.Elapsed -= OnTimedEvent;
+                    _helpRequestTimeoutTimer.Dispose();
+                    _helpRequestTimeoutTimer = null;
+                }
+            }
+
+
             // The sig/UO method: Need separate handlers for fixed and user sigs, all flavors, 
             // even though they all contain sigs.
-
 
             BoolOutputSig outSig;
             if (args.UserConfiguredSigDetail is BooleanSigDataFixedName sigData)
@@ -1632,9 +1894,102 @@ namespace PepperDash.Essentials.Core.Fusion
                 (outSig.UserObject as Action<string>).Invoke(outSig.StringValue);
             }
         }
+
+        /// <inheritdoc />
+        public void SendHelpRequest()
+        {
+
+            var now = DateTime.Now;
+
+            var breakString = _config.UseHtmlFormatForHelpRequests ? "<BR>" : "\r\n";
+
+            var date = now.ToString("MMMM dd, yyyy");
+            var time = now.ToString("hh:mm tt");
+            if (_config.Use24HourTimeFormat)
+            {
+                time = now.ToString("HH:mm");
+            }
+
+            var requestString = $"HR00: {breakString} Assistance has been requested from room {Room.Name}{breakString}on {date} at {time}";
+
+            FusionRoom.Help.InputSig.StringValue = requestString;
+
+            this.LogInformation("Help request sent to Fusion from room '{0}'", Room.Name);
+            this.LogDebug("Help request content: {0}", FusionRoom.Help.InputSig.StringValue);
+
+            _helpRequestSent = true;
+            HelpRequestSentFeedback.FireUpdate();
+
+            if (UseHelpRequestTimer)
+            {
+                if (_helpRequestTimeoutTimer == null)
+                {
+                    _helpRequestTimeoutTimer = new Timer(HelpRequestTimeoutMs);
+                    _helpRequestTimeoutTimer.AutoReset = false;
+                    _helpRequestTimeoutTimer.Enabled = true;
+
+                    _helpRequestTimeoutTimer.Elapsed += OnTimedEvent;
+                }
+
+                _helpRequestTimeoutTimer.Interval = HelpRequestTimeoutMs;
+                _helpRequestTimeoutTimer.Start();
+
+                this.LogDebug("Help request timeout timer started for room '{0}' with timeout of {1} ms.",
+    Room.Name, HelpRequestTimeoutMs);
+            }
+
+            _helpRequestStatus = eFusionHelpResponse.HelpRequested;
+            HelpRequestStatusFeedback.FireUpdate();
+        }
+
+        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        {
+            this.LogInformation("Help request timeout reached for room '{0}'. Cancelling help request.", Room.Name);
+            CancelHelpRequest();
+        }
+
+        /// <inheritdoc />
+        public void CancelHelpRequest()
+        {
+            if (_helpRequestSent)
+            {
+                FusionRoom.Help.InputSig.StringValue = "";
+                _helpRequestSent = false;
+                HelpRequestSentFeedback.FireUpdate();
+                _helpRequestStatus = eFusionHelpResponse.None;
+                HelpRequestStatusFeedback.FireUpdate();
+                Debug.LogMessage(LogEventLevel.Information, this, "Help request cancelled for room '{0}'", Room.Name);
+            }
+
+            if (_helpRequestTimeoutTimer != null)
+            {
+                _helpRequestTimeoutTimer.Stop();
+                _helpRequestTimeoutTimer.Elapsed -= OnTimedEvent;
+                _helpRequestTimeoutTimer.Dispose();
+                _helpRequestTimeoutTimer = null;
+                this.LogDebug("Help request timeout timer stopped for room '{0}'.", Room.Name);
+            }
+        }
+
+        /// <inheritdoc />
+        public void ToggleHelpRequest()
+        {
+            if (_helpRequestSent)
+            {
+                CancelHelpRequest();
+            }
+            else
+            {
+                SendHelpRequest();
+            }
+        }
+
     }
 
 
+    /// <summary>
+    /// Extensions to enhance Fusion room, asset and signal creation.
+    /// </summary>
     public static class FusionRoomExtensions
     {
         /// <summary>
@@ -1648,6 +2003,8 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         public static BooleanSigData CreateOffsetBoolSig(this FusionRoom fr, uint number, string name, eSigIoMask mask)
         {
+            Debug.LogDebug("Creating Offset Bool Sig: {0} at Join {1}", name, number);
+
             if (number < 50)
             {
                 throw new ArgumentOutOfRangeException("number", "Cannot be less than 50");
@@ -1668,6 +2025,8 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         public static UShortSigData CreateOffsetUshortSig(this FusionRoom fr, uint number, string name, eSigIoMask mask)
         {
+            Debug.LogDebug("Creating Offset UShort Sig: {0} at Join {1}", name, number);
+
             if (number < 50)
             {
                 throw new ArgumentOutOfRangeException("number", "Cannot be less than 50");
@@ -1688,6 +2047,8 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         public static StringSigData CreateOffsetStringSig(this FusionRoom fr, uint number, string name, eSigIoMask mask)
         {
+            Debug.LogDebug("Creating Offset String Sig: {0} at Join {1}", name, number);
+
             if (number < 50)
             {
                 throw new ArgumentOutOfRangeException("number", "Cannot be less than 50");
@@ -1803,6 +2164,9 @@ namespace PepperDash.Essentials.Core.Fusion
     /// </summary>
     public class RoomInformation
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public RoomInformation()
         {
             FusionCustomProperties = new List<FusionCustomProperty>();
@@ -1855,10 +2219,17 @@ namespace PepperDash.Essentials.Core.Fusion
     /// </summary>
     public class FusionCustomProperty
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public FusionCustomProperty()
         {
         }
 
+        /// <summary>
+        /// Constructor with id
+        /// </summary>
+        /// <param name="id"></param>
         public FusionCustomProperty(string id)
         {
             ID = id;

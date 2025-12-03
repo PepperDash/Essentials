@@ -38,6 +38,12 @@ namespace PepperDash.Essentials
         /// </summary>
         [JsonProperty("enableApiServer")]
         public bool EnableApiServer { get; set; } = true;
+
+        /// <summary>
+        /// Enable subscriptions for Messengers
+        /// </summary>
+        [JsonProperty("enableMessengerSubscriptions")]
+        public bool EnableMessengerSubscriptions { get; set; }
     }
 
     /// <summary>
@@ -77,6 +83,15 @@ namespace PepperDash.Essentials
         /// </remarks>
         [JsonProperty("csLanUiDeviceKeys")]
         public List<string> CSLanUiDeviceKeys { get; set; }
+
+        /// <summary>
+        /// Get or set the Secure property
+        /// </summary>
+        /// <remarks>
+        /// Indicates whether the connection is secure (HTTPS).
+        /// </remarks>
+        [JsonProperty("Secure")]
+        public bool Secure { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the MobileControlDirectServerPropertiesConfig class.

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
+﻿namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 {
     /// <summary>
     /// Describes the ability to start an ad-hoc meeting

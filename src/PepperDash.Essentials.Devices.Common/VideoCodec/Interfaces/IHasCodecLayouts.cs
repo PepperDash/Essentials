@@ -1,14 +1,4 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using PepperDash.Essentials.Core;
-
-using Newtonsoft.Json;
+﻿using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
@@ -17,10 +7,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// </summary>
     public interface IHasCodecLayouts
     {
+        /// <summary>
+        /// Feedback that indicates the current layout on the local display
+        /// </summary>
         StringFeedback LocalLayoutFeedback { get; }
 
+        /// <summary>
+        /// Toggles the local layout
+        /// </summary>
         void LocalLayoutToggle();
-		void LocalLayoutToggleSingleProminent();
-		void MinMaxLayoutToggle();
+
+        /// <summary>
+        /// Toggles the local layout to single prominent
+        /// </summary>
+        void LocalLayoutToggleSingleProminent();
+
+        /// <summary>
+        /// Toggle the MinMax layout
+        /// </summary>
+        void MinMaxLayoutToggle();
     }
 }

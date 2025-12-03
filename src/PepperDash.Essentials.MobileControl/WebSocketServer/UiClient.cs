@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.RoomBridges;
 using Serilog.Events;
-using System;
-using System.Text.RegularExpressions;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 using ErrorEventArgs = WebSocketSharp.ErrorEventArgs;
@@ -16,16 +16,44 @@ namespace PepperDash.Essentials.WebSocketServer
     /// <summary>
     /// Represents the behaviour to associate with a UiClient for WebSocket communication
     /// </summary>
-    public class UiClient : WebSocketBehavior
+    public class UiClient : WebSocketBehavior, IKeyed
     {
+        /// <inheritdoc />
+        public string Key { get; private set; }
+
+        /// <summary>
+        /// Client ID used by client for this connection
+        /// </summary>
+        public string Id { get; private set; }
+
+        /// <summary>
+        /// Token associated with this client
+        /// </summary>
+        public string Token { get; private set; }
+
+        /// <summary>
+        /// Touchpanel Key associated with this client
+        /// </summary>
+        public string TouchpanelKey { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the mobile control system controller that handles this client's messages
+        /// </summary>
         public MobileControlSystemController Controller { get; set; }
 
+        /// <summary>
+        /// Gets or sets the room key that this client is associated with
+        /// </summary>
         public string RoomKey { get; set; }
 
-        private string _clientId;
-
+        /// <summary>
+        /// The timestamp when this client connection was established
+        /// </summary>
         private DateTime _connectionTime;
 
+        /// <summary>
+        /// Gets the duration that this client has been connected. Returns zero if not currently connected.
+        /// </summary>
         public TimeSpan ConnectedDuration
         {
             get
@@ -41,28 +69,35 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
-        public UiClient()
-        {
+        /// <summary>
+        /// Triggered when this client closes it's connection
+        /// </summary>
+        public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
 
+        /// <summary>
+        /// Initializes a new instance of the UiClient class with the specified key
+        /// </summary>
+        /// <param name="key">The unique key to identify this client</param>
+        /// <param name="id">The client ID used by the client for this connection</param>
+        /// <param name="token">The token associated with this client</param>
+        /// <param name="touchpanelKey">The touchpanel key associated with this client</param>
+        public UiClient(string key, string id, string token, string touchpanelKey = "")
+        {
+            Key = key;
+            Id = id;
+            Token = token;
+            TouchpanelKey = touchpanelKey;
         }
 
+        /// <inheritdoc />
         protected override void OnOpen()
         {
             base.OnOpen();
 
-            var url = Context.WebSocket.Url;
-            Debug.LogMessage(LogEventLevel.Verbose, "New WebSocket Connection from: {0}", null, url);
+            _connectionTime = DateTime.Now;
 
-            var match = Regex.Match(url.AbsoluteUri, "(?:ws|wss):\\/\\/.*(?:\\/mc\\/api\\/ui\\/join\\/)(.*)");
-
-            if (!match.Success)
-            {
-                _connectionTime = DateTime.Now;
-                return;
-            }
-
-            var clientId = match.Groups[1].Value;
-            _clientId = clientId;
+            Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message, this);
+            Log.Level = LogLevel.Trace;
 
             if (Controller == null)
             {
@@ -75,8 +110,9 @@ namespace PepperDash.Essentials.WebSocketServer
                 Type = "/system/clientJoined",
                 Content = JToken.FromObject(new
                 {
-                    clientId,
+                    clientId = Id,
                     roomKey = RoomKey,
+                    touchpanelKey = TouchpanelKey ?? string.Empty,
                 })
             };
 
@@ -86,7 +122,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
             if (bridge == null) return;
 
-            SendUserCodeToClient(bridge, clientId);
+            SendUserCodeToClient(bridge, Id);
 
             bridge.UserCodeChanged -= Bridge_UserCodeChanged;
             bridge.UserCodeChanged += Bridge_UserCodeChanged;
@@ -94,11 +130,21 @@ namespace PepperDash.Essentials.WebSocketServer
             // TODO: Future: Check token to see if there's already an open session using that token and reject/close the session 
         }
 
+        /// <summary>
+        /// Handles the UserCodeChanged event from a room bridge and sends the updated user code to the client
+        /// </summary>
+        /// <param name="sender">The room bridge that raised the event</param>
+        /// <param name="e">Event arguments</param>
         private void Bridge_UserCodeChanged(object sender, EventArgs e)
         {
-            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, _clientId);
+            SendUserCodeToClient((MobileControlEssentialsRoomBridge)sender, Id);
         }
 
+        /// <summary>
+        /// Sends the current user code and QR code URL to the specified client
+        /// </summary>
+        /// <param name="bridge">The room bridge containing the user code information</param>
+        /// <param name="clientId">The ID of the client to send the information to</param>
         private void SendUserCodeToClient(MobileControlBridgeBase bridge, string clientId)
         {
             var content = new
@@ -117,6 +163,7 @@ namespace PepperDash.Essentials.WebSocketServer
             Controller.SendMessageObjectToDirectClient(message);
         }
 
+        /// <inheritdoc />
         protected override void OnMessage(MessageEventArgs e)
         {
             base.OnMessage(e);
@@ -128,18 +175,33 @@ namespace PepperDash.Essentials.WebSocketServer
             }
         }
 
+        /// <inheritdoc />
         protected override void OnClose(CloseEventArgs e)
         {
             base.OnClose(e);
 
-            Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Closing: {0} reason: {1}", null, e.Code, e.Reason);
+            this.LogInformation("WebSocket UiClient Closing: {code} reason: {reason}", e.Code, e.Reason);
+
+            foreach (var messenger in Controller.Messengers)
+            {
+                messenger.Value.UnsubscribeClient(Id);
+            }
+
+            foreach (var messenger in Controller.DefaultMessengers)
+            {
+                messenger.Value.UnsubscribeClient(Id);
+            }
+
+            ConnectionClosed?.Invoke(this, new ConnectionClosedEventArgs(Id));
         }
 
+        /// <inheritdoc />
         protected override void OnError(ErrorEventArgs e)
         {
             base.OnError(e);
 
-            Debug.LogMessage(LogEventLevel.Verbose, "WebSocket UiClient Error: {exception} message: {message}", e.Exception, e.Message);
+            this.LogError("WebSocket UiClient Error: {message}", e.Message);
+            this.LogDebug(e.Exception, "Stack Trace");
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.CrestronIO;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -23,7 +23,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+
+            AddAction("/switchedOutputStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/on", (id, content) =>
             {
@@ -42,14 +44,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
             device.OutputIsOnFeedback.OutputChange += new EventHandler<Core.FeedbackEventArgs>((o, a) => SendFullStatus());
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             var state = new ISwitchedOutputStateMessage
             {
                 IsOn = device.OutputIsOnFeedback.BoolValue
             };
 
-            PostStatusMessage(state);
+            PostStatusMessage(state, id);
         }
     }
 
@@ -58,10 +60,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class ISwitchedOutputStateMessage : DeviceStateMessageBase
     {
-        [JsonProperty("isOn")]
         /// <summary>
         /// Gets or sets the IsOn
         /// </summary>
+        [JsonProperty("isOn")]
         public bool IsOn { get; set; }
     }
 }

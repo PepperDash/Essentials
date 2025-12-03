@@ -3,19 +3,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.Cameras;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Devices.Common.Codec;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
@@ -47,10 +45,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public RoutingOutputPort HdmiOut { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the CallFavorites
-  /// </summary>
-		public CodecCallFavorites CallFavorites { get; private set; }
+        /// <summary>
+        /// Gets or sets the CallFavorites
+        /// </summary>
+        public CodecCallFavorites CallFavorites { get; private set; }
 
         /// <summary>
         /// 
@@ -62,22 +60,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             CodecInfo = new MockCodecInfo();
 
-			// Get favoritesw
+            // Get favoritesw
             if (PropertiesConfig.Favorites != null)
-			{
-				CallFavorites = new CodecCallFavorites();
-				CallFavorites.Favorites = PropertiesConfig.Favorites;
-			}
+            {
+                CallFavorites = new CodecCallFavorites();
+                CallFavorites.Favorites = PropertiesConfig.Favorites;
+            }
 
             DirectoryBrowseHistory = new List<CodecDirectory>();
 
             // Debug helpers
             MuteFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "Mute={0}", _IsMuted);
             PrivacyModeIsOnFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "Privacy={0}", _PrivacyModeIsOn);
-            SharingSourceFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "SharingSource={0}", _SharingSource);   
+            SharingSourceFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "SharingSource={0}", _SharingSource);
             VolumeLevelFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "Volume={0}", _VolumeLevel);
 
-            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => DirectoryBrowseHistory.Count > 0);
+            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback("currentDirectoryResultIsNotDirectoryRoot", () => DirectoryBrowseHistory.Count > 0);
 
             CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
 
@@ -105,38 +103,44 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             CreateOsdSource();
 
             SetIsReady();
-       }
+        }
 
+        /// <inheritdoc />
         protected override Func<bool> MuteFeedbackFunc
         {
             get { return () => _IsMuted; }
         }
         bool _IsMuted;
 
+        /// <inheritdoc />
         protected override Func<bool> PrivacyModeIsOnFeedbackFunc
         {
             get { return () => _PrivacyModeIsOn; }
         }
         bool _PrivacyModeIsOn;
-        
+
+        /// <inheritdoc />
         protected override Func<string> SharingSourceFeedbackFunc
         {
             get { return () => _SharingSource; }
         }
         string _SharingSource;
 
+        /// <inheritdoc />
         protected override Func<bool> SharingContentIsOnFeedbackFunc
         {
             get { return () => _SharingIsOn; }
         }
         bool _SharingIsOn;
 
+        /// <inheritdoc />
         protected override Func<int> VolumeLevelFeedbackFunc
         {
             get { return () => _VolumeLevel; }
         }
         int _VolumeLevel;
 
+        /// <inheritdoc />
         protected override Func<bool> StandbyIsOnFeedbackFunc
         {
             get { return () => _StandbyIsOn; }
@@ -157,9 +161,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             //foreach(var input in Status.Video.
         }
 
-        /// <summary>
-        /// Dial method
-        /// </summary>
         /// <inheritdoc />
         public override void Dial(string number)
         {
@@ -177,9 +178,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             }, 2000);
         }
 
-        /// <summary>
-        /// Dial method
-        /// </summary>
         /// <inheritdoc />
         public override void Dial(Meeting meeting)
         {
@@ -199,9 +197,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         }
 
-        /// <summary>
-        /// EndCall method
-        /// </summary>
         /// <inheritdoc />
         public override void EndCall(CodecActiveCallItem call)
         {
@@ -211,14 +206,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             //ActiveCallCountFeedback.FireUpdate();
         }
 
-        /// <summary>
-        /// EndAllCalls method
-        /// </summary>
+
         /// <inheritdoc />
         public override void EndAllCalls()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "EndAllCalls");
-            for(int i = ActiveCalls.Count - 1; i >= 0; i--)
+            for (int i = ActiveCalls.Count - 1; i >= 0; i--)
             {
                 var call = ActiveCalls[i];
                 ActiveCalls.Remove(call);
@@ -227,9 +220,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             //ActiveCallCountFeedback.FireUpdate();
         }
 
-        /// <summary>
-        /// AcceptCall method
-        /// </summary>
+
         /// <inheritdoc />
         public override void AcceptCall(CodecActiveCallItem call)
         {
@@ -239,9 +230,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             // should already be in active list
         }
 
-        /// <summary>
-        /// RejectCall method
-        /// </summary>
         /// <inheritdoc />
         public override void RejectCall(CodecActiveCallItem call)
         {
@@ -251,65 +239,44 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             //ActiveCallCountFeedback.FireUpdate();
         }
 
-        /// <summary>
-        /// Makes horrible tones go out on the wire!
-        /// </summary>
-        /// <param name="s"></param>
-        /// <summary>
-        /// SendDtmf method
-        /// </summary>
+        /// <inheritdoc />
         public override void SendDtmf(string s)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "SendDTMF: {0}", s);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override void StartSharing()
         {
             _SharingIsOn = true;
             SharingContentIsOnFeedback.FireUpdate();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override void StopSharing()
         {
             _SharingIsOn = false;
             SharingContentIsOnFeedback.FireUpdate();
         }
 
+        /// <inheritdoc />
         public override void StandbyActivate()
         {
             _StandbyIsOn = true;
         }
 
-        /// <summary>
-        /// StandbyDeactivate method
-        /// </summary>
         /// <inheritdoc />
         public override void StandbyDeactivate()
         {
             _StandbyIsOn = false;
         }
 
-        /// <summary>
-        /// LinkToApi method
-        /// </summary>
+        /// <inheritdoc />          
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Called by routing to make it happen
-        /// </summary>
-        /// <param name="selector"></param>
-        /// <summary>
-        /// ExecuteSwitch method
-        /// </summary>
         /// <inheritdoc />
         public override void ExecuteSwitch(object selector)
         {
@@ -317,40 +284,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             _SharingSource = selector.ToString();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override void MuteOff()
         {
             _IsMuted = false;
             MuteFeedback.FireUpdate();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override void MuteOn()
         {
             _IsMuted = true;
             MuteFeedback.FireUpdate();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override void MuteToggle()
         {
             _IsMuted = !_IsMuted;
             MuteFeedback.FireUpdate();
         }
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="level"></param>
-        /// <summary>
-        /// SetVolume method
-        /// </summary>
+
         /// <inheritdoc />
         public override void SetVolume(ushort level)
         {
@@ -358,29 +312,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             VolumeLevelFeedback.FireUpdate();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pressRelease"></param>
-        /// <summary>
-        /// VolumeDown method
-        /// </summary>
         /// <inheritdoc />
         public override void VolumeDown(bool pressRelease)
         {
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pressRelease"></param>
+
+        /// <inheritdoc />
         public override void VolumeUp(bool pressRelease)
         {
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <inheritdoc />
         public override void PrivacyModeOn()
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "PrivacyMuteOn");
@@ -390,9 +333,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             PrivacyModeIsOnFeedback.FireUpdate();
         }
 
-        /// <summary>
-        /// PrivacyModeOff method
-        /// </summary>
+
         /// <inheritdoc />
         public override void PrivacyModeOff()
         {
@@ -403,45 +344,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             PrivacyModeIsOnFeedback.FireUpdate();
         }
 
-        /// <summary>
-        /// PrivacyModeToggle method
-        /// </summary>
+
         /// <inheritdoc />
         public override void PrivacyModeToggle()
         {
             _PrivacyModeIsOn = !_PrivacyModeIsOn;
-             Debug.LogMessage(LogEventLevel.Debug, this, "PrivacyMuteToggle: {0}", _PrivacyModeIsOn);
-           PrivacyModeIsOnFeedback.FireUpdate();
+            Debug.LogMessage(LogEventLevel.Debug, this, "PrivacyMuteToggle: {0}", _PrivacyModeIsOn);
+            PrivacyModeIsOnFeedback.FireUpdate();
         }
 
         //********************************************************
         // SIMULATION METHODS
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="url"></param>
-        /// <summary>
         /// TestIncomingVideoCall method
         /// </summary>
+        /// <param name="url"></param>        
         public void TestIncomingVideoCall(string url)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "TestIncomingVideoCall from {0}", url);
-            var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type= eCodecCallType.Video, Direction = eCodecCallDirection.Incoming };
+            var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type = eCodecCallType.Video, Direction = eCodecCallDirection.Incoming };
             ActiveCalls.Add(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Ringing, call);
 
             //OnCallStatusChange(eCodecCallStatus.Unknown, eCodecCallStatus.Ringing, call);
-                
+
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="url"></param>
-        /// <summary>
         /// TestIncomingAudioCall method
         /// </summary>
+        /// <param name="url"></param>        
         public void TestIncomingAudioCall(string url)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "TestIncomingAudioCall from {0}", url);
@@ -451,7 +384,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             //OnCallStatusChange(eCodecCallStatus.Unknown, eCodecCallStatus.Ringing, call);
         }
-        
+
         /// <summary>
         /// TestFarEndHangup method
         /// </summary>
@@ -464,6 +397,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #region IHasCallHistory Members
 
+        /// <summary>
+        /// CallHistory property
+        /// </summary>
         public CodecCallHistory CallHistory { get; private set; }
 
         /// <summary>
@@ -471,12 +407,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry)
         {
-            
+
         }
 
         #endregion
 
-		#region IHasScheduleAwareness Members
+        #region IHasScheduleAwareness Members
 
         /// <summary>
         /// GetSchedule method
@@ -486,47 +422,59 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         }
 
-		public CodecScheduleAwareness CodecSchedule
-		{
-			get {
-				// if the last meeting has past, generate a new list
-				if (_CodecSchedule == null || _CodecSchedule.Meetings.Count == 0
-					|| _CodecSchedule.Meetings[_CodecSchedule.Meetings.Count - 1].StartTime < DateTime.Now)
-				{
-					_CodecSchedule = new CodecScheduleAwareness(1000);
-					for (int i = 0; i < 5; i++)
-					{
-						var m = new Meeting();
+        /// <summary>
+        /// CodecSchedule property
+        /// </summary>
+        public CodecScheduleAwareness CodecSchedule
+        {
+            get
+            {
+                // if the last meeting has past, generate a new list
+                if (_CodecSchedule == null || _CodecSchedule.Meetings.Count == 0
+                    || _CodecSchedule.Meetings[_CodecSchedule.Meetings.Count - 1].StartTime < DateTime.Now)
+                {
+                    _CodecSchedule = new CodecScheduleAwareness(1000);
+                    for (int i = 0; i < 5; i++)
+                    {
+                        var m = new Meeting();
                         m.MinutesBeforeMeeting = 5;
                         m.Id = i.ToString();
                         m.Organizer = "Employee " + 1;
-						m.StartTime = DateTime.Now.AddMinutes(5).AddHours(i);
-						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(50);
-						m.Title = "Meeting " + i;
-                        m.Calls.Add(new Call() { Number = i + "meeting@fake.com"});
-						_CodecSchedule.Meetings.Add(m);
-					}
-				}
-				return _CodecSchedule;
-			}
-		}
-		CodecScheduleAwareness _CodecSchedule;
+                        m.StartTime = DateTime.Now.AddMinutes(5).AddHours(i);
+                        m.EndTime = DateTime.Now.AddHours(i).AddMinutes(50);
+                        m.Title = "Meeting " + i;
+                        m.Calls.Add(new Call() { Number = i + "meeting@fake.com" });
+                        _CodecSchedule.Meetings.Add(m);
+                    }
+                }
+                return _CodecSchedule;
+            }
+        }
+        CodecScheduleAwareness _CodecSchedule;
 
-		#endregion
+        #endregion
 
         #region IHasDirectory Members
 
+        /// <summary>
+        /// DirectoryResultReturned event. Fired when the directory result changes
+        /// </summary>
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
-
+        /// <summary>
+        /// DirectoryRoot property. The root of the directory
+        /// </summary>
         public CodecDirectory DirectoryRoot
         {
-            get 
+            get
             {
                 return MockVideoCodecDirectory.DirectoryRoot;
             }
         }
 
+        /// <summary>
+        /// CurrentDirectoryResult property. The current directory result
+        /// </summary>
         public CodecDirectory CurrentDirectoryResult
         {
             get
@@ -538,9 +486,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             }
         }
 
+        /// <summary>
+        /// PhonebookSyncState property. The current state of the phonebook synchronization
+        /// </summary>
         public CodecPhonebookSyncState PhonebookSyncState
         {
-            get 
+            get
             {
                 var syncState = new CodecPhonebookSyncState(Key + "PhonebookSync");
 
@@ -554,8 +505,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
 
         /// <summary>
-        /// SearchDirectory method
+        /// Search the directory for contacts that contain the search string
         /// </summary>
+        /// <param name="searchString">The search string to use</param>
         public void SearchDirectory(string searchString)
         {
             var searchResults = new CodecDirectory();
@@ -577,8 +529,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
 
         /// <summary>
-        /// GetDirectoryFolderContents method
+        /// Get the contents of the specified folder
         /// </summary>
+        /// <param name="folderId">The ID of the folder to get the contents of</param>
         public void GetDirectoryFolderContents(string folderId)
         {
             var folderDirectory = new CodecDirectory();
@@ -606,7 +559,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
 
         /// <summary>
-        /// SetCurrentDirectoryToRoot method
+        /// Set the current directory to the root
         /// </summary>
         public void SetCurrentDirectoryToRoot()
         {
@@ -616,7 +569,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
 
         /// <summary>
-        /// GetDirectoryParentFolderContents method
+        /// Get the contents of the parent folder
         /// </summary>
         public void GetDirectoryParentFolderContents()
         {
@@ -656,16 +609,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public void OnDirectoryResultReturned(CodecDirectory result)
         {
             CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
-
-            var handler = DirectoryResultReturned;
-            if (handler != null)
+            DirectoryResultReturned?.Invoke(this, new DirectoryEventArgs()
             {
-                handler(this, new DirectoryEventArgs()
-                {
-                    Directory = result,
-                    DirectoryIsOnRoot = !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue
-                });
-            }
+                Directory = result,
+                DirectoryIsOnRoot = !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue
+            });
         }
 
         #endregion
@@ -686,11 +634,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             Cameras.Add(farEndCamera);
 
-            SelectedCameraFeedback = new StringFeedback(() => SelectedCamera.Key);
+            SelectedCameraFeedback = new StringFeedback("selectedCamera", () => SelectedCamera.Key);
 
-            ControllingFarEndCameraFeedback = new BoolFeedback(() => SelectedCamera is IAmFarEndCamera);
+            ControllingFarEndCameraFeedback = new BoolFeedback("controllingFarEndCamera", () => SelectedCamera is IAmFarEndCamera);
 
-            CameraAutoModeIsOnFeedback = new BoolFeedback(() => _CameraAutoModeIsOn);
+            CameraAutoModeIsOnFeedback = new BoolFeedback("cameraAutoModeIsOn", () => _CameraAutoModeIsOn);
 
             SupportsCameraAutoMode = true;
 
@@ -728,10 +676,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #region IHasCameras Members
 
+        /// <summary>
+        /// CameraSelected event. Fired when a camera is selected
+        /// </summary>
         public event EventHandler<CameraSelectedEventArgs> CameraSelected;
 
         /// <summary>
-        /// Gets or sets the Cameras
+        /// Gets the list of cameras associated with this codec
         /// </summary>
         public List<CameraBase> Cameras { get; private set; }
 
@@ -751,12 +702,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 _selectedCamera = value;
                 SelectedCameraFeedback.FireUpdate();
                 ControllingFarEndCameraFeedback.FireUpdate();
-
-                var handler = CameraSelected;
-                if (handler != null)
-                {
-                    handler(this, new CameraSelectedEventArgs(SelectedCamera));
-                }
+                CameraSelected?.Invoke(this, new CameraSelectedEventArgs(SelectedCamera));
             }
         }
 
@@ -788,7 +734,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// Gets or sets the FarEndCamera
         /// </summary>
         public CameraBase FarEndCamera { get; private set; }
-        
+
         /// <summary>
         /// Gets or sets the ControllingFarEndCameraFeedback
         /// </summary>
@@ -823,7 +769,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public void CameraAutoModeToggle()
         {
-            if(_CameraAutoModeIsOn)
+            if (_CameraAutoModeIsOn)
                 _CameraAutoModeIsOn = false;
             else
                 _CameraAutoModeIsOn = true;
@@ -835,12 +781,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <summary>
         /// Gets or sets the CameraAutoModeIsOnFeedback
         /// </summary>
-        public BoolFeedback CameraAutoModeIsOnFeedback {get; private set;}
+        public BoolFeedback CameraAutoModeIsOnFeedback { get; private set; }
 
         #endregion
 
         #region IHasCameraPresets Members
 
+        /// <summary>
+        /// CodecRoomPresetsListHasChanged event. Fired when the presets list changes
+        /// </summary>
         public event EventHandler<EventArgs> CodecRoomPresetsListHasChanged;
 
         /// <summary>
@@ -883,11 +832,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             else
                 NearEndPresets.Add(new CodecRoomPreset(preset, description, true, true));
 
-            var handler = CodecRoomPresetsListHasChanged;
-            if (handler != null)
-            {
-                handler(this, new EventArgs());
-            }
+            CodecRoomPresetsListHasChanged?.Invoke(this, new EventArgs());
 
             // Update the config
             SetConfig(Config);
@@ -903,6 +848,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
+        /// <inheritdoc />
         protected override void CustomSetConfig(DeviceConfig config)
         {
             PropertiesConfig.Presets = NearEndPresets;
@@ -920,11 +866,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     public class MockCodecInfo : VideoCodecInfo
     {
 
+        /// <inheritdoc />
         public override bool MultiSiteOptionIsEnabled
         {
             get { return true; }
         }
 
+        /// <inheritdoc />
         public override string E164Alias
         {
             get { return "someE164alias"; }
@@ -975,14 +923,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// </summary>
     public class MockVCFactory : EssentialsDeviceFactory<MockVC>
     {
+        /// <inheritdoc />
         public MockVCFactory()
         {
             TypeNames = new List<string>() { "mockvc" };
         }
 
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
         /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {

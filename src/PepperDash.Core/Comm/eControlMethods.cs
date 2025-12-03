@@ -78,6 +78,10 @@ namespace PepperDash.Core
         /// <summary>
         /// Used when comms needs to be handled in SIMPL and bridged opposite the normal direction
         /// </summary>
-        ComBridge
+        ComBridge,
+        /// <summary>
+        /// InfinetEX control
+        /// </summary>
+        InfinetEx
     }
 }

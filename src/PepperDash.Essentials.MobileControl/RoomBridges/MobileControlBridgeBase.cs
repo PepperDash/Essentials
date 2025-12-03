@@ -1,23 +1,35 @@
-﻿using PepperDash.Core;
+﻿using System;
+using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
 
 
 namespace PepperDash.Essentials.RoomBridges
 {
     /// <summary>
-    /// 
+    /// Base class for a Mobile Control Bridge that's used to control a room
     /// </summary>
     public abstract class MobileControlBridgeBase : MessengerBase, IMobileControlRoomMessenger
     {
+        /// <summary>
+        /// Triggered when the user Code changes
+        /// </summary>
         public event EventHandler<EventArgs> UserCodeChanged;
 
+        /// <summary>
+        /// Triggered when a user should be prompted for the new code
+        /// </summary>
         public event EventHandler<EventArgs> UserPromptedForCode;
 
+        /// <summary>
+        /// Triggered when a client joins to control this room
+        /// </summary>
         public event EventHandler<EventArgs> ClientJoined;
 
+        /// <summary>
+        /// Triggered when the App URL for this room changes
+        /// </summary>
         public event EventHandler<EventArgs> AppUrlChanged;
 
         /// <summary>
@@ -49,15 +61,32 @@ namespace PepperDash.Essentials.RoomBridges
         /// </summary>
         public string McServerUrl { get; private set; }
 
+        /// <summary>
+        /// Room Name
+        /// </summary>
         public abstract string RoomName { get; }
 
+        /// <summary>
+        /// Room key
+        /// </summary>
         public abstract string RoomKey { get; }
 
+        /// <summary>
+        /// Create an instance of the <see cref="MobileControlBridgeBase"/> class
+        /// </summary>
+        /// <param name="key">The unique key for this bridge</param>
+        /// <param name="messagePath">The message path for this bridge</param>
         protected MobileControlBridgeBase(string key, string messagePath)
             : base(key, messagePath)
         {
         }
 
+        /// <summary>
+        /// Create an instance of the <see cref="MobileControlBridgeBase"/> class
+        /// </summary>
+        /// <param name="key">The unique key for this bridge</param>
+        /// <param name="messagePath">The message path for this bridge</param>
+        /// <param name="device">The device associated with this bridge</param>
         protected MobileControlBridgeBase(string key, string messagePath, IKeyName device)
             : base(key, messagePath, device)
         {
@@ -110,6 +139,10 @@ namespace PepperDash.Essentials.RoomBridges
             SetUserCode(code);
         }
 
+        /// <summary>
+        /// Update the App Url with the provided URL
+        /// </summary>
+        /// <param name="url">The new App URL</param>
         public virtual void UpdateAppUrl(string url)
         {
             AppUrl = url;
@@ -137,16 +170,25 @@ namespace PepperDash.Essentials.RoomBridges
             OnUserCodeChanged();
         }
 
+        /// <summary>
+        /// Trigger the UserCodeChanged event
+        /// </summary>
         protected void OnUserCodeChanged()
         {
             UserCodeChanged?.Invoke(this, new EventArgs());
         }
 
+        /// <summary>
+        /// Trigger the UserPromptedForCode event
+        /// </summary>
         protected void OnUserPromptedForCode()
         {
             UserPromptedForCode?.Invoke(this, new EventArgs());
         }
 
+        /// <summary>
+        /// Trigger the ClientJoined event
+        /// </summary>
         protected void OnClientJoined()
         {
             ClientJoined?.Invoke(this, new EventArgs());

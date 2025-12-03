@@ -40,20 +40,20 @@ namespace PepperDash.Core
 
         private static ILogger _logger;
 
-        private static readonly LoggingLevelSwitch _consoleLoggingLevelSwitch;
+        private static readonly LoggingLevelSwitch _consoleLogLevelSwitch;
 
-        private static readonly LoggingLevelSwitch _websocketLoggingLevelSwitch;
+        private static readonly LoggingLevelSwitch _websocketLogLevelSwitch;
 
         private static readonly LoggingLevelSwitch _errorLogLevelSwitch;
 
-        private static readonly LoggingLevelSwitch _fileLevelSwitch;
+        private static readonly LoggingLevelSwitch _fileLogLevelSwitch;
 
         /// <summary>
         /// Gets the minimum log level for the websocket sink.
         /// </summary>
         public static LogEventLevel WebsocketMinimumLogLevel
         {
-            get { return _websocketLoggingLevelSwitch.MinimumLevel; }
+            get { return _websocketLogLevelSwitch.MinimumLevel; }
         }
 
         private static readonly DebugWebsocketSink _websocketSink;
@@ -138,13 +138,13 @@ namespace PepperDash.Core
 
             var defaultFileLogLevel = GetStoredLogEventLevel(FileLevelStoreKey);
 
-            _consoleLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultConsoleLevel);
+            _consoleLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultConsoleLevel);
 
-            _websocketLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultWebsocketLevel);
+            _websocketLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultWebsocketLevel);
 
             _errorLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultErrorLogLevel);
 
-            _fileLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultFileLogLevel);
+            _fileLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultFileLogLevel);
 
             _websocketSink = new DebugWebsocketSink(new JsonFormatter(renderMessage: true));
 
@@ -162,14 +162,14 @@ namespace PepperDash.Core
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
                 .Enrich.With(new CrestronEnricher())
-                .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: _consoleLoggingLevelSwitch)
-                .WriteTo.Sink(_websocketSink, levelSwitch: _websocketLoggingLevelSwitch)
+                .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: _consoleLogLevelSwitch)
+                .WriteTo.Sink(_websocketSink, levelSwitch: _websocketLogLevelSwitch)
                 .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: _errorLogLevelSwitch)
                 .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
-                    retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 30 : 60,
-                    levelSwitch: _fileLevelSwitch
+                    retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 7 : 14,
+                    levelSwitch: _fileLogLevelSwitch
                 );
 
             try
@@ -237,10 +237,13 @@ namespace PepperDash.Core
             if (DoNotLoadConfigOnNextBoot)
                 CrestronConsole.PrintLine(string.Format("Program {0} will not load config after next boot.  Use console command go:{0} to load the config manually", InitialParametersClass.ApplicationNumber));
 
-            _consoleLoggingLevelSwitch.MinimumLevelChanged += (sender, args) =>
+            _errorLogLevelSwitch.MinimumLevelChanged += (sender, args) =>
             {
-                LogMessage(LogEventLevel.Information, "Console debug level set to {minimumLevel}", _consoleLoggingLevelSwitch.MinimumLevel);
+                LogMessage(LogEventLevel.Information, "Error log debug level set to {minimumLevel}", _errorLogLevelSwitch.MinimumLevel);
             };
+
+            // Set initial error log level based on platform && stored level. If appliance, use stored level, otherwise default to verbose
+            SetErrorLogMinimumDebugLevel(CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? _errorLogLevelSwitch.MinimumLevel : LogEventLevel.Verbose);
         }
 
         /// <summary>
@@ -273,9 +276,9 @@ namespace PepperDash.Core
                 {
                     CrestronConsole.Print($"Unable to retrieve stored log level for {levelStoreKey}.\r\nError: {result}.\r\nSetting level to {LogEventLevel.Information}\r\n");
 
-                    CrestronDataStoreStatic.SetLocalIntValue(levelStoreKey, (int)LogEventLevel.Information);
+                    CrestronDataStoreStatic.SetLocalIntValue(levelStoreKey, levelStoreKey == ErrorLogLevelStoreKey ? (int)LogEventLevel.Warning : (int)LogEventLevel.Information);
 
-                    return LogEventLevel.Information;
+                    return levelStoreKey == ErrorLogLevelStoreKey ? LogEventLevel.Warning : LogEventLevel.Information;
                 }
 
                 if (logLevel < 0 || logLevel > 5)
@@ -283,6 +286,8 @@ namespace PepperDash.Core
                     CrestronConsole.PrintLine($"Stored Log level not valid for {levelStoreKey}: {logLevel}. Setting level to {LogEventLevel.Information}");
                     return LogEventLevel.Information;
                 }
+
+                CrestronConsole.PrintLine($"Stored log level for {levelStoreKey} is {logLevel}");
 
                 return (LogEventLevel)logLevel;
             }
@@ -349,7 +354,11 @@ namespace PepperDash.Core
                 if (levelString.Trim() == "?")
                 {
                     CrestronConsole.ConsoleCommandResponse(
-                    "Used to set the minimum level of debug messages to be printed to the console:\r\n" +
+                    "Used to set the minimum level of debug messages:\r\n" +
+                    "Usage: appdebug:P [sink] [level]\r\n" +
+                    "  sink: console (default), errorlog, file, all\r\n" +
+                    "  all: sets all sinks to the specified level\r\n" +
+                    "  level: 0-5 or LogEventLevel name\r\n" +
                     $"{_logLevels[0]} = 0\r\n" +
                     $"{_logLevels[1]} = 1\r\n" +
                     $"{_logLevels[2]} = 2\r\n" +
@@ -361,32 +370,88 @@ namespace PepperDash.Core
 
                 if (string.IsNullOrEmpty(levelString.Trim()))
                 {
-                    CrestronConsole.ConsoleCommandResponse("AppDebug level = {0}", _consoleLoggingLevelSwitch.MinimumLevel);
+                    CrestronConsole.ConsoleCommandResponse("Console log level = {0}\r\n", _consoleLogLevelSwitch.MinimumLevel);
+                    CrestronConsole.ConsoleCommandResponse("File log level = {0}\r\n", _fileLogLevelSwitch.MinimumLevel);
+                    CrestronConsole.ConsoleCommandResponse("Error log level = {0}\r\n", _errorLogLevelSwitch.MinimumLevel);
                     return;
                 }
 
-                if (int.TryParse(levelString, out var levelInt))
+                // Parse tokens: first token is sink (defaults to console), second token is level
+                var tokens = levelString.Trim().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                string sinkName;
+                string levelToken;
+
+                if (tokens.Length == 1)
+                {
+                    // Single token - assume it's a level for console sink
+                    sinkName = "console";
+                    levelToken = tokens[0];
+                }
+                else if (tokens.Length == 2)
+                {
+                    // Two tokens - first is sink, second is level
+                    sinkName = tokens[0].ToLowerInvariant();
+                    levelToken = tokens[1];
+                }
+                else
+                {
+                    CrestronConsole.ConsoleCommandResponse("Usage: appdebug:P [sink] [level]");
+                    return;
+                }
+
+                // Parse the level using the same logic as before
+                LogEventLevel level;
+
+                if (int.TryParse(levelToken, out var levelInt))
                 {
                     if (levelInt < 0 || levelInt > 5)
                     {
-                        CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level. If using a number, value must be between 0-5");
+                        CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelToken} to valid log level. If using a number, value must be between 0-5");
                         return;
                     }
-                    SetDebugLevel((uint)levelInt);
-                    return;
-                }
 
-                if (Enum.TryParse<LogEventLevel>(levelString, true, out var levelEnum))
+                    if (!_logLevels.TryGetValue((uint)levelInt, out level))
+                    {
+                        level = LogEventLevel.Information;
+                        CrestronConsole.ConsoleCommandResponse($"{levelInt} not valid. Setting level to {level}");
+                    }
+                }
+                else if (Enum.TryParse(levelToken, true, out level))
                 {
-                    SetDebugLevel(levelEnum);
+                    // Successfully parsed as LogEventLevel enum
+                }
+                else
+                {
+                    CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelToken} to valid log level");
                     return;
                 }
 
-                CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level");
+                // Set the level for the specified sink
+                switch (sinkName)
+                {
+                    case "console":
+                        SetDebugLevel(level);
+                        break;
+                    case "errorlog":
+                        SetErrorLogMinimumDebugLevel(level);
+                        break;
+                    case "file":
+                        SetFileMinimumDebugLevel(level);
+                        break;
+                    case "all":
+                        SetDebugLevel(level);
+                        SetErrorLogMinimumDebugLevel(level);
+                        SetFileMinimumDebugLevel(level);
+                        break;
+                    default:
+                        CrestronConsole.ConsoleCommandResponse($"Error: Unknown sink '{sinkName}'. Valid sinks: console, errorlog, file");
+                        break;
+                }
             }
             catch
             {
-                CrestronConsole.ConsoleCommandResponse("Usage: appdebug:P [0-5]");
+                CrestronConsole.ConsoleCommandResponse("Usage: appdebug:P [sink] [level]");
             }
         }
 
@@ -416,10 +481,10 @@ namespace PepperDash.Core
         /// </summary>
         public static void SetDebugLevel(LogEventLevel level)
         {
-            _consoleLoggingLevelSwitch.MinimumLevel = level;
+            _consoleLogLevelSwitch.MinimumLevel = level;
 
-            CrestronConsole.ConsoleCommandResponse("[Application {0}], Debug level set to {1}\r\n",
-                InitialParametersClass.ApplicationNumber, _consoleLoggingLevelSwitch.MinimumLevel);
+            CrestronConsole.ConsoleCommandResponse("[Application {0}] Debug level set to {1}\r\n",
+                InitialParametersClass.ApplicationNumber, _consoleLogLevelSwitch.MinimumLevel);
 
             CrestronConsole.ConsoleCommandResponse($"Storing level {level}:{(int)level}");
 
@@ -436,14 +501,14 @@ namespace PepperDash.Core
         /// </summary>
         public static void SetWebSocketMinimumDebugLevel(LogEventLevel level)
         {
-            _websocketLoggingLevelSwitch.MinimumLevel = level;
+            _websocketLogLevelSwitch.MinimumLevel = level;
 
             var err = CrestronDataStoreStatic.SetLocalUintValue(WebSocketLevelStoreKey, (uint)level);
 
             if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                 LogMessage(LogEventLevel.Information, "Error saving websocket debug level setting: {erro}", err);
 
-            LogMessage(LogEventLevel.Information, "Websocket debug level set to {0}", _websocketLoggingLevelSwitch.MinimumLevel);
+            LogMessage(LogEventLevel.Information, "Websocket debug level set to {0}", _websocketLogLevelSwitch.MinimumLevel);
         }
 
         /// <summary>
@@ -453,12 +518,17 @@ namespace PepperDash.Core
         {
             _errorLogLevelSwitch.MinimumLevel = level;
 
-            var err = CrestronDataStoreStatic.SetLocalUintValue(ErrorLogLevelStoreKey, (uint)level);
+            CrestronConsole.ConsoleCommandResponse("[Application {0}] Error log level set to {1}\r\n",
+                InitialParametersClass.ApplicationNumber, _errorLogLevelSwitch.MinimumLevel);
+
+            CrestronConsole.ConsoleCommandResponse($"Storing level {level}:{(int)level}");
+
+            var err = CrestronDataStoreStatic.SetLocalIntValue(ErrorLogLevelStoreKey, (int)level);
+
+            CrestronConsole.ConsoleCommandResponse($"Store result: {err}:{(int)level}");
 
             if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
-                LogMessage(LogEventLevel.Information, "Error saving Error Log debug level setting: {error}", err);
-
-            LogMessage(LogEventLevel.Information, "Error log debug level set to {0}", _websocketLoggingLevelSwitch.MinimumLevel);
+                CrestronConsole.PrintLine($"Error saving error log debug level setting: {err}");
         }
 
         /// <summary>
@@ -466,14 +536,19 @@ namespace PepperDash.Core
         /// </summary>
         public static void SetFileMinimumDebugLevel(LogEventLevel level)
         {
-            _errorLogLevelSwitch.MinimumLevel = level;
+            _fileLogLevelSwitch.MinimumLevel = level;
 
-            var err = CrestronDataStoreStatic.SetLocalUintValue(ErrorLogLevelStoreKey, (uint)level);
+            CrestronConsole.ConsoleCommandResponse("[Application {0}] File log level set to {1}\r\n",
+                InitialParametersClass.ApplicationNumber, _fileLogLevelSwitch.MinimumLevel);
+
+            CrestronConsole.ConsoleCommandResponse($"Storing level {level}:{(int)level}");
+
+            var err = CrestronDataStoreStatic.SetLocalIntValue(FileLevelStoreKey, (int)level);
+
+            CrestronConsole.ConsoleCommandResponse($"Store result: {err}:{(int)level}");
 
             if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
-                LogMessage(LogEventLevel.Information, "Error saving File debug level setting: {error}", err);
-
-            LogMessage(LogEventLevel.Information, "File debug level set to {0}", _websocketLoggingLevelSwitch.MinimumLevel);
+                CrestronConsole.PrintLine($"Error saving file debug level setting: {err}");
         }
 
         /// <summary>
@@ -1006,9 +1081,6 @@ namespace PepperDash.Core
         /// Logs to Console when at-level, and all messages to error log
         /// </summary>
         [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-        /// <summary>
-        /// Console method
-        /// </summary>
         public static void Console(uint level, ErrorLogLevel errorLogLevel,
             string format, params object[] items)
         {
@@ -1021,9 +1093,6 @@ namespace PepperDash.Core
         /// it will only be written to the log.
         /// </summary>
         [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-        /// <summary>
-        /// ConsoleWithLog method
-        /// </summary>
         public static void ConsoleWithLog(uint level, string format, params object[] items)
         {
             LogMessage(level, format, items);

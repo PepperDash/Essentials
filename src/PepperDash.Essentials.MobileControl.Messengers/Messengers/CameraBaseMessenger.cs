@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
@@ -9,12 +11,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Messenger for a CameraBase device
     /// </summary>
-    public class CameraBaseMessenger : MessengerBase
+    public class CameraBaseMessenger<T> : MessengerBase where T : IKeyed
     {
         /// <summary>
         /// Gets or sets the Camera
         /// </summary>
-        public CameraBase Camera { get; set; }
+        public T Camera { get; set; }
 
         /// <summary>
         /// Constructor
@@ -22,10 +24,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="key"></param>
         /// <param name="camera"></param>
         /// <param name="messagePath"></param>
-        public CameraBaseMessenger(string key, CameraBase camera, string messagePath)
-            : base(key, messagePath, camera)
+        public CameraBaseMessenger(string key, T camera, string messagePath)
+            : base(key, messagePath, camera as IKeyName)
         {
-            Camera = camera ?? throw new ArgumentNullException("camera");
+            if (camera == null)
+                throw new ArgumentNullException(nameof(camera));
+
+            Camera = camera;
 
 
             if (Camera is IHasCameraPresets presetsCamera)
@@ -55,7 +60,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendCameraFullMessageObject());
+            AddAction("/fullStatus", (id, content) => SendCameraFullMessageObject(id));
+
+            AddAction("/cameraStatus", (id, content) => SendCameraFullMessageObject(id));
 
 
             if (Camera is IHasCameraPtzControl ptzCamera)
@@ -173,22 +180,47 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Helper method to update the full status of the camera
         /// </summary>
-        private void SendCameraFullMessageObject()
+        private void SendCameraFullMessageObject(string id = null)
         {
             var presetList = new List<CameraPreset>();
+            CameraCapabilities capabilities = null;
 
             if (Camera is IHasCameraPresets presetsCamera)
                 presetList = presetsCamera.Presets;
 
-            PostStatusMessage(JToken.FromObject(new
+            if (Camera is ICameraCapabilities cameraCapabilities)
+                capabilities = new CameraCapabilities
+                {
+                    CanPan = cameraCapabilities.CanPan,
+                    CanTilt = cameraCapabilities.CanTilt,
+                    CanZoom = cameraCapabilities.CanZoom,
+                    CanFocus = cameraCapabilities.CanFocus
+
+                };
+
+            if (Camera is CameraBase cameraBase)
+                capabilities = new CameraCapabilities
+                {
+                    CanPan = cameraBase.CanPan,
+                    CanTilt = cameraBase.CanTilt,
+                    CanZoom = cameraBase.CanZoom,
+                    CanFocus = cameraBase.CanFocus
+                    
+                };
+
+            var message = new CameraStateMessage
             {
-                cameraManualSupported = Camera is IHasCameraControls,
-                cameraAutoSupported = Camera is IHasCameraAutoMode,
-                cameraOffSupported = Camera is IHasCameraOff,
-                cameraMode = GetCameraMode(),
-                hasPresets = Camera is IHasCameraPresets,
-                presets = presetList
-            })
+                CameraManualSupported = Camera is IHasCameraControls,
+                CameraAutoSupported = Camera is IHasCameraAutoMode,
+                CameraOffSupported = Camera is IHasCameraOff,
+                CameraMode = (eCameraControlMode)Enum.Parse(typeof(eCameraControlMode), GetCameraMode(), true),
+                HasPresets = Camera is IHasCameraPresets,
+                Presets = presetList,
+                Capabilities = capabilities,
+                IsFarEnd = Camera is IAmFarEndCamera
+            };
+
+            PostStatusMessage(message, id
             );
         }
 
@@ -207,5 +239,60 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 m = eCameraControlMode.Manual.ToString().ToLower();
             return m;
         }
+    }
+
+    /// <summary>
+    /// State message for a camera device
+    /// </summary>
+    public class CameraStateMessage : DeviceStateMessageBase
+    {
+        /// <summary>
+        /// Indicates whether the camera supports manual control
+        /// </summary>
+        [JsonProperty("cameraManualSupported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool CameraManualSupported { get; set; }
+
+        /// <summary>
+        /// Indicates whether the camera supports auto control
+        /// </summary>
+        [JsonProperty("cameraAutoSupported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool CameraAutoSupported { get; set; }
+
+        /// <summary>
+        /// Indicates whether the camera supports off control
+        /// </summary>
+        [JsonProperty("cameraOffSupported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool CameraOffSupported { get; set; }
+
+        /// <summary>
+        /// Indicates the current camera control mode
+        /// </summary>
+        [JsonProperty("cameraMode", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public eCameraControlMode CameraMode { get; set; }
+
+        /// <summary>
+        /// Indicates whether the camera has presets
+        /// </summary>
+        [JsonProperty("hasPresets", NullValueHandling = NullValueHandling.Ignore)]
+        public bool HasPresets { get; set; }
+
+        /// <summary>
+        /// List of presets if the camera supports them
+        /// </summary>
+        [JsonProperty("presets", NullValueHandling = NullValueHandling.Ignore)]
+        public List<CameraPreset> Presets { get; set; }
+
+        /// <summary>
+        /// Indicates the capabilities of the camera
+        /// </summary>
+        [JsonProperty("capabilities", NullValueHandling = NullValueHandling.Ignore)]
+        public CameraCapabilities Capabilities { get; set; }
+
+        /// <summary>
+        /// Indicates whether the camera is a far end camera
+        /// </summary>
+        [JsonProperty("isFarEnd", NullValueHandling = NullValueHandling.Ignore)]
+        public bool IsFarEnd { get; set; }
     }
 }

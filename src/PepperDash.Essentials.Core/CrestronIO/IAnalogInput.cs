@@ -12,6 +12,12 @@ namespace PepperDash.Essentials.Core.CrestronIO
     /// </summary>
     public interface IAnalogInput
     {
+        /// <summary>
+        /// Get the InputValueFeedback.
+        /// </summary>
+        /// <remarks>
+        /// Updates when the analog input value changes
+        /// </remarks>
         IntFeedback InputValueFeedback { get; }
     }
 }

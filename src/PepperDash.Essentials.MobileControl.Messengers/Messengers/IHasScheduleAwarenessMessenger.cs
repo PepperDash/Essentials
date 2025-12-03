@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Devices.Common.Codec;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -27,7 +27,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         protected override void RegisterActions()
         {
-            AddAction("/schedule/fullStatus", (id, content) => SendFullScheduleObject());
+            AddAction("/schedule/fullStatus", (id, content) => SendFullScheduleObject(id));
+
+            AddAction("/schedule/status", (id, content) => SendFullScheduleObject(id));
         }
 
         private void CodecSchedule_MeetingEventChange(object sender, MeetingEventArgs e)
@@ -51,13 +53,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Helper method to send the full schedule data
         /// </summary>
-        private void SendFullScheduleObject()
+        private void SendFullScheduleObject(string id = null)
         {
             PostStatusMessage(new FullScheduleMessage
             {
                 Meetings = ScheduleSource.CodecSchedule.Meetings,
                 MeetingWarningMinutes = ScheduleSource.CodecSchedule.MeetingWarningMinutes
-            });
+            }, id);
         }
     }
 
@@ -66,16 +68,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class FullScheduleMessage : DeviceStateMessageBase
     {
-        [JsonProperty("meetings", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Meetings
         /// </summary>
+        [JsonProperty("meetings", NullValueHandling = NullValueHandling.Ignore)]
         public List<Meeting> Meetings { get; set; }
 
-        [JsonProperty("meetingWarningMinutes", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the MeetingWarningMinutes
         /// </summary>
+        [JsonProperty("meetingWarningMinutes", NullValueHandling = NullValueHandling.Ignore)]
         public int MeetingWarningMinutes { get; set; }
     }
 
@@ -84,10 +88,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class MeetingChangeMessage
     {
-        [JsonProperty("meetingChange", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the MeetingChange
         /// </summary>
+        [JsonProperty("meetingChange", NullValueHandling = NullValueHandling.Ignore)]
         public MeetingChange MeetingChange { get; set; }
     }
 
@@ -96,16 +101,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class MeetingChange
     {
-        [JsonProperty("changeType", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the ChangeType
         /// </summary>
+        [JsonProperty("changeType", NullValueHandling = NullValueHandling.Ignore)]
         public string ChangeType { get; set; }
 
-        [JsonProperty("meeting", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the Meeting
         /// </summary>
+        [JsonProperty("meeting", NullValueHandling = NullValueHandling.Ignore)]
         public Meeting Meeting { get; set; }
     }
 }

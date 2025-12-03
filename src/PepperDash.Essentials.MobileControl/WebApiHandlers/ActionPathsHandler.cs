@@ -1,8 +1,8 @@
-﻿using Crestron.SimplSharp.WebScripting;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PepperDash.Essentials.WebApiHandlers
 {
@@ -12,11 +12,20 @@ namespace PepperDash.Essentials.WebApiHandlers
     public class ActionPathsHandler : WebApiBaseRequestHandler
     {
         private readonly MobileControlSystemController mcController;
+
+        /// <summary>
+        /// Create an instance of the <see cref="ActionPathsHandler"/> class.
+        /// </summary>
+        /// <param name="controller"></param>
         public ActionPathsHandler(MobileControlSystemController controller) : base(true)
         {
             mcController = controller;
         }
 
+        /// <summary>
+        /// Handle a request to get the action paths
+        /// </summary>
+        /// <param name="context">Request Context</param>
         protected override void HandleGet(HttpCwsContext context)
         {
             var response = JsonConvert.SerializeObject(new ActionPathsResponse(mcController));
@@ -37,9 +46,16 @@ namespace PepperDash.Essentials.WebApiHandlers
         [JsonIgnore]
         private readonly MobileControlSystemController mcController;
 
+        /// <summary>
+        /// Registered action paths for this system
+        /// </summary>
         [JsonProperty("actionPaths")]
         public List<ActionPath> ActionPaths => mcController.GetActionDictionaryPaths().Select((path) => new ActionPath { MessengerKey = path.Item1, Path = path.Item2 }).ToList();
 
+        /// <summary>
+        /// Create an instance of the <see cref="ActionPathsResponse"/> class.
+        /// </summary>
+        /// <param name="mcController"></param>
         public ActionPathsResponse(MobileControlSystemController mcController)
         {
             this.mcController = mcController;
@@ -51,16 +67,18 @@ namespace PepperDash.Essentials.WebApiHandlers
     /// </summary>
     public class ActionPath
     {
-        [JsonProperty("messengerKey")]
+
         /// <summary>
         /// Gets or sets the MessengerKey
         /// </summary>
+        [JsonProperty("messengerKey")]
         public string MessengerKey { get; set; }
 
-        [JsonProperty("path")]
+
         /// <summary>
         /// Gets or sets the Path
         /// </summary>
+        [JsonProperty("path")]
         public string Path { get; set; }
     }
 }

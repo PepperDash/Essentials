@@ -6,9 +6,9 @@ using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
- /// <summary>
- /// Represents a SetDeviceStreamDebugRequestHandler
- /// </summary>
+	/// <summary>
+	/// Represents a SetDeviceStreamDebugRequestHandler
+	/// </summary>
 	public class SetDeviceStreamDebugRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -122,23 +122,23 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-            if (!(DeviceManager.GetDeviceForKey(body.DeviceKey) is IStreamDebugging device))
-            {
-                context.Response.StatusCode = 404;
-                context.Response.StatusDescription = "Not Found";
-                context.Response.End();
+			if (!(DeviceManager.GetDeviceForKey(body.DeviceKey) is IStreamDebugging device))
+			{
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
+				context.Response.End();
 
-                return;
-            }
+				return;
+			}
 
-            eStreamDebuggingSetting debugSetting;
+			eStreamDebuggingSetting debugSetting;
 			try
 			{
-				debugSetting = (eStreamDebuggingSetting) Enum.Parse(typeof (eStreamDebuggingSetting), body.Setting, true);				
+				debugSetting = (eStreamDebuggingSetting)Enum.Parse(typeof(eStreamDebuggingSetting), body.Setting, true);
 			}
 			catch (Exception ex)
 			{
-                Debug.LogMessage(ex, "Exception handling set debug request");
+				Debug.LogMessage(ex, "Exception handling set debug request");
 				context.Response.StatusCode = 500;
 				context.Response.StatusDescription = "Internal Server Error";
 				context.Response.End();
@@ -164,7 +164,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 			catch (Exception ex)
 			{
-                Debug.LogMessage(ex, "Exception handling set debug request");
+				Debug.LogMessage(ex, "Exception handling set debug request");
 				context.Response.StatusCode = 500;
 				context.Response.StatusDescription = "Internal Server Error";
 				context.Response.End();
@@ -198,21 +198,21 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	public class SetDeviceStreamDebugConfig
 	{
 		[JsonProperty("deviceKey", NullValueHandling = NullValueHandling.Include)]
-  /// <summary>
-  /// Gets or sets the DeviceKey
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the DeviceKey
+		/// </summary>
 		public string DeviceKey { get; set; }
 
 		[JsonProperty("setting", NullValueHandling = NullValueHandling.Include)]
-  /// <summary>
-  /// Gets or sets the Setting
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the Setting
+		/// </summary>
 		public string Setting { get; set; }
 
 		[JsonProperty("timeout")]
-  /// <summary>
-  /// Gets or sets the Timeout
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the Timeout
+		/// </summary>
 		public int Timeout { get; set; }
 
 		public SetDeviceStreamDebugConfig()

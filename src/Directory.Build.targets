@@ -23,23 +23,32 @@
     <FileName>$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz</FileName>
   </PropertyGroup>
 
-  <Target Name="DeleteCLZ" BeforeTargets="PreBuildEvent" Condition="$(ProjectType) == 'Library' And $(TargetDir) != '' And Exists($(FileName))">
-    <Delete Files="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).clz">
+  <Target Name="DeleteCLZ" BeforeTargets="CoreBuild" Condition="$(ProjectType) == 'Library' And $(TargetDir) != ''">
+    <ItemGroup>
+      <OldCLZFiles Include="$(TargetDir)$(TargetName).*.$(TargetFramework).clz" />
+    </ItemGroup>
+    <Delete Files="@(OldCLZFiles)" Condition="@(OldCLZFiles) != ''">
       <Output TaskParameter="DeletedFiles" ItemName="DeletedList"/>
     </Delete>
-    <Message Text="Deleted files: '@(DeletedList)'" />
+    <Message Text="Deleted old CLZ files: '@(DeletedList)'" Condition="@(DeletedList) != ''" />
   </Target>
-  <Target Name="DeleteCPZ" BeforeTargets="PreBuildEvent" Condition="$(ProjectType) == 'Program' And $(TargetDir) != '' And Exists($(FileName))">
-    <Delete Files="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz">
+  <Target Name="DeleteCPZ" BeforeTargets="CoreBuild" Condition="$(ProjectType) == 'Program' And $(TargetDir) != ''">
+    <ItemGroup>
+      <OldCPZFiles Include="$(TargetDir)$(TargetName).*.$(TargetFramework).cpz" />
+    </ItemGroup>
+    <Delete Files="@(OldCPZFiles)" Condition="@(OldCPZFiles) != ''">
       <Output TaskParameter="DeletedFiles" ItemName="DeletedList"/>
     </Delete>
-    <Message Text="Deleted files: '@(DeletedList)'" />
+    <Message Text="Deleted old CPZ files: '@(DeletedList)'" Condition="@(DeletedList) != ''" />
   </Target>
-  <Target Name="DeleteCPLZ" BeforeTargets="PreBuildEvent" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != '' And Exists($(FileName))">
-    <Delete Files="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz">
+  <Target Name="DeleteCPLZ" BeforeTargets="CoreBuild" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != ''">
+    <ItemGroup>
+      <OldCPLZFiles Include="$(TargetDir)$(TargetName).*.$(TargetFramework).cplz" />
+    </ItemGroup>
+    <Delete Files="@(OldCPLZFiles)" Condition="@(OldCPLZFiles) != ''">
       <Output TaskParameter="DeletedFiles" ItemName="DeletedList"/>
     </Delete>
-    <Message Text="Deleted files: '@(DeletedList)'" />
+    <Message Text="Deleted old CPLZ files: '@(DeletedList)'" Condition="@(DeletedList) != ''" />
   </Target>
   
   <Target Name="CreateCPLZ" AfterTargets="Build" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != ''" DependsOnTargets="DeleteCPLZ">

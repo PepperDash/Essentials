@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// SendFullStatus method
         /// </summary>
-        public void SendFullStatus()
+        public void SendFullStatus(string id = null)
         {
             var messageObj = new TwoWayDisplayBaseStateMessage
             {
@@ -31,16 +31,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 CurrentInput = _display.CurrentInputFeedback.StringValue
             };
 
-            PostStatusMessage(messageObj);
+            PostStatusMessage(messageObj, id);
         }
 
         protected override void RegisterActions()
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
-            //_display.PowerIsOnFeedback.OutputChange += PowerIsOnFeedbackOnOutputChange;
+            AddAction("/displayStatus", (id, content) => SendFullStatus(id));
+
             _display.CurrentInputFeedback.OutputChange += CurrentInputFeedbackOnOutputChange;
             _display.IsCoolingDownFeedback.OutputChange += IsCoolingFeedbackOnOutputChange;
             _display.IsWarmingUpFeedback.OutputChange += IsWarmingFeedbackOnOutputChange;
@@ -54,16 +55,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
             })
             );
         }
-
-
-        //private void PowerIsOnFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
-        //{
-        //    PostStatusMessage(JToken.FromObject(new
-        //        {
-        //            powerState = feedbackEventArgs.BoolValue
-        //        })
-        //    );
-        //}
 
         private void IsWarmingFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
         {
@@ -96,10 +87,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
         //[JsonProperty("powerState", NullValueHandling = NullValueHandling.Ignore)]
         //public bool? PowerState { get; set; }
 
-        [JsonProperty("currentInput", NullValueHandling = NullValueHandling.Ignore)]
+
         /// <summary>
         /// Gets or sets the CurrentInput
         /// </summary>
+        [JsonProperty("currentInput", NullValueHandling = NullValueHandling.Ignore)]
         public string CurrentInput { get; set; }
     }
 }

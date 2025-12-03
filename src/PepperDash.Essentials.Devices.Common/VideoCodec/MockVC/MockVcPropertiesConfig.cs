@@ -1,14 +1,5 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
@@ -18,18 +9,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// </summary>
     public class MockVcPropertiesConfig
     {
-        [JsonProperty("favorites")]
         /// <summary>
         /// Gets or sets the Favorites
         /// </summary>
+        [JsonProperty("favorites")]
         public List<CodecActiveCallItem> Favorites { get; set; }
 
-        [JsonProperty("presets")]
         /// <summary>
         /// Gets or sets the Presets
         /// </summary>
+        [JsonProperty("presets")]
         public List<CodecRoomPreset> Presets { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MockVcPropertiesConfig"/> class.
+        /// </summary>
         public MockVcPropertiesConfig()
         {
             Favorites = new List<CodecActiveCallItem>();

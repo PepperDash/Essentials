@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
@@ -11,6 +7,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public interface IHasCallFavorites
     {
+        /// <summary>
+        /// Gets the call favorites for this device
+        /// </summary>
         CodecCallFavorites CallFavorites { get; }
     }
 
@@ -24,6 +23,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         public List<CodecActiveCallItem> Favorites { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the CodecCallFavorites class
+        /// </summary>
         public CodecCallFavorites()
         {
             Favorites = new List<CodecActiveCallItem>();

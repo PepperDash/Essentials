@@ -98,7 +98,7 @@ namespace PepperDash.Essentials.Core.Routing
         /// <param name="inputPort">The currently selected input port on the destination device.</param>
         private void UpdateDestination(IRoutingSinkWithSwitching destination, RoutingInputPort inputPort)
         {            
-            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating destination {destination} with inputPort {inputPort}", this,destination?.Key, inputPort?.Key);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Updating destination {destination} with inputPort {inputPort}", this, destination?.Key, inputPort?.Key);
 
             if(inputPort == null)
             {

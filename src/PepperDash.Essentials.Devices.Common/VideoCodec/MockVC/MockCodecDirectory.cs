@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
+﻿using System.Collections.Generic;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
+    /// <summary>
+    /// Mock video codec directory structure
+    /// </summary>
     public static class MockVideoCodecDirectory
     {
         /// <summary>
@@ -18,13 +14,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public enum eFolderId
         {
+            /// <summary>
+            /// The United States folder
+            /// </summary>
             UnitedStates,
+            /// <summary>
+            /// The Canada folder
+            /// </summary>
             Canada,
+            /// <summary>
+            /// The New York folder
+            /// </summary>
             NewYork,
+            /// <summary>
+            /// The Boston folder
+            /// </summary>
             Boston,
+            /// <summary>
+            /// The San Francisco folder
+            /// </summary>
             SanFrancisco,
+            /// <summary>
+            /// The Denver folder
+            /// </summary>
             Denver,
+            /// <summary>
+            /// The Austin folder
+            /// </summary>
             Austin,
+            /// <summary>
+            /// The Calgary folder
+            /// </summary>
             Calgary
         }
 
@@ -51,16 +71,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             }
         }
 
-        public static CodecDirectory DirectoryRoot 
+        /// <summary>
+        /// The root of the directory structure
+        /// </summary>
+        public static CodecDirectory DirectoryRoot
         {
             get
             {
                 var directory = new CodecDirectory();
-                
+
                 directory.AddFoldersToDirectory
-                ( 
+                (
                     new List<DirectoryItem>()
-                    {                      
+                    {
                         new DirectoryFolder()
                         {
                             FolderId = eFolderId.UnitedStates.ToString(),
@@ -77,7 +100,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         }
                     }
                 );
-                        
+
                 directory.AddContactsToDirectory
                 (
                     new List<DirectoryItem>()
@@ -97,23 +120,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                             }
                         }
                     }
-                );              
-                
+                );
+
                 return directory;
-            }     
+            }
         }
 
+        /// <summary>
+        /// Contents of the United States folder
+        /// </summary>
         public static CodecDirectory UnitedStatesFolderContents
         {
             get
             {
-                var directory = new CodecDirectory();
-
-                directory.ResultsFolderId = eFolderId.UnitedStates.ToString();
-                directory.AddFoldersToDirectory 
-                (                
-                    new List<DirectoryItem>()
-                    { 
+                var directory = new CodecDirectory
+                {
+                    ResultsFolderId = eFolderId.UnitedStates.ToString()
+                };
+                directory.AddFoldersToDirectory
+                        (
+                            new List<DirectoryItem>()
+                            {
                         new DirectoryFolder()
                         {
                             FolderId = eFolderId.NewYork.ToString(),
@@ -149,24 +176,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                             ParentFolderId = eFolderId.UnitedStates.ToString(),
                             Contacts = null
                         }
-                    }
-                );
+                            }
+                        );
 
                 return directory;
             }
         }
 
+        /// <summary>
+        /// Contents of the New York folder
+        /// </summary>
         public static CodecDirectory NewYorkFolderContents
         {
             get
             {
-                var directory = new CodecDirectory();
-
-                directory.ResultsFolderId = eFolderId.NewYork.ToString();
+                var directory = new CodecDirectory
+                {
+                    ResultsFolderId = eFolderId.NewYork.ToString()
+                };
                 directory.AddContactsToDirectory
-                (                    
-                    new List<DirectoryItem>()
-                    {
+                        (
+                            new List<DirectoryItem>()
+                            {
                         new DirectoryContact()
                         {
                             ContactId = "nyc_1",
@@ -215,24 +246,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                 }
                             }
                         }
-                    }
-                );
+                            }
+                        );
 
                 return directory;
             }
         }
 
+        /// <summary>
+        /// Contents of the Boston folder
+        /// </summary>
         public static CodecDirectory BostonFolderContents
         {
             get
             {
-                var directory = new CodecDirectory();
-
-                directory.ResultsFolderId = eFolderId.Boston.ToString();
+                var directory = new CodecDirectory
+                {
+                    ResultsFolderId = eFolderId.Boston.ToString()
+                };
                 directory.AddContactsToDirectory
-                (                    
-                    new List<DirectoryItem>()
-                    {
+                        (
+                            new List<DirectoryItem>()
+                            {
                         new DirectoryContact()
                         {
                             ContactId = "bos_1",
@@ -249,24 +284,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                 }
                             }
                         }
-                    }
-                );
+                            }
+                        );
 
                 return directory;
             }
         }
 
+        /// <summary>
+        /// Contents of the San Francisco folder
+        /// </summary>
         public static CodecDirectory SanFranciscoFolderContents
         {
             get
             {
-                var directory = new CodecDirectory();
-
-                directory.ResultsFolderId = eFolderId.SanFrancisco.ToString();
+                var directory = new CodecDirectory
+                {
+                    ResultsFolderId = eFolderId.SanFrancisco.ToString()
+                };
                 directory.AddContactsToDirectory
-                (                    
-                    new List<DirectoryItem>()
-                    {
+                        (
+                            new List<DirectoryItem>()
+                            {
                         new DirectoryContact()
                         {
                             ContactId = "sfo_1",
@@ -282,25 +321,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                     CallType = eContactMethodCallType.Video
                                 }
                             }
-                        }   
-                    }
-                );
+                        }
+                            }
+                        );
 
                 return directory;
             }
         }
 
+        /// <summary>
+        /// Contents of the Denver folder
+        /// </summary>
         public static CodecDirectory DenverFolderContents
         {
             get
             {
-                var directory = new CodecDirectory();
-
-                directory.ResultsFolderId = eFolderId.Denver.ToString();
+                var directory = new CodecDirectory
+                {
+                    ResultsFolderId = eFolderId.Denver.ToString()
+                };
                 directory.AddContactsToDirectory
-                (                    
-                    new List<DirectoryItem>()
-                    {
+                        (
+                            new List<DirectoryItem>()
+                            {
                         new DirectoryContact()
                         {
                             ContactId = "den_1",
@@ -316,25 +359,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                     CallType = eContactMethodCallType.Video
                                 }
                             }
-                        }   
-                    }
-                );
+                        }
+                            }
+                        );
 
                 return directory;
             }
         }
 
+        /// <summary>
+        /// Contents of the Austin folder
+        /// </summary>
         public static CodecDirectory AustinFolderContents
         {
             get
             {
-                var directory = new CodecDirectory();
-
-                directory.ResultsFolderId = eFolderId.Austin.ToString();
+                var directory = new CodecDirectory
+                {
+                    ResultsFolderId = eFolderId.Austin.ToString()
+                };
                 directory.AddContactsToDirectory
-                (                    
-                    new List<DirectoryItem>()
-                    {
+                        (
+                            new List<DirectoryItem>()
+                            {
                         new DirectoryContact()
                         {
                             ContactId = "atx_1",
@@ -350,25 +397,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                     CallType = eContactMethodCallType.Video
                                 }
                             }
-                        }   
-                    }
-                );
+                        }
+                            }
+                        );
 
                 return directory;
             }
         }
 
+        /// <summary>
+        /// Contents of the Canada folder
+        /// </summary>
         public static CodecDirectory CanadaFolderContents
         {
             get
             {
-                var directory = new CodecDirectory();
-
-                directory.ResultsFolderId = eFolderId.Canada.ToString();
+                var directory = new CodecDirectory
+                {
+                    ResultsFolderId = eFolderId.Canada.ToString()
+                };
                 directory.AddFoldersToDirectory
-                (                    
-                    new List<DirectoryItem>()
-                    { 
+                        (
+                            new List<DirectoryItem>()
+                            {
                         new DirectoryFolder()
                         {
                             FolderId = eFolderId.Calgary.ToString(),
@@ -376,24 +427,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                             ParentFolderId = eFolderId.Canada.ToString(),
                             Contacts = null
                         }
-                    }
-                );
+                            }
+                        );
 
                 return directory;
             }
         }
 
+        /// <summary>
+        /// Contents of the Calgary folder
+        /// </summary>
         public static CodecDirectory CalgaryFolderContents
         {
             get
             {
-                var directory = new CodecDirectory();
-
-                directory.ResultsFolderId = eFolderId.Calgary.ToString();
+                var directory = new CodecDirectory
+                {
+                    ResultsFolderId = eFolderId.Calgary.ToString()
+                };
                 directory.AddContactsToDirectory
-                (                    
-                    new List<DirectoryItem>()
-                    {
+                        (
+                            new List<DirectoryItem>()
+                            {
                         new DirectoryContact()
                         {
                             ContactId = "cdn_1",
@@ -409,14 +464,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                     CallType = eContactMethodCallType.Video
                                 }
                             }
-                        }  
-                    }
-                );
+                        }
+                            }
+                        );
 
                 return directory;
             }
         }
-
-
     }
 }

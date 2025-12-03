@@ -1,107 +1,106 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
-
-using PepperDash.Core;
+﻿using Crestron.SimplSharpPro;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
-using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-    [Description("Wrapper class for an IR-Controlled Roku")]
- /// <summary>
- /// Represents a Roku2
- /// </summary>
+	/// <summary>
+	/// Represents a Roku2
+	/// Wrapper class for an IR-Controlled Roku
+	/// </summary>
+	[Description("Wrapper class for an IR-Controlled Roku")]
 	public class Roku2 : EssentialsDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingSource, IRoutingOutputs
 	{
+		/// <summary>
+		/// Gets or sets the IrPort
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Gets or sets the IrPort
-  /// </summary>
 		public IrOutputPortController IrPort { get; private set; }
+
+		/// <summary>
+		/// Standard Driver Name
+		/// </summary>
 		public const string StandardDriverName = "Roku XD_S.ir";
+		/// <summary>
+		/// Gets or sets the DisplayUiType
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Gets or sets the DisplayUiType
-  /// </summary>
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeRoku; } }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Roku2"/> class
+		/// </summary>
 		public Roku2(string key, string name, IrOutputPortController portCont)
 			: base(key, name)
 		{
 			IrPort = portCont;
-			DeviceManager.AddDevice(portCont);;
+			DeviceManager.AddDevice(portCont); ;
 
-			HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
+			HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.Hdmi, null, this);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { HdmiOut };
 		}
 
 		#region IDPad Members
 
+		/// <summary>
+		/// Up method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Up method
-  /// </summary>
 		public void Up(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_UP_ARROW, pressRelease);
 		}
 
+		/// <summary>
+		/// Down method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Down method
-  /// </summary>
 		public void Down(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_DN_ARROW, pressRelease);
 		}
 
+		/// <summary>
+		/// Left method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Left method
-  /// </summary>
 		public void Left(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_LEFT_ARROW, pressRelease);
 		}
 
+		/// <summary>
+		/// Right method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Right method
-  /// </summary>
 		public void Right(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_RIGHT_ARROW, pressRelease);
 		}
 
+
+		/// <summary>
+		/// Select method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Select method
-  /// </summary>
 		public void Select(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_ENTER, pressRelease);
 		}
 
+		/// <summary>
+		/// Menu method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Menu method
-  /// </summary>
 		public void Menu(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_MENU, pressRelease);
 		}
 
+		/// <summary>
+		/// Exit method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Exit method
-  /// </summary>
 		public void Exit(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_EXIT, pressRelease);
@@ -111,49 +110,46 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#region ITransport Members
 
+		/// <summary>
+		/// Play method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Play method
-  /// </summary>
 		public void Play(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_PLAY, pressRelease);
 		}
 
+		/// <summary>
+		/// Pause method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Pause method
-  /// </summary>
 		public void Pause(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_PAUSE, pressRelease);
 		}
 
+		/// <summary>
+		/// Rewind method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// Rewind method
-  /// </summary>
 		public void Rewind(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_RSCAN, pressRelease);
 		}
 
+		/// <summary>
+		/// FFwd method
+		/// </summary>
 		[Api]
-  /// <summary>
-  /// FFwd method
-  /// </summary>
 		public void FFwd(bool pressRelease)
 		{
 			IrPort.PressRelease(IROutputStandardCommands.IROut_FSCAN, pressRelease);
 		}
 
 		/// <summary>
-		/// Not implemented
+		/// ChapMinus method - Not implemented
 		/// </summary>
 		/// <param name="pressRelease"></param>
-  /// <summary>
-  /// ChapMinus method
-  /// </summary>
 		public void ChapMinus(bool pressRelease)
 		{
 		}
@@ -186,34 +182,18 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#region IRoutingOutputs Members
 
+		/// <summary>
+		/// HdmiOut
+		/// </summary>
 		public RoutingOutputPort HdmiOut { get; private set; }
+
+		/// <summary>
+		/// OutputPorts
+		/// </summary>
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
 		#endregion
 
 	}
-
-    /// <summary>
-    /// Represents a Roku2Factory
-    /// </summary>
-    public class Roku2Factory : EssentialsDeviceFactory<Roku2>
-    {
-        public Roku2Factory()
-        {
-            TypeNames = new List<string>() { "roku" };
-        }
-
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
-        /// <inheritdoc />
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Roku Device");
-            var irCont = IRPortHelper.GetIrOutputPortController(dc);
-            return new Roku2(dc.Key, dc.Name, irCont);
-
-        }
-    }
 
 }

@@ -39,8 +39,6 @@ namespace PepperDash.Essentials
             DeviceManager.Initialize(this);
             SecretsManager.Initialize();
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
-
-            Debug.SetErrorLogMinimumDebugLevel(CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? LogEventLevel.Warning : LogEventLevel.Verbose);
         }
 
         /// <summary>
@@ -75,8 +73,6 @@ namespace PepperDash.Essentials
 
         private void StartSystem(object preventInitialization)
         {
-            Debug.SetErrorLogMinimumDebugLevel(LogEventLevel.Verbose);
-
             DeterminePlatform();
 
             if (Debug.DoNotLoadConfigOnNextBoot)
@@ -108,7 +104,7 @@ namespace PepperDash.Essentials
                 CrestronConsole.ConsoleCommandResponse
                     ("Current running configuration. This is the merged system and template configuration" + CrestronEnvironment.NewLine);
                 CrestronConsole.ConsoleCommandResponse(Newtonsoft.Json.JsonConvert.SerializeObject
-                    (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
+                    (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented).Replace(Environment.NewLine, "\r\n"));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>

@@ -1,22 +1,27 @@
-﻿using PepperDash.Core;
+﻿using System.Collections.Generic;
+using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
 
 namespace PepperDash.Essentials.Devices.Common.Generic
 {
     /// <summary>
     /// Represents a GenericSink
     /// </summary>
-    public class GenericSink : EssentialsDevice, IRoutingSinkWithInputPort
+    public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputPort
     {
+        /// <summary>
+        /// Initializes a new instance of the GenericSink class
+        /// </summary>
+        /// <param name="key">The device key</param>
+        /// <param name="name">The device name</param>
         public GenericSink(string key, string name) : base(key, name)
         {
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-            var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);            
+            var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio, eRoutingPortConnectionType.Hdmi, null, this);
 
             InputPorts.Add(inputPort);
         }
@@ -35,10 +40,12 @@ namespace PepperDash.Essentials.Devices.Common.Generic
         /// <summary>
         /// Gets or sets the CurrentSourceInfo
         /// </summary>
-        public SourceListItem CurrentSourceInfo {
+        public SourceListItem CurrentSourceInfo
+        {
             get => _currentSource;
-            set {
-                if(value == _currentSource)
+            set
+            {
+                if (value == _currentSource)
                 {
                     return;
                 }
@@ -51,9 +58,24 @@ namespace PepperDash.Essentials.Devices.Common.Generic
             }
         }
 
+        /// <summary>
+        /// Gets the current input port
+        /// </summary>
         public RoutingInputPort CurrentInputPort => InputPorts[0];
 
+        /// <summary>
+        /// Event fired when the current source changes
+        /// </summary>
         public event SourceInfoChangeHandler CurrentSourceChange;
+
+        /// <inheritdoc />
+        public event InputChangedEventHandler InputChanged;
+
+        /// <inheritdoc />
+        public void ExecuteSwitch(object inputSelector)
+        {
+            this.LogDebug("GenericSink Executing Switch to: {inputSelector}", inputSelector);
+        }
     }
 
     /// <summary>
@@ -61,6 +83,9 @@ namespace PepperDash.Essentials.Devices.Common.Generic
     /// </summary>
     public class GenericSinkFactory : EssentialsDeviceFactory<GenericSink>
     {
+        /// <summary>
+        /// Initializes a new instance of the GenericSinkFactory class
+        /// </summary>
         public GenericSinkFactory()
         {
             TypeNames = new List<string>() { "genericsink", "genericdestination" };

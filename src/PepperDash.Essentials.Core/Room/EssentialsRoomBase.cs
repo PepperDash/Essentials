@@ -408,7 +408,7 @@ namespace PepperDash.Essentials.Core
             Debug.LogMessage(LogEventLevel.Information, this, "Timeout Minutes from Config is: {0}", timeoutMinutes);
 
             // If status provider is fusion, set flag to remote
-            if (statusProvider is Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
+            if (statusProvider is Core.Fusion.IEssentialsRoomFusionController)
                 OccupancyStatusProviderIsRemote = true;
 
             if(timeoutMinutes > 0)

@@ -1,10 +1,6 @@
-﻿using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Devices.Common.Displays
 {
@@ -15,6 +11,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
     {
         private Dictionary<string, ISelectableItem> _items;
 
+        /// <summary>
+        /// Gets or sets the collection of selectable items
+        /// </summary>
         public Dictionary<string, ISelectableItem> Items
         {
             get
@@ -34,8 +33,11 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
         private string _currentItem;
 
+        /// <summary>
+        /// Gets or sets the currently selected item
+        /// </summary>
         public string CurrentItem
-        { 
+        {
             get
             {
                 return _currentItem;
@@ -51,7 +53,13 @@ namespace PepperDash.Essentials.Devices.Common.Displays
             }
         }
 
+        /// <summary>
+        /// Occurs when the items collection is updated
+        /// </summary>
         public event EventHandler ItemsUpdated;
+        /// <summary>
+        /// Occurs when the current item changes
+        /// </summary>
         public event EventHandler CurrentItemChanged;
     }
 
@@ -63,7 +71,10 @@ namespace PepperDash.Essentials.Devices.Common.Displays
         private MockDisplay _parent;
 
         private bool _isSelected;
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this input is selected
+        /// </summary>
         public bool IsSelected
         {
             get
@@ -91,8 +102,17 @@ namespace PepperDash.Essentials.Devices.Common.Displays
         /// </summary>
         public string Key { get; set; }
 
+        /// <summary>
+        /// Occurs when this item is updated
+        /// </summary>
         public event EventHandler ItemUpdated;
 
+        /// <summary>
+        /// Initializes a new instance of the MockDisplayInput class
+        /// </summary>
+        /// <param name="key">The input key</param>
+        /// <param name="name">The input name</param>
+        /// <param name="parent">The parent mock display</param>
         public MockDisplayInput(string key, string name, MockDisplay parent)
         {
             Key = key;
@@ -107,7 +127,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
         {
             if (!_parent.PowerIsOnFeedback.BoolValue) _parent.PowerOn();
 
-            foreach(var input in _parent.Inputs.Items)
+            foreach (var input in _parent.Inputs.Items)
             {
                 input.Value.IsSelected = input.Key == this.Key;
             }

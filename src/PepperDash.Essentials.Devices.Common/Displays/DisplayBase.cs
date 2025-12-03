@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 	/// Abstract base class for display devices that provides common display functionality
 	/// including power control, input switching, and routing capabilities.
 	/// </summary>
-	public abstract class DisplayBase : EssentialsDevice, IDisplay, ICurrentSources
+	public abstract class DisplayBase : EssentialsDevice, IDisplay, ICurrentSources, IHasFeedback
 	{
 		private RoutingInputPort _currentInputPort;
 
@@ -73,13 +73,11 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 
 				var handler = CurrentSourceChange;
 
-				if (handler != null)
-					handler(_CurrentSourceInfo, ChangeType.WillChange);
+				handler?.Invoke(_CurrentSourceInfo, ChangeType.WillChange);
 
 				_CurrentSourceInfo = value;
 
-				if (handler != null)
-					handler(_CurrentSourceInfo, ChangeType.DidChange);
+				handler?.Invoke(_CurrentSourceInfo, ChangeType.DidChange);
 			}
 		}
 		SourceListItem _CurrentSourceInfo;
@@ -160,6 +158,9 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			IsCoolingDownFeedback = new BoolFeedback("IsCoolingDown", IsCoolingDownFeedbackFunc);
 			IsWarmingUpFeedback = new BoolFeedback("IsWarmingUp", IsWarmingUpFeedbackFunc);
 
+			Feedbacks.Add(IsCoolingDownFeedback);
+			Feedbacks.Add(IsWarmingUpFeedback);
+
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
 			CurrentSources = new Dictionary<eRoutingSignalType, SourceListItem>
@@ -194,17 +195,8 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// Gets the collection of feedback objects for this display device.
 		/// </summary>
 		/// <inheritdoc />
-		public virtual FeedbackCollection<Feedback> Feedbacks
-		{
-			get
-			{
-				return new FeedbackCollection<Feedback>
-				{
-					IsCoolingDownFeedback,
-					IsWarmingUpFeedback
-				};
-			}
-		}
+		public virtual FeedbackCollection<Feedback> Feedbacks { get; private set; } = new FeedbackCollection<Feedback>();
+
 
 		/// <summary>
 		/// Executes a switch to the specified input on the display device. Must be implemented by derived classes.
@@ -252,47 +244,35 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 		/// <param name="joinMap">The join map configuration for the device.</param>
 		protected void LinkDisplayToApi(DisplayBase displayDevice, BasicTriList trilist, DisplayControllerJoinMap joinMap)
 		{
-			Debug.LogMessage(LogEventLevel.Debug, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-			Debug.LogMessage(LogEventLevel.Information, "Linking to Display: {0}", displayDevice.Name);
+			this.LogDebug("Linking to Trilist {ipId}", trilist.ID.ToString("X"));
+			this.LogDebug("Linking to Display: {displayName}", displayDevice.Name);
 
 			trilist.StringInput[joinMap.Name.JoinNumber].StringValue = displayDevice.Name;
 
-			var commMonitor = displayDevice as ICommunicationMonitor;
-			if (commMonitor != null)
+			if (displayDevice is ICommunicationMonitor commMonitor)
 			{
 				commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
 			}
 
+			// TODO: revisit this as there could be issues with this approach
 			var inputNumber = 0;
 			var inputKeys = new List<string>();
 
-			var inputNumberFeedback = new IntFeedback(() => inputNumber);
+			var inputNumberFeedback = new IntFeedback("inputNumber", () => inputNumber);
 
-			// Two way feedbacks
-			var twoWayDisplay = displayDevice as TwoWayDisplayBase;
+			// Add input number feedback to the device feedback collection to keep it around...
+			Feedbacks.Add(inputNumberFeedback);
 
-			if (twoWayDisplay != null)
+			// Two way feedbacks			
+			if (displayDevice is TwoWayDisplayBase twoWayDisplay)
 			{
 				trilist.SetBool(joinMap.IsTwoWayDisplay.JoinNumber, true);
 
-				twoWayDisplay.CurrentInputFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Information, "CurrentInputFeedback_OutputChange {0}", a.StringValue);
-
+				twoWayDisplay.CurrentInputFeedback.OutputChange += (o, a) => this.LogDebug("CurrentInputFeedback_OutputChange {input}", a.StringValue);
 
 				inputNumberFeedback.LinkInputSig(trilist.UShortInput[joinMap.InputSelect.JoinNumber]);
-			}
 
-			// Power Off
-			trilist.SetSigTrueAction(joinMap.PowerOff.JoinNumber, () =>
-			{
-				inputNumber = 102;
-				inputNumberFeedback.FireUpdate();
-				displayDevice.PowerOff();
-			});
-
-			var twoWayDisplayDevice = displayDevice as TwoWayDisplayBase;
-			if (twoWayDisplayDevice != null)
-			{
-				twoWayDisplayDevice.PowerIsOnFeedback.OutputChange += (o, a) =>
+				twoWayDisplay.PowerIsOnFeedback.OutputChange += (o, a) =>
 				{
 					if (!a.BoolValue)
 					{
@@ -307,9 +287,17 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 					}
 				};
 
-				twoWayDisplayDevice.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff.JoinNumber]);
-				twoWayDisplayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn.JoinNumber]);
+				twoWayDisplay.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff.JoinNumber]);
+				twoWayDisplay.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn.JoinNumber]);
 			}
+
+			// Power Off
+			trilist.SetSigTrueAction(joinMap.PowerOff.JoinNumber, () =>
+			{
+				inputNumber = 102;
+				inputNumberFeedback.FireUpdate();
+				displayDevice.PowerOff();
+			});
 
 			// PowerOn
 			trilist.SetSigTrueAction(joinMap.PowerOn.JoinNumber, () =>
@@ -320,44 +308,61 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			});
 
 
-
 			for (int i = 0; i < displayDevice.InputPorts.Count; i++)
 			{
-				if (i < joinMap.InputNamesOffset.JoinSpan)
+				var localindex = i;
+				if (localindex >= joinMap.InputNamesOffset.JoinSpan)
 				{
-					inputKeys.Add(displayDevice.InputPorts[i].Key);
-					var tempKey = inputKeys.ElementAt(i);
-					trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset.JoinNumber + i),
-						() => displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector));
-					Debug.LogMessage(LogEventLevel.Verbose, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}",
-						joinMap.InputSelectOffset.JoinNumber + i, displayDevice.InputPorts[tempKey].Key.ToString());
-					trilist.StringInput[(ushort)(joinMap.InputNamesOffset.JoinNumber + i)].StringValue = displayDevice.InputPorts[i].Key.ToString();
+					this.LogWarning("Device has {inputCount} inputs.  The Join Map allows up to {joinSpan} inputs.  Discarding inputs {discardStart} - {discardEnd} from bridge.",
+						displayDevice.InputPorts.Count, joinMap.InputNamesOffset.JoinSpan, localindex + 1, displayDevice.InputPorts.Count);
+
+					continue;
 				}
 				else
-					Debug.LogMessage(LogEventLevel.Information, displayDevice, "Device has {0} inputs.  The Join Map allows up to {1} inputs.  Discarding inputs {2} - {3} from bridge.",
-						displayDevice.InputPorts.Count, joinMap.InputNamesOffset.JoinSpan, i + 1, displayDevice.InputPorts.Count);
+				{
+					inputKeys.Add(displayDevice.InputPorts[localindex].Key);
+
+					var tempKey = inputKeys.ElementAt(localindex);
+
+					trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset.JoinNumber + localindex), () => displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector));
+
+					this.LogDebug("Setting Input Select Action on Digital Join {joinNumber} to Input: {input}", joinMap.InputSelectOffset.JoinNumber + localindex, displayDevice.InputPorts[tempKey].Key);
+
+					trilist.SetString((uint)(joinMap.InputNamesOffset.JoinNumber + localindex), displayDevice.InputPorts[localindex].Key);
+				}
 			}
 
-			Debug.LogMessage(LogEventLevel.Verbose, displayDevice, "Setting Input Select Action on Analog Join {0}", joinMap.InputSelect);
-			trilist.SetUShortSigAction(joinMap.InputSelect.JoinNumber, (a) =>
+			this.LogDebug("Setting Input Select Action on Analog Join {inputSelectJoin}", joinMap.InputSelect);
+
+			trilist.SetUShortSigAction(joinMap.InputSelect.JoinNumber, (requestedInput) =>
 			{
-				if (a == 0)
+				if (requestedInput == 0)
 				{
 					displayDevice.PowerOff();
 					inputNumber = 0;
+					return;
 				}
-				else if (a > 0 && a < displayDevice.InputPorts.Count && a != inputNumber)
+
+				// using 1-based indexing for inputs coming from SIMPL, so need to check if the input is <= the count, not <
+				if (requestedInput > 0 && requestedInput <= displayDevice.InputPorts.Count && requestedInput != inputNumber)
 				{
-					displayDevice.ExecuteSwitch(displayDevice.InputPorts.ElementAt(a - 1).Selector);
-					inputNumber = a;
+					displayDevice.ExecuteSwitch(displayDevice.InputPorts.ElementAt(requestedInput - 1).Selector);
+
+					inputNumber = requestedInput;
+
+					return;
 				}
-				else if (a == 102)
+
+				if (requestedInput == 102)
 				{
 					displayDevice.PowerToggle();
-
+					return;
 				}
-				if (twoWayDisplay != null)
-					inputNumberFeedback.FireUpdate();
+
+				if (displayDevice is TwoWayDisplayBase)
+				{
+					inputNumberFeedback?.FireUpdate();
+				}
 			});
 
 
@@ -429,96 +434,5 @@ namespace PepperDash.Essentials.Devices.Common.Displays
 			}
 		}
 
-	}
-
-	/// <summary>
-	/// Abstract base class for two-way display devices that provide feedback capabilities.
-	/// Extends DisplayBase with routing feedback and power control feedback functionality.
-	/// </summary>
-	public abstract class TwoWayDisplayBase : DisplayBase, IRoutingFeedback, IHasPowerControlWithFeedback
-	{
-		/// <summary>
-		/// Gets feedback for the current input selection on the display.
-		/// </summary>
-		public StringFeedback CurrentInputFeedback { get; private set; }
-
-		/// <summary>
-		/// Abstract function that must be implemented by derived classes to provide the current input feedback value.
-		/// Must be implemented by concrete sub-classes.
-		/// </summary>
-		abstract protected Func<string> CurrentInputFeedbackFunc { get; }
-
-		/// <summary>
-		/// Gets feedback indicating whether the display is currently powered on.
-		/// </summary>
-		public BoolFeedback PowerIsOnFeedback { get; protected set; }
-
-		/// <summary>
-		/// Abstract function that must be implemented by derived classes to provide the power state feedback value.
-		/// Must be implemented by concrete sub-classes.
-		/// </summary>
-		abstract protected Func<bool> PowerIsOnFeedbackFunc { get; }
-
-		/// <summary>
-		/// Gets the default mock display instance for testing and development purposes.
-		/// </summary>
-		public static MockDisplay DefaultDisplay
-		{
-			get
-			{
-				if (_DefaultDisplay == null)
-					_DefaultDisplay = new MockDisplay("default", "Default Display");
-				return _DefaultDisplay;
-			}
-		}
-		static MockDisplay _DefaultDisplay;
-
-		/// <summary>
-		/// Initializes a new instance of the TwoWayDisplayBase class.
-		/// </summary>
-		/// <param name="key">The unique key identifier for this display device.</param>
-		/// <param name="name">The friendly name for this display device.</param>
-		public TwoWayDisplayBase(string key, string name)
-			: base(key, name)
-		{
-			CurrentInputFeedback = new StringFeedback(CurrentInputFeedbackFunc);
-
-			WarmupTime = 7000;
-			CooldownTime = 15000;
-
-			PowerIsOnFeedback = new BoolFeedback("PowerOnFeedback", PowerIsOnFeedbackFunc);
-
-			Feedbacks.Add(CurrentInputFeedback);
-			Feedbacks.Add(PowerIsOnFeedback);
-
-			PowerIsOnFeedback.OutputChange += PowerIsOnFeedback_OutputChange;
-
-		}
-
-		void PowerIsOnFeedback_OutputChange(object sender, EventArgs e)
-		{
-			if (UsageTracker != null)
-			{
-				if (PowerIsOnFeedback.BoolValue)
-					UsageTracker.StartDeviceUsage();
-				else
-					UsageTracker.EndDeviceUsage();
-			}
-		}
-
-		/// <summary>
-		/// Event that is raised when a numeric switch change occurs on the display.
-		/// </summary>
-		public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
-
-		/// <summary>
-		/// Raise an event when the status of a switch object changes.
-		/// </summary>
-		/// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
-		protected void OnSwitchChange(RoutingNumericEventArgs e)
-		{
-			var newEvent = NumericSwitchChange;
-			if (newEvent != null) newEvent(this, e);
-		}
 	}
 }

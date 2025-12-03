@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
-using System;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -12,35 +13,46 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// </summary>
     public class DeviceVolumeMessenger : MessengerBase
     {
-        private readonly IBasicVolumeWithFeedback _localDevice;
+        private readonly IBasicVolumeControls device;
 
-        public DeviceVolumeMessenger(string key, string messagePath, IBasicVolumeWithFeedback device)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceVolumeMessenger"/> class.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="messagePath">The message path.</param>
+        /// <param name="device">The device.</param>
+        public DeviceVolumeMessenger(string key, string messagePath, IBasicVolumeControls device)
             : base(key, messagePath, device as IKeyName)
         {
-            _localDevice = device;
+            this.device = device;
         }
 
-        private void SendStatus()
+        private void SendStatus(string id = null)
         {
             try
             {
+                if (!(device is IBasicVolumeWithFeedback feedbackDevice))
+                {
+                    return;
+                }
+
                 var messageObj = new VolumeStateMessage
                 {
                     Volume = new Volume
                     {
-                        Level = _localDevice?.VolumeLevelFeedback.IntValue ?? -1,
-                        Muted = _localDevice?.MuteFeedback.BoolValue ?? false,
+                        Level = feedbackDevice?.VolumeLevelFeedback.IntValue ?? -1,
+                        Muted = feedbackDevice?.MuteFeedback.BoolValue ?? false,
                         HasMute = true,  // assume all devices have mute for now
                     }
                 };
 
-                if (_localDevice is IBasicVolumeWithFeedbackAdvanced volumeAdvanced)
+                if (device is IBasicVolumeWithFeedbackAdvanced volumeAdvanced)
                 {
                     messageObj.Volume.RawValue = volumeAdvanced.RawVolumeLevel.ToString();
                     messageObj.Volume.Units = volumeAdvanced.Units;
                 }
 
-                PostStatusMessage(messageObj);
+                PostStatusMessage(messageObj, id);
             }
             catch (Exception ex)
             {
@@ -50,47 +62,26 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         #region Overrides of MessengerBase
 
-
+        /// <inheritdoc />
         protected override void RegisterActions()
         {
-            AddAction("/fullStatus", (id, content) => SendStatus());
-
-            AddAction("/level", (id, content) =>
-            {
-                var volume = content.ToObject<MobileControlSimpleContent<ushort>>();
-
-                _localDevice.SetVolume(volume.Value);
-            });
+            AddAction("/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
+                        {
+                            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Calling {localDevice} volume up with {value}", DeviceKey, b);
+                            try
+                            {
+                                device.VolumeUp(b);
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogMessage(ex, "Got exception during volume up: {Exception}", null, ex);
+                            }
+                        }));
 
             AddAction("/muteToggle", (id, content) =>
-            {
-                _localDevice.MuteToggle();
-            });
-
-            AddAction("/muteOn", (id, content) =>
-            {
-                _localDevice.MuteOn();
-            });
-
-            AddAction("/muteOff", (id, content) =>
-            {
-                _localDevice.MuteOff();
-            });
-
-            AddAction("/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
-            {
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Calling {localDevice} volume up with {value}", DeviceKey, b);
-                try
-                {
-                    _localDevice.VolumeUp(b);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogMessage(ex, "Got exception during volume up: {Exception}", null, ex);
-                }
-            }));
-
-
+                        {
+                            device.MuteToggle();
+                        });
 
             AddAction("/volumeDown", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
             {
@@ -98,7 +89,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 try
                 {
-                    _localDevice.VolumeDown(b);
+                    device.VolumeDown(b);
                 }
                 catch (Exception ex)
                 {
@@ -106,7 +97,38 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 }
             }));
 
-            _localDevice.MuteFeedback.OutputChange += (sender, args) =>
+            if (!(device is IBasicVolumeWithFeedback feedback))
+            {
+                this.LogDebug("Skipping feedback methods for {deviceKey}", (device as IKeyName)?.Key);
+                return;
+            }
+
+            AddAction("/fullStatus", (id, content) => SendStatus(id));
+
+            AddAction("/volumeStatus", (id, content) => SendStatus(id));
+
+            AddAction("/level", (id, content) =>
+            {
+                var volume = content.ToObject<MobileControlSimpleContent<ushort>>();
+
+                feedback.SetVolume(volume.Value);
+            });
+
+
+
+            AddAction("/muteOn", (id, content) =>
+            {
+                feedback.MuteOn();
+            });
+
+            AddAction("/muteOff", (id, content) =>
+            {
+                feedback.MuteOff();
+            });
+
+
+
+            feedback.MuteFeedback.OutputChange += (sender, args) =>
             {
                 PostStatusMessage(JToken.FromObject(
                         new
@@ -119,10 +141,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 );
             };
 
-            _localDevice.VolumeLevelFeedback.OutputChange += (sender, args) =>
+            feedback.VolumeLevelFeedback.OutputChange += (sender, args) =>
             {
                 var rawValue = "";
-                if (_localDevice is IBasicVolumeWithFeedbackAdvanced volumeAdvanced)
+                if (feedback is IBasicVolumeWithFeedbackAdvanced volumeAdvanced)
                 {
                     rawValue = volumeAdvanced.RawVolumeLevel.ToString();
                 }
@@ -138,8 +160,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 PostStatusMessage(JToken.FromObject(message));
             };
-
-
         }
 
         #endregion

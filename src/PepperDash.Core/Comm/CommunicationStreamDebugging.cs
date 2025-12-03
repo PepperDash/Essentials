@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
@@ -37,14 +36,14 @@ namespace PepperDash.Core
         {
             get
             {
-                return _DebugTimeoutInMs/60000;
+                return _DebugTimeoutInMs / 60000;
             }
         }
 
         /// <summary>
         /// Gets or sets the RxStreamDebuggingIsEnabled
         /// </summary>
-        public bool RxStreamDebuggingIsEnabled{ get; private set; }
+        public bool RxStreamDebuggingIsEnabled { get; private set; }
 
         /// <summary>
         /// Indicates that transmit stream debugging is enabled
@@ -108,7 +107,7 @@ namespace PepperDash.Core
                 TxStreamDebuggingIsEnabled = true;
 
             Debug.SetDeviceDebugSettings(ParentDeviceKey, setting);
-        
+
         }
 
         /// <summary>
@@ -135,52 +134,5 @@ namespace PepperDash.Core
             DebugExpiryPeriod.Dispose();
             DebugExpiryPeriod = null;
         }
-    }
-
-    /// <summary>
-    /// The available settings for stream debugging
-    /// </summary>
-    [Flags]
-    /// <summary>
-    /// Enumeration of eStreamDebuggingSetting values
-    /// </summary>
-    public enum eStreamDebuggingSetting
-    {
-        /// <summary>
-        /// Debug off
-        /// </summary>
-        Off = 0,
-        /// <summary>
-        /// Debug received data
-        /// </summary>
-        Rx = 1, 
-        /// <summary>
-        /// Debug transmitted data
-        /// </summary>
-        Tx = 2,
-        /// <summary>
-        /// Debug both received and transmitted data
-        /// </summary>
-        Both = Rx | Tx
-    }
-
-    /// <summary>
-    /// The available settings for stream debugging response types
-    /// </summary>
-    [Flags]
-    public enum eStreamDebuggingDataTypeSettings
-    {
-        /// <summary>
-        /// Debug data in byte format
-        /// </summary>
-        Bytes = 0,
-        /// <summary>
-        /// Debug data in text format
-        /// </summary>
-        Text = 1,
-        /// <summary>
-        /// Debug data in both byte and text formats
-        /// </summary>
-        Both = Bytes | Text,
     }
 }

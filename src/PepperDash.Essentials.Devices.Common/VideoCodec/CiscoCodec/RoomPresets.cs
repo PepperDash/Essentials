@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using PepperDash.Core;
 using PepperDash.Essentials.Core.Presets;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
@@ -38,19 +36,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         /// <param name="preset"></param>
         /// <param name="description"></param>
-        void CodecRoomPresetStore(int preset, string description);  
+        void CodecRoomPresetStore(int preset, string description);
 
         /// <summary>
         /// Selects a far end preset by its ID. This is typically used to recall a preset that has been defined on the far end codec.
         /// </summary>
         /// <param name="preset"></param>
-        void SelectFarEndPreset(int preset);        
+        void SelectFarEndPreset(int preset);
     }
 
     /// <summary>
     /// Static class for converting non-generic RoomPresets to generic CameraPresets.
     /// </summary>
-    public static class RoomPresets 
+    public static class RoomPresets
     {
         /// <summary>
         /// Converts non-generic RoomPresets to generic CameraPresets

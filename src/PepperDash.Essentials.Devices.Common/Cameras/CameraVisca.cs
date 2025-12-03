@@ -3,38 +3,33 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Devices.Common.Codec;
-using System.Text.RegularExpressions;
-using System.Reflection;
-
-using Newtonsoft.Json;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
- /// <summary>
- /// Represents a CameraVisca
- /// </summary>
-	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IHasPowerControlWithFeedback, IBridgeAdvanced, IHasCameraFocusControl, IHasAutoFocusMode
-	{
+    /// <summary>
+    /// Represents a CameraVisca
+    /// </summary>
+    public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IHasPowerControlWithFeedback, IBridgeAdvanced, IHasCameraFocusControl, IHasAutoFocusMode
+    {
         private readonly CameraViscaPropertiesConfig PropertiesConfig;
 
-  /// <summary>
-  /// Gets or sets the Communication
-  /// </summary>
-		public IBasicCommunication Communication { get; private set; }
+        /// <summary>
+        /// Gets or sets the Communication
+        /// </summary>
+        public IBasicCommunication Communication { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the CommunicationMonitor
-  /// </summary>
-		public StatusMonitorBase CommunicationMonitor { get; private set; }
+        /// <summary>
+        /// Gets or sets the CommunicationMonitor
+        /// </summary>
+        public StatusMonitorBase CommunicationMonitor { get; private set; }
 
         /// <summary>
         /// Used to store the actions to parse inquiry responses as the inquiries are sent
@@ -45,20 +40,41 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         /// Camera ID (Default 1)
         /// </summary>
         public byte ID = 0x01;
+
+        /// <summary>
+        /// Response ID used for VISCA communication
+        /// </summary>
         public byte ResponseID;
 
+        /// <summary>
+        /// Slow speed value for pan movement
+        /// </summary>
+        public byte PanSpeedSlow = 0x10;
 
-		public byte PanSpeedSlow = 0x10;
-		public byte TiltSpeedSlow = 0x10;
+        /// <summary>
+        /// Slow speed value for tilt movement
+        /// </summary>
+        public byte TiltSpeedSlow = 0x10;
 
+        /// <summary>
+        /// Fast speed value for pan movement
+        /// </summary>
         public byte PanSpeedFast = 0x13;
+
+        /// <summary>
+        /// Fast speed value for tilt movement
+        /// </summary>
         public byte TiltSpeedFast = 0x13;
 
         // private bool IsMoving;
-		private bool IsZooming;
+        private bool IsZooming;
 
         bool _powerIsOn;
-		public bool PowerIsOn 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the camera power is on
+        /// </summary>
+        public bool PowerIsOn
         {
             get
             {
@@ -87,12 +103,23 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         long FastSpeedHoldTimeMs = 2000;
 
-		byte[] IncomingBuffer = new byte[] { };
-		public BoolFeedback PowerIsOnFeedback  { get; private set; }
+        byte[] IncomingBuffer = new byte[] { };
 
+        /// <summary>
+        /// Feedback indicating whether the camera power is on
+        /// </summary>
+        public BoolFeedback PowerIsOnFeedback { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the CameraVisca class
+        /// </summary>
+        /// <param name="key">The unique key for this camera device</param>
+        /// <param name="name">The friendly name for this camera device</param>
+        /// <param name="comm">The communication interface for VISCA protocol</param>
+        /// <param name="props">The camera properties configuration</param>
         public CameraVisca(string key, string name, IBasicCommunication comm, CameraViscaPropertiesConfig props) :
-			base(key, name)
-		{
+            base(key, name)
+        {
             InquiryResponseQueue = new CrestronQueue<Action<byte[]>>(15);
 
             Presets = props.Presets;
@@ -107,8 +134,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             OutputPorts.Add(new RoutingOutputPort("videoOut", eRoutingSignalType.Video, eRoutingPortConnectionType.None, null, this, true));
 
             // Default to all capabilties
-            Capabilities = eCameraCapabilities.Pan | eCameraCapabilities.Tilt | eCameraCapabilities.Zoom | eCameraCapabilities.Focus; 
-            
+            Capabilities = eCameraCapabilities.Pan | eCameraCapabilities.Tilt | eCameraCapabilities.Zoom | eCameraCapabilities.Focus;
+
             Communication = comm;
             if (comm is ISocketStatus socket)
             {
@@ -121,19 +148,19 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             }
 
             Communication.BytesReceived += new EventHandler<GenericCommMethodReceiveBytesArgs>(Communication_BytesReceived);
-			PowerIsOnFeedback = new BoolFeedback(() => { return PowerIsOn; });
-            CameraIsOffFeedback = new BoolFeedback(() => { return !PowerIsOn; });
+            PowerIsOnFeedback = new BoolFeedback("powerIsOn", () => { return PowerIsOn; });
+            CameraIsOffFeedback = new BoolFeedback("cameraIsOff", () => { return !PowerIsOn; });
 
-			if (props.CommunicationMonitorProperties != null)
-			{
-				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, props.CommunicationMonitorProperties);
-			}
-			else
-			{
-				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 20000, 120000, 300000, "\x81\x09\x04\x00\xFF");
-			}
-			DeviceManager.AddDevice(CommunicationMonitor);
-		}
+            if (props.CommunicationMonitorProperties != null)
+            {
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, props.CommunicationMonitorProperties);
+            }
+            else
+            {
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 20000, 120000, 300000, "\x81\x09\x04\x00\xFF");
+            }
+            DeviceManager.AddDevice(CommunicationMonitor);
+        }
 
 
         /// <summary>
@@ -165,57 +192,57 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             }
         }
 
-  /// <summary>
-  /// CustomActivate method
-  /// </summary>
-  /// <inheritdoc />
-		public override bool CustomActivate()
-		{
-			Communication.Connect();
-
-			
-			CommunicationMonitor.StatusChange += (o, a) => { Debug.LogMessage(LogEventLevel.Verbose, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
-			CommunicationMonitor.Start();
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
+        public override bool CustomActivate()
+        {
+            Communication.Connect();
 
 
-			CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
-			return true;
-		}
+            CommunicationMonitor.StatusChange += (o, a) => { Debug.LogMessage(LogEventLevel.Verbose, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
+            CommunicationMonitor.Start();
 
-     /// <summary>
-     /// LinkToApi method
-     /// </summary>
-	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
-	    {
-	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
-	    }
 
-	    void Socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
-		{
-			Debug.LogMessage(LogEventLevel.Verbose, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
+            CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
+            return true;
+        }
 
-			if (e.Client.IsConnected)
-			{
-				
-			}
-			else
-			{
+        /// <summary>
+        /// LinkToApi method
+        /// </summary>
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+        }
 
-			}
-		}
-	
+        void Socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+        {
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
 
-		void SendBytes(byte[] b)
-		{
-			
-			if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
-				Debug.LogMessage(LogEventLevel.Verbose, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
+            if (e.Client.IsConnected)
+            {
 
-			Communication.SendBytes(b);
-		}
+            }
+            else
+            {
 
-		void Communication_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
-		{
+            }
+        }
+
+
+        void SendBytes(byte[] b)
+        {
+
+            if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
+
+            Communication.SendBytes(b);
+        }
+
+        void Communication_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
+        {
             var newBytes = new byte[IncomingBuffer.Length + e.Bytes.Length];
 
             try
@@ -355,10 +382,10 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         /// <summary>
         /// Sends a pan/tilt command. If the command is not for fastSpeed then it starts a timer to initiate fast speed.
         /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="fastSpeed"></param>
-		private void SendPanTiltCommand (byte[] cmd, bool fastSpeedEnabled)
-		{
+        /// <param name="cmd">The VISCA command to send</param>
+        /// <param name="fastSpeedEnabled">Whether fast speed is enabled for this command</param>
+		private void SendPanTiltCommand(byte[] cmd, bool fastSpeedEnabled)
+        {
             SendBytes(GetPanTiltCommand(cmd, fastSpeedEnabled));
 
             if (!fastSpeedEnabled)
@@ -372,7 +399,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 SpeedTimer = new CTimer((o) => SendPanTiltCommand(GetPanTiltCommand(cmd, true), true), FastSpeedHoldTimeMs);
             }
 
-		}
+        }
 
         private void StopSpeedTimer()
         {
@@ -381,7 +408,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 SpeedTimer.Stop();
                 SpeedTimer.Dispose();
                 SpeedTimer = null;
-            }     
+            }
         }
 
         /// <summary>
@@ -424,14 +451,14 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             InquiryResponseQueue.Enqueue(HandlePowerResponse);
         }
 
-  /// <summary>
-  /// PowerOn method
-  /// </summary>
-		public void PowerOn()
-		{
-			SendBytes(new byte[] { ID, 0x01, 0x04, 0x00, 0x02, 0xFF });
+        /// <summary>
+        /// PowerOn method
+        /// </summary>
+        public void PowerOn()
+        {
+            SendBytes(new byte[] { ID, 0x01, 0x04, 0x00, 0x02, 0xFF });
             SendPowerQuery();
-		}
+        }
 
         void HandlePowerResponse(byte[] response)
         {
@@ -450,12 +477,12 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             }
         }
 
-  /// <summary>
-  /// PowerOff method
-  /// </summary>
-		public void PowerOff()
-		{
-			SendBytes(new byte[] {ID, 0x01, 0x04, 0x00, 0x03, 0xFF});
+        /// <summary>
+        /// PowerOff method
+        /// </summary>
+        public void PowerOff()
+        {
+            SendBytes(new byte[] { ID, 0x01, 0x04, 0x00, 0x03, 0xFF });
             SendPowerQuery();
         }
 
@@ -470,22 +497,22 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 PowerOn();
         }
 
-  /// <summary>
-  /// PanLeft method
-  /// </summary>
-		public void PanLeft() 
-		{
-			SendPanTiltCommand(new byte[] {0x01, 0x03}, false);
-			// IsMoving = true;
-		}
-  /// <summary>
-  /// PanRight method
-  /// </summary>
-		public void PanRight() 
-		{
+        /// <summary>
+        /// PanLeft method
+        /// </summary>
+        public void PanLeft()
+        {
+            SendPanTiltCommand(new byte[] { 0x01, 0x03 }, false);
+            // IsMoving = true;
+        }
+        /// <summary>
+        /// PanRight method
+        /// </summary>
+        public void PanRight()
+        {
             SendPanTiltCommand(new byte[] { 0x02, 0x03 }, false);
-			// IsMoving = true;
-		}
+            // IsMoving = true;
+        }
         /// <summary>
         /// PanStop method
         /// </summary>
@@ -493,22 +520,22 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         {
             Stop();
         }
-  /// <summary>
-  /// TiltDown method
-  /// </summary>
-		public void TiltDown() 
-		{
+        /// <summary>
+        /// TiltDown method
+        /// </summary>
+        public void TiltDown()
+        {
             SendPanTiltCommand(new byte[] { 0x03, 0x02 }, false);
-			// IsMoving = true;
-		}
-  /// <summary>
-  /// TiltUp method
-  /// </summary>
-		public void TiltUp() 
-		{
+            // IsMoving = true;
+        }
+        /// <summary>
+        /// TiltUp method
+        /// </summary>
+        public void TiltUp()
+        {
             SendPanTiltCommand(new byte[] { 0x03, 0x01 }, false);
-			// IsMoving = true;
-		}
+            // IsMoving = true;
+        }
         /// <summary>
         /// TiltStop method
         /// </summary>
@@ -517,28 +544,28 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             Stop();
         }
 
-		private void SendZoomCommand (byte cmd)
-		{
-			SendBytes(new byte[] {ID, 0x01, 0x04, 0x07, cmd, 0xFF} );
-		}
+        private void SendZoomCommand(byte cmd)
+        {
+            SendBytes(new byte[] { ID, 0x01, 0x04, 0x07, cmd, 0xFF });
+        }
 
 
-  /// <summary>
-  /// ZoomIn method
-  /// </summary>
-		public void ZoomIn() 
-		{
+        /// <summary>
+        /// ZoomIn method
+        /// </summary>
+        public void ZoomIn()
+        {
             SendZoomCommand(ZoomInCmd);
-			IsZooming = true;
-		}
-  /// <summary>
-  /// ZoomOut method
-  /// </summary>
-		public void ZoomOut() 
-		{
+            IsZooming = true;
+        }
+        /// <summary>
+        /// ZoomOut method
+        /// </summary>
+        public void ZoomOut()
+        {
             SendZoomCommand(ZoomOutCmd);
-			IsZooming = true;
-		}
+            IsZooming = true;
+        }
         /// <summary>
         /// ZoomStop method
         /// </summary>
@@ -547,23 +574,23 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             Stop();
         }
 
-  /// <summary>
-  /// Stop method
-  /// </summary>
-		public void Stop() 
-		{
-			if (IsZooming)
-			{
+        /// <summary>
+        /// Stop method
+        /// </summary>
+        public void Stop()
+        {
+            if (IsZooming)
+            {
                 SendZoomCommand(ZoomStopCmd);
-				IsZooming = false;
-			}
-			else
-			{
+                IsZooming = false;
+            }
+            else
+            {
                 StopSpeedTimer();
                 SendPanTiltCommand(new byte[] { 0x03, 0x03 }, false);
-				// IsMoving = false;
-			}
-		}
+                // IsMoving = false;
+            }
+        }
         /// <summary>
         /// PositionHome method
         /// </summary>
@@ -572,33 +599,39 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             SendBytes(new byte[] { ID, 0x01, 0x06, 0x02, PanSpeedFast, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF });
             SendBytes(new byte[] { ID, 0x01, 0x04, 0x47, 0x00, 0x00, 0x00, 0x00, 0xFF });
         }
-  /// <summary>
-  /// RecallPreset method
-  /// </summary>
-		public void RecallPreset(int presetNumber)
-		{
-			SendBytes(new byte[] {ID, 0x01, 0x04, 0x3F, 0x02, (byte)presetNumber, 0xFF} );
-		}
-  /// <summary>
-  /// SavePreset method
-  /// </summary>
-		public void SavePreset(int presetNumber)
-		{
-			SendBytes(new byte[] { ID, 0x01, 0x04, 0x3F, 0x01, (byte)presetNumber, 0xFF });
-		}
+        /// <summary>
+        /// RecallPreset method
+        /// </summary>
+        public void RecallPreset(int presetNumber)
+        {
+            SendBytes(new byte[] { ID, 0x01, 0x04, 0x3F, 0x02, (byte)presetNumber, 0xFF });
+        }
+        /// <summary>
+        /// SavePreset method
+        /// </summary>
+        public void SavePreset(int presetNumber)
+        {
+            SendBytes(new byte[] { ID, 0x01, 0x04, 0x3F, 0x01, (byte)presetNumber, 0xFF });
+        }
 
         #region IHasCameraPresets Members
 
+        /// <summary>
+        /// Event that is raised when the presets list has changed
+        /// </summary>
         public event EventHandler<EventArgs> PresetsListHasChanged;
 
-		protected void OnPresetsListHasChanged()
-		{
-			var handler = PresetsListHasChanged;
-			if (handler == null)
-				return;
+        /// <summary>
+        /// Raises the PresetsListHasChanged event
+        /// </summary>
+        protected void OnPresetsListHasChanged()
+        {
+            var handler = PresetsListHasChanged;
+            if (handler == null)
+                return;
 
-			handler.Invoke(this, EventArgs.Empty);
-		}
+            handler.Invoke(this, EventArgs.Empty);
+        }
 
         /// <summary>
         /// Gets or sets the Presets
@@ -741,6 +774,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     /// </summary>
     public class CameraViscaFactory : EssentialsDeviceFactory<CameraVisca>
     {
+        /// <summary>
+        /// Initializes a new instance of the CameraViscaFactory class
+        /// </summary>
         public CameraViscaFactory()
         {
             TypeNames = new List<string>() { "cameravisca" };
@@ -768,11 +804,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     {
         /// <summary>
         /// Control ID of the camera (1-7)
-        /// </summary>
-        [JsonProperty("id")]
-        /// <summary>
         /// Gets or sets the Id
         /// </summary>
+        [JsonProperty("id")]
         public uint Id { get; set; }
 
         /// <summary>
@@ -790,7 +824,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         /// <summary>
         /// Slow tilt speed (0-18)
         /// </summary>
-        [JsonProperty("tiltSpeedSlow")] 
+        [JsonProperty("tiltSpeedSlow")]
         public uint TiltSpeedSlow { get; set; }
 
         /// <summary>

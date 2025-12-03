@@ -1,10 +1,10 @@
-﻿using Crestron.SimplSharp.WebScripting;
+﻿using System;
+using System.Threading.Tasks;
+using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Web;
-using System;
-using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.WebApiHandlers
 {
@@ -15,11 +15,20 @@ namespace PepperDash.Essentials.WebApiHandlers
     {
         private readonly MobileControlSystemController mcController;
 
+        /// <summary>
+        /// Create an instance of the <see cref="MobileAuthRequestHandler"/> class.
+        /// </summary>
+        /// <param name="controller"></param>
         public MobileAuthRequestHandler(MobileControlSystemController controller) : base(true)
         {
             mcController = controller;
         }
 
+        /// <summary>
+        /// Handle authorization request for this processor
+        /// </summary>
+        /// <param name="context">request context</param>
+        /// <returns>Task</returns>
         protected override async Task HandlePost(HttpCwsContext context)
         {
             try
