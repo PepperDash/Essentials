@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Timers;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
@@ -87,15 +88,17 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <inheritdoc />
         public StringFeedback HelpRequestStatusFeedback { get; private set; }
 
+        private Timer _helpRequestTimeoutTimer;
 
-        #region System Info Sigs
+        /// <summary>
+        /// Gets the DefaultHelpRequestTimeoutMs
+        /// </summary>
+        public int HelpRequestTimeoutMs => _config.HelpRequestTimeoutMs;
 
-        //StringSigData SystemName;
-        //StringSigData Model;
-        //StringSigData SerialNumber;
-        //StringSigData Uptime;
-
-        #endregion
+        /// <summary>
+        /// Gets whether to use a timer for help requests
+        /// </summary>
+        public bool UseHelpRequestTimer => _config.UseTimeoutForHelpRequests;
 
         #region Processor Info Sigs
 
@@ -1805,7 +1808,7 @@ namespace PepperDash.Essentials.Core.Fusion
                             break;
                         case "Please call the helpdesk.":
                             // this.LogInformation("Please call the helpdesk.");
-                            // _helpRequestStatus = eFusionHelpResponse.CallHelpDesk;
+                            _helpRequestStatus = eFusionHelpResponse.CallHelpDesk;
                             break;
                         case "Please wait, I will reschedule your meeting to a different room.":
                             // this.LogInformation("Please wait, I will reschedule your meeting to a different room.",
@@ -1839,6 +1842,14 @@ namespace PepperDash.Essentials.Core.Fusion
                 }
 
                 HelpRequestStatusFeedback.FireUpdate();
+
+                if (_helpRequestTimeoutTimer != null)
+                {
+                    _helpRequestTimeoutTimer.Stop();
+                    _helpRequestTimeoutTimer.Elapsed -= OnTimedEvent;
+                    _helpRequestTimeoutTimer.Dispose();
+                    _helpRequestTimeoutTimer = null;
+                }
             }
 
 
@@ -1909,8 +1920,32 @@ namespace PepperDash.Essentials.Core.Fusion
             _helpRequestSent = true;
             HelpRequestSentFeedback.FireUpdate();
 
+            if (UseHelpRequestTimer)
+            {
+                if (_helpRequestTimeoutTimer == null)
+                {
+                    _helpRequestTimeoutTimer = new Timer(HelpRequestTimeoutMs);
+                    _helpRequestTimeoutTimer.AutoReset = false;
+                    _helpRequestTimeoutTimer.Enabled = true;
+
+                    _helpRequestTimeoutTimer.Elapsed += OnTimedEvent;
+                }
+
+                _helpRequestTimeoutTimer.Interval = HelpRequestTimeoutMs;
+                _helpRequestTimeoutTimer.Start();
+
+                this.LogDebug("Help request timeout timer started for room '{0}' with timeout of {1} ms.",
+    Room.Name, HelpRequestTimeoutMs);
+            }
+
             _helpRequestStatus = eFusionHelpResponse.HelpRequested;
             HelpRequestStatusFeedback.FireUpdate();
+        }
+
+        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        {
+            this.LogInformation("Help request timeout reached for room '{0}'. Cancelling help request.", Room.Name);
+            CancelHelpRequest();
         }
 
         /// <inheritdoc />
@@ -1923,7 +1958,16 @@ namespace PepperDash.Essentials.Core.Fusion
                 HelpRequestSentFeedback.FireUpdate();
                 _helpRequestStatus = eFusionHelpResponse.None;
                 HelpRequestStatusFeedback.FireUpdate();
-                Debug.LogMessage(LogEventLevel.Information, this, "Help request cancelled in Fusion for room '{0}'", Room.Name);
+                Debug.LogMessage(LogEventLevel.Information, this, "Help request cancelled for room '{0}'", Room.Name);
+            }
+
+            if (_helpRequestTimeoutTimer != null)
+            {
+                _helpRequestTimeoutTimer.Stop();
+                _helpRequestTimeoutTimer.Elapsed -= OnTimedEvent;
+                _helpRequestTimeoutTimer.Dispose();
+                _helpRequestTimeoutTimer = null;
+                this.LogDebug("Help request timeout timer stopped for room '{0}'.", Room.Name);
             }
         }
 
