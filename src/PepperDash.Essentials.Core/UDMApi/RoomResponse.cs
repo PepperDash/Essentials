@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core
         /// API version string
         /// </summary>
         [JsonProperty("apiVersion")]
-        public string ApiVersion { get; set; }
+        public string ApiVersion { get; private set; }
 
         /// <summary>
         /// Standard room properties
