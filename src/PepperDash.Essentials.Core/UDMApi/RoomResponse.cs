@@ -25,35 +25,22 @@ namespace PepperDash.Essentials.Core.UDMApi
         /// Standard room properties
         /// </summary>
         [JsonProperty("standard")]
-        public StandardProperties standard { get; set; }
+        public StandardProperties standard { get; private set; }
 
         /// <summary>
         /// Status information including devices
         /// </summary>
         [JsonProperty("status")]
-        public StatusProperties status { get; set; }
+        public StatusProperties status { get; private set; }
 
         /// <summary>
         /// Custom properties dictionary
         /// </summary>
         [JsonProperty("custom")]
-        public Dictionary<string, CustomProperties> custom { get; set; }
+        public Dictionary<string, CustomProperties> custom { get; private set; }
     }
 
     /// <summary>
     /// Represents status properties including devices
     /// </summary>
-    internal class StatusProperties
-    {
-        /// <summary>
-        /// Dictionary of device statuses keyed by device identifier
-        /// </summary>
-        [JsonProperty("devices")]
-        public Dictionary<string, DeviceStatus> devices { get; set; }
-
-        public StatusProperties()
-        {
-            devices = new Dictionary<string, DeviceStatus>();
-        }
-    }
 }
