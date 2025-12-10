@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -39,10 +40,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
       sourceDevice.CurrentSourcesChanged += (sender, e) =>
       {
+        // need to copy the dictionaries to avoid enumeration issues
+        var currentSourceKeys = sourceDevice.CurrentSourceKeys.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        var currentSources = sourceDevice.CurrentSources.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        
         PostStatusMessage(JToken.FromObject(new
         {
-          currentSourceKeys = sourceDevice.CurrentSourceKeys,
-          currentSources = sourceDevice.CurrentSources
+          currentSourceKeys,
+          currentSources,
         }));
       };
     }
