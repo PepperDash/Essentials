@@ -8,13 +8,6 @@ namespace PepperDash.Essentials.Core.UDMApi
     /// </summary>
     internal class RoomResponse
     {
-        public RoomResponse()
-        {
-            standard = new StandardProperties();
-            status = new StatusProperties();
-            custom = new Dictionary<string, CustomProperties>();
-        }
-
         /// <summary>
         /// API version string
         /// </summary>

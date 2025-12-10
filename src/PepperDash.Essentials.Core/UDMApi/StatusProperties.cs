@@ -10,10 +10,5 @@ namespace PepperDash.Essentials.Core.UDMApi
         /// </summary>
         [JsonProperty("devices")]
         public Dictionary<string, DeviceStatus> devices { get; set; }
-
-        public StatusProperties()
-        {
-            devices = new Dictionary<string, DeviceStatus>();
-        }
     }
 }
