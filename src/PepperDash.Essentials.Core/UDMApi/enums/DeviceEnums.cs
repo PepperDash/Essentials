@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PepperDash.Essentials.Core
+﻿namespace PepperDash.Essentials.Core
 {
-    internal class DeviceEnums
-    {
-        public enum DeviceKeys
+        /// <summary>
+        /// Enumeration of valid device identifiers for UDM API status properties.
+        /// Device keys must be in the format "device1" through "device20".
+        /// </summary>
+        internal enum DeviceKeys
         {
             device1,
             device2,
@@ -30,7 +26,5 @@ namespace PepperDash.Essentials.Core
             device18,
             device19,
             device20
-
         }
-    }
 }
