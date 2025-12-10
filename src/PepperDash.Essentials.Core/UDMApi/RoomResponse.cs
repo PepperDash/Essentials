@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core.UDMApi
+namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// Represents the complete room response for UDM API

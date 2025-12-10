@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core.UDMApi
+namespace PepperDash.Essentials.Core
 {
     internal class StatusProperties
     {
