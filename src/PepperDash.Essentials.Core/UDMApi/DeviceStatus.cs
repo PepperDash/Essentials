@@ -5,25 +5,25 @@ namespace PepperDash.Essentials.Core.UDMApi
     internal class DeviceStatus
     {
         [JsonProperty("label")]
-        public string label { get; set; }
+        public string Label { get; set; }
 
         [JsonProperty("status")]
-        public string status { get; set; }
+        public string Status { get; set; }
 
         [JsonProperty("description")]
-        public string description { get; set; }
+        public string Description { get; set; }
 
         [JsonProperty("videoSource")]
-        public string videoSource { get; set; }
+        public string VideoSource { get; set; }
 
         [JsonProperty("audioSource")]
-        public string audioSource { get; set; }
+        public string AudioSource { get; set; }
 
         [JsonProperty("usage")]
-        public int usage { get; set; }
+        public int Usage { get; set; }
 
         [JsonProperty("error")]
-        public string error { get; set; }
+        public string Error { get; set; }
     }
 
 }

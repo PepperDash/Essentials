@@ -6,10 +6,10 @@ namespace PepperDash.Essentials.Core.UDMApi
     internal class CustomProperties
     {
         [JsonProperty("label")]
-        public string label { get; set; }
+        public string Label { get; set; }
 
         [JsonProperty("value")]
-        public string value { get; set; }
+        public string Value { get; set; }
     }
 
 }

@@ -12,24 +12,24 @@ namespace PepperDash.Essentials.Core.UDMApi
         /// API version string
         /// </summary>
         [JsonProperty("apiVersion")]
-        public string apiVersion { get; set; }
+        public string ApiVersion { get; set; }
 
         /// <summary>
         /// Standard room properties
         /// </summary>
         [JsonProperty("standard")]
-        public StandardProperties standard { get; set; }
+        public StandardProperties Standard { get; set; }
 
         /// <summary>
         /// Status information including devices
         /// </summary>
         [JsonProperty("status")]
-        public StatusProperties status { get; set; }
+        public StatusProperties Status { get; set; }
 
         /// <summary>
         /// Custom properties dictionary
         /// </summary>
         [JsonProperty("custom")]
-        public Dictionary<string, CustomProperties> custom { get; set; }
+        public Dictionary<string, CustomProperties> Custom { get; set; }
     }
 }

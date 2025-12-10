@@ -5,22 +5,22 @@ namespace PepperDash.Essentials.Core.UDMApi
     internal class StandardProperties
     {
         [JsonProperty("version")]
-        public string version { get; set; }
+        public string Version { get; set; }
 
         [JsonProperty("state")]
-        public string state { get; set; }
+        public string State { get; set; }
 
         [JsonProperty("error")]
-        public string error { get; set; }
+        public string Error { get; set; }
 
         [JsonProperty("occupancy")]
-        public bool occupancy { get; set; }
+        public bool Occupancy { get; set; }
 
         [JsonProperty("helpRequest")]
-        public string helpRequest { get; set; }
+        public string HelpRequest { get; set; }
 
         [JsonProperty("activity")]
-        public string activity { get; set; }
+        public string Activity { get; set; }
     }
 
 }
