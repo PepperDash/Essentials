@@ -1,10 +1,10 @@
-﻿namespace PepperDash.Essentials.Core
+﻿namespace UdmCws
 {
     /// <summary>
     /// Enumeration of valid custom property identifiers for UDM API.
     /// Property keys must be in the format "property1" through "property20".
     /// </summary>
-    internal enum PropertyKeys
+    public enum PropertyKeys
     {
         property1,
         property2,

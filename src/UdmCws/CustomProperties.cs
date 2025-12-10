@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core
+namespace UdmCws
 {
 
-    internal class CustomProperties
+    public class CustomProperties
     {
         [JsonProperty("label")]
         public string Label { get; set; }

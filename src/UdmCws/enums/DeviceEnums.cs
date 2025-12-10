@@ -1,10 +1,10 @@
-﻿namespace PepperDash.Essentials.Core
+﻿namespace UdmCws
 {
         /// <summary>
         /// Enumeration of valid device identifiers for UDM API status properties.
         /// Device keys must be in the format "device1" through "device20".
         /// </summary>
-        internal enum DeviceKeys
+        public enum DeviceKeys
         {
             device1,
             device2,

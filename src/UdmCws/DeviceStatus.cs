@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core
+namespace UdmCws
 {
-    internal class DeviceStatus
+    public class DeviceStatus
     {
         [JsonProperty("label")]
         public string Label { get; set; }

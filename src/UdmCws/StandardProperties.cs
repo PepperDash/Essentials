@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core
+namespace UdmCws
 {
-    internal class StandardProperties
+    public class StandardProperties
     {
         [JsonProperty("version")]
         public string Version { get; set; }

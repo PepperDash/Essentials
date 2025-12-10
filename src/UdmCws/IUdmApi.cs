@@ -1,7 +1,7 @@
 ﻿
-namespace PepperDash.Essentials.Core
+namespace UdmCws
 {
-    internal interface IUdmApi
+    public interface IUdmApi
     {
         bool SetDeviceProperty(DeviceKeys DeviceKey, DeviceStatus DeviceStatus );
     }

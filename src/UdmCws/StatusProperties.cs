@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace PepperDash.Essentials.Core
+namespace UdmCws
 {
-    internal class StatusProperties
+    public class StatusProperties
     {
         /// <summary>
         /// Dictionary of device statuses keyed by device identifier

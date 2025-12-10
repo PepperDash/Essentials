@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core
+namespace UdmCws
 {
     /// <summary>
     /// Represents the complete room response for UDM API
     /// </summary>
-    internal class RoomResponse
+    public class RoomResponse
     {
         /// <summary>
         /// API version string
