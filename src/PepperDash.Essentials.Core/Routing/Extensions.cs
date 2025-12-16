@@ -134,7 +134,7 @@ namespace PepperDash.Essentials.Core
             }
             // otherwise, audioVideo needs to be handled as two steps.
 
-            Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
+            Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {destinationKey} to {sourceKey} of type {type}", destination, source.Key, signalType);
 
             RouteDescriptor audioRouteDescriptor;
 

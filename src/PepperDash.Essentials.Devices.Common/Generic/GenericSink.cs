@@ -76,24 +76,8 @@ namespace PepperDash.Essentials.Devices.Common.Generic
 
         private void UpdateCurrentSources(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
         {
-            if (CurrentSources.ContainsKey(signalType))
-            {
-                CurrentSources[signalType] = sourceListItem;
-            }
-            else
-            {
-                CurrentSources.Add(signalType, sourceListItem);
-            }
-
-            // Update the current source key for the specified signal type
-            if (CurrentSourceKeys.ContainsKey(signalType))
-            {
-                CurrentSourceKeys[signalType] = sourceListKey;
-            }
-            else
-            {
-                CurrentSourceKeys.Add(signalType, sourceListKey);
-            }
+            CurrentSources[signalType] = sourceListItem;
+            CurrentSourceKeys[signalType] = sourceListKey;
         }
 
         /// <summary>
