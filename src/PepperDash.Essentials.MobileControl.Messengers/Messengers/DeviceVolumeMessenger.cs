@@ -130,33 +130,32 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             feedback.MuteFeedback.OutputChange += (sender, args) =>
             {
-                PostStatusMessage(JToken.FromObject(
-                        new
-                        {
-                            volume = new
-                            {
-                                muted = args.BoolValue
-                            }
-                        })
-                );
+                var message = new VolumeStateMessage
+                {
+                    Volume = new Volume
+                    {
+                        Muted = args.BoolValue
+                    }
+                };
+
+                PostStatusMessage(JToken.FromObject(message));
             };
 
             feedback.VolumeLevelFeedback.OutputChange += (sender, args) =>
             {
-                var rawValue = "";
-                if (feedback is IBasicVolumeWithFeedbackAdvanced volumeAdvanced)
+                var message = new VolumeStateMessage
                 {
-                    rawValue = volumeAdvanced.RawVolumeLevel.ToString();
-                }
-
-                var message = new
-                {
-                    volume = new
+                    Volume = new Volume
                     {
-                        level = args.IntValue,
-                        rawValue
+                        Level = args.IntValue,
                     }
                 };
+
+                if (device is IBasicVolumeWithFeedbackAdvanced volumeAdvanced)
+                {
+                    message.Volume.RawValue = volumeAdvanced.RawVolumeLevel.ToString();
+                    message.Volume.Units = volumeAdvanced.Units;
+                }
 
                 PostStatusMessage(JToken.FromObject(message));
             };
