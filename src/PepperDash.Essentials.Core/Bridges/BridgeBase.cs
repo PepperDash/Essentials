@@ -427,9 +427,12 @@ namespace PepperDash.Essentials.Core.Bridges
     /// </summary>
     public class EiscApiAdvancedFactory : EssentialsDeviceFactory<EiscApiAdvanced>
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public EiscApiAdvancedFactory()
         {
-            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "eiscapiadvancedserver", "eiscapiadvancedclient", "vceiscapiadv", "vceiscapiadvanced" };
+            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "eiscapiadvancedserver", "eiscapiadvancedclient", "vceiscapiadv", "vceiscapiadvanced", "eiscapiadvudp", "eiscapiadvancedudp" };
         }
 
         /// <summary>
@@ -438,7 +441,7 @@ namespace PepperDash.Essentials.Core.Bridges
         /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new EiscApiAdvanced Device");
+            Debug.LogDebug("Attempting to create new EiscApiAdvanced Device");
 
             var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
 
@@ -446,6 +449,13 @@ namespace PepperDash.Essentials.Core.Bridges
 
             switch (dc.Type.ToLower())
             {
+                case "eiscapiadvudp":
+                case "eiscapiadvancedudp":
+                    {
+                        eisc = new EthernetIntersystemCommunications(controlProperties.IpIdInt,
+                            controlProperties.TcpSshProperties.Address, Global.ControlSystem);
+                        break;
+                    }
                 case "eiscapiadv":
                 case "eiscapiadvanced":
                     {
