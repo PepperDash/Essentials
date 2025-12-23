@@ -273,17 +273,18 @@ namespace PepperDash.Essentials.Core.Bridges
                         }
                     case "analog":
                         {
-                            if (Eisc.BooleanOutput[join].UserObject is Action<ushort> userObject)
+                            if (Eisc.UShortOutput[join].UserObject is Action<ushort> userObject)
                             {
                                 this.LogVerbose("Executing Analog Action");
                                 userObject(Convert.ToUInt16(state));
                             }
                             else
-                                this.LogVerbose("User Object is null.  Nothing to Execute"); break;
+                                this.LogVerbose("User Object is null.  Nothing to Execute");
+                            break;
                         }
                     case "serial":
                         {
-                            if (Eisc.BooleanOutput[join].UserObject is Action<string> userObject)
+                            if (Eisc.StringOutput[join].UserObject is Action<string> userObject)
                             {
                                 this.LogVerbose("Executing Serial Action");
                                 userObject(Convert.ToString(state));
@@ -316,18 +317,27 @@ namespace PepperDash.Essentials.Core.Bridges
         {
             try
             {
-                this.LogVerbose("EiscApiAdvanced change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
-                var uo = args.Sig.UserObject;
+                this.LogVerbose("EiscApiAdvanced change: {type} {number}={value}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+                var userObject = args.Sig.UserObject;
 
-                if (uo == null) return;
+                if (userObject == null) return;
 
-                this.LogDebug("Executing Action: {0}", uo.ToString());
-                if (uo is Action<bool>)
-                    (uo as Action<bool>)(args.Sig.BoolValue);
-                else if (uo is Action<ushort>)
-                    (uo as Action<ushort>)(args.Sig.UShortValue);
-                else if (uo is Action<string>)
-                    (uo as Action<string>)(args.Sig.StringValue);
+
+                if (userObject is Action<bool>)
+                {
+                    this.LogDebug("Executing Boolean Action");
+                    (userObject as Action<bool>)(args.Sig.BoolValue);
+                }
+                else if (userObject is Action<ushort>)
+                {
+                    this.LogDebug("Executing Analog Action");
+                    (userObject as Action<ushort>)(args.Sig.UShortValue);
+                }
+                else if (userObject is Action<string>)
+                {
+                    this.LogDebug("Executing Serial Action");
+                    (userObject as Action<string>)(args.Sig.StringValue);
+                }
             }
             catch (Exception e)
             {
@@ -484,7 +494,7 @@ namespace PepperDash.Essentials.Core.Bridges
                     {
                         if (string.IsNullOrEmpty(controlProperties.RoomId))
                         {
-                            Debug.LogInformation("Unable to build VC-4 EISC Client for device {0}. Room ID is missing or empty", dc.Key);
+                            Debug.LogInformation("Unable to build VC-4 EISC Client for device {deviceKey}. Room ID is missing or empty", dc.Key);
                             eisc = null;
                             break;
                         }
