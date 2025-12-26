@@ -32,6 +32,11 @@ namespace PepperDash.Essentials.WebSocketServer
         public string Token { get; private set; }
 
         /// <summary>
+        /// The URL token key used to connect (from UiClientContexts dictionary key)
+        /// </summary>
+        public string TokenKey { get; set; }
+
+        /// <summary>
         /// Touchpanel Key associated with this client
         /// </summary>
         public string TouchpanelKey { get; private set; }

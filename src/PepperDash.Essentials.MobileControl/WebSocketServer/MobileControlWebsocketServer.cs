@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -59,12 +60,18 @@ namespace PepperDash.Essentials.WebSocketServer
         /// </summary>
         public Dictionary<string, UiClientContext> UiClientContexts { get; private set; }
 
-        private readonly Dictionary<string, UiClient> uiClients = new Dictionary<string, UiClient>();
+        private readonly ConcurrentDictionary<string, UiClient> uiClients = new ConcurrentDictionary<string, UiClient>();
+
+        /// <summary>
+        /// Stores pending client registrations using composite key: token-clientId
+        /// This ensures the correct client ID is matched even when connections establish out of order
+        /// </summary>
+        private readonly ConcurrentDictionary<string, string> pendingClientRegistrations = new ConcurrentDictionary<string, string>();
 
         /// <summary>
         /// Gets the collection of UI clients
         /// </summary>
-        public ReadOnlyDictionary<string, UiClient> UiClients => new ReadOnlyDictionary<string, UiClient>(uiClients);
+        public IReadOnlyDictionary<string, UiClient> UiClients => uiClients;
 
         private readonly MobileControlSystemController _parent;
 
@@ -723,20 +730,46 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private UiClient BuildUiClient(string roomKey, JoinToken token, string key)
         {
-            var c = new UiClient($"uiclient-{key}-{roomKey}-{token.Id}", token.Id, token.Token, token.TouchpanelKey);
-            this.LogInformation("Constructing UiClient with key {key} and ID {id}", key, token.Id);
+            // Try to retrieve a pending client ID that was registered during the join request
+            // Use the composite key: token-clientId
+            string clientId = null;
+            string registrationKey = null;
+            
+            // Find a registration for this token
+            var matchingRegistrations = pendingClientRegistrations.Keys
+                .Where(k => k.StartsWith($"{key}-"))
+                .OrderBy(k => k) // Process in order for FIFO behavior
+                .ToList();
+            
+            if (matchingRegistrations.Any())
+            {
+                registrationKey = matchingRegistrations.First();
+                if (pendingClientRegistrations.TryRemove(registrationKey, out clientId))
+                {
+                    this.LogVerbose("Retrieved pending clientId {clientId} for token {key}", clientId, key);
+                }
+            }
+            
+            if (clientId == null)
+            {
+                // Fallback: generate a new client ID if none was pending
+                clientId = $"{Utilities.GetNextClientId()}";
+                this.LogWarning("No pending clientId found for token {key}, generated new ID {clientId}", key, clientId);
+            }
+            
+            var c = new UiClient($"uiclient-{key}-{roomKey}-{clientId}", clientId, token.Token, token.TouchpanelKey);
+            this.LogInformation("Constructing UiClient with key {key} and ID {id}", key, clientId);
             c.Controller = _parent;
             c.RoomKey = roomKey;
+            c.TokenKey = key; // Store the URL token key for filtering
 
-            if (uiClients.ContainsKey(token.Id))
+            uiClients.AddOrUpdate(clientId, c, (id, existingClient) =>
             {
-                this.LogWarning("removing client with duplicate id {id}", token.Id);
-                uiClients.Remove(token.Id);
-            }
-            uiClients.Add(token.Id, c);
+                this.LogWarning("replacing client with duplicate id {id}", id);
+                return c;
+            });
             // UiClients[key].SetClient(c);
-            c.ConnectionClosed += (o, a) => uiClients.Remove(a.ClientId);
-            token.Id = null;
+            c.ConnectionClosed += (o, a) => uiClients.TryRemove(a.ClientId, out _);
             return c;
         }
 
@@ -1046,10 +1079,14 @@ namespace PepperDash.Essentials.WebSocketServer
                 });
             }
 
+            // Generate a client ID for this join request and store it with a composite key
             var clientId = $"{Utilities.GetNextClientId()}";
-            clientContext.Token.Id = clientId;
+            
+            // Store registration with composite key: token-clientId so BuildUiClient can verify it
+            var registrationKey = $"{token}-{clientId}";
+            pendingClientRegistrations.TryAdd(registrationKey, clientId);
 
-            this.LogVerbose("Assigning ClientId: {clientId}", clientId);
+            this.LogVerbose("Assigning ClientId: {clientId} for token: {token}", clientId, token);
 
             // Construct the response object
             JoinResponse jRes = new JoinResponse
