@@ -11,6 +11,16 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Devices.Common.Shades
 {
     /// <summary>
+    /// Enumeration for requested state
+    /// </summary>
+    enum RequestedState
+    {
+        None,
+        Raise,
+        Lower
+    }
+
+    /// <summary>
     /// Controls a single shade using three relays
     /// </summary>
     public class ScreenLiftController : EssentialsDevice, IProjectorScreenLiftControl
@@ -24,6 +34,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         ISwitchedOutput RaiseRelay;
         ISwitchedOutput LowerRelay;
         ISwitchedOutput LatchedRelay;
+
+        private bool _isMoving;
+        private RequestedState _requestedState;
+        private CTimer _movementTimer;
 
         /// <summary>
         /// Gets or sets the InUpPosition
@@ -163,6 +177,16 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         {
             if (RaiseRelay == null && LatchedRelay == null) return;
 
+            Debug.LogMessage(LogEventLevel.Debug, this, $"Raise called for {Type}");
+
+            // If device is moving, bank the command
+            if (_isMoving)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, this, $"Device is moving, banking Raise command");
+                _requestedState = RequestedState.Raise;
+                return;
+            }
+
             Debug.LogMessage(LogEventLevel.Debug, this, $"Raising {Type}");
 
             switch (Mode)
@@ -170,11 +194,25 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                 case eScreenLiftControlMode.momentary:
                     {
                         PulseOutput(RaiseRelay, RaiseRelayConfig.PulseTimeInMs);
+                        
+                        // Set moving flag and start timer if movement time is configured
+                        if (RaiseRelayConfig.MovementTimeInMs > 0)
+                        {
+                            _isMoving = true;
+                            _movementTimer = new CTimer(OnMovementComplete, RaiseRelayConfig.MovementTimeInMs);
+                        }
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.Off();
+                        
+                        // Set moving flag and start timer if movement time is configured
+                        if (LatchedRelayConfig.MovementTimeInMs > 0)
+                        {
+                            _isMoving = true;
+                            _movementTimer = new CTimer(OnMovementComplete, LatchedRelayConfig.MovementTimeInMs);
+                        }
                         break;
                     }
             }
@@ -188,6 +226,16 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         {
             if (LowerRelay == null && LatchedRelay == null) return;
 
+            Debug.LogMessage(LogEventLevel.Debug, this, $"Lower called for {Type}");
+
+            // If device is moving, bank the command
+            if (_isMoving)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, this, $"Device is moving, banking Lower command");
+                _requestedState = RequestedState.Lower;
+                return;
+            }
+
             Debug.LogMessage(LogEventLevel.Debug, this, $"Lowering {Type}");
 
             switch (Mode)
@@ -195,15 +243,72 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                 case eScreenLiftControlMode.momentary:
                     {
                         PulseOutput(LowerRelay, LowerRelayConfig.PulseTimeInMs);
+                        
+                        // Set moving flag and start timer if movement time is configured
+                        if (LowerRelayConfig.MovementTimeInMs > 0)
+                        {
+                            _isMoving = true;
+                            _movementTimer = new CTimer(OnMovementComplete, LowerRelayConfig.MovementTimeInMs);
+                        }
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.On();
+                        
+                        // Set moving flag and start timer if movement time is configured
+                        if (LatchedRelayConfig.MovementTimeInMs > 0)
+                        {
+                            _isMoving = true;
+                            _movementTimer = new CTimer(OnMovementComplete, LatchedRelayConfig.MovementTimeInMs);
+                        }
                         break;
                     }
             }
             InUpPosition = false;
+        }
+
+        /// <summary>
+        /// Called when movement timer completes
+        /// </summary>
+        void OnMovementComplete(object o)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, this, $"Movement complete");
+            
+            _isMoving = false;
+            
+            // Execute banked command if one exists
+            if (_requestedState != RequestedState.None)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, this, $"Executing banked command: {_requestedState}");
+                
+                var commandToExecute = _requestedState;
+                _requestedState = RequestedState.None;
+                
+                // Check if current state matches what the banked command would do
+                // If so, ignore it
+                if (commandToExecute == RequestedState.Raise && InUpPosition)
+                {
+                    Debug.LogMessage(LogEventLevel.Debug, this, $"Already in up position, ignoring banked Raise command");
+                    return;
+                }
+                
+                if (commandToExecute == RequestedState.Lower && !InUpPosition)
+                {
+                    Debug.LogMessage(LogEventLevel.Debug, this, $"Already in down position, ignoring banked Lower command");
+                    return;
+                }
+                
+                // Execute the banked command
+                if (commandToExecute == RequestedState.Raise)
+                {
+                    Raise();
+                }
+                else if (commandToExecute == RequestedState.Lower)
+                {
+                    Lower();
+                }
+            }
         }
 
         void PulseOutput(ISwitchedOutput output, int pulseTime)
