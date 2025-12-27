@@ -196,23 +196,24 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                         PulseOutput(RaiseRelay, RaiseRelayConfig.PulseTimeInMs);
                         
                         // Set moving flag and start timer if movement time is configured
-                        if (RaiseRelayConfig.MovementTimeInMs > 0)
+                        if (RaiseRelayConfig.RaiseTimeInMs > 0)
                         {
                             _isMoving = true;
-                            _movementTimer = new CTimer(OnMovementComplete, RaiseRelayConfig.MovementTimeInMs);
+                            
+                            // Dispose previous timer if exists
+                            if (_movementTimer != null)
+                            {
+                                _movementTimer.Stop();
+                                _movementTimer.Dispose();
+                            }
+                            
+                            _movementTimer = new CTimer(OnMovementComplete, RaiseRelayConfig.RaiseTimeInMs);
                         }
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.Off();
-                        
-                        // Set moving flag and start timer if movement time is configured
-                        if (LatchedRelayConfig.MovementTimeInMs > 0)
-                        {
-                            _isMoving = true;
-                            _movementTimer = new CTimer(OnMovementComplete, LatchedRelayConfig.MovementTimeInMs);
-                        }
                         break;
                     }
             }
@@ -245,23 +246,24 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                         PulseOutput(LowerRelay, LowerRelayConfig.PulseTimeInMs);
                         
                         // Set moving flag and start timer if movement time is configured
-                        if (LowerRelayConfig.MovementTimeInMs > 0)
+                        if (LowerRelayConfig.LowerTimeInMs > 0)
                         {
                             _isMoving = true;
-                            _movementTimer = new CTimer(OnMovementComplete, LowerRelayConfig.MovementTimeInMs);
+                            
+                            // Dispose previous timer if exists
+                            if (_movementTimer != null)
+                            {
+                                _movementTimer.Stop();
+                                _movementTimer.Dispose();
+                            }
+                            
+                            _movementTimer = new CTimer(OnMovementComplete, LowerRelayConfig.LowerTimeInMs);
                         }
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.On();
-                        
-                        // Set moving flag and start timer if movement time is configured
-                        if (LatchedRelayConfig.MovementTimeInMs > 0)
-                        {
-                            _isMoving = true;
-                            _movementTimer = new CTimer(OnMovementComplete, LatchedRelayConfig.MovementTimeInMs);
-                        }
                         break;
                     }
             }
@@ -271,7 +273,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         /// <summary>
         /// Called when movement timer completes
         /// </summary>
-        void OnMovementComplete(object o)
+        private void OnMovementComplete(object o)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, $"Movement complete");
             
