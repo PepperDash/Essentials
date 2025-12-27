@@ -37,6 +37,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
         private bool _isMoving;
         private RequestedState _requestedState;
+        private RequestedState _currentMovement;
         private CTimer _movementTimer;
 
         /// <summary>
@@ -188,7 +189,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             }
 
             Debug.LogMessage(LogEventLevel.Debug, this, $"Raising {Type}");
-
+    
             switch (Mode)
             {
                 case eScreenLiftControlMode.momentary:
@@ -196,21 +197,26 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                         PulseOutput(RaiseRelay, RaiseRelayConfig.PulseTimeInMs);
                         
                         // Set moving flag and start timer if movement time is configured
-                        if (RaiseRelayConfig.RaiseTimeInMs > 0)
+                        if (RaiseRelayConfig.MoveTimeInMs > 0)
                         {
                             _isMoving = true;
+                            _currentMovement = RequestedState.Raise;
                             DisposeMovementTimer();
-                            _movementTimer = new CTimer(OnMovementComplete, RaiseRelayConfig.RaiseTimeInMs);
+                            _movementTimer = new CTimer(OnMovementComplete, RaiseRelayConfig.MoveTimeInMs);
+                        }
+                        else
+                        {
+                            InUpPosition = true;
                         }
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.Off();
+                        InUpPosition = true;
                         break;
                     }
             }
-            InUpPosition = true;
         }
 
         /// <summary>
@@ -221,7 +227,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             if (LowerRelay == null && LatchedRelay == null) return;
 
             Debug.LogMessage(LogEventLevel.Debug, this, $"Lower called for {Type}");
-
+    
             // If device is moving, bank the command
             if (_isMoving)
             {
@@ -239,21 +245,26 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                         PulseOutput(LowerRelay, LowerRelayConfig.PulseTimeInMs);
                         
                         // Set moving flag and start timer if movement time is configured
-                        if (LowerRelayConfig.LowerTimeInMs > 0)
+                        if (LowerRelayConfig.MoveTimeInMs > 0)
                         {
                             _isMoving = true;
+                            _currentMovement = RequestedState.Lower;
                             DisposeMovementTimer();
-                            _movementTimer = new CTimer(OnMovementComplete, LowerRelayConfig.LowerTimeInMs);
+                            _movementTimer = new CTimer(OnMovementComplete, LowerRelayConfig.MoveTimeInMs);
+                        }
+                        else
+                        {
+                            InUpPosition = false;
                         }
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.On();
+                        InUpPosition = false;
                         break;
                     }
             }
-            InUpPosition = false;
         }
 
         /// <summary>
@@ -276,7 +287,18 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         {
             Debug.LogMessage(LogEventLevel.Debug, this, $"Movement complete");
             
+            // Update position based on completed movement
+            if (_currentMovement == RequestedState.Raise)
+            {
+                InUpPosition = true;
+            }
+            else if (_currentMovement == RequestedState.Lower)
+            {
+                InUpPosition = false;
+            }
+            
             _isMoving = false;
+            _currentMovement = RequestedState.None;
             
             // Execute banked command if one exists
             if (_requestedState != RequestedState.None)
@@ -290,25 +312,11 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                 switch (commandToExecute)
                 {
                     case RequestedState.Raise:
-                        if (InUpPosition)
-                        {
-                            Debug.LogMessage(LogEventLevel.Debug, this, $"Already in up position, ignoring banked Raise command");
-                        }
-                        else
-                        {
-                            Raise();
-                        }
+                        Raise();
                         break;
                         
                     case RequestedState.Lower:
-                        if (!InUpPosition)
-                        {
-                            Debug.LogMessage(LogEventLevel.Debug, this, $"Already in down position, ignoring banked Lower command");
-                        }
-                        else
-                        {
-                            Lower();
-                        }
+                        Lower();
                         break;
                 }
             }

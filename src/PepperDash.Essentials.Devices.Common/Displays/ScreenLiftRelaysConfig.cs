@@ -20,15 +20,9 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     public int PulseTimeInMs { get; set; }
 
     /// <summary>
-    /// Gets or sets the RaiseTimeInMs - time in milliseconds for the raise movement to complete
+    /// Gets or sets the MoveTimeInMs - time in milliseconds for the movement to complete
     /// </summary>
-    [JsonProperty("raiseTimeInMs")]
-    public int RaiseTimeInMs { get; set; }
-
-    /// <summary>
-    /// Gets or sets the LowerTimeInMs - time in milliseconds for the lower movement to complete
-    /// </summary>
-    [JsonProperty("lowerTimeInMs")]
-    public int LowerTimeInMs { get; set; }
+    [JsonProperty("moveTimeInMs")]
+    public int MoveTimeInMs { get; set; }
   }
 }
