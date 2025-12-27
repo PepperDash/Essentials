@@ -199,14 +199,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                         if (RaiseRelayConfig.RaiseTimeInMs > 0)
                         {
                             _isMoving = true;
-                            
-                            // Dispose previous timer if exists
-                            if (_movementTimer != null)
-                            {
-                                _movementTimer.Stop();
-                                _movementTimer.Dispose();
-                            }
-                            
+                            DisposeMovementTimer();
                             _movementTimer = new CTimer(OnMovementComplete, RaiseRelayConfig.RaiseTimeInMs);
                         }
                         break;
@@ -249,14 +242,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                         if (LowerRelayConfig.LowerTimeInMs > 0)
                         {
                             _isMoving = true;
-                            
-                            // Dispose previous timer if exists
-                            if (_movementTimer != null)
-                            {
-                                _movementTimer.Stop();
-                                _movementTimer.Dispose();
-                            }
-                            
+                            DisposeMovementTimer();
                             _movementTimer = new CTimer(OnMovementComplete, LowerRelayConfig.LowerTimeInMs);
                         }
                         break;
@@ -268,6 +254,19 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                     }
             }
             InUpPosition = false;
+        }
+
+        /// <summary>
+        /// Disposes the current movement timer if it exists
+        /// </summary>
+        private void DisposeMovementTimer()
+        {
+            if (_movementTimer != null)
+            {
+                _movementTimer.Stop();
+                _movementTimer.Dispose();
+                _movementTimer = null;
+            }
         }
 
         /// <summary>
@@ -287,28 +286,30 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                 var commandToExecute = _requestedState;
                 _requestedState = RequestedState.None;
                 
-                // Check if current state matches what the banked command would do
-                // If so, ignore it
-                if (commandToExecute == RequestedState.Raise && InUpPosition)
+                // Check if current state matches what the banked command would do and execute if different
+                switch (commandToExecute)
                 {
-                    Debug.LogMessage(LogEventLevel.Debug, this, $"Already in up position, ignoring banked Raise command");
-                    return;
-                }
-                
-                if (commandToExecute == RequestedState.Lower && !InUpPosition)
-                {
-                    Debug.LogMessage(LogEventLevel.Debug, this, $"Already in down position, ignoring banked Lower command");
-                    return;
-                }
-                
-                // Execute the banked command
-                if (commandToExecute == RequestedState.Raise)
-                {
-                    Raise();
-                }
-                else if (commandToExecute == RequestedState.Lower)
-                {
-                    Lower();
+                    case RequestedState.Raise:
+                        if (InUpPosition)
+                        {
+                            Debug.LogMessage(LogEventLevel.Debug, this, $"Already in up position, ignoring banked Raise command");
+                        }
+                        else
+                        {
+                            Raise();
+                        }
+                        break;
+                        
+                    case RequestedState.Lower:
+                        if (!InUpPosition)
+                        {
+                            Debug.LogMessage(LogEventLevel.Debug, this, $"Already in down position, ignoring banked Lower command");
+                        }
+                        else
+                        {
+                            Lower();
+                        }
+                        break;
                 }
             }
         }
