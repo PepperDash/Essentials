@@ -179,10 +179,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
             Debug.LogMessage(LogEventLevel.Debug, this, $"Raise called for {Type}");
 
-            // If device is moving, bank the command
+            // If device is moving, just bank the command - don't interrupt current movement
             if (_isMoving)
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, $"Device is moving, banking Raise command");
+                Debug.LogMessage(LogEventLevel.Debug, this, $"Device is moving, banking Raise command for execution after movement completes");
                 _requestedState = RequestedState.Raise;
                 return;
             }
@@ -193,24 +193,31 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             {
                 case eScreenLiftControlMode.momentary:
                     {
+                        // Ensure lower relay is off to prevent simultaneous relay activation
+                        if (LowerRelay != null) LowerRelay.Off();
+                        
                         PulseOutput(RaiseRelay, RaiseRelayConfig.PulseTimeInMs);
                         
-                        // Set moving flag and start timer if movement time is configured
+                        // Always set moving flag to enable command banking, even if no timer is configured
+                        _isMoving = true;
+                        DisposeMovementTimer();
+                        
+                        // Start timer if movement time is configured
                         if (RaiseRelayConfig.RaiseTimeInMs > 0)
                         {
-                            _isMoving = true;
-                            DisposeMovementTimer();
                             _movementTimer = new CTimer(OnMovementComplete, RaiseRelayConfig.RaiseTimeInMs);
                         }
+                        
+                        InUpPosition = true;
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.Off();
+                        InUpPosition = true;
                         break;
                     }
             }
-            InUpPosition = true;
         }
 
         /// <summary>
@@ -222,10 +229,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
             Debug.LogMessage(LogEventLevel.Debug, this, $"Lower called for {Type}");
 
-            // If device is moving, bank the command
+            // If device is moving, just bank the command - don't interrupt current movement
             if (_isMoving)
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, $"Device is moving, banking Lower command");
+                Debug.LogMessage(LogEventLevel.Debug, this, $"Device is moving, banking Lower command for execution after movement completes");
                 _requestedState = RequestedState.Lower;
                 return;
             }
@@ -236,24 +243,31 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             {
                 case eScreenLiftControlMode.momentary:
                     {
+                        // Ensure raise relay is off to prevent simultaneous relay activation
+                        if (RaiseRelay != null) RaiseRelay.Off();
+                        
                         PulseOutput(LowerRelay, LowerRelayConfig.PulseTimeInMs);
                         
-                        // Set moving flag and start timer if movement time is configured
+                        // Always set moving flag to enable command banking, even if no timer is configured
+                        _isMoving = true;
+                        DisposeMovementTimer();
+                        
+                        // Start timer if movement time is configured
                         if (LowerRelayConfig.LowerTimeInMs > 0)
                         {
-                            _isMoving = true;
-                            DisposeMovementTimer();
                             _movementTimer = new CTimer(OnMovementComplete, LowerRelayConfig.LowerTimeInMs);
                         }
+                        
+                        InUpPosition = false;
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.On();
+                        InUpPosition = false;
                         break;
                     }
             }
-            InUpPosition = false;
         }
 
         /// <summary>
