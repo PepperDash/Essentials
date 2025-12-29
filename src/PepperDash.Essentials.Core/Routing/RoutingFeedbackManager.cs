@@ -122,7 +122,7 @@ namespace PepperDash.Essentials.Core.Routing
         )
         {
             Debug.LogMessage(
-                Serilog.Events.LogEventLevel.Verbose,
+                Serilog.Events.LogEventLevel.Debug,
                 "Updating destination {destination} with inputPort {inputPort}",
                 this,
                 destination?.Key,
@@ -237,7 +237,7 @@ namespace PepperDash.Essentials.Core.Routing
             if (room == null)
             {
                 Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Warning,
+                    Serilog.Events.LogEventLevel.Debug,
                     "No room found for display {destination}",
                     this,
                     destination.Key
@@ -252,7 +252,7 @@ namespace PepperDash.Essentials.Core.Routing
             if (sourceList == null)
             {
                 Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Warning,
+                    Serilog.Events.LogEventLevel.Debug,
                     "No source list found for source list key {key}. Unable to find source for tieLine {sourceTieLine}",
                     this,
                     room.SourceListKey,
