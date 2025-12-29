@@ -18,5 +18,11 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     /// </summary>
     [JsonProperty("pulseTimeInMs")]
     public int PulseTimeInMs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the MoveTimeInMs - time in milliseconds for the movement to complete
+    /// </summary>
+    [JsonProperty("moveTimeInMs")]
+    public int MoveTimeInMs { get; set; }
   }
 }
