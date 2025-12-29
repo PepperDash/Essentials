@@ -1,4 +1,9 @@
-﻿using Crestron.SimplSharp;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Timers;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXml.Serialization;
@@ -10,11 +15,6 @@ using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Timers;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
@@ -1091,7 +1091,7 @@ namespace PepperDash.Essentials.Core.Fusion
                         }
                         RoomInfoChange?.Invoke(this, new EventArgs());
 
-                        CustomPropertiesBridge.EvaluateRoomInfo(Room.Key, roomInformation);
+                        CustomPropertiesBridge.EvaluateRoomInfo(Room, roomInformation, _config.UseFusionRoomName);
                     }
                 }
                 catch (Exception e)
