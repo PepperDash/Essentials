@@ -100,12 +100,15 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 var roomConfig = reconfigurable.Config;
 
+                var updateConfig = false;
+
                 // Set the room name
                 if (!string.IsNullOrEmpty(roomInfo.Name) && useFusionRoomName)
                 {
                     Debug.LogDebug("Current Room Name: {currentName}. New Room Name: {fusionName}", roomConfig.Name, roomInfo.Name);
                     // Set the name in config
                     roomConfig.Name = roomInfo.Name;
+                    updateConfig = true;
 
                     Debug.LogDebug("Room Name Successfully Changed.");
                 }
@@ -115,9 +118,13 @@ namespace PepperDash.Essentials.Core.Fusion
                 if (helpMessage != null)
                 {
                     roomConfig.Properties["helpMessage"] = helpMessage.CustomFieldValue;
+                    updateConfig = true;
                 }
 
-                reconfigurable.SetConfig(roomConfig);
+                if (updateConfig)
+                {
+                    reconfigurable.SetConfig(roomConfig);
+                }
             }
             catch (Exception e)
             {
