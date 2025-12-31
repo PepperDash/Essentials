@@ -32,6 +32,11 @@ namespace PepperDash.Essentials.WebSocketServer
         public string Token { get; private set; }
 
         /// <summary>
+        /// The URL token key used to connect (from UiClientContexts dictionary key)
+        /// </summary>
+        public string TokenKey { get; set; }
+
+        /// <summary>
         /// Touchpanel Key associated with this client
         /// </summary>
         public string TouchpanelKey { get; private set; }
@@ -40,6 +45,11 @@ namespace PepperDash.Essentials.WebSocketServer
         /// Gets or sets the mobile control system controller that handles this client's messages
         /// </summary>
         public MobileControlSystemController Controller { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server instance for client registration
+        /// </summary>
+        public MobileControlWebsocketServer Server { get; set; }
 
         /// <summary>
         /// Gets or sets the room key that this client is associated with
@@ -98,6 +108,50 @@ namespace PepperDash.Essentials.WebSocketServer
 
             Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message, this);
             Log.Level = LogLevel.Trace;
+
+            // Get clientId from query parameter
+            var queryString = Context.QueryString;
+            var clientId = queryString["clientId"];
+
+            if (!string.IsNullOrEmpty(clientId))
+            {
+                // New behavior: Validate and register with the server using provided clientId
+                if (Server == null || !Server.RegisterUiClient(this, clientId, TokenKey))
+                {
+                    this.LogError("Failed to register client with ID {clientId}. Invalid or expired registration.", clientId);
+                    Context.WebSocket.Close(CloseStatusCode.PolicyViolation, "Invalid or expired clientId");
+                    return;
+                }
+
+                // Update this client's ID to the validated one
+                Id = clientId;
+                Key = $"uiclient-{TokenKey}-{RoomKey}-{clientId}";
+
+                this.LogInformation("Client {clientId} successfully connected and registered (new flow)", clientId);
+            }
+            else
+            {
+                // Legacy behavior: Use clientId from Token.Id (generated in HandleJoinRequest)
+                this.LogInformation("Client connected without clientId query parameter. Using legacy registration flow.");
+
+                // Id is already set from Token in constructor, use it
+                if (string.IsNullOrEmpty(Id))
+                {
+                    this.LogError("Legacy client has no ID from token. Connection will be closed.");
+                    Context.WebSocket.Close(CloseStatusCode.PolicyViolation, "No client ID available");
+                    return;
+                }
+
+                Key = $"uiclient-{TokenKey}-{RoomKey}-{Id}";
+
+                // Register directly to active clients (legacy flow)
+                if (Server != null)
+                {
+                    Server.RegisterLegacyUiClient(this);
+                }
+
+                this.LogInformation("Client {clientId} registered using legacy flow", Id);
+            }
 
             if (Controller == null)
             {

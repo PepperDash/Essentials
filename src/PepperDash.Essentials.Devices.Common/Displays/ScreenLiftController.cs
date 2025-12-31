@@ -1,15 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Timers;
 using Crestron.SimplSharp;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
-using Serilog.Events;
+using PepperDash.Essentials.Devices.Common.Displays;
 
 namespace PepperDash.Essentials.Devices.Common.Shades
 {
+    /// <summary>
+    /// Enumeration for requested state
+    /// </summary>
+    enum RequestedState
+    {
+        None,
+        Raise,
+        Lower
+    }
+
     /// <summary>
     /// Controls a single shade using three relays
     /// </summary>
@@ -20,10 +32,15 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         readonly ScreenLiftRelaysConfig LowerRelayConfig;
         readonly ScreenLiftRelaysConfig LatchedRelayConfig;
 
-        Displays.DisplayBase DisplayDevice;
+        DisplayBase DisplayDevice;
         ISwitchedOutput RaiseRelay;
         ISwitchedOutput LowerRelay;
         ISwitchedOutput LatchedRelay;
+
+        private bool _isMoving;
+        private RequestedState _requestedState;
+        private RequestedState _currentMovement;
+        private Timer _movementTimer;
 
         /// <summary>
         /// Gets or sets the InUpPosition
@@ -80,6 +97,11 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
             IsInUpPosition = new BoolFeedback("isInUpPosition", () => _isInUpPosition);
 
+            // Initialize movement timer for reuse
+            _movementTimer = new Timer();
+            _movementTimer.Elapsed += OnMovementComplete;
+            _movementTimer.AutoReset = false;
+
             switch (Mode)
             {
                 case eScreenLiftControlMode.momentary:
@@ -129,25 +151,25 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             {
                 case eScreenLiftControlMode.momentary:
                     {
-                        Debug.LogMessage(LogEventLevel.Debug, this, $"Getting relays for {Mode}");
+                        this.LogDebug("Getting relays for {mode}", Mode);
                         RaiseRelay = GetSwitchedOutputFromDevice(RaiseRelayConfig.DeviceKey);
                         LowerRelay = GetSwitchedOutputFromDevice(LowerRelayConfig.DeviceKey);
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
-                        Debug.LogMessage(LogEventLevel.Debug, this, $"Getting relays for {Mode}");
+                        this.LogDebug("Getting relays for {mode}", Mode);
                         LatchedRelay = GetSwitchedOutputFromDevice(LatchedRelayConfig.DeviceKey);
                         break;
                     }
             }
 
-            Debug.LogMessage(LogEventLevel.Debug, this, $"Getting display with key {DisplayDeviceKey}");
+            this.LogDebug("Getting display with key {displayKey}", DisplayDeviceKey);
             DisplayDevice = GetDisplayBaseFromDevice(DisplayDeviceKey);
 
             if (DisplayDevice != null)
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, $"Subscribing to {DisplayDeviceKey} feedbacks");
+                this.LogDebug("Subscribing to {displayKey} feedbacks", DisplayDeviceKey);
 
                 DisplayDevice.IsWarmingUpFeedback.OutputChange += IsWarmingUpFeedback_OutputChange;
                 DisplayDevice.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
@@ -163,22 +185,49 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         {
             if (RaiseRelay == null && LatchedRelay == null) return;
 
-            Debug.LogMessage(LogEventLevel.Debug, this, $"Raising {Type}");
+            this.LogDebug("Raise called for {type}", Type);
+
+            // If device is moving, bank the command
+            if (_isMoving)
+            {
+                this.LogDebug("Device is moving, banking Raise command");
+                _requestedState = RequestedState.Raise;
+                return;
+            }
+
+            this.LogDebug("Raising {type}", Type);
 
             switch (Mode)
             {
                 case eScreenLiftControlMode.momentary:
                     {
                         PulseOutput(RaiseRelay, RaiseRelayConfig.PulseTimeInMs);
+
+                        // Set moving flag and start timer if movement time is configured
+                        if (RaiseRelayConfig.MoveTimeInMs > 0)
+                        {
+                            _isMoving = true;
+                            _currentMovement = RequestedState.Raise;
+                            if (_movementTimer.Enabled)
+                            {
+                                _movementTimer.Stop();
+                            }
+                            _movementTimer.Interval = RaiseRelayConfig.MoveTimeInMs;
+                            _movementTimer.Start();
+                        }
+                        else
+                        {
+                            InUpPosition = true;
+                        }
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.Off();
+                        InUpPosition = true;
                         break;
                     }
             }
-            InUpPosition = true;
         }
 
         /// <summary>
@@ -188,59 +237,145 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         {
             if (LowerRelay == null && LatchedRelay == null) return;
 
-            Debug.LogMessage(LogEventLevel.Debug, this, $"Lowering {Type}");
+            this.LogDebug("Lower called for {type}", Type);
+
+            // If device is moving, bank the command
+            if (_isMoving)
+            {
+                this.LogDebug("Device is moving, banking Lower command");
+                _requestedState = RequestedState.Lower;
+                return;
+            }
+
+            this.LogDebug("Lowering {type}", Type);
 
             switch (Mode)
             {
                 case eScreenLiftControlMode.momentary:
                     {
                         PulseOutput(LowerRelay, LowerRelayConfig.PulseTimeInMs);
+
+                        // Set moving flag and start timer if movement time is configured
+                        if (LowerRelayConfig.MoveTimeInMs > 0)
+                        {
+                            _isMoving = true;
+                            _currentMovement = RequestedState.Lower;
+                            if (_movementTimer.Enabled)
+                            {
+                                _movementTimer.Stop();
+                            }
+                            _movementTimer.Interval = LowerRelayConfig.MoveTimeInMs;
+                            _movementTimer.Start();
+                        }
+                        else
+                        {
+                            InUpPosition = false;
+                        }
                         break;
                     }
                 case eScreenLiftControlMode.latched:
                     {
                         LatchedRelay.On();
+                        InUpPosition = false;
                         break;
                     }
             }
-            InUpPosition = false;
         }
 
-        void PulseOutput(ISwitchedOutput output, int pulseTime)
+        private void DisposeMovementTimer()
         {
-            output.On();
-            CTimer pulseTimer = new CTimer(new CTimerCallbackFunction((o) => output.Off()), pulseTime);
+            if (_movementTimer != null)
+            {
+                _movementTimer.Stop();
+                _movementTimer.Elapsed -= OnMovementComplete;
+                _movementTimer.Dispose();
+                _movementTimer = null;
+            }
         }
 
         /// <summary>
-        /// Attempts to get the port on teh specified device from config
+        /// Called when movement timer completes
         /// </summary>
-        /// <param name="relayKey"></param>
-        /// <returns></returns>
-        ISwitchedOutput GetSwitchedOutputFromDevice(string relayKey)
+        private void OnMovementComplete(object sender, ElapsedEventArgs e)
         {
-            var portDevice = DeviceManager.GetDeviceForKey(relayKey);
+            this.LogDebug("Movement complete");
+
+            // Update position based on completed movement
+            if (_currentMovement == RequestedState.Raise)
+            {
+                InUpPosition = true;
+            }
+            else if (_currentMovement == RequestedState.Lower)
+            {
+                InUpPosition = false;
+            }
+
+            _isMoving = false;
+            _currentMovement = RequestedState.None;
+
+            // Execute banked command if one exists
+            if (_requestedState != RequestedState.None)
+            {
+                this.LogDebug("Executing next command: {command}", _requestedState);
+
+                var commandToExecute = _requestedState;
+                _requestedState = RequestedState.None;
+
+                // Check if current state matches what the banked command would do and execute if different
+                switch (commandToExecute)
+                {
+                    case RequestedState.Raise:
+                        Raise();
+                        break;
+
+                    case RequestedState.Lower:
+                        Lower();
+                        break;
+                }
+            }
+        }
+
+        private void PulseOutput(ISwitchedOutput output, int pulseTime)
+        {
+            output.On();
+
+            var timer = new Timer(pulseTime)
+            {
+                AutoReset = false
+            };
+
+            timer.Elapsed += (sender, e) =>
+                  {
+                      output.Off();
+                      timer.Dispose();
+                  };
+            timer.Start();
+        }
+
+        private ISwitchedOutput GetSwitchedOutputFromDevice(string relayKey)
+        {
+            var portDevice = DeviceManager.GetDeviceForKey<ISwitchedOutput>(relayKey);
             if (portDevice != null)
             {
-                return portDevice as ISwitchedOutput;
+                return portDevice;
             }
             else
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, "Error: Unable to get relay device with key '{0}'", relayKey);
+                this.LogWarning("Error: Unable to get relay device with key '{relayKey}'", relayKey);
                 return null;
             }
         }
 
-        Displays.DisplayBase GetDisplayBaseFromDevice(string displayKey)
+        private DisplayBase GetDisplayBaseFromDevice(string displayKey)
         {
-            var displayDevice = DeviceManager.GetDeviceForKey(displayKey);
+            var displayDevice = DeviceManager.GetDeviceForKey<DisplayBase>(displayKey);
             if (displayDevice != null)
             {
-                return displayDevice as Displays.DisplayBase;
+                return displayDevice;
             }
             else
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, "Error: Unable to get display device with key '{0}'", displayKey);
+                this.LogWarning("Error: Unable to get display device with key '{displayKey}'", displayKey);
                 return null;
             }
         }
@@ -248,7 +383,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     }
 
     /// <summary>
-    /// Represents a ScreenLiftControllerFactory
+    /// Factory for ScreenLiftController devices
     /// </summary>
     public class ScreenLiftControllerFactory : EssentialsDeviceFactory<RelayControlledShade>
     {
@@ -260,14 +395,11 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             TypeNames = new List<string>() { "screenliftcontroller" };
         }
 
-        /// <summary>
-        /// BuildDevice method
-        /// </summary>
         /// <inheritdoc />
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Generic Comm Device");
-            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<ScreenLiftControllerConfigProperties>(dc.Properties.ToString());
+            Debug.LogDebug("Factory Attempting to create new ScreenLiftController Device");
+            var props = dc.Properties.ToObject<ScreenLiftControllerConfigProperties>();
 
             return new ScreenLiftController(dc.Key, dc.Name, props);
         }
