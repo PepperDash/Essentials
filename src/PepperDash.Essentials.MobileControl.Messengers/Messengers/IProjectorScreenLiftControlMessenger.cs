@@ -85,7 +85,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Gets or sets the InUpPosition
         /// </summary>
-        [JsonProperty("isInUpPosition", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("inUpPosition", NullValueHandling = NullValueHandling.Ignore)]
         public bool? InUpPosition { get; set; }
 
         /// <summary>
