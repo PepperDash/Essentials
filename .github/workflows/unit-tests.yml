@@ -1,0 +1,36 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore tests/PepperDash.Essentials.Core.Tests/PepperDash.Essentials.Core.Tests.csproj
+    
+    - name: Build tests
+      run: dotnet build tests/PepperDash.Essentials.Core.Tests/PepperDash.Essentials.Core.Tests.csproj --no-restore
+    
+    - name: Run tests
+      run: dotnet test tests/PepperDash.Essentials.Core.Tests/PepperDash.Essentials.Core.Tests.csproj --no-build --verbosity normal --collect:"XPlat Code Coverage"
+    
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./tests/PepperDash.Essentials.Core.Tests/TestResults/*/coverage.cobertura.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
