@@ -69,10 +69,11 @@ namespace PepperDash.Essentials.WebSocketServer
         private readonly ConcurrentDictionary<string, string> pendingClientRegistrations = new ConcurrentDictionary<string, string>();
 
         /// <summary>
-        /// Stores queues of pending client IDs per token for legacy clients (FIFO)
-        /// This ensures thread-safety when multiple legacy clients use the same token
+        /// Stores pending client registrations with timestamp for legacy clients
+        /// Key is token, Value is list of (clientId, timestamp) tuples
+        /// Most recent registration is used to handle duplicate join requests
         /// </summary>
-        private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> legacyClientIdQueues = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
+        private readonly ConcurrentDictionary<string, ConcurrentBag<(string clientId, DateTime timestamp)>> legacyClientRegistrations = new ConcurrentDictionary<string, ConcurrentBag<(string, DateTime)>>();
 
         /// <summary>
         /// Gets the collection of UI clients
@@ -736,15 +737,23 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private UiClient BuildUiClient(string roomKey, JoinToken token, string key)
         {
-            // Dequeue the next clientId for legacy client support (FIFO per token)
+            // Get the most recent unused clientId for this token (legacy support)
             // New clients will override this ID in OnOpen with the validated query parameter value
             var clientId = "pending";
-            if (legacyClientIdQueues.TryGetValue(key, out var queue) && queue.TryDequeue(out var dequeuedId))
+            if (legacyClientRegistrations.TryGetValue(key, out var registrations))
             {
-                clientId = dequeuedId;
-                this.LogVerbose("Dequeued legacy clientId {clientId} for token {token}", clientId, key);
+                // Get most recent registration
+                var sorted = registrations.OrderByDescending(r => r.timestamp).ToList();
+                if (sorted.Any())
+                {
+                    clientId = sorted.First().clientId;
+                    // Remove it from the bag
+                    var newBag = new ConcurrentBag<(string, DateTime)>(sorted.Skip(1));
+                    legacyClientRegistrations.TryUpdate(key, newBag, registrations);
+                    this.LogVerbose("Assigned most recent legacy clientId {clientId} for token {token}", clientId, key);
+                }
             }
-            
+
             var c = new UiClient($"uiclient-{key}-{roomKey}-{clientId}", clientId, token.Token, token.TouchpanelKey);
             this.LogInformation("Constructing UiClient with key {key} and temporary ID (will be set from query param)", key);
             c.Controller = _parent;
@@ -753,8 +762,8 @@ namespace PepperDash.Essentials.WebSocketServer
             c.Server = this; // Give UiClient access to server for ID registration
 
             // Don't add to uiClients yet - will be added in OnOpen after ID is set from query param
-            
-            c.ConnectionClosed += (o, a) => 
+
+            c.ConnectionClosed += (o, a) =>
             {
                 uiClients.TryRemove(a.ClientId, out _);
                 // Clean up any pending registrations for this token
@@ -765,11 +774,11 @@ namespace PepperDash.Essentials.WebSocketServer
                 {
                     pendingClientRegistrations.TryRemove(k, out _);
                 }
-                
-                // Clean up legacy queue if empty
-                if (legacyClientIdQueues.TryGetValue(key, out var legacyQueue) && legacyQueue.IsEmpty)
+
+                // Clean up legacy registrations if empty
+                if (legacyClientRegistrations.TryGetValue(key, out var legacyBag) && legacyBag.IsEmpty)
                 {
-                    legacyClientIdQueues.TryRemove(key, out _);
+                    legacyClientRegistrations.TryRemove(key, out _);
                 }
             };
             return c;
@@ -785,7 +794,7 @@ namespace PepperDash.Essentials.WebSocketServer
         public bool RegisterUiClient(UiClient client, string clientId, string tokenKey)
         {
             var registrationKey = $"{tokenKey}-{clientId}";
-            
+
             // Verify this clientId was generated during a join request for this token
             if (!pendingClientRegistrations.TryRemove(registrationKey, out _))
             {
@@ -799,8 +808,60 @@ namespace PepperDash.Essentials.WebSocketServer
                 this.LogWarning("Replacing existing client with duplicate id {id}", id);
                 return client;
             });
-            
+
             this.LogInformation("Successfully registered UiClient with ID {clientId} for token {token}", clientId, tokenKey);
+            return true;
+        }
+
+        /// <summary>
+        /// Updates a client's ID when a mismatch is detected between stored ID and message ID
+        /// </summary>
+        /// <param name="oldClientId">The current/old client ID</param>
+        /// <param name="newClientId">The new client ID from the message</param>
+        /// <param name="tokenKey">The token key for validation</param>
+        /// <returns>True if update successful, false otherwise</returns>
+        public bool UpdateClientId(string oldClientId, string newClientId, string tokenKey)
+        {
+            if (string.IsNullOrEmpty(oldClientId) || string.IsNullOrEmpty(newClientId))
+            {
+                this.LogWarning("Cannot update client ID with null or empty values");
+                return false;
+            }
+
+            if (oldClientId == newClientId)
+            {
+                return true; // No update needed
+            }
+
+            // Verify the new clientId was registered for this token
+            var registrationKey = $"{tokenKey}-{newClientId}";
+            if (!pendingClientRegistrations.TryRemove(registrationKey, out _))
+            {
+                this.LogWarning("Cannot update to unregistered clientId {newClientId} for token {token}", newClientId, tokenKey);
+                return false;
+            }
+
+            // Get the existing client
+            if (!uiClients.TryRemove(oldClientId, out var client))
+            {
+                this.LogWarning("Cannot find client with old ID {oldClientId}", oldClientId);
+                return false;
+            }
+
+            // Update the client's ID
+            client.UpdateId(newClientId);
+
+            // Re-add with new ID
+            if (!uiClients.TryAdd(newClientId, client))
+            {
+                // If add fails, try to restore old entry
+                uiClients.TryAdd(oldClientId, client);
+                client.UpdateId(oldClientId);
+                this.LogError("Failed to update client ID from {oldClientId} to {newClientId}", oldClientId, newClientId);
+                return false;
+            }
+
+            this.LogInformation("Successfully updated client ID from {oldClientId} to {newClientId}", oldClientId, newClientId);
             return true;
         }
 
@@ -821,7 +882,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 this.LogWarning("Replacing existing client with duplicate id {id} (legacy flow)", id);
                 return client;
             });
-            
+
             this.LogInformation("Successfully registered UiClient with ID {clientId} using legacy flow", client.Id);
         }
 
@@ -1133,16 +1194,17 @@ namespace PepperDash.Essentials.WebSocketServer
 
             // Generate a client ID for this join request
             var clientId = $"{Utilities.GetNextClientId()}";
-            
+            var now = DateTime.UtcNow;
+
             // Store in pending registrations for new clients that send clientId via query param
             var registrationKey = $"{token}-{clientId}";
             pendingClientRegistrations.TryAdd(registrationKey, clientId);
-            
-            // Also enqueue for legacy clients (thread-safe FIFO per token)
-            var queue = legacyClientIdQueues.GetOrAdd(token, _ => new ConcurrentQueue<string>());
-            queue.Enqueue(clientId);
 
-            this.LogVerbose("Assigning ClientId: {clientId} for token: {token}", clientId, token);
+            // For legacy clients, store with timestamp instead of FIFO queue
+            var legacyBag = legacyClientRegistrations.GetOrAdd(token, _ => new ConcurrentBag<(string, DateTime)>());
+            legacyBag.Add((clientId, now));
+
+            this.LogVerbose("Assigning ClientId: {clientId} for token: {token} at {timestamp}", clientId, token, now);
 
             // Construct WebSocket URL with clientId query parameter
             var wsProtocol = "ws";
