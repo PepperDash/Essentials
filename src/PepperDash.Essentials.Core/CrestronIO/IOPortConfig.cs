@@ -37,5 +37,12 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// </summary>
         [JsonProperty("minimumChange")]
         public int MinimumChange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the circuit type: "NO" (Normally Open) or "NC" (Normally Closed)
+        /// If set to "NC", the input state will be inverted. Defaults to "NO" if not specified.
+        /// </summary>
+        [JsonProperty("circuitType")]
+        public string CircuitType { get; set; } = "NO";
     }
 }
