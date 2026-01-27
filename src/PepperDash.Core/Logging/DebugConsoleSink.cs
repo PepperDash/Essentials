@@ -41,6 +41,9 @@ namespace PepperDash.Core
             CrestronConsole.PrintLine(message);
         }
 
+        /// <summary>
+        /// Constructor for DebugConsoleSink        
+        /// </summary>
         public DebugConsoleSink(ITextFormatter formatProvider )
         {
             _textFormatter = formatProvider ?? new JsonFormatter();
@@ -48,6 +51,9 @@ namespace PepperDash.Core
 
     }
 
+    /// <summary>
+    /// Provides extension methods for DebugConsoleSink     
+    /// </summary>
     public static class DebugConsoleSinkExtensions
     {
         /// <summary>

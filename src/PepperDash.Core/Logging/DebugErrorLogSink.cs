@@ -63,6 +63,9 @@ namespace PepperDash.Core.Logging
             handler(message);
         }
 
+        /// <summary>
+        /// Constructor for DebugErrorLogSink
+        /// </summary>
         public DebugErrorLogSink(ITextFormatter formatter = null)
         {
             _formatter = formatter;
