@@ -52,7 +52,7 @@ namespace PepperDash.Core
     }
 
     /// <summary>
-    /// Provides extension methods for DebugConsoleSink     
+    /// Provides extension methods for DebugConsoleSink
     /// </summary>
     public static class DebugConsoleSinkExtensions
     {

@@ -67,6 +67,8 @@ namespace PepperDash.Core
         /// <summary>
         /// Constructor for DebugWebsocketSink
         /// </summary>
+        /// <param name="formatProvider">text formatter for log output</param>
+      
         public DebugWebsocketSink(ITextFormatter formatProvider)
         {
 
@@ -227,7 +229,7 @@ namespace PepperDash.Core
     }
 
     /// <summary>
-    /// Provides extension methods for DebugWebsocketSink   
+    /// Provides extension methods for DebugWebsocketSink
     /// </summary>
     public static class DebugWebsocketSinkExtensions
     {
@@ -310,7 +312,7 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// OnError method          
+        /// OnError method
         /// </summary>
         protected override void OnError(WebSocketSharp.ErrorEventArgs e)
         {

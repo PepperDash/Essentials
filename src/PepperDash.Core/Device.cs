@@ -20,7 +20,7 @@ namespace PepperDash.Core
 		/// </summary>
 		public string Name { get; protected set; }
 		/// <summary>
-		/// 
+		/// Gets or sets a value indicating whether the device is enabled
 		/// </summary>
 		public bool Enabled { get; protected set; }
 
