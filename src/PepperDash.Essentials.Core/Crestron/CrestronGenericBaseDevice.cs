@@ -9,8 +9,14 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Abstract base class for Crestron GenericBase devices
+    /// </summary>
 	public abstract class CrestronGenericBaseDevice : EssentialsDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
 	{
+        /// <summary>
+        /// Gets or sets the Hardware
+        /// </summary>
 	    protected GenericBase Hardware;
 
         /// <summary>
@@ -18,24 +24,32 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public FeedbackCollection<Feedback> Feedbacks { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the IsOnline
-  /// </summary>
+        /// <summary>
+        /// Gets or sets the IsOnline
+        /// </summary>
 		public BoolFeedback IsOnline { get; private set; }
-  /// <summary>
-  /// Gets or sets the IsRegistered
-  /// </summary>
+
+        /// <summary>
+        /// Gets or sets the IsRegistered
+        /// </summary>
 		public BoolFeedback IsRegistered { get; private set; }
-  /// <summary>
-  /// Gets or sets the IpConnectionsText
-  /// </summary>
+
+        /// <summary>
+        /// Gets or sets the IpConnectionsText
+        /// </summary>
 		public StringFeedback IpConnectionsText { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the PreventRegistration
-  /// </summary>
+        /// <summary>
+        /// Gets or sets the PreventRegistration
+        /// </summary>
 		public bool PreventRegistration { get; protected set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key of the device</param>
+        /// <param name="name">name of the device</param>
+        /// <param name="hardware">hardware instance</param>
 	    protected CrestronGenericBaseDevice(string key, string name, GenericBase hardware)
             : base(key, name)
         {
@@ -50,6 +64,11 @@ namespace PepperDash.Essentials.Core
             CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
         }
 
+        /// <summary>
+        /// Constructor without hardware instance
+        /// </summary>
+        /// <param name="key">key of the device</param>
+        /// <param name="name">name of the device</param>
         protected CrestronGenericBaseDevice(string key, string name)
             : base(key, name)
         {
@@ -57,6 +76,10 @@ namespace PepperDash.Essentials.Core
 
         }
 
+        /// <summary>
+        /// Registers the Crestron GenericBase hardware instance
+        /// </summary>
+        /// <param name="hardware">hardware instance</param>
 	    protected void RegisterCrestronGenericBase(GenericBase hardware)
 	    {
             Hardware = hardware;
@@ -68,10 +91,10 @@ namespace PepperDash.Essentials.Core
             CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
 	    }
 
-  /// <summary>
-  /// CustomActivate method
-  /// </summary>
-  /// <inheritdoc />
+        /// <summary>
+        /// CustomActivate method
+        /// </summary>
+        /// <inheritdoc />
 		public override bool CustomActivate()
 		{
             Debug.LogMessage(LogEventLevel.Information, this, "Activating");
@@ -118,11 +141,7 @@ namespace PepperDash.Essentials.Core
 		/// <summary>
 		/// This disconnects events and unregisters the base hardware device.
 		/// </summary>
-		/// <returns></returns>
-  /// <summary>
-  /// Deactivate method
-  /// </summary>
-  /// <inheritdoc />
+		/// <returns>true if successful, otherwise false</returns>
 		public override bool Deactivate()
 		{
 			CommunicationMonitor.Stop();
@@ -138,10 +157,7 @@ namespace PepperDash.Essentials.Core
 	    /// <summary>
         /// Adds feedback(s) to the list
         /// </summary>
-        /// <param name="newFbs"></param>
-        /// <summary>
-        /// AddToFeedbackList method
-        /// </summary>
+        /// <param name="newFbs">feedback(s) to be added to the list</param>
         public void AddToFeedbackList(params Feedback[] newFbs)
         {
             foreach (var f in newFbs)
@@ -173,9 +189,9 @@ namespace PepperDash.Essentials.Core
 
 		#region IStatusMonitor Members
 
-  /// <summary>
-  /// Gets or sets the CommunicationMonitor
-  /// </summary>
+        /// <summary>
+        /// Gets or sets the CommunicationMonitor
+        /// </summary>
 		public StatusMonitorBase CommunicationMonitor { get; private set; }
 		#endregion
 
@@ -189,29 +205,57 @@ namespace PepperDash.Essentials.Core
         #endregion
 	}
 
+    /// <summary>
+    /// Abstract base class for Crestron GenericBase devices that are bridgeable
+    /// </summary>
     public abstract class CrestronGenericBridgeableBaseDevice : CrestronGenericBaseDevice, IBridgeAdvanced
     {
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key of the device</param>
+        /// <param name="name">name of the device</param>
+        /// <param name="hardware">hardware instance</param>
         protected CrestronGenericBridgeableBaseDevice(string key, string name, GenericBase hardware) : base(key, name, hardware)
         {
         }
 
+        /// <summary>
+        /// Constructor without hardware instance
+        /// </summary>
+        /// <param name="key">key of the device</param>
+        /// <param name="name">name of the device</param>
         protected CrestronGenericBridgeableBaseDevice(string key, string name)
             : base(key, name)
         {
         }
 
-
+        /// <summary>
+        /// Links to API
+        /// </summary>
+        /// <param name="trilist">the trilist</param>
+        /// <param name="joinStart">the starting join number</param>
+        /// <param name="joinMapKey">the join map key</param>
+        /// <param name="bridge">the bridge instance</param>
         public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
     }
 
 
 	//***********************************************************************************
- /// <summary>
- /// Represents a CrestronGenericBaseDeviceEventIds
- /// </summary>
+    /// <summary>
+    /// Represents a CrestronGenericBaseDeviceEventIds
+    /// </summary>
 	public class CrestronGenericBaseDeviceEventIds
 	{
+        /// <summary>
+        /// IsOnline event ID
+        /// </summary>
 		public const uint IsOnline = 1;
+
+        /// <summary>
+        /// IpConnectionsText event ID
+        /// </summary>
 		public const uint IpConnectionsText =2;
 	}
 
@@ -220,9 +264,11 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public static class GenericBaseExtensions
 	{
-  /// <summary>
-  /// RegisterWithLogging method
-  /// </summary>
+        /// <summary>
+        /// RegisterWithLogging method
+        /// </summary>
+        /// <param name="device">the GenericBase device</param>
+        /// <param name="key">the device key</param>
 		public static eDeviceRegistrationUnRegistrationResponse RegisterWithLogging(this GenericBase device, string key)
 		{
 		    var result = device.Register();
