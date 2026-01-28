@@ -7,6 +7,9 @@ namespace PepperDash.Essentials.Core
   /// </summary>
   public interface IAudioZones : IRouting
   {
+    /// <summary>
+    /// Gets the collection of audio zones
+    /// </summary>
     Dictionary<uint, IAudioZone> Zone { get; }
   }
 }

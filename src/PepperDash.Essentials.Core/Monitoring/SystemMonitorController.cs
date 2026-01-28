@@ -26,15 +26,26 @@ namespace PepperDash.Essentials.Core.Monitoring
         private string _uptime;
         private string _lastStart;
 
+        /// <summary>
+        /// Event fired when any SystemMonitor property changes
+        /// </summary>
         public event EventHandler<EventArgs> SystemMonitorPropertiesChanged;
 
+        /// <summary>
+        /// Gets or sets the ProgramStatusFeedbackCollection
+        /// </summary>
         public Dictionary<uint, ProgramStatusFeedbacks> ProgramStatusFeedbackCollection;
+
+        /// <summary>
+        /// Gets or sets the EthernetStatusFeedbackCollection
+        /// </summary>
         public Dictionary<short, EthernetStatusFeedbacks> EthernetStatusFeedbackCollection;
 
         /// <summary>
         /// Gets or sets the TimeZoneFeedback
         /// </summary>
         public IntFeedback TimeZoneFeedback { get; protected set; }
+
         /// <summary>
         /// Gets or sets the TimeZoneTextFeedback
         /// </summary>
@@ -44,14 +55,17 @@ namespace PepperDash.Essentials.Core.Monitoring
         /// Gets or sets the IoControllerVersionFeedback
         /// </summary>
         public StringFeedback IoControllerVersionFeedback { get; protected set; }
+
         /// <summary>
         /// Gets or sets the SnmpVersionFeedback
         /// </summary>
         public StringFeedback SnmpVersionFeedback { get; protected set; }
+
         /// <summary>
         /// Gets or sets the BaCnetAppVersionFeedback
         /// </summary>
         public StringFeedback BaCnetAppVersionFeedback { get; protected set; }
+
         /// <summary>
         /// Gets or sets the ControllerVersionFeedback
         /// </summary>
@@ -62,6 +76,7 @@ namespace PepperDash.Essentials.Core.Monitoring
         /// Gets or sets the SerialNumberFeedback
         /// </summary>
         public StringFeedback SerialNumberFeedback { get; protected set; }
+
         /// <summary>
         /// Gets or sets the ModelFeedback
         /// </summary>
@@ -71,30 +86,34 @@ namespace PepperDash.Essentials.Core.Monitoring
         /// Gets or sets the UptimeFeedback
         /// </summary>
         public StringFeedback UptimeFeedback { get; set; }
+
         /// <summary>
         /// Gets or sets the LastStartFeedback
         /// </summary>
         public StringFeedback LastStartFeedback { get; set; }
 
-  /// <summary>
-  /// Gets or sets the IsApplianceFeedback
-  /// </summary>
+        /// <summary>
+        /// Gets or sets the IsApplianceFeedback
+        /// </summary>
 		public BoolFeedback IsApplianceFeedback { get; protected set; }
 	    private bool _isApplianceFb
 	    {
 			get { return CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance; }
 	    }
 
-  /// <summary>
-  /// Gets or sets the IsServerFeedback
-  /// </summary>
+        /// <summary>
+        /// Gets or sets the IsServerFeedback
+        /// </summary>
 		public BoolFeedback IsServerFeedback { get; protected set; }
 	    private bool _isServerFb
 	    {
 			get { return CrestronEnvironment.DevicePlatform == eDevicePlatform.Server; }
 	    }
 
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">device key</param>
 	    public SystemMonitorController(string key)
             : base(key)
         {
@@ -464,55 +483,71 @@ namespace PepperDash.Essentials.Core.Monitoring
             OnSystemMonitorPropertiesChanged();
         }
 
+        /// <summary>
+        /// Represents an EthernetStatusFeedbacks
+        /// </summary>
         public class EthernetStatusFeedbacks
         {
             /// <summary>
             /// Gets or sets the HostNameFeedback
             /// </summary>
             public StringFeedback HostNameFeedback { get; protected set; }
+
             /// <summary>
             /// Gets or sets the DnsServerFeedback
             /// </summary>
             public StringFeedback DnsServerFeedback { get; protected set; }
+
             /// <summary>
             /// Gets or sets the DomainFeedback
             /// </summary>
             public StringFeedback DomainFeedback { get; protected set; }
+
             /// <summary>
             /// Gets or sets the MacAddressFeedback
             /// </summary>
             public StringFeedback MacAddressFeedback { get; protected set; }
+
             /// <summary>
             /// Gets or sets the DhcpStatusFeedback
             /// </summary>
             public StringFeedback DhcpStatusFeedback { get; protected set; }
 
+
             /// <summary>
             /// Gets or sets the CurrentIpAddressFeedback
             /// </summary>
             public StringFeedback CurrentIpAddressFeedback { get; protected set; }
+
             /// <summary>
             /// Gets or sets the CurrentSubnetMaskFeedback
             /// </summary>
             public StringFeedback CurrentSubnetMaskFeedback { get; protected set; }
+
             /// <summary>
             /// Gets or sets the CurrentDefaultGatewayFeedback
             /// </summary>
             public StringFeedback CurrentDefaultGatewayFeedback { get; protected set; }
-            
+                        
             /// <summary>
             /// Gets or sets the StaticIpAddressFeedback
             /// </summary>
             public StringFeedback StaticIpAddressFeedback { get; protected set; }
+
             /// <summary>
             /// Gets or sets the StaticSubnetMaskFeedback
             /// </summary>
             public StringFeedback StaticSubnetMaskFeedback { get; protected set; }
+
             /// <summary>
             /// Gets or sets the StaticDefaultGatewayFeedback
             /// </summary>
             public StringFeedback StaticDefaultGatewayFeedback { get; protected set; }
 
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="adapterIndex">index of the ethernet addapter</param>
             public EthernetStatusFeedbacks(short adapterIndex)
             {
                 Debug.LogMessage(LogEventLevel.Verbose, "Ethernet Information for interface {0}", adapterIndex);
@@ -621,6 +656,9 @@ namespace PepperDash.Essentials.Core.Monitoring
         /// </summary>
         public class ProgramStatusFeedbacks
         {
+            /// <summary>
+            /// Event fired when ProgramInfo changes
+            /// </summary>
             public event EventHandler<ProgramInfoEventArgs> ProgramInfoChanged;
 
             /// <summary>
@@ -637,14 +675,17 @@ namespace PepperDash.Essentials.Core.Monitoring
             /// Gets or sets the ProgramStartedFeedback
             /// </summary>
             public BoolFeedback ProgramStartedFeedback;
+
             /// <summary>
             /// Gets or sets the ProgramStoppedFeedback
             /// </summary>
             public BoolFeedback ProgramStoppedFeedback;
+
             /// <summary>
             /// Gets or sets the ProgramRegisteredFeedback
             /// </summary>
             public BoolFeedback ProgramRegisteredFeedback;
+
             /// <summary>
             /// Gets or sets the ProgramUnregisteredFeedback
             /// </summary>
@@ -654,24 +695,32 @@ namespace PepperDash.Essentials.Core.Monitoring
             /// Gets or sets the ProgramNameFeedback
             /// </summary>
             public StringFeedback ProgramNameFeedback;
+
             /// <summary>
             /// Gets or sets the ProgramCompileTimeFeedback
             /// </summary>
             public StringFeedback ProgramCompileTimeFeedback;
+
             /// <summary>
             /// Gets or sets the CrestronDataBaseVersionFeedback
             /// </summary>
             public StringFeedback CrestronDataBaseVersionFeedback;
+
             // SIMPL windows version
             /// <summary>
             /// Gets or sets the EnvironmentVersionFeedback
             /// </summary>
             public StringFeedback EnvironmentVersionFeedback;
+
             /// <summary>
             /// Gets or sets the AggregatedProgramInfoFeedback
             /// </summary>
             public StringFeedback AggregatedProgramInfoFeedback;
 
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="program">program to get status about</param>
             public ProgramStatusFeedbacks(Program program)
             {
                 ProgramInfo = new ProgramInfo(program.Number);
@@ -863,38 +912,47 @@ namespace PepperDash.Essentials.Core.Monitoring
     {
         // Shared properties
 
+        /// <summary>
+        /// Gets the ProgramNumber
+        /// </summary>
         [JsonProperty("programNumber")]
         public uint ProgramNumber { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the OperatingState
+        /// </summary>
         [JsonConverter(typeof (StringEnumConverter))]
         [JsonProperty("operatingState")]
         public eProgramOperatingState OperatingState { get; set; }
 
-        [JsonConverter(typeof (StringEnumConverter))]
-        [JsonProperty("registrationState")]
         /// <summary>
         /// Gets or sets the RegistrationState
         /// </summary>
+        [JsonConverter(typeof (StringEnumConverter))]
+        [JsonProperty("registrationState")]
         public eProgramRegistrationState RegistrationState { get; set; }
 
-        [JsonProperty("programFile")]
         /// <summary>
         /// Gets or sets the ProgramFile
         /// </summary>
+        [JsonProperty("programFile")]
         public string ProgramFile { get; set; }
 
-        [JsonProperty("friendlyName")]
         /// <summary>
         /// Gets or sets the FriendlyName
         /// </summary>
+        [JsonProperty("friendlyName")]
         public string FriendlyName { get; set; }
 
-        [JsonProperty("compilerRevision")]
         /// <summary>
         /// Gets or sets the CompilerRevision
         /// </summary>
+        [JsonProperty("compilerRevision")]
         public string CompilerRevision { get; set; }
 
+        /// <summary>
+        /// Gets the CompilerRevisionInfo
+        /// </summary>
 	    [JsonIgnore]
 	    public Version CompilerRevisionInfo
 	    {
@@ -904,69 +962,75 @@ namespace PepperDash.Essentials.Core.Monitoring
 		    }
 	    }
 
-        [JsonProperty("compileTime")]
         /// <summary>
         /// Gets or sets the CompileTime
         /// </summary>
+        [JsonProperty("compileTime")]
         public string CompileTime { get; set; }
 
-        [JsonProperty("include4Dat")]
         /// <summary>
         /// Gets or sets the Include4Dat
         /// </summary>
+        [JsonProperty("include4Dat")]
         public string Include4Dat { get; set; }
 
         // SIMPL Windows properties
-        [JsonProperty("systemName")]
+
         /// <summary>
         /// Gets or sets the SystemName
         /// </summary>
+        [JsonProperty("systemName")]
         public string SystemName { get; set; }
 
-        [JsonProperty("crestronDb")]
         /// <summary>
         /// Gets or sets the CrestronDb
         /// </summary>
+        [JsonProperty("crestronDb")]
         public string CrestronDb { get; set; }
 
-        [JsonProperty("environment")]
         /// <summary>
         /// Gets or sets the Environment
         /// </summary>
+        [JsonProperty("environment")]
         public string Environment { get; set; }
 
-        [JsonProperty("programmer")]
         /// <summary>
         /// Gets or sets the Programmer
         /// </summary>
+        [JsonProperty("programmer")]
         public string Programmer { get; set; }
 
 
         // SSP Properties
-        [JsonProperty("applicationName")]
+
         /// <summary>
         /// Gets or sets the ApplicationName
         /// </summary>
+        [JsonProperty("applicationName")]
         public string ApplicationName { get; set; }
 
-        [JsonProperty("programTool")]
         /// <summary>
         /// Gets or sets the ProgramTool
         /// </summary>
+        [JsonProperty("programTool")]
         public string ProgramTool { get; set; }
 
-        [JsonProperty("minFirmwareVersion")]
         /// <summary>
         /// Gets or sets the MinFirmwareVersion
         /// </summary>
+        [JsonProperty("minFirmwareVersion")]
         public string MinFirmwareVersion { get; set; }
 
-        [JsonProperty("plugInVersion")]
         /// <summary>
         /// Gets or sets the PlugInVersion
         /// </summary>
+        [JsonProperty("plugInVersion")]
         public string PlugInVersion { get; set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="number">program slot to get info about</param>
         public ProgramInfo(uint number)
         {
             ProgramNumber = number;
@@ -999,6 +1063,10 @@ namespace PepperDash.Essentials.Core.Monitoring
         /// </summary>
         public ProgramInfo ProgramInfo;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="progInfo">program info</param>
         public ProgramInfoEventArgs(ProgramInfo progInfo)
         {
             ProgramInfo = progInfo;

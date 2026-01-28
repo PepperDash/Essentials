@@ -8,33 +8,42 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.Core.Presets
 {
- /// <summary>
- /// Represents a DevicePresetsView
- /// </summary>
+	/// <summary>
+	/// Represents a DevicePresetsView
+	/// </summary>
 	public class DevicePresetsView
 	{
-  /// <summary>
-  /// Gets or sets the ShowNumbers
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the ShowNumbers
+		/// </summary>
 		public bool ShowNumbers { get; set; }
-  /// <summary>
-  /// Gets or sets the ShowName
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the ShowName
+		/// </summary>
 		public bool ShowName { get; set; }
-  /// <summary>
-  /// Gets or sets the ShowIcon
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the ShowIcon
+		/// </summary>
 		public bool ShowIcon { get; set; }
 
         /// <summary>
         /// Gets or sets the SRL
         /// </summary>
         public SubpageReferenceList SRL { get; private set; }
-  /// <summary>
-  /// Gets or sets the Model
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the Model
+		/// </summary>
 		public DevicePresetsModel Model { get; private set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="tl">trilst</param>
+		/// <param name="model">device presets model</param>
+		/// <exception cref="ArgumentNullException"></exception>
 		public DevicePresetsView(BasicTriListWithSmartObject tl, DevicePresetsModel model)
 		{
 			if (model == null)
@@ -50,9 +59,9 @@ namespace PepperDash.Essentials.Core.Presets
 			Model.PresetsLoaded += new EventHandler(Model_PresetsLoaded);
 		}
 
-  /// <summary>
-  /// Attach method
-  /// </summary>
+		/// <summary>
+		/// Attach method
+		/// </summary>
 		public void Attach()
 		{
 			if (Model.PresetsAreLoaded)
@@ -67,9 +76,9 @@ namespace PepperDash.Essentials.Core.Presets
 			}
 		}
 
-  /// <summary>
-  /// Detach method
-  /// </summary>
+		/// <summary>
+		/// Detach method
+		/// </summary>
 		public void Detach()
 		{
 			SRL.Clear();

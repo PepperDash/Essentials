@@ -620,6 +620,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class EssentialsRoomEmergencyBase : IKeyed
     {
+        /// <summary>
+        /// Key of the room
+        /// </summary>
         public string Key { get; private set; }
 
         /// <summary>
