@@ -15,10 +15,20 @@ namespace PepperDash.Essentials.Core.Devices
     /// </summary>
     public class CrestronProcessor : Device, ISwitchedOutputCollection
     {
+        /// <summary>
+        /// Collection of switched outputs (relays) on the processor
+        /// </summary>
         public Dictionary<uint, ISwitchedOutput> SwitchedOutputs { get; private set; }
 
+        /// <summary>
+        /// The underlying CrestronControlSystem processor
+        /// </summary>
         public Crestron.SimplSharpPro.CrestronControlSystem Processor { get; private set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key for the processor</param>
         public CrestronProcessor(string key)
             : base(key)
         {
