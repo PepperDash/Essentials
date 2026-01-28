@@ -12,45 +12,57 @@ namespace PepperDash.Essentials.Core.Config
     /// </summary>
     public class InfoConfig
 	{
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
 		[JsonProperty("name")]
 		public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Date
+        /// </summary>
 		[JsonProperty("date")]
 		public DateTime Date { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Type
+        /// </summary>
 		[JsonProperty("type")]
 		public string Type { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Version
+        /// </summary>
 		[JsonProperty("version")]
-  /// <summary>
-  /// Gets or sets the Version
-  /// </summary>
 		public string Version { get; set; }
 
-        [JsonProperty("runtimeInfo")]
         /// <summary>
         /// Gets or sets the RuntimeInfo
         /// </summary>
+        [JsonProperty("runtimeInfo")]
         public RuntimeInfo RuntimeInfo { get; set; } 
 		
+        /// <summary>
+        /// Gets or sets the Comment
+        /// </summary>
 		[JsonProperty("comment")]
-  /// <summary>
-  /// Gets or sets the Comment
-  /// </summary>
 		public string Comment { get; set; }
 
-        [JsonProperty("hostname")]
         /// <summary>
         /// Gets or sets the HostName
         /// </summary>
+        [JsonProperty("hostname")]
         public string HostName { get; set; }
 
-        [JsonProperty("appNumber")]
         /// <summary>
         /// Gets or sets the AppNumber
         /// </summary>
+        [JsonProperty("appNumber")]
         public uint AppNumber { get; set; }
 
+        /// <summary>
+        /// InfoConfig Constructor
+        /// </summary>
 		public InfoConfig()
 		{
 			Name = "";

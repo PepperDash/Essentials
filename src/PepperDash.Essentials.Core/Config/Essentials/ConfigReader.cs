@@ -18,17 +18,23 @@ namespace PepperDash.Essentials.Core.Config
 	/// </summary>
 	public class ConfigReader
 	{
+        /// <summary>
+        /// Local Config Present Message
+        /// </summary>
 	    public const string LocalConfigPresent =
             @"
 ***************************************************
 ************* Using Local config file *************
 ***************************************************";
 
+        /// <summary>
+        /// The loaded config object
+        /// </summary>
 		public static EssentialsConfig ConfigObject { get; private set; }
 
-  /// <summary>
-  /// LoadConfig2 method
-  /// </summary>
+        /// <summary>
+        /// LoadConfig2 method
+        /// </summary>
 		public static bool LoadConfig2()
 		{
 			Debug.LogMessage(LogEventLevel.Information, "Loading unmerged system/template portal configuration file.");
@@ -171,11 +177,8 @@ namespace PepperDash.Essentials.Core.Config
         /// <summary>
         /// Returns all the files from the directory specified.
         /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        /// <summary>
-        /// GetConfigFiles method
-        /// </summary>
+        /// <param name="filePath">path to the directory</param>
+        /// <returns>config files</returns>
         public static FileInfo[] GetConfigFiles(string filePath)
         {
             // Get the directory
@@ -206,11 +209,8 @@ namespace PepperDash.Essentials.Core.Config
 		/// <summary>
 		/// Returns the group for a given device key in config
 		/// </summary>
-		/// <param name="key"></param>
-		/// <returns></returns>
-        /// <summary>
-        /// GetGroupForDeviceKey method
-        /// </summary>
+		/// <param name="key">Key of the device</param>
+		/// <returns>Group name if the device is found, null otherwise</returns>
         public static string GetGroupForDeviceKey(string key)
         {
             var dev = ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
