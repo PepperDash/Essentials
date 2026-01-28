@@ -13,6 +13,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IUsageTracking
     {
+        /// <summary>
+        /// Gets or sets the UsageTracker
+        /// </summary>
         UsageTracking UsageTracker { get; set; }
     }
 
@@ -29,6 +32,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class UsageTracking
     {
+        /// <summary>
+        /// Event fired when device usage ends
+        /// </summary>
         public event EventHandler<DeviceUsageEventArgs> DeviceUsageEnded;
 
         /// <summary>
@@ -59,6 +65,10 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public Device Parent { get; private set; }
 
+        /// <summary>
+        /// Constructor for UsageTracking class
+        /// </summary>
+        /// <param name="parent">The parent device</param>
         public UsageTracking(Device parent)
         {
             Parent = parent;

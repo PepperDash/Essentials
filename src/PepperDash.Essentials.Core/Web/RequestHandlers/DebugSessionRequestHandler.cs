@@ -18,6 +18,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
     /// </summary>
     public class DebugSessionRequestHandler : WebApiBaseRequestHandler
     {    
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public DebugSessionRequestHandler()
             : base(true)
         {

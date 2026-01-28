@@ -14,33 +14,57 @@ namespace PepperDash.Essentials.Core.Config
 	/// </summary>
 	public class BasicConfig
 	{
+        /// <summary>
+        /// Gets or sets the Info
+        /// </summary>
 		[JsonProperty("info")]
 		public InfoConfig Info { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Devices
+        /// </summary>
 		[JsonProperty("devices")]
 		public List<DeviceConfig> Devices { get; set; }
 
+        /// <summary>
+        /// Gets or sets the SourceLists
+        /// </summary>
 		[JsonProperty("sourceLists")]
 		public Dictionary<string, Dictionary<string, SourceListItem>> SourceLists { get; set; }
 
+        /// <summary>
+        /// Gets or sets the DestinationLists
+        /// </summary>
         [JsonProperty("destinationLists")]
         public Dictionary<string, Dictionary<string, DestinationListItem>> DestinationLists { get; set; }
 
+        /// <summary>
+        /// Gets or sets the AudioControlPointLists
+        /// </summary>
         [JsonProperty("audioControlPointLists")]
         public Dictionary<string, AudioControlPointListItem> AudioControlPointLists { get; set; }
 
+        /// <summary>
+        /// Gets or sets the CameraLists
+        /// </summary>
         [JsonProperty("cameraLists")]
         public Dictionary<string, Dictionary<string, CameraListItem>> CameraLists { get; set; }
 
+        /// <summary>
+        /// Gets or sets the TieLines
+        /// </summary>
         [JsonProperty("tieLines")]
-  /// <summary>
-  /// Gets or sets the TieLines
-  /// </summary>
-		public List<TieLineConfig> TieLines { get; set; }
+  		public List<TieLineConfig> TieLines { get; set; }
 
+        /// <summary>
+        /// Gets or sets the JoinMaps
+        /// </summary>
         [JsonProperty("joinMaps")]
         public Dictionary<string, JObject> JoinMaps { get; set; }
 
+        /// <summary>
+        /// BasicConfig Constructor
+        /// </summary>
         public BasicConfig()
         {
             Info = new InfoConfig();
@@ -98,6 +122,7 @@ namespace PepperDash.Essentials.Core.Config
         /// <summary>
         /// Checks CameraLists for a given list and returns it if found. Otherwise, returns null
         /// </summary>
+        /// <param name="key">Key of desired camera list</param>
         public Dictionary<string, CameraListItem> GetCameraListForKey(string key)
         {
             if (CameraLists == null || string.IsNullOrEmpty(key) || !CameraLists.ContainsKey(key))
@@ -110,10 +135,6 @@ namespace PepperDash.Essentials.Core.Config
         /// Checks Devices for an item with a Key that matches and returns it if found. Otherwise, retunes null
         /// </summary>
         /// <param name="key">Key of desired device</param>
-        /// <returns></returns>
-        /// <summary>
-        /// GetDeviceForKey method
-        /// </summary>
         public DeviceConfig GetDeviceForKey(string key)
         {
             if (string.IsNullOrEmpty(key))

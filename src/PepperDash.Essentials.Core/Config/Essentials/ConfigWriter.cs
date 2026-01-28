@@ -18,22 +18,29 @@ namespace PepperDash.Essentials.Core.Config
     /// </summary>
     public class ConfigWriter
     {
+        /// <summary>
+        /// LocalConfigFolder constant
+        /// </summary>
         public const string LocalConfigFolder = "LocalConfig";
 
+        /// <summary>
+        /// WriteTimeout constant
+        /// </summary>
         public const long WriteTimeout = 30000;
 
+        /// <summary>
+        /// WriteTimer variable
+        /// </summary>
         public static CTimer WriteTimer;
+
 		static CCriticalSection fileLock = new CCriticalSection();
 
         /// <summary>
         /// Updates the config properties of a device
         /// </summary>
-        /// <param name="deviceKey"></param>
-        /// <param name="properties"></param>
-        /// <returns></returns>
-        /// <summary>
-        /// UpdateDeviceProperties method
-        /// </summary>
+        /// <param name="deviceKey">The key of the device to update</param>
+        /// <param name="properties">The new properties for the device</param>
+        /// <returns>True if the update was successful, otherwise false</returns>
         public static bool UpdateDeviceProperties(string deviceKey, JToken properties)
         {
             bool success = false;
@@ -59,6 +66,8 @@ namespace PepperDash.Essentials.Core.Config
         /// <summary>
         /// UpdateDeviceConfig method
         /// </summary>
+        /// <param name="config">The new device config</param>
+        /// <returns>True if the update was successful, otherwise false</returns>
         public static bool UpdateDeviceConfig(DeviceConfig config)
         {
             bool success = false;
@@ -82,6 +91,8 @@ namespace PepperDash.Essentials.Core.Config
         /// <summary>
         /// UpdateRoomConfig method
         /// </summary>
+        /// <param name="config">The new room config</param>
+        /// <returns>True if the update was successful, otherwise false</returns>
         public static bool UpdateRoomConfig(DeviceConfig config)
         {
             bool success = false;
@@ -118,7 +129,6 @@ namespace PepperDash.Essentials.Core.Config
         /// <summary>
         /// Writes the current config to a file in the LocalConfig subfolder
         /// </summary>
-        /// <returns></returns>
         private static void WriteConfigFile(object o)
         {
             var filePath = Global.FilePathPrefix + LocalConfigFolder + Global.DirectorySeparator + "configurationFile.json";
@@ -129,13 +139,10 @@ namespace PepperDash.Essentials.Core.Config
         }
 
         /// <summary>
-        /// Writes
+        /// Writes the current config data to a file
         /// </summary>
-        /// <param name="filepath"></param>
-        /// <param name="o"></param>
-        /// <summary>
-        /// WriteFile method
-        /// </summary>
+        /// <param name="filePath">The file path to write to</param>
+        /// <param name="configData">The config data to write</param>
         public static void WriteFile(string filePath, string configData)
         {
             if (WriteTimer != null)

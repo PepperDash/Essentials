@@ -8,12 +8,39 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasBatteryStats : IKeyName
     {
+        /// <summary>
+        /// Gets the BatteryPercentage
+        /// </summary>
         int BatteryPercentage { get; }
+
+        /// <summary>
+        /// Gets the BatteryCautionThresholdPercentage
+        /// </summary>
         int BatteryCautionThresholdPercentage { get;  }
+
+        /// <summary>
+        /// Gets the BatteryWarningThresholdPercentage
+        /// </summary>
         int BatteryWarningThresholdPercentage { get; }
+
+        /// <summary>
+        /// Gets the BatteryIsWarningFeedback
+        /// </summary>
         BoolFeedback BatteryIsWarningFeedback { get; }
+
+        /// <summary>
+        /// Gets the BatteryIsCautionFeedback
+        /// </summary>
         BoolFeedback BatteryIsCautionFeedback { get; }
+
+        /// <summary>
+        /// Gets the BatteryIsOkFeedback
+        /// </summary>
         BoolFeedback BatteryIsOkFeedback { get; }
+
+        /// <summary>
+        /// Gets the BatteryPercentageFeedback
+        /// </summary>
         IntFeedback BatteryPercentageFeedback { get; }
     }
 
@@ -22,6 +49,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasBatteryCharging : IHasBatteryStats
     {
+        /// <summary>
+        /// Gets the BatteryIsCharging
+        /// </summary>
         BoolFeedback BatteryIsCharging { get; }
     }
 
@@ -30,19 +60,55 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasBatteries : IKeyName
     {
+        /// <summary>
+        /// Collection of batteries
+        /// </summary>
         ReadOnlyDictionary<string, IHasBatteryStats> Batteries { get; }   
     }
 
+    /// <summary>
+    /// Defines the contract for IHasBatteryStatsExtended
+    /// </summary>
     public interface IHasBatteryStatsExtended : IHasBatteryStats
     {
+        /// <summary>
+        /// Gets the InputVoltage in millivolts
+        /// </summary>
         int InputVoltage { get; }
+
+        /// <summary>
+        /// Gets the OutputVoltage in millivolts
+        /// </summary>
         int OutputVoltage { get; }
+
+        /// <summary>
+        /// Gets the InputCurrent in milliamps
+        /// </summary>
         int InptuCurrent { get; }
+
+        /// <summary>
+        /// Gets the OutputCurrent in milliamps
+        /// </summary>
         int OutputCurrent { get; }
 
+        /// <summary>
+        /// Gets the InputVoltageFeedback
+        /// </summary>
         IntFeedback InputVoltageFeedback { get; }
+
+        /// <summary>
+        /// Gets the OutputVoltageFeedback
+        /// </summary>
         IntFeedback OutputVoltageFeedback { get; }
+
+        /// <summary>
+        /// Gets the InputCurrentFeedback
+        /// </summary>
         IntFeedback InputCurrentFeedback { get; }
+
+        /// <summary>
+        /// Gets the OutputCurrentFeedback
+        /// </summary>
         IntFeedback OutputCurrentFeedback { get; }
     }
 

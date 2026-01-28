@@ -15,6 +15,11 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public class CommFactory
 	{
+		/// <summary>
+		/// GetControlPropertiesConfig method
+		/// </summary>
+		/// <param name="deviceConfig">The Device config object</param>
+		/// <returns>EssentialsControlPropertiesConfig object</returns>
 		public static EssentialsControlPropertiesConfig GetControlPropertiesConfig(DeviceConfig deviceConfig)
 		{
 			try
@@ -223,11 +228,16 @@ namespace PepperDash.Essentials.Core
 	public class EssentialsControlPropertiesConfig :
 			ControlPropertiesConfig
 	{
-
+		/// <summary>
+		/// Gets or sets the ComParams
+		/// </summary>
 		[JsonProperty("comParams", NullValueHandling = NullValueHandling.Ignore)]
 		[JsonConverter(typeof(ComSpecJsonConverter))]
 		public ComPort.ComPortSpec? ComParams { get; set; }
 
+		/// <summary>
+		/// Gets or sets the CresnetId
+		/// </summary>
 		[JsonProperty("cresnetId", NullValueHandling = NullValueHandling.Ignore)]
 		public string CresnetId { get; set; }
 
@@ -250,10 +260,10 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		[JsonProperty("infinetId", NullValueHandling = NullValueHandling.Ignore)]
 		/// <summary>
 		/// Gets or sets the InfinetId
 		/// </summary>
+		[JsonProperty("infinetId", NullValueHandling = NullValueHandling.Ignore)]
 		public string InfinetId { get; set; }
 
 		/// <summary>

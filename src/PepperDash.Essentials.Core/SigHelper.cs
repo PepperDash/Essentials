@@ -17,7 +17,8 @@ namespace PepperDash.Essentials.Core
 		/// <summary>
 		/// Runs action when Sig is pressed
 		/// </summary>
-		/// <param name="sig"></param>
+		/// <param name="sig">signal pressed</param>
+		/// <param name="act">action to run</param>
 		public static void Pressed(Sig sig, Action act) { if (sig.BoolValue) act(); }
 
 		/// <summary>

@@ -5,6 +5,9 @@ namespace PepperDash.Essentials.Core
   /// </summary>
   public interface IDisplayUsage
   {
+    /// <summary>
+    /// Gets the LampHours
+    /// </summary>
     IntFeedback LampHours { get; }
   }
 }

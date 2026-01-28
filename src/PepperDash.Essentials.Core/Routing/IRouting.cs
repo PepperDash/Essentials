@@ -11,6 +11,12 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRouting : IRoutingInputsOutputs
 	{
+        /// <summary>
+        /// Executes a switch on the device
+        /// </summary>
+        /// <param name="inputSelector">input selector</param>
+        /// <param name="outputSelector">output selector</param>
+        /// <param name="signalType">type of signal</param>
 		void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType);        
     }    
 

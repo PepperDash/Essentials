@@ -10,14 +10,23 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+	/// <summary>
+	/// Static class for FileIO operations
+	/// </summary>
 	public static class FileIO
 	{
 
 		static CCriticalSection fileLock = new CCriticalSection();
-  /// <summary>
-  /// Delegate for GotFileEventHandler
-  /// </summary>
+		/// <summary>
+		/// Delegate for GotFileEventHandler
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		public delegate void GotFileEventHandler(object sender, FileEventArgs e);
+
+		/// <summary>
+		/// Event for GotFileEvent
+		/// </summary>
 		public static event GotFileEventHandler GotFileEvent;
 
 		/// <summary>
@@ -297,6 +306,10 @@ namespace PepperDash.Essentials.Core
  /// </summary>
 	public class FileEventArgs
 	{
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="data"></param>
 		public FileEventArgs(string data) { Data = data; }
   /// <summary>
   /// Gets or sets the Data

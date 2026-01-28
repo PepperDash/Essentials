@@ -8,8 +8,14 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// </summary>
     public interface ILanguageProvider
     {
+        /// <summary>
+        /// The current language definition
+        /// </summary>
         ILanguageDefinition CurrentLanguage { get; set; }
 
+        /// <summary>
+        /// Event raised when the current language changes
+        /// </summary>
         event EventHandler CurrentLanguageChanged;
     }
 

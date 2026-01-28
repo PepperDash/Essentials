@@ -17,8 +17,17 @@ namespace PepperDash.Essentials.Core
 		/// The list that this lives in
 		/// </summary>
 		protected SubpageReferenceList Owner;
+
+		/// <summary>
+		/// The index of this item
+		/// </summary>
 		protected uint Index;
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="index">index of the item</param>
+		/// <param name="owner">owner of the item</param>
 		public SubpageReferenceListItem(uint index, SubpageReferenceList owner)
 		{
 			Index = index;

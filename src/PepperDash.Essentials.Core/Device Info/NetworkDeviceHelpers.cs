@@ -8,6 +8,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.DeviceInfo
 {
+    /// <summary>
+    /// Static class NetworkDeviceHelpers
+    /// </summary>
     public static class NetworkDeviceHelpers
     {
         /// <summary>
@@ -167,7 +170,14 @@ namespace PepperDash.Essentials.Core.DeviceInfo
     /// </summary>
     public class ArpEntry
     {
+        /// <summary>
+        /// The IP Address of the ARP Entry
+        /// </summary>
         public readonly IPAddress IpAddress;
+
+        /// <summary>
+        /// The MAC Address of the ARP Entry
+        /// </summary>
         public readonly string MacAddress;
 
         /// <summary>

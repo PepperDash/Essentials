@@ -6,16 +6,16 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core
 {
+	/// <summary>
+	/// IAttachVideoStatusExtensions class
+	/// </summary>
 	public static class IAttachVideoStatusExtensions
 	{
 		/// <summary>
 		/// Gets the VideoStatusOutputs for the device
 		/// </summary>
-		/// <param name="attachDev"></param>
+		/// <param name="attachedDev"></param>
 		/// <returns>Attached VideoStatusOutputs or the default if none attached</returns>
-  /// <summary>
-  /// GetVideoStatuses method
-  /// </summary>
 		public static VideoStatusOutputs GetVideoStatuses(this IAttachVideoStatus attachedDev)
 		{
 			// See if this device is connected to a status-providing port

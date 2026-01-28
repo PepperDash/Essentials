@@ -10,6 +10,10 @@ namespace PepperDash.Essentials.Core.Bridges
     /// </summary>
     public static class BridgeHelper
     {
+        /// <summary>
+        /// PrintJoinMp method
+        /// </summary>
+        /// <param name="command">target bridgekey to print join map for</param>
         public static void PrintJoinMap(string command)
         {
             var targets = command.Split(' ');

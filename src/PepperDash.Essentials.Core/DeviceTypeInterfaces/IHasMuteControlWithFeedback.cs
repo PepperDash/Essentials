@@ -5,8 +5,19 @@ namespace PepperDash.Essentials.Core
   /// </summary>
   public interface IHasMuteControlWithFeedback : IHasMuteControl
   {
+    /// <summary>
+    /// MuteFeedback property
+    /// </summary>
     BoolFeedback MuteFeedback { get; }
+
+    /// <summary>
+    /// MuteOn method
+    /// </summary>
     void MuteOn();
+
+    /// <summary>
+    /// MuteOff method
+    /// </summary>
     void MuteOff();
   }
 }

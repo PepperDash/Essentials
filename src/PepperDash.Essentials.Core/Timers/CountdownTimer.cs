@@ -14,8 +14,19 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class SecondsCountdownTimer: IKeyed
     {
+        /// <summary>
+        /// Event fired when the timer starts
+        /// </summary>
         public event EventHandler<EventArgs> HasStarted;
+
+        /// <summary>
+        /// Event fired when the timer finishes
+        /// </summary>
         public event EventHandler<EventArgs> HasFinished;
+
+        /// <summary>
+        /// Event fired when the timer is cancelled
+        /// </summary>
         public event EventHandler<EventArgs> WasCancelled;
 
         /// <summary>
@@ -33,6 +44,7 @@ namespace PepperDash.Essentials.Core
         /// Gets or sets the PercentFeedback
         /// </summary>
         public IntFeedback PercentFeedback { get; private set; }
+        
         /// <summary>
         /// Gets or sets the TimeRemainingFeedback
         /// </summary>

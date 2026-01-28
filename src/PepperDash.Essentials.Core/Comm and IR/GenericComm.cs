@@ -23,8 +23,15 @@ namespace PepperDash.Essentials.Core
     {
         EssentialsControlPropertiesConfig PropertiesConfig;
 
+        /// <summary>
+        /// Gets the CommPort
+        /// </summary>
         public IBasicCommunication CommPort { get; private set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="config">the config of the device</param>
         public GenericComm(DeviceConfig config)
             : base(config)
         {
@@ -33,7 +40,7 @@ namespace PepperDash.Essentials.Core
 
             var commPort = CommFactory.CreateCommForDevice(config);
 
-            //Fixing decision to require '-comPorts' in delcaration for DGE in order to get a device with comports included
+            //Fixing decision to require '-comPorts' in declaration for DGE in order to get a device with comports included
             if (commPort == null)
             {
                 config.Key = config.Key + "-comPorts";
@@ -70,6 +77,10 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// CustomSetConfig method
+        /// </summary>
+        /// <param name="config">the new device configuration</param>
         protected override void CustomSetConfig(DeviceConfig config)
         {
             PropertiesConfig = CommFactory.GetControlPropertiesConfig(config);
@@ -144,6 +155,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class GenericCommFactory : EssentialsDeviceFactory<GenericComm>
     {
+        /// <summary>
+        /// Initializes a new instance of the GenericCommFactory class.
+        /// </summary>
         public GenericCommFactory()
         {
             TypeNames = new List<string>() { "genericComm" };

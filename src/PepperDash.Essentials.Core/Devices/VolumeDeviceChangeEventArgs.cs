@@ -14,10 +14,27 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public class VolumeDeviceChangeEventArgs : EventArgs
 	{
+		/// <summary>
+		/// The old device
+		/// </summary>
 		public IBasicVolumeControls OldDev { get; private set; }
+
+		/// <summary>
+		/// The new device
+		/// </summary>
 		public IBasicVolumeControls NewDev { get; private set; }
+
+		/// <summary>
+		/// The type of change
+		/// </summary>
 		public ChangeType Type { get; private set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="oldDev">the old device</param>
+		/// <param name="newDev">the new device</param>
+		/// <param name="type">the type of change</param>
 		public VolumeDeviceChangeEventArgs(IBasicVolumeControls oldDev, IBasicVolumeControls newDev, ChangeType type)
 		{
 			OldDev = oldDev;
@@ -31,6 +48,14 @@ namespace PepperDash.Essentials.Core
  /// </summary>
 	public enum ChangeType
 	{
-		WillChange, DidChange
+		/// <summary>
+		/// Will change
+		/// </summary>
+		WillChange, 
+		
+		/// <summary>
+		/// Did change
+		/// </summary>
+		DidChange
 	}
 }

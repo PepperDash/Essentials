@@ -9,6 +9,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRoutingOutputs : IKeyed
 	{
+        /// <summary>
+        /// Collection of Output Ports
+        /// </summary>
 		RoutingPortCollection<RoutingOutputPort> OutputPorts { get; }
 	}
 

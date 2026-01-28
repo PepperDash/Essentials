@@ -11,7 +11,14 @@ namespace PepperDash.Essentials.Core.Devices
     /// </summary>
     public abstract class DeviceApiBase
     {
+        /// <summary>
+        /// Action API dictionary
+        /// </summary>
         public Dictionary<string, Object> ActionApi { get; protected set; }
+
+        /// <summary>
+        /// Feedback API dictionary
+        /// </summary>
         public Dictionary<string, Feedback> FeedbackApi { get; protected set; }
     }
 }

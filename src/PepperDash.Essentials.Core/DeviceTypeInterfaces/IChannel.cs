@@ -7,26 +7,56 @@ using PepperDash.Essentials.Core.SmartObjects;
 namespace PepperDash.Essentials.Core
 {
 	/// <summary>
-	/// 
+	/// Defines the contract for IChannel
 	/// </summary>
 	public interface IChannel
 	{
+		/// <summary>
+		/// Channel up
+		/// </summary>
+		/// <param name="pressRelease">indicates whether this is a press or release</param>
+		/// 
 		void ChannelUp(bool pressRelease);
+		/// <summary>
+		/// Channel down
+		/// </summary>
+		/// <param name="pressRelease">indicates whether this is a press or release</param>
 		void ChannelDown(bool pressRelease);
+
+		/// <summary>
+		/// Last channel
+		/// </summary>
+		/// <param name="pressRelease">indicates whether this is a press or release</param>
 		void LastChannel(bool pressRelease);
+
+		/// <summary>
+		/// Guide
+		/// </summary>
+		/// <param name="pressRelease">indicates whether this is a press or release</param>
+		/// 
 		void Guide(bool pressRelease);
+
+		/// <summary>
+		/// Info
+		/// </summary>
+		/// <param name="pressRelease">indicates whether this is a press or release</param>
 		void Info(bool pressRelease);
+
+		/// <summary>
+		/// Exit
+		/// </summary>
+		/// <param name="pressRelease">indicates whether this is a press or release</param>
 		void Exit(bool pressRelease);
 	}
 
 	/// <summary>
-	/// 
+	/// IChannelExtensions class
 	/// </summary>
 	public static class IChannelExtensions
 	{
-  /// <summary>
-  /// LinkButtons method
-  /// </summary>
+		/// <summary>
+		/// LinkButtons method
+		/// </summary>
 		public static void LinkButtons(this IChannel dev, BasicTriList triList)
 		{
 			triList.SetBoolSigAction(123, dev.ChannelUp);
@@ -37,9 +67,9 @@ namespace PepperDash.Essentials.Core
 			triList.SetBoolSigAction(134, dev.Exit);
 		}
 
-  /// <summary>
-  /// UnlinkButtons method
-  /// </summary>
+		/// <summary>
+		/// UnlinkButtons method
+		/// </summary>
 		public static void UnlinkButtons(this IChannel dev, BasicTriList triList)
 		{
 			triList.ClearBoolSigAction(123);
