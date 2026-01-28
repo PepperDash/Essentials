@@ -14,9 +14,6 @@ namespace PepperDash.Essentials.Room.Config
         /// The key of the dummy device used to enable routing
         /// </summary>
         [JsonProperty("dummySourceKey")]
-        /// <summary>
-        /// Gets or sets the DummySourceKey
-        /// </summary>
         public string DummySourceKey { get; set; }
 
         /// <summary>
@@ -26,7 +23,7 @@ namespace PepperDash.Essentials.Room.Config
         public List<string> Displays { get; set; }
         
         /// <summary>
-        /// The keys of the tuners assinged to this room
+        /// The keys of the tuners assigned to this room
         /// </summary>
         [JsonProperty("tuners")]
         public List<string> Tuners { get; set; }
@@ -49,19 +46,16 @@ namespace PepperDash.Essentials.Room.Config
         [JsonProperty("presetsFileName")]
         public string PresetsFileName { get; set; }
 
-        [JsonProperty("scheduledEvents")]
         /// <summary>
         /// Gets or sets the ScheduledEvents
         /// </summary>
+        [JsonProperty("scheduledEvents")]
         public List<ScheduledEventConfig> ScheduledEvents { get; set; }
 
         /// <summary>
         /// Indicates that the room is the primary when true
         /// </summary>
         [JsonProperty("isPrimary")]
-        /// <summary>
-        /// Gets or sets the IsPrimary
-        /// </summary>
         public bool IsPrimary { get; set; }
 
         /// <summary>
@@ -70,21 +64,21 @@ namespace PepperDash.Essentials.Room.Config
         [JsonProperty("mirroredTuners")]
         public Dictionary<uint, string> MirroredTuners { get; set; }
 
-        [JsonProperty("helpMessage")]
         /// <summary>
         /// Gets or sets the HelpMessage
         /// </summary>
+        [JsonProperty("helpMessage")]
         public string HelpMessage { get; set; }
 
         /// <summary>
-        /// Indicates the room 
-        /// </summary>
-        [JsonProperty("isTvPresetsProvider")] 
-        /// <summary>
         /// Gets or sets the IsTvPresetsProvider
         /// </summary>
+        [JsonProperty("isTvPresetsProvider")] 
         public bool IsTvPresetsProvider;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public EssentialsTechRoomConfig()
         {
             Displays = new List<string>();

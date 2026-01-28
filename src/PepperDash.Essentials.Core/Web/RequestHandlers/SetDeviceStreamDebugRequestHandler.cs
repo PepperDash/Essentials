@@ -195,26 +195,32 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	}
 
 
+	/// <summary>
+	/// Configuration class for SetDeviceStreamDebugRequestHandler
+	/// </summary>
 	public class SetDeviceStreamDebugConfig
 	{
-		[JsonProperty("deviceKey", NullValueHandling = NullValueHandling.Include)]
 		/// <summary>
 		/// Gets or sets the DeviceKey
 		/// </summary>
+		[JsonProperty("deviceKey", NullValueHandling = NullValueHandling.Include)]
 		public string DeviceKey { get; set; }
 
-		[JsonProperty("setting", NullValueHandling = NullValueHandling.Include)]
 		/// <summary>
 		/// Gets or sets the Setting
 		/// </summary>
+		[JsonProperty("setting", NullValueHandling = NullValueHandling.Include)]
 		public string Setting { get; set; }
 
-		[JsonProperty("timeout")]
 		/// <summary>
 		/// Gets or sets the Timeout
 		/// </summary>
+		[JsonProperty("timeout")]
 		public int Timeout { get; set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
 		public SetDeviceStreamDebugConfig()
 		{
 			DeviceKey = null;

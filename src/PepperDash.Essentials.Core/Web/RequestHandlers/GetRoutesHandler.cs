@@ -13,11 +13,20 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         private HttpCwsRouteCollection routeCollection;
         private string basePath;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="routeCollection"></param>
+        /// <param name="basePath"></param>
         public GetRoutesHandler(HttpCwsRouteCollection routeCollection, string basePath) {
             this.routeCollection = routeCollection;
             this.basePath = basePath;
         }
 
+        /// <summary>
+        /// Handles GET method requests
+        /// </summary>
+        /// <param name="context"></param>
         protected override void HandleGet(HttpCwsContext context)
         {
             var currentIp = CrestronEthernetHelper.GetEthernetParameter(
@@ -49,16 +58,16 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
     /// </summary>
     public class  RoutesResponseObject 
     {
-        [JsonProperty("url")]
         /// <summary>
         /// Gets or sets the Url
         /// </summary>
+        [JsonProperty("url")]
         public string Url { set; get; }
 
-        [JsonProperty("routes")]
         /// <summary>
         /// Gets or sets the Routes
         /// </summary>
+        [JsonProperty("routes")]
         public HttpCwsRouteCollection Routes { get; set; }
     }
 }
