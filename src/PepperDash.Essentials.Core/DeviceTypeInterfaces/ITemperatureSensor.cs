@@ -17,9 +17,15 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         /// </summary>
         IntFeedback TemperatureFeedback { get; }
 
-
+        /// <summary>
+        /// The temperature in Celsius format
+        /// </summary>
         BoolFeedback TemperatureInCFeedback { get; }
 
+        /// <summary>
+        /// Sets the temperature format to Celsius or Fahrenheit
+        /// </summary>
+        /// <param name="setToC">If true, sets the format to Celsius; otherwise, sets it to Fahrenheit.</param>
         void SetTemperatureFormat(bool setToC);
     }
 }
