@@ -15,10 +15,29 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class ActionIncrementer
     {
+        /// <summary>
+        /// The amount to change the value by each increment
+        /// </summary>
         public int ChangeAmount { get; set; }
+
+        /// <summary>
+        /// The maximum value for the incrementer
+        /// </summary>
         public int MaxValue { get; set; }
+
+        /// <summary>
+        /// The minimum value for the incrementer
+        /// </summary>
         public int MinValue { get; set; }
+
+        /// <summary>
+        /// The delay before repeating starts
+        /// </summary>
         public uint RepeatDelay { get; set; }
+
+        /// <summary>
+        /// The time between repeats
+        /// </summary>
         public uint RepeatTime { get; set; }
 
         Action<int> SetAction;

@@ -14,10 +14,16 @@ namespace PepperDash.Essentials.Core
     {
         private IPartitionStateProvider _partitionSensor;
 
+        /// <summary>
+        /// Indicates whether the controller is in Auto mode or Manual mode
+        /// </summary>
         public bool IsInAutoMode { get; private set; }
 
         private bool _partitionPresent;
 
+        /// <summary>
+        /// Gets or sets the PartitionPresent state
+        /// </summary>
         public bool PartitionPresent
         {
             get
@@ -45,6 +51,14 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key for the partition controller</param>
+        /// <param name="name">name of the partition controller</param>
+        /// <param name="sensor">partition state provider sensor</param>
+        /// <param name="defaultToManualMode">whether to default to manual mode</param>
+        /// <param name="adjacentRoomKeys">list of adjacent room keys</param>
         public EssentialsPartitionController(string key, string name, IPartitionStateProvider sensor, bool defaultToManualMode, List<string> adjacentRoomKeys)
         {
             Key = key;

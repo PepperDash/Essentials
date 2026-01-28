@@ -4,6 +4,9 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Queues
 {
+    /// <summary>
+    /// Processes string responses from a communication port or gather using a queue to ensure thread safety
+    /// </summary>
     public sealed class StringResponseProcessor : IKeyed, IDisposable
     {
         private readonly Action<string> _processStringAction; 
@@ -98,6 +101,9 @@ namespace PepperDash.Essentials.Core.Queues
         /// </summary>
         public bool Disposed { get; private set; }
 
+        /// <summary>
+        /// Finalizer
+        /// </summary>
         ~StringResponseProcessor()
         {
             Dispose(false);

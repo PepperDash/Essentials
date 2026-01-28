@@ -16,14 +16,44 @@ namespace PepperDash.Essentials.Core
     public class UshortSigIncrementer
     {
         UShortInputSig TheSig;
+
+        /// <summary>
+        /// The amount to change the value by each increment
+        /// </summary>
         public ushort ChangeAmount { get; set; }
+
+        /// <summary>
+        /// The maximum value for the incrementer
+        /// </summary>
         public int MaxValue { get; set; }
+
+        /// <summary>
+        /// The minimum value for the incrementer
+        /// </summary>
         public int MinValue { get; set; }
+
+        /// <summary>
+        /// The delay before repeating starts
+        /// </summary>
         public uint RepeatDelay { get; set; }
+
+        /// <summary>
+        /// The time between repeats
+        /// </summary>
         public uint RepeatTime { get; set; }
+
         bool SignedMode;
         CTimer Timer;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="sig">the signal toi be incremented</param>
+        /// <param name="changeAmount">the amount to increment by</param>
+        /// <param name="minValue">the minimum value of the signal</param>
+        /// <param name="maxValue">the maximum value of the signal</param>
+        /// <param name="repeatDelay">the delay before repeating starts</param>
+        /// <param name="repeatTime">the time between repeats</param>
         public UshortSigIncrementer(UShortInputSig sig, ushort changeAmount, int minValue, int maxValue, uint repeatDelay, uint repeatTime)
         {
             TheSig = sig;
