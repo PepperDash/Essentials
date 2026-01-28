@@ -17,6 +17,10 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public bool IsReady { get; set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="data">indicates if the object is ready</param>
         public IsReadyEventArgs(bool data)
         {
             IsReady = data;
@@ -28,7 +32,14 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasReady
     {
+        /// <summary>
+        /// Fires when the IsReady property changes
+        /// </summary>
         event EventHandler<IsReadyEventArgs> IsReadyEvent;
+
+        /// <summary>
+        /// indicates whether the object is ready
+        /// </summary>
         bool IsReady { get; }
     }
 }
