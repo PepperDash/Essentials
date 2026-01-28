@@ -5,6 +5,10 @@ namespace PepperDash.Essentials.Core
   /// </summary>
   public interface IBasicVolumeWithFeedback : IBasicVolumeControls
   {
+    /// <summary>
+    /// Gets the mute feedback
+    /// </summary>
+    BoolFeedback MuteFeedback { get; }
 
     /// <summary>
     /// Mutes the volume
