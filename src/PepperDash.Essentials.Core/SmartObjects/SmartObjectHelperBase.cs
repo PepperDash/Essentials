@@ -11,21 +11,26 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.SmartObjects
 {
- /// <summary>
- /// Represents a SmartObjectHelperBase
- /// </summary>
+	/// <summary>
+	/// Represents a SmartObjectHelperBase
+	/// </summary>
 	public class SmartObjectHelperBase
 	{
-  /// <summary>
-  /// Gets or sets the SmartObject
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the SmartObject
+		/// </summary>
 		public SmartObject SmartObject { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the Validated
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the Validated
+		/// </summary>
 		public bool Validated { get; protected set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="so">smart object</param>
+		/// <param name="useUserObjectHandler">use the user object hadnler if true</param>
 		public SmartObjectHelperBase(SmartObject so, bool useUserObjectHandler)
 		{
 			SmartObject = so;
@@ -37,6 +42,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			}
 		}
 
+		/// <summary>
+		/// Destructor
+		/// </summary>
 		~SmartObjectHelperBase()
 		{
 			SmartObject.SigChange -= this.SmartObject_SigChange;
@@ -47,9 +55,6 @@ namespace PepperDash.Essentials.Core.SmartObjects
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-  /// <summary>
-  /// GetBoolOutputNamed method
-  /// </summary>
 		public BoolOutputSig GetBoolOutputNamed(string name)
 		{
 			if (SmartObject.BooleanOutput.Contains(name))

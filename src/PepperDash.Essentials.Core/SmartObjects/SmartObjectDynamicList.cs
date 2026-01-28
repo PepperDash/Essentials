@@ -17,14 +17,24 @@ namespace PepperDash.Essentials.Core.SmartObjects
  /// </summary>
 	public class SmartObjectDynamicList : SmartObjectHelperBase
 	{
+		/// <summary>
+		/// Sig name for Scroll To Item
+		/// </summary>
 		public const string SigNameScrollToItem = "Scroll To Item";
+
+		/// <summary>
+		/// Sig name for Set Number of Items
+		/// </summary>
 		public const string SigNameSetNumberOfItems = "Set Number of Items";
 
-  /// <summary>
-  /// Gets or sets the NameSigOffset
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the NameSigOffset
+		/// </summary>
 		public uint NameSigOffset { get; private set; }
 
+		///	<summary>
+		/// Gets or sets the Count
+		/// </summary>	
 		public ushort Count 
 		{
 			get 
@@ -34,9 +44,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			set { SmartObject.UShortInput[SigNameSetNumberOfItems].UShortValue = value; }
 		}
 
-  /// <summary>
-  /// Gets or sets the MaxCount
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the MaxCount
+		/// </summary>
 		public int MaxCount { get; private set; }
 
         /// <summary>
@@ -62,9 +72,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			}
 		}
 
-  /// <summary>
-  /// SetItem method
-  /// </summary>
+		/// <summary>
+		/// SetItem method
+		/// </summary>
 		public void SetItem(uint index, string mainText, string iconName, Action<bool> action)
 		{
 			SetItemMainText(index, mainText);
@@ -83,9 +93,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			//}
 		}
 
-  /// <summary>
-  /// SetItemMainText method
-  /// </summary>
+		/// <summary>
+		/// SetItemMainText method
+		/// </summary>
 		public void SetItemMainText(uint index, string text)
 		{
 			if (index > MaxCount) return;
@@ -93,27 +103,27 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			(SmartObject.Device as BasicTriList).StringInput[NameSigOffset + index].StringValue = text;
 		}
 
-  /// <summary>
-  /// SetItemIcon method
-  /// </summary>
+		/// <summary>
+		/// SetItemIcon method
+		/// </summary>
 		public void SetItemIcon(uint index, string iconName)
 		{
 			if (index > MaxCount) return;
 			SmartObject.StringInput[string.Format("Set Item {0} Icon Serial", index)].StringValue = iconName;
 		}
 
-  /// <summary>
-  /// SetItemButtonAction method
-  /// </summary>
+		/// <summary>
+		/// SetItemButtonAction method
+		/// </summary>
 		public void SetItemButtonAction(uint index, Action<bool> action)
 		{
 			if (index > MaxCount) return;
 			SmartObject.BooleanOutput[string.Format("Item {0} Pressed", index)].UserObject = action;
 		}
 
-  /// <summary>
-  /// SetFeedback method
-  /// </summary>
+		/// <summary>
+		/// SetFeedback method
+		/// </summary>
 		public void SetFeedback(uint index, bool interlocked)
 		{
 			if (interlocked) 
@@ -121,9 +131,9 @@ namespace PepperDash.Essentials.Core.SmartObjects
 			SmartObject.BooleanInput[string.Format("Item {0} Selected", index)].BoolValue = true;
 		}
 
-  /// <summary>
-  /// ClearFeedbacks method
-  /// </summary>
+		/// <summary>
+		/// ClearFeedbacks method
+		/// </summary>
 		public void ClearFeedbacks()
 		{
 			for(int i = 1; i<= Count; i++)
