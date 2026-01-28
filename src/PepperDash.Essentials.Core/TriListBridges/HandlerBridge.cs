@@ -9,6 +9,9 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.Core
 {
+	/// <summary>
+	/// Abstract base class for TriList handler bridges
+	/// </summary>
 	public abstract class HandlerBridge
 	{
   /// <summary>
