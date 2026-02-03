@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
@@ -549,7 +549,10 @@ namespace PepperDash.Essentials
             var applicationDirectory = new DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
             Debug.LogMessage(LogEventLevel.Information, "Searching: {applicationDirectory:l} for embedded assets - {Destination}", applicationDirectory.FullName, Global.FilePathPrefix);
 
-            var zipFiles = applicationDirectory.GetFiles("assets*.zip");
+            var zipFiles = applicationDirectory.GetFiles("*")
+                .Where(f => f.Name.StartsWith("assets", StringComparison.OrdinalIgnoreCase) && 
+                            f.Extension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
             if (zipFiles.Length > 1)
             {
@@ -597,7 +600,10 @@ namespace PepperDash.Essentials
                 File.Delete(file.FullName);
             }
 
-            var htmlZipFiles = applicationDirectory.GetFiles("htmlassets*.zip");
+            var htmlZipFiles = applicationDirectory.GetFiles("*")
+                .Where(f => f.Name.StartsWith("htmlassets", StringComparison.OrdinalIgnoreCase) && 
+                            f.Extension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
             if (htmlZipFiles.Length > 1)
             {
@@ -658,7 +664,10 @@ namespace PepperDash.Essentials
                 File.Delete(file.FullName);
             }
 
-            var jsonFiles = applicationDirectory.GetFiles("*configurationFile*.json");
+            var jsonFiles = applicationDirectory.GetFiles("*")
+                .Where(f => f.Name.IndexOf("configurationFile", StringComparison.OrdinalIgnoreCase) >= 0 && 
+                            f.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
             if (jsonFiles.Length > 1)
             {
