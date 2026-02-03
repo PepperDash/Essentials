@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     {
         None,
         Raise,
-        Lower
+        Lower,
     }
 
     /// <summary>
@@ -50,7 +50,8 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             get { return _isInUpPosition; }
             set
             {
-                if (value == _isInUpPosition) return;
+                if (value == _isInUpPosition)
+                    return;
                 _isInUpPosition = value;
                 IsInUpPosition.FireUpdate();
                 PositionChanged?.Invoke(this, new EventArgs());
@@ -87,7 +88,11 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         /// <summary>
         /// Constructor for ScreenLiftController
         /// </summary>
-        public ScreenLiftController(string key, string name, ScreenLiftControllerConfigProperties config)
+        public ScreenLiftController(
+            string key,
+            string name,
+            ScreenLiftControllerConfigProperties config
+        )
             : base(key, name)
         {
             Config = config;
@@ -105,27 +110,60 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             switch (Mode)
             {
                 case eScreenLiftControlMode.momentary:
-                    {
-                        RaiseRelayConfig = Config.Relays["raise"];
-                        LowerRelayConfig = Config.Relays["lower"];
-                        break;
-                    }
+                {
+                    RaiseRelayConfig = Config.Relays["raise"];
+                    LowerRelayConfig = Config.Relays["lower"];
+                    break;
+                }
                 case eScreenLiftControlMode.latched:
-                    {
-                        LatchedRelayConfig = Config.Relays["latched"];
-                        break;
-                    }
+                {
+                    LatchedRelayConfig = Config.Relays["latched"];
+                    break;
+                }
             }
+
+            IsInUpPosition.OutputChange += (sender, args) =>
+            {
+                this.LogDebug(
+                    "ScreenLiftController '{name}' IsInUpPosition changed to {position}",
+                    Name,
+                    IsInUpPosition.BoolValue ? "Up" : "Down"
+                );
+
+                if (!Config.MuteOnScreenUp)
+                {
+                    return;
+                }
+
+                if (args.BoolValue)
+                {
+                    return;
+                }
+
+                if (DisplayDevice is IBasicVideoMuteWithFeedback videoMute)
+                {
+                    this.LogInformation("Unmuting video because screen is down");
+                    videoMute.VideoMuteOff();
+                }
+            };
+
+            IsInUpPosition.FireUpdate();
         }
 
         private void IsCoolingDownFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
-            if (!DisplayDevice.IsCoolingDownFeedback.BoolValue && Type == eScreenLiftControlType.lift)
+            if (
+                !DisplayDevice.IsCoolingDownFeedback.BoolValue
+                && Type == eScreenLiftControlType.lift
+            )
             {
                 Raise();
                 return;
             }
-            if (DisplayDevice.IsCoolingDownFeedback.BoolValue && Type == eScreenLiftControlType.screen)
+            if (
+                DisplayDevice.IsCoolingDownFeedback.BoolValue
+                && Type == eScreenLiftControlType.screen
+            )
             {
                 Raise();
                 return;
@@ -150,18 +188,18 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             switch (Mode)
             {
                 case eScreenLiftControlMode.momentary:
-                    {
-                        this.LogDebug("Getting relays for {mode}", Mode);
-                        RaiseRelay = GetSwitchedOutputFromDevice(RaiseRelayConfig.DeviceKey);
-                        LowerRelay = GetSwitchedOutputFromDevice(LowerRelayConfig.DeviceKey);
-                        break;
-                    }
+                {
+                    this.LogDebug("Getting relays for {mode}", Mode);
+                    RaiseRelay = GetSwitchedOutputFromDevice(RaiseRelayConfig.DeviceKey);
+                    LowerRelay = GetSwitchedOutputFromDevice(LowerRelayConfig.DeviceKey);
+                    break;
+                }
                 case eScreenLiftControlMode.latched:
-                    {
-                        this.LogDebug("Getting relays for {mode}", Mode);
-                        LatchedRelay = GetSwitchedOutputFromDevice(LatchedRelayConfig.DeviceKey);
-                        break;
-                    }
+                {
+                    this.LogDebug("Getting relays for {mode}", Mode);
+                    LatchedRelay = GetSwitchedOutputFromDevice(LatchedRelayConfig.DeviceKey);
+                    break;
+                }
             }
 
             this.LogDebug("Getting display with key {displayKey}", DisplayDeviceKey);
@@ -172,7 +210,8 @@ namespace PepperDash.Essentials.Devices.Common.Shades
                 this.LogDebug("Subscribing to {displayKey} feedbacks", DisplayDeviceKey);
 
                 DisplayDevice.IsWarmingUpFeedback.OutputChange += IsWarmingUpFeedback_OutputChange;
-                DisplayDevice.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
+                DisplayDevice.IsCoolingDownFeedback.OutputChange +=
+                    IsCoolingDownFeedback_OutputChange;
             }
 
             return base.CustomActivate();
@@ -183,9 +222,16 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         /// </summary>
         public void Raise()
         {
-            if (RaiseRelay == null && LatchedRelay == null) return;
+            if (RaiseRelay == null && LatchedRelay == null)
+                return;
 
             this.LogDebug("Raise called for {type}", Type);
+
+            if (Config.MuteOnScreenUp && DisplayDevice is IBasicVideoMuteWithFeedback videoMute)
+            {
+                this.LogInformation("Muting video because screen is going up");
+                videoMute.VideoMuteOn();
+            }
 
             // If device is moving, bank the command
             if (_isMoving)
@@ -200,33 +246,33 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             switch (Mode)
             {
                 case eScreenLiftControlMode.momentary:
-                    {
-                        PulseOutput(RaiseRelay, RaiseRelayConfig.PulseTimeInMs);
+                {
+                    PulseOutput(RaiseRelay, RaiseRelayConfig.PulseTimeInMs);
 
-                        // Set moving flag and start timer if movement time is configured
-                        if (RaiseRelayConfig.MoveTimeInMs > 0)
-                        {
-                            _isMoving = true;
-                            _currentMovement = RequestedState.Raise;
-                            if (_movementTimer.Enabled)
-                            {
-                                _movementTimer.Stop();
-                            }
-                            _movementTimer.Interval = RaiseRelayConfig.MoveTimeInMs;
-                            _movementTimer.Start();
-                        }
-                        else
-                        {
-                            InUpPosition = true;
-                        }
-                        break;
-                    }
-                case eScreenLiftControlMode.latched:
+                    // Set moving flag and start timer if movement time is configured
+                    if (RaiseRelayConfig.MoveTimeInMs > 0)
                     {
-                        LatchedRelay.Off();
-                        InUpPosition = true;
-                        break;
+                        _isMoving = true;
+                        _currentMovement = RequestedState.Raise;
+                        if (_movementTimer.Enabled)
+                        {
+                            _movementTimer.Stop();
+                        }
+                        _movementTimer.Interval = RaiseRelayConfig.MoveTimeInMs;
+                        _movementTimer.Start();
                     }
+                    else
+                    {
+                        InUpPosition = true;
+                    }
+                    break;
+                }
+                case eScreenLiftControlMode.latched:
+                {
+                    LatchedRelay.Off();
+                    InUpPosition = true;
+                    break;
+                }
             }
         }
 
@@ -235,7 +281,8 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         /// </summary>
         public void Lower()
         {
-            if (LowerRelay == null && LatchedRelay == null) return;
+            if (LowerRelay == null && LatchedRelay == null)
+                return;
 
             this.LogDebug("Lower called for {type}", Type);
 
@@ -252,33 +299,33 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             switch (Mode)
             {
                 case eScreenLiftControlMode.momentary:
-                    {
-                        PulseOutput(LowerRelay, LowerRelayConfig.PulseTimeInMs);
+                {
+                    PulseOutput(LowerRelay, LowerRelayConfig.PulseTimeInMs);
 
-                        // Set moving flag and start timer if movement time is configured
-                        if (LowerRelayConfig.MoveTimeInMs > 0)
-                        {
-                            _isMoving = true;
-                            _currentMovement = RequestedState.Lower;
-                            if (_movementTimer.Enabled)
-                            {
-                                _movementTimer.Stop();
-                            }
-                            _movementTimer.Interval = LowerRelayConfig.MoveTimeInMs;
-                            _movementTimer.Start();
-                        }
-                        else
-                        {
-                            InUpPosition = false;
-                        }
-                        break;
-                    }
-                case eScreenLiftControlMode.latched:
+                    // Set moving flag and start timer if movement time is configured
+                    if (LowerRelayConfig.MoveTimeInMs > 0)
                     {
-                        LatchedRelay.On();
-                        InUpPosition = false;
-                        break;
+                        _isMoving = true;
+                        _currentMovement = RequestedState.Lower;
+                        if (_movementTimer.Enabled)
+                        {
+                            _movementTimer.Stop();
+                        }
+                        _movementTimer.Interval = LowerRelayConfig.MoveTimeInMs;
+                        _movementTimer.Start();
                     }
+                    else
+                    {
+                        InUpPosition = false;
+                    }
+                    break;
+                }
+                case eScreenLiftControlMode.latched:
+                {
+                    LatchedRelay.On();
+                    InUpPosition = false;
+                    break;
+                }
             }
         }
 
@@ -339,16 +386,13 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         {
             output.On();
 
-            var timer = new Timer(pulseTime)
-            {
-                AutoReset = false
-            };
+            var timer = new Timer(pulseTime) { AutoReset = false };
 
             timer.Elapsed += (sender, e) =>
-                  {
-                      output.Off();
-                      timer.Dispose();
-                  };
+            {
+                output.Off();
+                timer.Dispose();
+            };
             timer.Start();
         }
 
@@ -361,7 +405,10 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             }
             else
             {
-                this.LogWarning("Error: Unable to get relay device with key '{relayKey}'", relayKey);
+                this.LogWarning(
+                    "Error: Unable to get relay device with key '{relayKey}'",
+                    relayKey
+                );
                 return null;
             }
         }
@@ -375,11 +422,13 @@ namespace PepperDash.Essentials.Devices.Common.Shades
             }
             else
             {
-                this.LogWarning("Error: Unable to get display device with key '{displayKey}'", displayKey);
+                this.LogWarning(
+                    "Error: Unable to get display device with key '{displayKey}'",
+                    displayKey
+                );
                 return null;
             }
         }
-
     }
 
     /// <summary>
@@ -387,7 +436,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
     /// </summary>
     public class ScreenLiftControllerFactory : EssentialsDeviceFactory<RelayControlledShade>
     {
-        /// <summary> 
+        /// <summary>
         /// Constructor for ScreenLiftControllerFactory
         /// </summary>
         public ScreenLiftControllerFactory()
