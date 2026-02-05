@@ -32,6 +32,9 @@ namespace PepperDash.Core
         private const string _certificateName = "selfCres";
         private const string _certificatePassword = "cres12345";
 
+        /// <summary>
+        /// Gets the Port
+        /// </summary>
         public int Port 
         { get 
             { 
@@ -41,6 +44,9 @@ namespace PepperDash.Core
             } 
         }
 
+        /// <summary>
+        /// Gets the Url
+        /// </summary>
         public string Url
         {
             get
@@ -58,6 +64,11 @@ namespace PepperDash.Core
 
         private readonly ITextFormatter _textFormatter;
 
+        /// <summary>
+        /// Constructor for DebugWebsocketSink
+        /// </summary>
+        /// <param name="formatProvider">text formatter for log output</param>
+      
         public DebugWebsocketSink(ITextFormatter formatProvider)
         {
 
@@ -217,6 +228,9 @@ namespace PepperDash.Core
         }
     }
 
+    /// <summary>
+    /// Provides extension methods for DebugWebsocketSink
+    /// </summary>
     public static class DebugWebsocketSinkExtensions
     {
         /// <summary>
@@ -237,6 +251,9 @@ namespace PepperDash.Core
     {
         private DateTime _connectionTime;
 
+        /// <summary>
+        /// Gets the ConnectedDuration
+        /// </summary>
         public TimeSpan ConnectedDuration
         {
             get
@@ -252,11 +269,17 @@ namespace PepperDash.Core
             }
         }
 
+        /// <summary>
+        /// Constructor for DebugClient
+        /// </summary>
         public DebugClient()
         {
             Debug.Console(0, "DebugClient Created");
         }
 
+        /// <summary>
+        /// OnOpen method
+        /// </summary>
         protected override void OnOpen()
         {
             base.OnOpen();
@@ -267,6 +290,9 @@ namespace PepperDash.Core
             _connectionTime = DateTime.Now;
         }
 
+        /// <summary>
+        /// OnMessage method
+        /// </summary>
         protected override void OnMessage(MessageEventArgs e)
         {
             base.OnMessage(e);
@@ -274,6 +300,9 @@ namespace PepperDash.Core
             Debug.Console(0, "WebSocket UiClient Message: {0}", e.Data);
         }
 
+        /// <summary>
+        /// OnClose method
+        /// </summary>
         protected override void OnClose(CloseEventArgs e)
         {
             base.OnClose(e);
@@ -282,6 +311,9 @@ namespace PepperDash.Core
 
         }
 
+        /// <summary>
+        /// OnError method
+        /// </summary>
         protected override void OnError(WebSocketSharp.ErrorEventArgs e)
         {
             base.OnError(e);
