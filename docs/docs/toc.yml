@@ -4,7 +4,7 @@
 - name: How-to's
   items:
   - name: How to add an article or doc page
-    href: how-to/How-to-add-docs.md
+    href: how-to/how-to-add-docs.md
 - name: Usage
   items:
   - href: usage/Standalone-Use.md    
