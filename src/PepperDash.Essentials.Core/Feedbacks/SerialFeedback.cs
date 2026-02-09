@@ -13,6 +13,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class SerialFeedback : Feedback
     {
+        /// <summary>
+        /// Gets the SerialValue
+        /// </summary>
         public override string SerialValue { get { return _SerialValue; } }
         string _SerialValue;
 
@@ -25,11 +28,18 @@ namespace PepperDash.Essentials.Core
 
         List<StringInputSig> LinkedInputSigs = new List<StringInputSig>();
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         [Obsolete("use constructor with Key parameter. This constructor will be removed in a future version")]
         public SerialFeedback()
         {
         }
 
+        /// <summary>
+        /// Constructor with Key parameter
+        /// </summary>
+        /// <param name="key">Key to find this Feedback</param>
         public SerialFeedback(string key)
             : base(key)
         {

@@ -27,6 +27,11 @@ namespace PepperDash.Essentials.Core.Timers
         private CTimer _timer;
         private long _timerIntervalMs;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key of the timer</param>
+        /// <param name="config">configuration for the timer</param>
         public RetriggerableTimer(string key, DeviceConfig config)
             : base(key, config.Name)
         {
@@ -98,7 +103,7 @@ namespace PepperDash.Essentials.Core.Timers
         /// <summary>
         /// Executes the Elapsed action from confing when the timer elapses
         /// </summary>
-        /// <param name="o"></param>
+        /// <param name="action">action to be executed</param>
         private void TimerElapsedCallback(object action)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Timer Elapsed. Executing Action");
@@ -144,15 +149,27 @@ namespace PepperDash.Essentials.Core.Timers
     /// </summary>
     public class RetriggerableTimerPropertiesConfig
     {
+        /// <summary>
+        /// Start the timer on device activation
+        /// </summary>
         [JsonProperty("startTimerOnActivation")]
         public bool StartTimerOnActivation { get; set; }
 
+        /// <summary>
+        /// Timer interval in milliseconds
+        /// </summary>
         [JsonProperty("timerIntervalMs")]
         public long TimerIntervalMs { get; set; }
 
+        /// <summary>
+        /// Events and their associated actions
+        /// </summary>
         [JsonProperty("events")]
         public Dictionary<eRetriggerableTimerEvents, DeviceActionWrapper> Events { get; set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public RetriggerableTimerPropertiesConfig()
         {
             Events = new Dictionary<eRetriggerableTimerEvents, DeviceActionWrapper>();
@@ -164,7 +181,14 @@ namespace PepperDash.Essentials.Core.Timers
     /// </summary>
     public enum eRetriggerableTimerEvents
     {
+        /// <summary>
+        /// Elapsed event
+        /// </summary>
         Elapsed,
+
+        /// <summary>
+        /// Stopped event
+        /// </summary>
         Stopped,
     }
 
@@ -173,11 +197,19 @@ namespace PepperDash.Essentials.Core.Timers
     /// </summary>
     public class RetriggerableTimerFactory : EssentialsDeviceFactory<RetriggerableTimer>
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public RetriggerableTimerFactory()
         {
             TypeNames = new List<string>() { "retriggerabletimer" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <param name="dc">device config</param>
+        /// <returns></returns>
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new RetriggerableTimer Device");

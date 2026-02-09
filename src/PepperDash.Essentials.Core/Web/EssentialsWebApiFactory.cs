@@ -10,15 +10,18 @@ namespace PepperDash.Essentials.Core.Web
  /// </summary>
 	public class EssentialsWebApiFactory : EssentialsDeviceFactory<EssentialsWebApi>
 	{
+		/// <summary>
+		/// Constructor
+		/// </summary>
 		public EssentialsWebApiFactory()
 		{
 			TypeNames = new List<string> { "EssentialsWebApi" };
 		}
 
-  /// <summary>
-  /// BuildDevice method
-  /// </summary>
-  /// <inheritdoc />
+		/// <summary>
+		/// BuildDevice method
+		/// </summary>
+		/// <inheritdoc />
 		public override EssentialsDevice BuildDevice(DeviceConfig dc)
 		{
 			Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Essentials Web API Server");

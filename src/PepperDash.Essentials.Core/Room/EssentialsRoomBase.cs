@@ -29,7 +29,14 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public event EventHandler<EventArgs> RoomOccupancyIsSet;
 
+        /// <summary>
+        /// Gets or sets the IsWarmingUpFeedback
+        /// </summary>
         public BoolFeedback IsWarmingUpFeedback { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the IsCoolingDownFeedback
+        /// </summary>
         public BoolFeedback IsCoolingDownFeedback { get; private set; }
 
         /// <summary>
@@ -37,10 +44,19 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public IOccupancyStatusProvider RoomOccupancy { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the OccupancyStatusProviderIsRemote
+        /// </summary>
         public bool OccupancyStatusProviderIsRemote { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the EnvironmentalControlDevices
+        /// </summary>
         public List<EssentialsDevice> EnvironmentalControlDevices { get; protected set; }
 
+        /// <summary>
+        /// Indicates if the room has any environmental control devices
+        /// </summary>
         public bool HasEnvironmentalControlDevices
         {
             get
@@ -49,7 +65,14 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the IsWarmingFeedbackFunc
+        /// </summary>
         protected abstract Func<bool> IsWarmingFeedbackFunc { get; }
+
+        /// <summary>
+        /// Gets or sets the IsCoolingFeedbackFunc
+        /// </summary>
         protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
 
         /// <summary>
@@ -62,6 +85,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public IMobileControlRoomMessenger MobileControlRoomBridge { get; private set; }
 
+        /// <summary>
+        /// The config name of the default source list
+        /// </summary>
         protected const string _defaultListKey = "default";
 
         /// <summary>
@@ -69,6 +95,10 @@ namespace PepperDash.Essentials.Core
         /// </summary>
 		/// 
 		private string _sourceListKey;
+
+        /// <summary>
+        /// Gets or sets the SourceListKey
+        /// </summary>
         public string SourceListKey {
 			get
 			{
@@ -91,6 +121,10 @@ namespace PepperDash.Essentials.Core
 		}
 
         private string _destinationListKey;
+
+        /// <summary>
+        /// Gets or sets the DestinationListKey
+        /// </summary>
         public string DestinationListKey
         {
             get 
@@ -114,6 +148,10 @@ namespace PepperDash.Essentials.Core
         }
 
         private string _audioControlPointListKey;
+
+        /// <summary>
+        /// Gets or sets the AudioControlPointListKey
+        /// </summary>
         public string AudioControlPointListKey
         {
             get
@@ -137,6 +175,10 @@ namespace PepperDash.Essentials.Core
         }
 
         private string _cameraListKey;
+
+        /// <summary>
+        /// Gets or sets the CameraListKey
+        /// </summary>
         public string CameraListKey
         {
             get
@@ -165,16 +207,33 @@ namespace PepperDash.Essentials.Core
         public SecondsCountdownTimer ShutdownPromptTimer { get; private set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the ShutdownPromptSeconds
         /// </summary>
         public int ShutdownPromptSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ShutdownVacancySeconds
+        /// </summary>
         public int ShutdownVacancySeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ShutdownType
+        /// </summary>
         public eShutdownType ShutdownType { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the Emergency
+        /// </summary>
         public EssentialsRoomEmergencyBase Emergency { get; set; }
 
+        /// <summary>
+        /// Gets or sets the MicrophonePrivacy
+        /// </summary>
         public Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; set; }
 
+        /// <summary>
+        /// Gets or sets the LogoUrlLightBkgnd
+        /// </summary>
         public string LogoUrlLightBkgnd { get; set; }
 
         /// <summary>
@@ -182,6 +241,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public string LogoUrlDarkBkgnd { get; set; }
 
+        /// <summary>
+        /// Gets or sets the RoomVacancyShutdownTimer
+        /// </summary>
         protected SecondsCountdownTimer RoomVacancyShutdownTimer { get; private set; }
 
         /// <summary>
@@ -204,6 +266,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         protected abstract Func<bool> OnFeedbackFunc { get; }
 
+        /// <summary>
+        /// Gets or sets the SavedVolumeLevels
+        /// </summary>
 		protected Dictionary<IBasicVolumeWithFeedback, uint> SavedVolumeLevels = new Dictionary<IBasicVolumeWithFeedback, uint>();
 
 		/// <summary>
@@ -211,7 +276,10 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; private set; }
 
-
+        /// <summary>
+        /// Constructor for EssentialsRoomBase
+        /// </summary>
+        /// <param name="config">config of the device</param>
         public EssentialsRoomBase(DeviceConfig config)
             : base(config)
         {
@@ -283,6 +351,10 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// Sets the DestinationListKey property to the passed in value or the default if no value passed in
+        /// </summary>
+        /// <param name="destinationListKey">key of the destination list object</param>
         protected void SetDestinationListKey(string destinationListKey)
         {
             if (!string.IsNullOrEmpty(destinationListKey))
@@ -396,6 +468,7 @@ namespace PepperDash.Essentials.Core
         /// Sets the object to be used as the IOccupancyStatusProvider for the room. Can be an Occupancy Aggregator or a specific device
         /// </summary>
         /// <param name="statusProvider"></param>
+        /// <param name="timeoutMinutes"></param>
         public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes)
         { 
 			if (statusProvider == null)
@@ -479,16 +552,45 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public enum eShutdownType
     {
+        /// <summary>
+        /// No shutdown in progress
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// Manual shutdown initiated
+        /// </summary>
         External,
+
+        /// <summary>
+        /// Vacancy based shutdown
+        /// </summary>
         Manual,
+
+        /// <summary>
+        /// Shutdown due to room vacancy
+        /// </summary>
         Vacancy
     }
 
+    /// <summary>
+    /// Enumeration of eVacancyMode values
+    /// </summary>
     public enum eVacancyMode
     {
+        /// <summary>
+        /// No vacancy detected
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// InInitialVacancy - countdown to warning
+        /// </summary>
         InInitialVacancy,
+
+        /// <summary>
+        /// InShutdownWarning - countdown to shutdown
+        /// </summary>
         InShutdownWarning
     }
 
@@ -497,15 +599,36 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public enum eWarmingCoolingMode
     {
+        /// <summary>
+        /// None
+        /// </summary>
         None,
+
+        /// <summary>
+        /// Warming
+        /// </summary>
         Warming,
+
+        /// <summary>
+        /// Cooling
+        /// </summary>
         Cooling
     }
 
+    /// <summary>
+    /// Base class for room emergency implementations
+    /// </summary>
     public abstract class EssentialsRoomEmergencyBase : IKeyed
     {
+        /// <summary>
+        /// Key of the room
+        /// </summary>
         public string Key { get; private set; }
 
+        /// <summary>
+        /// Constructor for EssentialsRoomEmergencyBase
+        /// </summary>
+        /// <param name="key">key of the room</param>
         public EssentialsRoomEmergencyBase(string key)
         {
             Key = key;

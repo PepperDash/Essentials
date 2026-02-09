@@ -59,6 +59,10 @@ namespace PepperDash.Essentials.Core
             ValueFunc = valueFunc;
         }
 
+        /// <summary>
+        /// Sets the ValueFunc
+        /// </summary>
+        /// <param name="newFunc">function to set</param>
         public void SetValueFunc(Func<string> newFunc)
         {
             ValueFunc = newFunc;

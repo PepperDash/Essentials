@@ -14,23 +14,37 @@ namespace PepperDash.Essentials.Core
  /// </summary>
 	public enum AudioChangeType
 	{
-		Mute, Volume
+		/// <summary>
+		/// Mute change
+		/// </summary>
+		Mute, 
+		
+		/// <summary>
+		/// Volume change
+		/// </summary>
+		Volume
 	}
 
- /// <summary>
- /// Represents a AudioChangeEventArgs
- /// </summary>
+	/// <summary>
+	/// Represents a AudioChangeEventArgs
+	/// </summary>
 	public class AudioChangeEventArgs
 	{
-  /// <summary>
-  /// Gets or sets the ChangeType
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the ChangeType
+		/// </summary>
 		public AudioChangeType ChangeType { get; private set; }
-  /// <summary>
-  /// Gets or sets the AudioDevice
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the AudioDevice
+		/// </summary>
 		public IBasicVolumeControls AudioDevice { get; private set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="device">device that changed</param>
+		/// <param name="changeType">type of change</param>
 		public AudioChangeEventArgs(IBasicVolumeControls device, AudioChangeType changeType)
 		{
 			ChangeType = changeType;

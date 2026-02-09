@@ -22,7 +22,14 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public CommunicationStreamDebugging StreamDebugging { get; private set; }
 
+        /// <summary>
+        /// Event raised when bytes are received
+        /// </summary>
         public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
+
+        /// <summary>
+        /// Event raised when text is received
+        /// </summary>
         public event EventHandler<GenericCommMethodReceiveTextArgs> TextReceived;
 
         /// <summary>
@@ -32,6 +39,12 @@ namespace PepperDash.Essentials.Core
 
         ICec Port;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key of the device</param>
+        /// <param name="postActivationFunc">post activation function for the device</param>
+        /// <param name="config">configuration for the device</param>
         public CecPortController(string key, Func<EssentialsControlPropertiesConfig, ICec> postActivationFunc,
             EssentialsControlPropertiesConfig config) : base(key)
         {
@@ -45,6 +58,11 @@ namespace PepperDash.Essentials.Core
             });
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key of the device</param>
+        /// <param name="port">CEC port</param>
         public CecPortController(string key, ICec port)
             : base(key)
         {

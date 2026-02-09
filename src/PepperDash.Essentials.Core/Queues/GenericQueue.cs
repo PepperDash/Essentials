@@ -14,8 +14,20 @@ namespace PepperDash.Essentials.Core.Queues
     public class GenericQueue : IQueue<IQueueMessage>
     {
         private readonly string _key;
+
+        /// <summary>
+        /// The internal queue
+        /// </summary>
         protected readonly ConcurrentQueue<IQueueMessage> _queue;
+
+        /// <summary>
+        /// The worker thread
+        /// </summary>
         protected readonly Thread _worker;
+
+        /// <summary>
+        /// The wait handle for the queue
+        /// </summary>
         protected readonly CEvent _waitHandle = new CEvent();
 
         private bool _delayEnabled;
@@ -256,6 +268,9 @@ namespace PepperDash.Essentials.Core.Queues
             Disposed = true;
         }
 
+        /// <summary>
+        /// Finalizer
+        /// </summary>
         ~GenericQueue()
         {
             Dispose(true);

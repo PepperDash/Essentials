@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
     /// </summary>
     public interface IDigitalInput
     {
+        /// <summary>
+        /// Feedback to indicate the state of the input
+        /// </summary>
         BoolFeedback InputStateFeedback { get; }
     }
 }

@@ -39,6 +39,13 @@ namespace PepperDash.Essentials.Core
   /// </summary>
 		public bool ShowHexResponse { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the ConsoleCommMockDevice class.
+        /// </summary>
+        /// <param name="key">The key of the device.</param>
+        /// <param name="name">The name of the device.</param>
+        /// <param name="props">The properties configuration for the device.</param>
+        /// <param name="comm">The communication method for the device.</param>
 		public ConsoleCommMockDevice(string key, string name, ConsoleCommMockDevicePropertiesConfig props, IBasicCommunication comm)
 			:base(key, name)
 		{
@@ -72,20 +79,24 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
- /// <summary>
- /// Represents a ConsoleCommMockDevicePropertiesConfig
- /// </summary>
+    /// <summary>
+    /// Represents a ConsoleCommMockDevicePropertiesConfig
+    /// </summary>
 	public class ConsoleCommMockDevicePropertiesConfig
 	{
-  /// <summary>
-  /// Gets or sets the LineEnding
-  /// </summary>
+        /// <summary>
+        /// Gets or sets the LineEnding
+        /// </summary>
 		public string LineEnding { get; set; }
-  /// <summary>
-  /// Gets or sets the CommunicationMonitorProperties
-  /// </summary>
+
+        /// <summary>
+        /// Gets or sets the CommunicationMonitorProperties
+        /// </summary>
 		public CommunicationMonitorConfig CommunicationMonitorProperties { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the ConsoleCommMockDevicePropertiesConfig class.
+        /// </summary>
 		public ConsoleCommMockDevicePropertiesConfig()
 		{
 			LineEnding = "\x0a";
@@ -97,6 +108,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class ConsoleCommMockDeviceFactory : EssentialsDeviceFactory<ConsoleCommMockDevice>
     {
+        /// <summary>
+        /// Initializes a new instance of the ConsoleCommMockDeviceFactory class.
+        /// </summary>
         public ConsoleCommMockDeviceFactory()
         {
             TypeNames = new List<string>() { "commmock" };

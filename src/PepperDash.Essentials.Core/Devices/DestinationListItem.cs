@@ -52,9 +52,6 @@ namespace PepperDash.Essentials.Core
         /// If set, this name will be used as the PreferredName instead of the device name.
         /// </summary>
         [JsonProperty("name")]
-        /// <summary>
-        /// Gets or sets the Name
-        /// </summary>
         public string Name { get; set; }
 
         /// <summary>

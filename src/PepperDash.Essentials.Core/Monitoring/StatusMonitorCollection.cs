@@ -14,41 +14,51 @@ using PepperDash.Core;
 namespace PepperDash.Essentials.Core
 {
 	/// <summary>
-	///
+	/// Collection class for multiple status monitors
 	/// </summary>
 	public class StatusMonitorCollection : IStatusMonitor
 	{
+		/// <summary>
+		/// Gets or sets the Parent
+		/// </summary>
 		public IKeyed Parent { get; private set; }
 
 		List<IStatusMonitor> Monitors = new List<IStatusMonitor>();
 
 		#region IStatusMonitor Members
 
+		/// <summary>
+		/// Event fired when status changes
+		/// </summary>
 		public event EventHandler<MonitorStatusChangeEventArgs> StatusChange;
 
-  /// <summary>
-  /// Gets or sets the Status
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the Status
+		/// </summary>
 		public MonitorStatus Status { get; protected set; }
 
-  /// <summary>
-  /// Gets or sets the Message
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the Message
+		/// </summary>
 		public string Message { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the IsOnlineFeedback
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the IsOnlineFeedback
+		/// </summary>
 		public BoolFeedback IsOnlineFeedback { get; set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="parent">parent device</param>
 		public StatusMonitorCollection(IKeyed parent)
 		{
 			Parent = parent;
 		}
 
-  /// <summary>
-  /// Start method
-  /// </summary>
+		/// <summary>
+		/// Start method
+		/// </summary>
 		public void Start()
 		{
 			foreach (var mon in Monitors)
@@ -145,7 +155,11 @@ namespace PepperDash.Essentials.Core
 				Monitors.Add(monitor);
 		}
 
-
+		/// <summary>
+		/// Fires the StatusChange event
+		/// </summary>
+		/// <param name="status">monitor status</param>
+		/// <param name="message">status message</param>
 		protected void OnStatusChange(MonitorStatus status, string message)
 		{
 			var handler = StatusChange;

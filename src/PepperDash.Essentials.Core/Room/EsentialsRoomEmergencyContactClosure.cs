@@ -9,6 +9,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class EssentialsRoomEmergencyContactClosure : EssentialsRoomEmergencyBase, IEssentialsRoomEmergency
     {
+        /// <summary>
+        /// Event fired when emergency state changes
+        /// </summary>
         public event EventHandler<EventArgs> EmergencyStateChange;
 
         IEssentialsRoom Room;
@@ -20,6 +23,12 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public bool InEmergency { get; private set; }
 
+        /// <summary>
+        /// Constructor for EssentialsRoomEmergencyContactClosure
+        /// </summary>
+        /// <param name="key">device key</param>
+        /// <param name="config">emergency device config</param>
+        /// <param name="room">the room associated with this emergency contact closure</param>
         public EssentialsRoomEmergencyContactClosure(string key, EssentialsRoomEmergencyConfig config, IEssentialsRoom room) :
             base(key)
         {
@@ -95,8 +104,14 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IEssentialsRoomEmergency
     {
+        /// <summary>
+        /// Event fired when emergency state changes
+        /// </summary>
         event EventHandler<EventArgs> EmergencyStateChange;
 
+        /// <summary>
+        /// Gets or sets the InEmergency
+        /// </summary>
         bool InEmergency { get; }
     }
 }

@@ -12,8 +12,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
     /// </summary>
     public class GetRoutingPortsHandler : WebApiBaseRequestHandler
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public GetRoutingPortsHandler() : base(true) { }
 
+        /// <summary>
+        /// Handles the GET request
+        /// </summary>
+        /// <param name="context"></param>
         protected override void HandleGet(HttpCwsContext context)
         {
             var routeData = context.Request.RouteData;
@@ -63,17 +70,18 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         }
     }
 
-    internal class ReturnValue {
-        [JsonProperty("inputPorts", NullValueHandling = NullValueHandling.Ignore)]
+    internal class ReturnValue 
+    {
         /// <summary>
         /// Gets or sets the InputPorts
         /// </summary>
+        [JsonProperty("inputPorts", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> InputPorts { get; set; }
 
-        [JsonProperty("outputPorts", NullValueHandling = NullValueHandling.Ignore)]
         /// <summary>
         /// Gets or sets the OutputPorts
         /// </summary>
+        [JsonProperty("outputPorts", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> OutputPorts { get; set; }
     }
 }

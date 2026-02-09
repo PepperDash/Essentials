@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class RouteDescriptorCollection
     {
+        /// <summary>
+        /// DefaultCollection static property
+        /// </summary>
         public static RouteDescriptorCollection DefaultCollection
         {
             get
@@ -57,6 +60,12 @@ namespace PepperDash.Essentials.Core
             return RouteDescriptors.FirstOrDefault(rd => rd.Destination == destination);
         }
 
+        /// <summary>
+        /// Gets the RouteDescriptor for a destination and input port key. Returns null if no matching RouteDescriptor exists.
+        /// </summary>
+        /// <param name="destination"></param>
+        /// <param name="inputPortKey"></param>
+        /// <returns></returns>
         public RouteDescriptor GetRouteDescriptorForDestinationAndInputPort(IRoutingInputs destination, string inputPortKey)
         {
             Debug.LogMessage(LogEventLevel.Information, "Getting route descriptor for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);

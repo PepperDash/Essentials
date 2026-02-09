@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Base class for audio control list items
+    /// </summary>
     public abstract class AudioControlListItemBase
     {
         /// <summary>
         /// Key of the parent device in the DeviceManager
         /// </summary>
         [JsonProperty("parentDeviceKey")]
-        /// <summary>
-        /// Gets or sets the ParentDeviceKey
-        /// </summary>
         public string ParentDeviceKey { get; set; }
 
         /// <summary>

@@ -30,35 +30,60 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public class SubpageReferenceList
 	{
-
+		/// <summary>
+		/// Gets or sets the Count
+		/// </summary>
 		public ushort Count
 		{
 			get { return SetNumberOfItemsSig.UShortValue; }
 			set { SetNumberOfItemsSig.UShortValue = value; }
 		}
+
+		/// <summary>
+		/// Gets or sets the MaxDefinedItems
+		/// </summary>
 		public ushort MaxDefinedItems { get; private set; }
 
 		/// <summary>
 		/// Gets or sets the ScrollToItemSig
 		/// </summary>
 		public UShortInputSig ScrollToItemSig { get; private set; }
+
 		UShortInputSig SetNumberOfItemsSig;
+
 		/// <summary>
 		/// Gets or sets the BoolIncrement
 		/// </summary>
 		public uint BoolIncrement { get; protected set; }
+
 		/// <summary>
 		/// Gets or sets the UShortIncrement
 		/// </summary>
 		public uint UShortIncrement { get; protected set; }
+
 		/// <summary>
 		/// Gets or sets the StringIncrement
 		/// </summary>
 		public uint StringIncrement { get; protected set; }
 
+		/// <summary>
+		/// Gets or sets the SRL
+		/// </summary>
 		protected readonly SmartObject SRL;
+
+		/// <summary>
+		/// Gets the list of items in the SRL
+		/// </summary>
 		protected readonly List<SubpageReferenceListItem> Items = new List<SubpageReferenceListItem>();
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="triList">trilist for the smart object</param>
+		/// <param name="smartObjectId">smart object ID</param>
+		/// <param name="boolIncrement"></param>
+		/// <param name="ushortIncrement"></param>
+		/// <param name="stringIncrement"></param>
 		public SubpageReferenceList(BasicTriListWithSmartObject triList, uint smartObjectId,
 			uint boolIncrement, uint ushortIncrement, uint stringIncrement)
 		{

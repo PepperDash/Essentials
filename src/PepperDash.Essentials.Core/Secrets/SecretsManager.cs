@@ -7,8 +7,14 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// SecretsManager static class
+    /// </summary>
     public static class SecretsManager
     {
+        /// <summary>
+        /// Gets the Secrets dictionary
+        /// </summary>
         public static Dictionary<string, ISecretProvider> Secrets { get; private set; }
 
         /// <summary>

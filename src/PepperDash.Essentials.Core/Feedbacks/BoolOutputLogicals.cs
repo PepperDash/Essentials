@@ -8,7 +8,9 @@ using Crestron.SimplSharpPro;
 namespace PepperDash.Essentials.Core
 {
 
-
+	/// <summary>
+	/// Abstract base class for BoolOutputLogicals
+	/// </summary>
 	public abstract class BoolFeedbackLogic
 	{
   /// <summary>
@@ -21,13 +23,23 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		protected List<BoolFeedback> OutputsIn = new List<BoolFeedback>();
 
+		/// <summary>
+		/// Gets or sets the ComputedValue
+		/// </summary>
 		protected bool ComputedValue;
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
 	    protected BoolFeedbackLogic()
 		{
 			Output = new BoolFeedback(() => ComputedValue);
 		}	
 
+		/// <summary>
+		/// AddOutputIn method
+		/// </summary>
+		/// <param name="output">feedback to add</param>
 		public void AddOutputIn(BoolFeedback output)
 		{
 			// Don't double up outputs
@@ -38,9 +50,10 @@ namespace PepperDash.Essentials.Core
 			Evaluate();
 		}
 
-  /// <summary>
-  /// AddOutputsIn method
-  /// </summary>
+		/// <summary>
+		/// AddOutputsIn method
+		/// </summary>
+		/// <param name="outputs">feedbacks to add</param>
 		public void AddOutputsIn(List<BoolFeedback> outputs)
 		{
 		    foreach (var o in outputs.Where(o => !OutputsIn.Contains(o)))
@@ -51,9 +64,10 @@ namespace PepperDash.Essentials.Core
 		    Evaluate();
 		}
 
-     /// <summary>
-     /// RemoveOutputIn method
-     /// </summary>
+		/// <summary>
+		/// RemoveOutputIn method
+		/// </summary>
+		/// <param name="output">feedback to remove</param>
 	    public void RemoveOutputIn(BoolFeedback output)
 		{
 			// Don't double up outputs
@@ -64,9 +78,10 @@ namespace PepperDash.Essentials.Core
 			Evaluate();
 		}
 
-  /// <summary>
-  /// RemoveOutputsIn method
-  /// </summary>
+		/// <summary>
+		/// RemoveOutputsIn method
+		/// </summary>
+		/// <param name="outputs">feedbacks to remove</param>
 		public void RemoveOutputsIn(List<BoolFeedback> outputs)
 		{
 			foreach (var o in outputs)
@@ -77,20 +92,28 @@ namespace PepperDash.Essentials.Core
 			Evaluate();
 		}
 
-     /// <summary>
-     /// ClearOutputs method
-     /// </summary>
+		/// <summary>
+		/// ClearOutputs method
+		/// </summary>
 	    public void ClearOutputs()
 	    {
 	        OutputsIn.Clear();
             Evaluate();
 	    }
 
+		/// <summary>
+		/// AnyInput_OutputChange event handler
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		void AnyInput_OutputChange(object sender, EventArgs e)
 		{
 			Evaluate();
 		}
 
+		/// <summary>
+		/// Evaluate method
+		/// </summary>
 		protected abstract void Evaluate();
 	}
 
@@ -99,6 +122,9 @@ namespace PepperDash.Essentials.Core
  /// </summary>
 	public class BoolFeedbackAnd : BoolFeedbackLogic
 	{
+		/// <summary>
+		/// Evaluate method
+		/// </summary>
 		protected override void Evaluate()
 		{
 			var prevValue = ComputedValue;
@@ -112,11 +138,14 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
- /// <summary>
- /// Represents a BoolFeedbackOr
- /// </summary>
+	/// <summary>
+	/// Represents a BoolFeedbackOr
+	/// </summary>
 	public class BoolFeedbackOr : BoolFeedbackLogic
 	{
+		/// <summary>
+		/// Evaluate method
+		/// </summary>
 		protected override void Evaluate()
 		{
 			var prevValue = ComputedValue;
@@ -130,19 +159,26 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
- /// <summary>
- /// Represents a BoolFeedbackLinq
- /// </summary>
+	/// <summary>
+	/// Represents a BoolFeedbackLinq
+	/// </summary>
 	public class BoolFeedbackLinq : BoolFeedbackLogic
 	{
 	    readonly Func<IEnumerable<BoolFeedback>, bool> _predicate;
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="predicate"></param>
 		public BoolFeedbackLinq(Func<IEnumerable<BoolFeedback>, bool> predicate)
 			: base()
 		{
 			_predicate = predicate;
 		}
 
+		/// <summary>
+		/// Evaluate method
+		/// </summary>
 		protected override void Evaluate()
 		{
 			var prevValue = ComputedValue;
