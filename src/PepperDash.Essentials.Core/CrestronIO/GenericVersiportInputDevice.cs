@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
     public class GenericVersiportDigitalInputDevice : EssentialsBridgeableDevice, IDigitalInput, IPartitionStateProvider, IHasFeedback
     {
         private Versiport inputPort;
-        private bool invertState;
+        private readonly bool invertState;
 
         /// <summary>
         /// Gets or sets the InputStateFeedback
@@ -48,9 +48,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
         public GenericVersiportDigitalInputDevice(string key, string name, Func<IOPortConfig, Versiport> postActivationFunc, IOPortConfig config) :
             base(key, name)
         {
-            invertState = !string.IsNullOrEmpty(config.CircuitType) && 
-                         config.CircuitType.Equals("NC", StringComparison.OrdinalIgnoreCase);
-            
+            var circuitType = string.IsNullOrEmpty(config.CircuitType) ? "NO" : config.CircuitType;
+            invertState = circuitType.Equals("NC", StringComparison.OrdinalIgnoreCase);
+
             InputStateFeedback = new BoolFeedback("inputState", () => invertState ? !inputPort.DigitalIn : inputPort.DigitalIn);
             PartitionPresentFeedback = new BoolFeedback("partitionPresent", () => !inputPort.DigitalIn);
 

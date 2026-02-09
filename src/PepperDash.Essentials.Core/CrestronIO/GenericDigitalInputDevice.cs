@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
     public class GenericDigitalInputDevice : EssentialsBridgeableDevice, IDigitalInput, IHasFeedback
     {
         private DigitalInput inputPort;
-        private bool invertState;
+        private readonly bool invertState;
 
         /// <summary>
         /// Gets or sets the InputStateFeedback
@@ -42,9 +42,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
             IOPortConfig config)
             : base(key, name)
         {
-            invertState = !string.IsNullOrEmpty(config.CircuitType) && 
-                         config.CircuitType.Equals("NC", StringComparison.OrdinalIgnoreCase);
-            
+            invertState = string.Equals(config.CircuitType, "NC", StringComparison.OrdinalIgnoreCase);
+
             InputStateFeedback = new BoolFeedback("inputState", () => invertState ? !inputPort.State : inputPort.State);
 
             AddPostActivationAction(() =>
