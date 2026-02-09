@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface ILoadConfig
     {
+        /// <summary>
+        /// GoWithLoad method
+        /// </summary>
         void GoWithLoad();
     }
 }

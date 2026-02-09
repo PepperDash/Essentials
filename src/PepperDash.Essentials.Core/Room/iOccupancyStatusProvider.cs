@@ -13,6 +13,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IOccupancyStatusProvider
     {
+        /// <summary>
+        /// Gets the RoomIsOccupiedFeedback
+        /// </summary>
         BoolFeedback RoomIsOccupiedFeedback { get; }
     }
 }

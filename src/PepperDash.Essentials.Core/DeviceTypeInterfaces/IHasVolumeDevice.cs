@@ -5,6 +5,9 @@ namespace PepperDash.Essentials.Core
   /// </summary>
   public interface IHasVolumeDevice
   {
+    /// <summary>
+    /// VolumeDevice property
+    /// </summary>
     IBasicVolumeControls VolumeDevice { get; }
   }
 }

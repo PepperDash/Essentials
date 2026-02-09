@@ -21,11 +21,22 @@ namespace PepperDash.Essentials.Core.CrestronIO
     [Description("Wrapper class for a Relay")]
     public class GenericRelayDevice : EssentialsBridgeableDevice, ISwitchedOutput
     {
+        /// <summary>
+        /// The RelayOutput controlled by this device
+        /// </summary>
         public Relay RelayOutput { get; private set; }
 
+        /// <summary>
+        /// Feedback to indicate whether the output is on
+        /// </summary>
         public BoolFeedback OutputIsOnFeedback { get; private set; }
 
         //Maintained for compatibility with PepperDash.Essentials.Core.Devices.CrestronProcessor
+        /// <summary>
+        /// Constructor for GenericRelayDevice
+        /// </summary>
+        /// <param name="key">key of the device</param>
+        /// <param name="relay">Relay output controlled by this device</param>
         public GenericRelayDevice(string key, Relay relay) :
             base(key)
         {
@@ -37,6 +48,13 @@ namespace PepperDash.Essentials.Core.CrestronIO
             RelayOutput.StateChange += RelayOutput_StateChange;
         }
 
+        /// <summary>
+        /// Constructor for GenericRelayDevice
+        /// </summary>
+        /// <param name="key">key of the device</param>
+        /// <param name="name">name of the device</param>
+        /// <param name="postActivationFunc">function to get the relay output</param>
+        /// <param name="config">IO port configuration</param>
         public GenericRelayDevice(string key, string name, Func<IOPortConfig, Relay> postActivationFunc,
             IOPortConfig config)
             : base(key, name)
@@ -212,6 +230,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// </summary>
         public class GenericRelayDeviceFactory : EssentialsDeviceFactory<GenericRelayDevice>
         {
+            /// <summary>
+            /// Constructor for GenericRelayDeviceFactory
+            /// </summary>
             public GenericRelayDeviceFactory()
             {
                 TypeNames = new List<string>() { "relayoutput" };

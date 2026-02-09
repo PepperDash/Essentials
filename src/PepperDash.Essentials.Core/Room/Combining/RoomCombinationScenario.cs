@@ -53,6 +53,9 @@ namespace PepperDash.Essentials.Core
 
         private bool _isActive;
 
+        /// <summary>
+        /// Gets or sets IsActive
+        /// </summary>
         [JsonProperty("isActive")]
         public bool IsActive
         {
@@ -69,16 +72,20 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-        [JsonIgnore]
         /// <summary>
         /// Gets or sets the IsActiveFeedback
         /// </summary>
+        [JsonIgnore]
         public BoolFeedback IsActiveFeedback { get; private set; }
 
         private List<DeviceActionWrapper> activationActions;
 
         private List<DeviceActionWrapper> deactivationActions;
 
+        /// <summary>
+        /// Constructor for RoomCombinationScenario
+        /// </summary>
+        /// <param name="config">config of the room combine scenario</param>
         public RoomCombinationScenario(RoomCombinationScenarioConfig config)
         {
             Key = config.Key;
@@ -98,6 +105,10 @@ namespace PepperDash.Essentials.Core
             IsActiveFeedback = new BoolFeedback(() => _isActive);
         }
 
+        /// <summary>
+        /// Activates the scenario
+        /// </summary>
+        /// <returns></returns>
         public async Task Activate()
         {
             this.LogInformation("Activating Scenario {name} with {activationActionCount} action(s) defined", Name, activationActions.Count);
@@ -116,6 +127,10 @@ namespace PepperDash.Essentials.Core
             IsActive = true;
         }
 
+        /// <summary>
+        /// Deactivates the scenario
+        /// </summary>
+        /// <returns></returns>
         public async Task Deactivate()
         {
             this.LogInformation("Deactivating Scenario {name} with {deactivationActionCount} action(s) defined", Name, deactivationActions.Count);

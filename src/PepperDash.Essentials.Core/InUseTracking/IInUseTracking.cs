@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public interface IInUseTracking
 	{
+		/// <summary>
+		/// Gets the InUseTracker
+		/// </summary>
 		InUseTracking InUseTracker { get; }
 	}
 }

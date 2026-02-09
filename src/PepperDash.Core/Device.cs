@@ -15,23 +15,23 @@ namespace PepperDash.Core
 		/// Unique Key
 		/// </summary>
 		public string Key { get; protected set; }
-		/// <summary>
-		/// Gets or sets the Name
-		/// </summary>
+  /// <summary>
+  /// Gets or sets the Name
+  /// </summary>
 		public string Name { get; protected set; }
 		/// <summary>
-		/// Gets or sets a value indicating whether the device is enabled
+		/// 
 		/// </summary>
 		public bool Enabled { get; protected set; }
 
-		// /// <summary>
-		// /// A place to store reference to the original config object, if any. These values should 
-		// /// NOT be used as properties on the device as they are all publicly-settable values.
-		// /// </summary>
+		/// <summary>
+		/// A place to store reference to the original config object, if any. These values should 
+		/// NOT be used as properties on the device as they are all publicly-settable values.
+		/// </summary>
 		//public DeviceConfig Config { get; private set; }
-		// /// <summary>
-		// /// Helper method to check if Config exists
-		// /// </summary>
+		/// <summary>
+		/// Helper method to check if Config exists
+		/// </summary>
 		//public bool HasConfig { get { return Config != null; } }
 
 		List<Action> _PreActivationActions;

@@ -21,6 +21,14 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class ComSpecJsonConverter : JsonConverter
     {
+        /// <summary>
+        /// ReadJson method
+        /// </summary>
+        /// <param name="reader">reader to use</param>
+        /// <param name="objectType">type of the object being read</param>
+        /// <param name="existingValue">existing value of the object being read</param>
+        /// <param name="serializer">serializer to use</param>
+        /// <returns>deserialized object</returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (objectType == typeof(ComPort.ComPortSpec?))
@@ -42,6 +50,9 @@ namespace PepperDash.Essentials.Core
             return objectType == typeof(ComPort.ComPortSpec?);
         }
 
+        /// <summary>
+        /// Gets or sets the CanRead
+        /// </summary>
         public override bool CanRead { get { return true; } }
 
         /// <summary>

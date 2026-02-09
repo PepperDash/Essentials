@@ -15,10 +15,13 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Core
 {
 	/// <summary>
-	/// 
+	/// Helper class for IR port operations
 	/// </summary>
 	public static class IRPortHelper
 	{
+		/// <summary>
+		/// Gets the IrDriverPathPrefix
+		/// </summary>
 		public static string IrDriverPathPrefix
 		{
 			get
@@ -31,7 +34,7 @@ namespace PepperDash.Essentials.Core
 		/// Finds either the ControlSystem or a device controller that contains IR ports and
 		/// returns a port from the hardware device
 		/// </summary>
-		/// <param name="propsToken"></param>
+		/// <param name="propsToken">JSON token containing properties</param>
 		/// <returns>IrPortConfig object.  The port and or filename will be empty/null 
 		/// if valid values don't exist on config</returns>
 		public static IrOutPortConfig GetIrPort(JToken propsToken)
@@ -83,9 +86,11 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-     /// <summary>
-     /// GetIrOutputPort method
-     /// </summary>
+		/// <summary>
+		/// GetIrOutputPort method
+		/// </summary>
+		/// <param name="dc">DeviceConfig to get the IR port for</param>
+		/// <returns>IROutputPort or null if not found</returns>
 	    public static IROutputPort GetIrOutputPort(DeviceConfig dc)
 	    {
 	        var irControllerKey = dc.Key + "-ir";
@@ -145,9 +150,11 @@ namespace PepperDash.Essentials.Core
 	        return port;
 	    }
 
-     /// <summary>
-     /// GetIrOutputPortController method
-     /// </summary>
+		/// <summary>
+		/// GetIrOutputPortController method
+		/// </summary>
+		/// <param name="config">DeviceConfig to create the IrOutputPortController for</param>
+		/// <returns>IrOutputPortController object</returns>
 	    public static IrOutputPortController GetIrOutputPortController(DeviceConfig config)
 	    {
             Debug.LogMessage(LogEventLevel.Debug, "Attempting to create new Ir Port Controller");
@@ -228,23 +235,32 @@ namespace PepperDash.Essentials.Core
         }*/
 	}
 
- /// <summary>
- /// Represents a IrOutPortConfig
- /// </summary>
+	/// <summary>
+	/// Represents a IrOutPortConfig
+	/// </summary>
 	public class IrOutPortConfig
 	{
+		/// <summary>
+		/// Gets or sets the Port
+		/// </summary>
 		[JsonProperty("port")]
-  /// <summary>
-  /// Gets or sets the Port
-  /// </summary>
-		public IROutputPort Port { get; set; }
-		
+  		public IROutputPort Port { get; set; }
+
+		/// <summary>
+		/// Gets or sets the FileName
+		/// </summary>		
 		[JsonProperty("fileName")]
 		public string FileName { get; set; }
 
+		/// <summary>
+		/// Gets or sets a value indicating whether to use bridge join map
+		/// </summary>
 		[JsonProperty("useBridgeJoinMap")]
 		public bool UseBridgeJoinMap { get; set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
 		public IrOutPortConfig()
 		{
 			FileName = "";			

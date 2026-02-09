@@ -5,16 +5,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Core.Web.RequestHandlers
 {
-    /// <summary>
-    /// CWS Base Async Handler, implements IHttpCwsHandler
-    /// </summary>
     public abstract class WebApiBaseRequestAsyncHandler:IHttpCwsHandler
     {
         private readonly Dictionary<string, Func<HttpCwsContext, Task>> _handlers;
-       
-        /// <summary>
-        /// Indicates whether CORS is enabled
-        /// </summary>
         protected readonly bool EnableCors;
 
         /// <summary>

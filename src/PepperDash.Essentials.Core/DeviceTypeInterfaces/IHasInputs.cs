@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// </example>
     public interface IHasInputs<T> : IKeyName
     {
+        /// <summary>
+        /// Gets the collection of inputs
+        /// </summary>
         ISelectableItems<T> Inputs { get; }
     }
 }

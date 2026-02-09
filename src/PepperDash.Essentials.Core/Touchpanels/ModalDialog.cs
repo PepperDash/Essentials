@@ -113,8 +113,13 @@ namespace PepperDash.Essentials.Core
 		/// Shows the dialog
 		/// </summary>
 		/// <param name="numberOfButtons">Number of buttons to show. 0, 1, 2</param>
-		/// <param name="timeMs">The amount of time to show the dialog. Use 0 for no timeout.</param>
-		/// <param name="decreasingGauge">If the progress bar gauge needs to count down instead of up</param>
+		/// <param name="title">Title text</param>
+		/// <param name="iconName">Icon name</param>
+		/// <param name="message">Message text</param>
+		/// <param name="button1Text">Button 1 text</param>
+		/// <param name="button2Text">Button 2 text</param>
+		/// <param name="showGauge">True to show the gauge</param>
+		/// <param name="showCancel">True to show the cancel "X" button</param>
 		/// <param name="completeAction">The action to run when the dialog is dismissed. Parameter will be 1 or 2 if button pressed, or 0 if dialog times out</param>
 		/// <returns>True when modal is created.</returns>
 		public bool PresentModalDialog(uint numberOfButtons, string title, string iconName,

@@ -14,6 +14,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class PresetListItem : AudioControlListItemBase
     {
+        /// <summary>
+        /// Gets the preset associated with this list item
+        /// </summary>
         [JsonIgnore]
         public IKeyName Preset
         {

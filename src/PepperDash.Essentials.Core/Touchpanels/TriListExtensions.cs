@@ -44,6 +44,13 @@ namespace PepperDash.Essentials.Core
 			return tl.BooleanOutput[sigNum].SetBoolSigAction(a);
 		}
 
+		/// <summary>
+		/// Attaches a void Action to a TriList's output sig's UserObject, to be run on press
+		/// </summary>
+		/// <param name="tl">trilist</param>
+		/// <param name="sigNum">number of the signal</param>
+		/// <param name="a">action to run when the signal is true (pressed)</param>
+		/// <returns></returns>
 		public static BoolOutputSig SetSigTrueAction(this BasicTriList tl, uint sigNum, Action a)
 		{
 			return tl.BooleanOutput[sigNum].SetBoolSigAction(b => { if(b) a(); });
@@ -53,9 +60,6 @@ namespace PepperDash.Essentials.Core
 		/// Attaches a void Action to a TriList's output sig's UserObject, to be run on release
 		/// </summary>
 		/// <returns>The sig</returns>
-  /// <summary>
-  /// SetSigFalseAction method
-  /// </summary>
 		public static BoolOutputSig SetSigFalseAction(this BasicTriList tl, uint sigNum, Action a)
 		{
 			return tl.BooleanOutput[sigNum].SetBoolSigAction(b => { if (!b) a(); });
@@ -143,43 +147,35 @@ namespace PepperDash.Essentials.Core
 		}
 
 		/// <summary>
-		/// 
-		/// </summary>
+  		/// SetUShortSigAction method
+  		/// </summary>
 		/// <param name="sig"></param>
 		/// <param name="a"></param>
 		/// <returns>The Sig</returns>
-  /// <summary>
-  /// SetUShortSigAction method
-  /// </summary>
-		public static UShortOutputSig SetUShortSigAction(this UShortOutputSig sig, Action<ushort> a)
+ 		public static UShortOutputSig SetUShortSigAction(this UShortOutputSig sig, Action<ushort> a)
 		{
 			sig.UserObject = a;
 			return sig;
 		}
+
 		/// <summary>
-		/// 
+		/// SetUShortSigAction method
 		/// </summary>
 		/// <param name="tl"></param>
 		/// <param name="sigNum"></param>
 		/// <param name="a"></param>
 		/// <returns></returns>
-  /// <summary>
-  /// SetUShortSigAction method
-  /// </summary>
 		public static UShortOutputSig SetUShortSigAction(this BasicTriList tl, uint sigNum, Action<ushort> a)
 		{
 			return tl.UShortOutput[sigNum].SetUShortSigAction(a);
 		}
 
 		/// <summary>
-		/// 
+		/// SetStringSigAction method
 		/// </summary>
 		/// <param name="sig"></param>
 		/// <param name="a"></param>
 		/// <returns></returns>
-  /// <summary>
-  /// SetStringSigAction method
-  /// </summary>
 		public static StringOutputSig SetStringSigAction(this StringOutputSig sig, Action<string> a)
 		{
 			sig.UserObject = a;
@@ -187,50 +183,50 @@ namespace PepperDash.Essentials.Core
 		}
 
 		/// <summary>
-		/// 
+		/// SetStringSigAction method
 		/// </summary>
 		/// <param name="tl"></param>
 		/// <param name="sigNum"></param>
 		/// <param name="a"></param>
 		/// <returns></returns>
-  /// <summary>
-  /// SetStringSigAction method
-  /// </summary>
 		public static StringOutputSig SetStringSigAction(this BasicTriList tl, uint sigNum, Action<string> a)
 		{
 			return tl.StringOutput[sigNum].SetStringSigAction(a);
 		}
 
 		/// <summary>
-		/// 
+		/// ClearSigAction method
 		/// </summary>
 		/// <param name="sig"></param>
 		/// <returns></returns>
-  /// <summary>
-  /// ClearSigAction method
-  /// </summary>
 		public static Sig ClearSigAction(this Sig sig)
 		{
 			sig.UserObject = null;
 			return sig;
 		}
 
+		/// <summary>
+		/// ClearBoolSigAction method
+		/// </summary>
+		/// <param name="tl">trilist</param>
+		/// <param name="sigNum">signal number to clear</param>
+		/// <returns></returns>
 		public static BoolOutputSig ClearBoolSigAction(this BasicTriList tl, uint sigNum)
 		{
 			return ClearSigAction(tl.BooleanOutput[sigNum]) as BoolOutputSig;
 		}
 
-  /// <summary>
-  /// ClearUShortSigAction method
-  /// </summary>
+		/// <summary>
+		/// ClearUShortSigAction method
+		/// </summary>
 		public static UShortOutputSig ClearUShortSigAction(this BasicTriList tl, uint sigNum)
 		{
 			return ClearSigAction(tl.UShortOutput[sigNum]) as UShortOutputSig;
 		}
 
-  /// <summary>
-  /// ClearStringSigAction method
-  /// </summary>
+		/// <summary>
+		/// ClearStringSigAction method
+		/// </summary>
 		public static StringOutputSig ClearStringSigAction(this BasicTriList tl, uint sigNum)
 		{
 			return ClearSigAction(tl.StringOutput[sigNum]) as StringOutputSig;
@@ -270,9 +266,6 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="tl"></param>
 		/// <param name="sigNum"></param>
-  /// <summary>
-  /// PulseBool method
-  /// </summary>
 		public static void PulseBool(this BasicTriList tl, uint sigNum)
 		{
 			tl.BooleanInput[sigNum].Pulse();
@@ -284,9 +277,6 @@ namespace PepperDash.Essentials.Core
 		/// <param name="tl"></param>
 		/// <param name="sigNum"></param>
 		/// <param name="ms"></param>
-  /// <summary>
-  /// PulseBool method
-  /// </summary>
 		public static void PulseBool(this BasicTriList tl, uint sigNum, int ms)
 		{
 			tl.BooleanInput[sigNum].Pulse(ms);
@@ -308,6 +298,13 @@ namespace PepperDash.Essentials.Core
             tl.StringInput[sigNum].StringValue = value;
         }
 
+		/// <summary>
+		/// Helper method to set the value of a string Sig on TriList with encoding
+		/// </summary>
+		/// <param name="tl">trilist</param>
+		/// <param name="sigNum">signal number to set</param>
+		/// <param name="value">string value to set</param>
+		/// <param name="encoding">string encoding to use</param>
 	    public static void SetString(this BasicTriList tl, uint sigNum, string value, eStringEncoding encoding)
 	    {
 	        tl.StringInput[sigNum].StringEncoding = encoding;
@@ -320,9 +317,6 @@ namespace PepperDash.Essentials.Core
 		/// <param name="tl"></param>
 		/// <param name="sigNum"></param>
 		/// <returns></returns>
-  /// <summary>
-  /// GetBool method
-  /// </summary>
 		public static bool GetBool(this BasicTriList tl, uint sigNum)
 		{
 			return tl.BooleanOutput[sigNum].BoolValue;
@@ -334,9 +328,6 @@ namespace PepperDash.Essentials.Core
 		/// <param name="tl"></param>
 		/// <param name="sigNum"></param>
 		/// <returns></returns>
-  /// <summary>
-  /// GetUshort method
-  /// </summary>
 		public static ushort GetUshort(this BasicTriList tl, uint sigNum)
 		{
 			return tl.UShortOutput[sigNum].UShortValue;
@@ -348,9 +339,6 @@ namespace PepperDash.Essentials.Core
 		/// <param name="tl"></param>
 		/// <param name="sigNum"></param>
 		/// <returns></returns>
-  /// <summary>
-  /// GetString method
-  /// </summary>
 		public static string GetString(this BasicTriList tl, uint sigNum)
 		{
 			return tl.StringOutput[sigNum].StringValue;

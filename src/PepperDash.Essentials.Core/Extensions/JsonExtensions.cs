@@ -10,11 +10,17 @@ using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// JsonExtensions class
+    /// </summary>
     public static class JsonExtensions
     {
         /// <summary>
         /// FindTokens method
         /// </summary>
+        /// <param name="containerToken">token for the container</param>
+        /// <param name="name">name of the token to find</param>
+        /// <returns>list of matching tokens</returns>
         public static List<JToken> FindTokens(this JToken containerToken, string name)
         {
             List<JToken> matches = new List<JToken>();
