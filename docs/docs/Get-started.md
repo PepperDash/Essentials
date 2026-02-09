@@ -23,4 +23,4 @@ This section assumes knowledge of loading programs to and working with the file 
 1. Run the command `devjson:1 {"deviceKey":"display-1","methodName":"PowerOn", "params": []}`. This will call the method PowerOn() on the device with key "display-1".
 1. Run the provided example XPanel SmartGraphics project and connect to your processor at the appropriate IPID.
 
-Next: [Standalone use](~/docs/Standalone-Use.md)
+Next: [Standalone use](~/docs/usage/Standalone-Use.md)

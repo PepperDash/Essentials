@@ -1,48 +1,52 @@
 - name: Get Started With Essentials
 - href: ../index.md
-- href: Get-started.md    
+- href: Get-started.md 
+- name: How-to's
+  items:
+  - name: How to add an article or doc page
+    href: how-to/How-to-add-docs.md
 - name: Usage
   items:
-  - href: Standalone-Use.md    
-  - href: SIMPL-Bridging-Updated.md
+  - href: usage/Standalone-Use.md    
+  - href: usage/SIMPL-Bridging-Updated.md
     items:
     - name: Join Maps
-      href: JoinMaps.md
+      href: usage/JoinMaps.md
     - name: Bridging to Hardware Resources
-      href: Bridging-To-Hardware-Resources.md
+      href: usage/Bridging-To-Hardware-Resources.md
       items:
       - name: GenericComm Bridging
-        href: GenericComm.md
+        href: usage/GenericComm.md
       - name: RelayOutput Bridging
-        href: RelayOutput.md
+        href: usage/RelayOutput.md
       - name: Digital Input Bridging
-        href: DigitalInput.md
+        href: usage/DigitalInput.md
       - name: IR Driver Bridging
-        href: IR-Driver-Bridging.md
+        href: usage/IR-Driver-Bridging.md
 - name: Technical documentation
   items:    
-    - href: Arch-summary.md
+    - href: technical-docs/Arch-summary.md
     - name: Devices and DeviceManager
-      href: Arch-1.md
+      href: technical-docs/Arch-1.md
     - name: Configurable lifecycle
-      href: Arch-lifecycle.md
+      href: technical-docs/Arch-lifecycle.md
     - name: Activation phases
-      href: Arch-activate.md
+      href: technical-docs/Arch-activate.md
     - name: More
-      href: Arch-topics.md
+      href: technical-docs/Arch-topics.md
     - name: Plugins
-      href: Plugins.md
+      href: technical-docs/Plugins.md
     - name: Communication Basics
-      href: Communication-Basics.md
+      href: technical-docs/Communication-Basics.md
     - name: Debugging
-      href: Debugging.md
+      href: technical-docs/Debugging.md
     - name: Feedback Classes
-      href: Feedback-Classes.md
+      href: technical-docs/Feedback-Classes.md
     - name: Connection Based Routing
-      href: Connection-Based-Routing.md
+      href: technical-docs/Connection-Based-Routing.md
     - name: Configuration Structure
-      href: ConfigurationStructure.md
+      href: technical-docs/ConfigurationStructure.md
     - name: Supported Devices
-      href: Supported-Devices.md
+      href: technical-docs/Supported-Devices.md
     - name: Glossary of Terms
-      href: Glossary-of-Terms.md
+      href: technical-docs/Glossary-of-Terms.md

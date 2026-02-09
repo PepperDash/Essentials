@@ -6,10 +6,10 @@ One of the most powerful features of Essentials is the ability to bridge SIMPL t
 
 Follow the links below for examples of bridging to hardware and network resources.
 
-**[GenericComm Bridging](~/docs/GenericComm.md)**
+**[GenericComm Bridging](~/docs/usage/GenericComm.md)**
 
-**[RelayOutput Bridging](~/docs/RelayOutput.md)**
+**[RelayOutput Bridging](~/docs/usage/RelayOutput.md)**
 
-**[Digital Input Bridging](~/docs/DigitalInput.md)**
+**[Digital Input Bridging](~/docs/usage/DigitalInput.md)**
 
 **[Card Frame Bridging](~/docs/CardFrame.md)**
