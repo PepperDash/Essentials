@@ -8,7 +8,7 @@ By defining devices and a room in a JSON configuration file, Essentials can cont
 
 ### Devices
 
-Essentials supports device plugins for communicating with various devices using both standard Crestron CIP communications, Cresnet, SSH, or other TCP/IP-based communication methods. See [the Plugins section](~/docs/Plugins.md) for more details
+Essentials supports device plugins for communicating with various devices using both standard Crestron CIP communications, Cresnet, SSH, or other TCP/IP-based communication methods. See [the Plugins section](~/docs/technical-docs/Plugins.md) for more details
 
 ### Rooms
 
@@ -16,4 +16,4 @@ In order to tie together equipment into a unit that comprises what devices are u
 
 See Also: [[Supported Devices|Supported-Devices]]
 
-Next: [Simpl Windows bridging](~/docs/SIMPL-Bridging-Updated.md)
+Next: [Simpl Windows bridging](~/docs/usage/SIMPL-Bridging-Updated.md)

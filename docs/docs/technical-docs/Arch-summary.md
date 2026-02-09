@@ -16,4 +16,4 @@ The diagram below shows the reference dependencies that exist between the differ
 
 ![Architecture drawing](~/docs/images/arch-high-level.png)
 
-Next: [Architecture](~/docs/Arch-1.md)
+Next: [Architecture](~/docs/technical-docs/Arch-1.md)
