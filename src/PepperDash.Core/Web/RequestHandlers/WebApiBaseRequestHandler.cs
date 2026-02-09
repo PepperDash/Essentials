@@ -10,10 +10,6 @@ namespace PepperDash.Core.Web.RequestHandlers
 	public abstract class WebApiBaseRequestHandler : IHttpCwsHandler
 	{
 		private readonly Dictionary<string, Action<HttpCwsContext>> _handlers;
-		
-		/// <summary>
-		/// Indicates whether CORS is enabled
-		/// </summary>
 		protected readonly bool EnableCors;
 
 		/// <summary>

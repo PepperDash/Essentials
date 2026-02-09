@@ -4,9 +4,6 @@ using Log = PepperDash.Core.Debug;
 
 namespace PepperDash.Core.Logging
 {
-    /// <summary>
-    /// Provides extension methods for logging on IKeyed objects
-    /// </summary>
     public static class DebugExtensions
     {
         /// <summary>

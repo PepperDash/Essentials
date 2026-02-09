@@ -7,26 +7,44 @@ namespace PepperDash.Essentials.Core.Bridges
     /// </summary>
     public class IBasicCommunicationJoinMap : JoinMapBaseAdvanced
     {
+        /// <summary>
+        /// Text Received From Remote Device
+        /// </summary>
         [JoinName("TextReceived")]
         public JoinDataComplete TextReceived = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Text Received From Remote Device", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
+        /// <summary>
+        /// Text Sent To Remote Device
+        /// </summary>
         [JoinName("SendText")]
         public JoinDataComplete SendText = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Text Sent To Remote Device", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
+        /// <summary>
+        /// Set Port Config
+        /// </summary>
         [JoinName("SetPortConfig")]
         public JoinDataComplete SetPortConfig = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
             new JoinMetadata { Description = "Set Port Config", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
+        /// <summary>
+        /// Connect
+        /// </summary>
         [JoinName("Connect")]
         public JoinDataComplete Connect = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Connect", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
+        /// <summary>
+        /// Disconnect
+        /// </summary>
         [JoinName("Connected")]
         public JoinDataComplete Connected = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Connected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
+        /// <summary>
+        /// Status
+        /// </summary>
         [JoinName("Status")]
         public JoinDataComplete Status = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });

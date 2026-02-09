@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core.Bridges
 
 		#region Digital
 
+		/// <summary>
+		/// Enable Automatic Routing on Xx1 Switchers
+		/// </summary>
 		[JoinName("EnableAutoRoute")]
 		public JoinDataComplete EnableAutoRoute = new JoinDataComplete(
 			new JoinData
@@ -25,7 +28,9 @@ namespace PepperDash.Essentials.Core.Bridges
 				JoinType = eJoinType.Digital
 			});
 
-
+		/// <summary>
+		/// Device Input Sync
+		/// </summary>
 		[JoinName("InputSync")]
 		public JoinDataComplete InputSync = new JoinDataComplete(
 			new JoinData
@@ -40,7 +45,9 @@ namespace PepperDash.Essentials.Core.Bridges
 				JoinType = eJoinType.Digital
 			});
 
-
+		/// <summary>
+		/// Device Enable Input Hdcp
+		/// </summary>
 		[JoinName("EnableInputHdcp")]
 		public JoinDataComplete EnableInputHdcp = new JoinDataComplete(
 			new JoinData
@@ -55,7 +62,9 @@ namespace PepperDash.Essentials.Core.Bridges
 				JoinType = eJoinType.Digital
 			});
 
-
+		/// <summary>
+		/// Device Disnable Input Hdcp
+		/// </summary>
 		[JoinName("DisableInputHdcp")]
 		public JoinDataComplete DisableInputHdcp = new JoinDataComplete(
 			new JoinData
@@ -70,7 +79,9 @@ namespace PepperDash.Essentials.Core.Bridges
 				JoinType = eJoinType.Digital
 			});
 
-
+		/// <summary>
+		/// Device Onlne
+		/// </summary>
 		[JoinName("IsOnline")]
 		public JoinDataComplete IsOnline = new JoinDataComplete(
 			new JoinData
@@ -90,6 +101,9 @@ namespace PepperDash.Essentials.Core.Bridges
 
 		#region Analog
 
+		/// <summary>
+		/// Device Input Route Set/Get
+		/// </summary>
 		[JoinName("OutputRoute")]
 		public JoinDataComplete OutputRoute = new JoinDataComplete(
 			new JoinData
@@ -109,6 +123,9 @@ namespace PepperDash.Essentials.Core.Bridges
 
 		#region Serial
 
+		/// <summary>
+		/// Device Name
+		/// </summary>
 		[JoinName("Name")]
 		public JoinDataComplete Name = new JoinDataComplete(
 			new JoinData
@@ -123,7 +140,9 @@ namespace PepperDash.Essentials.Core.Bridges
 				JoinType = eJoinType.Serial
 			});
 
-
+		/// <summary>
+		/// Device Input Name
+		/// </summary>
 		[JoinName("InputName")]
 		public JoinDataComplete InputName = new JoinDataComplete(
 			new JoinData
@@ -138,7 +157,9 @@ namespace PepperDash.Essentials.Core.Bridges
 				JoinType = eJoinType.Serial
 			});
 
-
+		/// <summary>
+		/// Device Output Name
+		/// </summary>
 		[JoinName("OutputName")]
 		public JoinDataComplete OutputName = new JoinDataComplete(
 			new JoinData
@@ -153,7 +174,9 @@ namespace PepperDash.Essentials.Core.Bridges
 				JoinType = eJoinType.Serial
 			});
 
-
+		/// <summary>
+		/// Device Output Route Name
+		/// </summary>
 		[JoinName("OutputRoutedName")]
 		public JoinDataComplete OutputRoutedName = new JoinDataComplete(
 			new JoinData

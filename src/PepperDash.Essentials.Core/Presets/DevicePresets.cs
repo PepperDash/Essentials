@@ -19,8 +19,17 @@ namespace PepperDash.Essentials.Core.Presets
     /// </summary>
     public class DevicePresetsModel : Device
     {
+        /// <summary>
+        /// Delegate for preset recalled event
+        /// </summary>
+        /// <param name="device">device that recalled a preset</param>
+        /// <param name="channel">channel that was recalled</param>
         public delegate void PresetRecalledCallback(ISetTopBoxNumericKeypad device, string channel);
 
+        /// <summary>
+        /// Delegate for presets saved event
+        /// </summary>
+        /// <param name="presets">list of presets that were saved</param>
         public delegate void PresetsSavedCallback(List<PresetChannel> presets);
 
         private readonly CCriticalSection _fileOps = new CCriticalSection();
@@ -37,6 +46,12 @@ namespace PepperDash.Essentials.Core.Presets
         private Action<bool> _enterFunction;
         private string _filePath;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key for the device</param>
+        /// <param name="setTopBox">set top box device</param>
+        /// <param name="fileName">file name for presets</param>
         public DevicePresetsModel(string key, ISetTopBoxNumericKeypad setTopBox, string fileName)
             : this(key, fileName)
         {
@@ -71,6 +86,11 @@ namespace PepperDash.Essentials.Core.Presets
             _enterFunction = setTopBox.KeypadEnter;
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key for the device</param>
+        /// <param name="fileName">file name for presets</param>
         public DevicePresetsModel(string key, string fileName) : base(key)
         {
             PulseTime = 150;
@@ -88,17 +108,26 @@ namespace PepperDash.Essentials.Core.Presets
             _initSuccess = true;
         }
 
+        /// <summary>
+        /// Event fired when a preset is recalled
+        /// </summary>
         public event PresetRecalledCallback PresetRecalled;
+
+        /// <summary>
+        /// Event fired when presets are saved
+        /// </summary>
         public event PresetsSavedCallback PresetsSaved;
 
         /// <summary>
         /// Gets or sets the PulseTime
         /// </summary>
         public int PulseTime { get; set; }
+
         /// <summary>
         /// Gets or sets the DigitSpacingMs
         /// </summary>
         public int DigitSpacingMs { get; set; }
+        
         /// <summary>
         /// Gets or sets the PresetsAreLoaded
         /// </summary>
@@ -109,6 +138,9 @@ namespace PepperDash.Essentials.Core.Presets
         /// </summary>
         public List<PresetChannel> PresetsList { get; private set; }
 
+        /// <summary>
+        /// Gets the Count of presets
+        /// </summary>
         public int Count
         {
             get { return PresetsList != null ? PresetsList.Count : 0; }
@@ -118,18 +150,25 @@ namespace PepperDash.Essentials.Core.Presets
         /// Gets or sets the UseLocalImageStorage
         /// </summary>
         public bool UseLocalImageStorage { get; set; }
+
         /// <summary>
         /// Gets or sets the ImagesLocalHostPrefix
         /// </summary>
         public string ImagesLocalHostPrefix { get; set; }
+
         /// <summary>
         /// Gets or sets the ImagesPathPrefix
         /// </summary>
         public string ImagesPathPrefix { get; set; }
+
         /// <summary>
         /// Gets or sets the ListPathPrefix
         /// </summary>
         public string ListPathPrefix { get; set; }
+
+        /// <summary>
+        /// Event fired when presets are loaded
+        /// </summary>
         public event EventHandler PresetsLoaded;
 
 

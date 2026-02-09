@@ -8,42 +8,46 @@ namespace PepperDash.Essentials.Room.Config
  /// </summary>
 	public class SimplRoomPropertiesConfig : EssentialsHuddleVtc1PropertiesConfig
 	{
+        /// <summary>
+        /// Gets or sets the RoomPhoneNumber
+        /// </summary>
 		[JsonProperty("roomPhoneNumber")]
-  /// <summary>
-  /// Gets or sets the RoomPhoneNumber
-  /// </summary>
 		public string RoomPhoneNumber { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the RoomURI
+        /// </summary>
 		[JsonProperty("roomURI")]
-  /// <summary>
-  /// Gets or sets the RoomURI
-  /// </summary>
 		public string RoomURI { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the SpeedDials
+        /// </summary>
 		[JsonProperty("speedDials")]
-  /// <summary>
-  /// Gets or sets the SpeedDials
-  /// </summary>
 		public List<SimplSpeedDial> SpeedDials { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the VolumeSliderNames
+        /// </summary>
 		[JsonProperty("volumeSliderNames")]
-  /// <summary>
-  /// Gets or sets the VolumeSliderNames
-  /// </summary>
 		public List<string> VolumeSliderNames { get; set; }
 	}
 
- /// <summary>
- /// Represents a SimplSpeedDial
- /// </summary>
+    /// <summary>
+    /// Represents a SimplSpeedDial
+    /// </summary>
 	public class SimplSpeedDial
 	{
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
 		[JsonProperty("name")]
-  /// <summary>
-  /// Gets or sets the Name
-  /// </summary>
 		public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Number
+        /// </summary>
 		[JsonProperty("number")]
-  /// <summary>
-  /// Gets or sets the Number
-  /// </summary>
 		public string Number { get; set; }
 	}
 }

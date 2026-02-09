@@ -9,6 +9,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 	{
 		#region Digital
 
+		/// <summary>
+		/// Device is Online
+		/// </summary>
 		[JoinName("IsOnline")]
 		public JoinDataComplete IsOnline = new JoinDataComplete(
 			new JoinData
@@ -23,6 +26,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// If High, will send DTMF tones to the call set by SelectCall analog.  If low sends DTMF tones to last connected call.
+		/// </summary>
         [JoinName("SendDtmfToSpecificCallIndex")]
         public JoinDataComplete SendDtmfToSpecificCallIndex = new JoinDataComplete(
             new JoinData
@@ -37,6 +43,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// DTMF 1
+		/// </summary>
         [JoinName("Dtmf1")]
 		public JoinDataComplete Dtmf1 = new JoinDataComplete(
 			new JoinData
@@ -51,6 +60,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF 2
+		/// </summary>
         [JoinName("Dtmf2")]
 		public JoinDataComplete Dtmf2 = new JoinDataComplete(
 			new JoinData
@@ -65,6 +77,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF 3
+		/// </summary>
         [JoinName("Dtmf3")]
 		public JoinDataComplete Dtmf3 = new JoinDataComplete(
 			new JoinData
@@ -79,6 +94,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF 4
+		/// </summary>
         [JoinName("Dtmf4")]
 		public JoinDataComplete Dtmf4 = new JoinDataComplete(
 			new JoinData
@@ -93,6 +111,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF 5
+		/// </summary>
         [JoinName("Dtmf5")]
 		public JoinDataComplete Dtmf5 = new JoinDataComplete(
 			new JoinData
@@ -107,6 +128,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF 6
+		/// </summary>
         [JoinName("Dtmf6")]
 		public JoinDataComplete Dtmf6 = new JoinDataComplete(
 			new JoinData
@@ -121,6 +145,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF 7
+		/// </summary>
         [JoinName("Dtmf7")]
 		public JoinDataComplete Dtmf7 = new JoinDataComplete(
 			new JoinData
@@ -135,6 +162,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF 8
+		/// </summary>
         [JoinName("Dtmf8")]
 		public JoinDataComplete Dtmf8 = new JoinDataComplete(
 			new JoinData
@@ -149,6 +179,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF 9
+		/// </summary>
         [JoinName("Dtmf9")]
 		public JoinDataComplete Dtmf9 = new JoinDataComplete(
 			new JoinData
@@ -163,6 +196,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF 0
+		/// </summary>
         [JoinName("Dtmf0")]
 		public JoinDataComplete Dtmf0 = new JoinDataComplete(
 			new JoinData
@@ -177,6 +213,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF *
+		/// </summary>
         [JoinName("DtmfStar")]
 		public JoinDataComplete DtmfStar = new JoinDataComplete(
 			new JoinData
@@ -191,6 +230,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// DTMF #
+		/// </summary>
         [JoinName("DtmfPound")]
 		public JoinDataComplete DtmfPound = new JoinDataComplete(
 			new JoinData
@@ -205,6 +247,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// End All Calls
+		/// </summary>
         [JoinName("EndAllCalls")]
 		public JoinDataComplete EndAllCalls = new JoinDataComplete(
 			new JoinData
@@ -219,6 +264,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Current Hook State
+		/// </summary>
 		[JoinName("HookState")]
 		public JoinDataComplete HookState = new JoinDataComplete(
 			new JoinData
@@ -233,6 +281,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Speed Dial
+		/// </summary>
 		[JoinName("SpeedDialStart")]
 		public JoinDataComplete SpeedDialStart = new JoinDataComplete(
 			new JoinData
@@ -247,6 +298,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Incoming Call
+		/// </summary>
 		[JoinName("IncomingCall")]
 		public JoinDataComplete IncomingCall = new JoinDataComplete(
 			new JoinData
@@ -261,6 +315,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Answer Incoming Call
+		/// </summary>
 		[JoinName("IncomingAnswer")]
 		public JoinDataComplete IncomingAnswer = new JoinDataComplete(
 			new JoinData
@@ -275,6 +332,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Reject Incoming Call
+		/// </summary>
 		[JoinName("IncomingReject")]
 		public JoinDataComplete IncomingReject = new JoinDataComplete(
 			new JoinData
@@ -289,6 +349,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Manual Dial
+		/// </summary>
 		[JoinName("ManualDial")]
 		public JoinDataComplete ManualDial = new JoinDataComplete(
 			new JoinData
@@ -303,6 +366,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Dial Phone
+		/// </summary>
         [JoinName("DialPhone")]
 		public JoinDataComplete DialPhone = new JoinDataComplete(
 			new JoinData
@@ -317,6 +383,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Phone Hook State
+		/// </summary>
 		[JoinName("PhoneHookState")]
 		public JoinDataComplete PhoneHookState = new JoinDataComplete(
 			new JoinData
@@ -331,6 +400,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Hang Up Phone
+		/// </summary>
         [JoinName("HangUpPhone")]
 		public JoinDataComplete HangUpPhone = new JoinDataComplete(
 			new JoinData
@@ -345,6 +417,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// End Call
+		/// </summary>
         [JoinName("EndCallStart")]
         public JoinDataComplete EndCallStart = new JoinDataComplete(
             new JoinData
@@ -359,6 +434,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Join All Calls
+		/// </summary>
         [JoinName("JoinAllCalls")]
         public JoinDataComplete JoinAllCalls = new JoinDataComplete(
             new JoinData
@@ -373,6 +451,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Join Call
+		/// </summary>
         [JoinName("JoinCallStart")]
         public JoinDataComplete JoinCallStart = new JoinDataComplete(
             new JoinData
@@ -387,6 +468,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Directory Search Busy
+		/// </summary>
 		[JoinName("DirectorySearchBusy")]
 		public JoinDataComplete DirectorySearchBusy = new JoinDataComplete(
 			new JoinData
@@ -401,7 +485,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-
+		/// <summary>
+		/// Directory Selected Entry Is Contact
+		/// </summary>
 		[JoinName("DirectoryEntryIsContact")]
 		public JoinDataComplete DirectoryEntryIsContact = new JoinDataComplete(
 			new JoinData
@@ -416,6 +502,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Directory Line Selected
+		/// </summary>
 		[JoinName("DirectoryLineSelected")]
 		public JoinDataComplete DirectoryLineSelected = new JoinDataComplete(
 			new JoinData
@@ -430,6 +519,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Directory Is Root
+		/// </summary>
 		[JoinName("DirectoryIsRoot")]
 		public JoinDataComplete DirectoryIsRoot = new JoinDataComplete(
 			new JoinData
@@ -444,6 +536,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Directory Has Changed
+		/// </summary>
 		[JoinName("DirectoryHasChanged")]
 		public JoinDataComplete DirectoryHasChanged = new JoinDataComplete(
 			new JoinData
@@ -458,6 +553,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Directory Go to Root
+		/// </summary>
 		[JoinName("DirectoryRoot")]
 		public JoinDataComplete DirectoryRoot = new JoinDataComplete(
 			new JoinData
@@ -472,6 +570,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Directory Go Back One Level
+		/// </summary>
 		[JoinName("DirectoryFolderBack")]
 		public JoinDataComplete DirectoryFolderBack = new JoinDataComplete(
 			new JoinData
@@ -486,6 +587,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Directory Dial Selected Line
+		/// </summary>
 		[JoinName("DirectoryDialSelectedLine")]
 		public JoinDataComplete DirectoryDialSelectedLine = new JoinDataComplete(
 			new JoinData
@@ -500,6 +604,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Directory Disable Auto Dial Selected Line
+		/// </summary>
         [JoinName("DirectoryDisableAutoDialSelectedLine")]
         public JoinDataComplete DirectoryDisableAutoDialSelectedLine = new JoinDataComplete(
             new JoinData
@@ -514,6 +621,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Directory Dial Selected Contact Method
+		/// </summary>
         [JoinName("DirectoryDialSelectedContactMethod")]
         public JoinDataComplete DirectoryDialSelectedContactMethod = new JoinDataComplete(
             new JoinData
@@ -528,6 +638,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Directory Clear Selected
+		/// </summary>
         [JoinName("DirectoryClearSelected")]
         public JoinDataComplete DirectoryClearSelected = new JoinDataComplete(
             new JoinData
@@ -542,7 +655,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
-
+		/// <summary>
+		/// Camera Tilt Up
+		/// </summary>
 		[JoinName("CameraTiltUp")]
 		public JoinDataComplete CameraTiltUp = new JoinDataComplete(
 			new JoinData
@@ -557,6 +672,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Tilt Down
+		/// </summary>
 		[JoinName("CameraTiltDown")]
 		public JoinDataComplete CameraTiltDown = new JoinDataComplete(
 			new JoinData
@@ -571,6 +689,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Pan Left
+		/// </summary>
 		[JoinName("CameraPanLeft")]
 		public JoinDataComplete CameraPanLeft = new JoinDataComplete(
 			new JoinData
@@ -585,6 +706,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Pan Right
+		/// </summary>
 		[JoinName("CameraPanRight")]
 		public JoinDataComplete CameraPanRight = new JoinDataComplete(
 			new JoinData
@@ -599,6 +723,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Zoom In
+		/// </summary>
 		[JoinName("CameraZoomIn")]
 		public JoinDataComplete CameraZoomIn = new JoinDataComplete(
 			new JoinData
@@ -613,6 +740,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Zoom Out
+		/// </summary>
 		[JoinName("CameraZoomOut")]
 		public JoinDataComplete CameraZoomOut = new JoinDataComplete(
 			new JoinData
@@ -627,6 +757,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Focus Near
+		/// </summary>
         [JoinName("CameraFocusNear")]
         public JoinDataComplete CameraFocusNear = new JoinDataComplete(
             new JoinData
@@ -641,6 +774,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Camera Focus Far
+		/// </summary>
         [JoinName("CameraFocusFar")]
         public JoinDataComplete CameraFocusFar = new JoinDataComplete(
             new JoinData
@@ -655,6 +791,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Camera Auto Focus
+		/// </summary>
         [JoinName("CameraFocusAuto")]
         public JoinDataComplete CameraFocusAuto = new JoinDataComplete(
             new JoinData
@@ -669,6 +808,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Camera Preset Save
+		/// </summary>
 		[JoinName("CameraPresetSave")]
 		public JoinDataComplete CameraPresetSave = new JoinDataComplete(
 			new JoinData
@@ -683,6 +825,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Preset Recall
+		/// </summary>
 		[JoinName("CameraModeAuto")]
 		public JoinDataComplete CameraModeAuto = new JoinDataComplete(
 			new JoinData
@@ -697,6 +842,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Mode Manual
+		/// </summary>
 		[JoinName("CameraModeManual")]
 		public JoinDataComplete CameraModeManual = new JoinDataComplete(
 			new JoinData
@@ -711,6 +859,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Mode Off
+		/// </summary>
 		[JoinName("CameraModeOff")]
 		public JoinDataComplete CameraModeOff = new JoinDataComplete(
 			new JoinData
@@ -725,6 +876,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Self View
+		/// </summary>
 		[JoinName("CameraSelfView")]
 		public JoinDataComplete CameraSelfView = new JoinDataComplete(
 			new JoinData
@@ -739,6 +893,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Layout
+		/// </summary>
 		[JoinName("CameraLayout")]
 		public JoinDataComplete CameraLayout = new JoinDataComplete(
 			new JoinData
@@ -753,6 +910,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Supports Auto Mode
+		/// </summary>
 		[JoinName("CameraSupportsAutoMode")]
 		public JoinDataComplete CameraSupportsAutoMode = new JoinDataComplete(
 			new JoinData
@@ -767,6 +927,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Camera Supports Off Mode
+		/// </summary>
 		[JoinName("CameraSupportsOffMode")]
 		public JoinDataComplete CameraSupportsOffMode = new JoinDataComplete(
 			new JoinData
@@ -781,6 +944,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Update Meetings
+		/// </summary>
 		[JoinName("UpdateMeetings")]
 		public JoinDataComplete UpdateMeetings = new JoinDataComplete(
 			new JoinData
@@ -795,6 +961,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Dial Meeting Start
+		/// </summary>
         [JoinName("DialMeetingStart")]
 		public JoinDataComplete DialMeetingStart = new JoinDataComplete(
 			new JoinData
@@ -809,6 +978,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Mic Mute On
+		/// </summary>
 		[JoinName("MicMuteOn")]
 		public JoinDataComplete MicMuteOn = new JoinDataComplete(
 			new JoinData
@@ -823,6 +995,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Mic Mute Off
+		/// </summary>
 		[JoinName("MicMuteOff")]
 		public JoinDataComplete MicMuteOff = new JoinDataComplete(
 			new JoinData
@@ -837,6 +1012,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Mic Mute Toggle
+		/// </summary>
 		[JoinName("MicMuteToggle")]
 		public JoinDataComplete MicMuteToggle = new JoinDataComplete(
 			new JoinData
@@ -851,6 +1029,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Volume Up
+		/// </summary>
 		[JoinName("VolumeUp")]
 		public JoinDataComplete VolumeUp = new JoinDataComplete(
 			new JoinData
@@ -865,6 +1046,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Volume Down
+		/// </summary>
 		[JoinName("VolumeDown")]
 		public JoinDataComplete VolumeDown = new JoinDataComplete(
 			new JoinData
@@ -879,6 +1063,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Volume Mute On
+		/// </summary>
 		[JoinName("VolumeMuteOn")]
 		public JoinDataComplete VolumeMuteOn = new JoinDataComplete(
 			new JoinData
@@ -893,6 +1080,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Volume Mute Off
+		/// </summary>
 		[JoinName("VolumeMuteOff")]
 		public JoinDataComplete VolumeMuteOff = new JoinDataComplete(
 			new JoinData
@@ -907,6 +1097,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Volume Mute Toggle
+		/// </summary>
 		[JoinName("VolumeMuteToggle")]
 		public JoinDataComplete VolumeMuteToggle = new JoinDataComplete(
 			new JoinData
@@ -921,6 +1114,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Remove Selected Recent Call Item
+		/// </summary>
         [JoinName("RemoveSelectedRecentCallItem")]
         public JoinDataComplete RemoveSelectedRecentCallItem = new JoinDataComplete(
             new JoinData
@@ -935,6 +1131,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Dial Selected Recent Call Item
+		/// </summary>
         [JoinName("DialSelectedRecentCallItem")]
         public JoinDataComplete DialSelectedRecentCallItem = new JoinDataComplete(
             new JoinData
@@ -949,6 +1148,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Source Share Start
+		/// </summary>
 		[JoinName("SourceShareStart")]
 		public JoinDataComplete SourceShareStart = new JoinDataComplete(
 			new JoinData
@@ -963,6 +1165,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Source Share End
+		/// </summary>
 		[JoinName("SourceShareEnd")]
 		public JoinDataComplete SourceShareEnd = new JoinDataComplete(
 			new JoinData
@@ -977,6 +1182,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Source Share Auto Start
+		/// </summary>
 		[JoinName("AutoShareWhileInCall")]
 		public JoinDataComplete SourceShareAutoStart = new JoinDataComplete(
 			new JoinData
@@ -991,6 +1199,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Recieving Content
+		/// </summary>
 		[JoinName("RecievingContent")]
 		public JoinDataComplete RecievingContent = new JoinDataComplete(
 			new JoinData
@@ -1005,6 +1216,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinCapabilities = eJoinCapabilities.ToSIMPL
 			});
 
+		/// <summary>
+		/// Selfview Position
+		/// </summary>
 		[JoinName("SelfviewPosition")]
 		public JoinDataComplete SelfviewPosition = new JoinDataComplete(
 			new JoinData
@@ -1019,6 +1233,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+		/// <summary>
+		/// Hold All Calls
+		/// </summary>
         [JoinName("HoldAllCalls")]
         public JoinDataComplete HoldAllCalls = new JoinDataComplete(
             new JoinData
@@ -1033,6 +1250,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Hold Call at Index
+		/// </summary>
         [JoinName("HoldCallsStart")]
         public JoinDataComplete HoldCallsStart = new JoinDataComplete(
             new JoinData
@@ -1047,6 +1267,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Resume All Calls
+		/// </summary>
         [JoinName("ResumeCallsStart")]
         public JoinDataComplete ResumeCallsStart = new JoinDataComplete(
             new JoinData
@@ -1061,6 +1284,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Multi Site Option Is Enabled
+		/// </summary>
         [JoinName("MultiSiteOptionIsEnabled")]
         public JoinDataComplete MultiSiteOptionIsEnabled = new JoinDataComplete(
             new JoinData
@@ -1075,6 +1301,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Auto Answer Enabled
+		/// </summary>
         [JoinName("AutoAnswerEnabled")]
         public JoinDataComplete AutoAnswerEnabled = new JoinDataComplete(
             new JoinData
@@ -1089,6 +1318,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Participant Audio Mute Toggle
+		/// </summary>
         [JoinName("ParticipantAudioMuteToggleStart")]
         public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
 			new JoinData 
@@ -1103,6 +1335,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Participant Video Mute Toggle
+		/// </summary>
         [JoinName("ParticipantVideoMuteToggleStart")]
         public JoinDataComplete ParticipantVideoMuteToggleStart = new JoinDataComplete(
 			new JoinData 
@@ -1117,6 +1352,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+		/// <summary>
+		/// Participant Pin Toggle
+		/// </summary>
         [JoinName("ParticipantPinToggleStart")]
         public JoinDataComplete ParticipantPinToggleStart = new JoinDataComplete(
 			new JoinData 
@@ -1139,6 +1377,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 		#region Analog
 
         // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+
+		/// <summary>
+		/// Meetings To Display
+		/// </summary>		
         [JoinName("MeetingsToDisplay")]
         public JoinDataComplete MeetingsToDisplay = new JoinDataComplete(
             new JoinData
@@ -1153,6 +1395,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+		/// <summary>
+		/// Select Call
+		/// </summary>
         [JoinName("SelectCall")]
         public JoinDataComplete SelectCall = new JoinDataComplete(
             new JoinData
@@ -1167,7 +1412,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
-
+		/// <summary>
+		/// Connected Call Count
+		/// </summary>
         [JoinName("ConnectedCallCount")]
         public JoinDataComplete ConnectedCallCount = new JoinDataComplete(
             new JoinData
@@ -1182,6 +1429,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+		/// <summary>
+		/// Minutes Before Meeting Start
+		/// </summary>
 		[JoinName("MinutesBeforeMeetingStart")]
 		public JoinDataComplete MinutesBeforeMeetingStart = new JoinDataComplete(
 			new JoinData
@@ -1196,6 +1446,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
+		/// <summary>
+		/// Camera Number Select
+		/// </summary>
 		[JoinName("CameraNumberSelect")]
 		public JoinDataComplete CameraNumberSelect = new JoinDataComplete(
 			new JoinData
@@ -1210,6 +1463,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
+		/// <summary>
+		/// Camera Count
+		/// </summary>
         [JoinName("CameraCount")]
         public JoinDataComplete CameraCount = new JoinDataComplete(
             new JoinData
@@ -1224,6 +1480,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+		/// <summary>
+		/// Directory Row Count
+		/// </summary>
 		[JoinName("DirectoryRowCount")]
 		public JoinDataComplete DirectoryRowCount = new JoinDataComplete(
 			new JoinData
@@ -1238,6 +1497,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
+		/// <summary>
+		/// Directory Select Row
+		/// </summary>
 		[JoinName("DirectorySelectRow")]
 		public JoinDataComplete DirectorySelectRow = new JoinDataComplete(
 			new JoinData
@@ -1252,7 +1514,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
-
+		/// <summary>
+		/// Selected Contact Method Count
+		/// </summary>
         [JoinName("SelectedContactMethodCount")]
         public JoinDataComplete SelectedContactMethodCount = new JoinDataComplete(
             new JoinData
@@ -1267,6 +1531,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+		/// <summary>
+		/// Select Contact Method
+		/// </summary>
         [JoinName("SelectContactMethod")]
         public JoinDataComplete SelectContactMethod = new JoinDataComplete(
             new JoinData
@@ -1281,6 +1548,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+		/// <summary>
+		/// Directory Select Row Feedback
+		/// </summary>
         [JoinName("DirectorySelectRowFeedback")]
         public JoinDataComplete DirectorySelectRowFeedback = new JoinDataComplete(
             new JoinData
@@ -1296,7 +1566,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             });
 
 
-
+		/// <summary>
+		/// Camera Preset Select
+		/// </summary>
 		[JoinName("CameraPresetSelect")]
 		public JoinDataComplete CameraPresetSelect = new JoinDataComplete(
 			new JoinData
@@ -1311,6 +1583,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
+		/// <summary>
+		/// Far End Preset Select
+		/// </summary>
         [JoinName("FarEndPresetSelect")]
         public JoinDataComplete FarEndPresetSelect = new JoinDataComplete(
             new JoinData
@@ -1325,6 +1600,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+		/// <summary>
+		/// Participant Count
+		/// </summary>
 		[JoinName("ParticipantCount")]
 		public JoinDataComplete ParticipantCount = new JoinDataComplete(
 			new JoinData
@@ -1339,6 +1617,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
+		/// <summary>
+		/// Meeting Count
+		/// </summary>
 		[JoinName("Meeting Count Fb")]
 		public JoinDataComplete MeetingCount = new JoinDataComplete(
 			new JoinData
@@ -1353,6 +1634,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
+		/// <summary>
+		/// Volume Level
+		/// </summary>
 		[JoinName("VolumeLevel")]
 		public JoinDataComplete VolumeLevel = new JoinDataComplete(
 			new JoinData
@@ -1367,6 +1651,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
+		/// <summary>
+		/// Select Recent Call Item
+		/// </summary>
         [JoinName("SelectRecentCallItem")]
         public JoinDataComplete SelectRecentCallItem = new JoinDataComplete(
             new JoinData
@@ -1381,6 +1668,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+		/// <summary>
+		/// Recent Call Occurrence Type
+		/// </summary>
         [JoinName("RecentCallOccurrenceType")]
         public JoinDataComplete RecentCallOccurrenceType = new JoinDataComplete(
             new JoinData
@@ -1395,6 +1685,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+		/// <summary>
+		/// Recent Call Count
+		/// </summary>
         [JoinName("RecentCallCount")]
         public JoinDataComplete RecentCallCount = new JoinDataComplete(
             new JoinData
@@ -1415,6 +1708,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 
 		#region Serials
 
+		/// <summary>
+		/// Current Dial String
+		/// </summary>
 		[JoinName("CurrentDialString")]
 		public JoinDataComplete CurrentDialString = new JoinDataComplete(
 			new JoinData
@@ -1429,6 +1725,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Phone Dial String
+		/// </summary>
         [JoinName("PhoneDialString")]
 		public JoinDataComplete PhoneDialString = new JoinDataComplete(
 			new JoinData
@@ -1443,6 +1742,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Current Call Data
+		/// </summary>
         [JoinName("CurrentCallData")]
 		public JoinDataComplete CurrentCallData = new JoinDataComplete(
 			new JoinData
@@ -1457,6 +1759,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Call Direction
+		/// </summary>
 		[JoinName("CallDirection")]
 		public JoinDataComplete CallDirection = new JoinDataComplete(
 			new JoinData
@@ -1471,6 +1776,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Incoming Call Name
+		/// </summary>
 		[JoinName("IncomingCallName")]
 		public JoinDataComplete IncomingCallName = new JoinDataComplete(
 			new JoinData
@@ -1485,6 +1793,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Incoming Call Number
+		/// </summary>
 		[JoinName("IncomingCallNumber")]
 		public JoinDataComplete IncomingCallNumber = new JoinDataComplete(
 			new JoinData
@@ -1499,7 +1810,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
-
+		/// <summary>
+		/// Directory Search String
+		/// </summary>
 		[JoinName("DirectorySearchString")]
 		public JoinDataComplete DirectorySearchString = new JoinDataComplete(
 			new JoinData
@@ -1514,6 +1827,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Directory Entries
+		/// </summary>
 		[JoinName("DirectoryEntries")]
 		public JoinDataComplete DirectoryEntries = new JoinDataComplete(
 			new JoinData
@@ -1528,6 +1844,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Schedule Data
+		/// </summary>
 		[JoinName("Schedule")]
 		public JoinDataComplete Schedule = new JoinDataComplete(
 			new JoinData
@@ -1542,6 +1861,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Contact Methods
+		/// </summary>
         [JoinName("ContactMethods")]
         public JoinDataComplete ContactMethods = new JoinDataComplete(
             new JoinData
@@ -1556,6 +1878,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// Camera Preset Names
+		/// </summary>
 		[JoinName("CameraPresetNames")]
 		public JoinDataComplete CameraPresetNames = new JoinDataComplete(
 			new JoinData
@@ -1570,6 +1895,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Current Layout String
+		/// </summary>
         [JoinName("CurrentLayoutStringFb")]
 		public JoinDataComplete CurrentLayoutStringFb = new JoinDataComplete(
 			new JoinData
@@ -1584,6 +1912,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Available Layouts XSig
+		/// </summary>
         [JoinName("AvailableLayoutsFb")]
         public JoinDataComplete AvailableLayoutsFb = new JoinDataComplete(
             new JoinData
@@ -1598,6 +1929,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// Select Layout
+		/// </summary>
         [JoinName("SelectLayout")]
         public JoinDataComplete SelectLayout = new JoinDataComplete(
             new JoinData
@@ -1613,7 +1947,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             });
 
 
-
+		/// <summary>
+		/// Current Participants XSig
+		/// </summary>
 		[JoinName("CurrentParticipants")]
 		public JoinDataComplete CurrentParticipants = new JoinDataComplete(
 			new JoinData
@@ -1628,6 +1964,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Camera Names XSig
+		/// </summary>
         [JoinName("CameraNamesFb")]
         public JoinDataComplete CameraNamesFb = new JoinDataComplete(
             new JoinData
@@ -1642,6 +1981,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// Selected Recent Call Name
+		/// </summary>
         [JoinName("SelectedRecentCallName")]
         public JoinDataComplete SelectedRecentCallName = new JoinDataComplete(
          new JoinData
@@ -1656,6 +1998,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
              JoinType = eJoinType.Serial
          });
 
+		/// <summary>
+		/// Selected Recent Call Number
+		/// </summary>
         [JoinName("SelectedRecentCallNumber")]
         public JoinDataComplete SelectedRecentCallNumber = new JoinDataComplete(
          new JoinData
@@ -1670,6 +2015,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
              JoinType = eJoinType.Serial
          });
 
+		/// <summary>
+		/// Recent Call Names
+		/// </summary>
         [JoinName("RecentCallNamesStart")]
         public JoinDataComplete RecentCallNamesStart = new JoinDataComplete(
             new JoinData
@@ -1684,6 +2032,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// Recent Call Numbers
+		/// </summary>
         [JoinName("RecentCallTimesStart")]
         public JoinDataComplete RecentCallTimesStart = new JoinDataComplete(
             new JoinData
@@ -1698,6 +2049,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// Current Source
+		/// </summary>
 		[JoinName("CurrentSource")]
 		public JoinDataComplete CurrentSource = new JoinDataComplete(
 			new JoinData
@@ -1712,6 +2066,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Selfview Position Feedback
+		/// </summary>
 		[JoinName("SelfviewPositionFb")]
 		public JoinDataComplete SelfviewPositionFb = new JoinDataComplete(
 			new JoinData
@@ -1726,6 +2083,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Device IP Address
+		/// </summary>
         [JoinName("DeviceIpAddresss")]
         public JoinDataComplete DeviceIpAddresss = new JoinDataComplete(
             new JoinData
@@ -1740,6 +2100,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// SIP Phone Number
+		/// </summary>
         [JoinName("SipPhoneNumber")]
         public JoinDataComplete SipPhoneNumber = new JoinDataComplete(
             new JoinData
@@ -1754,6 +2117,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// E164 Alias
+		/// </summary>
         [JoinName("E164Alias")]
         public JoinDataComplete E164Alias = new JoinDataComplete(
             new JoinData
@@ -1768,6 +2134,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// H323 ID
+		/// </summary>
         [JoinName("H323Id")]
         public JoinDataComplete H323Id = new JoinDataComplete(
             new JoinData
@@ -1782,6 +2151,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// SIP URI
+		/// </summary>
         [JoinName("SipUri")]
         public JoinDataComplete SipUri = new JoinDataComplete(
             new JoinData
@@ -1796,6 +2168,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+		/// <summary>
+		/// Selected Directory Entry Name
+		/// </summary>
 		[JoinName("DirectoryEntrySelectedName")]
 		public JoinDataComplete DirectoryEntrySelectedName = new JoinDataComplete(
 			new JoinData
@@ -1810,6 +2185,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Selected Directory Entry Number
+		/// </summary>
 		[JoinName("DirectoryEntrySelectedNumber")]
 		public JoinDataComplete DirectoryEntrySelectedNumber = new JoinDataComplete(
 			new JoinData
@@ -1824,6 +2202,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+		/// <summary>
+		/// Selected Directory Folder Name
+		/// </summary>
 		[JoinName("DirectorySelectedFolderName")]
 		public JoinDataComplete DirectorySelectedFolderName = new JoinDataComplete(
 			new JoinData
@@ -1841,11 +2222,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 		#endregion
 
 
+		/// <summary>
+		/// Constructor for the VideoCodecControllerJoinMap class.
+		/// </summary>
+		/// <param name="joinStart">Join this join map will start at</param>
 		public VideoCodecControllerJoinMap(uint joinStart)
 			: base(joinStart, typeof(VideoCodecControllerJoinMap))
 		{
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="joinStart">Join this join map will start at</param>
+		/// <param name="type">Type of the child join map</param>
 		public VideoCodecControllerJoinMap(uint joinStart, Type type)
 			: base(joinStart, type)
 		{

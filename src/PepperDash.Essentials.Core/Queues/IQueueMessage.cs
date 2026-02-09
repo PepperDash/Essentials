@@ -7,6 +7,9 @@ namespace PepperDash.Essentials.Core.Queues
     /// </summary>
     public interface IQueueMessage
     {
+        /// <summary>
+        /// Dispatches the message
+        /// </summary>
         void Dispatch();
     }
 }

@@ -7,6 +7,9 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// </summary>
     public interface ITvPresetsProvider
     {
+        /// <summary>
+        /// The TV presets model
+        /// </summary>
         DevicePresetsModel TvPresets { get; }
     }
 }

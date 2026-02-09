@@ -19,6 +19,13 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
 		readonly Dictionary<string, KeypadButton> _buttons;
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="key">device key</param>
+		/// <param name="name">device name</param>
+		/// <param name="processor">control system processor</param>
+		/// <param name="buttons">dictionary of keypad buttons</param>
 		public Mpc3TouchpanelController(string key, string name, CrestronControlSystem processor, Dictionary<string, KeypadButton> buttons)
 			: base(key, name)
 		{
@@ -348,12 +355,21 @@ namespace PepperDash.Essentials.Core.Touchpanels
  /// </summary>
 	public class KeypadButton
 	{
+		/// <summary>
+		/// Gets or sets the EventTypes
+		/// </summary>
 		[JsonProperty("eventTypes")]
 		public Dictionary<string, DeviceActionWrapper[]> EventTypes { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Feedback
+		/// </summary>
 		[JsonProperty("feedback")]
 		public KeypadButtonFeedback Feedback { get; set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
 		public KeypadButton()
 		{
 			EventTypes = new Dictionary<string, DeviceActionWrapper[]>();
@@ -361,17 +377,20 @@ namespace PepperDash.Essentials.Core.Touchpanels
 		}
 	}
 
- /// <summary>
- /// Represents a KeypadButtonFeedback
- /// </summary>
+	/// <summary>
+	/// Represents a KeypadButtonFeedback
+	/// </summary>
 	public class KeypadButtonFeedback
 	{
+		/// <summary>
+		/// Gets or sets the DeviceKey
+		/// </summary>
 		[JsonProperty("deviceKey")]
-  /// <summary>
-  /// Gets or sets the DeviceKey
-  /// </summary>
 		public string DeviceKey { get; set; }
 
+		/// <summary>
+		/// Gets or sets the FeedbackName
+		/// </summary>
 		[JsonProperty("feedbackName")]
 		public string FeedbackName { get; set; }
 	}
