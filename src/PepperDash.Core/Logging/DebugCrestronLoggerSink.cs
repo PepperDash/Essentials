@@ -27,6 +27,9 @@ namespace PepperDash.Core.Logging
             CrestronLogger.WriteToLog(message, (uint)logEvent.Level);
         }
 
+        /// <summary>
+        /// Constructor for DebugCrestronLoggerSink
+        /// </summary>
         public DebugCrestronLoggerSink()
         {
             CrestronLogger.Initialize(1, LoggerModeEnum.RM);

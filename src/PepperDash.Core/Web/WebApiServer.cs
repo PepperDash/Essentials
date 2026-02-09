@@ -45,9 +45,9 @@ namespace PepperDash.Core.Web
   /// </summary>
 		public bool IsRegistered { get; private set; }
 
-		/// <summary>
-		/// Http request handler
-		/// </summary>
+		// /// <summary>
+		// /// Http request handler
+		// /// </summary>
 		//public IHttpCwsHandler HttpRequestHandler
 		//{
 		//    get { return _server.HttpRequestHandler; }
@@ -58,9 +58,9 @@ namespace PepperDash.Core.Web
 		//    }
 		//}
 
-		/// <summary>
-		/// Received request event handler
-		/// </summary>
+		// /// <summary>
+		// /// Received request event handler
+		// /// </summary>
 		//public event EventHandler<HttpCwsRequestEventArgs> ReceivedRequestEvent
 		//{
 		//    add { _server.ReceivedRequestEvent += new HttpCwsRequestEventHandler(value); }
