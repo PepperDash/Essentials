@@ -69,51 +69,61 @@ namespace PepperDash.Essentials.Core
 
 		void ProcessStatuses()
 		{
-			var InError = Monitors.Where(m => m.Status == MonitorStatus.InError);
-			var InWarning = Monitors.Where(m => m.Status == MonitorStatus.InWarning);
-			var IsOk = Monitors.Where(m => m.Status == MonitorStatus.IsOk);
+			var InError = Monitors.Where(m => m.Status == MonitorStatus.InError).ToList();
+			var InWarning = Monitors.Where(m => m.Status == MonitorStatus.InWarning).ToList();
+			var IsOk = Monitors.Where(m => m.Status == MonitorStatus.IsOk).ToList();
 
 
 			MonitorStatus initialStatus;
 			string prefix = "0:";
-			if (InError.Count() > 0)
+			if (InError.Any())
 			{
 				initialStatus = MonitorStatus.InError;
 				prefix = "3:";
 			}
-			else if (InWarning.Count() > 0)
+			else if (InWarning.Any())
 			{
 				initialStatus = MonitorStatus.InWarning;
 				prefix = "2:";
 			}
-			else if (IsOk.Count() > 0)
+			else if (IsOk.Any())
 				initialStatus = MonitorStatus.IsOk;
 			else
 				initialStatus = MonitorStatus.StatusUnknown;
 
 			// Build the error message string
-            if (InError.Count() > 0 || InWarning.Count() > 0)
-            {
-                StringBuilder sb = new StringBuilder(prefix);
-                if (InError.Count() > 0)
-                {
-                    // Do string splits and joins 
-                    sb.Append(string.Format("{0} Errors:", InError.Count()));
-                    foreach (var mon in InError)
-                        sb.Append(string.Format("{0}, ", mon.Parent.Key));
-                }
-                if (InWarning.Count() > 0)
-                {
-                    sb.Append(string.Format("{0} Warnings:", InWarning.Count()));
-                    foreach (var mon in InWarning)
-                        sb.Append(string.Format("{0}, ", mon.Parent.Key));
-                }
-                Message = sb.ToString();
-            }
-            else
-            {
-                Message = "Room Ok.";
-            }
+			if (InError.Any() || InWarning.Any())
+			{
+				var errorNames = InError
+					.Select(mon => mon.Parent is IKeyName keyName ? keyName.Name : mon.Parent.Key)
+					.ToList();
+				var warningNames = InWarning
+					.Select(mon => mon.Parent is IKeyName keyName ? keyName.Name : mon.Parent.Key)
+					.ToList();
+
+				var sb = new StringBuilder(prefix);
+
+				if (errorNames.Count > 0)
+				{
+					sb.Append($"{errorNames.Count} Error{(errorNames.Count > 1 ? "s" : "")}: ");
+					sb.Append(string.Join(", ", errorNames));
+				}
+				if (warningNames.Count > 0)
+				{
+					if (errorNames.Count > 0)
+						sb.Append("; ");
+
+					sb.Append($"{warningNames.Count} Warning{(warningNames.Count > 1 ? "s" : "")}: ");
+					sb.Append(string.Join(", ", warningNames));
+				}
+
+                sb.Append(" Offline");
+				Message = sb.ToString();
+			}
+			else
+			{
+				Message = "Room Ok.";
+			}
 
 			// Want to fire even if status doesn't change because the message may.
 			Status = initialStatus;
