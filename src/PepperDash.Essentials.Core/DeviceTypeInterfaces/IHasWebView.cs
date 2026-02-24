@@ -48,7 +48,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         bool IsInPwaMode { get; }
 
         /// <summary>
-        /// Indicates whether the webview is currently in PWA mode
+        /// Gets the BoolFeedback indicating whether the webview is currently in PWA mode
         /// </summary>
         BoolFeedback IsInPwaModeFeedback { get; }
 
