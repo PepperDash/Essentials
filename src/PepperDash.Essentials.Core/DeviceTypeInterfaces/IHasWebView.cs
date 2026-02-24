@@ -43,6 +43,16 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     public interface IHasWebViewWithPwaMode : IHasWebView
     {
         /// <summary>
+        /// Indicates whether the webview is currently in PWA mode
+        /// </summary>
+        bool IsInPwaMode { get; }
+
+        /// <summary>
+        /// Indicates whether the webview is currently in PWA mode
+        /// </summary>
+        BoolFeedback IsInPwaModeFeedback { get; }
+
+        /// <summary>
         /// Sends navigators to the specified PWA URL.  Accepts an absolute URL or a relative URL for a mobile control app
         /// </summary>
         /// <param name="url">The URL to navigate to</param>
