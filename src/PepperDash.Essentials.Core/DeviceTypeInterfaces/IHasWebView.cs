@@ -36,6 +36,25 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         event EventHandler<WebViewStatusChangedEventArgs> WebViewStatusChanged;
     }
 
+
+    /// <summary>
+    /// Defines the contract for IHasWebViewWithPwaMode
+    /// </summary>
+    public interface IHasWebViewWithPwaMode : IHasWebView
+    {
+        /// <summary>
+        /// Sends navigators to the specified PWA URL.  Accepts an absolute URL or a relative URL for a mobile control app
+        /// </summary>
+        /// <param name="url">The URL to navigate to</param>
+        void SendNavigatorsToPwaUrl(string url);
+
+        /// <summary> 
+        /// Exits navigators from PWA mode
+        /// </summary>
+        void ExitNavigatorsPwaMode();
+    }
+
+
     /// <summary>
     /// Represents a WebViewStatusChangedEventArgs
     /// </summary>
@@ -56,3 +75,9 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         }
     }
 }
+
+
+
+
+
+
