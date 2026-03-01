@@ -36,8 +36,17 @@ namespace PepperDash.Essentials.Core
         {
             var programAssemblies = Directory.GetFiles(InitialParametersClass.ProgramDirectory.ToString(), "*.dll");
 
+            // Assemblies known to cause load errors that should be skipped
+            var assembliesToSkip = new[] { "CrestronOnvif.dll" };
+
             foreach (var assembly in programAssemblies)
             {
+                if (assembliesToSkip.Any(a => Path.GetFileName(assembly).Equals(a, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Debug.LogMessage(LogEventLevel.Verbose, "Skipping assembly: {assemblyName}", Path.GetFileName(assembly));
+                    continue;
+                }
+
                 try
                 {
                     Assembly.LoadFrom(assembly);
