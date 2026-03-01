@@ -43,7 +43,7 @@ namespace PepperDash.Essentials.Core
             {
                 if (assembliesToSkip.Any(a => Path.GetFileName(assembly).Equals(a, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Debug.LogMessage(LogEventLevel.Verbose, "Skipping assembly: {assemblyName}", null, assembly);
+                    Debug.LogMessage(LogEventLevel.Verbose, "Skipping assembly: {assemblyName}", Path.GetFileName(assembly));
                     continue;
                 }
 
