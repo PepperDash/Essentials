@@ -22,6 +22,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Global static class for Essentials
+    /// </summary>
 	public static class Global
 	{
   /// <summary>
@@ -34,6 +37,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public static eDevicePlatform Platform { get { return CrestronEnvironment.DevicePlatform; } }
 
+        /// <summary>
+        /// Gets the collection of Ethernet Adapter Info
+        /// </summary>
         public static Dictionary<short, EthernetAdapterInfo> EthernetAdapterInfoCollection { get; private set; }
 
   /// <summary>
@@ -47,6 +53,9 @@ namespace PepperDash.Essentials.Core
         public static eCrestronSeries ProcessorSeries { get { return CrestronEnvironment.ProgramCompatibility; } }
 
         // TODO: consider making this configurable later
+        /// <summary>
+        /// The CultureInfo for formatting
+        /// </summary>
         public static IFormatProvider Culture = CultureInfo.CreateSpecificCulture("en-US");
 
         /// <summary>
@@ -182,6 +191,13 @@ namespace PepperDash.Essentials.Core
             AssemblyVersion = assemblyVersion;
         }
 
+        /// <summary>
+        /// Checks to see if the running version is in the list of development versions.  If so, checks to see if it meets the minimum version requirement.
+        /// If not in the list, returns false.  For beta versions (0.xx.yy), will always return true.
+        /// </summary>
+        /// <param name="developmentVersions">list of development versions</param>
+        /// <param name="minimumVersion">minimum version</param>
+        /// <returns></returns>
 	    public static bool IsRunningDevelopmentVersion(List<string> developmentVersions, string minimumVersion)
 	    {
 	        if (Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*").Groups[1].Value == "0")

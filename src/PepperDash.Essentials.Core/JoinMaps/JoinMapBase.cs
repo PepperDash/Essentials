@@ -17,6 +17,9 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// JoinMapHelper class
+    /// </summary>
     public static class JoinMapHelper
     {
         /// <summary>
@@ -93,6 +96,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class JoinMapBaseAdvanced
     {
+        /// <summary>
+        /// The join offset
+        /// </summary>
         protected uint JoinOffset;
 
         /// <summary>
@@ -100,6 +106,10 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public Dictionary<string, JoinDataComplete> Joins { get; private set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="joinStart">join start offset</param>
         protected JoinMapBaseAdvanced(uint joinStart)
         {
             Joins = new Dictionary<string, JoinDataComplete>();
@@ -107,11 +117,20 @@ namespace PepperDash.Essentials.Core
             JoinOffset = joinStart - 1;
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="joinStart">join start offset</param>
+        /// <param name="type">type of joinstart</param>
         protected JoinMapBaseAdvanced(uint joinStart, Type type):this(joinStart)
         {
             AddJoins(type);
         }
 
+        /// <summary>
+        /// AddJoins method
+        /// </summary>
+        /// <param name="type">type of join to add</param>
         protected void AddJoins(Type type)
         {            
             var fields =
@@ -303,18 +322,11 @@ namespace PepperDash.Essentials.Core
             PrintJoinMapInfo();
         }
 
-        /// <summary>
-        /// Returns the join span for the join with the specified key
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-
-
-        /// <summary>
-        /// Returns the join span for the join with the specified key
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        // /// <summary>
+        // /// Returns the join span for the join with the specified key
+        // /// </summary>
+        // /// <param name="key"></param>
+        // /// <returns></returns>
         //public uint GetJoinSpanForKey(string key)
         //{
         //    return Joins.ContainsKey(key) ? Joins[key].JoinSpan : 0;
@@ -328,28 +340,86 @@ namespace PepperDash.Essentials.Core
     [Flags]
     public enum eJoinCapabilities
     {
+        /// <summary>
+        /// No capabilities
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// To SIMPL
+        /// </summary>
         ToSIMPL = 1,
+
+        /// <summary>
+        /// From SIMPL
+        /// </summary>
         FromSIMPL = 2,
+
+        /// <summary>
+        /// To and From SIMPL
+        /// </summary>
         ToFromSIMPL = ToSIMPL | FromSIMPL,
+
+        /// <summary>
+        /// To Fusion
+        /// </summary>
         ToFusion = 4,
+
+        /// <summary>
+        /// From Fusion
+        /// </summary>
         FromFusion = 8,
+
+        /// <summary>
+        /// To and From Fusion
+        /// </summary>
         ToFromFusion = ToFusion | FromFusion,
     }
 
-    [Flags]
     /// <summary>
     /// Enumeration of eJoinType values
     /// </summary>
+    [Flags]
     public enum eJoinType
     {
+        /// <summary>
+        /// No join type
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// Digital join
+        /// </summary>
         Digital = 1,
+
+        /// <summary>
+        /// Analog join
+        /// </summary>
         Analog = 2,
+
+        /// <summary>
+        /// Serial join
+        /// </summary>
         Serial = 4,
+
+        /// <summary>
+        /// Digital and Analog join
+        /// </summary>
         DigitalAnalog = Digital | Analog,
+
+        /// <summary>
+        /// Digital and Serial join
+        /// </summary>
         DigitalSerial = Digital | Serial,
+
+        /// <summary>
+        /// Analog and Serial join
+        /// </summary>
         AnalogSerial = Analog | Serial,
+
+        /// <summary>
+        /// Digital, Analog and Serial join
+        /// </summary>
         DigitalAnalogSerial = Digital | Analog | Serial,
     }
 
@@ -364,29 +434,23 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("description")]
         public string Description { get { return _description; } set { _description = value; } }
-        /// <summary>
-        /// Signal type(s)
-        /// </summary>
-        [JsonProperty("joinType")]
+
         /// <summary>
         /// Gets or sets the JoinType
         /// </summary>
+        [JsonProperty("joinType")]
         public eJoinType JoinType { get; set; }
-        /// <summary>
-        /// Indicates whether the join is read and/or write
-        /// </summary>
-        [JsonProperty("joinCapabilities")]
+        
         /// <summary>
         /// Gets or sets the JoinCapabilities
         /// </summary>
+        [JsonProperty("joinCapabilities")]
         public eJoinCapabilities JoinCapabilities { get; set; }
-        /// <summary>
-        /// Indicates a set of valid values (particularly if this translates to an enum
-        /// </summary>
-        [JsonProperty("validValues")]
+
         /// <summary>
         /// Gets or sets the ValidValues
         /// </summary>
+        [JsonProperty("validValues")]
         public string[] ValidValues { get; set; }
 
     }
@@ -401,18 +465,17 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("joinNumber")]
         public uint JoinNumber { get; set; }
+
         /// <summary>
         /// Join range span.  If join indicates the start of a range of joins, this indicated the maximum number of joins in the range
         /// </summary>
         [JsonProperty("joinSpan")]
         public uint JoinSpan { get; set; }
-        /// <summary>
-        /// Fusion Attribute Name (optional)
-        /// </summary>
-        [JsonProperty("attributeName")]
+
         /// <summary>
         /// Gets or sets the AttributeName
         /// </summary>
+        [JsonProperty("attributeName")]
         public string AttributeName { get; set; }
     }
 
@@ -424,18 +487,34 @@ namespace PepperDash.Essentials.Core
         private uint _joinOffset;
 
         private JoinData _data;
+
+        /// <summary>
+        /// Gets or sets the JoinMetadata
+        /// </summary>
         public JoinMetadata Metadata { get; set; }
+
         /// <summary>
         /// To store some future information as you please
         /// </summary>
         public object UserObject { get; private set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="metadata"></param>
         public JoinDataComplete(JoinData data, JoinMetadata metadata)
         {
             _data = data;
             Metadata = metadata;
         }
 
+        /// <summary>
+        /// GetMarkdownFormattedData method
+        /// </summary>
+        /// <param name="stringFormatter">formatter to use</param>
+        /// <param name="descriptionLen">length of the description</param>
+        /// <returns></returns>
         public string GetMarkdownFormattedData(string stringFormatter, int descriptionLen)
         {
 
@@ -498,9 +577,6 @@ namespace PepperDash.Essentials.Core
         /// Sets the join offset value
         /// </summary>
         /// <param name="joinOffset"></param>
-        /// <summary>
-        /// SetJoinOffset method
-        /// </summary>
         public void SetJoinOffset(uint joinOffset)
         {
             _joinOffset = joinOffset;
@@ -515,11 +591,17 @@ namespace PepperDash.Essentials.Core
             set { _data.JoinNumber = value; }
         }
 
+        /// <summary>
+        /// The join span
+        /// </summary>
         public uint JoinSpan
         {
             get { return _data.JoinSpan; }
         }
 
+        /// <summary>
+        /// The attribute name
+        /// </summary>
         public string AttributeName
         {
             get { return _data.AttributeName; }
@@ -551,20 +633,27 @@ namespace PepperDash.Essentials.Core
 
     
 
-    [AttributeUsage(AttributeTargets.All)]
     /// <summary>
     /// Represents a JoinNameAttribute
     /// </summary>
+    [AttributeUsage(AttributeTargets.All)]
     public class JoinNameAttribute : Attribute
     {
         private string _Name;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="name">name of the attribute</param>
         public JoinNameAttribute(string name)
         {
             Debug.LogMessage(LogEventLevel.Verbose, "Setting Attribute Name: {0}",null, name);
             _Name = name;
         }
 
+        /// <summary>
+        /// Gets the Name
+        /// </summary>
         public string Name
         {
             get { return _Name; }

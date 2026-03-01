@@ -13,9 +13,15 @@ namespace PepperDash.Essentials.Core.Config
     /// </summary>
     public class AudioControlPointListItem
     {
+        /// <summary>
+        /// Level controls for this audio control point
+        /// </summary>
         [JsonProperty("levelControls")]
         public Dictionary<string, LevelControlListItem> LevelControls { get; set; } = new Dictionary<string, LevelControlListItem>();
 
+        /// <summary>
+        /// Presets for this audio control point
+        /// </summary>
         [JsonProperty("presets")]
         public Dictionary<string, PresetListItem> Presets { get; set; } = new Dictionary<string, PresetListItem>();
 

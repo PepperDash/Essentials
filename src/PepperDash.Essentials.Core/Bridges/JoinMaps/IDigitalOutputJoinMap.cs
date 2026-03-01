@@ -7,7 +7,9 @@ namespace PepperDash.Essentials.Core.Bridges
     /// </summary>
     public class IDigitalOutputJoinMap : JoinMapBaseAdvanced
     {
-
+        /// <summary>
+        /// Output State
+        /// </summary>
         [JoinName("OutputState")]
         public JoinDataComplete OutputState = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Get / Set state of Digital Input", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });

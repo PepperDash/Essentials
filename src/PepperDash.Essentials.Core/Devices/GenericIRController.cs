@@ -31,6 +31,12 @@ namespace PepperDash.Essentials.Core.Devices
         /// </summary>
         public string[] IrCommands {get { return _port.IrFileCommands; }}	    
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">key for the device</param>
+        /// <param name="name">name of the device</param>
+        /// <param name="irPort">IR output port controller</param>
         public GenericIrController(string key, string name, IrOutputPortController irPort) : base(key, name)
         {
             _port = irPort;
@@ -105,9 +111,9 @@ namespace PepperDash.Essentials.Core.Devices
 			        var joinNumber = bridgeJoin.Value.Value.JoinNumber;					
 
 					Debug.LogMessage(LogEventLevel.Verbose, this, @"bridgeJoin: Key-'{0}'
-Value.Key-'{1}'
-Value.JoinNumber-'{2}'
-Value.Metadata.Description-'{3}'", 
+                                                                    Value.Key-'{1}'
+                                                                    Value.JoinNumber-'{2}'
+                                                                    Value.Metadata.Description-'{3}'", 
 						key,
 						joinDataKey,
 						joinNumber,
@@ -172,6 +178,9 @@ Value.Metadata.Description-'{3}'",
     /// </summary>
     public class GenericIrControllerFactory : EssentialsDeviceFactory<GenericIrController>
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public GenericIrControllerFactory()
         {
             TypeNames = new List<string> {"genericIrController"};

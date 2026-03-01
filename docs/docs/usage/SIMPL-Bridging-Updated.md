@@ -286,7 +286,7 @@ Example device config: <https://github.com/PepperDash/Essentials/blob/main/Peppe
 
 3. A bridge need not only bridge between applications on the same processor. A bridge may bridge to an application on a completely separate processor; simply define the ip address in the Bridge control properties accordingly.
 
-4. For devices included in Essentials, you will be able to find defined join maps below. If you are building your own plugins, you will need to build the join map yourself. It would be beneficial to review the wiki entry on the [Feedback Class](~/docs/Feedback-Classes.md) for this.
+4. For devices included in Essentials, you will be able to find defined join maps below. If you are building your own plugins, you will need to build the join map yourself. It would be beneficial to review the wiki entry on the [Feedback Class](~/docs/technical-docs/Feedback-Classes.md) for this.
 
 5. When building plugins, we highly recommend reusing JoinMaps, as this will make code more easily interchangeable. For example; if you were to build a display plugin, we'd recommend you use/extend the existing `DisplayControllerJoinMap`. This way, you can swap plugins without needing any change on the SIMPL Windows side. This is extremely powerful when maintaining SIMPL Windows code bases for large deployments that may utilize differing equipment per room. If you can build a SIMPL Windows program that interacts with established join maps, you can swap out the device via config without any change needed to SIMPL Windows.
 
@@ -302,7 +302,7 @@ Example device config: <https://github.com/PepperDash/Essentials/blob/main/Peppe
 
 ## Join Map Documentation
 
-[Join Map Documentation](~/docs/JoinMaps.md)
+[Join Map Documentation](~/docs/usage/JoinMaps.md)
 
 ## Device Type Join Maps
 
@@ -408,4 +408,4 @@ Please note that these joinmaps _may_ be using a deprecated implementation. The 
 
 We've provided an [example program](https://github.com/PepperDash/EssentialsSIMPLWindowsBridgeExample) for SIMPL Windows that works with the provided example Essentials configuration file [SIMPLBridgeExample_configurationFile.json](https://github.com/PepperDash/Essentials/blob/main/PepperDashEssentials/Example%20Configuration/SIMPLBridging/SIMPLBridgeExample_configurationFile.json). Load Essentials and the example SIMPL program to two slots on the same processor and you can get a better idea of how to take advantage of SIMPL Windows bridging.
 
-Next: [Essentials architecture](~/docs/Arch-summary.md)
+Next: [Essentials architecture](~/docs/technical-docs/Arch-summary.md)

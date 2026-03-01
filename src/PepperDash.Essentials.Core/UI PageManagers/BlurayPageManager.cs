@@ -10,6 +10,11 @@ namespace PepperDash.Essentials.Core.PageManagers
 	{
 		IDiscPlayerControls Player;
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="player">player controls object</param>
+		/// <param name="trilist">trilist object</param>
 		public DiscPlayerMediumPageManager(IDiscPlayerControls player, BasicTriListWithSmartObject trilist)
 			: base(player.DisplayUiType)
 		{
@@ -17,10 +22,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 			TriList = trilist;
 		}
 
-  /// <summary>
-  /// Show method
-  /// </summary>
-  /// <inheritdoc />
+		/// <summary>
+		/// Show method
+		/// </summary>
+		/// <inheritdoc />
 		public override void Show()
 		{
 			uint offset = GetOffsetJoin();
@@ -40,10 +45,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 			}
 		}
 
-  /// <summary>
-  /// Hide method
-  /// </summary>
-  /// <inheritdoc />
+		/// <summary>
+		/// Hide method
+		/// </summary>
+		/// <inheritdoc />
 		public override void Hide()
 		{
 			TriList.BooleanInput[BackingPageJoin].BoolValue = false;

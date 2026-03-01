@@ -1,16 +1,10 @@
 ﻿
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 using Serilog.Events;
 
@@ -25,17 +19,25 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <summary>
         /// Evaluates the room info and custom properties from Fusion and updates the system properties aa needed
         /// </summary>
-        /// <param name="roomInfo"></param>
-        public void EvaluateRoomInfo(string roomKey, RoomInformation roomInfo)
+        /// <param name="room">The room associated with this Fusion instance</param>
+        /// <param name="roomInfo">The room information from Fusion</param>
+        /// <param name="useFusionRoomName"></param>
+        public void EvaluateRoomInfo(IEssentialsRoom room, RoomInformation roomInfo, bool useFusionRoomName)
         {
             try
             {
-                var reconfigurableDevices = DeviceManager.AllDevices.Where(d => d is ReconfigurableDevice);
+                var reconfigurableDevices = DeviceManager.AllDevices.OfType<ReconfigurableDevice>();
 
                 foreach (var device in reconfigurableDevices)
                 {
                     // Get the current device config so new values can be overwritten over existing
-                    var deviceConfig = (device as ReconfigurableDevice).Config;
+                    var deviceConfig = device.Config;
+
+                    if (device is IEssentialsRoom)
+                    {
+                        // Skipping room name as this will affect ALL room instances in the configuration and cause unintended consequences when multiple rooms are present and multiple Fusion instances are used
+                        continue;
+                    }
 
                     if (device is RoomOnToDefaultSourceWhenOccupied)
                     {
@@ -85,36 +87,49 @@ namespace PepperDash.Essentials.Core.Fusion
 
                         deviceConfig.Properties = JToken.FromObject(devProps);
                     }
-                    else if (device is IEssentialsRoom)
-                    {
-                        // Set the room name
-                        if (!string.IsNullOrEmpty(roomInfo.Name))
-                        {
-                            Debug.LogMessage(LogEventLevel.Debug, "Current Room Name: {0}. New Room Name: {1}", deviceConfig.Name, roomInfo.Name);
-                            // Set the name in config
-                            deviceConfig.Name = roomInfo.Name;
-
-                            Debug.LogMessage(LogEventLevel.Debug, "Room Name Successfully Changed.");
-                        }
-
-                        // Set the help message
-                        var helpMessage = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomHelpMessage"));
-                        if (helpMessage != null)
-                        {
-                            //Debug.LogMessage(LogEventLevel.Debug, "Current Help Message: {0}. New Help Message: {1}", deviceConfig.Properties["help"]["message"].Value<string>(ToString()), helpMessage.CustomFieldValue);
-                            deviceConfig.Properties["helpMessage"] = (string)helpMessage.CustomFieldValue;
-                        }
-                    }
 
                     // Set the config on the device
-                    (device as ReconfigurableDevice).SetConfig(deviceConfig);
+                    device.SetConfig(deviceConfig);
                 }
 
+                if (!(room is ReconfigurableDevice reconfigurable))
+                {
+                    Debug.LogWarning("FusionCustomPropertiesBridge: Room is not a ReconfigurableDevice. Cannot map custom properties.");
+                    return;
+                }
 
+                var roomConfig = reconfigurable.Config;
+
+                var updateConfig = false;
+
+                // Set the room name
+                if (!string.IsNullOrEmpty(roomInfo.Name) && useFusionRoomName)
+                {
+                    Debug.LogDebug("Current Room Name: {currentName}. New Room Name: {fusionName}", roomConfig.Name, roomInfo.Name);
+                    // Set the name in config
+                    roomConfig.Name = roomInfo.Name;
+                    updateConfig = true;
+
+                    Debug.LogDebug("Room Name Successfully Changed.");
+                }
+
+                // Set the help message
+                var helpMessage = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomHelpMessage"));
+                if (helpMessage != null)
+                {
+                    roomConfig.Properties["helpMessage"] = helpMessage.CustomFieldValue;
+                    updateConfig = true;
+                }
+
+                if (updateConfig)
+                {
+                    reconfigurable.SetConfig(roomConfig);
+                }
             }
             catch (Exception e)
             {
-                Debug.LogMessage(LogEventLevel.Debug, "FusionCustomPropetiesBridge: Error mapping properties: {0}", e);
+                Debug.LogError("FusionCustomPropetiesBridge: Exception mapping properties for {roomKey}: {message}", room.Key, e.Message);
+                Debug.LogDebug(e, "Stack Trace: ");
             }
         }
     }

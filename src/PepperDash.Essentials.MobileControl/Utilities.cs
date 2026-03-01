@@ -1,3 +1,4 @@
+using System.Threading;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using WebSocketSharp;
@@ -12,13 +13,12 @@ namespace PepperDash.Essentials
     private static int nextClientId = 0;
 
     /// <summary>
-    /// Get the next unique client ID
+    /// Get the next unique client ID (thread-safe)
     /// </summary>
     /// <returns>Client ID</returns>
     public static int GetNextClientId()
     {
-      nextClientId++;
-      return nextClientId;
+      return Interlocked.Increment(ref nextClientId);
     }
     /// <summary>
     /// Converts a WebSocketServer LogData object to Essentials logging calls.

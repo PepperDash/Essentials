@@ -12,6 +12,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     [Obsolete("Use CameraSelectedEventArgs<T> instead. This class will be removed in a future version")]
     public class CameraSelectedEventArgs : EventArgs
     {
+        /// <summary>
         /// Gets or sets the SelectedCamera
         /// </summary>
         public CameraBase SelectedCamera { get; private set; }

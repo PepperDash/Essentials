@@ -17,18 +17,47 @@ namespace PepperDash.Essentials.Core.Fusion
     /// </summary>
     public class FusionRoomGuids
     {
+        /// <summary>
+        /// Gets or sets the RoomName
+        /// </summary>
         public string RoomName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IpId
+        /// </summary>
         public uint IpId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RoomGuid
+        /// </summary>
         public string RoomGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the OccupancyAsset
+        /// </summary>
         public FusionOccupancySensorAsset OccupancyAsset { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StaticAssets
+        /// </summary>
         public Dictionary<int, FusionAsset> StaticAssets { get; set; }
 
+        /// <summary>
+        /// FusionRoomGuids constructor
+        /// </summary>
         public FusionRoomGuids()
         {
             StaticAssets = new Dictionary<int, FusionAsset>();
             OccupancyAsset = new FusionOccupancySensorAsset();
         }
 
+        /// <summary>
+        /// FusionRoomGuids constructor
+        /// </summary>
+        /// <param name="roomName">name of the fusion room</param>
+        /// <param name="ipId">ipID of the fusion room</param>
+        /// <param name="roomGuid">room GUID</param>
+        /// <param name="staticAssets">dictionary of assets</param>
         public FusionRoomGuids(string roomName, uint ipId, string roomGuid, Dictionary<int, FusionAsset> staticAssets)
         {
             RoomName = roomName;
@@ -39,6 +68,14 @@ namespace PepperDash.Essentials.Core.Fusion
             OccupancyAsset = new FusionOccupancySensorAsset();
         }
 
+        /// <summary>
+        /// FusionRoomGuids constructor
+        /// </summary>
+        /// <param name="roomName">name of the fusion room</param>
+        /// <param name="ipId">ipID of the fusion room</param>
+        /// <param name="roomGuid">room GUID</param>
+        /// <param name="staticAssets">dictionary of assets</param>
+        /// <param name="occAsset">occupancy asset</param>
         public FusionRoomGuids(string roomName, uint ipId, string roomGuid, Dictionary<int, FusionAsset> staticAssets, FusionOccupancySensorAsset occAsset)
         {
             RoomName = roomName;
@@ -143,10 +180,17 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         public string InstanceId { get; set; }
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public FusionOccupancySensorAsset()
         {
         }
 
+        /// <summary>
+        /// FusionOccupancySensorAsset constructor
+        /// </summary>
+        /// <param name="type">asset type</param>
         public FusionOccupancySensorAsset(eAssetType type)
         {
             Type = type;
@@ -177,11 +221,21 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         public string InstanceId { get;set; }
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public FusionAsset()
         {
 
         }
 
+        /// <summary>
+        /// FusionAsset constructor
+        /// </summary>
+        /// <param name="slotNum">slot number of asset</param>
+        /// <param name="assetName">name of the asset</param>
+        /// <param name="type">type of the asset</param>
+        /// <param name="instanceId">instance ID of the asset</param>
         public FusionAsset(uint slotNum, string assetName, string type, string instanceId)
         {
             SlotNumber = slotNum;
@@ -210,6 +264,9 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         public List<Event> Meetings { get; set; }
 
+        /// <summary>
+        /// RoomSchedule constructor
+        /// </summary>
         public RoomSchedule()
         {
             Meetings = new List<Event>();
@@ -224,6 +281,9 @@ namespace PepperDash.Essentials.Core.Fusion
     /// </summary>
     public class LocalTimeRequest
     {
+        /// <summary>
+        /// Gets or sets the RequestID
+        /// </summary>
         public string RequestID { get; set; }
     }
 
@@ -238,13 +298,30 @@ namespace PepperDash.Essentials.Core.Fusion
         /// Gets or sets the RequestID
         /// </summary>
         public string RequestID { get; set; }
+
         //[XmlElement(ElementName = "RoomID")]
+        /// <summary>
+        /// Gets or sets the RoomID
+        /// </summary>
         public string RoomID { get; set; }
+
         //[XmlElement(ElementName = "Start")]
+        /// <summary>
+        /// Gets or sets the Start
+        /// </summary>
         public DateTime Start { get; set; }
+
         //[XmlElement(ElementName = "HourSpan")]
+        /// <summary>
+        /// Gets or sets the HourSpan
+        /// </summary>
         public double HourSpan { get; set; }
 
+        /// <summary>
+        /// RequestSchedule constructor
+        /// </summary>
+        /// <param name="requestID">id of the request</param>
+        /// <param name="roomID">id of the room</param>
         public RequestSchedule(string requestID, string roomID)
         {
             RequestID = requestID;
@@ -282,6 +359,12 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         public List<Parameter> Parameters { get; set; }
 
+        /// <summary>
+        /// RequestAction constructor
+        /// </summary>
+        /// <param name="roomID">id of the room</param>
+        /// <param name="actionID">id of the action</param>
+        /// <param name="parameters">list of parameters</param>
         public RequestAction(string roomID, string actionID, List<Parameter> parameters)
         {
             RoomID = roomID;
@@ -301,11 +384,13 @@ namespace PepperDash.Essentials.Core.Fusion
         /// Gets or sets the RequestID
         /// </summary>
         public string RequestID { get; set; }
+
         //[XmlElement(ElementName = "ActionID")]
         /// <summary>
         /// Gets or sets the ActionID
         /// </summary>
         public string ActionID { get; set; }
+
         //[XmlElement(ElementName = "Parameters")]
         /// <summary>
         /// Gets or sets the Parameters
@@ -324,6 +409,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// Gets or sets the ID
         /// </summary>
         public string ID { get; set; }
+
         //[XmlAttribute(AttributeName = "Value")]
         /// <summary>
         /// Gets or sets the Value
@@ -345,14 +431,32 @@ namespace PepperDash.Essentials.Core.Fusion
     public class ScheduleResponse
     {
         //[XmlElement(ElementName = "RequestID")]
+        /// <summary>
+        /// Gets or sets the RequestID
+        /// </summary>
         public string RequestID { get; set; }
+
         //[XmlElement(ElementName = "RoomID")]
+        /// <summary>
+        /// Gets or sets the RoomID
+        /// </summary>
         public string RoomID { get; set; }
+
         //[XmlElement(ElementName = "RoomName")]
+        /// <summary>
+        /// Gets or sets the RoomName
+        /// </summary>
         public string RoomName { get; set; }
+
         //[XmlElement("Event")]
+        /// <summary>
+        /// Gets or sets the Events
+        /// </summary>
         public List<Event> Events { get; set; }
 
+        /// <summary>
+        /// ScheduleResponse constructor
+        /// </summary>
         public ScheduleResponse()
         {
             Events = new List<Event>();

@@ -39,7 +39,7 @@ Thanks!
 
 ## Collaboration
 
-Essentials is an open-source project and we encourage collaboration on this community project. For features that may not be useful to the greater community, or for just-plain learning, we want to remind developers to try writing plugins for Essentials. More information can be found here: [Plugins](~/docs/Plugins.md)
+Essentials is an open-source project and we encourage collaboration on this community project. For features that may not be useful to the greater community, or for just-plain learning, we want to remind developers to try writing plugins for Essentials. More information can be found here: [Plugins](~/docs/technical-docs/Plugins.md)
 
 ### Open-source-collaborative workflow
 

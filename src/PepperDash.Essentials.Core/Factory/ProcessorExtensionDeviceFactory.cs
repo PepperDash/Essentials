@@ -15,6 +15,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class ProcessorExtensionDeviceFactory
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public ProcessorExtensionDeviceFactory() {
             var assy = Assembly.GetExecutingAssembly();
             PluginLoader.SetEssentialsAssembly(assy.GetName().Name, assy);
@@ -50,7 +53,8 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Adds a plugin factory method
         /// </summary>
-        /// <param name="dc"></param>
+        /// <param name="extensionName">name fo extension to add</param>
+        /// <param name="method">method to add</param>
         /// <returns></returns>
         public static void AddFactoryForType(string extensionName, Func<DeviceConfig, IKeyed> method)
         {
@@ -58,6 +62,13 @@ namespace PepperDash.Essentials.Core
             ProcessorExtensionDeviceFactory.ProcessorExtensionFactoryMethods.Add(extensionName, new DeviceFactoryWrapper() { FactoryMethod = method });
         }
 
+        /// <summary>
+        /// Adds a plugin factory method with type and description
+        /// </summary>
+        /// <param name="extensionName">name of extension to add</param>
+        /// <param name="description">description of extension to add</param>
+        /// <param name="Type">type of extension to add</param>
+        /// <param name="method">method to add</param>
         public static void AddFactoryForType(string extensionName, string description, Type Type, Func<DeviceConfig, IKeyed> method)
         {
             //Debug.LogMessage(LogEventLevel.Debug, "Adding factory method for type '{0}'", typeName);

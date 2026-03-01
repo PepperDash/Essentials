@@ -17,6 +17,9 @@ namespace PepperDash.Essentials.Core
  /// </summary>
 	public interface IRoutingHasVideoInputSyncFeedbacks
 	{
+		/// <summary>
+		/// Video Input Sync Feedbacks
+		/// </summary>
 		FeedbackCollection<BoolFeedback> VideoInputSyncFeedbacks { get; }
 	}	
 }

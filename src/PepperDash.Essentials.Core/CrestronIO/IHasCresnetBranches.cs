@@ -13,6 +13,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasCresnetBranches
     {
+        /// <summary>
+        /// Collection of Cresnet branches
+        /// </summary>
         CrestronCollection<CresnetBranch> CresnetBranches { get; }
     }
 }

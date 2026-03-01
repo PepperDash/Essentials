@@ -62,6 +62,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
                         inputs = matrixDevice.InputSlots.ToDictionary(kvp => kvp.Key, kvp => new RoutingInput(kvp.Value))
                     }));
                 };
+
+                inputSlot.IsOnline.OutputChange += (sender, args) =>
+                {
+                    PostStatusMessage(JToken.FromObject(new
+                    {
+                        inputs = matrixDevice.InputSlots.ToDictionary(kvp => kvp.Key, kvp => new RoutingInput(kvp.Value))
+                    }));
+                };
             }
         }
 

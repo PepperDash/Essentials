@@ -12,7 +12,14 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public class BoolFeedbackPulseExtender
 	{
+		/// <summary>
+		/// Gets or sets the TimeoutMs
+		/// </summary>
 		public uint TimeoutMs { get; set; }
+
+		/// <summary>
+		/// Gets the Feedback
+		/// </summary>
 		public BoolFeedback Feedback { get; private set; }
 		CTimer Timer;
 

@@ -8,12 +8,12 @@ Essentials is a collection of C# libraries that can be used in many ways. It is 
 
 ## Get started
 
-- [Download essentials build or clone repo](~/docs/Get-started.md)
-- [How to get started](~/docs/Get-started.md)
+- [Download an Essentials build or clone the repo](~/docs/Get-started.md)
+- [Get started](~/docs/Get-started.md)
 - [YouTube Video Series Playlist](https://youtube.com/playlist?list=PLKOoNNwgPFZdV5wDEBDZxTHu1KROspaBu)
 - [Discord Server](https://discord.gg/6Vh3ssDdPs)
 
-Or use the links to the right to navigate our documentation.
+Or use the links to the left to navigate our documentation.
 
 ---
 
@@ -25,21 +25,12 @@ Or use the links to the right to navigate our documentation.
 - Shared resources made easily available
 - More flexibility with less code
 - Configurable using simple JSON files
-- Is awesome
-
----
-
-## Comment
-
-The Essentials wiki is clearly in-progress right now. Take a look at the links to the right. We are actively working on this documentation, so please be patient with us. If you have any comments on or suggestions for the documentation, please file an issue here, with as much detail as you can provide: <https://github.com/PepperDash/Essentials/issues>
-
-Thanks!
 
 ---
 
 ## Collaboration
 
-Essentials is an open-source project and we encourage collaboration on this community project. For features that may not be useful to the greater community, or for just-plain learning, we want to remind developers to try writing plugins for Essentials. More information can be found here: [Plugins](~/docs/Plugins.md)
+Essentials is an open-source project and we encourage collaboration on this community project. For features that may not be useful to the greater community, or for just-plain learning, we want to remind developers to try writing plugins for Essentials. More information can be found here: [Plugins](~/docs/technical-docs/Plugins.md)
 
 ### Open-source-collaborative workflow
 
@@ -52,7 +43,7 @@ The `main` branch always contain the latest stable version. The `development` br
    - Example: `feature/add-awesomeness` or `hotfix/really-big-oops`
    - When working on a new feature or bugfix, branch from the `development` branch. When working on a hotfix, branch from `main`.
 3. Make commits as necessary (often is better). And use concise, descriptive language, leveraging issue notation and/or [Closing Keywords](https://help.github.com/articles/closing-issues-using-keywords) to ensure any issues addressed by your work are referenced accordingly.
-4. When the scope of the work for your branch is complete, make sure to rebase your branch in case further progress has been made since the repo was forked
+4. When the scope of the work for your branch is complete, make sure to update your branch in case further progress has been made since the repo was forked
 5. Create a Pull Request to pull your branch into the appropriate branch in the main repository.
 6. Your Pull Request will be reviewed by our team and evaluated for inclusion into the main repository.
 

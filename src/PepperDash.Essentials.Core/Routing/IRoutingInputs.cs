@@ -8,6 +8,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRoutingInputs : IKeyed
 	{
+        /// <summary>
+        /// Collection of Input Ports
+        /// </summary>
 		RoutingPortCollection<RoutingInputPort> InputPorts { get; }
 	}
 

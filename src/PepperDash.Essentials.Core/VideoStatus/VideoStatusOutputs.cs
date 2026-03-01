@@ -14,12 +14,34 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public class VideoStatusFuncsWrapper
 	{
+		/// <summary>
+		/// Gets or sets the HasVideoStatusFunc
+		/// </summary>
 		public Func<bool> HasVideoStatusFunc { get; set; }
+
+		/// <summary>
+		/// Gets or sets the HdcpActiveFeedbackFunc
+		/// </summary>
 		public Func<bool> HdcpActiveFeedbackFunc { get; set; }
+
+		/// <summary>
+		/// Gets or sets the HdcpStateFeedbackFunc
+		/// </summary>
 		public Func<string> HdcpStateFeedbackFunc { get; set; }
+
+		/// <summary>
+		/// Gets or sets the VideoResolutionFeedbackFunc
+		/// </summary>
 		public Func<string> VideoResolutionFeedbackFunc { get; set; }
+
+		/// <summary>
+		/// Gets or sets the VideoSyncFeedbackFunc
+		/// </summary>
 		public Func<bool> VideoSyncFeedbackFunc { get; set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
 		public VideoStatusFuncsWrapper()
 		{
 			HasVideoStatusFunc = () => true;
@@ -30,32 +52,50 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
- /// <summary>
- /// Represents a VideoStatusOutputs
- /// </summary>
+	/// <summary>
+	/// Represents a VideoStatusOutputs
+	/// </summary>
 	public class VideoStatusOutputs
 	{
-  /// <summary>
-  /// Gets or sets the HasVideoStatusFeedback
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the HasVideoStatusFeedback
+		/// </summary>
 		public BoolFeedback HasVideoStatusFeedback { get; private set; }
-  /// <summary>
-  /// Gets or sets the HdcpActiveFeedback
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the HdcpActiveFeedback
+		/// </summary>
 		public BoolFeedback HdcpActiveFeedback { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the HdcpStateFeedback
+		/// </summary>
 		public StringFeedback HdcpStateFeedback { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the VideoResolutionFeedback
+		/// </summary>
 		public StringFeedback VideoResolutionFeedback { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the VideoSyncFeedback
+		/// </summary>
 		public BoolFeedback VideoSyncFeedback { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the NoStatus
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the NoStatus
+		/// </summary>
 		public static VideoStatusOutputs NoStatus { get { return _Default; } }
+
 		static VideoStatusOutputs _Default = new VideoStatusOutputs(new VideoStatusFuncsWrapper
 			{
 				HasVideoStatusFunc = () => false
 			});
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="funcs"></param>
 		public VideoStatusOutputs(VideoStatusFuncsWrapper funcs)
 		{
 			HasVideoStatusFeedback = new BoolFeedback("HasVideoStatusFeedback", funcs.HasVideoStatusFunc);
@@ -66,9 +106,9 @@ namespace PepperDash.Essentials.Core
 			VideoSyncFeedback = new BoolFeedback("VideoSyncFeedback", funcs.VideoSyncFeedbackFunc);
 		}
 
-  /// <summary>
-  /// FireAll method
-  /// </summary>
+		/// <summary>
+		/// FireAll method
+		/// </summary>
 		public void FireAll()
 		{
 			HasVideoStatusFeedback.FireUpdate();
@@ -78,9 +118,9 @@ namespace PepperDash.Essentials.Core
 			VideoSyncFeedback.FireUpdate();
 		}
 
-  /// <summary>
-  /// ToList method
-  /// </summary>
+		/// <summary>
+		/// ToList method
+		/// </summary>
 		public List<Feedback> ToList()
 		{
 			return new List<Feedback>
@@ -94,9 +134,9 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-	/// <summary>
-	/// Wraps up the common video statuses exposed on a video input port
-	/// </summary>
+	// /// <summary>
+	// /// Wraps up the common video statuses exposed on a video input port
+	// /// </summary>
 	//public class BasicVideoStatus : IBasicVideoStatus
 	//{
 	//    public event VideoStatusChangeHandler VideoStatusChange;

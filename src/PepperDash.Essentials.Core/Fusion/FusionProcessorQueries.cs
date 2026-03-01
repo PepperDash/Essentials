@@ -15,6 +15,10 @@ namespace PepperDash.Essentials.Core.Fusion
     {
         //public static Dictionary<int, ProcessorProgramItem> Programs { get; private set; }
 
+        /// <summary>
+        /// Gets the processor program registry
+        /// </summary>
+        /// <returns></returns>
         public static Dictionary<int, ProcessorProgramItem> GetProcessorProgReg()
         {
             var programs = new Dictionary<int, ProcessorProgramItem>();

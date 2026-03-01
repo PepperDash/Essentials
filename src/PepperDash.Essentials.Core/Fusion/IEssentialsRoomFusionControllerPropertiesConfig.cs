@@ -27,7 +27,7 @@ public class IEssentialsRoomFusionControllerPropertiesConfig
             }
             else
             {
-                Debug.LogWarning( "Failed to parse IpId '{0}' as UInt16", IpId);
+                Debug.LogWarning("Failed to parse IpId '{0}' as UInt16", IpId);
                 return 0;
             }
         }
@@ -44,6 +44,13 @@ public class IEssentialsRoomFusionControllerPropertiesConfig
     /// </summary>
     [JsonProperty("roomKey")]
     public string RoomKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to use the Fusion room name for this room
+    /// </summary>
+    /// <remarks>Defaults to true to preserve current behavior. Set to false to skip updating the room name from Fusion</remarks>
+    [JsonProperty("useFusionRoomName")]
+    public bool UseFusionRoomName { get; set; } = true;
 
     /// <summary>
     /// Gets or sets whether to use HTML format for help requests
@@ -68,4 +75,11 @@ public class IEssentialsRoomFusionControllerPropertiesConfig
     /// </summary>
     [JsonProperty("helpRequestTimeoutMs")]
     public int HelpRequestTimeoutMs { get; set; } = 30000;
+
+    /// <summary>
+    /// Gets or sets whether to enable schedule push notifications
+    /// </summary>
+    /// <remarks>Defaults to false to skip getting schedule unless required</remarks>
+    [JsonProperty("enableSchedulePushNotifications")]
+    public bool EnableSchedulePushNotifications { get; set; } = false;
 }

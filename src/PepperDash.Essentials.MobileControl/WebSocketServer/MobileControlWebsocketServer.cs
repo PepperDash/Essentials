@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -59,12 +60,25 @@ namespace PepperDash.Essentials.WebSocketServer
         /// </summary>
         public Dictionary<string, UiClientContext> UiClientContexts { get; private set; }
 
-        private readonly Dictionary<string, UiClient> uiClients = new Dictionary<string, UiClient>();
+        private readonly ConcurrentDictionary<string, UiClient> uiClients = new ConcurrentDictionary<string, UiClient>();
+
+        /// <summary>
+        /// Stores pending client registrations using composite key: token-clientId
+        /// This ensures the correct client ID is matched even when connections establish out of order
+        /// </summary>
+        private readonly ConcurrentDictionary<string, string> pendingClientRegistrations = new ConcurrentDictionary<string, string>();
+
+        /// <summary>
+        /// Stores pending client registrations with timestamp for legacy clients
+        /// Key is token, Value is list of (clientId, timestamp) tuples
+        /// Most recent registration is used to handle duplicate join requests
+        /// </summary>
+        private readonly ConcurrentDictionary<string, ConcurrentBag<(string clientId, DateTime timestamp)>> legacyClientRegistrations = new ConcurrentDictionary<string, ConcurrentBag<(string, DateTime)>>();
 
         /// <summary>
         /// Gets the collection of UI clients
         /// </summary>
-        public ReadOnlyDictionary<string, UiClient> UiClients => new ReadOnlyDictionary<string, UiClient>(uiClients);
+        public IReadOnlyDictionary<string, UiClient> UiClients => uiClients;
 
         private readonly MobileControlSystemController _parent;
 
@@ -723,21 +737,153 @@ namespace PepperDash.Essentials.WebSocketServer
 
         private UiClient BuildUiClient(string roomKey, JoinToken token, string key)
         {
-            var c = new UiClient($"uiclient-{key}-{roomKey}-{token.Id}", token.Id, token.Token, token.TouchpanelKey);
-            this.LogInformation("Constructing UiClient with key {key} and ID {id}", key, token.Id);
+            // Get the most recent unused clientId for this token (legacy support)
+            // New clients will override this ID in OnOpen with the validated query parameter value
+            var clientId = "pending";
+            if (legacyClientRegistrations.TryGetValue(key, out var registrations))
+            {
+                // Get most recent registration
+                var sorted = registrations.OrderByDescending(r => r.timestamp).ToList();
+                if (sorted.Any())
+                {
+                    clientId = sorted.First().clientId;
+                    // Remove it from the bag
+                    var newBag = new ConcurrentBag<(string, DateTime)>(sorted.Skip(1));
+                    legacyClientRegistrations.TryUpdate(key, newBag, registrations);
+                    this.LogVerbose("Assigned most recent legacy clientId {clientId} for token {token}", clientId, key);
+                }
+            }
+
+            var c = new UiClient($"uiclient-{key}-{roomKey}-{clientId}", clientId, token.Token, token.TouchpanelKey);
+            this.LogInformation("Constructing UiClient with key {key} and temporary ID (will be set from query param)", key);
             c.Controller = _parent;
             c.RoomKey = roomKey;
+            c.TokenKey = key; // Store the URL token key for filtering
+            c.Server = this; // Give UiClient access to server for ID registration
 
-            if (uiClients.ContainsKey(token.Id))
+            // Don't add to uiClients yet - will be added in OnOpen after ID is set from query param
+
+            c.ConnectionClosed += (o, a) =>
             {
-                this.LogWarning("removing client with duplicate id {id}", token.Id);
-                uiClients.Remove(token.Id);
-            }
-            uiClients.Add(token.Id, c);
-            // UiClients[key].SetClient(c);
-            c.ConnectionClosed += (o, a) => uiClients.Remove(a.ClientId);
-            token.Id = null;
+                uiClients.TryRemove(a.ClientId, out _);
+                // Clean up any pending registrations for this token
+                var keysToRemove = pendingClientRegistrations.Keys
+                    .Where(k => k.StartsWith($"{key}-"))
+                    .ToList();
+                foreach (var k in keysToRemove)
+                {
+                    pendingClientRegistrations.TryRemove(k, out _);
+                }
+
+                // Clean up legacy registrations if empty
+                if (legacyClientRegistrations.TryGetValue(key, out var legacyBag) && legacyBag.IsEmpty)
+                {
+                    legacyClientRegistrations.TryRemove(key, out _);
+                }
+            };
             return c;
+        }
+
+        /// <summary>
+        /// Registers a UiClient with its validated client ID after WebSocket connection
+        /// </summary>
+        /// <param name="client">The UiClient to register</param>
+        /// <param name="clientId">The validated client ID</param>
+        /// <param name="tokenKey">The token key for validation</param>
+        /// <returns>True if registration successful, false if validation failed</returns>
+        public bool RegisterUiClient(UiClient client, string clientId, string tokenKey)
+        {
+            var registrationKey = $"{tokenKey}-{clientId}";
+
+            // Verify this clientId was generated during a join request for this token
+            if (!pendingClientRegistrations.TryRemove(registrationKey, out _))
+            {
+                this.LogWarning("Client attempted to connect with unregistered or expired clientId {clientId} for token {token}", clientId, tokenKey);
+                return false;
+            }
+
+            // Registration is valid - add to active clients
+            uiClients.AddOrUpdate(clientId, client, (id, existingClient) =>
+            {
+                this.LogWarning("Replacing existing client with duplicate id {id}", id);
+                return client;
+            });
+
+            this.LogInformation("Successfully registered UiClient with ID {clientId} for token {token}", clientId, tokenKey);
+            return true;
+        }
+
+        /// <summary>
+        /// Updates a client's ID when a mismatch is detected between stored ID and message ID
+        /// </summary>
+        /// <param name="oldClientId">The current/old client ID</param>
+        /// <param name="newClientId">The new client ID from the message</param>
+        /// <param name="tokenKey">The token key for validation</param>
+        /// <returns>True if update successful, false otherwise</returns>
+        public bool UpdateClientId(string oldClientId, string newClientId, string tokenKey)
+        {
+            if (string.IsNullOrEmpty(oldClientId) || string.IsNullOrEmpty(newClientId))
+            {
+                this.LogWarning("Cannot update client ID with null or empty values");
+                return false;
+            }
+
+            if (oldClientId == newClientId)
+            {
+                return true; // No update needed
+            }
+
+            // Verify the new clientId was registered for this token
+            var registrationKey = $"{tokenKey}-{newClientId}";
+            if (!pendingClientRegistrations.TryRemove(registrationKey, out _))
+            {
+                this.LogWarning("Cannot update to unregistered clientId {newClientId} for token {token}", newClientId, tokenKey);
+                return false;
+            }
+
+            // Get the existing client
+            if (!uiClients.TryRemove(oldClientId, out var client))
+            {
+                this.LogWarning("Cannot find client with old ID {oldClientId}", oldClientId);
+                return false;
+            }
+
+            // Update the client's ID
+            client.UpdateId(newClientId);
+
+            // Re-add with new ID
+            if (!uiClients.TryAdd(newClientId, client))
+            {
+                // If add fails, try to restore old entry
+                uiClients.TryAdd(oldClientId, client);
+                client.UpdateId(oldClientId);
+                this.LogError("Failed to update client ID from {oldClientId} to {newClientId}", oldClientId, newClientId);
+                return false;
+            }
+
+            this.LogInformation("Successfully updated client ID from {oldClientId} to {newClientId}", oldClientId, newClientId);
+            return true;
+        }
+
+        /// <summary>
+        /// Registers a UiClient using legacy flow (for backwards compatibility with older clients)
+        /// </summary>
+        /// <param name="client">The UiClient to register</param>
+        public void RegisterLegacyUiClient(UiClient client)
+        {
+            if (string.IsNullOrEmpty(client.Id))
+            {
+                this.LogError("Cannot register client with null or empty ID");
+                return;
+            }
+
+            uiClients.AddOrUpdate(client.Id, client, (id, existingClient) =>
+            {
+                this.LogWarning("Replacing existing client with duplicate id {id} (legacy flow)", id);
+                return client;
+            });
+
+            this.LogInformation("Successfully registered UiClient with ID {clientId} using legacy flow", client.Id);
         }
 
         /// <summary>
@@ -1046,10 +1192,23 @@ namespace PepperDash.Essentials.WebSocketServer
                 });
             }
 
+            // Generate a client ID for this join request
             var clientId = $"{Utilities.GetNextClientId()}";
-            clientContext.Token.Id = clientId;
+            var now = DateTime.UtcNow;
 
-            this.LogVerbose("Assigning ClientId: {clientId}", clientId);
+            // Store in pending registrations for new clients that send clientId via query param
+            var registrationKey = $"{token}-{clientId}";
+            pendingClientRegistrations.TryAdd(registrationKey, clientId);
+
+            // For legacy clients, store with timestamp instead of FIFO queue
+            var legacyBag = legacyClientRegistrations.GetOrAdd(token, _ => new ConcurrentBag<(string, DateTime)>());
+            legacyBag.Add((clientId, now));
+
+            this.LogVerbose("Assigning ClientId: {clientId} for token: {token} at {timestamp}", clientId, token, now);
+
+            // Construct WebSocket URL with clientId query parameter
+            var wsProtocol = "ws";
+            var wsUrl = $"{wsProtocol}://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{Port}{_wsPath}{token}?clientId={clientId}";
 
             // Construct the response object
             JoinResponse jRes = new JoinResponse
@@ -1064,6 +1223,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 UserAppUrl = string.Format("http://{0}:{1}/mc/app",
                 CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0),
                 Port),
+                WebSocketUrl = wsUrl,
                 EnableDebug = false,
                 DeviceInterfaceSupport = deviceInterfaces
             };
