@@ -8,9 +8,16 @@ namespace PepperDash.Essentials.Core.Bridges
     public class IAnalogInputJoinMap : JoinMapBaseAdvanced
     {
 
+        /// <summary>
+        /// Input Value
+        /// </summary>
         [JoinName("InputValue")]
         public JoinDataComplete InputValue = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Input Value", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+        
+        /// <summary>
+        /// Minimum Change
+        /// </summary>
         [JoinName("MinimumChange")]
         public JoinDataComplete MinimumChange = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
             new JoinMetadata { Description = "Minimum voltage change required to reflect a change", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });

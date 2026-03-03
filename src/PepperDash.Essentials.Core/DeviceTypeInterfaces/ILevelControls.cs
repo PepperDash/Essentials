@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// </summary>
     public interface ILevelControls
     {
+        /// <summary>
+        /// The level control points
+        /// </summary>
         Dictionary<string, IBasicVolumeWithFeedback> LevelControlPoints { get; }
     }
 }

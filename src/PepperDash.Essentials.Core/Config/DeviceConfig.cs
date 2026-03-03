@@ -55,6 +55,10 @@ namespace PepperDash.Essentials.Core.Config
         [JsonConverter(typeof(DevicePropertiesConverter))]
         public JToken Properties { get; set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="dc">device config</param>
         public DeviceConfig(DeviceConfig dc)
         {
             Key = dc.Key;
@@ -68,6 +72,9 @@ namespace PepperDash.Essentials.Core.Config
             //Properties = JToken.FromObject(dc.Properties);
         }
 
+        /// <summary>
+        /// Default Constructor
+        /// </summary>
         public DeviceConfig() { }
     }
 
@@ -85,6 +92,14 @@ namespace PepperDash.Essentials.Core.Config
             return objectType == typeof(JToken);
         }
 
+        /// <summary>
+        /// ReadJson method
+        /// </summary>
+        /// <param name="reader">reader to use</param>
+        /// <param name="objectType">type of object being read</param>
+        /// <param name="existingValue">existing value for the object</param>
+        /// <param name="serializer">serializer to use</param>
+        /// <returns></returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             return JToken.ReadFrom(reader);

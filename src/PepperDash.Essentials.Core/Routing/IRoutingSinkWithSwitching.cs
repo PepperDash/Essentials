@@ -12,6 +12,10 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRoutingSinkWithSwitching : IRoutingSink
 	{		
+        /// <summary>
+        /// Executes a switch on the device
+        /// </summary>
+        /// <param name="inputSelector">input selector</param>
 		void ExecuteSwitch(object inputSelector);        
     }
 
@@ -20,6 +24,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRoutingSinkWithSwitchingWithInputPort:IRoutingSinkWithSwitching, IRoutingSinkWithInputPort
     {
+        /// <summary>
+        /// Event raised when the input changes
+        /// </summary>
         event InputChangedEventHandler InputChanged;
     }
 

@@ -28,6 +28,9 @@ namespace PepperDash.Essentials.Core
   /// </summary>
 		public IntFeedback InUseCountFeedback { get; private set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
 		public InUseTracking()
 		{
 			InUseFeedback = new BoolFeedback(() => _Users.Count > 0);
@@ -39,9 +42,7 @@ namespace PepperDash.Essentials.Core
 		/// multiple times, provided that the label is different
 		/// </summary>
 		/// <param name="label">A label to identify the instance of the user. Treated like a "role", etc.</param>
-  /// <summary>
-  /// AddUser method
-  /// </summary>
+		/// <param name="objectToAdd">The object to add</param>
 		public void AddUser(object objectToAdd, string label)
 		{
 			// check if an exact object/label pair exists and ignore if so.  No double-registers.
@@ -56,9 +57,11 @@ namespace PepperDash.Essentials.Core
 			InUseCountFeedback.FireUpdate();
 		}
 
-  /// <summary>
-  /// RemoveUser method
-  /// </summary>
+		/// <summary>
+		/// RemoveUser method
+		/// </summary>
+		/// <param name="label">The label of the user to remove</param>
+		/// <param name="objectToRemove">The object to remove</param>
 		public void RemoveUser(object objectToRemove, string label)
 		{
 			// Find the user object if exists and remove it
@@ -73,14 +76,26 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
- /// <summary>
- /// Represents a InUseTrackingObject
- /// </summary>
+	/// <summary>
+	/// Represents a InUseTrackingObject
+	/// </summary>
 	public class InUseTrackingObject
 	{
+		/// <summary>
+		/// The label of the user
+		/// </summary>
 		public string Label { get; private set; }
+
+		/// <summary>
+		/// The user object
+		/// </summary>
 		public object User { get; private set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="user">user using the object</param>
+		/// <param name="label">label for the object</param>
 		public InUseTrackingObject(object user, string label)
 		{
 			User = user;

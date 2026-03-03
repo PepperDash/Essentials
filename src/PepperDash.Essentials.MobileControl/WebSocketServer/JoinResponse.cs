@@ -64,6 +64,12 @@ namespace PepperDash.Essentials.WebSocketServer
     [JsonProperty("userAppUrl")]
     public string UserAppUrl { get; set; }
 
+    /// <summary>
+    /// Gets or sets the WebSocketUrl with clientId query parameter
+    /// </summary>
+    [JsonProperty("webSocketUrl")]
+    public string WebSocketUrl { get; set; }
+
 
     /// <summary>
     /// Gets or sets the EnableDebug

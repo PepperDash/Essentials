@@ -22,6 +22,10 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public string Description { get; private set; }
 
+        /// <summary>
+        /// Constructor for CrestronGlobalSecretsProvider
+        /// </summary>
+        /// <param name="key">The key for the secret provider</param>
         public CrestronGlobalSecretsProvider(string key)
         {
             Key = key;

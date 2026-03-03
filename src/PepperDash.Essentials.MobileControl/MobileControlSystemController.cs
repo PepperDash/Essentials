@@ -1748,7 +1748,7 @@ namespace PepperDash.Essentials
                 var clientNo = 1;
                 foreach (var clientContext in _directServer.UiClientContexts)
                 {
-                    var clients = _directServer.UiClients.Values.Where(c => c.Token == clientContext.Value.Token.Token);
+                    var clients = _directServer.UiClients.Values.Where(c => c.TokenKey == clientContext.Key);
 
                     CrestronConsole.ConsoleCommandResponse(
                         $"\r\nClient {clientNo}:\r\n" +

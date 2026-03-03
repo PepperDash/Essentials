@@ -20,6 +20,9 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public interface IComPortsDevice
 	{
+		/// <summary>
+		/// Gets the Device
+		/// </summary>
 		IComPorts Device { get; }
 	}
 }

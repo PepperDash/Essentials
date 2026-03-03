@@ -7,158 +7,275 @@ namespace PepperDash.Essentials.Core.Bridges
     /// </summary>
     public class GlsOccupancySensorBaseJoinMap : JoinMapBaseAdvanced
     {
+        /// <summary>
+        /// Occ Sensor Is Online
+        /// </summary>
         [JoinName("IsOnline")]
         public JoinDataComplete IsOnline = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Is Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Set to Occupied
+        /// </summary>
         [JoinName("ForceOccupied")]
         public JoinDataComplete ForceOccupied = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Set to Occupied", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Set to Vacant
+        /// </summary>
         [JoinName("ForceVacant")]
         public JoinDataComplete ForceVacant = new JoinDataComplete(new JoinData { JoinNumber = 3, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Set to Vacant", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Enable Raw
+        /// </summary>
         [JoinName("EnableRawStates")]
         public JoinDataComplete EnableRawStates = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Enable Raw", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Disable Raw
+        /// </summary>
         [JoinName("RoomOccupiedFeedback")]
         public JoinDataComplete RoomOccupiedFeedback = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Room Is Occupied", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Grace Occupancy Detected
+        /// </summary>
         [JoinName("GraceOccupancyDetectedFeedback")]
         public JoinDataComplete GraceOccupancyDetectedFeedback = new JoinDataComplete(new JoinData { JoinNumber = 3, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Grace Occupancy Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Room Is Vacant
+        /// </summary>
         [JoinName("RoomVacantFeedback")]
         public JoinDataComplete RoomVacantFeedback = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Room Is Vacant", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Raw Occupancy Detected
+        /// </summary>
         [JoinName("RawOccupancyFeedback")]
         public JoinDataComplete RawOccupancyFeedback = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Raw Occupancy Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Raw PIR Occupancy Detected
+        /// </summary>
         [JoinName("RawOccupancyPirFeedback")]
         public JoinDataComplete RawOccupancyPirFeedback = new JoinDataComplete(new JoinData { JoinNumber = 6, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Raw PIR Occupancy Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Raw US Occupancy Detected
+        /// </summary>
         [JoinName("RawOccupancyUsFeedback")]
         public JoinDataComplete RawOccupancyUsFeedback = new JoinDataComplete(new JoinData { JoinNumber = 7, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Raw US Occupancy Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Enable LED Flash
+        /// </summary>
         [JoinName("EnableLedFlash")]
         public JoinDataComplete EnableLedFlash = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Enable LED Flash", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Disable LED Flash
+        /// </summary>
         [JoinName("DisableLedFlash")]
         public JoinDataComplete DisableLedFlash = new JoinDataComplete(new JoinData { JoinNumber = 12, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Disable LED Flash", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Enable Short Timeout
+        /// </summary>
         [JoinName("EnableShortTimeout")]
         public JoinDataComplete EnableShortTimeout = new JoinDataComplete(new JoinData { JoinNumber = 13, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Enable Short Timeout", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Disable Short Timeout
+        /// </summary>
         [JoinName("DisableShortTimeout")]
         public JoinDataComplete DisableShortTimeout = new JoinDataComplete(new JoinData { JoinNumber = 14, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Disable Short Timeout", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Set To Vacant when Either Sensor is Vacant
+        /// </summary>
         [JoinName("OrWhenVacated")]
         public JoinDataComplete OrWhenVacated = new JoinDataComplete(new JoinData { JoinNumber = 15, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Set To Vacant when Either Sensor is Vacant", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Set To Vacant when Both Sensors are Vacant
+        /// </summary>
         [JoinName("AndWhenVacated")]
         public JoinDataComplete AndWhenVacated = new JoinDataComplete(new JoinData { JoinNumber = 16, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Set To Vacant when Both Sensors are Vacant", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Enable Ultrasonic Sensor A
+        /// </summary>
         [JoinName("EnableUsA")]
         public JoinDataComplete EnableUsA = new JoinDataComplete(new JoinData { JoinNumber = 17, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Enable Ultrasonic Sensor A", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Disable Ultrasonic Sensor A
+        /// </summary>
         [JoinName("DisableUsA")]
         public JoinDataComplete DisableUsA = new JoinDataComplete(new JoinData { JoinNumber = 18, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Disable Ultrasonic Sensor A", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Enable Ultrasonic Sensor B
+        /// </summary>
         [JoinName("EnableUsB")]
         public JoinDataComplete EnableUsB = new JoinDataComplete(new JoinData { JoinNumber = 19, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Enable Ultrasonic Sensor B", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Disable Ultrasonic Sensor B
+        /// </summary>
         [JoinName("DisableUsB")]
         public JoinDataComplete DisableUsB = new JoinDataComplete(new JoinData { JoinNumber = 20, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Disable Ultrasonic Sensor B", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Enable IR Sensor
+        /// </summary>
         [JoinName("EnablePir")]
         public JoinDataComplete EnablePir = new JoinDataComplete(new JoinData { JoinNumber = 21, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Enable IR Sensor", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Disable IR Sensor
+        /// </summary>
         [JoinName("DisablePir")]
         public JoinDataComplete DisablePir = new JoinDataComplete(new JoinData { JoinNumber = 22, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Disable IR Sensor", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Increment US Occupied State Sensitivity
+        /// </summary>
         [JoinName("IncrementUsInOccupiedState")]
         public JoinDataComplete IncrementUsInOccupiedState = new JoinDataComplete(new JoinData { JoinNumber = 23, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Increment US Occupied State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Decrement US Occupied State Sensitivity
+        /// </summary>
         [JoinName("DecrementUsInOccupiedState")]
         public JoinDataComplete DecrementUsInOccupiedState = new JoinDataComplete(new JoinData { JoinNumber = 24, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Decrement US Occupied State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Increment US Vacant State Sensitivity
+        /// </summary>
         [JoinName("IncrementUsInVacantState")]
         public JoinDataComplete IncrementUsInVacantState = new JoinDataComplete(new JoinData { JoinNumber = 25, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Increment US Vacant State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Decrement US Vacant State Sensitivity
+        /// </summary>
         [JoinName("DecrementUsInVacantState")]
         public JoinDataComplete DecrementUsInVacantState = new JoinDataComplete(new JoinData { JoinNumber = 26, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Decrement US Vacant State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Increment IR Occupied State Sensitivity
+        /// </summary>
         [JoinName("IncrementPirInOccupiedState")]
         public JoinDataComplete IncrementPirInOccupiedState = new JoinDataComplete(new JoinData { JoinNumber = 27, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Increment IR Occupied State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Decrement IR Occupied State Sensitivity
+        /// </summary>
         [JoinName("DecrementPirInOccupiedState")]
         public JoinDataComplete DecrementPirInOccupiedState = new JoinDataComplete(new JoinData { JoinNumber = 28, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Decrement IR Occupied State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Increment IR Vacant State Sensitivity
+        /// </summary>
         [JoinName("IncrementPirInVacantState")]
         public JoinDataComplete IncrementPirInVacantState = new JoinDataComplete(new JoinData { JoinNumber = 29, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Increment IR Vacant State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Decrement IR Vacant State Sensitivity
+        /// </summary>
         [JoinName("DecrementPirInVacantState")]
         public JoinDataComplete DecrementPirInVacantState = new JoinDataComplete(new JoinData { JoinNumber = 30, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Decrement IR Vacant State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Occ Sensor Timeout Value
+        /// </summary>
         [JoinName("Timeout")]
         public JoinDataComplete Timeout = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Timeout Value", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Occ Sensor Local Timeout Value
+        /// </summary>
         [JoinName("TimeoutLocalFeedback")]
         public JoinDataComplete TimeoutLocalFeedback = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Local Timeout Value", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Occ Sensor Internal PhotoSensor Value
+        /// </summary>
         [JoinName("InternalPhotoSensorValue")]
         public JoinDataComplete InternalPhotoSensorValue = new JoinDataComplete(new JoinData { JoinNumber = 3, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Internal PhotoSensor Value", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Occ Sensor External PhotoSensor Value
+        /// </summary>
         [JoinName("ExternalPhotoSensorValue")]
         public JoinDataComplete ExternalPhotoSensorValue = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor External PhotoSensor Value", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Occ Sensor Ultrasonic Sensitivity in Occupied State
+        /// </summary>
         [JoinName("UsSensitivityInOccupiedState")]
         public JoinDataComplete UsSensitivityInOccupiedState = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Ultrasonic Sensitivity in Occupied State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Occ Sensor Ultrasonic Sensitivity in Vacant State
+        /// </summary>
         [JoinName("UsSensitivityInVacantState")]
         public JoinDataComplete UsSensitivityInVacantState = new JoinDataComplete(new JoinData { JoinNumber = 6, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Ultrasonic Sensitivity in Vacant State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Occ Sensor PIR Sensitivity in Occupied State
+        /// </summary>
         [JoinName("PirSensitivityInOccupiedState")]
         public JoinDataComplete PirSensitivityInOccupiedState = new JoinDataComplete(new JoinData { JoinNumber = 7, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor PIR Sensitivity in Occupied State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Occ Sensor PIR Sensitivity in Vacant State
+        /// </summary>
         [JoinName("PirSensitivityInVacantState")]
         public JoinDataComplete PirSensitivityInVacantState = new JoinDataComplete(new JoinData { JoinNumber = 8, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor PIR Sensitivity in Vacant State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Occ Sensor Name
+        /// </summary>
         [JoinName("Name")]
         public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Occ Sensor Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });

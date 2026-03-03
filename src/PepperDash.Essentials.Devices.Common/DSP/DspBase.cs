@@ -61,12 +61,17 @@ namespace PepperDash.Essentials.Devices.Common.DSP
     /// <summary>
     /// Base class for DSP control points
     /// </summary>
-    public abstract class DspControlPoint : IKeyed
+    public abstract class DspControlPoint : IKeyName
     {
         /// <summary>
         /// Gets or sets the Key
         /// </summary>
         public string Key { get; }
+
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
+        public string Name { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the DspControlPoint class

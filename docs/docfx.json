@@ -52,6 +52,7 @@
       "_appLogoPath": "docs/images/favicon-32x32.png",
       "_appFaviconPath": "docs/images/favicon.ico",
       "_disableToc": false,
+      "_enableNewTab": true,
       "pdf": false
     }
   }

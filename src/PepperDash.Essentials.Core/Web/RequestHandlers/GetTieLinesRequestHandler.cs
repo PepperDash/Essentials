@@ -11,8 +11,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
     /// </summary>
     public class GetTieLinesRequestHandler : WebApiBaseRequestHandler
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public GetTieLinesRequestHandler() : base(true) { }
 
+        /// <summary>
+        /// Handles the GET request
+        /// </summary>
+        /// <param name="context"></param>
         protected override void HandleGet(HttpCwsContext context)
         {
             var tieLineString = JsonConvert.SerializeObject(TieLineCollection.Default.Select((tl) => new

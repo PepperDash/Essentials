@@ -12,6 +12,9 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public class GenericCommunicationMonitor : StatusMonitorBase
 	{
+        /// <summary>
+        /// Gets the Client being monitored
+        /// </summary>
 		public IBasicCommunication Client { get; private set; }
 
         /// <summary>
@@ -281,17 +284,29 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
- /// <summary>
- /// Represents a CommunicationMonitorConfig
- /// </summary>
+    /// <summary>
+    /// Represents a CommunicationMonitorConfig
+    /// </summary>
 	public class CommunicationMonitorConfig
 	{
-  /// <summary>
-  /// Gets or sets the PollInterval
-  /// </summary>
+        /// <summary>
+        /// Gets or sets the PollInterval
+        /// </summary>
 		public int PollInterval { get; set; }
+
+        /// <summary>
+        /// Gets or sets the TimeToWarning
+        /// </summary>
 		public int TimeToWarning { get; set; }
+
+        /// <summary>
+        /// Gets or sets the TimeToError
+        /// </summary>
 		public int TimeToError { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PollString
+        /// </summary>
 		public string PollString { get; set; }
 
         /// <summary>

@@ -662,6 +662,7 @@ namespace PepperDash.Essentials
 
             if (jsonFiles.Length > 1)
             {
+                Debug.LogError("Multiple configuration files found in application directory: {@jsonFiles}", jsonFiles.Select(f => f.FullName).ToArray());
                 throw new Exception("Multiple configuration files found. Cannot continue.");
             }
 

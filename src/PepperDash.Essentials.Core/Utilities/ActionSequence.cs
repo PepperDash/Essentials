@@ -30,6 +30,11 @@ namespace PepperDash.Essentials.Core.Utilities
 
         private bool _allowActionsToExecute;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="config"></param>
         public ActionSequence(string key, DeviceConfig config)
             : base(key, config.Name)
         {
@@ -126,9 +131,15 @@ namespace PepperDash.Essentials.Core.Utilities
     /// </summary>
     public class ActionSequencePropertiesConfig
     {
+        /// <summary>
+        /// Gets or sets the ActionSequence
+        /// </summary>
         [JsonProperty("actionSequence")]
         public List<SequencedDeviceActionWrapper> ActionSequence { get; set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public ActionSequencePropertiesConfig()
         {
             ActionSequence = new List<SequencedDeviceActionWrapper>();
@@ -140,10 +151,10 @@ namespace PepperDash.Essentials.Core.Utilities
     /// </summary>
     public class SequencedDeviceActionWrapper : DeviceActionWrapper
     {
-        [JsonProperty("delayMs")]
         /// <summary>
         /// Gets or sets the DelayMs
         /// </summary>
+        [JsonProperty("delayMs")]
         public int DelayMs { get; set; }
     }
 
@@ -152,11 +163,19 @@ namespace PepperDash.Essentials.Core.Utilities
     /// </summary>
     public class ActionSequenceFactory : EssentialsDeviceFactory<ActionSequence>
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public ActionSequenceFactory()
         {
             TypeNames = new List<string>() { "actionsequence" };
         }
 
+        /// <summary>
+        /// BuildDevice method
+        /// </summary>
+        /// <param name="dc">device config</param>
+        /// <returns></returns>
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new ActionSequence Device");

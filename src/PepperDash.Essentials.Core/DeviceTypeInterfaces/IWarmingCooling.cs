@@ -11,7 +11,14 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public interface IWarmingCooling
 	{
+		/// <summary>
+		/// Feedback indicating whether the device is warming up
+		/// </summary>
 		BoolFeedback IsWarmingUpFeedback { get; }
+
+		/// <summary>
+		/// Feedback indicating whether the device is cooling down
+		/// </summary>
 		BoolFeedback IsCoolingDownFeedback { get; }
 	}
 }

@@ -2,8 +2,14 @@
 
 namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
+		/// <summary>
+		/// Represents a GenericIrControllerJoinMap
+		/// </summary>
 		public sealed class GenericIrControllerJoinMap : JoinMapBaseAdvanced
 		{
+			/// <summary>
+			/// PLAY
+			/// </summary>
 			[JoinName("PLAY")]
 			public JoinDataComplete Play = new JoinDataComplete(
 				new JoinData
@@ -17,7 +23,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// STOP
+			/// </summary>
 			[JoinName("STOP")]
 			public JoinDataComplete Stop = new JoinDataComplete(
 				new JoinData
@@ -31,7 +40,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// PAUSE
+			/// </summary>
 			[JoinName("PAUSE")]
 			public JoinDataComplete Pause = new JoinDataComplete(
 				new JoinData
@@ -46,6 +58,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 
+			/// <summary>
+			/// FSCAN
+			/// </summary>
 			[JoinName("FSCAN")]
 			public JoinDataComplete ForwardScan = new JoinDataComplete(
 				new JoinData
@@ -60,6 +75,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
+			/// <summary>
+			/// RSCAN
+			/// </summary>
 			[JoinName("RSCAN")]
 			public JoinDataComplete ReverseScan = new JoinDataComplete(
 				new JoinData
@@ -73,7 +91,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// F_SKIP
+			/// </summary>
 			[JoinName("F_SKIP")]
 			public JoinDataComplete ForwardSkip = new JoinDataComplete(
 				new JoinData
@@ -88,6 +109,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
+			/// <summary>
+			/// R_SKIP
+			/// </summary>
 			[JoinName("R_SKIP")]
 			public JoinDataComplete ReverseSkip = new JoinDataComplete(
 				new JoinData
@@ -101,7 +125,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// RECORD
+			/// </summary>
 			[JoinName("RECORD")]
 			public JoinDataComplete Record = new JoinDataComplete(
 				new JoinData
@@ -116,6 +143,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
+			/// <summary>
+			/// POWER
+			/// </summary>
 			[JoinName("POWER")]
 			public JoinDataComplete Power = new JoinDataComplete(
 				new JoinData
@@ -130,6 +160,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
+			/// <summary>
+			/// 0
+			/// </summary>
 			[JoinName("0")]
 			public JoinDataComplete Kp0 = new JoinDataComplete(
 				new JoinData
@@ -143,7 +176,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// 1
+			/// </summary>
 			[JoinName("1")]
 			public JoinDataComplete Kp1 = new JoinDataComplete(
 				new JoinData
@@ -157,7 +193,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// 2
+			/// </summary>
 			[JoinName("2")]
 			public JoinDataComplete Kp2 = new JoinDataComplete(
 				new JoinData
@@ -171,7 +210,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// 3
+			/// </summary>
 			[JoinName("3")]
 			public JoinDataComplete Kp3 = new JoinDataComplete(
 				new JoinData
@@ -185,7 +227,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// 4
+			/// </summary>
 			[JoinName("4")]
 			public JoinDataComplete Kp4 = new JoinDataComplete(
 				new JoinData
@@ -199,7 +244,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// 5
+			/// </summary>
 			[JoinName("5")]
 			public JoinDataComplete Kp5 = new JoinDataComplete(
 				new JoinData
@@ -213,7 +261,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// 6
+			/// </summary>
 			[JoinName("6")]
 			public JoinDataComplete Kp6 = new JoinDataComplete(
 				new JoinData
@@ -227,7 +278,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// 7
+			/// </summary>
 			[JoinName("7")]
 			public JoinDataComplete Kp7 = new JoinDataComplete(
 				new JoinData
@@ -241,7 +295,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// 8
+			/// </summary>
 			[JoinName("8")]
 			public JoinDataComplete Kp8 = new JoinDataComplete(
 				new JoinData
@@ -255,7 +312,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// 9
+			/// </summary>
 			[JoinName("9")]
 			public JoinDataComplete Kp9 = new JoinDataComplete(
 				new JoinData
@@ -283,7 +343,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			// 		JoinCapabilities = eJoinCapabilities.FromSIMPL,
 			// 		JoinType = eJoinType.Digital
 			// 	});
-			
+
+			/// <summary>
+			/// ENTER
+			/// </summary>
 			[JoinName("ENTER")]
 			public JoinDataComplete Enter = new JoinDataComplete(
 				new JoinData
@@ -297,7 +360,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// CH+
+			/// </summary>
 			[JoinName("CH+")]
 			public JoinDataComplete ChannelUp = new JoinDataComplete(
 				new JoinData
@@ -311,7 +377,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// CH-
+			/// </summary>
 			[JoinName("CH-")]
 			public JoinDataComplete ChannelDown = new JoinDataComplete(
 				new JoinData
@@ -325,7 +394,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-			
+
+			/// <summary>
+			/// *
+			/// </summary>
 			[JoinName("*")]
 			public JoinDataComplete KpStar = new JoinDataComplete(
 				new JoinData
@@ -339,7 +411,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// #
+			/// </summary>
 			[JoinName("#")]
 			public JoinDataComplete KpPound = new JoinDataComplete(
 				new JoinData
@@ -368,6 +443,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			// 		JoinType = eJoinType.Digital
 			// 	});
 
+			/// <summary>
+			/// POWER_ON
+			/// </summary>
 			[JoinName("POWER_ON")]
 			public JoinDataComplete PowerOn = new JoinDataComplete(
 				new JoinData
@@ -381,7 +459,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// POWER_OFF
+			/// </summary>
 			[JoinName("POWER_OFF")]
 			public JoinDataComplete PowerOff = new JoinDataComplete(
 				new JoinData
@@ -395,7 +476,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// PLAY_PAUSE
+			/// </summary>
 			[JoinName("PLAY_PAUSE")]
 			public JoinDataComplete PlayPause = new JoinDataComplete(
 				new JoinData
@@ -409,7 +493,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// LAST
+			/// </summary>
 			[JoinName("LAST")]
 			public JoinDataComplete Last = new JoinDataComplete(
 				new JoinData
@@ -424,6 +511,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
+			/// <summary>
+			/// HOME
+			/// </summary>
 			[JoinName("HOME")]
 			public JoinDataComplete Home = new JoinDataComplete(
 				new JoinData
@@ -438,6 +528,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
+			/// <summary>
+			/// BACK
+			/// </summary>
 			[JoinName("BACK")]
 			public JoinDataComplete Back = new JoinDataComplete(
 				new JoinData
@@ -452,7 +545,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 
-
+			/// <summary>
+			/// GUIDE
+			/// </summary>
 			[JoinName("GUIDE")]
 			public JoinDataComplete Guide = new JoinDataComplete(
 				new JoinData
@@ -466,7 +561,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// INFO
+			/// </summary>
 			[JoinName("INFO")]
 			public JoinDataComplete Info = new JoinDataComplete(
 				new JoinData
@@ -480,7 +578,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// MENU
+			/// </summary>
 			[JoinName("MENU")]
 			public JoinDataComplete Menu = new JoinDataComplete(
 				new JoinData
@@ -494,7 +595,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// UP_ARROW
+			/// </summary>
 			[JoinName("UP_ARROW")]
 			public JoinDataComplete DpadUp = new JoinDataComplete(
 				new JoinData
@@ -508,7 +612,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// DN_ARROW
+			/// </summary>
 			[JoinName("DN_ARROW")]
 			public JoinDataComplete DpadDown = new JoinDataComplete(
 				new JoinData
@@ -522,7 +629,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// LEFT_ARROW
+			/// </summary>
 			[JoinName("LEFT_ARROW")]
 			public JoinDataComplete DpadLeft = new JoinDataComplete(
 				new JoinData
@@ -536,7 +646,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// RIGHT_ARROW
+			/// </summary>
 			[JoinName("RIGHT_ARROW")]
 			public JoinDataComplete DpadRight = new JoinDataComplete(
 				new JoinData
@@ -550,7 +663,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// SELECT
+			/// </summary>
 			[JoinName("SELECT")]
 			public JoinDataComplete DpadSelect = new JoinDataComplete(
 				new JoinData
@@ -564,7 +680,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// OPTIONS
+			/// </summary>
 			[JoinName("OPTIONS")]
 			public JoinDataComplete Options = new JoinDataComplete(
 				new JoinData
@@ -578,7 +697,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// RETURN
+			/// </summary>
 			[JoinName("RETURN")]
 			public JoinDataComplete Return = new JoinDataComplete(
 				new JoinData
@@ -593,6 +715,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
+			/// <summary>
+			/// DVR
+			/// </summary>
 			[JoinName("DVR")]
 			public JoinDataComplete Dvr = new JoinDataComplete(
 				new JoinData
@@ -607,7 +732,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
-
+			/// <summary>
+			/// ON_DEMAND
+			/// </summary>
 			[JoinName("ON_DEMAND")]
 			public JoinDataComplete OnDemand = new JoinDataComplete(
 				new JoinData
@@ -622,7 +749,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
-
+			/// <summary>
+			/// PAGE_UP
+			/// </summary>
 			[JoinName("PAGE_UP")]
 			public JoinDataComplete PageUp = new JoinDataComplete(
 				new JoinData
@@ -636,7 +765,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// PAGE_DOWN
+			/// </summary>
 			[JoinName("PAGE_DOWN")]
 			public JoinDataComplete PageDown = new JoinDataComplete(
 				new JoinData
@@ -650,7 +782,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// F_SRCH
+			/// </summary>
 			[JoinName("F_SRCH")]
 			public JoinDataComplete ForwardSearch = new JoinDataComplete(
 				new JoinData
@@ -664,7 +799,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// R_SRCH
+			/// </summary>
 			[JoinName("R_SRCH")]
 			public JoinDataComplete ReverseSearch = new JoinDataComplete(
 				new JoinData
@@ -678,7 +816,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// TRACK+
+			/// </summary>
 			[JoinName("TRACK+")]
 			public JoinDataComplete TrackPlus = new JoinDataComplete(
 				new JoinData
@@ -692,7 +833,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// TRACK-
+			/// </summary>
 			[JoinName("TRACK-")]
 			public JoinDataComplete TrackMinus = new JoinDataComplete(
 				new JoinData
@@ -707,6 +851,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 			
+			/// <summary>
+			/// A
+			/// </summary>
 			[JoinName("A")]
 			public JoinDataComplete KpA = new JoinDataComplete(
 				new JoinData
@@ -720,7 +867,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// B
+			/// </summary>
 			[JoinName("B")]
 			public JoinDataComplete KpB = new JoinDataComplete(
 				new JoinData
@@ -734,7 +884,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// C
+			/// </summary>
 			[JoinName("C")]
 			public JoinDataComplete KpC = new JoinDataComplete(
 				new JoinData
@@ -748,7 +901,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// D
+			/// </summary>
 			[JoinName("D")]
 			public JoinDataComplete KpD = new JoinDataComplete(
 				new JoinData
@@ -762,7 +918,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// RED
+			/// </summary>
 			[JoinName("RED")]
 			public JoinDataComplete KpRed = new JoinDataComplete(
 				new JoinData
@@ -776,7 +935,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// GREEN
+			/// </summary>
 			[JoinName("GREEN")]
 			public JoinDataComplete KpGreen = new JoinDataComplete(
 				new JoinData
@@ -790,7 +952,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// YELLOW
+			/// </summary>
 			[JoinName("YELLOW")]
 			public JoinDataComplete KpYellow = new JoinDataComplete(
 				new JoinData
@@ -804,7 +969,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinCapabilities = eJoinCapabilities.FromSIMPL,
 					JoinType = eJoinType.Digital
 				});
-
+			
+			/// <summary>
+			/// BLUE
+			/// </summary>
 			[JoinName("BLUE")]
 			public JoinDataComplete KpBlue = new JoinDataComplete(
 				new JoinData
@@ -819,6 +987,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 					JoinType = eJoinType.Digital
 				});
 
+			/// <summary>
+			/// Constructor
+			/// </summary>
+			/// <param name="joinStart">Join this join map will start at</param>
 			public GenericIrControllerJoinMap(uint joinStart)
 				: base(joinStart, typeof(GenericIrControllerJoinMap))
 			{

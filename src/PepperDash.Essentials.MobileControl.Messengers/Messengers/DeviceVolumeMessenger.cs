@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="messagePath">The message path.</param>
         /// <param name="device">The device.</param>
         public DeviceVolumeMessenger(string key, string messagePath, IBasicVolumeControls device)
-            : base(key, messagePath, device as IKeyName)
+            : base(key, messagePath, device)
         {
             this.device = device;
         }

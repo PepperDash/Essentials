@@ -11,23 +11,57 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public interface IDPad : IKeyed
 	{
+		/// <summary>
+		/// Up button press
+		/// </summary>
+		/// <param name="pressRelease">determines if the button is pressed or released</param>
 		void Up(bool pressRelease);
+
+		/// <summary>
+		/// Down button press
+		/// </summary>
+		/// <param name="pressRelease">determines if the button is pressed or released</param>
 		void Down(bool pressRelease);
+
+		/// <summary>
+		/// Left button press
+		/// </summary>
+		/// <param name="pressRelease">determines if the button is pressed or released</param>
 		void Left(bool pressRelease);
+
+		/// <summary>
+		/// Right button press
+		/// </summary>
+		/// <param name="pressRelease">determines if the button is pressed or released</param>
 		void Right(bool pressRelease);
+
+		/// <summary>
+		/// Select button press
+		/// </summary>
+		/// <param name="pressRelease">determines if the button is pressed or released</param>
 		void Select(bool pressRelease);
+
+		/// <summary>
+		/// Menu button press
+		/// </summary>
+		/// <param name="pressRelease">determines if the button is pressed or released</param>
 		void Menu(bool pressRelease);
+
+		/// <summary>
+		/// Exit button press
+		/// </summary>
+		/// <param name="pressRelease">determines if the button is pressed or released</param>
 		void Exit(bool pressRelease);
 	}
 
 	/// <summary>
-	/// 
+	/// IDPadExtensions class
 	/// </summary>
 	public static class IDPadExtensions
 	{
-  /// <summary>
-  /// LinkButtons method
-  /// </summary>
+		/// <summary>
+		/// LinkButtons method
+		/// </summary>
 		public static void LinkButtons(this IDPad dev, BasicTriList triList)
 		{
 			triList.SetBoolSigAction(138, dev.Up);
@@ -39,9 +73,9 @@ namespace PepperDash.Essentials.Core
 			triList.SetBoolSigAction(134, dev.Exit);        
 		}
 
-  /// <summary>
-  /// UnlinkButtons method
-  /// </summary>
+		/// <summary>
+		/// UnlinkButtons method
+		/// </summary>
 		public static void UnlinkButtons(this IDPad dev, BasicTriList triList)
 		{
 			triList.ClearBoolSigAction(138);

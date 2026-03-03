@@ -326,6 +326,8 @@ namespace PepperDash.Essentials.Core
         /// <param name="signalType">This recursive function should not be called with AudioVideo</param>
         /// <param name="cycle">Just an informational counter</param>
         /// <param name="routeTable">The RouteDescriptor being populated as the route is discovered</param>
+        /// <param name="outputPortToUse">The RoutingOutputPort to use for the route</param>
+        /// <param name="sourcePort">The specific source output port to use (optional)</param>
         /// <returns>true if source is hit</returns>
         private static bool GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source,
             RoutingOutputPort outputPortToUse, List<IRoutingInputsOutputs> alreadyCheckedDevices,

@@ -4,14 +4,19 @@ using PepperDash.Essentials.Core.Presets;
 
 namespace PepperDash.Essentials.Core.PageManagers
 {
- /// <summary>
- /// Represents a SetTopBoxMediumPageManager
- /// </summary>
+	/// <summary>
+	/// Represents a SetTopBoxMediumPageManager
+	/// </summary>
 	public class SetTopBoxMediumPageManager : MediumLeftSwitchablePageManager
 	{
 		ISetTopBoxControls SetTopBox;
 		DevicePresetsView PresetsView;
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="stb">set top box controls device</param>
+		/// <param name="trilist">trilist device</param>
 		public SetTopBoxMediumPageManager(ISetTopBoxControls stb, BasicTriListWithSmartObject trilist)
 			: base(stb.DisplayUiType)
 		{
@@ -21,10 +26,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 				PresetsView = new DevicePresetsView(trilist, stb.TvPresets);
 		}
 
-  /// <summary>
-  /// Show method
-  /// </summary>
-  /// <inheritdoc />
+		/// <summary>
+		/// Show method
+		/// </summary>
+		/// <inheritdoc />
 		public override void Show()
 		{
 			if(PresetsView != null)
@@ -54,10 +59,10 @@ namespace PepperDash.Essentials.Core.PageManagers
 			}
 		}
 
-  /// <summary>
-  /// Hide method
-  /// </summary>
-  /// <inheritdoc />
+		/// <summary>
+		/// Hide method
+		/// </summary>
+		/// <inheritdoc />
 		public override void Hide()
 		{
 			TriList.BooleanInput[BackingPageJoin].BoolValue = false;

@@ -138,6 +138,11 @@ Recurrence Days: {evt.Value.Recurrence.RecurrenceDays}
                 EventGroups.Remove(eventGroup.Name);
         }
 
+        /// <summary>
+        /// Gets the event group by key
+        /// </summary>
+        /// <param name="key">key of the event group</param>
+        /// <returns></returns>
         public static ScheduledEventGroup GetEventGroup(string key)
         {
             ScheduledEventGroup returnValue;
@@ -146,6 +151,9 @@ Recurrence Days: {evt.Value.Recurrence.RecurrenceDays}
         }
     }
 
+    /// <summary>
+    /// SchedulerUtilities class
+    /// </summary>
     public static class SchedulerUtilities
     {
         /// <summary>

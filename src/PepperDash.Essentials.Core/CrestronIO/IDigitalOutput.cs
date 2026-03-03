@@ -11,7 +11,15 @@ namespace PepperDash.Essentials.Core.CrestronIO
     /// </summary>
     public interface IDigitalOutput
     {
+        /// <summary>
+        /// Feedback to indicate the state of the output
+        /// </summary>
         BoolFeedback OutputStateFeedback { get; }
+
+        /// <summary>
+        /// Sets the output state
+        /// </summary>
+        /// <param name="state">The desired state of the output</param>
         void SetOutput(bool state);
     }
 }

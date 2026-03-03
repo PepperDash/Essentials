@@ -48,12 +48,8 @@ namespace PepperDash.Essentials.Core
 		}
 
 		/// <summary>
-		/// Starts the 
+		/// Start method
 		/// </summary>
-		/// <param name="timeout"></param>
-  /// <summary>
-  /// Start method
-  /// </summary>
 		public void Start()
 		{
 			if (Timer == null)

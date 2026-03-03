@@ -8,7 +8,15 @@ namespace PepperDash.Essentials.Core.Queues
     /// </summary>
     public interface IQueue<T> : IKeyed, IDisposable where T : class 
     {
+        /// <summary>
+        /// Enqueues an item
+        /// </summary>
+        /// <param name="item">item to be queued</param>
         void Enqueue(T item);
+
+        /// <summary>
+        /// gets the disposed status of the queue
+        /// </summary>
         bool Disposed { get; }
     }
 }

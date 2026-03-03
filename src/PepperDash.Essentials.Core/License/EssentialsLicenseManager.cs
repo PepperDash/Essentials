@@ -13,21 +13,29 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.License
 {
+	/// <summary>
+	/// Abstract base class for License Managers
+	/// </summary>
 	public abstract class LicenseManager
 	{
-  /// <summary>
-  /// Gets or sets the LicenseIsValid
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the LicenseIsValid
+		/// </summary>
 		public BoolFeedback LicenseIsValid { get; protected set; }
-  /// <summary>
-  /// Gets or sets the LicenseMessage
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the LicenseMessage
+		/// </summary>
 		public StringFeedback LicenseMessage { get; protected set; }
-  /// <summary>
-  /// Gets or sets the LicenseLog
-  /// </summary>
+
+		/// <summary>
+		/// Gets or sets the LicenseLog
+		/// </summary>
 		public StringFeedback LicenseLog { get; protected set; }
 
+		/// <summary>
+		/// Constructor
+		/// </summary>
 		protected LicenseManager()
 		{
 			CrestronConsole.AddNewConsoleCommand(
@@ -36,12 +44,15 @@ namespace PepperDash.Essentials.License
 				ConsoleAccessLevelEnum.AccessOperator);
 		}
 
+		/// <summary>
+		/// Gets the status string for console command
+		/// </summary>
 		protected abstract string GetStatusString();
 	}
 
- /// <summary>
- /// Represents a MockEssentialsLicenseManager
- /// </summary>
+	/// <summary>
+	/// Represents a MockEssentialsLicenseManager
+	/// </summary>
 	public class MockEssentialsLicenseManager : LicenseManager
 	{
 		/// <summary>
@@ -91,6 +102,10 @@ namespace PepperDash.Essentials.License
 			SetIsValid(isValid);
 		}
 
+		/// <summary>
+		/// Gets the status string for console command
+		/// </summary>
+		/// <returns>license status valid or invalid</returns>
 		protected override string GetStatusString()
 		{
 			return string.Format("License Status: {0}", IsValid ? "Valid" : "Not Valid");

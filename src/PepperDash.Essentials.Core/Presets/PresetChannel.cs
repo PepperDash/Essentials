@@ -15,40 +15,40 @@ namespace PepperDash.Essentials.Core.Presets
 	public class PresetChannel
 	{
 
+		/// <summary>
+		/// Gets or sets the Name
+		/// </summary>
 		[JsonProperty(Required = Required.Always,PropertyName = "name")]
-  /// <summary>
-  /// Gets or sets the Name
-  /// </summary>
 		public string Name { get; set; }
 
+		/// <summary>
+		/// Gets or sets the IconUrl
+		/// </summary>
 		[JsonProperty(Required = Required.Always, PropertyName = "iconUrl")]
-  /// <summary>
-  /// Gets or sets the IconUrl
-  /// </summary>
 		public string IconUrl { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Channel
+		/// </summary>
 		[JsonProperty(Required = Required.Always, PropertyName = "channel")]
-  /// <summary>
-  /// Gets or sets the Channel
-  /// </summary>
 		public string Channel { get; set; }
 	}
 
- /// <summary>
- /// Represents a PresetsList
- /// </summary>
+	/// <summary>
+	/// Represents a PresetsList
+	/// </summary>
 	public class PresetsList
 	{
+		/// <summary>
+		/// Gets or sets the Name
+		/// </summary>
 		[JsonProperty(Required=Required.Always,PropertyName = "name")]
-  /// <summary>
-  /// Gets or sets the Name
-  /// </summary>
 		public string Name { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Channels
+		/// </summary>
 		[JsonProperty(Required = Required.Always, PropertyName = "channels")]
-  /// <summary>
-  /// Gets or sets the Channels
-  /// </summary>
 		public List<PresetChannel> Channels { get; set; }
 	}
 }

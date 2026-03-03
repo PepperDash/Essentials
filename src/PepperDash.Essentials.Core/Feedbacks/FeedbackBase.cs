@@ -102,12 +102,19 @@ namespace PepperDash.Essentials.Core
             if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
         }
 
+        /// <summary>
+        /// Helper method that fires event. Use this intstead of calling OutputChange
+        /// </summary>
+        /// <param name="value">value to seed eventArgs</param>
         protected void OnOutputChange(int value)
         {
             if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
         }
 
-
+        /// <summary>
+        /// Helper method that fires event. Use this intstead of calling OutputChange
+        /// </summary>
+        /// <param name="value">value to seed eventArgs</param>
         protected void OnOutputChange(string value)
         {
             if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));

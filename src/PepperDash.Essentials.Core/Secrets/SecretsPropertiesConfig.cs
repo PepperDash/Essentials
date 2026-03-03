@@ -14,8 +14,15 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class SecretsPropertiesConfig
     {
+        /// <summary>
+        /// Gets or sets the Provider
+        /// </summary>
         [JsonProperty("provider")]
         public string Provider { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
         [JsonProperty("key")]
         public string Key { get; set; }
     }

@@ -105,7 +105,7 @@ Each of the three activation phases operates in a try/catch block for each devic
 
 In any real-world system, devices and business logic need to talk to each other, otherwise, what's the point of all this coding? When creating your classes and configuration, it is best practice to _try_ not to "plug" one device into another during construction or activation. For example your touchpanel controller class has a `Display1` property that holds the display-1 object. Rather, it may be better to refer to the device as it is stored in the `DeviceManager` when it's needed using the static `DeviceManager.GetDeviceForKey(key)` method to get a reference to the device, which can be cast using various interfaces/class types, and then interacted with.  This prevents objects from being referenced in places where the developer may later forget to dereference them, causing memory leak.  This will become more important as Essentials becomes more able to be reconfigured at runtime.
 
-As an example, [connection-based routing](~/docs/Connection-based-routing.md#essentials-connection-based-routing) uses these methods.  When a route is requested, the collection of tielines and devices is searched for the devices and paths necessary to complete a route, but there are no devices or tie lines that are object-referenced in running code.  It can all be torn down and reconfigured without any memory-management dereferencing, setting things to null.
+As an example, [connection-based routing](~/docs/technical-docs/Connection-based-routing.md#essentials-connection-based-routing) uses these methods.  When a route is requested, the collection of tielines and devices is searched for the devices and paths necessary to complete a route, but there are no devices or tie lines that are object-referenced in running code.  It can all be torn down and reconfigured without any memory-management dereferencing, setting things to null.
 
 ## Device Initialization
 
@@ -155,4 +155,4 @@ Robust C#-based system code should not depend on "order" or "time" to get runnin
 
 When designing new Device-based classes, be it rooms, devices, port controllers, bridges, make them as independent as possible.  They could exist alone in a program with no required partner objects, and just quietly exist without failing. We want the system to be fast and flexible, and keeping the interdependence between objects at a minimum improves this flexibility into the future.
 
-Next: [More architecture](~/docs/Arch-topics.md)
+Next: [More architecture](~/docs/technical-docs/Arch-topics.md)

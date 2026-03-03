@@ -19,6 +19,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasPowerControlWithFeedback : IHasPowerControl
     {
+        /// <summary>
+        /// Feedback indicating whether the device is powered on
+        /// </summary>
         BoolFeedback PowerIsOnFeedback { get; }
     }
 
@@ -27,13 +30,24 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasPowerControl
     {
+        /// <summary>
+        /// Powers the device on
+        /// </summary>
         void PowerOn();
+
+        /// <summary>
+        /// Powers the device off
+        /// </summary>
         void PowerOff();
+
+        /// <summary>
+        /// Toggles the power state of the device
+        /// </summary>
         void PowerToggle();
     }
 
 	/// <summary>
-	/// 
+	/// IHasPowerControlExtensions class
 	/// </summary>
 	public static class IHasPowerControlExtensions
 	{
