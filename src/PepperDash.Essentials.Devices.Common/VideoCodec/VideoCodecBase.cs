@@ -20,6 +20,7 @@ using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using Serilog.Events;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec;
 
@@ -382,7 +383,7 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 	/// </summary>
 	protected void SetIsReady()
 	{
-		CrestronInvoke.BeginInvoke((o) =>
+		Task.Run(() =>
 			{
 				try
 				{

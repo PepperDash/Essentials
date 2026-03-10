@@ -4,9 +4,12 @@ using System.Threading;
 using Crestron.SimplSharp;
 using PepperDash.Core;
 using Serilog.Events;
-using Thread = Crestron.SimplSharpPro.CrestronThread.Thread;
 
 namespace PepperDash.Essentials.Core.Queues;
+
+
+// TODO: The capacity argument in the constructors should be removed.  Now that this class uses System.Threading rather than the Crestron library, there is no longer a thread capacity limit.  
+// If a capacity limit is needed, it should be implemented by the caller by checking the QueueCount property before enqueuing items and deciding how to handle the situation when the queue is too full (e.g. drop messages, log warnings, etc.)
 
 /// <summary>
 /// Threadsafe processing of queued items with pacing if required
@@ -14,14 +17,22 @@ namespace PepperDash.Essentials.Core.Queues;
 public class GenericQueue : IQueue<IQueueMessage>
 {
     private readonly string _key;
+
+    /// <summary>
+    /// Returns the number of items currently in the queue.  This is not threadsafe, so it should only be used for informational purposes and not for processing logic.
+    /// </summary>
     protected readonly ConcurrentQueue<IQueueMessage> _queue;
+    
+    /// <summary>
+    /// The thread that processes the queue items
+    /// </summary>
     protected readonly Thread _worker;
-    protected readonly CEvent _waitHandle = new CEvent();
+    private readonly object _lock = new();
 
     private bool _delayEnabled;
     private int _delayTime;
 
-    private const Thread.eThreadPriority _defaultPriority = Thread.eThreadPriority.MediumPriority;
+    private const ThreadPriority _defaultPriority = ThreadPriority.Normal;
 
     /// <summary>
     /// If the instance has been disposed.
@@ -96,7 +107,7 @@ public class GenericQueue : IQueue<IQueueMessage>
     /// <param name="key"></param>
     /// <param name="pacing"></param>
     /// <param name="priority"></param>
-    public GenericQueue(string key, int pacing, Thread.eThreadPriority priority)
+    public GenericQueue(string key, int pacing, ThreadPriority priority)
         : this(key, priority, 0, pacing)
     {
     }
@@ -107,7 +118,7 @@ public class GenericQueue : IQueue<IQueueMessage>
     /// <param name="key"></param>
     /// <param name="priority"></param>
     /// <param name="capacity"></param>
-    public GenericQueue(string key, Thread.eThreadPriority priority, int capacity)
+    public GenericQueue(string key, ThreadPriority priority, int capacity)
         : this(key, priority, capacity, 0)
     {
     }
@@ -119,7 +130,7 @@ public class GenericQueue : IQueue<IQueueMessage>
     /// <param name="pacing"></param>
     /// <param name="priority"></param>
     /// <param name="capacity"></param>
-    public GenericQueue(string key, int pacing, Thread.eThreadPriority priority, int capacity)
+    public GenericQueue(string key, int pacing, ThreadPriority priority, int capacity)
         : this(key, priority, capacity, pacing)
     {           
     }
@@ -131,21 +142,18 @@ public class GenericQueue : IQueue<IQueueMessage>
     /// <param name="priority"></param>
     /// <param name="capacity"></param>
     /// <param name="pacing"></param>
-    protected GenericQueue(string key, Thread.eThreadPriority priority, int capacity, int pacing)
+    protected GenericQueue(string key, ThreadPriority priority, int capacity, int pacing)
     {
         _key = key;
-        int cap = 25; // sets default
-        if (capacity > 0)
-        {
-            cap = capacity; // overrides default
-        }
 
         _queue = new ConcurrentQueue<IQueueMessage>();
-        _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running)
+        _worker = new Thread(ProcessQueue)
         {
             Priority = priority,
-            Name = _key
+            Name = _key,
+            IsBackground = true
         };
+        _worker.Start();
 
         SetDelayValues(pacing);
     }
@@ -167,9 +175,8 @@ public class GenericQueue : IQueue<IQueueMessage>
     /// <summary>
     /// Thread callback
     /// </summary>
-    /// <param name="obj">The action used to process dequeued items</param>
     /// <returns>Null when the thread is exited</returns>
-    private object ProcessQueue(object obj)
+    private void ProcessQueue()
     {
         while (true)
         {
@@ -186,7 +193,7 @@ public class GenericQueue : IQueue<IQueueMessage>
                     if (_delayEnabled)
                         Thread.Sleep(_delayTime);
                 }
-                catch (ThreadAbortException)
+                catch (ThreadInterruptedException)
                 {
                     //swallowing this exception, as it should only happen on shut down
                 }
@@ -202,12 +209,21 @@ public class GenericQueue : IQueue<IQueueMessage>
                     }
                 }
             }
-            else _waitHandle.Wait();
+            else
+            {
+                lock (_lock)
+                {
+                    if (_queue.IsEmpty)
+                        Monitor.Wait(_lock);
+                }
+            }
         }
-
-        return null;
     }
 
+    /// <summary>
+    /// Enqueues an item to be processed by the queue thread.  If the queue has been disposed, the item will not be enqueued and a message will be logged.
+    /// </summary>
+    /// <param name="item"></param>
     public void Enqueue(IQueueMessage item)
     {
         if (Disposed)
@@ -217,7 +233,8 @@ public class GenericQueue : IQueue<IQueueMessage>
         }
 
         _queue.Enqueue(item);
-        _waitHandle.Set();
+        lock (_lock)
+            Monitor.Pulse(_lock);
     }
 
     /// <summary>
@@ -242,18 +259,17 @@ public class GenericQueue : IQueue<IQueueMessage>
 
         if (disposing)
         {
-            using (_waitHandle)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, this, "Disposing...");
-                _queue.Enqueue(null);
-                _waitHandle.Set();
-                _worker.Join();
-            }
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Disposing...");
+            _queue.Enqueue(null);
+            lock (_lock)
+                Monitor.Pulse(_lock);
+            _worker.Join();
         }
 
         Disposed = true;
     }
 
+    /// Finalizer in case Dispose is not called.  This will clean up the thread, but any items still in the queue will not be processed and could potentially be lost.
     ~GenericQueue()
     {
         Dispose(true);

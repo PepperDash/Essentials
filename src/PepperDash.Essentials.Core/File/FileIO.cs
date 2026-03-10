@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using PepperDash.Core;
-using Crestron.SimplSharpPro.CrestronThread;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
@@ -16,7 +15,7 @@ namespace PepperDash.Essentials.Core
 	public static class FileIO
 	{
 
-		static CCriticalSection fileLock = new CCriticalSection();
+		static readonly object _fileLock = new();
 		/// <summary>
 		/// Delegate for GotFileEventHandler
 		/// </summary>
@@ -103,9 +102,11 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public static string ReadDataFromFile(FileInfo file)
 		{
+			var lockAcquired = false;
 			try
 			{
-				if (fileLock.TryEnter())
+				lockAcquired = Monitor.TryEnter(_fileLock);
+				if (lockAcquired)
 				{
 					DirectoryInfo dirInfo = new DirectoryInfo(file.DirectoryName);
 					Debug.LogMessage(LogEventLevel.Verbose, "FileIO Getting Data {0}", file.FullName);
@@ -128,7 +129,6 @@ namespace PepperDash.Essentials.Core
 					Debug.LogMessage(LogEventLevel.Information, "FileIO Unable to enter FileLock");
 					return "";
 				}
-
 			}
 			catch (Exception e)
 			{
@@ -137,9 +137,8 @@ namespace PepperDash.Essentials.Core
 			}
 			finally
 			{
-				if (fileLock != null && !fileLock.Disposed)
-					fileLock.Leave();
-
+				if (lockAcquired)
+					Monitor.Exit(_fileLock);
 			}
 		}
 
@@ -166,7 +165,7 @@ namespace PepperDash.Essentials.Core
 		{
 			try
 			{
-				CrestronInvoke.BeginInvoke(o => _ReadDataFromFileASync(file));
+				Task.Run(() => _ReadDataFromFileASync(file));
 			}
 			catch (Exception e)
 			{
@@ -177,9 +176,11 @@ namespace PepperDash.Essentials.Core
 		private static void _ReadDataFromFileASync(FileInfo file)
 		{
 			string data;
+			var lockAcquired = false;
 			try
 			{
-				if (fileLock.TryEnter())
+				lockAcquired = Monitor.TryEnter(_fileLock);
+				if (lockAcquired)
 				{
 					DirectoryInfo dirInfo = new DirectoryInfo(file.Name);
 					Debug.LogMessage(LogEventLevel.Verbose, "FileIO Getting Data {0}", file.FullName);
@@ -212,13 +213,9 @@ namespace PepperDash.Essentials.Core
 			}
 			finally
 			{
-				if (fileLock != null && !fileLock.Disposed)
-					fileLock.Leave();
-
+				if (lockAcquired)
+					Monitor.Exit(_fileLock);
 			}
-
-
-
 		}
 
 		/// <summary>
@@ -228,35 +225,35 @@ namespace PepperDash.Essentials.Core
 		/// <param name="filePath"></param>		
 		public static void WriteDataToFile(string data, string filePath)
 		{
-			Thread _WriteFileThread;
-			_WriteFileThread = new Thread((O) => _WriteFileMethod(data, Global.FilePathPrefix + "/" + filePath), null, Thread.eThreadStartOptions.CreateSuspended);
-			_WriteFileThread.Priority = Thread.eThreadPriority.LowestPriority;
+			var _WriteFileThread = new System.Threading.Thread(() => _WriteFileMethod(data, Global.FilePathPrefix + "/" + filePath))
+			{
+				IsBackground = true,
+				Priority = ThreadPriority.Lowest
+			};
 			_WriteFileThread.Start();
 			Debug.LogMessage(LogEventLevel.Information, "New WriteFile Thread");
-
 		}
 
-		static object _WriteFileMethod(string data, string filePath)
+		static void _WriteFileMethod(string data, string filePath)
 		{
 			Debug.LogMessage(LogEventLevel.Information, "Attempting to write file: '{0}'", filePath);
 
+			var lockAcquired = false;
 			try
 			{
-				if (fileLock.TryEnter())
+				lockAcquired = Monitor.TryEnter(_fileLock);
+				if (lockAcquired)
 				{
-
 					using (StreamWriter sw = new StreamWriter(filePath))
 					{
 						sw.Write(data);
 						sw.Flush();
 					}
-
 				}
 				else
 				{
 					Debug.LogMessage(LogEventLevel.Information, "FileIO Unable to enter FileLock");
 				}
-
 			}
 			catch (Exception e)
 			{
@@ -264,12 +261,9 @@ namespace PepperDash.Essentials.Core
 			}
 			finally
 			{
-				if (fileLock != null && !fileLock.Disposed)
-					fileLock.Leave();
-
+				if (lockAcquired)
+					Monitor.Exit(_fileLock);
 			}
-			return null;
-
 		}
 
 		/// <summary>

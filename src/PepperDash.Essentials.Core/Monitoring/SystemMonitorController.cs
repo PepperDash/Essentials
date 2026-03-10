@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core.Bridges;
 using Serilog.Events;
+using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.Monitoring;
 
@@ -272,7 +273,7 @@ public class SystemMonitorController : EssentialsBridgeableDevice
     private void RefreshSystemMonitorData()
     {
         // this takes a while, launch a new thread
-        CrestronInvoke.BeginInvoke(UpdateFeedback);
+        Task.Run(() => UpdateFeedback(null));
     }
 
     private void UpdateFeedback(object o)
@@ -744,7 +745,7 @@ public class ProgramStatusFeedbacks
     /// </summary>
     public void GetProgramInfo()
     {
-        CrestronInvoke.BeginInvoke(GetProgramInfo);
+        Task.Run(() => GetProgramInfo(null));
     }
 
     private void GetProgramInfo(object o)

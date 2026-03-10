@@ -15,6 +15,7 @@ using PepperDash.Essentials.Core.Routing;
 using System.Threading;
 using Timeout = Crestron.SimplSharp.Timeout;
 using Serilog.Events;
+using System.Threading.Tasks;
 
 namespace PepperDash.Essentials;
 
@@ -108,7 +109,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
 
         if (Debug.DoNotLoadConfigOnNextBoot)
         {
-            CrestronConsole.AddNewConsoleCommand(s => CrestronInvoke.BeginInvoke((o) => GoWithLoad()), "go", "Loads configuration file",
+            CrestronConsole.AddNewConsoleCommand(s => Task.Run(() => GoWithLoad()), "go", "Loads configuration file",
                 ConsoleAccessLevelEnum.AccessOperator);
         }
 

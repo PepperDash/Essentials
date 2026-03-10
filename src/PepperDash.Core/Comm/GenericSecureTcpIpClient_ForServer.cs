@@ -15,6 +15,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using PepperDash.Core.Logging;
@@ -271,7 +273,7 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
     /// <summary>
     /// Queue lock
     /// </summary>
-    CCriticalSection DequeueLock = new CCriticalSection();
+    private readonly object _dequeueLock = new();
 
     /// <summary>
     /// Receive Queue size. Defaults to 20. Will set to 20 if QueueSize property is less than 20. Use constructor or set queue size property before
@@ -655,9 +657,8 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
             //Check to see if there is a subscription to the TextReceivedQueueInvoke event. If there is start the dequeue thread. 
             if (handler != null)
             {
-                var gotLock = DequeueLock.TryEnter();
-                if (gotLock)
-                    CrestronInvoke.BeginInvoke((o) => DequeueEvent());
+                if (Monitor.TryEnter(_dequeueLock))
+                    Task.Run(() => DequeueEvent());
             }
         }
         else //JAG added this as I believe the error return is 0 bytes like the server. See help when hover on ReceiveAsync
@@ -667,7 +668,7 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
     }
 
     /// <summary>
-    /// This method gets spooled up in its own thread an protected by a CCriticalSection to prevent multiple threads from running concurrently.
+    /// This method gets spooled up in its own thread an protected by a lock to prevent multiple threads from running concurrently.
     /// It will dequeue items as they are enqueued automatically.
     /// </summary>
     void DequeueEvent()
@@ -689,11 +690,8 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
         {
             this.LogError("DequeueEvent error: {0}", e.Message, e);
         }
-        // Make sure to leave the CCritical section in case an exception above stops this thread, or we won't be able to restart it.
-        if (DequeueLock != null)
-        {
-            DequeueLock.Leave();
-        }
+        // Make sure to release the lock in case an exception above stops this thread, or we won't be able to restart it.
+        Monitor.Exit(_dequeueLock);
     }
 
     void HeartbeatStart()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using Org.BouncyCastle.Utilities;
@@ -135,8 +136,6 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
 
     CTimer ReconnectTimer;
 
-    //Lock object to prevent simulatneous connect/disconnect operations
-    //private CCriticalSection connectLock = new CCriticalSection();
     private SemaphoreSlim connectLock = new SemaphoreSlim(1);
 
     private bool DisconnectLogged = false;
@@ -435,7 +434,7 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
     /// </summary>
     void Client_ErrorOccurred(object sender, ExceptionEventArgs e)
     {
-        CrestronInvoke.BeginInvoke(o =>
+        Task.Run(() =>
         {
             if (e.Exception is SshConnectionException || e.Exception is System.Net.Sockets.SocketException)
                 this.LogError("Disconnected by remote");

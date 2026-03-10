@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Crestron.SimplSharp;
 using PepperDash.Core;
 
@@ -77,11 +78,11 @@ namespace PepperDash.Essentials.Core
         public abstract void FireUpdate();
 
         /// <summary>
-        /// Fires the update asynchronously within a CrestronInvoke
+        /// Fires the update asynchronously within a Task
         /// </summary>
         public void InvokeFireUpdate()
         {
-            CrestronInvoke.BeginInvoke(o => FireUpdate());
+            Task.Run(() => FireUpdate());
         }
 
         /// <summary>

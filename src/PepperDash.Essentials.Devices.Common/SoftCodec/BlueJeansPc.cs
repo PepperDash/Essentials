@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using Crestron.SimplSharp;
+using System.Threading.Tasks;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -10,19 +9,37 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec;
 
+/// <summary>
+/// Class representing a BlueJeans soft codec running on an in-room PC.
+/// </summary>
 public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
 {
 
+    /// <summary>
+    /// The input port for any video source.
+    /// </summary>
     public RoutingInputPort AnyVideoIn { get; private set; }
 
+    /// <summary>
+    /// The currently active input port, which for this device is always AnyVideoIn
+     /// This is used by the routing system to determine where to route video sources when this device is a destination
+    /// </summary>
     public RoutingInputPort CurrentInputPort => AnyVideoIn;
 
     #region IRoutingInputs Members
 
+    /// <summary>
+    /// Collection of the input ports for this device
+    /// </summary>
     public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
     #endregion
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BlueJeansPc"/> class.
+    /// </summary>
+    /// <param name="key">The key for the device.</param>
+    /// <param name="name">The name of the device.</param>
     public BlueJeansPc(string key, string name)
         : base(key, name)
     {
@@ -34,14 +51,25 @@ public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
 
     #region IRunRouteAction Members
 
+    /// <summary>
+    /// Runs a route action for the specified route key and source list key. Optionally, a callback can be provided to be executed upon successful completion.
+     /// </summary>
+     /// <param name="routeKey"></param>
+     /// <param name="sourceListKey"></param>
     public void RunRouteAction(string routeKey, string sourceListKey)
     {
         RunRouteAction(routeKey, sourceListKey, null);
     }
 
+    /// <summary>
+    /// Runs a route action for the specified route key and source list key. Optionally, a callback can be provided to be executed upon successful completion.
+    /// </summary>
+    /// <param name="routeKey"></param>
+    /// <param name="sourceListKey"></param>
+    /// <param name="successCallback"></param>
     public void RunRouteAction(string routeKey, string sourceListKey, Action successCallback)
     {
-        CrestronInvoke.BeginInvoke(o =>
+        Task.Run(() =>
             {
                 Debug.LogMessage(LogEventLevel.Debug, this, "Run route action '{0}' on SourceList: {1}", routeKey, sourceListKey);
 
@@ -127,6 +155,7 @@ public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
 
     #region IHasCurrentSourceInfoChange Members
 
+    /// <inheritdoc />
     public string CurrentSourceInfoKey { get; set; }
 
     /// <summary>
@@ -158,6 +187,7 @@ public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
     }
     SourceListItem _CurrentSourceInfo;
 
+    /// <inheritdoc />
     public event SourceInfoChangeHandler CurrentSourceChange;
 
     #endregion

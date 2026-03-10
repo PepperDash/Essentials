@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using PepperDash.Core;
 using Crestron.SimplSharp;
-using PepperDash.Essentials.Core;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.DeviceInfo;
 
+/// <summary>
+/// Helper methods for network devices
+/// </summary>
 public static class NetworkDeviceHelpers
 {
     /// <summary>
@@ -24,7 +26,7 @@ public static class NetworkDeviceHelpers
     private static readonly char NewLineSplitter = CrestronEnvironment.NewLine.ToCharArray().First();
     private static readonly string NewLine = CrestronEnvironment.NewLine;
 
-    private static readonly CCriticalSection Lock = new CCriticalSection();
+    private static readonly object _lock = new();
 
     /// <summary>
     /// Last resolved ARP table - it is recommended to refresh the arp before using this.
@@ -37,46 +39,45 @@ public static class NetworkDeviceHelpers
     public static void RefreshArp()
     {
         var error = false;
-        try
+        lock (_lock)
         {
-            Lock.Enter();
-            var consoleResponse = string.Empty;
-            if (!CrestronConsole.SendControlSystemCommand("showarptable", ref consoleResponse)) return;
-            if (string.IsNullOrEmpty(consoleResponse))
+            try
             {
+                var consoleResponse = string.Empty;
+                if (!CrestronConsole.SendControlSystemCommand("showarptable", ref consoleResponse)) return;
+                if (string.IsNullOrEmpty(consoleResponse))
+                {
+                    error = true;
+                    return;
+                }
+                ArpTable.Clear();
+
+                Debug.LogMessage(LogEventLevel.Verbose, "ConsoleResponse of 'showarptable' : {0}{1}", NewLine, consoleResponse);
+
+                var myLines =
+                    consoleResponse.Split(NewLineSplitter)
+                        .ToList()
+                        .Where(o => (o.Contains(':') && !o.Contains("Type", StringComparison.OrdinalIgnoreCase)))
+                        .ToList();
+                foreach (var line in myLines)
+                {
+                    var item = line;
+                    var seperator = item.Contains('\t') ? '\t' : ' ';
+                    var dataPoints = item.Split(seperator);
+                    if (dataPoints == null || dataPoints.Length < 2) continue;
+                    var ipAddress = SanitizeIpAddress(dataPoints.First().TrimAll());
+                    var macAddress = dataPoints.Last();
+                    ArpTable.Add(new ArpEntry(ipAddress, macAddress));
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogMessage(LogEventLevel.Information, "Exception in \"RefreshArp\" : {0}", ex.Message);
                 error = true;
-                return;
             }
-            ArpTable.Clear();
+        } // end lock
 
-            Debug.LogMessage(LogEventLevel.Verbose, "ConsoleResponse of 'showarptable' : {0}{1}", NewLine, consoleResponse);
-
-            var myLines =
-                consoleResponse.Split(NewLineSplitter)
-                    .ToList()
-                    .Where(o => (o.Contains(':') && !o.Contains("Type", StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
-            foreach (var line in myLines)
-            {
-                var item = line;
-                var seperator = item.Contains('\t') ? '\t' : ' ';
-                var dataPoints = item.Split(seperator);
-                if (dataPoints == null || dataPoints.Length < 2) continue;
-                var ipAddress = SanitizeIpAddress(dataPoints.First().TrimAll());
-                var macAddress = dataPoints.Last();
-                ArpTable.Add(new ArpEntry(ipAddress, macAddress));
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.LogMessage(LogEventLevel.Information, "Exception in \"RefreshArp\" : {0}", ex.Message);
-            error = true;
-        }
-        finally
-        {
-            Lock.Leave();
-            OnArpTableUpdated(new ArpTableEventArgs(ArpTable, error));
-        }
+        OnArpTableUpdated(new ArpTableEventArgs(ArpTable, error));
     }
 
 
@@ -158,7 +159,14 @@ public static class NetworkDeviceHelpers
 /// </summary>
 public class ArpEntry
 {
+    /// <summary>
+    /// IP Address of the ARP entry
+    /// </summary>
     public readonly IPAddress IpAddress;
+
+    /// <summary> 
+    /// MAC Address of the ARP entry
+    /// </summary>
     public readonly string MacAddress;
 
     /// <summary>

@@ -1,15 +1,14 @@
-﻿ 
+﻿
 
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
 
-//using SSMono.IO;
-using PepperDash.Core.WebApi.Presets;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Presets;
@@ -19,11 +18,19 @@ namespace PepperDash.Essentials.Core.Presets;
 /// </summary>
 public class DevicePresetsModel : Device
 {
+    /// <summary>
+    /// Delegate for PresetRecalled event, which is fired when a preset is recalled. Provides the device and channel that was recalled.
+    /// </summary>
+    /// <param name="device"></param>
+    /// <param name="channel"></param>
     public delegate void PresetRecalledCallback(ISetTopBoxNumericKeypad device, string channel);
 
+    /// <summary>
+    /// Delegate for PresetsSaved event, which is fired when presets are saved. Provides the list of presets that were saved.
+    /// </summary> <param name="presets"></param>
     public delegate void PresetsSavedCallback(List<PresetChannel> presets);
 
-    private readonly CCriticalSection _fileOps = new CCriticalSection();
+    private readonly object _fileOps = new();
     private readonly bool _initSuccess;
 
     private readonly ISetTopBoxNumericKeypad _setTopBox;
@@ -37,6 +44,12 @@ public class DevicePresetsModel : Device
     private Action<bool> _enterFunction;
     private string _filePath;
 
+    /// <summary>
+    /// Constructor for DevicePresetsModel when a set top box device is included.  If the set top box does not implement the required INumericKeypad interface, the model will still be created but dialing functionality will be disabled and a message will be logged.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="setTopBox"></param>
+    /// <param name="fileName"></param>
     public DevicePresetsModel(string key, ISetTopBoxNumericKeypad setTopBox, string fileName)
         : this(key, fileName)
     {
@@ -71,6 +84,11 @@ public class DevicePresetsModel : Device
         _enterFunction = setTopBox.KeypadEnter;
     }
 
+    /// <summary>
+    /// Constructor for DevicePresetsModel when only a file name is provided. Dialing functionality will be disabled.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="fileName"></param>
     public DevicePresetsModel(string key, string fileName) : base(key)
     {
         PulseTime = 150;
@@ -88,27 +106,73 @@ public class DevicePresetsModel : Device
         _initSuccess = true;
     }
 
+    /// <summary>
+    /// Event fired when a preset is recalled, providing the device and channel that was recalled
+    /// </summary>
     public event PresetRecalledCallback PresetRecalled;
+
+    /// <summary>
+    /// Event fired when presets are saved, providing the list of presets that were saved
+    /// </summary>
     public event PresetsSavedCallback PresetsSaved;
 
-    public int PulseTime { get; set; }
-    public int DigitSpacingMs { get; set; }
+    /// <summary>
+    /// Time in milliseconds to pulse the digit for when dialing a channel
+    /// </summary>
+    public int PulseTime { get; private set; }
+
+    /// <summary> 
+    /// Time in milliseconds to wait between pulsing digits when dialing a channel
+    /// </summary>
+    public int DigitSpacingMs { get; private set; }
+
+    /// <summary>
+    /// Whether the presets have finished loading from the file or not
+    /// </summary>
     public bool PresetsAreLoaded { get; private set; }
 
+    /// <summary>
+    /// The list of presets to display
+    /// </summary>
     public List<PresetChannel> PresetsList { get; private set; }
 
+    /// <summary>
+    /// The number of presets in the list
+    /// </summary>
     public int Count
     {
         get { return PresetsList != null ? PresetsList.Count : 0; }
     }
 
-    public bool UseLocalImageStorage { get; set; }
-    public string ImagesLocalHostPrefix { get; set; }
-    public string ImagesPathPrefix { get; set; }
-    public string ListPathPrefix { get; set; }
+    /// <summary>
+    /// Indicates whether to use local image storage for preset images, which allows for more and larger images than the SIMPL+ zip file method
+    /// </summary>
+    public bool UseLocalImageStorage { get; private set; }
+
+    /// <summary>
+    /// The prefix for the local host URL for preset images
+    /// </summary>
+    public string ImagesLocalHostPrefix { get; private set; }
+
+    /// <summary>
+    /// The path prefix for preset images
+    /// </summary>
+    public string ImagesPathPrefix { get; private set; }
+
+    /// <summary>
+    /// The path prefix for preset lists
+    /// </summary>
+    public string ListPathPrefix { get; private set; }
+
+    /// <summary>
+    /// Event fired when presets are loaded
+    /// </summary>
     public event EventHandler PresetsLoaded;
 
-
+    /// <summary>
+    /// Sets the file name for the presets list and loads the presets from that file. The file should be a JSON file in the format of the PresetsList class. If the file cannot be read, an empty list will be created and a message will be logged. This method is thread safe.
+    /// </summary>
+    /// <param name="path">The path to the presets file.</param>
     public void SetFileName(string path)
     {
         _filePath = ListPathPrefix + path;
@@ -117,12 +181,13 @@ public class DevicePresetsModel : Device
         LoadChannels();
     }
 
+    /// <summary>
+    /// Loads the presets from the file specified by _filePath. 
+    /// </summary>
     public void LoadChannels()
     {
-        try
+        lock (_fileOps)
         {
-            _fileOps.Enter();
-
             Debug.LogMessage(LogEventLevel.Verbose, this, "Loading presets from {0}", _filePath);
             PresetsAreLoaded = false;
             try
@@ -149,12 +214,12 @@ public class DevicePresetsModel : Device
                 handler(this, EventArgs.Empty);
             }
         }
-        finally
-        {
-            _fileOps.Leave();
-        }
     }
 
+    /// <summary>
+    /// Dials a preset by its number in the list (starting at 1). If the preset number is out of range, nothing will happen.
+    /// </summary> 
+    /// <param name="presetNum">The number of the preset to dial, starting at 1</param>
     public void Dial(int presetNum)
     {
         if (presetNum <= PresetsList.Count)
@@ -163,6 +228,10 @@ public class DevicePresetsModel : Device
         }
     }
 
+    /// <summary>
+    /// Dials a preset by its channel number. If the channel number contains characters that are not 0-9 or '-', those characters will be ignored. 
+    /// If the model was not initialized with a valid set top box device, dialing will be disabled and a message will be logged.
+    /// </summary> <param name="chanNum">The channel number to dial</param>
     public void Dial(string chanNum)
     {
         if (_dialIsRunning || !_initSuccess)
@@ -176,7 +245,7 @@ public class DevicePresetsModel : Device
         }
 
         _dialIsRunning = true;
-        CrestronInvoke.BeginInvoke(o =>
+        Task.Run(() =>
         {
             foreach (var c in chanNum.ToCharArray())
             {
@@ -199,6 +268,11 @@ public class DevicePresetsModel : Device
         OnPresetRecalled(_setTopBox, chanNum);
     }
 
+    /// <summary>
+    /// Dials a preset by its number in the list (starting at 1) using the provided set top box device. If the preset number is out of range, nothing will happen.
+    /// </summary>
+    /// <param name="presetNum"></param>
+    /// <param name="setTopBox"></param>
     public void Dial(int presetNum, ISetTopBoxNumericKeypad setTopBox)
     {
         if (presetNum <= PresetsList.Count)
@@ -207,6 +281,13 @@ public class DevicePresetsModel : Device
         }
     }
 
+    /// <summary>
+    /// Dials a preset by its channel number using the provided set top box device. If the channel number contains characters that are not 0-9 or '-', those characters will be ignored.
+    /// If the provided set top box device does not implement the required INumericKeypad interface, dialing will be disabled and a message will be logged.
+    /// If the model was not initialized with a valid set top box device, dialing will be disabled and a message will be logged.
+    /// </summary> 
+    /// <param name="chanNum"></param>
+    /// <param name="setTopBox"></param>
     public void Dial(string chanNum, ISetTopBoxNumericKeypad setTopBox)
     {
         _dialFunctions = new Dictionary<char, Action<bool>>(10)
@@ -243,6 +324,11 @@ public class DevicePresetsModel : Device
         handler(setTopBox, channel);
     }
 
+    /// <summary>
+    /// Updates the preset at the given index with the provided preset information, then saves the updated presets list to the file. If the index is out of range, nothing will happen.
+    /// </summary> 
+    /// <param name="index">The index of the preset to update, starting at 0</param>
+    /// <param name="preset">The preset information to update</param>
     public void UpdatePreset(int index, PresetChannel preset)
     {
         if (index >= PresetsList.Count)
@@ -257,6 +343,10 @@ public class DevicePresetsModel : Device
         OnPresetsSaved();
     }
 
+    /// <summary>
+    /// Updates the entire presets list with the provided list, then saves the updated presets list to the file. If the provided list is null, nothing will happen.
+    /// </summary>
+    /// <param name="presets"></param>
     public void UpdatePresets(List<PresetChannel> presets)
     {
         PresetsList = presets;
@@ -268,10 +358,9 @@ public class DevicePresetsModel : Device
 
     private void SavePresets()
     {
-        try
+        lock (_fileOps)
         {
-            _fileOps.Enter();
-            var pl = new PresetsList {Channels = PresetsList, Name = Name};
+            var pl = new PresetsList { Channels = PresetsList, Name = Name };
             var json = JsonConvert.SerializeObject(pl, Formatting.Indented);
 
             using (var file = File.Open(_filePath, FileMode.Truncate))
@@ -279,11 +368,6 @@ public class DevicePresetsModel : Device
                 file.Write(json, Encoding.UTF8);
             }
         }
-        finally
-        {
-            _fileOps.Leave();
-        }
-        
     }
 
     private void OnPresetsSaved()

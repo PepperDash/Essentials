@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using PepperDash.Core.Logging;
@@ -61,9 +62,14 @@ public class GenericTcpIpServer : Device
     #region Properties/Variables
 
     /// <summary>
-    /// 
+    /// Server listen lock
     /// </summary>
-    CCriticalSection ServerCCSection = new CCriticalSection();
+   object _serverLock = new();
+
+    /// <summary>
+    /// Broadcast lock
+    /// </summary>
+    private readonly object _broadcastLock = new();
 
 
     /// <summary>
@@ -365,12 +371,12 @@ public class GenericTcpIpServer : Device
             }
             else
             {
-                ErrorLog.Error("Could not initialize server with key: {0}", serverConfigObject.Key);
+                this.LogError("Could not initialize server with key: {0}", serverConfigObject.Key);
             }
         }
         catch
         {
-            ErrorLog.Error("Could not initialize server with key: {0}", serverConfigObject.Key);
+            this.LogError("Could not initialize server with key: {0}", serverConfigObject.Key);
         }
     }
 
@@ -379,19 +385,18 @@ public class GenericTcpIpServer : Device
     /// </summary>
     public void Listen()
     {
-        ServerCCSection.Enter();
+        lock (_serverLock)
+        {
         try
         {
             if (Port < 1 || Port > 65535)
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Server '{0}': Invalid port", Key);
-                ErrorLog.Warn(string.Format("Server '{0}': Invalid port", Key));
+                this.LogError("Server '{0}': Invalid port", Key);
                 return;
             }
             if (string.IsNullOrEmpty(SharedKey) && SharedKeyRequired)
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Server '{0}': No Shared Key set", Key);
-                ErrorLog.Warn(string.Format("Server '{0}': No Shared Key set", Key));
+                this.LogError("Server '{0}': No Shared Key set", Key);
                 return;
             }
             if (IsListening)
@@ -417,18 +422,15 @@ public class GenericTcpIpServer : Device
             ServerStopped = false;
             myTcpServer.WaitForConnectionAsync(IPAddress.Any, TcpConnectCallback);
             OnServerStateChange(myTcpServer.State);
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "TCP Server Status: {0}, Socket Status: {1}", myTcpServer.State, myTcpServer.ServerSocketStatus);
+            this.LogInformation("TCP Server Status: {0}, Socket Status: {1}", myTcpServer.State, myTcpServer.ServerSocketStatus);
 
             // StartMonitorClient();
-
-
-            ServerCCSection.Leave();
         }
         catch (Exception ex)
         {
-            ServerCCSection.Leave();
-            ErrorLog.Error("{1} Error with Dynamic Server: {0}", ex.ToString(), Key);
+            this.LogException(ex, "Error with Dynamic Server: {0}", ex.Message);
         }
+        } // end lock
     }
 
     /// <summary>
@@ -438,18 +440,18 @@ public class GenericTcpIpServer : Device
     {
         try
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Stopping Listener");
+            this.LogDebug("Stopping Listener");
             if (myTcpServer != null)
             {
                 myTcpServer.Stop();
-                Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Server State: {0}", myTcpServer.State);
+                this.LogDebug("Server State: {0}", myTcpServer.State);
 					OnServerStateChange(myTcpServer.State);
             }
 		        ServerStopped = true;
         }
         catch (Exception ex)
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error stopping server. Error: {0}", ex);
+            this.LogException(ex, "Error stopping server. Error: {0}", ex.Message);
         }
     }
 
@@ -462,11 +464,11 @@ public class GenericTcpIpServer : Device
         try
         {
             myTcpServer.Disconnect(client);
-            Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Disconnected client index: {0}", client);
+            this.LogVerbose("Disconnected client index: {0}", client);
         }
         catch (Exception ex)
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Disconnecting client index: {0}. Error: {1}", client, ex);
+            this.LogException(ex, "Error Disconnecting client index: {0}. Error: {1}", client, ex.Message);
         }
     }
     /// <summary>
@@ -474,7 +476,7 @@ public class GenericTcpIpServer : Device
     /// </summary>
     public void DisconnectAllClientsForShutdown()
     {
-        Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Disconnecting All Clients");
+        this.LogInformation("Disconnecting All Clients");
         if (myTcpServer != null)
         {
             myTcpServer.SocketStatusChange -= TcpServer_SocketStatusChange;
@@ -486,17 +488,17 @@ public class GenericTcpIpServer : Device
                 try
                 {
                     myTcpServer.Disconnect(i);
-                    Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Disconnected client index: {0}", i);
+                    this.LogVerbose("Disconnected client index: {0}", i);
                 }
                 catch (Exception ex)
                 {
-                    Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Disconnecting client index: {0}. Error: {1}", i, ex);
+                    this.LogException(ex, "Error Disconnecting client index: {0}. Error: {1}", i, ex.Message);
                 }
             }
-            Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Server Status: {0}", myTcpServer.ServerSocketStatus);
+            this.LogVerbose("Server Status: {0}", myTcpServer.ServerSocketStatus);
         }
 
-        Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Disconnected All Clients");
+        this.LogInformation("Disconnected All Clients");
         ConnectedClientsIndexes.Clear();
 
         if (!ProgramIsStopping)
@@ -514,8 +516,8 @@ public class GenericTcpIpServer : Device
     /// <param name="text"></param>
     public void BroadcastText(string text)
     {
-        CCriticalSection CCBroadcast = new CCriticalSection();
-        CCBroadcast.Enter();
+        lock (_broadcastLock)
+        {
         try
         {
             if (ConnectedClientsIndexes.Count > 0)
@@ -531,13 +533,12 @@ public class GenericTcpIpServer : Device
                     }
                 }
             }
-            CCBroadcast.Leave();
         }
         catch (Exception ex)
         {
-            CCBroadcast.Leave();
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Broadcasting messages from server. Error: {0}", ex.Message);
+            this.LogException(ex, "Error Broadcasting messages from server. Error: {0}", ex.Message);
         }
+        } // end lock
     }
 
     /// <summary>
@@ -558,7 +559,7 @@ public class GenericTcpIpServer : Device
         }
         catch (Exception ex)
         {
-            Debug.Console(2, this, "Error sending text to client. Text: {1}. Error: {0}", ex.Message, text);
+            this.LogException(ex, "Error sending text to client. Text: {1}. Error: {0}", ex.Message, text);
         }
     }
 
@@ -582,7 +583,7 @@ public class GenericTcpIpServer : Device
                             CTimer HeartbeatTimer = new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs);
                             HeartbeatTimerDictionary.Add(clientIndex, HeartbeatTimer);
                         }
-                        Debug.Console(1, this, "Heartbeat Received: {0}, from client index: {1}", HeartbeatStringToMatch, clientIndex);
+                        this.LogVerbose("Heartbeat Received: {0}, from client index: {1}", HeartbeatStringToMatch, clientIndex);
                         // Return Heartbeat
                         SendTextToClient(HeartbeatStringToMatch, clientIndex);
                         return remainingText;
@@ -597,13 +598,13 @@ public class GenericTcpIpServer : Device
                         CTimer HeartbeatTimer = new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs);
                         HeartbeatTimerDictionary.Add(clientIndex, HeartbeatTimer);
                     }
-                    Debug.Console(1, this, "Heartbeat Received: {0}, from client index: {1}", received, clientIndex);
+                    this.LogVerbose("Heartbeat Received: {0}, from client index: {1}", received, clientIndex);
                 }
             }
         }
         catch (Exception ex)
         {
-            Debug.Console(1, this, "Error checking heartbeat: {0}", ex.Message);
+            this.LogException(ex, "Error checking heartbeat: {0}", ex.Message);
         }
         return received;
     }
@@ -615,11 +616,11 @@ public class GenericTcpIpServer : Device
     /// <returns>IP address of the client</returns>
     public string GetClientIPAddress(uint clientIndex)
     {
-        Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "GetClientIPAddress Index: {0}", clientIndex);
+        this.LogVerbose("GetClientIPAddress Index: {0}", clientIndex);
         if (!SharedKeyRequired || (SharedKeyRequired && ClientReadyAfterKeyExchange.Contains(clientIndex)))
         {
             var ipa = this.myTcpServer.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex);
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "GetClientIPAddress IPAddreess: {0}", ipa);
+            this.LogVerbose("GetClientIPAddress IPAddreess: {0}", ipa);
             return ipa;
 
         }
@@ -642,7 +643,7 @@ public class GenericTcpIpServer : Device
             clientIndex = (uint)o;
             address = myTcpServer.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex);
 
-            Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Heartbeat not received for Client index {2} IP: {0}, DISCONNECTING BECAUSE HEARTBEAT REQUIRED IS TRUE {1}",
+            this.LogWarning("Heartbeat not received for Client index {2} IP: {0}, DISCONNECTING BECAUSE HEARTBEAT REQUIRED IS TRUE {1}",
                 address, string.IsNullOrEmpty(HeartbeatStringToMatch) ? "" : ("HeartbeatStringToMatch: " + HeartbeatStringToMatch), clientIndex);
 
             if (myTcpServer.GetServerSocketStatusForSpecificClient(clientIndex) == SocketStatus.SOCKET_STATUS_CONNECTED)
@@ -678,7 +679,7 @@ public class GenericTcpIpServer : Device
         try
         {
 
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SecureServerSocketStatusChange Index:{0} status:{1} Port:{2} IP:{3}", clientIndex, serverSocketStatus, this.myTcpServer.GetPortNumberServerAcceptedConnectionFromForSpecificClient(clientIndex), this.myTcpServer.GetLocalAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
+            this.LogInformation("SecureServerSocketStatusChange Index:{0} status:{1} Port:{2} IP:{3}", clientIndex, serverSocketStatus, this.myTcpServer.GetPortNumberServerAcceptedConnectionFromForSpecificClient(clientIndex), this.myTcpServer.GetLocalAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
             if (serverSocketStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
             {
                 if (ConnectedClientsIndexes.Contains(clientIndex))
@@ -697,7 +698,7 @@ public class GenericTcpIpServer : Device
         }
         catch (Exception ex)
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error in Socket Status Change Callback. Error: {0}", ex);
+            this.LogException(ex, "Error in Socket Status Change Callback. Error: {0}", ex);
         }
         onConnectionChange(clientIndex, server.GetServerSocketStatusForSpecificClient(clientIndex));
     }
@@ -714,7 +715,7 @@ public class GenericTcpIpServer : Device
     {
         try
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "ConnectCallback: IPAddress: {0}. Index: {1}. Status: {2}",
+            this.LogDebug("ConnectCallback: IPAddress: {0}. Index: {1}. Status: {2}",
                 server.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex),
                 clientIndex, server.GetServerSocketStatusForSpecificClient(clientIndex));
             if (clientIndex != 0)
@@ -734,10 +735,11 @@ public class GenericTcpIpServer : Device
                         }
                         byte[] b = Encoding.GetEncoding(28591).GetBytes("SharedKey:");
                         server.SendDataAsync(clientIndex, b, b.Length, (x, y, z) => { });
-                        Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Sent Shared Key Request to client at {0}", server.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
+                        this.LogDebug("Sent Shared Key Request to client at {0}", server.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
                     }
                     else
                     {
+                        this.LogDebug("Client at index {0} is ready for communications", clientIndex);
                         OnServerClientReadyForCommunications(clientIndex);
                     }
                     if (HeartbeatRequired)
@@ -753,7 +755,7 @@ public class GenericTcpIpServer : Device
             }
             else
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Client attempt faulty.");
+                this.LogError("Client attempt faulty.");
                 if (!ServerStopped)
                 {
                     server.WaitForConnectionAsync(IPAddress.Any, TcpConnectCallback);
@@ -763,7 +765,7 @@ public class GenericTcpIpServer : Device
         }
         catch (Exception ex)
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error in Socket Status Connect Callback. Error: {0}", ex);
+            this.LogException(ex, "Error in Socket Status Connect Callback. Error: {0}", ex);
         }
         //Debug.Console(1, this, Debug.ErrorLogLevel, "((((((Server State bitfield={0}; maxclient={1}; ServerStopped={2}))))))",
         //    server.State, 
@@ -771,7 +773,7 @@ public class GenericTcpIpServer : Device
         //    ServerStopped);
         if ((server.State & ServerState.SERVER_LISTENING) != ServerState.SERVER_LISTENING && MaxClients > 1 && !ServerStopped)
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Waiting for next connection");
+            this.LogDebug("Waiting for next connection");
             server.WaitForConnectionAsync(IPAddress.Any, TcpConnectCallback);
 
         }
@@ -802,7 +804,7 @@ public class GenericTcpIpServer : Device
 						if (received != SharedKey)
 						{
 							byte[] b = Encoding.GetEncoding(28591).GetBytes("Shared key did not match server. Disconnecting");
-							Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Client at index {0} Shared key did not match the server, disconnecting client. Key: {1}", clientIndex, received);
+							this.LogWarning("Client at index {0} Shared key did not match the server, disconnecting client. Key: {1}", clientIndex, received);
 							myTCPServer.SendData(clientIndex, b, b.Length);
 							myTCPServer.Disconnect(clientIndex);
 							return;
@@ -812,7 +814,7 @@ public class GenericTcpIpServer : Device
 						byte[] success = Encoding.GetEncoding(28591).GetBytes("Shared Key Match");
 						myTCPServer.SendDataAsync(clientIndex, success, success.Length, null);
 						OnServerClientReadyForCommunications(clientIndex);
-						Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Client with index {0} provided the shared key and successfully connected to the server", clientIndex);
+						this.LogDebug("Client with index {0} provided the shared key and successfully connected to the server", clientIndex);
 					}
 
 					else if (!string.IsNullOrEmpty(checkHeartbeat(clientIndex, received)))
@@ -820,7 +822,7 @@ public class GenericTcpIpServer : Device
 				}
 				catch (Exception ex)
 				{
-					Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Receiving data: {0}. Error: {1}", received, ex);
+					this.LogException(ex, "Error Receiving data: {0}. Error: {1}", received, ex);
 				}
 				if (myTCPServer.GetServerSocketStatusForSpecificClient(clientIndex) == SocketStatus.SOCKET_STATUS_CONNECTED)
 					myTCPServer.ReceiveDataAsync(clientIndex, TcpServerReceivedDataAsyncCallback);
@@ -901,7 +903,7 @@ public class GenericTcpIpServer : Device
             if (MonitorClient != null)
                 MonitorClient.Disconnect();
 
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Program stopping. Closing server");
+            this.LogInformation("Program stopping. Closing server");
             KillServer();
         }
     }
@@ -942,7 +944,7 @@ public class GenericTcpIpServer : Device
         //MonitorClient.ConnectionChange += MonitorClient_ConnectionChange;
         MonitorClient.ClientReadyForCommunications += MonitorClient_IsReadyForComm;
 
-        Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Starting monitor check");
+        this.LogDebug("Starting monitor check");
 
         MonitorClient.Connect();
         // From here MonitorCLient either connects or hangs, MonitorClient will call back 
@@ -969,7 +971,7 @@ public class GenericTcpIpServer : Device
     {
         if (args.IsReady)
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Monitor client connection success. Disconnecting in 2s");
+            this.LogInformation("Monitor client connection success. Disconnecting in 2s");
             MonitorClientTimer.Stop();
             MonitorClientTimer = null;
             MonitorClientFailureCount = 0;
@@ -990,13 +992,13 @@ public class GenericTcpIpServer : Device
         StopMonitorClient();
         if (MonitorClientFailureCount < MonitorClientMaxFailureCount)
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Warning, "Monitor client connection has hung {0} time{1}, maximum {2}",
+            this.LogWarning("Monitor client connection has hung {0} time{1}, maximum {2}",
                 MonitorClientFailureCount, MonitorClientFailureCount > 1 ? "s" : "", MonitorClientMaxFailureCount);
             StartMonitorClient();
         }
         else
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error,
+            this.LogError(
                 "\r***************************\rMonitor client connection has hung a maximum of {0} times.\r***************************",
                 MonitorClientMaxFailureCount);
 

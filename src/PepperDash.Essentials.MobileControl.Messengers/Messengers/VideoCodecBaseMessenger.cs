@@ -26,8 +26,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         protected VideoCodecBase Codec { get; private set; }
 
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -126,7 +124,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     //state.CurrentDirectory = PrefixDirectoryFolderItems(directory);
                     state.CurrentDirectory = directory;
 
-                    CrestronInvoke.BeginInvoke((o) => PostStatusMessage(state));
+                    Task.Run(() => PostStatusMessage(state));
                 }
             }
             catch (Exception ex)
@@ -162,7 +160,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Called from base's RegisterWithAppServer method
         /// </summary>
-        /// <param name="appServerController"></param>
         protected override void RegisterActions()
         {
             try
@@ -786,6 +783,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
+        /// <summary>
+        /// Sends the full status of the codec, including active calls, camera status, and directory info if applicable
+        /// </summary>
+        /// <param name="id"></param>
         protected virtual void SendFullStatus(string id = null)
         {
             if (!Codec.IsReady)

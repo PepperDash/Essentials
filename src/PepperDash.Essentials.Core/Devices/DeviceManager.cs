@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using PepperDash.Core;
@@ -10,13 +11,27 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core;
 
+/// <summary>
+/// Manages devices in the system, including activation and console commands to interact with devices
+/// </summary>
 public static class DeviceManager
 {
+    /// <summary>
+    /// Event raised when all devices have been activated
+    /// </summary>
     public static event EventHandler<EventArgs> AllDevicesActivated;
+
+    /// <summary>
+    /// Event raised when all devices have been registered
+    /// </summary>
     public static event EventHandler<EventArgs> AllDevicesRegistered;
+
+    /// <summary>
+    /// Event raised when all devices have been initialized
+    /// </summary>
     public static event EventHandler<EventArgs> AllDevicesInitialized;
 
-    private static readonly CCriticalSection DeviceCriticalSection = new CCriticalSection();
+    private static readonly object _deviceLock = new();
 
     //public static List<Device> Devices { get { return _Devices; } }
     //static List<Device> _Devices = new List<Device>();
@@ -28,7 +43,10 @@ public static class DeviceManager
     /// </summary>
     public static List<IKeyed> AllDevices => [.. Devices.Values];
 
-    public static bool AddDeviceEnabled;
+    /// <summary>
+    /// Flag to indicate whether adding devices is currently allowed.  This is set to false once ActivateAll is called to prevent changes to the device list after activation.
+    /// </summary>
+    public static bool AddDeviceEnabled { get; private set; }
 
     /// <summary>
     /// Initializes the control system by enabling device management and registering console commands.
@@ -65,11 +83,10 @@ public static class DeviceManager
     /// </summary>
     public static void ActivateAll()
     {
-        try
-        {
-            OnAllDevicesRegistered();
+        OnAllDevicesRegistered();
 
-            DeviceCriticalSection.Enter();
+        lock (_deviceLock)
+        {
             AddDeviceEnabled = false;
             // PreActivate all devices
             Debug.LogMessage(LogEventLevel.Information, "****PreActivation starting...****");
@@ -125,11 +142,7 @@ public static class DeviceManager
             Debug.LogMessage(LogEventLevel.Information, "****PostActivation complete****");
 
             OnAllDevicesActivated();
-        }
-        finally
-        {
-            DeviceCriticalSection.Leave();
-        }
+        } // end lock
     }
 
     private static void DeviceManager_Initialized(object sender, EventArgs e)
@@ -176,17 +189,12 @@ public static class DeviceManager
     /// </summary>
     public static void DeactivateAll()
     {
-        try
+        lock (_deviceLock)
         {
-            DeviceCriticalSection.Enter();
             foreach (var d in Devices.Values.OfType<Device>())
             {
                 d.Deactivate();
             }
-        }
-        finally
-        {
-            DeviceCriticalSection.Leave();
         }
     }
 
@@ -266,11 +274,16 @@ public static class DeviceManager
     //    Debug.LogMessage(LogEventLevel.Information, "Not yet implemented.  Stay tuned");
     //}
 
+    /// <summary>
+    /// Adds a device to the manager
+    /// </summary>
     public static void AddDevice(IKeyed newDev)
     {
+        var lockAcquired = false;
         try
         {
-            if (!DeviceCriticalSection.TryEnter())
+            lockAcquired = Monitor.TryEnter(_deviceLock);
+            if (!lockAcquired)
             {
                 Debug.LogMessage(LogEventLevel.Information, "Currently unable to add devices to Device Manager. Please try again");
                 return;
@@ -300,15 +313,22 @@ public static class DeviceManager
         }
         finally
         {
-            DeviceCriticalSection.Leave();
+            if (lockAcquired)
+                Monitor.Exit(_deviceLock);
         }
     }
 
+    /// <summary>
+    /// Adds a list of devices to the manager
+    /// </summary>
+    /// <param name="devicesToAdd"></param>
     public static void AddDevice(IEnumerable<IKeyed> devicesToAdd)
     {
+        var lockAcquired = false;
         try
         {
-            if (!DeviceCriticalSection.TryEnter())
+            lockAcquired = Monitor.TryEnter(_deviceLock);
+            if (!lockAcquired)
             {
                 Debug.LogMessage(LogEventLevel.Information,
                     "Currently unable to add devices to Device Manager. Please try again");
@@ -336,15 +356,19 @@ public static class DeviceManager
         }
         finally
         {
-            DeviceCriticalSection.Leave();
+            if (lockAcquired)
+                Monitor.Exit(_deviceLock);
         }
     }
 
+    /// <summary>
+    /// Removes a device from the manager
+    /// </summary>
+    /// <param name="newDev">The device to remove</param>
     public static void RemoveDevice(IKeyed newDev)
     {
-        try
+        lock (_deviceLock)
         {
-            DeviceCriticalSection.Enter();
             if (newDev == null)
                 return;
             if (Devices.ContainsKey(newDev.Key))
@@ -354,18 +378,22 @@ public static class DeviceManager
             else
                 Debug.LogMessage(LogEventLevel.Information, "Device manager: Device '{0}' does not exist in manager.  Cannot remove", newDev.Key);
         }
-        finally
-        {
-            DeviceCriticalSection.Leave();
-        }
     }
 
+    /// <summary>
+    /// Returns a list of all device keys currently in the manager
+    /// </summary>
+    /// <returns>A list of device keys</returns>
+    /// <remarks>This method provides a way to retrieve a list of all device keys currently registered in the Device Manager. It returns an enumerable collection of strings representing the keys of the devices, allowing for easy access and manipulation of the device list as needed.</remarks>
     public static IEnumerable<string> GetDeviceKeys()
     {
         //return _Devices.Select(d => d.Key).ToList();
         return Devices.Keys;
     }
 
+    /// <summary>
+    /// Returns a list of all devices currently in the manager
+    /// </summary> <returns>A list of devices</returns>
     public static IEnumerable<IKeyed> GetDevices()
     {
         //return _Devices.Select(d => d.Key).ToList();

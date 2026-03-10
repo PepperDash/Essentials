@@ -1,18 +1,9 @@
-﻿/*PepperDash Technology Corp.
-JAG
-Copyright:		2017
-------------------------------------
-***Notice of Ownership and Copyright***
-The material in which this notice appears is the property of PepperDash Technology Corporation,
-which claims copyright under the laws of the United States of America in the entire body of material
-and in all parts thereof, regardless of the use to which it is being put.  Any use, in whole or in part,
-of this material by another party without the express written permission of PepperDash Technology Corporation is prohibited.
-PepperDash Technology Corporation reserves all rights under applicable laws.
------------------------------------- */
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using PepperDash.Core.Logging;
@@ -69,12 +60,17 @@ public class GenericSecureTcpIpServer : Device
     /// <summary>
     /// Server listen lock
     /// </summary>
-    CCriticalSection ServerCCSection = new CCriticalSection();
+    private readonly object _serverLock = new();
 
     /// <summary>
     /// Queue lock
     /// </summary>
-    CCriticalSection DequeueLock = new CCriticalSection();
+    private readonly object _dequeueLock = new();
+
+    /// <summary>
+    /// Broadcast lock
+    /// </summary>
+    private readonly object _broadcastLock = new();
 
     /// <summary>
     /// Receive Queue size. Defaults to 20. Will set to 20 if QueueSize property is less than 20. Use constructor or set queue size property before
@@ -399,18 +395,19 @@ public class GenericSecureTcpIpServer : Device
     /// </summary>
     public void Listen()
     {
-        ServerCCSection.Enter();
+        lock (_serverLock)
+        {
         try
         {
             if (Port < 1 || Port > 65535)
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Server '{0}': Invalid port", Key);
+                this.LogError("Server '{0}': Invalid port", Key);
                 ErrorLog.Warn(string.Format("Server '{0}': Invalid port", Key));
                 return;
             }
             if (string.IsNullOrEmpty(SharedKey) && SharedKeyRequired)
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Server '{0}': No Shared Key set", Key);
+                this.LogError("Server '{0}': No Shared Key set", Key);
                 ErrorLog.Warn(string.Format("Server '{0}': No Shared Key set", Key));
                 return;
             }
@@ -434,22 +431,21 @@ public class GenericSecureTcpIpServer : Device
 					SocketErrorCodes status = SecureServer.WaitForConnectionAsync(IPAddress.Any, SecureConnectCallback);
 					if (status != SocketErrorCodes.SOCKET_OPERATION_PENDING)
 					{
-						Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Error starting WaitForConnectionAsync {0}", status);
+						this.LogError("Error starting WaitForConnectionAsync {0}", status);
 					}
 				else 
 				{
 					ServerStopped = false;
 				} 
 				OnServerStateChange(SecureServer.State);
-				Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Secure Server Status: {0}, Socket Status: {1}", SecureServer.State, SecureServer.ServerSocketStatus);
-				ServerCCSection.Leave();
+				this.LogInformation("Secure Server Status: {0}, Socket Status: {1}", SecureServer.State, SecureServer.ServerSocketStatus);
 			
         }
         catch (Exception ex)
         {
-            ServerCCSection.Leave();
-            ErrorLog.Error("{1} Error with Dynamic Server: {0}", ex.ToString(), Key);
+            this.LogException(ex, "{1} Error with Dynamic Server: {0}", ex.ToString(), Key);
         }
+        } // end lock
     }
 
     /// <summary>
@@ -459,18 +455,18 @@ public class GenericSecureTcpIpServer : Device
     {
 			try
 			{
-				Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Stopping Listener");
+				this.LogVerbose("Stopping Listener");
 				if (SecureServer != null)
 				{
 					SecureServer.Stop();
-					Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Server State: {0}", SecureServer.State);
+					this.LogVerbose("Server State: {0}", SecureServer.State);
 					OnServerStateChange(SecureServer.State);
 				}
 				ServerStopped = true;
 			}
 			catch (Exception ex)
 			{
-				Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error stopping server. Error: {0}", ex);
+				this.LogException(ex, "Error stopping server. Error: {0}", ex.Message);
 			}
     }
 
@@ -483,11 +479,11 @@ public class GenericSecureTcpIpServer : Device
         try
         {
             SecureServer.Disconnect(client);
-            Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Disconnected client index: {0}", client);
+            this.LogVerbose("Disconnected client index: {0}", client);
         }
         catch (Exception ex)
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Disconnecting client index: {0}. Error: {1}", client, ex);
+            this.LogException(ex, "Error Disconnecting client index: {0}. Error: {1}", client, ex.Message);
         }
     }
     /// <summary>
@@ -495,7 +491,7 @@ public class GenericSecureTcpIpServer : Device
     /// </summary>
     public void DisconnectAllClientsForShutdown()
     {
-        Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Disconnecting All Clients");
+        this.LogInformation("Disconnecting All Clients");
         if (SecureServer != null)
         {
             SecureServer.SocketStatusChange -= SecureServer_SocketStatusChange;
@@ -507,17 +503,17 @@ public class GenericSecureTcpIpServer : Device
                 try
                 {
                     SecureServer.Disconnect(i);
-                    Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Disconnected client index: {0}", i);
+                    this.LogInformation("Disconnected client index: {0}", i);
                 }
                 catch (Exception ex)
                 {
-                    Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Disconnecting client index: {0}. Error: {1}", i, ex);
+                    this.LogException(ex, "Error Disconnecting client index: {0}. Error: {1}", i, ex.Message);
                 }
             }
-            Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Server Status: {0}", SecureServer.ServerSocketStatus);
+            this.LogInformation("Server Status: {0}", SecureServer.ServerSocketStatus);
         }
 
-        Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Disconnected All Clients");
+        this.LogInformation("Disconnected All Clients");
         ConnectedClientsIndexes.Clear();
 
         if (!ProgramIsStopping)
@@ -535,8 +531,8 @@ public class GenericSecureTcpIpServer : Device
     /// <param name="text"></param>
     public void BroadcastText(string text)
     {
-        CCriticalSection CCBroadcast = new CCriticalSection();
-        CCBroadcast.Enter();
+        lock (_broadcastLock)
+        {
         try
         {
             if (ConnectedClientsIndexes.Count > 0)
@@ -552,13 +548,12 @@ public class GenericSecureTcpIpServer : Device
                     }
                 }
             }
-            CCBroadcast.Leave();
         }
         catch (Exception ex)
         {
-            CCBroadcast.Leave();
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Broadcasting messages from server. Error: {0}", ex.Message);
+            this.LogException(ex, "Error Broadcasting messages from server. Error: {0}", ex.Message);
         }
+        } // end lock
     }
 
     /// <summary>
@@ -579,7 +574,7 @@ public class GenericSecureTcpIpServer : Device
         }
         catch (Exception ex)
         {
-            Debug.Console(2, this, "Error sending text to client. Text: {1}. Error: {0}", ex.Message, text);
+            this.LogException(ex, "Error sending text to client. Text: {1}. Error: {0}", ex.Message, text);
         }
     }
 
@@ -603,7 +598,7 @@ public class GenericSecureTcpIpServer : Device
                             CTimer HeartbeatTimer = new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs);
                             HeartbeatTimerDictionary.Add(clientIndex, HeartbeatTimer);
                         }
-                        Debug.Console(1, this, "Heartbeat Received: {0}, from client index: {1}", HeartbeatStringToMatch, clientIndex);
+                        this.LogDebug("Heartbeat Received: {0}, from client index: {1}", HeartbeatStringToMatch, clientIndex);
                         // Return Heartbeat
                         SendTextToClient(HeartbeatStringToMatch, clientIndex);
                         return remainingText;
@@ -618,13 +613,13 @@ public class GenericSecureTcpIpServer : Device
                         CTimer HeartbeatTimer = new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs);
                         HeartbeatTimerDictionary.Add(clientIndex, HeartbeatTimer);
                     }
-                    Debug.Console(1, this, "Heartbeat Received: {0}, from client index: {1}", received, clientIndex);
+                    this.LogInformation("Heartbeat Received: {0}, from client index: {1}", received, clientIndex);
                 }
             }
         }
         catch (Exception ex)
         {
-            Debug.Console(1, this, "Error checking heartbeat: {0}", ex.Message);
+            this.LogException(ex, "Error checking heartbeat: {0}", ex.Message);
         }
         return received;
     }
@@ -636,11 +631,11 @@ public class GenericSecureTcpIpServer : Device
     /// <returns></returns>
     public string GetClientIPAddress(uint clientIndex)
     {
-        Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "GetClientIPAddress Index: {0}", clientIndex);
+        this.LogInformation("GetClientIPAddress Index: {0}", clientIndex);
         if (!SharedKeyRequired || (SharedKeyRequired && ClientReadyAfterKeyExchange.Contains(clientIndex)))
         {
             var ipa = this.SecureServer.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex);
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "GetClientIPAddress IPAddreess: {0}", ipa);
+            this.LogInformation("GetClientIPAddress IPAddreess: {0}", ipa);
             return ipa;
 
         }
@@ -663,7 +658,7 @@ public class GenericSecureTcpIpServer : Device
             clientIndex = (uint)o;
             address = SecureServer.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex);
 
-            Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Heartbeat not received for Client index {2} IP: {0}, DISCONNECTING BECAUSE HEARTBEAT REQUIRED IS TRUE {1}",
+            this.LogInformation("Heartbeat not received for Client index {2} IP: {0}, DISCONNECTING BECAUSE HEARTBEAT REQUIRED IS TRUE {1}",
                 address, string.IsNullOrEmpty(HeartbeatStringToMatch) ? "" : ("HeartbeatStringToMatch: " + HeartbeatStringToMatch), clientIndex);
 
             if (SecureServer.GetServerSocketStatusForSpecificClient(clientIndex) == SocketStatus.SOCKET_STATUS_CONNECTED)
@@ -703,7 +698,7 @@ public class GenericSecureTcpIpServer : Device
            // Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SecureServerSocketStatusChange Index:{0} status:{1} Port:{2} IP:{3}", clientIndex, serverSocketStatus, this.SecureServer.GetPortNumberServerAcceptedConnectionFromForSpecificClient(clientIndex), this.SecureServer.GetLocalAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
             if (serverSocketStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
             {
-					Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SecureServerSocketStatusChange ConnectedCLients: {0} ServerState: {1} Port: {2}", SecureServer.NumberOfClientsConnected, SecureServer.State, SecureServer.PortNumber);
+					this.LogInformation("SecureServerSocketStatusChange ConnectedCLients: {0} ServerState: {1} Port: {2}", SecureServer.NumberOfClientsConnected, SecureServer.State, SecureServer.PortNumber);
             
                 if (ConnectedClientsIndexes.Contains(clientIndex))
                     ConnectedClientsIndexes.Remove(clientIndex);
@@ -725,12 +720,12 @@ public class GenericSecureTcpIpServer : Device
         }
         catch (Exception ex)
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error in Socket Status Change Callback. Error: {0}", ex);
+            this.LogException(ex, "Error in Socket Status Change Callback. Error: {0}", ex.Message);
         }
         //Use a thread for this event so that the server state updates to listening while this event is processed. Listening must be added to the server state
         //after every client connection so that the server can check and see if it is at max clients. Due to this the event fires and server listening enum bit flag
         //is not set. Putting in a thread allows the state to update before this event processes so that the subscribers to this event get accurate isListening in the event. 
-        CrestronInvoke.BeginInvoke(o => onConnectionChange(clientIndex, server.GetServerSocketStatusForSpecificClient(clientIndex)), null);
+        Task.Run(() => onConnectionChange(clientIndex, server.GetServerSocketStatusForSpecificClient(clientIndex)));
     }
 
     #endregion
@@ -745,7 +740,7 @@ public class GenericSecureTcpIpServer : Device
     {
         try
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "ConnectCallback: IPAddress: {0}. Index: {1}. Status: {2}",
+            this.LogInformation("ConnectCallback: IPAddress: {0}. Index: {1}. Status: {2}",
                 server.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex),
                 clientIndex, server.GetServerSocketStatusForSpecificClient(clientIndex));
             if (clientIndex != 0)
@@ -765,7 +760,7 @@ public class GenericSecureTcpIpServer : Device
                         }
                         byte[] b = Encoding.GetEncoding(28591).GetBytes("SharedKey:");
                         server.SendDataAsync(clientIndex, b, b.Length, (x, y, z) => { });
-                        Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Sent Shared Key Request to client at {0}", server.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
+                        this.LogInformation("Sent Shared Key Request to client at {0}", server.GetAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
                     }
                     else
                     {
@@ -784,19 +779,19 @@ public class GenericSecureTcpIpServer : Device
             }
             else
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Client attempt faulty.");                    
+                this.LogError("Client attempt faulty.");                    
             }
         }
         catch (Exception ex)
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error in Socket Status Connect Callback. Error: {0}", ex);
+            this.LogException(ex, "Error in Socket Status Connect Callback. Error: {0}", ex.Message);
         }
 
 			// Rearm the listner 
 			SocketErrorCodes status = server.WaitForConnectionAsync(IPAddress.Any, SecureConnectCallback);
 			if (status != SocketErrorCodes.SOCKET_OPERATION_PENDING)
 			{
-				Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Socket status connect callback status {0}", status);
+				this.LogError("Socket status connect callback status {0}", status);
 				if (status == SocketErrorCodes.SOCKET_CONNECTION_IN_PROGRESS)
 				{
 					// There is an issue where on a failed negotiation we need to stop and start the server. This should still leave connected clients intact. 
@@ -833,7 +828,7 @@ public class GenericSecureTcpIpServer : Device
                     if (received != SharedKey)
                     {
                         byte[] b = Encoding.GetEncoding(28591).GetBytes("Shared key did not match server. Disconnecting");
-                        Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Client at index {0} Shared key did not match the server, disconnecting client. Key: {1}", clientIndex, received);
+                        this.LogWarning("Client at index {0} Shared key did not match the server, disconnecting client. Key: {1}", clientIndex, received);
                         mySecureTCPServer.SendData(clientIndex, b, b.Length);
                         mySecureTCPServer.Disconnect(clientIndex);
                         
@@ -844,7 +839,7 @@ public class GenericSecureTcpIpServer : Device
                     byte[] success = Encoding.GetEncoding(28591).GetBytes("Shared Key Match");
                     mySecureTCPServer.SendDataAsync(clientIndex, success, success.Length, null);
                     OnServerClientReadyForCommunications(clientIndex);
-                    Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Client with index {0} provided the shared key and successfully connected to the server", clientIndex);                        
+                    this.LogInformation("Client with index {0} provided the shared key and successfully connected to the server", clientIndex);                        
                 }
                 else if (!string.IsNullOrEmpty(checkHeartbeat(clientIndex, received)))
                 {
@@ -857,7 +852,7 @@ public class GenericSecureTcpIpServer : Device
             }
             catch (Exception ex)
             {
-                Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error Receiving data: {0}. Error: {1}", received, ex);
+                this.LogException(ex, "Error Receiving data: {0}. Error: {1}", received, ex.Message);
             }
 				if (mySecureTCPServer.GetServerSocketStatusForSpecificClient(clientIndex) == SocketStatus.SOCKET_STATUS_CONNECTED)
 					mySecureTCPServer.ReceiveDataAsync(clientIndex, SecureReceivedDataAsyncCallback);
@@ -865,9 +860,8 @@ public class GenericSecureTcpIpServer : Device
             //Check to see if there is a subscription to the TextReceivedQueueInvoke event. If there is start the dequeue thread. 
             if (handler != null)
             {
-                var gotLock = DequeueLock.TryEnter();
-                if (gotLock)
-                    CrestronInvoke.BeginInvoke((o) => DequeueEvent());
+                if (Monitor.TryEnter(_dequeueLock))
+                    Task.Run(() => DequeueEvent());
             }
         }
 			else
@@ -877,7 +871,7 @@ public class GenericSecureTcpIpServer : Device
     }
 
     /// <summary>
-    /// This method gets spooled up in its own thread an protected by a CCriticalSection to prevent multiple threads from running concurrently.
+    /// This method gets spooled up in its own thread an protected by a lock to prevent multiple threads from running concurrently.
     /// It will dequeue items as they are enqueued automatically.
     /// </summary>
     void DequeueEvent()
@@ -899,11 +893,8 @@ public class GenericSecureTcpIpServer : Device
         {
             this.LogError(e, "DequeueEvent error");
         }
-        // Make sure to leave the CCritical section in case an exception above stops this thread, or we won't be able to restart it.
-        if (DequeueLock != null)
-        {
-            DequeueLock.Leave();
-        }
+        // Make sure to release the lock in case an exception above stops this thread, or we won't be able to restart it.
+        Monitor.Exit(_dequeueLock);
     }
 
     #endregion
@@ -974,7 +965,7 @@ public class GenericSecureTcpIpServer : Device
             if (MonitorClient != null)
                 MonitorClient.Disconnect();
 
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Program stopping. Closing server");
+            this.LogInformation("Program stopping. Closing server");
             KillServer();
         }
     }
@@ -1015,7 +1006,7 @@ public class GenericSecureTcpIpServer : Device
         //MonitorClient.ConnectionChange += MonitorClient_ConnectionChange;
         MonitorClient.ClientReadyForCommunications += MonitorClient_IsReadyForComm;
 
-        Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Starting monitor check");
+        this.LogInformation("Starting monitor check");
 
         MonitorClient.Connect();
         // From here MonitorCLient either connects or hangs, MonitorClient will call back 
@@ -1042,7 +1033,7 @@ public class GenericSecureTcpIpServer : Device
     {
         if (args.IsReady)
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Monitor client connection success. Disconnecting in 2s");
+            this.LogInformation("Monitor client connection success. Disconnecting in 2s");
             MonitorClientTimer.Stop();
             MonitorClientTimer = null;
             MonitorClientFailureCount = 0;
@@ -1063,13 +1054,13 @@ public class GenericSecureTcpIpServer : Device
         StopMonitorClient();
         if (MonitorClientFailureCount < MonitorClientMaxFailureCount)
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Warning, "Monitor client connection has hung {0} time{1}, maximum {2}",
+            this.LogWarning("Monitor client connection has hung {0} time{1}, maximum {2}",
                 MonitorClientFailureCount, MonitorClientFailureCount > 1 ? "s" : "", MonitorClientMaxFailureCount);
             StartMonitorClient();
         }
         else
         {
-            Debug.Console(2, this, Debug.ErrorLogLevel.Error,
+            this.LogError(
                 "\r***************************\rMonitor client connection has hung a maximum of {0} times. \r***************************",
                 MonitorClientMaxFailureCount);
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Timers;
+using Timer = System.Timers.Timer;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronXml;
@@ -77,6 +77,8 @@ namespace PepperDash.Essentials.Core.Fusion
         private string _roomOccupancyRemoteString;
 
         private bool _helpRequestSent;
+
+        private readonly object _guidFileLock = new();
 
         private eFusionHelpResponse _helpRequestStatus;
 
@@ -390,44 +392,31 @@ namespace PepperDash.Essentials.Core.Fusion
                 return;
             }
 
-            var fileLock = new CCriticalSection();
-
-            try
+            lock (_guidFileLock)
             {
-                if (fileLock.Disposed)
+                try
                 {
-                    return;
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Writing GUIDs to file");
+
+                    _guids = FusionOccSensor == null
+                        ? new FusionRoomGuids(Room.Name, _config.IpIdInt, RoomGuid, FusionStaticAssets)
+                        : new FusionRoomGuids(Room.Name, _config.IpIdInt, RoomGuid, FusionStaticAssets, FusionOccSensor);
+
+                    var json = JsonConvert.SerializeObject(_guids, Newtonsoft.Json.Formatting.Indented);
+
+                    using (var sw = new StreamWriter(filePath))
+                    {
+                        sw.Write(json);
+                        sw.Flush();
+                    }
+
+                    Debug.LogMessage(LogEventLevel.Debug, this, "Guids successfully written to file '{0}'", filePath);
                 }
-
-                fileLock.Enter();
-
-                Debug.LogMessage(LogEventLevel.Debug, this, "Writing GUIDs to file");
-
-                _guids = FusionOccSensor == null
-                    ? new FusionRoomGuids(Room.Name, _config.IpIdInt, RoomGuid, FusionStaticAssets)
-                    : new FusionRoomGuids(Room.Name, _config.IpIdInt, RoomGuid, FusionStaticAssets, FusionOccSensor);
-
-                var json = JsonConvert.SerializeObject(_guids, Newtonsoft.Json.Formatting.Indented);
-
-                using (var sw = new StreamWriter(filePath))
+                catch (Exception e)
                 {
-                    sw.Write(json);
-                    sw.Flush();
+                    Debug.LogMessage(LogEventLevel.Information, this, "Error writing guid file: {0}", e);
                 }
-
-                Debug.LogMessage(LogEventLevel.Debug, this, "Guids successfully written to file '{0}'", filePath);
-            }
-            catch (Exception e)
-            {
-                Debug.LogMessage(LogEventLevel.Information, this, "Error writing guid file: {0}", e);
-            }
-            finally
-            {
-                if (!fileLock.Disposed)
-                {
-                    fileLock.Leave();
-                }
-            }
+            } // end lock
         }
 
         /// <summary>
@@ -442,50 +431,37 @@ namespace PepperDash.Essentials.Core.Fusion
                 return;
             }
 
-            var fileLock = new CCriticalSection();
-
-            try
+            lock (_guidFileLock)
             {
-                if (fileLock.Disposed)
+                try
                 {
-                    return;
+                    if (File.Exists(filePath))
+                    {
+                        var json = File.ReadToEnd(filePath, Encoding.ASCII);
+
+                        _guids = JsonConvert.DeserializeObject<FusionRoomGuids>(json);
+
+                        // _config.IpId = _guids.IpId;
+
+                        FusionStaticAssets = _guids.StaticAssets;
+                    }
+
+                    Debug.LogMessage(LogEventLevel.Information, this, "Fusion Guids successfully read from file: {0}",
+                        filePath);
+
+                    Debug.LogMessage(LogEventLevel.Debug, this, "\r\n********************\r\n\tRoom Name: {0}\r\n\tIPID: {1:X}\r\n\tRoomGuid: {2}\r\n*******************", Room.Name, _config.IpIdInt, RoomGuid);
+
+                    foreach (var item in FusionStaticAssets)
+                    {
+                        Debug.LogMessage(LogEventLevel.Debug, this, "\nAsset Name: {0}\nAsset No: {1}\n Guid: {2}", item.Value.Name,
+                            item.Value.SlotNumber, item.Value.InstanceId);
+                    }
                 }
-
-                fileLock.Enter();
-
-                if (File.Exists(filePath))
+                catch (Exception e)
                 {
-                    var json = File.ReadToEnd(filePath, Encoding.ASCII);
-
-                    _guids = JsonConvert.DeserializeObject<FusionRoomGuids>(json);
-
-                    // _config.IpId = _guids.IpId;
-
-                    FusionStaticAssets = _guids.StaticAssets;
+                    Debug.LogMessage(LogEventLevel.Information, this, "Error reading guid file: {0}", e);
                 }
-
-                Debug.LogMessage(LogEventLevel.Information, this, "Fusion Guids successfully read from file: {0}",
-                    filePath);
-
-                Debug.LogMessage(LogEventLevel.Debug, this, "\r\n********************\r\n\tRoom Name: {0}\r\n\tIPID: {1:X}\r\n\tRoomGuid: {2}\r\n*******************", Room.Name, _config.IpIdInt, RoomGuid);
-
-                foreach (var item in FusionStaticAssets)
-                {
-                    Debug.LogMessage(LogEventLevel.Debug, this, "\nAsset Name: {0}\nAsset No: {1}\n Guid: {2}", item.Value.Name,
-                        item.Value.SlotNumber, item.Value.InstanceId);
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogMessage(LogEventLevel.Information, this, "Error reading guid file: {0}", e);
-            }
-            finally
-            {
-                if (!fileLock.Disposed)
-                {
-                    fileLock.Leave();
-                }
-            }
+            } // end lock
         }
 
         /// <summary>
@@ -1950,11 +1926,12 @@ namespace PepperDash.Essentials.Core.Fusion
             HelpRequestStatusFeedback.FireUpdate();
         }
 
-        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        private void OnTimedEvent(object sender, System.Timers.ElapsedEventArgs e)
         {
             this.LogInformation("Help request timeout reached for room '{0}'. Cancelling help request.", Room.Name);
             CancelHelpRequest();
         }
+
 
         /// <inheritdoc />
         public void CancelHelpRequest()

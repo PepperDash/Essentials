@@ -103,7 +103,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public MobileControlWebsocketServer DirectServer => _directServer;
 
-        private readonly CCriticalSection _wsCriticalSection = new CCriticalSection();
+        private readonly object _wsCriticalSection = new();
 
         /// <summary>
         /// Gets or sets the SystemUrl
@@ -206,14 +206,14 @@ namespace PepperDash.Essentials
             //_receiveQueue = new ReceiveQueue(key, ParseStreamRx);
             _receiveQueue = new GenericQueue(
                 key + "-rxqueue",
-                Crestron.SimplSharpPro.CrestronThread.Thread.eThreadPriority.HighPriority,
+                    System.Threading.ThreadPriority.Highest,
                 25
             );
 
             // The queue that will collect the outgoing messages in the order they are received
             _transmitToServerQueue = new GenericQueue(
                 key + "-txqueue",
-                Crestron.SimplSharpPro.CrestronThread.Thread.eThreadPriority.HighPriority,
+                System.Threading.ThreadPriority.Highest,
                 25
             );
 
@@ -228,7 +228,7 @@ namespace PepperDash.Essentials
 
                 _transmitToClientsQueue = new GenericQueue(
                     key + "-clienttxqueue",
-                    Crestron.SimplSharpPro.CrestronThread.Thread.eThreadPriority.HighPriority,
+                    System.Threading.ThreadPriority.Highest,
                     25
                 );
             }
@@ -1811,10 +1811,8 @@ namespace PepperDash.Essentials
 
         private void ConnectWebsocketClient()
         {
-            try
+            lock (_wsCriticalSection)
             {
-                _wsCriticalSection.Enter();
-
                 // set to 99999 to let things work on 4-Series
                 if (
                     (CrestronEnvironment.ProgramCompatibility & eCrestronSeries.Series4)
@@ -1842,10 +1840,6 @@ namespace PepperDash.Essentials
                 );
 
                 TryConnect();
-            }
-            finally
-            {
-                _wsCriticalSection.Leave();
             }
         }
 

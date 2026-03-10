@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Crestron.SimplSharp;
+using System.Timers;
 using PepperDash.Core;
 
 namespace PepperDash.Core;
@@ -20,7 +20,7 @@ public class CommunicationStreamDebugging
     /// <summary>
     /// Timer to disable automatically if not manually disabled
     /// </summary>
-    private CTimer DebugExpiryPeriod;
+    private Timer DebugExpiryPeriod;
 
     /// <summary>
     /// The current debug setting
@@ -93,7 +93,9 @@ public class CommunicationStreamDebugging
 
         StopDebugTimer();
 
-        DebugExpiryPeriod = new CTimer((o) => DisableDebugging(), _DebugTimeoutInMs);
+        DebugExpiryPeriod = new Timer(_DebugTimeoutInMs) { AutoReset = false };
+        DebugExpiryPeriod.Elapsed += (s, e) => DisableDebugging();
+        DebugExpiryPeriod.Start();
 
         if ((setting & eStreamDebuggingSetting.Rx) == eStreamDebuggingSetting.Rx)
             RxStreamDebuggingIsEnabled = true;
