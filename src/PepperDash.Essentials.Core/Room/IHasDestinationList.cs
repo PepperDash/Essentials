@@ -6,7 +6,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Interface for rooms with a list of destinations
     /// </summary>
-    public interface IHasDestinationList
+    public interface IHasDestinations
     {
         /// <summary>
         /// Gets the dictionary of destinations.

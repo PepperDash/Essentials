@@ -255,7 +255,7 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found room {room} for destination {destination}", this, room.Key, destination.Key);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found room {room} for destination {destination}", this, room.Key, destination.Key);
 
             Dictionary<string, SourceListItem> sourceList = null;
 
