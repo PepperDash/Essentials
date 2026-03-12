@@ -5,7 +5,7 @@ using PepperDash.Essentials.Core;
 /// <summary>
 /// Interface for rooms with a list of destinations
 /// </summary>
-interface IHasDestinationList
+public interface IHasDestinationList
 {
     /// <summary>
     /// Gets the dictionary of destinations.

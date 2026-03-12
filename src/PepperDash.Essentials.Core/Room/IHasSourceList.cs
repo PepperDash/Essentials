@@ -5,7 +5,7 @@ using PepperDash.Essentials.Core;
 /// <summary>
 /// Interface for rooms with a list of destinations
 /// </summary>
-interface IHasSourceList
+public interface IHasSourceList
 {
     /// <summary>
     /// Gets the list of sources.
