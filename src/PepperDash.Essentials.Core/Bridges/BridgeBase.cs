@@ -30,6 +30,17 @@ namespace PepperDash.Essentials.Core.Bridges
         {
 
         }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="name"></param>
+        protected BridgeApi(string key, string name) :
+            base(key, name)
+        {
+
+        }
     }
 
     /// <summary>
@@ -58,7 +69,7 @@ namespace PepperDash.Essentials.Core.Bridges
         /// <param name="dc">Device configuration</param>
         /// <param name="eisc">EISC instance</param>
         public EiscApiAdvanced(DeviceConfig dc, BasicTriList eisc) :
-            base(dc.Key)
+            base(dc.Key, dc.Name)
         {
             JoinMaps = new Dictionary<string, JoinMapBaseAdvanced>();
 
