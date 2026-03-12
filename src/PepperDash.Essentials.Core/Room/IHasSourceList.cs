@@ -1,14 +1,15 @@
 using System.Collections.Generic;
-using PepperDash.Essentials.Core;
-
-
-/// <summary>
-/// Interface for rooms with a list of destinations
-/// </summary>
-public interface IHasSourceList
+namespace PepperDash.Essentials.Core
 {
+
     /// <summary>
-    /// Gets the list of sources.
+    /// Interface for rooms with a list of destinations
     /// </summary>
-    Dictionary<string, SourceListItem> SourceList { get; }
+    public interface IHasSourceList
+    {
+        /// <summary>
+        /// Gets the list of sources.
+        /// </summary>
+        Dictionary<string, SourceListItem> SourceList { get; }
+    }
 }

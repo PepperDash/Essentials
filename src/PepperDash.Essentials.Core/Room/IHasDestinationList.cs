@@ -1,14 +1,16 @@
 using System.Collections.Generic;
-using PepperDash.Essentials.Core;
 
-
-/// <summary>
-/// Interface for rooms with a list of destinations
-/// </summary>
-public interface IHasDestinationList
+namespace PepperDash.Essentials.Core
 {
+
     /// <summary>
-    /// Gets the dictionary of destinations.
+    /// Interface for rooms with a list of destinations
     /// </summary>
-    Dictionary<string, IRoutingSink> Destinations { get; }
+    public interface IHasDestinationList
+    {
+        /// <summary>
+        /// Gets the dictionary of destinations.
+        /// </summary>
+        Dictionary<string, IRoutingSink> Destinations { get; }
+    }
 }
