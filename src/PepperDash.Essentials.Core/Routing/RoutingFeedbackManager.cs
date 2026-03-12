@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
@@ -230,6 +231,15 @@ namespace PepperDash.Essentials.Core.Routing
                             return roomDefaultDisplay.DefaultDisplay.Key == destination.Key;
                         }
 
+                        if (r is IHasDestinationList roomDestinationList)
+                        {
+                            return roomDestinationList.Destinations.Any(d =>
+                                d.Value.Key == destination.Key
+                            );
+                        }
+
+                        var destList = ConfigReader.ConfigObject.GetDestinationListForKey(r.DestinationListKey);
+
                         return false;
                     }
                 );
@@ -247,7 +257,15 @@ namespace PepperDash.Essentials.Core.Routing
 
             // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found room {room} for destination {destination}", this, room.Key, destination.Key);
 
-            var sourceList = ConfigReader.ConfigObject.GetSourceListForKey(room.SourceListKey);
+            Dictionary<string, SourceListItem> sourceList = null;
+
+            if (room is IHasSourceList roomWithSourceList)
+            {
+                sourceList = roomWithSourceList.SourceList;
+            }
+            else {
+                 sourceList = ConfigReader.ConfigObject.GetSourceListForKey(room.SourceListKey);
+            }   
 
             if (sourceList == null)
             {
