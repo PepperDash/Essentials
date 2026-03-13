@@ -162,7 +162,7 @@ namespace PepperDash.Essentials.Core.Routing
                     };
 
                     destination.CurrentSourceInfo = tempSourceListItem;
-                    ;
+                    
                     destination.CurrentSourceInfoKey = "$transient";
                     return;
                 }
@@ -241,9 +241,9 @@ namespace PepperDash.Essentials.Core.Routing
             if (room == null)
             {
                 this.LogDebug(
-                                    "No room found for display {destination}",
-                                    destination.Key
-                                );
+                    "No room found for display {destination}",
+                    destination.Key
+                );
                 return;
             }
 
