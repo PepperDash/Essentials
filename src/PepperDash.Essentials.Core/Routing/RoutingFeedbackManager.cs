@@ -231,7 +231,7 @@ namespace PepperDash.Essentials.Core.Routing
                             return roomDefaultDisplay.DefaultDisplay.Key == destination.Key;
                         }
 
-                        if (r is IHasDestinationList roomDestinationList)
+                        if (r is IHasDestinations roomDestinationList)
                         {
                             return roomDestinationList.Destinations.Any(d =>
                                 d.Value.Key == destination.Key
@@ -281,14 +281,27 @@ namespace PepperDash.Essentials.Core.Routing
 
             // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found sourceList for room {room}", this, room.Key);
 
+            if (sourceTieLine.SourcePort?.ParentDevice == null)
+            {
+                Debug.LogMessage(
+                    Serilog.Events.LogEventLevel.Debug,
+                    "********SourcePort or ParentDevice is null for tieLine. Unable to find source for destination {destination}.",
+                    this,
+                    destination.Key
+                );
+                return;
+            }
+
             var sourceListItem = sourceList.FirstOrDefault(sli =>
             {
-                //// Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose,
-                //   "SourceListItem {sourceListItem}:{sourceKey} tieLine sourceport device key {sourcePortDeviceKey}",
-                //   this,
-                //   sli.Key,
-                //   sli.Value.SourceKey,
-                //   sourceTieLine.SourcePort.ParentDevice.Key);
+                if (sli.Value == null) return false;
+
+                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose,
+                  "********SourceListItem {sourceListItem}:{sourceKey} tieLine sourceport device key {sourcePortDeviceKey}",
+                  this,
+                  sli.Key,
+                  sli.Value.SourceKey,
+                  sourceTieLine.SourcePort.ParentDevice.Key);
 
                 return sli.Value.SourceKey.Equals(
                     sourceTieLine.SourcePort.ParentDevice.Key,
@@ -306,7 +319,7 @@ namespace PepperDash.Essentials.Core.Routing
                     "No source found for device {key}. Creating transient source for {destination}",
                     this,
                     sourceTieLine.SourcePort.ParentDevice.Key,
-                    destination
+                    destination.Key
                 );
 
                 var tempSourceListItem = new SourceListItem
@@ -320,7 +333,7 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {@source} with key {sourceKey}", this, source, sourceKey);
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {@source} with key {sourceKey}", this, source, sourceKey);
 
             destination.CurrentSourceInfoKey = sourceKey;
             destination.CurrentSourceInfo = source;
