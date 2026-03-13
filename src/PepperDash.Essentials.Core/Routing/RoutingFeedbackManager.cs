@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.Routing
@@ -122,20 +123,16 @@ namespace PepperDash.Essentials.Core.Routing
             RoutingInputPort inputPort
         )
         {
-            Debug.LogMessage(
-                Serilog.Events.LogEventLevel.Debug,
+            this.LogDebug(
                 "Updating destination {destination} with inputPort {inputPort}",
-                this,
                 destination?.Key,
                 inputPort?.Key
             );
 
             if (inputPort == null)
             {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
+                this.LogDebug(
                     "Destination {destination} has not reported an input port yet",
-                    this,
                     destination.Key
                 );
                 return;
@@ -153,10 +150,8 @@ namespace PepperDash.Essentials.Core.Routing
 
                 if (firstTieLine == null)
                 {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Debug,
+                    this.LogDebug(
                         "No tieline found for inputPort {inputPort}. Clearing current source",
-                        this,
                         inputPort
                     );
 
@@ -174,7 +169,7 @@ namespace PepperDash.Essentials.Core.Routing
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error getting first tieline: {Exception}", this, ex);
+                this.LogException(ex, "Error getting first tieline: {Exception}",  ex.Message);
                 return;
             }
 
@@ -187,8 +182,7 @@ namespace PepperDash.Essentials.Core.Routing
 
                 if (sourceTieLine == null)
                 {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Debug,
+                    this.LogDebug(
                         "No route found to source for inputPort {inputPort}. Clearing current source",
                         this,
                         inputPort
@@ -207,7 +201,7 @@ namespace PepperDash.Essentials.Core.Routing
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error getting sourceTieLine: {Exception}", this, ex);
+                this.LogException(ex, "Error getting sourceTieLine: {Exception}",  ex.Message);
                 return;
             }
 
@@ -246,16 +240,14 @@ namespace PepperDash.Essentials.Core.Routing
 
             if (room == null)
             {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
-                    "No room found for display {destination}",
-                    this,
-                    destination.Key
-                );
+                this.LogDebug(
+                                    "No room found for display {destination}",
+                                    destination.Key
+                                );
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found room {room} for destination {destination}", this, room.Key, destination.Key);
+            this.LogVerbose("Found room {room} for destination {destination}", room.Key, destination.Key);
 
             Dictionary<string, SourceListItem> sourceList = null;
 
@@ -263,30 +255,27 @@ namespace PepperDash.Essentials.Core.Routing
             {
                 sourceList = roomWithSourceList.SourceList;
             }
-            else {
-                 sourceList = ConfigReader.ConfigObject.GetSourceListForKey(room.SourceListKey);
-            }   
+            else
+            {
+                sourceList = ConfigReader.ConfigObject.GetSourceListForKey(room.SourceListKey);
+            }
 
             if (sourceList == null)
             {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
+                this.LogDebug(
                     "No source list found for source list key {key}. Unable to find source for tieLine {sourceTieLine}",
-                    this,
                     room.SourceListKey,
                     sourceTieLine
                 );
                 return;
             }
 
-            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found sourceList for room {room}", this, room.Key);
+            this.LogVerbose("Found sourceList for room {room}", room.Key);
 
             if (sourceTieLine.SourcePort?.ParentDevice == null)
             {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
+                this.LogDebug(
                     "********SourcePort or ParentDevice is null for tieLine. Unable to find source for destination {destination}.",
-                    this,
                     destination.Key
                 );
                 return;
@@ -296,9 +285,8 @@ namespace PepperDash.Essentials.Core.Routing
             {
                 if (sli.Value == null) return false;
 
-                Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose,
+                this.LogVerbose(
                   "********SourceListItem {sourceListItem}:{sourceKey} tieLine sourceport device key {sourcePortDeviceKey}",
-                  this,
                   sli.Key,
                   sli.Value.SourceKey,
                   sourceTieLine.SourcePort.ParentDevice.Key);
@@ -314,10 +302,8 @@ namespace PepperDash.Essentials.Core.Routing
 
             if (source == null)
             {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
+                this.LogDebug(
                     "No source found for device {key}. Creating transient source for {destination}",
-                    this,
                     sourceTieLine.SourcePort.ParentDevice.Key,
                     destination.Key
                 );
@@ -333,7 +319,7 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Got Source {@source} with key {sourceKey}", this, source, sourceKey);
+            this.LogVerbose("Got Source {@source} with key {sourceKey}", source, sourceKey);
 
             destination.CurrentSourceInfoKey = sourceKey;
             destination.CurrentSourceInfo = source;
