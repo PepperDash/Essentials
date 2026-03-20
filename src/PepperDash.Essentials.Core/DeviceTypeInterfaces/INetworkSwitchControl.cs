@@ -85,6 +85,11 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     public enum NetworkSwitchPortEventType
     {
         /// <summary>
+        /// Indicates that the type of event is unknown or cannot be determined.
+        /// </summary>
+        Unknown,
+
+        /// <summary>
         /// Indicates that the access VLAN on a port has changed, either through a successful call to SetPortVlan
         /// </summary>
         VlanChanged,
