@@ -446,6 +446,8 @@ namespace PepperDash.Essentials.Core
                     {
                         Debug.LogMessage(LogEventLevel.Debug, this, "Unable to find partition with key: '{0}'", partitionState.PartitionKey);
                     }
+                    // Sets the scenario while disregarding the returned task. This prevents current scenario from being null when starting in manual mode.
+                _ = ChangeScenario(scenario);
                 }
             }
             else
