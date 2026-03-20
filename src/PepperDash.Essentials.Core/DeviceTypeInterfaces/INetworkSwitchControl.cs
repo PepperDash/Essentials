@@ -90,14 +90,29 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         Unknown,
 
         /// <summary>
+        /// Indicates that a VLAN change is in progress on the port, either through a call to SetPortVlan or an external change detected by polling.
+        /// </summary>
+        VlanChangeInProgress,
+
+        /// <summary>
         /// Indicates that the access VLAN on a port has changed, either through a successful call to SetPortVlan
         /// </summary>
         VlanChanged,
 
         /// <summary>
+        /// Indicates that PoE is being disabled on the port, either through a call to SetPortPoeState or an external change detected by polling.
+        /// </summary>
+        PoeDisableInProgress,
+
+        /// <summary>
         /// Indicates that the PoE state on a port has changed, either through a successful call to SetPortPoeState
         /// </summary>
         PoEDisabled,
+
+        /// <summary> 
+        /// Indicates that PoE is being enabled on the port, either through a call to SetPortPoeState or an external change detected by polling. 
+        /// </summary>
+        PoeEnableInProgress,
 
         /// <summary>
         /// Indicates that the PoE state on a port has changed, either through a successful call to SetPortPoeState
