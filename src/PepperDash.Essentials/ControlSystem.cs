@@ -5,7 +5,6 @@ using System.Reflection;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Diagnostics;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -28,10 +27,8 @@ namespace PepperDash.Essentials;
 /// provides methods for platform determination, configuration loading, and system teardown.</remarks>
 public class ControlSystem : CrestronControlSystem, ILoadConfig
 {
-    private HttpLogoServer LogoServer;
-
-    private Timer _startTimer;
-    private ManualResetEventSlim _initializeEvent;
+    private Timer startTimer;
+    private ManualResetEventSlim initializeEvent;
     private const long StartupTime = 500;
 
     /// <summary>
@@ -79,16 +76,16 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
         {
             Debug.LogMessage(LogEventLevel.Debug, "******************* Initializing System **********************");
 
-            _startTimer = new Timer(StartSystem, preventInitializationComplete, StartupTime, Timeout.Infinite);
+            startTimer = new Timer(StartSystem, preventInitializationComplete, StartupTime, Timeout.Infinite);
 
-            _initializeEvent = new ManualResetEventSlim(false);
+            initializeEvent = new ManualResetEventSlim(false);
 
             DeviceManager.AllDevicesRegistered += (o, a) =>
             {
-                _initializeEvent.Set();
+                initializeEvent.Set();
             };
 
-            _initializeEvent.Wait(30000);
+            initializeEvent.Wait(30000);
 
             Debug.LogMessage(LogEventLevel.Debug, "******************* System Initialization Complete **********************");
 
@@ -96,7 +93,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
         }
         else
         {
-            _startTimer = new Timer(StartSystem, preventInitializationComplete, StartupTime, Timeout.Infinite);
+            startTimer = new Timer(StartSystem, preventInitializationComplete, StartupTime, Timeout.Infinite);
         }
     }
 
@@ -357,7 +354,6 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
     {
         LoadDevices();
         LoadRooms();
-        LoadLogoServer();
 
         DeviceManager.ActivateAll();
 
@@ -495,67 +491,6 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
 
     }
 
-    /// <summary>
-    /// Fires up a logo server if not already running
-    /// </summary>
-    void LoadLogoServer()
-    {
-        if (ConfigReader.ConfigObject.Rooms == null)
-        {
-            Debug.LogMessage(LogEventLevel.Information, "No rooms configured. Bypassing Logo server startup.");
-            return;
-        }
-
-        if (
-            !ConfigReader.ConfigObject.Rooms.Any(
-                CheckRoomConfig))
-        {
-            Debug.LogMessage(LogEventLevel.Information, "No rooms configured to use system Logo server. Bypassing Logo server startup");
-            return;
-        }
-
-        try
-        {
-            LogoServer = new HttpLogoServer(8080, Global.DirectorySeparator + "html" + Global.DirectorySeparator + "logo");
-        }
-        catch (Exception)
-        {
-            Debug.LogMessage(LogEventLevel.Information, "NOTICE: Logo server cannot be started. Likely already running in another program");
-        }
-    }
-
-    private bool CheckRoomConfig(DeviceConfig c)
-    {
-        string logoDark = null;
-        string logoLight = null;
-        string logo = null;
-
-        try
-        {
-            if (c.Properties["logoDark"] != null)
-            {
-                logoDark = c.Properties["logoDark"].Value<string>("type");
-            }
-
-            if (c.Properties["logoLight"] != null)
-            {
-                logoLight = c.Properties["logoLight"].Value<string>("type");
-            }
-
-            if (c.Properties["logo"] != null)
-            {
-                logo = c.Properties["logo"].Value<string>("type");
-            }
-
-            return ((logoDark != null && logoDark == "system") ||
-                    (logoLight != null && logoLight == "system") || (logo != null && logo == "system"));
-        }
-        catch
-        {
-            Debug.LogMessage(LogEventLevel.Information, "Unable to find logo information in any room config");
-            return false;
-        }
-    }
 
     private static void LoadAssets()
     {
