@@ -14,14 +14,14 @@ namespace PepperDash.Essentials.Devices.Common.Generic;
 /// </summary>
 public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputPort, ICurrentSources
 {
-    /// <inheritdoc/> 
-    public Dictionary<eRoutingSignalType, SourceListItem> CurrentSources { get; private set; }
+	/// <inheritdoc/> 
+	public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; private set; }
 
-    /// <inheritdoc/>
-    public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; }
+	/// <inheritdoc/>
+	public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; }
 
-    /// <inheritdoc />
-    public event EventHandler CurrentSourcesChanged;
+	/// <inheritdoc />
+	public event EventHandler<CurrentSourcesChangedEventArgs> CurrentSourcesChanged;
 
     /// <summary>
     /// Initializes a new instance of the GenericSink class
@@ -36,7 +36,7 @@ public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputP
 
         InputPorts.Add(inputPort);
 
-        CurrentSources = new Dictionary<eRoutingSignalType, SourceListItem>
+        CurrentSources = new Dictionary<eRoutingSignalType, IRoutingSource>
             {
                 { eRoutingSignalType.Audio, null },
                 { eRoutingSignalType.Video, null },
@@ -49,36 +49,55 @@ public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputP
             };
     }
 
-    /// <inheritdoc />
-    public void SetCurrentSource(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
-    {
-        foreach (eRoutingSignalType type in Enum.GetValues(typeof(eRoutingSignalType)))
-        {
-            var flagValue = Convert.ToInt32(type);
-            // Skip if flagValue is 0 or not a power of two (i.e., not a single-bit flag).
-            // (flagValue & (flagValue - 1)) != 0 checks if more than one bit is set.
-            if (flagValue == 0 || (flagValue & (flagValue - 1)) != 0)
-            {
-                this.LogDebug("Skipping {type}", type);
-                continue;
-            }
+	/// <inheritdoc />
+	public virtual void SetCurrentSource(eRoutingSignalType signalType, IRoutingSource sourceDevice)
+	{
+		foreach (eRoutingSignalType type in Enum.GetValues(typeof(eRoutingSignalType)))
+		{
+			var flagValue = Convert.ToInt32(type);
+			// Skip if flagValue is 0 or not a power of two (i.e., not a single-bit flag).
+			// (flagValue & (flagValue - 1)) != 0 checks if more than one bit is set.
+			if (flagValue == 0 || (flagValue & (flagValue - 1)) != 0)
+			{
+				this.LogDebug("Skipping {type}", type);
+				continue;
+			}
 
-            this.LogDebug("setting {type}", type);
+			this.LogDebug("setting {type}", type);
 
-            if (signalType.HasFlag(type))
-            {
-                UpdateCurrentSources(type, sourceListKey, sourceListItem);
-            }
-        }
-        // Raise the CurrentSourcesChanged event
-        CurrentSourcesChanged?.Invoke(this, EventArgs.Empty);
-    }
+			var previousSource = CurrentSources[type];
 
-    private void UpdateCurrentSources(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
-    {
-        CurrentSources[signalType] = sourceListItem;
-        CurrentSourceKeys[signalType] = sourceListKey;
-    }
+			if (signalType.HasFlag(type))
+			{
+				UpdateCurrentSources(type, previousSource, sourceDevice);
+			}
+		}
+	}
+
+	private void UpdateCurrentSources(eRoutingSignalType signalType, IRoutingSource previousSource, IRoutingSource sourceDevice)
+	{
+		if (CurrentSources.ContainsKey(signalType))
+		{
+			CurrentSources[signalType] = sourceDevice;
+		}
+		else
+		{
+			CurrentSources.Add(signalType, sourceDevice);
+		}
+
+		// Update the current source key for the specified signal type
+		if (CurrentSourceKeys.ContainsKey(signalType))
+		{
+			CurrentSourceKeys[signalType] = sourceDevice.Key;
+		}
+		else
+		{
+			CurrentSourceKeys.Add(signalType, sourceDevice.Key);
+		}
+
+		// Raise the CurrentSourcesChanged event
+		CurrentSourcesChanged?.Invoke(this, new CurrentSourcesChangedEventArgs(signalType, previousSource, sourceDevice));
+	}
 
     /// <summary>
     /// Gets or sets the InputPorts

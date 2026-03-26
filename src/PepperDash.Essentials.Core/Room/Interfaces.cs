@@ -29,18 +29,6 @@ public interface IHasDefaultDisplay
 }
 
 /// <summary>
-/// For rooms with multiple displays
-/// </summary>
-[Obsolete("This interface is being deprecated in favor of using destination lists for routing to multiple displays.")]
-public interface IHasMultipleDisplays
-{
-    /// <summary>
-    /// A dictionary of displays in the room with the key being the type of display (presentation, calling, etc.) and the value being the display device
-    /// </summary>
-    Dictionary<eSourceListItemDestinationTypes, IRoutingSink> Displays { get; }
-}
-
-/// <summary>
 /// For rooms with routing
 /// </summary>
 public interface IRunRouteAction

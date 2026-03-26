@@ -5,8 +5,9 @@
 /// <summary>
 /// Defines the contract for IRoutingSinkWithFeedback
 /// </summary>
-public interface IRoutingSinkWithFeedback : IRoutingSinkWithSwitching
+public interface IRoutingSinkWithFeedback : IRoutingSink
 {
-
 }
+
+
 

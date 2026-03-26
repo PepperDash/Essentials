@@ -49,47 +49,19 @@ public abstract class DisplayBase : EssentialsDevice, IDisplay, ICurrentSources,
 	public event InputChangedEventHandler InputChanged;
 
 	/// <summary>
-	/// Event that is raised when the current source information changes.
-	/// </summary>
-	public event SourceInfoChangeHandler CurrentSourceChange;
-
-	/// <summary>
 	/// Gets or sets the CurrentSourceInfoKey
 	/// </summary>
 	public string CurrentSourceInfoKey { get; set; }
 
-	/// <summary>
-	/// Gets or sets the current source information for the display.
-	/// </summary>
-	public SourceListItem CurrentSourceInfo
-	{
-		get
-		{
-			return _CurrentSourceInfo;
-		}
-		set
-		{
-			if (value == _CurrentSourceInfo) return;
-
-			var handler = CurrentSourceChange;
-
-			handler?.Invoke(_CurrentSourceInfo, ChangeType.WillChange);
-
-			_CurrentSourceInfo = value;
-
-			handler?.Invoke(_CurrentSourceInfo, ChangeType.DidChange);
-		}
-	}
-	SourceListItem _CurrentSourceInfo;
 
 	/// <inheritdoc/> 
-	public Dictionary<eRoutingSignalType, SourceListItem> CurrentSources { get; private set; }
+	public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; private set; }
 
 	/// <inheritdoc/>
 	public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; }
 
 	/// <inheritdoc />
-	public event EventHandler CurrentSourcesChanged;
+	public event EventHandler<CurrentSourcesChangedEventArgs> CurrentSourcesChanged;
 
 	/// <summary>
 	/// Gets feedback indicating whether the display is currently cooling down after being powered off.
@@ -163,7 +135,7 @@ public abstract class DisplayBase : EssentialsDevice, IDisplay, ICurrentSources,
 
 		InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-		CurrentSources = new Dictionary<eRoutingSignalType, SourceListItem>
+		CurrentSources = new Dictionary<eRoutingSignalType, IRoutingSource>
 			{
 				{ eRoutingSignalType.Audio, null },
 				{ eRoutingSignalType.Video, null },
@@ -388,7 +360,7 @@ public abstract class DisplayBase : EssentialsDevice, IDisplay, ICurrentSources,
 	}
 
 	/// <inheritdoc />
-	public virtual void SetCurrentSource(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
+	public virtual void SetCurrentSource(eRoutingSignalType signalType, IRoutingSource sourceDevice)
 	{
 		foreach (eRoutingSignalType type in Enum.GetValues(typeof(eRoutingSignalType)))
 		{
@@ -403,35 +375,38 @@ public abstract class DisplayBase : EssentialsDevice, IDisplay, ICurrentSources,
 
 			this.LogDebug("setting {type}", type);
 
+			var previousSource = CurrentSources[type];
+
 			if (signalType.HasFlag(type))
 			{
-				UpdateCurrentSources(type, sourceListKey, sourceListItem);
+				UpdateCurrentSources(type, previousSource, sourceDevice);
 			}
 		}
-		// Raise the CurrentSourcesChanged event
-		CurrentSourcesChanged?.Invoke(this, EventArgs.Empty);
 	}
 
-	private void UpdateCurrentSources(eRoutingSignalType signalType, string sourceListKey, SourceListItem sourceListItem)
+	private void UpdateCurrentSources(eRoutingSignalType signalType, IRoutingSource previousSource, IRoutingSource sourceDevice)
 	{
 		if (CurrentSources.ContainsKey(signalType))
 		{
-			CurrentSources[signalType] = sourceListItem;
+			CurrentSources[signalType] = sourceDevice;
 		}
 		else
 		{
-			CurrentSources.Add(signalType, sourceListItem);
+			CurrentSources.Add(signalType, sourceDevice);
 		}
 
 		// Update the current source key for the specified signal type
 		if (CurrentSourceKeys.ContainsKey(signalType))
 		{
-			CurrentSourceKeys[signalType] = sourceListKey;
+			CurrentSourceKeys[signalType] = sourceDevice.Key;
 		}
 		else
 		{
-			CurrentSourceKeys.Add(signalType, sourceListKey);
+			CurrentSourceKeys.Add(signalType, sourceDevice.Key);
 		}
+
+		// Raise the CurrentSourcesChanged event
+		CurrentSourcesChanged?.Invoke(this, new CurrentSourcesChangedEventArgs(signalType, previousSource, sourceDevice));
 	}
 
 }

@@ -43,17 +43,17 @@ public class SourceListItem
     /// Returns the source Device for this, if it exists in DeviceManager
     /// </summary>
     [JsonIgnore]
-    public Device SourceDevice
+    public IRoutingSource SourceDevice
     {
         get
         {
             if (_SourceDevice == null)
-                _SourceDevice = DeviceManager.GetDeviceForKey(SourceKey) as Device;
+                _SourceDevice = DeviceManager.GetDeviceForKey<IRoutingSource>(SourceKey);
             return _SourceDevice;
         }
     }
 
-    private Device _SourceDevice;
+    private IRoutingSource _SourceDevice;
 
     /// <summary>
     /// Gets either the source's Name or this AlternateName property, if 

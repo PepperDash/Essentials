@@ -2,6 +2,7 @@
 
 using Newtonsoft.Json;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core;
 
@@ -11,23 +12,22 @@ namespace PepperDash.Essentials.Core;
 /// </summary>
 public class DestinationListItem
 {
-
     /// <summary>
     /// Gets or sets the key identifier for the sink device that this destination represents.
     /// </summary>
     [JsonProperty("sinkKey")]
     public string SinkKey { get; set; }
 
-    private EssentialsDevice _sinkDevice;
+    private IRoutingSink _sinkDevice;
 
     /// <summary>
     /// Gets the actual device instance for this destination. 
     /// Lazily loads the device from the DeviceManager using the SinkKey.
     /// </summary>
     [JsonIgnore]
-    public EssentialsDevice SinkDevice
+    public IRoutingSink SinkDevice
     {
-        get { return _sinkDevice ?? (_sinkDevice = DeviceManager.GetDeviceForKey(SinkKey) as EssentialsDevice); }
+        get { return _sinkDevice ?? (_sinkDevice = DeviceManager.GetDeviceForKey(SinkKey) as IRoutingSink); }
     }
 
     /// <summary>

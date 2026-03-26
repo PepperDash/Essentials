@@ -1,3 +1,4 @@
+using PepperDash.Core;
 using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core;
@@ -5,7 +6,7 @@ namespace PepperDash.Essentials.Core;
 /// <summary>
 /// Defines the contract for IRoutingSink
 /// </summary>
-public interface IRoutingSink : IRoutingInputs, IHasCurrentSourceInfoChange
+public interface IRoutingSink : IRoutingInputs, IKeyName, ICurrentSources
 {
 }
 
@@ -20,10 +21,4 @@ public interface IRoutingSinkWithInputPort : IRoutingSink
     RoutingInputPort CurrentInputPort { get; }
 }
 
-/// <summary>
-/// Interface for routing sinks that have access to the current source information.
-/// </summary>
-public interface IRoutingSinkWithCurrentSources : IRoutingSink, ICurrentSources
-{
-}
 

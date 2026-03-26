@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Sources;
 using Serilog.Events;
 
@@ -22,9 +25,18 @@ public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
 
     /// <summary>
     /// The currently active input port, which for this device is always AnyVideoIn
-     /// This is used by the routing system to determine where to route video sources when this device is a destination
+    /// This is used by the routing system to determine where to route video sources when this device is a destination
     /// </summary>
     public RoutingInputPort CurrentInputPort => AnyVideoIn;
+
+    /// <inheritdoc/> 
+    public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; private set; }
+
+    /// <inheritdoc/>
+    public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; }
+
+    /// <inheritdoc />
+    public event EventHandler<CurrentSourcesChangedEventArgs> CurrentSourcesChanged;
 
     #region IRoutingInputs Members
 
@@ -47,15 +59,77 @@ public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
         {
             (AnyVideoIn = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, 0, this))
         };
+
+        CurrentSources = new Dictionary<eRoutingSignalType, IRoutingSource>
+            {
+                { eRoutingSignalType.Audio, null },
+                { eRoutingSignalType.Video, null },
+            };
+
+        CurrentSourceKeys = new Dictionary<eRoutingSignalType, string>
+            {
+                { eRoutingSignalType.Audio, string.Empty },
+                { eRoutingSignalType.Video, string.Empty },
+            };
+    }
+
+    /// <inheritdoc />
+    public virtual void SetCurrentSource(eRoutingSignalType signalType, IRoutingSource sourceDevice)
+    {
+        foreach (eRoutingSignalType type in Enum.GetValues(typeof(eRoutingSignalType)))
+        {
+            var flagValue = Convert.ToInt32(type);
+            // Skip if flagValue is 0 or not a power of two (i.e., not a single-bit flag).
+            // (flagValue & (flagValue - 1)) != 0 checks if more than one bit is set.
+            if (flagValue == 0 || (flagValue & (flagValue - 1)) != 0)
+            {
+                this.LogDebug("Skipping {type}", type);
+                continue;
+            }
+
+            this.LogDebug("setting {type}", type);
+
+            var previousSource = CurrentSources[type];
+
+            if (signalType.HasFlag(type))
+            {
+                UpdateCurrentSources(type, previousSource, sourceDevice);
+            }
+        }
+    }
+
+    private void UpdateCurrentSources(eRoutingSignalType signalType, IRoutingSource previousSource, IRoutingSource sourceDevice)
+    {
+        if (CurrentSources.ContainsKey(signalType))
+        {
+            CurrentSources[signalType] = sourceDevice;
+        }
+        else
+        {
+            CurrentSources.Add(signalType, sourceDevice);
+        }
+
+        // Update the current source key for the specified signal type
+        if (CurrentSourceKeys.ContainsKey(signalType))
+        {
+            CurrentSourceKeys[signalType] = sourceDevice.Key;
+        }
+        else
+        {
+            CurrentSourceKeys.Add(signalType, sourceDevice.Key);
+        }
+
+        // Raise the CurrentSourcesChanged event
+        CurrentSourcesChanged?.Invoke(this, new CurrentSourcesChangedEventArgs(signalType, previousSource, sourceDevice));
     }
 
     #region IRunRouteAction Members
 
     /// <summary>
     /// Runs a route action for the specified route key and source list key. Optionally, a callback can be provided to be executed upon successful completion.
-     /// </summary>
-     /// <param name="routeKey"></param>
-     /// <param name="sourceListKey"></param>
+    /// </summary>
+    /// <param name="routeKey"></param>
+    /// <param name="sourceListKey"></param>
     public void RunRouteAction(string routeKey, string sourceListKey)
     {
         RunRouteAction(routeKey, sourceListKey, null);

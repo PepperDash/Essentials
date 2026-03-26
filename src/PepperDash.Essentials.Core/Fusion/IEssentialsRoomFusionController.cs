@@ -1236,11 +1236,14 @@ namespace PepperDash.Essentials.Core.Fusion
                 uint i = 0;
                 foreach (var kvp in setTopBoxes)
                 {
-                    TryAddRouteActionSigs(JoinMap.Display1SetTopBoxSourceStart.AttributeName + " " + (i + 1), JoinMap.Display1SetTopBoxSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
-                    i++;
-                    if (i > JoinMap.Display1SetTopBoxSourceStart.JoinSpan) // We only have five spots
+                    if (kvp.Value.SourceDevice is Device device)
                     {
-                        break;
+                        TryAddRouteActionSigs(JoinMap.Display1SetTopBoxSourceStart.AttributeName + " " + (i + 1), JoinMap.Display1SetTopBoxSourceStart.JoinNumber + i, kvp.Key, device);
+                        i++;
+                        if (i > JoinMap.Display1SetTopBoxSourceStart.JoinSpan) // We only have five spots
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -1248,11 +1251,14 @@ namespace PepperDash.Essentials.Core.Fusion
                 i = 0;
                 foreach (var kvp in discPlayers)
                 {
-                    TryAddRouteActionSigs(JoinMap.Display1DiscPlayerSourceStart.AttributeName + " " + (i + 1), JoinMap.Display1DiscPlayerSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
-                    i++;
-                    if (i > JoinMap.Display1DiscPlayerSourceStart.JoinSpan) // We only have five spots
+                    if (kvp.Value.SourceDevice is Device device)
                     {
-                        break;
+                        TryAddRouteActionSigs(JoinMap.Display1DiscPlayerSourceStart.AttributeName + " " + (i + 1), JoinMap.Display1DiscPlayerSourceStart.JoinNumber + i, kvp.Key, device);
+                        i++;
+                        if (i > JoinMap.Display1DiscPlayerSourceStart.JoinSpan) // We only have five spots
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -1260,11 +1266,14 @@ namespace PepperDash.Essentials.Core.Fusion
                 i = 0;
                 foreach (var kvp in laptops)
                 {
-                    TryAddRouteActionSigs(JoinMap.Display1LaptopSourceStart.AttributeName + " " + (i + 1), JoinMap.Display1LaptopSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
-                    i++;
-                    if (i > JoinMap.Display1LaptopSourceStart.JoinSpan) // We only have ten spots???
+                    if (kvp.Value.SourceDevice is Device device)
                     {
-                        break;
+                        TryAddRouteActionSigs(JoinMap.Display1LaptopSourceStart.AttributeName + " " + (i + 1), JoinMap.Display1LaptopSourceStart.JoinNumber + i, kvp.Key, device);
+                        i++;
+                        if (i > JoinMap.Display1LaptopSourceStart.JoinSpan) // We only have ten spots???
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -1745,22 +1754,24 @@ namespace PepperDash.Essentials.Core.Fusion
                 return;
             }
 
-            var dev = info.SourceDevice;
-            if (type == ChangeType.WillChange)
+            if (info.SourceDevice is Device dev)
             {
-                if (_sourceToFeedbackSigs.ContainsKey(dev))
+                if (type == ChangeType.WillChange)
                 {
-                    _sourceToFeedbackSigs[dev].BoolValue = false;
+                    if (_sourceToFeedbackSigs.ContainsKey(dev))
+                    {
+                        _sourceToFeedbackSigs[dev].BoolValue = false;
+                    }
                 }
-            }
-            else
-            {
-                if (_sourceToFeedbackSigs.ContainsKey(dev))
+                else
                 {
-                    _sourceToFeedbackSigs[dev].BoolValue = true;
+                    if (_sourceToFeedbackSigs.ContainsKey(dev))
+                    {
+                        _sourceToFeedbackSigs[dev].BoolValue = true;
+                    }
+                    //var name = (room == null ? "" : room.Name);
+                    CurrentRoomSourceNameSig.InputSig.StringValue = dev.Name;
                 }
-                //var name = (room == null ? "" : room.Name);
-                CurrentRoomSourceNameSig.InputSig.StringValue = info.SourceDevice.Name;
             }
         }
 

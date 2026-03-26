@@ -132,12 +132,6 @@ public class GenericTcpIpClient : Device, ISocketStatusWithStreamDebugging, IAut
     public string ClientStatusText { get { return ClientStatus.ToString(); } }
 
     /// <summary>
-    /// Ushort representation of client status
-    /// </summary>
-    [Obsolete]
-    public ushort UClientStatus { get { return (ushort)ClientStatus; } }
-
-    /// <summary>
     /// Connection failure reason
     /// </summary>
     public string ConnectionFailure { get { return ClientStatus.ToString(); } }

@@ -1,4 +1,5 @@
-﻿using PepperDash.Core;
+﻿using Newtonsoft.Json;
+using PepperDash.Core;
 
 
 namespace PepperDash.Essentials.Core;
@@ -11,6 +12,7 @@ public interface IRoutingOutputs : IKeyed
     /// <summary>
     /// Collection of Output Ports
     /// </summary>
+    [JsonProperty("outputPorts")]
     RoutingPortCollection<RoutingOutputPort> OutputPorts { get; }
 }
 

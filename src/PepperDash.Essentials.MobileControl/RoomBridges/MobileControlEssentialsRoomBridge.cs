@@ -719,29 +719,6 @@ namespace PepperDash.Essentials.RoomBridges
                     }
                 }
 
-                if (room is IHasDefaultDisplay defDisplayRoom)
-                {
-                    this.LogVerbose("Getting default display config");
-                    configuration.DefaultDisplayKey = defDisplayRoom.DefaultDisplay.Key;
-                    configuration.Destinations.Add(eSourceListItemDestinationTypes.defaultDisplay, defDisplayRoom.DefaultDisplay.Key);
-                }
-
-                if (room is IHasMultipleDisplays multiDisplayRoom)
-                {
-                    this.LogVerbose("Getting multiple display config");
-
-                    if (multiDisplayRoom.Displays == null)
-                    {
-                        this.LogVerbose("Displays collection is null");
-                    }
-                    else
-                    {
-                        this.LogVerbose("Displays collection exists");
-
-                        configuration.Destinations = multiDisplayRoom.Displays.ToDictionary(kv => kv.Key, kv => kv.Value.Key);
-                    }
-                }
-
                 if (room is IHasAccessoryDevices accRoom)
                 {
                     Debug.LogMessage(Serilog.Events.LogEventLevel.Information, "Getting accessory devices config", this);
@@ -1016,13 +993,6 @@ namespace PepperDash.Essentials.RoomBridges
         public string DefaultDisplayKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the destinations dictionary keyed by destination type
-        /// </summary>
-        [JsonProperty("destinations", NullValueHandling = NullValueHandling.Ignore)]
-        public Dictionary<eSourceListItemDestinationTypes, string> Destinations { get; set; }
-
-
-        /// <summary>
         /// Gets or sets the EnvironmentalDevices
         /// </summary>
         [JsonProperty("environmentalDevices", NullValueHandling = NullValueHandling.Ignore)]
@@ -1106,7 +1076,6 @@ namespace PepperDash.Essentials.RoomBridges
         /// </summary>
         public RoomConfiguration()
         {
-            Destinations = new Dictionary<eSourceListItemDestinationTypes, string>();
             EnvironmentalDevices = new List<EnvironmentalDeviceConfiguration>();
             SourceList = new Dictionary<string, SourceListItem>();
             TouchpanelKeys = new List<string>();

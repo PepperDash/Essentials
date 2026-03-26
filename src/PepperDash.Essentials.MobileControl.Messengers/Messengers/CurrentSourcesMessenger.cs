@@ -69,7 +69,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
   /// </summary>
   public class CurrentSourcesStateMessage : DeviceStateMessageBase
   {
-
     /// <summary>
     /// Gets or sets the CurrentSourceKey
     /// </summary>
@@ -81,6 +80,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// Gets or sets the CurrentSource
     /// </summary>
     [JsonProperty("currentSources")]
-    public Dictionary<eRoutingSignalType, SourceListItem> CurrentSources { get; set; }
+    public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; set; }
   }
 }

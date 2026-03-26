@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-
+using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common;
@@ -13,33 +14,19 @@ namespace PepperDash.Essentials.Devices.Common;
 /// </summary>
 public class GenericAudioOut : EssentialsDevice, IRoutingSink
 {
+	/// <inheritdoc/>
 	public RoutingInputPort CurrentInputPort => AnyAudioIn;
 
-	public event SourceInfoChangeHandler CurrentSourceChange;
 
-	public string CurrentSourceInfoKey { get; set; }
-	public SourceListItem CurrentSourceInfo
-	{
-		get
-		{
-			return _CurrentSourceInfo;
-		}
-		set
-		{
-			if (value == _CurrentSourceInfo) return;
+	/// <inheritdoc/> 
+	public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; private set; }
 
-			var handler = CurrentSourceChange;
+	/// <inheritdoc/>
+	public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; }
 
-			if (handler != null)
-				handler(_CurrentSourceInfo, ChangeType.WillChange);
+	/// <inheritdoc />
+	public event System.EventHandler<CurrentSourcesChangedEventArgs> CurrentSourcesChanged;
 
-			_CurrentSourceInfo = value;
-
-			if (handler != null)
-				handler(_CurrentSourceInfo, ChangeType.DidChange);
-		}
-	}
-	SourceListItem _CurrentSourceInfo;
 
 	/// <summary>
 	/// Gets or sets the AnyAudioIn
@@ -56,6 +43,66 @@ public class GenericAudioOut : EssentialsDevice, IRoutingSink
 	{
 		AnyAudioIn = new RoutingInputPort(RoutingPortNames.AnyAudioIn, eRoutingSignalType.Audio,
 			eRoutingPortConnectionType.LineAudio, null, this);
+
+		CurrentSources = new Dictionary<eRoutingSignalType, IRoutingSource>
+			{
+				{ eRoutingSignalType.Audio, null },
+			};
+
+		CurrentSourceKeys = new Dictionary<eRoutingSignalType, string>
+			{
+				{ eRoutingSignalType.Audio, string.Empty },
+			};
+	}
+
+		/// <inheritdoc />
+	public virtual void SetCurrentSource(eRoutingSignalType signalType, IRoutingSource sourceDevice)
+	{
+		foreach (eRoutingSignalType type in System.Enum.GetValues(typeof(eRoutingSignalType)))
+		{
+			var flagValue = System.Convert.ToInt32(type);
+			// Skip if flagValue is 0 or not a power of two (i.e., not a single-bit flag).
+			// (flagValue & (flagValue - 1)) != 0 checks if more than one bit is set.
+			if (flagValue == 0 || (flagValue & (flagValue - 1)) != 0)
+			{
+				this.LogDebug("Skipping {type}", type);
+				continue;
+			}
+
+			this.LogDebug("setting {type}", type);
+
+			var previousSource = CurrentSources[type];
+
+			if (signalType.HasFlag(type))
+			{
+				UpdateCurrentSources(type, previousSource, sourceDevice);
+			}
+		}
+	}
+
+	private void UpdateCurrentSources(eRoutingSignalType signalType, IRoutingSource previousSource, IRoutingSource sourceDevice)
+	{
+		if (CurrentSources.ContainsKey(signalType))
+		{
+			CurrentSources[signalType] = sourceDevice;
+		}
+		else
+		{
+			CurrentSources.Add(signalType, sourceDevice);
+		}
+
+		// Update the current source key for the specified signal type
+		if (CurrentSourceKeys.ContainsKey(signalType))
+		{
+			CurrentSourceKeys[signalType] = sourceDevice.Key;
+		}
+		else
+		{
+			CurrentSourceKeys.Add(signalType, sourceDevice.Key);
+		}
+
+		// Raise the CurrentSourcesChanged event
+		CurrentSourcesChanged?.Invoke(this, new CurrentSourcesChangedEventArgs(signalType, previousSource, sourceDevice));
 	}
 
 	#region IRoutingInputs Members
@@ -116,13 +163,20 @@ public class GenericAudioOutWithVolume : GenericAudioOut, IHasVolumeDevice
 
 }
 
+/// <summary>
+/// Factory for creating GenericAudioOutWithVolume devices
+/// </summary>
 public class GenericAudioOutWithVolumeFactory : EssentialsDeviceFactory<GenericAudioOutWithVolume>
 {
+	/// <summary>
+	/// Constructor for GenericAudioOutWithVolumeFactory
+	/// </summary>
 	public GenericAudioOutWithVolumeFactory()
 	{
 		TypeNames = new List<string>() { "genericaudiooutwithvolume" };
 	}
 
+	/// <inheritdoc />
 	public override EssentialsDevice BuildDevice(DeviceConfig dc)
 	{
 		Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new GenericAudioOutWithVolumeFactory Device");
