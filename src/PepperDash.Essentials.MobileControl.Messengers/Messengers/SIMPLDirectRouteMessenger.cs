@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         protected override void RegisterActions()
         {
-            Debug.Console(2, "********** Direct Route Messenger CustomRegisterWithAppServer **********");
+            this.LogDebug("Direct Route Messenger CustomRegisterWithAppServer **********");
 
 
             //Audio source
@@ -81,7 +81,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 var b = content.ToObject<MobileControlSimpleContent<bool>>();
 
-                Debug.Console(1, "Current Sharing Mode: {2}\r\nadvanced sharing mode: {0} join number: {1}", b.Value,
+                this.LogDebug("Current Sharing Mode: {2}\r\nadvanced sharing mode: {0} join number: {1}", b.Value,
                     JoinMap.AdvancedSharingModeOn.JoinNumber,
                     _eisc.BooleanOutput[JoinMap.AdvancedSharingModeOn.JoinNumber].BoolValue);
 

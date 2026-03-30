@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp;
+using System.Timers;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -17,12 +17,14 @@ namespace PepperDash.Essentials.Devices.Common.Displays;
 /// </summary>
 public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string>, IRoutingSinkWithSwitchingWithInputPort, IHasPowerControlWithFeedback
 {
+    /// <inheritdoc />
     public ISelectableItems<string> Inputs { get; private set; }
 
     bool _PowerIsOn;
     bool _IsWarmingUp;
     bool _IsCoolingDown;
 
+    /// <inheritdoc />
     protected override Func<bool> PowerIsOnFeedbackFunc
     {
         get
@@ -33,6 +35,8 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
                 };
         }
     }
+
+    /// <inheritdoc />
     protected override Func<bool> IsCoolingDownFeedbackFunc
     {
         get
@@ -43,6 +47,8 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
             };
         }
     }
+
+    /// <inheritdoc />
     protected override Func<bool> IsWarmingUpFeedbackFunc
     {
         get
@@ -53,13 +59,21 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
             };
         }
     }
+
+    /// <inheritdoc />
     protected override Func<string> CurrentInputFeedbackFunc { get { return () => Inputs.CurrentItem; } }
 
     int VolumeHeldRepeatInterval = 200;
     ushort VolumeInterval = 655;
     ushort _FakeVolumeLevel = 31768;
     bool _IsMuted;
+    Timer _volumeUpTimer;
+    Timer _volumeDownTimer;
 
+    /// <summary>
+    /// Constructor for MockDisplay
+    /// </summary> <param name="key"></param>
+    /// <param name="name"></param>
     public MockDisplay(string key, string name)
         : base(key, name)
     {
@@ -108,16 +122,19 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
             _IsWarmingUp = true;
             IsWarmingUpFeedback.InvokeFireUpdate();
             // Fake power-up cycle
-            WarmupTimer = new CTimer(o =>
+            WarmupTimer = new Timer(WarmupTime) { AutoReset = false };
+            WarmupTimer.Elapsed += (s, e) =>
                 {
                     _IsWarmingUp = false;
                     _PowerIsOn = true;
                     IsWarmingUpFeedback.InvokeFireUpdate();
                     PowerIsOnFeedback.InvokeFireUpdate();
-                }, WarmupTime);
+                };
+            WarmupTimer.Start();
         }
     }
 
+    /// <inheritdoc />
     public override void PowerOff()
     {
         // If a display has unreliable-power off feedback, just override this and
@@ -127,17 +144,20 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
             _IsCoolingDown = true;
             IsCoolingDownFeedback.InvokeFireUpdate();
             // Fake cool-down cycle
-            CooldownTimer = new CTimer(o =>
+            CooldownTimer = new Timer(CooldownTime) { AutoReset = false };
+            CooldownTimer.Elapsed += (s, e) =>
                 {
                     Debug.LogMessage(LogEventLevel.Verbose, "Cooldown timer ending", this);
                     _IsCoolingDown = false;
                     IsCoolingDownFeedback.InvokeFireUpdate();
                     _PowerIsOn = false;
                     PowerIsOnFeedback.InvokeFireUpdate();
-                }, CooldownTime);
+                };
+            CooldownTimer.Start();
         }
     }
 
+    /// <inheritdoc />
     public override void PowerToggle()
     {
         if (PowerIsOnFeedback.BoolValue && !IsWarmingUpFeedback.BoolValue)
@@ -146,6 +166,7 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
             PowerOn();
     }
 
+    /// <inheritdoc />
     public override void ExecuteSwitch(object selector)
     {
         try
@@ -184,6 +205,7 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
         }
     }
 
+    /// <inheritdoc />
     public void SetInput(string selector)
     {
         ISelectableItem currentInput = null;
@@ -206,6 +228,7 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
 
     #region IBasicVolumeWithFeedback Members
 
+    /// <inheritdoc />
     public IntFeedback VolumeLevelFeedback { get; private set; }
 
     /// <summary>
@@ -245,32 +268,44 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
 
     #region IBasicVolumeControls Members
 
+    /// <inheritdoc />
     public void VolumeUp(bool pressRelease)
     {
-        //while (pressRelease)
-        //{
-        Debug.LogMessage(LogEventLevel.Verbose, this, "Volume Down {0}", pressRelease);
         if (pressRelease)
         {
-            var newLevel = _FakeVolumeLevel + VolumeInterval;
-            SetVolume((ushort)newLevel);
-            CrestronEnvironment.Sleep(VolumeHeldRepeatInterval);
+            SetVolume((ushort)(_FakeVolumeLevel + VolumeInterval));
+            if (_volumeUpTimer == null)
+            {
+                _volumeUpTimer = new Timer(VolumeHeldRepeatInterval) { AutoReset = true };
+                _volumeUpTimer.Elapsed += (s, e) => SetVolume((ushort)(_FakeVolumeLevel + VolumeInterval));
+                _volumeUpTimer.Start();
+            }
         }
-        //}
+        else
+        {
+            _volumeUpTimer?.Stop();
+            _volumeUpTimer = null;
+        }
     }
 
+    /// <inheritdoc />
     public void VolumeDown(bool pressRelease)
     {
-        //while (pressRelease)
-        //{
-        Debug.LogMessage(LogEventLevel.Verbose, this, "Volume Up {0}", pressRelease);
         if (pressRelease)
         {
-            var newLevel = _FakeVolumeLevel - VolumeInterval;
-            SetVolume((ushort)newLevel);
-            CrestronEnvironment.Sleep(VolumeHeldRepeatInterval);
+            SetVolume((ushort)(_FakeVolumeLevel - VolumeInterval));
+            if (_volumeDownTimer == null)
+            {
+                _volumeDownTimer = new Timer(VolumeHeldRepeatInterval) { AutoReset = true };
+                _volumeDownTimer.Elapsed += (s, e) => SetVolume((ushort)(_FakeVolumeLevel - VolumeInterval));
+                _volumeDownTimer.Start();
+            }
         }
-        //}
+        else
+        {
+            _volumeDownTimer?.Stop();
+            _volumeDownTimer = null;
+        }
     }
 
     /// <summary>
@@ -284,6 +319,7 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
 
     #endregion
 
+    /// <inheritdoc />
     public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
         LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
@@ -303,6 +339,7 @@ public class MockDisplayFactory : EssentialsDeviceFactory<MockDisplay>
         TypeNames = new List<string>() { "mockdisplay", "mockdisplay2" };
     }
 
+    /// <inheritdoc />
     public override EssentialsDevice BuildDevice(DeviceConfig dc)
     {
         Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new Mock Display Device");

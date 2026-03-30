@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Crestron.SimplSharp;
+using System.Timers;
 using PepperDash.Core;
 using Serilog.Events;
 
@@ -56,16 +56,14 @@ namespace PepperDash.Essentials.Devices.Common.Codec
       }
     }
 
-    private readonly CTimer _scheduleChecker;
+    private Timer _scheduleChecker;
 
     /// <summary>
     /// Initializes a new instance of the CodecScheduleAwareness class with default poll time
     /// </summary>
     public CodecScheduleAwareness()
     {
-      Meetings = new List<Meeting>();
-
-      _scheduleChecker = new CTimer(CheckSchedule, null, 1000, 1000);
+      Init(1000);
     }
 
     /// <summary>
@@ -74,9 +72,16 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// <param name="pollTime">The poll time in milliseconds for checking schedule changes</param>
     public CodecScheduleAwareness(long pollTime)
     {
+      Init(pollTime);
+    }
+
+    private void Init(long pollTime)
+    {
       Meetings = new List<Meeting>();
 
-      _scheduleChecker = new CTimer(CheckSchedule, null, pollTime, pollTime);
+      _scheduleChecker = new Timer(pollTime) { AutoReset = true };
+      _scheduleChecker.Elapsed += (s, e) => CheckSchedule(null);
+      _scheduleChecker.Start();
     }
 
     /// <summary>

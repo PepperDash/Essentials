@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Crestron.SimplSharp;
+using System.Timers;
 
 using PepperDash.Core;
 
@@ -15,15 +15,30 @@ namespace PepperDash.Essentials.Core;
 /// </summary>
 public class ActionIncrementer
 {
+    /// <summary>
+    /// The amount to change the value by each increment
+    /// </summary>
     public int ChangeAmount { get; set; }
+    /// <summary>
+    /// The maximum value the incrementer can reach
+    /// </summary>
     public int MaxValue { get; set; }
+    /// <summary>
+    /// The minimum value the incrementer can reach
+    /// </summary>
     public int MinValue { get; set; }
+    /// <summary>
+    /// The delay before the incrementer starts repeating
+    /// </summary>
     public uint RepeatDelay { get; set; }
+    /// <summary>
+    /// The time interval between each repeat
+    /// </summary>
     public uint RepeatTime { get; set; }
 
     Action<int> SetAction;
     Func<int> GetFunc;
-    CTimer Timer;
+    Timer Timer;
 
     /// <summary>
     /// 
@@ -89,7 +104,20 @@ public class ActionIncrementer
         if (atLimit) // Don't go past end
             Stop();
         else if (Timer == null) // Only enter the timer if it's not already running
-            Timer = new CTimer(o => { Go(change); }, null, RepeatDelay, RepeatTime);
+        {
+            Timer = new Timer(RepeatDelay) { AutoReset = false };
+            Timer.Elapsed += (s, e) =>
+            {
+                Go(change);
+                if (Timer != null)
+                {
+                    Timer.Interval = RepeatTime;
+                    Timer.AutoReset = true;
+                    Timer.Start();
+                }
+            };
+            Timer.Start();
+        }
     }
 
     /// <summary>

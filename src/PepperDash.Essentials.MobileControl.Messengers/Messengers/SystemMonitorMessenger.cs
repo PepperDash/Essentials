@@ -40,7 +40,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             if (e.ProgramInfo != null)
             {
-                //Debug.Console(1, "Posting Status Message: {0}", e.ProgramInfo.ToString());
                 PostStatusMessage(JToken.FromObject(e.ProgramInfo)
                 );
             }

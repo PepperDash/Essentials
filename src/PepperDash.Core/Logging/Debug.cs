@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharp.CrestronIO;
@@ -44,24 +45,32 @@ public static class Debug
 
     private static ILogger _logger;
 
-    private static readonly LoggingLevelSwitch _consoleLoggingLevelSwitch;
+    private static readonly LoggingLevelSwitch consoleLoggingLevelSwitch;
 
-    private static readonly LoggingLevelSwitch _websocketLoggingLevelSwitch;
+    private static readonly LoggingLevelSwitch websocketLoggingLevelSwitch;
 
-    private static readonly LoggingLevelSwitch _errorLogLevelSwitch;
+    private static readonly LoggingLevelSwitch errorLogLevelSwitch;
 
-    private static readonly LoggingLevelSwitch _fileLevelSwitch;
+    private static readonly LoggingLevelSwitch fileLevelSwitch;
 
+    /// <summary>
+    /// The minimum log level for messages to be sent to the console sink
+    /// </summary>
     public static LogEventLevel WebsocketMinimumLogLevel
     {
-        get { return _websocketLoggingLevelSwitch.MinimumLevel; }
+        get { return websocketLoggingLevelSwitch.MinimumLevel; }
     }
 
-    private static readonly DebugWebsocketSink _websocketSink;
+    private static readonly DebugWebsocketSink websocketSink;
 
+    /// <summary>
+    /// The DebugWebsocketSink instance used for sending log messages to connected websocket clients.  
+    /// This is exposed publicly in case there is a need to call methods on the sink directly, such as SendMessageToClients.  
+    /// For general logging purposes, use the LogMessage and LogError methods in this class which will send messages to all configured sinks including the websocket sink.
+    /// </summary>
     public static DebugWebsocketSink WebsocketSink
     {
-        get { return _websocketSink; }
+        get { return websocketSink; }
     }
 
     /// <summary>
@@ -95,6 +104,9 @@ public static class Debug
 
     private const int SaveTimeoutMs = 30000;
 
+    /// <summary>
+    /// Indicates whether the code is running on an appliance or not. Used to determine file paths and other appliance vs server differences
+    /// </summary>
     public static bool IsRunningOnAppliance = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance;
 
     /// <summary>
@@ -102,7 +114,12 @@ public static class Debug
     /// </summary>
     public static string PepperDashCoreVersion { get; private set; }
 
-    private static CTimer _saveTimer;
+    private static Timer _saveTimer;
+
+
+    private const int defaultConsoleDebugTimeoutMin = 120;
+
+    private static Timer consoleDebugTimer;
 
     /// <summary>
     /// When true, the IncludedExcludedKeys dict will contain keys to include. 
@@ -118,6 +135,10 @@ public static class Debug
 
     private static LoggerConfiguration _loggerConfiguration;
 
+    /// <summary>
+    /// The default logger configuration used by the Debug class. Can be used as a base for creating custom logger configurations. 
+    /// If changes are made to this configuration after initialization, call ResetLoggerConfiguration to have those changes reflected in the logger.
+    /// </summary>
     public static LoggerConfiguration LoggerConfiguration => _loggerConfiguration;
 
     static Debug()
@@ -125,6 +146,13 @@ public static class Debug
         try
         {
             CrestronDataStoreStatic.InitCrestronDataStore();
+
+            consoleDebugTimer = new Timer(defaultConsoleDebugTimeoutMin * 60000) { AutoReset = false };
+            consoleDebugTimer.Elapsed += (s, e) =>
+            {
+                SetDebugLevel(LogEventLevel.Information);
+                CrestronConsole.ConsoleCommandResponse($"Console debug level reset to {LogEventLevel.Information} after timeout of {defaultConsoleDebugTimeoutMin} minutes");
+            };
 
             var defaultConsoleLevel = GetStoredLogEventLevel(LevelStoreKey);
 
@@ -134,15 +162,15 @@ public static class Debug
 
             var defaultFileLogLevel = GetStoredLogEventLevel(FileLevelStoreKey);
 
-            _consoleLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultConsoleLevel);
+            consoleLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultConsoleLevel);
 
-            _websocketLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultWebsocketLevel);
+            websocketLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultWebsocketLevel);
 
-            _errorLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultErrorLogLevel);
+            errorLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultErrorLogLevel);
 
-            _fileLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultFileLogLevel);
+            fileLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultFileLogLevel);
 
-            _websocketSink = new DebugWebsocketSink(new JsonFormatter(renderMessage: true));
+            websocketSink = new DebugWebsocketSink(new JsonFormatter(renderMessage: true));
 
             var logFilePath = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ?
                 $@"{Directory.GetApplicationRootDirectory()}{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}debug{Path.DirectorySeparatorChar}app{InitialParametersClass.ApplicationNumber}{Path.DirectorySeparatorChar}global-log.log" :
@@ -158,14 +186,14 @@ public static class Debug
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
                 .Enrich.With(new CrestronEnricher())
-                .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: _consoleLoggingLevelSwitch)
-                .WriteTo.Sink(_websocketSink, levelSwitch: _websocketLoggingLevelSwitch)
-                .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: _errorLogLevelSwitch)
+                .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: consoleLoggingLevelSwitch)
+                .WriteTo.Sink(websocketSink, levelSwitch: websocketLoggingLevelSwitch)
+                .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: errorLogLevelSwitch)
                 .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
                     retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 30 : 60,
-                    levelSwitch: _fileLevelSwitch
+                    levelSwitch: fileLevelSwitch
                 );
 
             // Instantiate the root logger
@@ -214,9 +242,9 @@ public static class Debug
             if (DoNotLoadConfigOnNextBoot)
                 CrestronConsole.PrintLine(string.Format("Program {0} will not load config after next boot.  Use console command go:{0} to load the config manually", InitialParametersClass.ApplicationNumber));
 
-            _consoleLoggingLevelSwitch.MinimumLevelChanged += (sender, args) =>
+            consoleLoggingLevelSwitch.MinimumLevelChanged += (sender, args) =>
             {
-                LogMessage(LogEventLevel.Information, "Console debug level set to {minimumLevel}", _consoleLoggingLevelSwitch.MinimumLevel);
+                LogMessage(LogEventLevel.Information, "Console debug level set to {minimumLevel}", consoleLoggingLevelSwitch.MinimumLevel);
             };
         }
         catch (Exception ex)
@@ -238,6 +266,12 @@ public static class Debug
         return doNotLoad;
     }
 
+    /// <summary>
+    /// Updates the LoggerConfiguration used by the Debug class.  
+    /// This allows for changing logger settings such as sinks and output templates.  
+    /// After calling this method, the new configuration will be used for all subsequent log messages.
+    /// </summary>
+    /// <param name="config"></param>
     public static void UpdateLoggerConfiguration(LoggerConfiguration config)
     {
         _loggerConfiguration = config;
@@ -245,6 +279,9 @@ public static class Debug
         _logger = config.CreateLogger();
     }
 
+    /// <summary>
+    /// Resets the LoggerConfiguration to the default configuration defined in this class.
+    /// </summary>
     public static void ResetLoggerConfiguration()
     {
         _loggerConfiguration = _defaultLoggerConfiguration;
@@ -332,7 +369,11 @@ public static class Debug
             if (levelString.Trim() == "?")
             {
                 CrestronConsole.ConsoleCommandResponse(
+                
                 "Used to set the minimum level of debug messages to be printed to the console:\r\n" +
+                "[LogLevel] [TimeoutInMinutes]\r\n" +
+                 "If TimeoutInMinutes is not provided, it will default to 120 minutes.  If provided, the level will reset to Information after the timeout period elapses.\r\n" +
+                 "LogLevel can be either a number from 0-5 or a log level name.  If using a number, the mapping is as follows:\r\n" +
                 $"{_logLevels[0]} = 0\r\n" +
                 $"{_logLevels[1]} = 1\r\n" +
                 $"{_logLevels[2]} = 2\r\n" +
@@ -344,9 +385,21 @@ public static class Debug
 
             if (string.IsNullOrEmpty(levelString.Trim()))
             {
-                CrestronConsole.ConsoleCommandResponse("AppDebug level = {0}", _consoleLoggingLevelSwitch.MinimumLevel);
+                CrestronConsole.ConsoleCommandResponse("AppDebug level = {0}", consoleLoggingLevelSwitch.MinimumLevel);
                 return;
             }
+
+            // split on space to allow for potential future addition of timeout parameter without breaking existing command usage
+            var parts = Regex.Split(levelString.Trim(), @"\s+");
+            levelString = parts[0];
+
+            if (parts.Length > 1 && long.TryParse(parts[1], out var timeout))
+            {
+                timeout = Math.Max(timeout, 1); // enforce minimum timeout of 1 minute
+                consoleDebugTimer.Interval = timeout * 60000;
+            }
+
+            // first try to parse as int for backward compatibility with existing usage of numeric levels
 
             if (int.TryParse(levelString, out var levelInt))
             {
@@ -377,7 +430,8 @@ public static class Debug
     /// Sets the debug level
     /// </summary>
     /// <param name="level"> Valid values 0-5</param>
-    public static void SetDebugLevel(uint level)
+    /// <param name="timeout"> Timeout in minutes</param>
+    public static void SetDebugLevel(uint level, int timeout = defaultConsoleDebugTimeoutMin)
     {
         if (!_logLevels.TryGetValue(level, out var logLevel))
         {
@@ -385,18 +439,27 @@ public static class Debug
 
             CrestronConsole.ConsoleCommandResponse($"{level} not valid. Setting level to {logLevel}");
 
-            SetDebugLevel(logLevel);
+            SetDebugLevel(logLevel, timeout);
         }
 
-        SetDebugLevel(logLevel);
+        SetDebugLevel(logLevel, timeout);
     }
 
-    public static void SetDebugLevel(LogEventLevel level)
+    /// <summary>
+    /// Sets the debug level 
+    /// </summary>
+    /// <param name="level"> The log level to set</param>
+    /// <param name="timeout"> Timeout in minutes</param>
+    public static void SetDebugLevel(LogEventLevel level, int timeout = defaultConsoleDebugTimeoutMin)
     {
-        _consoleLoggingLevelSwitch.MinimumLevel = level;
+        consoleDebugTimer.Stop();
+        consoleDebugTimer.Interval = timeout * 60000;
+        consoleDebugTimer.Start();
+
+        consoleLoggingLevelSwitch.MinimumLevel = level;
 
         CrestronConsole.ConsoleCommandResponse("[Application {0}], Debug level set to {1}\r\n",
-            InitialParametersClass.ApplicationNumber, _consoleLoggingLevelSwitch.MinimumLevel);
+            InitialParametersClass.ApplicationNumber, consoleLoggingLevelSwitch.MinimumLevel);
 
         CrestronConsole.ConsoleCommandResponse($"Storing level {level}:{(int)level}");
 
@@ -408,40 +471,52 @@ public static class Debug
             CrestronConsole.PrintLine($"Error saving console debug level setting: {err}");
     }
 
+    /// <summary>
+    /// Sets the debug level for the websocket sink
+    /// </summary>
+    /// <param name="level"></param>
     public static void SetWebSocketMinimumDebugLevel(LogEventLevel level)
     {
-        _websocketLoggingLevelSwitch.MinimumLevel = level;
+        websocketLoggingLevelSwitch.MinimumLevel = level;
 
         var err = CrestronDataStoreStatic.SetLocalUintValue(WebSocketLevelStoreKey, (uint)level);
 
         if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
             LogMessage(LogEventLevel.Information, "Error saving websocket debug level setting: {erro}", err);
 
-        LogMessage(LogEventLevel.Information, "Websocket debug level set to {0}", _websocketLoggingLevelSwitch.MinimumLevel);
+        LogMessage(LogEventLevel.Information, "Websocket debug level set to {0}", websocketLoggingLevelSwitch.MinimumLevel);
     }
 
+
+    /// <summary>
+    /// Sets the minimum debug level for the error log sink
+    /// </summary>
+    /// <param name="level"></param>
     public static void SetErrorLogMinimumDebugLevel(LogEventLevel level)
     {
-        _errorLogLevelSwitch.MinimumLevel = level;
+        errorLogLevelSwitch.MinimumLevel = level;
 
         var err = CrestronDataStoreStatic.SetLocalUintValue(ErrorLogLevelStoreKey, (uint)level);
 
         if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
             LogMessage(LogEventLevel.Information, "Error saving Error Log debug level setting: {error}", err);
 
-        LogMessage(LogEventLevel.Information, "Error log debug level set to {0}", _websocketLoggingLevelSwitch.MinimumLevel);
+        LogMessage(LogEventLevel.Information, "Error log debug level set to {0}", websocketLoggingLevelSwitch.MinimumLevel);
     }
 
+    /// <summary>
+    /// Sets the minimum debug level for the file sink
+    /// </summary>
     public static void SetFileMinimumDebugLevel(LogEventLevel level)
     {
-        _errorLogLevelSwitch.MinimumLevel = level;
+        errorLogLevelSwitch.MinimumLevel = level;
 
         var err = CrestronDataStoreStatic.SetLocalUintValue(ErrorLogLevelStoreKey, (uint)level);
 
         if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
             LogMessage(LogEventLevel.Information, "Error saving File debug level setting: {error}", err);
 
-        LogMessage(LogEventLevel.Information, "File debug level set to {0}", _websocketLoggingLevelSwitch.MinimumLevel);
+        LogMessage(LogEventLevel.Information, "File debug level set to {0}", websocketLoggingLevelSwitch.MinimumLevel);
     }
 
     /// <summary>
@@ -626,21 +701,45 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with at the specified level.
+    /// </summary>
     public static void LogMessage(LogEventLevel level, string message, params object[] args)
     {
         _logger.Write(level, message, args);
     }
 
+    /// <summary>
+    /// Log a message with at the specified level and exception.
+    /// </summary>
+    /// <param name="level"></param>
+    /// <param name="ex"></param>
+    /// <param name="message"></param>
+    /// <param name="args"></param>
     public static void LogMessage(LogEventLevel level, Exception ex, string message, params object[] args)
     {
         _logger.Write(level, ex, message, args);
     }
 
+    /// <summary>
+    /// Log a message with at the specified level and device context.
+    /// </summary> <param name="level"></param>
+    /// <param name="keyed"></param>
+    /// <param name="message"></param>
+    /// <param name="args"></param>
     public static void LogMessage(LogEventLevel level, IKeyed keyed, string message, params object[] args)
     {
         LogMessage(level, message, keyed, args);
     }
 
+    /// <summary>
+    /// Log a message with at the specified level, exception, and device context.
+    /// </summary>
+    /// <param name="level"></param>
+    /// <param name="ex"></param>
+    /// <param name="device"></param>
+    /// <param name="message"></param>
+    /// <param name="args"></param>
     public static void LogMessage(LogEventLevel level, Exception ex, IKeyed device, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", device?.Key))
@@ -650,6 +749,13 @@ public static class Debug
     }
 
     #region Explicit methods for logging levels
+
+    /// <summary>
+    /// Log a message with Verbose level and device context.
+    /// </summary>
+    /// <param name="keyed"></param>
+    /// <param name="message"></param>
+    /// <param name="args"></param>
     public static void LogVerbose(IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -658,6 +764,9 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Verbose level, exception, and device context.
+    /// </summary>
     public static void LogVerbose(Exception ex, IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -666,16 +775,25 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Verbose level.
+    /// </summary>
     public static void LogVerbose(string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Verbose, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Verbose level and exception.
+    /// </summary>
     public static void LogVerbose(Exception ex, string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Verbose, ex, null, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Debug level and device context.
+    /// </summary>
     public static void LogDebug(IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -684,6 +802,9 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Debug level, exception, and device context.
+    /// </summary>
     public static void LogDebug(Exception ex, IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -692,16 +813,25 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Debug level.
+    /// </summary>
     public static void LogDebug(string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Debug, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Debug level and exception.
+    /// </summary>
     public static void LogDebug(Exception ex, string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Debug, ex, null, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Information level and device context.
+    /// </summary>
     public static void LogInformation(IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -710,6 +840,9 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Information level, exception, and device context.
+    /// </summary>
     public static void LogInformation(Exception ex, IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -718,16 +851,25 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Information level.
+    /// </summary>
     public static void LogInformation(string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Information, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Information level and exception.
+    /// </summary>
     public static void LogInformation(Exception ex, string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Information, ex, null, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Warning level and device context.
+    /// </summary>
     public static void LogWarning(IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -736,6 +878,9 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Warning level, exception, and device context.
+    /// </summary>
     public static void LogWarning(Exception ex, IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -744,16 +889,25 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Warning level.
+    /// </summary>
     public static void LogWarning(string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Warning, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Warning level and exception.
+    /// </summary>
     public static void LogWarning(Exception ex, string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Warning, ex, null, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Error level and device context.
+    /// </summary>
     public static void LogError(IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -762,6 +916,9 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Error level, exception, and device context.
+    /// </summary>
     public static void LogError(Exception ex, IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -770,16 +927,25 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Error level.
+    /// </summary>
     public static void LogError(string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Error, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Error level and exception.
+    /// </summary>
     public static void LogError(Exception ex, string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Error, ex, null, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Fatal level and device context.
+    /// </summary>
     public static void LogFatal(IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -788,6 +954,9 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Fatal level, exception, and device context.
+    /// </summary>
     public static void LogFatal(Exception ex, IKeyed keyed, string message, params object[] args)
     {
         using (LogContext.PushProperty("Key", keyed?.Key))
@@ -796,11 +965,19 @@ public static class Debug
         }
     }
 
+    /// <summary>
+    /// Log a message with Fatal level.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="args"></param>
     public static void LogFatal(string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Fatal, message, args);
     }
 
+    /// <summary>
+    /// Log a message with Fatal level and exception.
+    /// </summary>
     public static void LogFatal(Exception ex, string message, params object[] args)
     {
         _logger.Write(LogEventLevel.Fatal, ex, null, message, args);
@@ -829,126 +1006,27 @@ public static class Debug
 
 
     /// <summary>
-    /// Prints message to console if current debug level is equal to or higher than the level of this message.
-    /// Uses CrestronConsole.PrintLine.
-    /// </summary>
-    /// <param name="level"></param>
-    /// <param name="format">Console format string</param>
-    /// <param name="items">Object parameters</param>
-    [Obsolete("Use LogMessage methods. Will be removed in 2.2.0 and later versions")]
-    public static void Console(uint level, string format, params object[] items)
-    {
-
-        LogMessage(level, format, items);
-
-        //if (IsRunningOnAppliance)
-        //{
-        //    CrestronConsole.PrintLine("[{0}]App {1} Lvl {2}:{3}", DateTime.Now.ToString("HH:mm:ss.fff"),
-        //        InitialParametersClass.ApplicationNumber,
-        //        level,
-        //        string.Format(format, items));
-        //}
-    }
-
-    /// <summary>
-    /// Logs to Console when at-level, and all messages to error log, including device key			
-    /// </summary>
-    [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-    public static void Console(uint level, IKeyed dev, string format, params object[] items)
-    {
-        LogMessage(level, dev, format, items);
-
-        //if (Level >= level)
-        //    Console(level, "[{0}] {1}", dev.Key, message);
-    }
-
-    /// <summary>
-    /// Prints message to console if current debug level is equal to or higher than the level of this message. Always sends message to Error Log.
-    /// Uses CrestronConsole.PrintLine.
-    /// </summary>
-    [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-    public static void Console(uint level, IKeyed dev, ErrorLogLevel errorLogLevel,
-        string format, params object[] items)
-    {
-        LogMessage(level, dev, format, items);
-    }
-
-    /// <summary>
-    /// Logs to Console when at-level, and all messages to error log
-    /// </summary>
-    [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-    public static void Console(uint level, ErrorLogLevel errorLogLevel,
-        string format, params object[] items)
-    {
-        LogMessage(level, format, items);
-    }
-
-    /// <summary>
-    /// Logs to both console and the custom user log (not the built-in error log). If appdebug level is set at
-    /// or above the level provided, then the output will be written to both console and the log. Otherwise
-    /// it will only be written to the log.
-    /// </summary>
-    [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-    public static void ConsoleWithLog(uint level, string format, params object[] items)
-    {
-        LogMessage(level, format, items);
-
-        // var str = string.Format(format, items);
-        //if (Level >= level)
-        //    CrestronConsole.PrintLine("App {0}:{1}", InitialParametersClass.ApplicationNumber, str);
-        // CrestronLogger.WriteToLog(str, level);
-    }
-
-    /// <summary>
-    /// Logs to both console and the custom user log (not the built-in error log). If appdebug level is set at
-    /// or above the level provided, then the output will be written to both console and the log. Otherwise
-    /// it will only be written to the log.
-    /// </summary>
-    [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-    public static void ConsoleWithLog(uint level, IKeyed dev, string format, params object[] items)
-    {
-        LogMessage(level, dev, format, items);
-
-        // var str = string.Format(format, items);
-        // CrestronLogger.WriteToLog(string.Format("[{0}] {1}", dev.Key, str), level);
-    }
-
-    /// <summary>
-    /// Prints to log and error log
-    /// </summary>
-    /// <param name="errorLogLevel"></param>
-    /// <param name="str"></param>
-    [Obsolete("Use LogMessage methods, Will be removed in 2.2.0 and later versions")]
-    public static void LogError(ErrorLogLevel errorLogLevel, string str)
-    {
-        switch (errorLogLevel)
-        {
-            case ErrorLogLevel.Error:
-                LogMessage(LogEventLevel.Error, str);
-                break;
-            case ErrorLogLevel.Warning:
-                LogMessage(LogEventLevel.Warning, str);
-                break;
-            case ErrorLogLevel.Notice:
-                LogMessage(LogEventLevel.Information, str);
-                break;
-        }
-    }
-
-    /// <summary>
     /// Writes the memory object after timeout
     /// </summary>
     static void SaveMemoryOnTimeout()
     {
-        Console(0, "Saving debug settings");
+        LogInformation("Saving debug settings");
         if (_saveTimer == null)
-            _saveTimer = new CTimer(o =>
+        {
+            _saveTimer = new Timer(SaveTimeoutMs) { AutoReset = false };
+            _saveTimer.Elapsed += (s, e) =>
             {
                 _saveTimer = null;
                 SaveMemory();
-            }, SaveTimeoutMs);
+            };
+            _saveTimer.Start();
+        }
         else
-            _saveTimer.Reset(SaveTimeoutMs);
+        {
+            _saveTimer.Stop();
+            _saveTimer.Interval = SaveTimeoutMs;
+            _saveTimer.Start();
+        }
     }
 
     /// <summary>
@@ -964,7 +1042,7 @@ public static class Debug
         {
             var fileName = GetMemoryFileName();
 
-            LogMessage(LogEventLevel.Information, "Loading debug settings file from {fileName}", fileName);
+            LogInformation("Loading debug settings file from {fileName}", fileName);
 
             using (var sw = new StreamWriter(fileName))
             {
@@ -1017,28 +1095,5 @@ public static class Debug
         }
 
         return string.Format("{0}{1}user{1}debugSettings{1}{2}.json", Directory.GetApplicationRootDirectory(), Path.DirectorySeparatorChar, InitialParametersClass.RoomId);
-    }
-
-    /// <summary>
-    /// Error level to for message to be logged at
-    /// </summary>
-    public enum ErrorLogLevel
-    {
-        /// <summary>
-        /// Error
-        /// </summary>
-        Error,
-        /// <summary>
-        /// Warning
-        /// </summary>
-        Warning,
-        /// <summary>
-        /// Notice
-        /// </summary>
-        Notice,
-        /// <summary>
-        /// None
-        /// </summary>
-        None,
     }
 }

@@ -255,10 +255,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     _eisc.SetUshort(JoinMap.DirectorySelectRow.JoinNumber, u);
                     _eisc.PulseBool(JoinMap.DirectoryLineSelected.JoinNumber);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    Debug.Console(1, this, Debug.ErrorLogLevel.Warning,
-                        "/directoryById request contains non-numeric ID incompatible with SIMPL bridge");
+                    this.LogException(e,"directoryById request contains non-numeric ID incompatible with SIMPL bridge: {0}", e.Message);
+                    this.LogVerbose("Stack Trace:\r{0}", e.StackTrace);
                 }
             });
             AddAction("/directorySelectContact", (id, content) =>
@@ -270,9 +270,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     _eisc.SetUshort(JoinMap.DirectorySelectRow.JoinNumber, u);
                     _eisc.PulseBool(JoinMap.DirectoryLineSelected.JoinNumber);
                 }
-                catch
+                catch (Exception e)
                 {
-                    Debug.Console(2, this, "Error parsing contact from {0} for path /directorySelectContact", s);
+                    this.LogException(e, "Error parsing contact from {0} for path /directorySelectContact", s.Value);
+                    this.LogVerbose("Stack Trace:\r{0}", e.StackTrace);
                 }
             });
             AddAction("/directoryDialContact",

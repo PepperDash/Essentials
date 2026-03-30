@@ -431,7 +431,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
 
-        private void CameraCodec_CameraSelected(object sender, CameraSelectedEventArgs e)
+        private void CameraCodec_CameraSelected(object sender, CameraSelectedEventArgs<IHasCameraControls> e)
         {
             try
             {
@@ -449,7 +449,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         private void MapCameraActions()
         {
-            if (Codec is IHasCameras cameraCodec && cameraCodec.SelectedCamera != null)
+            if (Codec is IHasCamerasWithControls cameraCodec && cameraCodec.SelectedCamera != null)
             {
                 RemoveAction("/cameraUp");
                 RemoveAction("/cameraDown");
@@ -764,7 +764,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 status.ShowSelfViewByDefault = Codec.ShowSelfViewByDefault;
                 status.SupportsAdHocMeeting = Codec is IHasStartMeeting;
                 status.HasRecents = Codec is IHasCallHistory;
-                status.HasCameras = Codec is IHasCameras;
+                status.HasCameras = Codec is IHasCamerasWithControls;
                 status.Presets = GetCurrentPresets();
                 status.IsZoomRoom = codecType.GetInterface("IHasZoomRoomLayouts") != null;
                 status.ReceivingContent = Codec is IHasFarEndContentStatus && (Codec as IHasFarEndContentStatus).ReceivingContent.BoolValue;
@@ -899,12 +899,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 camera.Name = camerasCodec.SelectedCamera.Name;
 
-                camera.Capabilities = new CameraCapabilities()
+                if(camerasCodec.SelectedCamera is IHasCameraPtzControl cameraControls)
                 {
-                    CanPan = camerasCodec.SelectedCamera.CanPan,
-                    CanTilt = camerasCodec.SelectedCamera.CanTilt,
-                    CanZoom = camerasCodec.SelectedCamera.CanZoom,
-                    CanFocus = camerasCodec.SelectedCamera.CanFocus,
+                    camera.Capabilities = new CameraCapabilities()
+                    {
+                        CanPan = cameraControls is IHasCameraPanControl,
+                        CanTilt = cameraControls is IHasCameraTiltControl,
+                        CanZoom = cameraControls is IHasCameraZoomControl,
+                        CanFocus = cameraControls is IHasCameraFocusControl,
+                    };
                 };
             }
 
@@ -1084,7 +1087,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// Gets or sets the Cameras
         /// </summary>
         [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
-        public List<CameraBase> Cameras { get; set; }
+        public List<IHasCameraControls> Cameras { get; set; }
 
 
         /// <summary>

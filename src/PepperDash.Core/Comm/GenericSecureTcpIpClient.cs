@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using PepperDash.Core.Logging;
@@ -183,7 +182,7 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
     }
 
     // private Timer for auto reconnect
-    private CTimer RetryTimer;
+    private Timer RetryTimer;
 
     #endregion
 
@@ -266,12 +265,12 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
     /// </summary>
     public ushort HeartbeatRequiredIntervalInSeconds { set { HeartbeatInterval = (value * 1000); } }
 
-    CTimer HeartbeatSendTimer;
-    CTimer HeartbeatAckTimer;
+    Timer HeartbeatSendTimer;
+    Timer HeartbeatAckTimer;
 
     // Used to force disconnection on a dead connect attempt
-    CTimer ConnectFailTimer;
-    CTimer WaitForSharedKey;
+    Timer ConnectFailTimer;
+    Timer WaitForSharedKey;
     private int ConnectionCount;
 
     bool ProgramIsStopping;
@@ -493,7 +492,8 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
 
             //var timeOfConnect = DateTime.Now.ToString("HH:mm:ss.fff");
 
-            ConnectFailTimer = new CTimer(o =>
+            ConnectFailTimer = new Timer(30000) { AutoReset = false };
+            ConnectFailTimer.Elapsed += (s, e) =>
             {
                 this.LogError("Connect attempt has not finished after 30sec Count:{0}", ConnectionCount);
                 if (IsTryingToConnect)
@@ -507,7 +507,8 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
                     //SecureClient.DisconnectFromServer();
                     //CheckClosedAndTryReconnect();
                 }
-            }, 30000);
+            };
+            ConnectFailTimer.Start();
 
             this.LogVerbose("Making Connection Count:{0}", ConnectionCount);
             _client.ConnectToServerAsync(o =>
@@ -528,16 +529,16 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
                     if (SharedKeyRequired)
                     {
                         WaitingForSharedKeyResponse = true;
-                        WaitForSharedKey = new CTimer(timer =>
+                        WaitForSharedKey = new Timer(15000) { AutoReset = false };
+                        WaitForSharedKey.Elapsed += (s, e) =>
                         {
-
                             this.LogWarning("Shared key exchange timer expired. IsReadyForCommunication={0}", IsReadyForCommunication);
-                            // Debug.Console(1, this, "Connect attempt failed {0}", c.ClientStatus);
                             // This is the only case where we should call DisconectFromServer...Event handeler will trigger the cleanup 
                             o.DisconnectFromServer();
                             //CheckClosedAndTryReconnect();
                             //OnClientReadyForcommunications(false); // Should send false event
-                        }, 15000);
+                        };
+                        WaitForSharedKey.Start();
                     }
                     else
                     {
@@ -637,7 +638,9 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
             }
             if (AutoReconnectTriggered != null)
                 AutoReconnectTriggered(this, new EventArgs());
-            RetryTimer = new CTimer(o => Connect(), rndTime);
+            RetryTimer = new Timer(rndTime) { AutoReset = false };
+            RetryTimer.Elapsed += (s, e) => Connect();
+            RetryTimer.Start();
         }
     }
 
@@ -698,11 +701,11 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
             //Check to see if there is a subscription to the TextReceivedQueueInvoke event. If there is start the dequeue thread. 
             if (handler != null)
             {
-                if (Monitor.TryEnter(_dequeueLock))
-                    Task.Run(() => DequeueEvent());
+                if (System.Threading.Monitor.TryEnter(_dequeueLock))
+                    System.Threading.Tasks.Task.Run(() => DequeueEvent());
             }
-        }
-        else //JAG added this as I believe the error return is 0 bytes like the server. See help when hover on ReceiveAsync
+            }
+            else //JAG added this as I believe the error return is 0 bytes like the server. See help when hover on ReceiveAsync
         {
             client.DisconnectFromServer();
         }
@@ -732,7 +735,7 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
             this.LogError(e, "DequeueEvent error: {0}", e.Message);
         }
         // Make sure to release the lock in case an exception above stops this thread, or we won't be able to restart it.
-        Monitor.Exit(_dequeueLock);
+        System.Threading.Monitor.Exit(_dequeueLock);
     }
 
     void HeartbeatStart()
@@ -743,11 +746,15 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
             if (HeartbeatSendTimer == null)
             {
 
-                HeartbeatSendTimer = new CTimer(this.SendHeartbeat, null, HeartbeatInterval, HeartbeatInterval);
+                HeartbeatSendTimer = new Timer(HeartbeatInterval) { AutoReset = true };
+                HeartbeatSendTimer.Elapsed += (s, e) => SendHeartbeat(null);
+                HeartbeatSendTimer.Start();
             }
             if (HeartbeatAckTimer == null)
             {
-                HeartbeatAckTimer = new CTimer(HeartbeatAckTimerFail, null, (HeartbeatInterval * 2), (HeartbeatInterval * 2));
+                HeartbeatAckTimer = new Timer(HeartbeatInterval * 2) { AutoReset = true };
+                HeartbeatAckTimer.Elapsed += (s, e) => HeartbeatAckTimerFail(null);
+                HeartbeatAckTimer.Start();
             }
         }
 
@@ -791,11 +798,15 @@ public class GenericSecureTcpIpClient : Device, ISocketStatusWithStreamDebugging
                     {
                         if (HeartbeatAckTimer != null)
                         {
-                            HeartbeatAckTimer.Reset(HeartbeatInterval * 2);
+                            HeartbeatAckTimer.Stop();
+                            HeartbeatAckTimer.Interval = HeartbeatInterval * 2;
+                            HeartbeatAckTimer.Start();
                         }
                         else
                         {
-                            HeartbeatAckTimer = new CTimer(HeartbeatAckTimerFail, null, (HeartbeatInterval * 2), (HeartbeatInterval * 2));
+                            HeartbeatAckTimer = new Timer(HeartbeatInterval * 2) { AutoReset = true };
+                            HeartbeatAckTimer.Elapsed += (s, e) => HeartbeatAckTimerFail(null);
+                            HeartbeatAckTimer.Start();
                         }
                         this.LogVerbose("Heartbeat Received: {0}, from Server", HeartbeatString);
                         return remainingText;

@@ -8,6 +8,7 @@ using Crestron.SimplSharp.CrestronIO;
 using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using JValue = NewtonsoftJson::Newtonsoft.Json.Linq.JValue;
 using PepperDash.Core.Config;
+using PepperDash.Core.Logging;
 
 namespace PepperDash.Core.JsonToSimpl;
 
@@ -61,7 +62,7 @@ public class JsonToSimplPortalFileMaster : JsonToSimplMaster
 			// If the portal file is xyz.json, then 
 			// the file we want to check for first will be called xyz.local.json
 			var localFilepath = Path.ChangeExtension(PortalFilepath, "local.json");
-			Debug.Console(0, this, "Checking for local file {0}", localFilepath);
+			this.LogInformation("Checking for local file {0}", localFilepath);
 			var actualLocalFile = GetActualFileInfoFromPath(localFilepath);
 
 			if (actualLocalFile != null)
@@ -73,7 +74,7 @@ public class JsonToSimplPortalFileMaster : JsonToSimplMaster
 			// and create the local.
 			else
 			{
-				Debug.Console(1, this, "Local JSON file not found {0}\rLoading portal JSON file", localFilepath);
+				this.LogInformation("Local JSON file not found {0}\rLoading portal JSON file", localFilepath);
 				var actualPortalFile = GetActualFileInfoFromPath(portalFilepath);
 				if (actualPortalFile != null)
 				{
@@ -86,14 +87,13 @@ public class JsonToSimplPortalFileMaster : JsonToSimplMaster
 				else
 				{
 					var msg = string.Format("Portal JSON file not found: {0}", PortalFilepath);
-					Debug.Console(1, this, msg);
-					ErrorLog.Error(msg);
+					this.LogError(msg);
 					return;
 				}
 			}
 
 			// At this point we should have a local file.  Do it.
-			Debug.Console(1, "Reading local JSON file {0}", ActualFilePath);
+			this.LogInformation("Reading local JSON file {0}", ActualFilePath);
 
 			string json = File.ReadToEnd(ActualFilePath, System.Text.Encoding.ASCII);
 
@@ -107,8 +107,7 @@ public class JsonToSimplPortalFileMaster : JsonToSimplMaster
 			catch (Exception e)
 			{
 				var msg = string.Format("JSON parsing failed:\r{0}", e);
-				CrestronConsole.PrintLine(msg);
-				ErrorLog.Error(msg);
+				this.LogError(msg);
 				return;
 			}
 		}
@@ -149,30 +148,30 @@ public class JsonToSimplPortalFileMaster : JsonToSimplMaster
 			// Make each child update their values into master object
 			foreach (var child in Children)
 			{
-				Debug.Console(1, "Master [{0}] checking child [{1}] for updates to save", UniqueID, child.Key);
+				this.LogInformation("Master [{0}] checking child [{1}] for updates to save", UniqueID, child.Key);
 				child.UpdateInputsForMaster();
 			}
 
 			if (UnsavedValues == null || UnsavedValues.Count == 0)
 			{
-				Debug.Console(1, "Master [{0}] No updated values to save. Skipping", UniqueID);
+				this.LogInformation("Master [{0}] No updated values to save. Skipping", UniqueID);
 				return;
 			}
 			lock (FileLock)
 			{
-				Debug.Console(1, "Saving");
+				this.LogInformation("Saving");
 				foreach (var path in UnsavedValues.Keys)
 				{
 					var tokenToReplace = JsonObject.SelectToken(path);
 					if (tokenToReplace != null)
 					{// It's found
 						tokenToReplace.Replace(UnsavedValues[path]);
-						Debug.Console(1, "JSON Master[{0}] Updating '{1}'", UniqueID, path);
+						this.LogInformation("JSON Master[{0}] Updating '{1}'", UniqueID, path);
 					}
 					else // No token.  Let's make one 
 					{
 						//http://stackoverflow.com/questions/17455052/how-to-set-the-value-of-a-json-path-using-json-net
-						Debug.Console(1, "JSON Master[{0}] Cannot write value onto missing property: '{1}'", UniqueID, path);
+						this.LogWarning("JSON Master[{0}] Cannot write value onto missing property: '{1}'", UniqueID, path);
 						
 					}
 				}
@@ -186,8 +185,8 @@ public class JsonToSimplPortalFileMaster : JsonToSimplMaster
 					catch (Exception e)
 					{
 						string err = string.Format("Error writing JSON file:\r{0}", e);
-						Debug.Console(0, err);
-						ErrorLog.Warn(err);
+						this.LogException(e, "Error writing JSON file: {0}", e.Message);
+						this.LogVerbose("Stack Trace:\r{0}", e.StackTrace);
 						return;
 					}
 				}

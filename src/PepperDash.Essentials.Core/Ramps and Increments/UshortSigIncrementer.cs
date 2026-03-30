@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Crestron.SimplSharp;
+using System.Timers;
 using Crestron.SimplSharpPro;
 
 using PepperDash.Core;
@@ -16,14 +16,39 @@ namespace PepperDash.Essentials.Core;
 public class UshortSigIncrementer
 {
     UShortInputSig TheSig;
+
+    /// <summary>
+    /// Amount to change the signal on each step
+    /// </summary>
     public ushort ChangeAmount { get; set; }
+    /// <summary>
+    /// Maximum value to ramp to
+    /// </summary>
     public int MaxValue { get; set; }
+    /// <summary>
+    /// Minimum value to ramp to
+    /// </summary>
     public int MinValue { get; set; }
+    /// <summary>
+    /// The delay before the incrementer starts repeating
+    /// </summary>
     public uint RepeatDelay { get; set; }
+    /// <summary>
+    /// The time interval between each repeat
+    /// </summary>
     public uint RepeatTime { get; set; }
     bool SignedMode;
-    CTimer Timer;
+    Timer Timer;
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="sig"></param>
+    /// <param name="changeAmount"></param>
+    /// <param name="minValue"></param>
+    /// <param name="maxValue"></param>
+    /// <param name="repeatDelay"></param>
+    /// <param name="repeatTime"></param>
     public UshortSigIncrementer(UShortInputSig sig, ushort changeAmount, int minValue, int maxValue, uint repeatDelay, uint repeatTime)
     {
         TheSig = sig;
@@ -37,12 +62,19 @@ public class UshortSigIncrementer
             Debug.LogMessage(LogEventLevel.Debug, "UshortSigIncrementer has signed values that exceed range of -32768, 32767");
     }
 
+    /// <summary>
+    /// Starts incrementing cycle
+    /// </summary>
+
     public void StartUp()
     {
         if (Timer != null) return;
         Go(ChangeAmount);
     }
 
+    /// <summary>
+    /// Starts decrementing cycle
+    /// </summary>
     public void StartDown()
     {
         if (Timer != null) return;
@@ -64,7 +96,20 @@ public class UshortSigIncrementer
         if (atLimit) // Don't go past end
             Stop();
         else if (Timer == null) // Only enter the timer if it's not already running
-            Timer = new CTimer(o => { Go(change); }, null, RepeatDelay, RepeatTime);
+        {
+            Timer = new Timer(RepeatDelay) { AutoReset = false };
+            Timer.Elapsed += (s, e) =>
+            {
+                Go(change);
+                if (Timer != null)
+                {
+                    Timer.Interval = RepeatTime;
+                    Timer.AutoReset = true;
+                    Timer.Start();
+                }
+            };
+            Timer.Start();
+        }
     }
 
     bool CheckLevel(int levelIn, out int levelOut)
@@ -85,12 +130,20 @@ public class UshortSigIncrementer
         return IsAtLimit;
     }
 
+    /// <summary>
+    /// Stops incrementing/decrementing cycle
+    /// </summary>
     public void Stop()
     {
         if (Timer != null)
             Timer.Stop();
         Timer = null;
     }
+
+    /// <summary>
+    /// Sets the value of the signal
+    /// </summary>
+    /// <param name="value"></param>
 
     void SetValue(ushort value)
     {

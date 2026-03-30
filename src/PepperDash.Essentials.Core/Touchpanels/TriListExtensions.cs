@@ -1,5 +1,5 @@
 ﻿using System;
-using Crestron.SimplSharp;
+using System.Timers;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
@@ -84,7 +84,7 @@ namespace PepperDash.Essentials.Core;
 		/// <returns></returns>
 		public static BoolOutputSig SetSigHeldAction(this BoolOutputSig sig, uint heldMs, Action heldAction, Action holdReleasedAction, Action releaseAction)
 		{
-			CTimer heldTimer = null;
+			Timer heldTimer = null;
 			bool wasHeld = false;
 			return sig.SetBoolSigAction(press =>
 			{
@@ -92,7 +92,8 @@ namespace PepperDash.Essentials.Core;
 				{
 					wasHeld = false;
 					// Could insert a pressed action here
-					heldTimer = new CTimer(o =>
+					heldTimer = new Timer(heldMs) { AutoReset = false };
+					heldTimer.Elapsed += (s, e) =>
 					{
 						// if still held and there's an action
 						if (sig.BoolValue && heldAction != null)
@@ -101,7 +102,8 @@ namespace PepperDash.Essentials.Core;
 							// Hold action here
 							heldAction();
 						}
-					}, heldMs);
+					};
+					heldTimer.Start();
 				}
 				else if (!press && !wasHeld) // released, no hold
 				{

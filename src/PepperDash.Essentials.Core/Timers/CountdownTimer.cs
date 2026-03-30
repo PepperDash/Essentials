@@ -1,30 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+using System.Timers;
 
 using PepperDash.Core;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core;
 
+/// <summary>
+/// A class that represents a countdown timer with feedbacks for time remaining, percent, and seconds
+/// </summary>
 public class SecondsCountdownTimer: IKeyed
 {
+    /// <summary>
+    /// Event triggered when the timer starts.
+    /// </summary>
     public event EventHandler<EventArgs> HasStarted;
+    /// <summary>
+    /// Event triggered when the timer finishes.
+    /// </summary>
     public event EventHandler<EventArgs> HasFinished;
+    /// <summary>
+    /// Event triggered when the timer is cancelled.
+    /// </summary>
     public event EventHandler<EventArgs> WasCancelled;
 
+    /// <inheritdoc />
     public string Key { get; private set; }
 
+    /// <summary>
+    /// Indicates whether the timer is currently running
+    /// </summary> 
     public BoolFeedback IsRunningFeedback { get; private set; }
     bool _isRunning;
 
+    /// <summary>
+    /// Feedback for the percentage of time remaining
+    /// </summary>
     public IntFeedback PercentFeedback { get; private set; }
+
+    /// <summary>
+    /// Feedback for the time remaining in a string format
+     // </summary>
     public StringFeedback TimeRemainingFeedback { get; private set; }
 
+    /// <summary>
+    /// Feedback for the time remaining in seconds
+    /// </summary>
     public IntFeedback SecondsRemainingFeedback { get; private set; }
 
+    /// <summary>
+    /// When true, the timer will count down immediately upon calling Start. When false, the timer will count up, and when Finish is called, it will stop counting and fire the HasFinished event.
+    /// </summary>
     public bool CountsDown { get; set; }
 
     /// <summary>
@@ -32,10 +58,17 @@ public class SecondsCountdownTimer: IKeyed
     /// </summary>
     public int SecondsToCount { get; set; }
     
+    /// <summary>
+    /// The time at which the timer was started. Used to calculate percent and time remaining. Will be DateTime.MinValue if the timer is not currently running.
+    /// </summary>
     public DateTime StartTime { get; private set; }
+
+    /// <summary>
+    /// The time at which the timer will finish counting down. Used to calculate percent and time remaining. Will be DateTime.MinValue if the timer is not currently running.
+    /// </summary>
     public DateTime FinishTime { get; private set; }
 
-    private CTimer _secondTimer;
+    private Timer _secondTimer;
 
     /// <summary>
     /// Constructor
@@ -88,7 +121,10 @@ public class SecondsCountdownTimer: IKeyed
 
         if (_secondTimer != null)
             _secondTimer.Stop();
-        _secondTimer = new CTimer(SecondElapsedTimerCallback, null, 0, 1000);
+        _secondTimer = new Timer(1000) { AutoReset = true };
+        _secondTimer.Elapsed += (s, e) => SecondElapsedTimerCallback(null);
+        _secondTimer.Start();
+        SecondElapsedTimerCallback(null);
         _isRunning = true;
         IsRunningFeedback.FireUpdate();
 

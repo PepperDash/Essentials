@@ -8,7 +8,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     /// <summary>
     /// Interface for devices that have cameras with controls
     /// </summary>
-    public interface IHasCamerasWithControls : IKeyName, IKeyed
+    public interface IHasCamerasWithControls : IKeyName
     {
         /// <summary>
         /// List of cameras on the device. This should be a list of IHasCameraControls objects

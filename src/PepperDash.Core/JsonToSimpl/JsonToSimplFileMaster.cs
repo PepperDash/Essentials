@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
+using PepperDash.Core.Logging;
 using Formatting = NewtonsoftJson::Newtonsoft.Json.Formatting;
 using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using JValue = NewtonsoftJson::Newtonsoft.Json.Linq.JValue;
@@ -129,7 +130,7 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
             var fileName = Path.GetFileName(Filepath);
 
             OnStringChange(string.Format("Checking '{0}' for '{1}'", fileDirectory, fileName), 0, JsonToSimplConstants.StringValueChange);
-            Debug.Console(1, "Checking '{0}' for '{1}'", fileDirectory, fileName);
+            this.LogInformation("Checking '{0}' for '{1}'", fileDirectory, fileName);
 
             if (Directory.Exists(fileDirectory))
             {
@@ -143,7 +144,7 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
                     var msg = string.Format("JSON file not found: {0}", Filepath);
                     OnStringChange(msg, 0, JsonToSimplConstants.StringValueChange);
                     CrestronConsole.PrintLine(msg);
-                    ErrorLog.Error(msg);
+                    this.LogError(msg);
                     return;
                 }
 
@@ -152,18 +153,18 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
                 ActualFilePath = actualFile.FullName;                    
                 OnStringChange(ActualFilePath, 0, JsonToSimplConstants.ActualFilePathChange);
                 OnStringChange(string.Format("Actual JSON file is {0}", ActualFilePath), 0, JsonToSimplConstants.StringValueChange);
-                Debug.Console(1, "Actual JSON file is {0}", ActualFilePath);
+                this.LogInformation("Actual JSON file is {0}", ActualFilePath);
 
                 Filename = actualFile.Name;
                 OnStringChange(Filename, 0, JsonToSimplConstants.FilenameResolvedChange);
                 OnStringChange(string.Format("JSON Filename is {0}", Filename), 0, JsonToSimplConstants.StringValueChange);
-                Debug.Console(1, "JSON Filename is {0}", Filename);
+                this.LogInformation("JSON Filename is {0}", Filename);
 
 
                 FilePathName = string.Format(@"{0}{1}", actualFile.DirectoryName, dirSeparator);
                 OnStringChange(string.Format(@"{0}", actualFile.DirectoryName), 0, JsonToSimplConstants.FilePathResolvedChange);
                 OnStringChange(string.Format(@"JSON File Path is {0}", actualFile.DirectoryName), 0, JsonToSimplConstants.StringValueChange);
-                Debug.Console(1, "JSON File Path is {0}", FilePathName);                    
+                this.LogInformation("JSON File Path is {0}", FilePathName);                    
 
                 var json = File.ReadToEnd(ActualFilePath, System.Text.Encoding.ASCII);
 
@@ -176,7 +177,7 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
             else
             {
                 OnStringChange(string.Format("'{0}' not found", fileDirectory), 0, JsonToSimplConstants.StringValueChange);
-                Debug.Console(1, "'{0}' not found", fileDirectory);
+                this.LogError("'{0}' not found", fileDirectory);
             }
         }
         catch (Exception e)
@@ -184,12 +185,12 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
             var msg = string.Format("EvaluateFile Exception: Message\r{0}", e.Message);
             OnStringChange(msg, 0, JsonToSimplConstants.StringValueChange);
             CrestronConsole.PrintLine(msg);
-            ErrorLog.Error(msg);
+            this.LogException(e, "EvaluateFile Exception: {0}", e.Message);
 
             var stackTrace = string.Format("EvaluateFile: Stack Trace\r{0}", e.StackTrace);
             OnStringChange(stackTrace, 0, JsonToSimplConstants.StringValueChange);
             CrestronConsole.PrintLine(stackTrace);
-            ErrorLog.Error(stackTrace);
+            this.LogVerbose("EvaluateFile: Stack Trace\r{0}", e.StackTrace);
         }
     }
 
@@ -213,63 +214,31 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
         // Make each child update their values into master object
         foreach (var child in Children)
         {
-            Debug.Console(1, "Master [{0}] checking child [{1}] for updates to save", UniqueID, child.Key);
+            this.LogInformation("Master [{0}] checking child [{1}] for updates to save", UniqueID, child.Key);
             child.UpdateInputsForMaster();
         }
 
         if (UnsavedValues == null || UnsavedValues.Count == 0)
         {
-            Debug.Console(1, "Master [{0}] No updated values to save. Skipping", UniqueID);
+            this.LogInformation("Master [{0}] No updated values to save. Skipping", UniqueID);
             return;
         }
         lock (FileLock)
         {
-            Debug.Console(1, "Saving");
+            this.LogInformation("Saving");
             foreach (var path in UnsavedValues.Keys)
             {
                 var tokenToReplace = JsonObject.SelectToken(path);
                 if (tokenToReplace != null)
                 {// It's found
                     tokenToReplace.Replace(UnsavedValues[path]);
-                    Debug.Console(1, "JSON Master[{0}] Updating '{1}'", UniqueID, path);
+                    this.LogInformation("JSON Master[{0}] Updating '{1}'", UniqueID, path);
                 }
                 else // No token.  Let's make one 
                 {
                     //http://stackoverflow.com/questions/17455052/how-to-set-the-value-of-a-json-path-using-json-net
-                    Debug.Console(1, "JSON Master[{0}] Cannot write value onto missing property: '{1}'", UniqueID, path);
+                    this.LogWarning("JSON Master[{0}] Cannot write value onto missing property: '{1}'", UniqueID, path);
 
-                    //                        JContainer jpart = JsonObject;
-                    //                        // walk down the path and find where it goes
-                    //#warning Does not handle arrays.
-                    //                        foreach (var part in path.Split('.'))
-                    //                        {
-
-                    //                            var openPos = part.IndexOf('[');
-                    //                            if (openPos > -1)
-                    //                            {
-                    //                                openPos++; // move to number
-                    //                                var closePos = part.IndexOf(']');
-                    //                                var arrayName = part.Substring(0, openPos - 1); // get the name
-                    //                                var index = Convert.ToInt32(part.Substring(openPos, closePos - openPos));
-
-                    //                                // Check if the array itself exists and add the item if so
-                    //                                if (jpart[arrayName] != null)
-                    //                                {
-                    //                                    var arrayObj = jpart[arrayName] as JArray;
-                    //                                    var item = arrayObj[index];
-                    //                                    if (item == null)
-                    //                                        arrayObj.Add(new JObject());
-                    //                                }
-
-                    //                                Debug.Console(0, "IGNORING MISSING ARRAY VALUE FOR NOW");
-                    //                                continue;
-                    //                            }
-                    //                            // Build the 
-                    //                            if (jpart[part] == null)
-                    //                                jpart.Add(new JProperty(part, new JObject()));
-                    //                            jpart = jpart[part] as JContainer;
-                    //                        }
-                    //                        jpart.Replace(UnsavedValues[path]);
                 }
             }
             using (StreamWriter sw = new StreamWriter(ActualFilePath))
@@ -282,11 +251,13 @@ public class JsonToSimplFileMaster : JsonToSimplMaster
                 catch (Exception e)
                 {
                     string err = string.Format("Error writing JSON file:\r{0}", e);
-                    Debug.Console(0, err);
-                    ErrorLog.Warn(err);
+                    this.LogException(e, "Error writing JSON file: {0}", e.Message);
+                    this.LogVerbose("Stack Trace:\r{0}", e.StackTrace);
                     return;
                 }
             }
         }
     }
 }
+
+

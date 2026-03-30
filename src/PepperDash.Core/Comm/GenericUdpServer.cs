@@ -183,7 +183,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
         if (programEventType != eProgramStatusEventType.Stopping) 
             return;
 
-        Debug.Console(1, this, "Program stopping. Disabling Server");
+        this.LogInformation("Program stopping. Disabling Server");
         Disconnect();
     }
 
@@ -199,20 +199,20 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
 
         if (string.IsNullOrEmpty(Hostname))
         {
-            Debug.Console(1, Debug.ErrorLogLevel.Warning, "GenericUdpServer '{0}': No address set", Key);
+            this.LogWarning("GenericUdpServer '{0}': No address set", Key);
             return;
         }
         if (Port < 1 || Port > 65535)
         {
             {
-                Debug.Console(1, Debug.ErrorLogLevel.Warning, "GenericUdpServer '{0}': Invalid port", Key);
+                this.LogWarning("GenericUdpServer '{0}': Invalid port", Key);
                 return;
             }
         }
 
         var status = Server.EnableUDPServer(Hostname, Port);
 
-        Debug.Console(2, this, "SocketErrorCode: {0}", status);
+        this.LogVerbose("SocketErrorCode: {0}", status);
         if (status == SocketErrorCodes.SOCKET_OK)
             IsConnected = true;
 
@@ -247,7 +247,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
     /// <param name="numBytes"></param>
     void Receive(UDPServer server, int numBytes)
     {
-        Debug.Console(2, this, "Received {0} bytes", numBytes);
+        this.LogVerbose("Received {0} bytes", numBytes);
 
         try
         {
@@ -263,13 +263,13 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
             if (dataRecivedExtra != null)
                 dataRecivedExtra(this, new GenericUdpReceiveTextExtraArgs(str, sourceIp, sourcePort, bytes));
 
-            Debug.Console(2, this, "Bytes: {0}", bytes.ToString());
+            this.LogVerbose("Bytes: {0}", bytes.ToString());
             var bytesHandler = BytesReceived;
             if (bytesHandler != null)
             {
                 if (StreamDebugging.RxStreamDebuggingIsEnabled)
                 {
-                    Debug.Console(0, this, "Received {1} bytes: '{0}'", ComTextHelper.GetEscapedText(bytes), bytes.Length);
+                    this.LogInformation("Received {1} bytes: '{0}'", ComTextHelper.GetEscapedText(bytes), bytes.Length);
                 }
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
             }
@@ -277,7 +277,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
             if (textHandler != null)
             {
                 if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                    Debug.Console(0, this, "Received {1} characters of text: '{0}'", ComTextHelper.GetDebugText(str), str.Length);
+                    this.LogInformation("Received {1} characters of text: '{0}'", ComTextHelper.GetDebugText(str), str.Length);
                 textHandler(this, new GenericCommMethodReceiveTextArgs(str));
             }
         }
@@ -302,7 +302,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
         if (IsConnected && Server != null)
         {
             if (StreamDebugging.TxStreamDebuggingIsEnabled)
-                Debug.Console(0, this, "Sending {0} characters of text: '{1}'", text.Length, ComTextHelper.GetDebugText(text));
+                this.LogVerbose("Sending {0} characters of text: '{1}'", text.Length, ComTextHelper.GetDebugText(text));
 
             Server.SendData(bytes, bytes.Length);
         }
@@ -315,7 +315,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
     public void SendBytes(byte[] bytes)
     {
         if (StreamDebugging.TxStreamDebuggingIsEnabled)
-            Debug.Console(0, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+            this.LogInformation("Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
 
         if (IsConnected && Server != null)
             Server.SendData(bytes, bytes.Length);

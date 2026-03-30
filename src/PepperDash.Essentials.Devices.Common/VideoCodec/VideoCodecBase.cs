@@ -24,10 +24,19 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec;
 
+/// <summary>
+/// Base class for video codecs. Contains common properties, methods, and feedback for video codecs.
+/// Also contains the logic to link commonly implemented interfaces to the API bridge.
+/// </summary>
 public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutputs,
 	IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced, IHasStandbyMode
 {
 	private const int XSigEncoding = 28591;
+
+	/// <summary>
+	/// Maximum number of participants to display in the participant list.
+	/// This is used to limit the number of XSigs that need to be updated and processed on the control system when there are many participants in a call.
+	/// </summary>
 	protected const int MaxParticipants = 50;
 	private readonly byte[] _clearBytes = XSigHelpers.ClearOutputs();
 
@@ -35,6 +44,10 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 	private readonly BasicTriList _directoryTrilist;
 	private readonly VideoCodecControllerJoinMap _directoryJoinmap;
 
+	/// <summary>
+	/// Time format specifier for any time-related XSigs.
+	/// This should be set by the inheriting class based on the expected format of the codec (e.g. "hh:mm:ss" or "mm:ss")
+	/// </summary>
 	protected string _timeFormatSpecifier;
 
 	/// <summary>
@@ -56,7 +69,6 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 		SharingSourceFeedback = new StringFeedback("sharingSource", SharingSourceFeedbackFunc);
 		SharingContentIsOnFeedback = new BoolFeedback("sharingContentIsOn", SharingContentIsOnFeedbackFunc);
 
-		// TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
 		MeetingsToDisplayFeedback = new IntFeedback(() => MeetingsToDisplay);
 
 		InputPorts = new RoutingPortCollection<RoutingInputPort>();
@@ -110,7 +122,10 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 	/// </summary>
 	public bool ShowSelfViewByDefault { get; protected set; }
 
+	/// <inheritdoc	/>
 	public bool SupportsCameraOff { get; protected set; }
+
+	/// <inheritdoc	/>
 	public bool SupportsCameraAutoMode { get; protected set; }
 
 	/// <summary>
@@ -282,6 +297,8 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 	/// Sends DTMF tones
 	/// </summary>
 	public abstract void SendDtmf(string s);
+
+	/// <inheritdoc	/>
 	public virtual void SendDtmf(string s, CodecActiveCallItem call) { }
 
 	#endregion
@@ -746,7 +763,6 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 		{
 			if (!args.DeviceOnLine) return;
 
-			// TODO [ ] Issue #868
 			trilist.SetString(joinMap.CurrentParticipants.JoinNumber, "\xFC");
 			UpdateParticipantsXSig(codec, trilist, joinMap);
 		};
@@ -974,10 +990,8 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 		{
 			if (!args.DeviceOnLine) return;
 
-			// TODO [ ] Issue #868
 			trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
 			UpdateMeetingsList(codec, trilist, joinMap);
-			// TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
 			MeetingsToDisplayFeedback.LinkInputSig(trilist.UShortInput[joinMap.MeetingsToDisplay.JoinNumber]);
 		};
 	}
@@ -1006,16 +1020,14 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 		{
 			if (!args.DeviceOnLine) return;
 
-			// TODO [ ] Issue #868
 			trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
 			UpdateMeetingsListXSig(_currentMeetings);
 		};
 	}
 
-
-	// TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
 	private int _meetingsToDisplay = 3;
-	// TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+
+	/// <inheritdoc	/>
 	protected int MeetingsToDisplay
 	{
 		get { return _meetingsToDisplay; }
@@ -1026,12 +1038,13 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 		}
 	}
 
-	// TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+
+
+	/// <inheritdoc	/>
 	public IntFeedback MeetingsToDisplayFeedback { get; set; }
 
 	private string UpdateMeetingsListXSig(List<Meeting> meetings)
 	{
-		// TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
 		//const int _meetingsToDisplay = 3;            
 		const int maxDigitals = 2;
 		const int maxStrings = 7;
@@ -1291,7 +1304,6 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 
 		Debug.LogMessage(LogEventLevel.Verbose, this, "Creating XSIG token array with size {0}", maxMethods * offset);
 
-		// TODO: Add code to generate XSig data
 		foreach (var method in contact.ContactMethods)
 		{
 			if (arrayIndex >= maxMethods * offset)
@@ -1498,7 +1510,6 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 {
 	if (!args.DeviceOnLine) return;
 
-	// TODO [ ] #983
 	Debug.LogMessage(LogEventLevel.Information, this, "LinkVideoCodecCallControlsToApi: device is {0}, IsInCall {1}", args.DeviceOnLine ? "online" : "offline", IsInCall);
 	trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 	trilist.SetString(joinMap.CurrentCallData.JoinNumber, "\xFC");
@@ -1531,12 +1542,10 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 			tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, call.Direction.ToString());
 			tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, call.Type.ToString());
 			tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, call.Status.ToString());
-			if (call.Duration != null)
-			{
-				// May need to verify correct string format here
-				var dur = string.Format("{0:c}", call.Duration);
-				tokenArray[arrayIndex + 6] = new XSigSerialToken(stringIndex + 6, dur);
-			}
+			
+			// May need to verify correct string format here
+			var dur = string.Format("{0:c}", call.Duration);
+			tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, dur);
 
 			arrayIndex += offset;
 			stringIndex += maxStrings;
@@ -1879,7 +1888,6 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 		{
 			if (!args.DeviceOnLine) return;
 
-			// TODO [ ] Issue #868
 			trilist.SetString(joinMap.CameraPresetNames.JoinNumber, "\xFC");
 			SetCameraPresetNames(presetCodec.NearEndPresets);
 		};

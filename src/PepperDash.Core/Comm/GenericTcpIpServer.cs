@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
+using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using PepperDash.Core.Logging;
@@ -80,7 +80,7 @@ public class GenericTcpIpServer : Device
     /// <summary>
     /// Timer to operate the bandaid monitor client in a loop.
     /// </summary>
-    CTimer MonitorClientTimer;
+    Timer MonitorClientTimer;
 
     /// <summary>
     /// 
@@ -250,7 +250,7 @@ public class GenericTcpIpServer : Device
     public string HeartbeatStringToMatch { get; set; }
 
     //private timers for Heartbeats per client
-    Dictionary<uint, CTimer> HeartbeatTimerDictionary = new Dictionary<uint, CTimer>();
+    Dictionary<uint, Timer> HeartbeatTimerDictionary = new Dictionary<uint, Timer>();
 
     //flags to show the secure server is waiting for client at index to send the shared key
     List<uint> WaitingForSharedKey = new List<uint>();
@@ -577,11 +577,17 @@ public class GenericTcpIpServer : Device
                     if (noDelimiter.Contains(HeartbeatStringToMatch))
                     {
                         if (HeartbeatTimerDictionary.ContainsKey(clientIndex))
-                            HeartbeatTimerDictionary[clientIndex].Reset(HeartbeatRequiredIntervalMs);
+                        {
+                            HeartbeatTimerDictionary[clientIndex].Stop();
+                            HeartbeatTimerDictionary[clientIndex].Interval = HeartbeatRequiredIntervalMs;
+                            HeartbeatTimerDictionary[clientIndex].Start();
+                        }
                         else
                         {
-                            CTimer HeartbeatTimer = new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs);
-                            HeartbeatTimerDictionary.Add(clientIndex, HeartbeatTimer);
+                            var heartbeatTimer = new Timer(HeartbeatRequiredIntervalMs) { AutoReset = false };
+                            heartbeatTimer.Elapsed += (s, e) => HeartbeatTimer_CallbackFunction(clientIndex);
+                            heartbeatTimer.Start();
+                            HeartbeatTimerDictionary.Add(clientIndex, heartbeatTimer);
                         }
                         this.LogVerbose("Heartbeat Received: {0}, from client index: {1}", HeartbeatStringToMatch, clientIndex);
                         // Return Heartbeat
@@ -592,11 +598,17 @@ public class GenericTcpIpServer : Device
                 else
                 {
                     if (HeartbeatTimerDictionary.ContainsKey(clientIndex))
-                        HeartbeatTimerDictionary[clientIndex].Reset(HeartbeatRequiredIntervalMs);
+                    {
+                        HeartbeatTimerDictionary[clientIndex].Stop();
+                        HeartbeatTimerDictionary[clientIndex].Interval = HeartbeatRequiredIntervalMs;
+                        HeartbeatTimerDictionary[clientIndex].Start();
+                    }
                     else
                     {
-                        CTimer HeartbeatTimer = new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs);
-                        HeartbeatTimerDictionary.Add(clientIndex, HeartbeatTimer);
+                        var heartbeatTimer = new Timer(HeartbeatRequiredIntervalMs) { AutoReset = false };
+                        heartbeatTimer.Elapsed += (s, e) => HeartbeatTimer_CallbackFunction(clientIndex);
+                        heartbeatTimer.Start();
+                        HeartbeatTimerDictionary.Add(clientIndex, heartbeatTimer);
                     }
                     this.LogVerbose("Heartbeat Received: {0}, from client index: {1}", received, clientIndex);
                 }
@@ -650,7 +662,6 @@ public class GenericTcpIpServer : Device
                 SendTextToClient("Heartbeat not received by server, closing connection", clientIndex);
 
             var discoResult = myTcpServer.Disconnect(clientIndex);
-            //Debug.Console(1, this, "{0}", discoResult);  
 
             if (HeartbeatTimerDictionary.ContainsKey(clientIndex))
             {
@@ -661,7 +672,8 @@ public class GenericTcpIpServer : Device
         }
         catch (Exception ex)
         {
-            ErrorLog.Error("{3}: Heartbeat timeout Error on Client Index: {0}, at address: {1}, error: {2}", clientIndex, address, ex.Message, Key);
+            this.LogException(ex, "Heartbeat timeout Error on Client Index: {0}, at address: {1}, error: {2}", clientIndex, address, ex.Message);
+            this.LogVerbose("Stack Trace:\r{0}", ex.StackTrace);
         }
     }
 
@@ -746,7 +758,10 @@ public class GenericTcpIpServer : Device
                     {
                         if (!HeartbeatTimerDictionary.ContainsKey(clientIndex))
                         {
-                            HeartbeatTimerDictionary.Add(clientIndex, new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs));
+                            var heartbeatTimer = new Timer(HeartbeatRequiredIntervalMs) { AutoReset = false };
+                            heartbeatTimer.Elapsed += (s, e) => HeartbeatTimer_CallbackFunction(clientIndex);
+                            heartbeatTimer.Start();
+                            HeartbeatTimerDictionary.Add(clientIndex, heartbeatTimer);
                         }
                     }
 
@@ -765,9 +780,9 @@ public class GenericTcpIpServer : Device
         }
         catch (Exception ex)
         {
-            this.LogException(ex, "Error in Socket Status Connect Callback. Error: {0}", ex);
+            this.LogException(ex, "Error in Socket Status Connect Callback. Error: {0}", ex.Message);
+            this.LogVerbose("Stack Trace:\r{0}", ex.StackTrace);
         }
-        //Debug.Console(1, this, Debug.ErrorLogLevel, "((((((Server State bitfield={0}; maxclient={1}; ServerStopped={2}))))))",
         //    server.State, 
         //    MaxClients,
         //    ServerStopped);
@@ -929,7 +944,9 @@ public class GenericTcpIpServer : Device
         {
             return;
         }
-        MonitorClientTimer = new CTimer(o => RunMonitorClient(), 60000);
+        MonitorClientTimer = new Timer(60000) { AutoReset = false };
+        MonitorClientTimer.Elapsed += (s, e) => RunMonitorClient();
+        MonitorClientTimer.Start();
     }
 
     /// <summary>

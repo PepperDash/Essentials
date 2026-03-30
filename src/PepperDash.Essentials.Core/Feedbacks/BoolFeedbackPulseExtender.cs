@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
+using System.Timers;
 namespace PepperDash.Essentials.Core;
 
 	/// <summary>
@@ -21,7 +20,7 @@ namespace PepperDash.Essentials.Core;
 		/// Gets the Feedback
 		/// </summary>
 		public BoolFeedback Feedback { get; private set; }
-		CTimer Timer;
+		Timer Timer;
 
 		/// <summary>
 		/// When set to true, will cause Feedback to go high, and cancel the timer.
@@ -49,7 +48,11 @@ namespace PepperDash.Essentials.Core;
 				else
 				{
 					if (Timer == null)
-						Timer = new CTimer(o => ClearFeedback(), TimeoutMs);
+					{
+						Timer = new Timer(TimeoutMs) { AutoReset = false };
+						Timer.Elapsed += (s, e) => ClearFeedback();
+						Timer.Start();
+					}
 				}
 			}
 		}

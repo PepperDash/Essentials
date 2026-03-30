@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp;
+using System.Timers;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
@@ -103,12 +103,12 @@ public abstract class DisplayBase : EssentialsDevice, IDisplay, ICurrentSources,
 	/// <summary>
 	/// Timer used for managing display warmup timing.
 	/// </summary>
-	protected CTimer WarmupTimer;
+	protected Timer WarmupTimer;
 
 	/// <summary>
 	/// Timer used for managing display cooldown timing.
 	/// </summary>
-	protected CTimer CooldownTimer;
+	protected Timer CooldownTimer;
 
 	#region IRoutingInputs Members
 

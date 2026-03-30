@@ -17,6 +17,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using PepperDash.Core.Logging;
@@ -223,7 +224,7 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
     /// <summary>
     /// private Timer for auto reconnect
     /// </summary>
-    CTimer RetryTimer;
+    System.Timers.Timer RetryTimer;
 
 
     /// <summary>
@@ -255,13 +256,13 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
     /// </summary>
     public ushort HeartbeatRequiredIntervalInSeconds { set { HeartbeatInterval = (value * 1000); } }
 
-    CTimer HeartbeatSendTimer;
-    CTimer HeartbeatAckTimer;
+    System.Timers.Timer HeartbeatSendTimer;
+    System.Timers.Timer HeartbeatAckTimer;
     /// <summary>
     /// Used to force disconnection on a dead connect attempt
     /// </summary>
-    CTimer ConnectFailTimer;
-    CTimer WaitForSharedKey;
+    System.Timers.Timer ConnectFailTimer;
+    System.Timers.Timer WaitForSharedKey;
     private int ConnectionCount;
     /// <summary>
     /// Internal secure client
@@ -457,7 +458,8 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
 
             //var timeOfConnect = DateTime.Now.ToString("HH:mm:ss.fff");
 
-            ConnectFailTimer = new CTimer(o =>
+            ConnectFailTimer = new System.Timers.Timer(30000) { AutoReset = false };
+            ConnectFailTimer.Elapsed += (s, e) =>
             {
                 this.LogError("Connect attempt has not finished after 30sec Count:{0}", ConnectionCount);
                 if (IsTryingToConnect)
@@ -471,7 +473,8 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
                     //SecureClient.DisconnectFromServer();
                     //CheckClosedAndTryReconnect();
                 }
-            }, 30000);
+            };
+            ConnectFailTimer.Start();
 
             this.LogVerbose("Making Connection Count:{0}", ConnectionCount);
             Client.ConnectToServerAsync(o =>
@@ -492,16 +495,16 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
                     if (SharedKeyRequired)
                     {
                         WaitingForSharedKeyResponse = true;
-                        WaitForSharedKey = new CTimer(timer =>
+                        WaitForSharedKey = new System.Timers.Timer(15000) { AutoReset = false };
+                        WaitForSharedKey.Elapsed += (s, e) =>
                         {
-
                             this.LogWarning("Shared key exchange timer expired. IsReadyForCommunication={0}", IsReadyForCommunication);
-                            // Debug.Console(1, this, "Connect attempt failed {0}", c.ClientStatus);
                             // This is the only case where we should call DisconectFromServer...Event handeler will trigger the cleanup 
                             o.DisconnectFromServer();
                             //CheckClosedAndTryReconnect();
                             //OnClientReadyForcommunications(false); // Should send false event
-                        }, 15000);
+                        };
+                        WaitForSharedKey.Start();
                     }
                     else
                     {
@@ -596,7 +599,9 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
             }
             if (AutoReconnectTriggered != null)
                 AutoReconnectTriggered(this, new EventArgs());
-            RetryTimer = new CTimer(o => Connect(), rndTime);
+            RetryTimer = new System.Timers.Timer(rndTime) { AutoReset = false };
+            RetryTimer.Elapsed += (s, e) => Connect();
+            RetryTimer.Start();
         }
     }
 
@@ -702,11 +707,15 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
             if (HeartbeatSendTimer == null)
             {
 
-                HeartbeatSendTimer = new CTimer(this.SendHeartbeat, null, HeartbeatInterval, HeartbeatInterval);
+                HeartbeatSendTimer = new System.Timers.Timer(HeartbeatInterval) { AutoReset = true };
+                HeartbeatSendTimer.Elapsed += (s, e) => SendHeartbeat(null);
+                HeartbeatSendTimer.Start();
             }
             if (HeartbeatAckTimer == null)
             {
-                HeartbeatAckTimer = new CTimer(HeartbeatAckTimerFail, null, (HeartbeatInterval * 2), (HeartbeatInterval * 2));
+                HeartbeatAckTimer = new System.Timers.Timer(HeartbeatInterval * 2) { AutoReset = true };
+                HeartbeatAckTimer.Elapsed += (s, e) => HeartbeatAckTimerFail(null);
+                HeartbeatAckTimer.Start();
             }
         }
 
@@ -750,11 +759,15 @@ public class GenericSecureTcpIpClient_ForServer : Device, IAutoReconnect
                     {
                         if (HeartbeatAckTimer != null)
                         {
-                            HeartbeatAckTimer.Reset(HeartbeatInterval * 2);
+                            HeartbeatAckTimer.Stop();
+                            HeartbeatAckTimer.Interval = HeartbeatInterval * 2;
+                            HeartbeatAckTimer.Start();
                         }
                         else
                         {
-                            HeartbeatAckTimer = new CTimer(HeartbeatAckTimerFail, null, (HeartbeatInterval * 2), (HeartbeatInterval * 2));
+                            HeartbeatAckTimer = new System.Timers.Timer(HeartbeatInterval * 2) { AutoReset = true };
+                            HeartbeatAckTimer.Elapsed += (s, e) => HeartbeatAckTimerFail(null);
+                            HeartbeatAckTimer.Start();
                         }
                         this.LogVerbose("Heartbeat Received: {0}, from Server", HeartbeatString);
                         return remainingText;

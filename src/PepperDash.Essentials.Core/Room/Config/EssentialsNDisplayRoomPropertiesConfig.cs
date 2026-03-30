@@ -24,18 +24,12 @@ public class EssentialsNDisplayRoomPropertiesConfig : EssentialsConferenceRoomPr
     [JsonProperty("defaultVideoBehavior")]
     public string DefaultVideoBehavior { get; set; }
 
-    /// <summary>
-    /// Gets or sets the Displays
-    /// </summary>
-    [JsonProperty("displays")]
-    public Dictionary<eSourceListItemDestinationTypes, DisplayItem> Displays { get; set; }
 
     /// <summary>
     /// Constructor
     /// </summary>
     public EssentialsNDisplayRoomPropertiesConfig()
     {
-        Displays = new Dictionary<eSourceListItemDestinationTypes, DisplayItem>();
     }
 
 }

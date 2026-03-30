@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PepperDash.Core.Logging;
 using JValue = NewtonsoftJson::Newtonsoft.Json.Linq.JValue;
 
 namespace PepperDash.Core.JsonToSimpl;
@@ -91,7 +92,7 @@ namespace PepperDash.Core.JsonToSimpl;
 			if (Master != null)
 				Master.AddChild(this);
 			else
-				Debug.Console(1, "JSON Child [{0}] cannot link to master {1}", key, masterUniqueId);
+				this.LogWarning("JSON Child [{0}] cannot link to master {1}", key, masterUniqueId);
 		}
 
     /// <summary>
@@ -107,7 +108,7 @@ namespace PepperDash.Core.JsonToSimpl;
 		/// </summary>
 		public void SetBoolPath(ushort index, string path)
 		{
-			Debug.Console(1, "JSON Child[{0}] SetBoolPath {1}={2}", Key, index, path);
+			this.LogDebug("JSON Child[{0}] SetBoolPath {1}={2}", Key, index, path);
 			if (path == null || path.Trim() == string.Empty) return;
 			BoolPaths[index] = path;
 		}
@@ -117,7 +118,7 @@ namespace PepperDash.Core.JsonToSimpl;
   /// </summary>
 		public void SetUshortPath(ushort index, string path)
 		{
-			Debug.Console(1, "JSON Child[{0}] SetUshortPath {1}={2}", Key, index, path);
+			this.LogDebug("JSON Child[{0}] SetUshortPath {1}={2}", Key, index, path);
 			if (path == null || path.Trim() == string.Empty) return;
 			UshortPaths[index] = path;
 		}
@@ -127,7 +128,7 @@ namespace PepperDash.Core.JsonToSimpl;
   /// </summary>
 		public void SetStringPath(ushort index, string path)
 		{
-			Debug.Console(1, "JSON Child[{0}] SetStringPath {1}={2}", Key, index, path);
+			this.LogDebug("JSON Child[{0}] SetStringPath {1}={2}", Key, index, path);
 			if (path == null || path.Trim() == string.Empty) return;
 			StringPaths[index] = path;
 		}
@@ -140,13 +141,13 @@ namespace PepperDash.Core.JsonToSimpl;
 		{
 			if (!LinkedToObject)
 			{
-				Debug.Console(1, this, "Not linked to object in file.  Skipping");
+				this.LogDebug("Not linked to object in file.  Skipping");
 				return;
 			}
 
 			if (SetAllPathsDelegate == null)
 			{
-				Debug.Console(1, this, "No SetAllPathsDelegate set. Ignoring ProcessAll");
+				this.LogDebug("No SetAllPathsDelegate set. Ignoring ProcessAll");
 				return;
 			}
 			SetAllPathsDelegate();
@@ -206,11 +207,11 @@ namespace PepperDash.Core.JsonToSimpl;
 		bool Process(string path, out string response)
 		{
 			path = GetFullPath(path);
-			Debug.Console(1, "JSON Child[{0}] Processing {1}", Key, path);
+			this.LogDebug("JSON Child[{0}] Processing {1}", Key, path);
 			response = "";
 			if (Master == null)
 			{
-				Debug.Console(1, "JSONChild[{0}] cannot process without Master attached", Key);
+				this.LogWarning("JSONChild[{0}] cannot process without Master attached", Key);
 				return false;
 			}
 
@@ -233,7 +234,7 @@ namespace PepperDash.Core.JsonToSimpl;
 							response = (t.HasValues ? t.Children().Count() : 0).ToString();
 						else
 							response = (string)t;
-						Debug.Console(1, "   ='{0}'", response);
+						this.LogDebug("   ='{0}'", response);
 						return true;
 					}
 				}
@@ -259,13 +260,13 @@ namespace PepperDash.Core.JsonToSimpl;
 		{
 			if (!LinkedToObject)
 			{
-				Debug.Console(1, this, "Not linked to object in file.  Skipping");
+				this.LogDebug("Not linked to object in file.  Skipping");
 				return;
 			}
 
 			if (SetAllPathsDelegate == null)
 			{
-				Debug.Console(1, this, "No SetAllPathsDelegate set. Ignoring UpdateInputsForMaster");
+				this.LogDebug("No SetAllPathsDelegate set. Ignoring UpdateInputsForMaster");
 				return;
 			}
 			SetAllPathsDelegate();
@@ -327,7 +328,7 @@ namespace PepperDash.Core.JsonToSimpl;
 			var path = GetFullPath(keyPath);
 			try
 			{
-				Debug.Console(1, "JSON Child[{0}] Queueing value on master {1}='{2}'", Key, path, valueToSave);
+				this.LogDebug("JSON Child[{0}] Queueing value on master {1}='{2}'", Key, path, valueToSave);
 
 				//var token = Master.JsonObject.SelectToken(path);
 				//if (token != null) // The path exists in the file
@@ -335,7 +336,7 @@ namespace PepperDash.Core.JsonToSimpl;
 			}
 			catch (Exception e)
 			{
-				Debug.Console(1, "JSON Child[{0}] Failed setting value for path '{1}'\r{2}", Key, path, e);
+				this.LogDebug("JSON Child[{0}] Failed setting value for path '{1}'\r{2}", Key, path, e);
 			}
 		}
 

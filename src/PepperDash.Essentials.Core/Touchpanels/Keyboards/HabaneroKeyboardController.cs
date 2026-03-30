@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Text;
-using Crestron.SimplSharp;
+using System.Timers;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.Core.Touchpanels.Keyboards;
 
+/// <summary>
+/// Controller for the Habanero keyboard. This class handles all interaction with the keyboard, including showing/hiding, shift states, and key presses. It exposes a KeyPress event for single key presses, and an OutputFeedback string that contains the full text of what's been entered on the keyboard.
+/// </summary>
 public class HabaneroKeyboardController
 {
     /// <summary>
@@ -12,29 +15,57 @@ public class HabaneroKeyboardController
     /// </summary>
     public event EventHandler<KeyboardControllerPressEventArgs> KeyPress;
 
+    /// <summary>
+    /// The BasicTriList that the keyboard is connected to. This is used for all interaction with the keyboard, including showing/hiding, setting button text/visibility, and handling button presses.
+    /// </summary>
     public BasicTriList TriList { get; private set; }
 
+    /// <summary>
+    /// Feedback for the current text entered on the keyboard. This is updated whenever a key is pressed, and can be used to get the full string of what's been entered on the keyboard.
+    /// </summary>
     public StringFeedback OutputFeedback { get; private set; }
 
+    /// <summary>
+    /// Indicates whether the keyboard is currently visible. This is updated when Show and Hide are called, and can be used to determine the current visibility state of the keyboard.
+    /// </summary>
     public bool IsVisible { get; private set; }
 
+    /// <summary>
+    /// The string displayed on the ".com" button.
+    /// </summary>
     public string DotComButtonString { get; set; }
 
+    /// <summary>
+    /// The text displayed on the "Go" button.
+    /// </summary>
     public string GoButtonText { get; set; }
 
+    /// <summary>
+    /// The text displayed on the secondary button.
+    /// </summary>
     public string SecondaryButtonText { get; set; }
 
+    /// <summary>
+    /// Indicates whether the "Go" button is visible.
+    /// </summary>
     public bool GoButtonVisible { get; set; }
 
+    /// <summary>
+    /// Indicates whether the secondary button is visible.
+    /// </summary>
     public bool SecondaryButtonVisible { get; set; }
 
     int ShiftMode = 0;
-    
+
     StringBuilder Output;
 
+    /// <summary>
+    /// An action that is run when the keyboard is hidden, either by calling the Hide method or by pressing the close button on the keyboard. This can be used to perform any necessary cleanup or state updates when the keyboard is dismissed.
+    /// </summary>
+    /// </summary>
     public Action HideAction { get; set; }
 
-		CTimer BackspaceTimer;
+    Timer BackspaceTimer;
 
     /// <summary>
     /// 
@@ -88,8 +119,8 @@ public class HabaneroKeyboardController
         TriList.SetSigTrueAction(2947, () => Press('.'));
         TriList.SetSigTrueAction(2948, () => Press('@'));
         TriList.SetSigTrueAction(2949, () => Press(' '));
-			TriList.SetSigHeldAction(2950, 500, StartBackspaceRepeat, StopBackspaceRepeat, Backspace);
-			//TriList.SetSigTrueAction(2950, Backspace);
+        TriList.SetSigHeldAction(2950, 500, StartBackspaceRepeat, StopBackspaceRepeat, Backspace);
+        //TriList.SetSigTrueAction(2950, Backspace);
         TriList.SetSigTrueAction(2951, Shift);
         TriList.SetSigTrueAction(2952, NumShift);
         TriList.SetSigTrueAction(2953, Clear);
@@ -117,7 +148,7 @@ public class HabaneroKeyboardController
             TriList.ClearBoolSigAction(i);
 
         // run attached actions
-        if(HideAction != null)
+        if (HideAction != null)
             HideAction();
 
         TriList.SetBool(KeyboardVisible, false);
@@ -205,28 +236,31 @@ public class HabaneroKeyboardController
     char Y(int i) { return new char[] { 'y', 'Y', '6', '^' }[i]; }
     char Z(int i) { return new char[] { 'z', 'Z', ',', ',' }[i]; }
 
-		/// <summary>
-		/// Does what it says
-		/// </summary>
-		void StartBackspaceRepeat()
-		{
-			if (BackspaceTimer == null)
-			{
-				BackspaceTimer = new CTimer(o => Backspace(), null, 0, 175);
-			}
-		}
+    /// <summary>
+    /// Does what it says
+    /// </summary>
+    void StartBackspaceRepeat()
+    {
+        if (BackspaceTimer == null)
+        {
+            BackspaceTimer = new Timer(175) { AutoReset = true };
+            BackspaceTimer.Elapsed += (s, e) => Backspace();
+            BackspaceTimer.Start();
+            Backspace();
+        }
+    }
 
-		/// <summary>
-		/// Does what it says
-		/// </summary>
-		void StopBackspaceRepeat()
-		{
-			if (BackspaceTimer != null)
-			{
-				BackspaceTimer.Stop();
-				BackspaceTimer = null;
-			}
-		}
+    /// <summary>
+    /// Does what it says
+    /// </summary>
+    void StopBackspaceRepeat()
+    {
+        if (BackspaceTimer != null)
+        {
+            BackspaceTimer.Stop();
+            BackspaceTimer = null;
+        }
+    }
 
     void Backspace()
     {
@@ -384,7 +418,7 @@ public class HabaneroKeyboardController
     /// <summary>
     /// 2904
     /// </summary>
-    public const uint SecondaryButtonTextJoin = 2904;        
+    public const uint SecondaryButtonTextJoin = 2904;
     /// <summary>
     /// 2905
     /// </summary>
@@ -413,21 +447,58 @@ public class HabaneroKeyboardController
 /// </summary>
 public class KeyboardControllerPressEventArgs : EventArgs
 {
+    /// <summary>
+    /// The text of the key that was pressed. This will be null if a special key (backspace, clear, go, secondary) was pressed, in which case the SpecialKey property should be checked to determine which key was pressed.
+    /// </summary>
     public string Text { get; private set; }
+
+    /// <summary>
+    /// If a special key (backspace, clear, go, secondary) was pressed, this property indicates which key it was. If a regular key was pressed, this will be KeyboardSpecialKey.None, and the Text property should be checked for the value of the key press.
+    /// </summary>
     public KeyboardSpecialKey SpecialKey { get; private set; }
 
+    /// <summary>
+    /// Constructor for regular key presses
+    /// </summary>
     public KeyboardControllerPressEventArgs(string text)
     {
         Text = text;
     }
 
+    /// <summary>
+    /// Constructor for special key presses
+    /// </summary>
+    /// <param name="key"></param>
     public KeyboardControllerPressEventArgs(KeyboardSpecialKey key)
     {
         SpecialKey = key;
     }
 }
 
+/// <summary>
+/// An enum representing special keys on the keyboard that don't have text values, such as backspace, clear, go, and the secondary button. The None value is used for regular key presses that do have text values, and should not be used for special key presses.
+/// </summary>
 public enum KeyboardSpecialKey
 {
-    None = 0, Backspace, Clear, GoButton, SecondaryButton
+    /// <summary>
+    /// Indicates that a regular key with a text value was pressed, rather than a special key. When this value is set, the Text property of the KeyboardControllerPressEventArgs should be checked to get the value of the key press.
+    /// </summary>
+    None = 0,
+
+    /// <summary>
+    /// Indicates that the backspace key was pressed.
+    /// </summary>
+    Backspace, 
+    /// <summary>
+    /// Indicates that the clear key was pressed.
+    /// </summary>
+    Clear, 
+    /// <summary>
+    /// Indicates that the go button was pressed.
+    /// </summary>
+    GoButton, 
+    /// <summary>
+    /// Indicates that the secondary button was pressed.
+    /// </summary>
+    SecondaryButton
 }

@@ -1,4 +1,4 @@
-﻿using Crestron.SimplSharp;
+﻿using System.Timers;
 namespace PepperDash.Essentials.Core
 {
 	/// <summary>
@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core
 		/// Gets or sets the Feedback
 		/// </summary>
 		public BoolFeedback Feedback { get; private set; }
-		CTimer Timer;
+		Timer Timer;
 
 		bool _BoolValue;
 
@@ -51,16 +51,22 @@ namespace PepperDash.Essentials.Core
 			{
 				_BoolValue = true;
 				Feedback.FireUpdate();
-				Timer = new CTimer(o =>
+				Timer = new Timer(TimeoutMs) { AutoReset = false };
+				Timer.Elapsed += (s, e) =>
 					{
 						_BoolValue = false;
 						Feedback.FireUpdate();
 						Timer = null;
-					}, TimeoutMs);
+					};
+				Timer.Start();
 			}
 			// Timer is running, if retrigger is set, reset it.
 			else if (CanRetrigger)
-				Timer.Reset(TimeoutMs);
+			{
+				Timer.Stop();
+				Timer.Interval = TimeoutMs;
+				Timer.Start();
+			}
 		}
 
 		/// <summary>
@@ -69,7 +75,11 @@ namespace PepperDash.Essentials.Core
 		public void Cancel()
 		{
 			if (Timer != null)
-				Timer.Reset(0);
+			{
+				Timer.Stop();
+				Timer.Interval = 1;
+				Timer.Start();
+			}
 		}
 	}
 }

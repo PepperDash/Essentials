@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Crestron.SimplSharp;
+using System.Timers;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
@@ -207,22 +207,26 @@ public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
 	{
 		_IsWarmingUp = true;
 		IsWarmingUpFeedback.FireUpdate();
-		new CTimer(o =>
+		var t = new Timer(10000) { AutoReset = false };
+		t.Elapsed += (s, e) =>
 		{
 			_IsWarmingUp = false;
 			IsWarmingUpFeedback.FireUpdate();
-		}, 10000);
+		};
+		t.Start();
 	}
 
 	void StartCoolingTimer()
 	{
 		_IsCoolingDown = true;
 		IsCoolingDownFeedback.FireUpdate();
-		new CTimer(o =>
+		var t = new Timer(7000) { AutoReset = false };
+		t.Elapsed += (s, e) =>
 		{
 			_IsCoolingDown = false;
 			IsCoolingDownFeedback.FireUpdate();
-		}, 7000);
+		};
+		t.Start();
 	}
 
 	#region IRoutingSink Members

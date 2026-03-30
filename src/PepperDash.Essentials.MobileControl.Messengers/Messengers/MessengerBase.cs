@@ -285,7 +285,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             try
             {
-                //Debug.Console(2, this, "*********************Setting DeviceStateMessageProperties on MobileControlResponseMessage");
                 deviceState.SetInterfaces(_deviceInterfaces);
 
                 deviceState.Key = _device.Key;

@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 using System.ComponentModel;
+using System.Timers;
 
 using PepperDash.Core;
 
@@ -84,10 +85,8 @@ namespace PepperDash.Essentials.Core
 
 		long WarningTime;
 		long ErrorTime;
-		CTimer WarningTimer;
-		CTimer ErrorTimer;
-
-		/// <summary>
+	Timer WarningTimer;
+	Timer ErrorTimer;
 		/// Constructor
 		/// </summary>
 		/// <param name="parent">parent device</param>
@@ -155,8 +154,18 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		protected void StartErrorTimers()
 		{
-			if (WarningTimer == null) WarningTimer = new CTimer(o => { Status = MonitorStatus.InWarning; }, WarningTime);
-			if (ErrorTimer == null) ErrorTimer = new CTimer(o => { Status = MonitorStatus.InError; }, ErrorTime);
+		if (WarningTimer == null)
+		{
+			WarningTimer = new Timer(WarningTime) { AutoReset = false };
+			WarningTimer.Elapsed += (s, e) => { Status = MonitorStatus.InWarning; };
+			WarningTimer.Start();
+		}
+		if (ErrorTimer == null)
+		{
+			ErrorTimer = new Timer(ErrorTime) { AutoReset = false };
+			ErrorTimer.Elapsed += (s, e) => { Status = MonitorStatus.InError; };
+			ErrorTimer.Start();
+		}
 		}
 
 		/// <summary>
@@ -176,10 +185,17 @@ namespace PepperDash.Essentials.Core
 		protected void ResetErrorTimers()
 		{
 			if (WarningTimer != null)
-				WarningTimer.Reset(WarningTime, WarningTime);
-			if (ErrorTimer != null)
-				ErrorTimer.Reset(ErrorTime, ErrorTime);
-
+		{
+			WarningTimer.Stop();
+			WarningTimer.Interval = WarningTime;
+			WarningTimer.Start();
+		}
+		if (ErrorTimer != null)
+		{
+			ErrorTimer.Stop();
+			ErrorTimer.Interval = ErrorTime;
+			ErrorTimer.Start();
+		}
 		}
 	}
 }

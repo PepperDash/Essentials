@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
-using Org.BouncyCastle.Utilities;
 using PepperDash.Core.Logging;
 using Renci.SshNet;
 using Renci.SshNet.Common;
@@ -134,9 +131,9 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
 
     ShellStream TheStream;
 
-    CTimer ReconnectTimer;
+    Timer ReconnectTimer;
 
-    private SemaphoreSlim connectLock = new SemaphoreSlim(1);
+    private System.Threading.SemaphoreSlim connectLock = new System.Threading.SemaphoreSlim(1);
 
     private bool DisconnectLogged = false;
 
@@ -155,13 +152,14 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         Password = password;
         AutoReconnectIntervalMs = 5000;
 
-        ReconnectTimer = new CTimer(o =>
+        ReconnectTimer = new Timer { AutoReset = false, Enabled = false };
+        ReconnectTimer.Elapsed += (s, e) =>
                 {
                     if (ConnectEnabled)
                     {
                         Connect();
                     }
-                }, System.Threading.Timeout.Infinite);
+                };
     }
 
     /// <summary>
@@ -173,13 +171,14 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
         AutoReconnectIntervalMs = 5000;
 
-        ReconnectTimer = new CTimer(o =>
+        ReconnectTimer = new Timer { AutoReset = false, Enabled = false };
+        ReconnectTimer.Elapsed += (s, e) =>
         {
             if (ConnectEnabled)
             {
                 Connect();
             }
-        }, System.Threading.Timeout.Infinite);
+        };
     }
 
     /// <summary>
@@ -265,7 +264,6 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
                 catch (SshConnectionException e)
                 {
                     var ie = e.InnerException; // The details are inside!!
-                    var errorLogLevel = DisconnectLogged == true ? Debug.ErrorLogLevel.None : Debug.ErrorLogLevel.Error;
 
                     if (ie is SocketException)
                     {
@@ -289,7 +287,9 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
                     if (AutoReconnect)
                     {
                         this.LogDebug("Checking autoreconnect: {autoReconnect}, {autoReconnectInterval}ms", AutoReconnect, AutoReconnectIntervalMs);
-                        ReconnectTimer.Reset(AutoReconnectIntervalMs);
+                        ReconnectTimer.Stop();
+                        ReconnectTimer.Interval = AutoReconnectIntervalMs;
+                        ReconnectTimer.Start();
                     }
                 }
                 catch (SshOperationTimeoutException ex)
@@ -301,19 +301,22 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
                     if (AutoReconnect)
                     {
                         this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
-                        ReconnectTimer.Reset(AutoReconnectIntervalMs);
+                        ReconnectTimer.Stop();
+                        ReconnectTimer.Interval = AutoReconnectIntervalMs;
+                        ReconnectTimer.Start();
                     }
                 }
                 catch (Exception e)
                 {
-                    var errorLogLevel = DisconnectLogged == true ? Debug.ErrorLogLevel.None : Debug.ErrorLogLevel.Error;
                     this.LogException(e, "Unhandled exception on connect");
                     DisconnectLogged = true;
                     KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
                     if (AutoReconnect)
                     {
                         this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
-                        ReconnectTimer.Reset(AutoReconnectIntervalMs);
+                        ReconnectTimer.Stop();
+                        ReconnectTimer.Interval = AutoReconnectIntervalMs;
+                        ReconnectTimer.Start();
                     }
                 }
             }
@@ -434,7 +437,7 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
     /// </summary>
     void Client_ErrorOccurred(object sender, ExceptionEventArgs e)
     {
-        Task.Run(() =>
+        System.Threading.Tasks.Task.Run(() =>
         {
             if (e.Exception is SshConnectionException || e.Exception is System.Net.Sockets.SocketException)
                 this.LogError("Disconnected by remote");
@@ -452,7 +455,9 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
             if (AutoReconnect && ConnectEnabled)
             {
                 this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
-                ReconnectTimer.Reset(AutoReconnectIntervalMs);
+                ReconnectTimer.Stop();
+                ReconnectTimer.Interval = AutoReconnectIntervalMs;
+                ReconnectTimer.Start();
             }
         });
     }
@@ -497,7 +502,8 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
             this.LogError("ObjectDisposedException sending '{message}'. Restarting connection...", text.Trim());
 
             KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-            ReconnectTimer.Reset();
+            ReconnectTimer.Stop();
+            ReconnectTimer.Start();
         }
         catch (Exception ex)
         {
@@ -531,7 +537,8 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
             this.LogException(ex, "ObjectDisposedException sending {message}", ComTextHelper.GetEscapedText(bytes));
 
             KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-            ReconnectTimer.Reset();
+            ReconnectTimer.Stop();
+            ReconnectTimer.Start();
         }
         catch (Exception ex)
         {

@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace PepperDash.Core.Logging;
 
+/// <summary>
+/// Enriches log events with Crestron-specific context properties, such as the application name based on the device platform.
+/// </summary>
 public class CrestronEnricher : ILogEventEnricher
 {
     static readonly string _appName;
@@ -27,6 +30,11 @@ public class CrestronEnricher : ILogEventEnricher
     }
         
 
+    /// <summary>
+    /// Enriches the log event with Crestron-specific properties.
+    /// </summary>
+    /// <param name="logEvent"></param>
+    /// <param name="propertyFactory"></param>
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
         var property = propertyFactory.CreateProperty("App", _appName);

@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
+using PepperDash.Core.Logging;
+using Renci.SshNet.Messages;
 using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using JValue = NewtonsoftJson::Newtonsoft.Json.Linq.JValue;
 
@@ -74,7 +76,8 @@ namespace PepperDash.Core.JsonToSimpl;
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, this, "JSON parsing failed:\r{0}", e);
+				this.LogException(e, "JSON parsing failed:\r{0}", e.Message);
+				this.LogVerbose("Stack Trace:\r{0}", e.StackTrace);
 			}
 		}
 
@@ -89,36 +92,36 @@ namespace PepperDash.Core.JsonToSimpl;
 			// Make each child update their values into master object
 			foreach (var child in Children)
 			{
-				Debug.Console(1, this, "Master. checking child [{0}] for updates to save",  child.Key);
+				this.LogDebug("Master. checking child [{0}] for updates to save",  child.Key);
 				child.UpdateInputsForMaster();
 			}
 
 			if (UnsavedValues == null || UnsavedValues.Count == 0)
 			{
-				Debug.Console(1, this, "Master. No updated values to save. Skipping");
+				this.LogDebug("Master. No updated values to save. Skipping");
 				return;
 			}
 
 			lock (WriteLock)
 			{
-				Debug.Console(1, this, "Saving");
+				this.LogDebug("Saving");
 				foreach (var path in UnsavedValues.Keys)
 				{
 					var tokenToReplace = JsonObject.SelectToken(path);
 					if (tokenToReplace != null)
 					{// It's found
 						tokenToReplace.Replace(UnsavedValues[path]);
-						Debug.Console(1, this, "Master Updating '{0}'", path);
+						this.LogDebug("Master Updating '{0}'", path);
 					}
 					else // No token.  Let's make one 
 					{
-						Debug.Console(1, "Master Cannot write value onto missing property: '{0}'", path);
+						this.LogDebug("Master Cannot write value onto missing property: '{0}'", path);
 					}
 				}
 			}
 			if (SaveCallback != null)
 				SaveCallback(JsonObject.ToString());
 			else
-				Debug.Console(0, this, "WARNING: No save callback defined.");
+				this.LogDebug("WARNING: No save callback defined.");
 		}
 	}

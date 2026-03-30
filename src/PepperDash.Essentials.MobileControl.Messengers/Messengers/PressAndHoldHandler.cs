@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Crestron.SimplSharp;
+using System.Timers;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 
@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private const long ButtonHeartbeatInterval = 1000;
 
-        private static readonly Dictionary<string, CTimer> _pushedActions = new Dictionary<string, CTimer>();
+        private static readonly Dictionary<string, Timer> _pushedActions = new Dictionary<string, Timer>();
 
         private static readonly Dictionary<string, Action<string, Action<bool>>> _pushedActionHandlers;
 
@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             Debug.LogDebug("Attempting to add timer for {deviceKey}", deviceKey);
 
-            if (_pushedActions.TryGetValue(deviceKey, out CTimer cancelTimer))
+            if (_pushedActions.TryGetValue(deviceKey, out Timer cancelTimer))
             {
                 Debug.LogDebug("Timer for {deviceKey} already exists", deviceKey);
                 return;
@@ -41,14 +41,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             action(true);
 
-            cancelTimer = new CTimer(o =>
+            cancelTimer = new Timer(ButtonHeartbeatInterval) { AutoReset = false };
+            cancelTimer.Elapsed += (s, e) =>
             {
                 Debug.LogDebug("Timer expired for {deviceKey}", deviceKey);
 
                 action(false);
 
                 _pushedActions.Remove(deviceKey);
-            }, ButtonHeartbeatInterval);
+            };
+            cancelTimer.Start();
 
             _pushedActions.Add(deviceKey, cancelTimer);
         }
@@ -57,7 +59,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             Debug.LogDebug("Attempting to reset timer for {deviceKey}", deviceKey);
 
-            if (!_pushedActions.TryGetValue(deviceKey, out CTimer cancelTimer))
+            if (!_pushedActions.TryGetValue(deviceKey, out Timer cancelTimer))
             {
                 Debug.LogDebug("Timer for {deviceKey} not found", deviceKey);
                 return;
@@ -65,14 +67,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             Debug.LogDebug("Resetting timer for {deviceKey} with due time {dueTime}", deviceKey, ButtonHeartbeatInterval);
 
-            cancelTimer.Reset(ButtonHeartbeatInterval);
+            cancelTimer.Stop();
+            cancelTimer.Interval = ButtonHeartbeatInterval;
+            cancelTimer.Start();
         }
 
         private static void StopTimer(string deviceKey, Action<bool> action)
         {
             Debug.LogDebug("Attempting to stop timer for {deviceKey}", deviceKey);
 
-            if (!_pushedActions.TryGetValue(deviceKey, out CTimer cancelTimer))
+            if (!_pushedActions.TryGetValue(deviceKey, out Timer cancelTimer))
             {
                 Debug.LogDebug("Timer for {deviceKey} not found", deviceKey);
                 return;
@@ -85,6 +89,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _pushedActions.Remove(deviceKey);
         }
 
+        /// <summary>
+        /// Gets the handler for a given press and hold message type
+        /// </summary>
+        /// <param name="value">The press and hold message type.</param>
+        /// <returns>The handler for the specified message type.</returns>
         public static Action<string, Action<bool>> GetPressAndHoldHandler(string value)
         {
             Debug.LogDebug("Getting press and hold handler for {value}", value);

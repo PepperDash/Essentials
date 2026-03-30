@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp;
+using System.Timers;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -170,12 +170,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             OnCallStatusChange(call);
             //ActiveCallCountFeedback.FireUpdate();
             // Simulate 2-second ring, then connecting, then connected
-            new CTimer(o =>
+            var dialTimer = new Timer(2000) { AutoReset = false };
+            dialTimer.Elapsed += (s, e) =>
             {
                 call.Type = eCodecCallType.Video;
                 SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
-                new CTimer(oo => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call), 1000);
-            }, 2000);
+                var connectTimer = new Timer(1000) { AutoReset = false };
+                connectTimer.Elapsed += (ss, ee) => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call);
+                connectTimer.Start();
+            };
+            dialTimer.Start();
         }
 
         /// <inheritdoc />
@@ -188,12 +192,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             //ActiveCallCountFeedback.FireUpdate();
             // Simulate 2-second ring, then connecting, then connected
-            new CTimer(o =>
+            var dialMeetingTimer = new Timer(2000) { AutoReset = false };
+            dialMeetingTimer.Elapsed += (s, e) =>
             {
                 call.Type = eCodecCallType.Video;
                 SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
-                new CTimer(oo => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call), 1000);
-            }, 2000);
+                var connectTimer = new Timer(1000) { AutoReset = false };
+                connectTimer.Elapsed += (ss, ee) => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call);
+                connectTimer.Start();
+            };
+            dialMeetingTimer.Start();
 
         }
 
@@ -226,7 +234,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "AcceptCall");
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
-            new CTimer(o => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call), 1000);
+            var acceptTimer = new Timer(1000) { AutoReset = false };
+            acceptTimer.Elapsed += (s, e) => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call);
+            acceptTimer.Start();
             // should already be in active list
         }
 
@@ -624,7 +634,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             SupportsCameraOff = false;
 
-            Cameras = new List<CameraBase>();
+            Cameras = new List<IHasCameraControls>();
 
             var internalCamera = new MockVCCamera(Key + "-camera1", "Near End", this);
 
@@ -679,19 +689,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <summary>
         /// CameraSelected event. Fired when a camera is selected
         /// </summary>
-        public event EventHandler<CameraSelectedEventArgs> CameraSelected;
+        public event EventHandler<CameraSelectedEventArgs<IHasCameraControls>> CameraSelected;
 
         /// <summary>
         /// Gets the list of cameras associated with this codec
         /// </summary>
-        public List<CameraBase> Cameras { get; private set; }
+        public List<IHasCameraControls> Cameras { get; private set; }
 
-        private CameraBase _selectedCamera;
+        private IHasCameraControls _selectedCamera;
 
         /// <summary>
         /// Returns the selected camera
         /// </summary>
-        public CameraBase SelectedCamera
+        public IHasCameraControls SelectedCamera
         {
             get
             {
@@ -702,7 +712,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 _selectedCamera = value;
                 SelectedCameraFeedback.FireUpdate();
                 ControllingFarEndCameraFeedback.FireUpdate();
-                CameraSelected?.Invoke(this, new CameraSelectedEventArgs(SelectedCamera));
+                CameraSelected?.Invoke(this, new CameraSelectedEventArgs<IHasCameraControls>(SelectedCamera));
             }
         }
 

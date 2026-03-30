@@ -105,7 +105,7 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
             var hostName = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
             var domainName = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, 0);
 
-            CrestronConsole.PrintLine(string.Format("DomainName: {0} | HostName: {1} | {1}.{0}@{2}", domainName, hostName, ipAddress));
+            Debug.LogInformation("DomainName: {0} | HostName: {1} | {1}.{0}@{2}", domainName, hostName, ipAddress);
 
             var certificate = utility.CreateSelfSignedCertificate(string.Format("CN={0}.{1}", hostName, domainName), [string.Format("{0}.{1}", hostName, domainName), ipAddress], [KeyPurposeID.id_kp_serverAuth, KeyPurposeID.id_kp_clientAuth]);
 
@@ -118,8 +118,8 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
         }
         catch (Exception ex)
         {
-            //Debug.Console(0, "WSS CreateCert Failed\r\n{0}\r\n{1}", ex.Message, ex.StackTrace);
-            CrestronConsole.PrintLine("WSS CreateCert Failed\r\n{0}\r\n{1}", ex.Message, ex.StackTrace);
+            Debug.LogError(ex, "WSS CreateCert Failed: {0}", ex.Message);
+            Debug.LogVerbose("Stack Trace:\r{0}", ex.StackTrace);
         }
     }
 
@@ -149,7 +149,7 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
     /// <param name="port">The port number on which the WebSocket server will listen. Must be a valid, non-negative port number.</param>
     public void StartServerAndSetPort(int port)
     {
-        Debug.Console(0, "Starting Websocket Server on port: {0}", port);
+        Debug.LogInformation("Starting Websocket Server on port: {0}", port);
 
 
         Start(port, $"\\user\\{_certificateName}.pfx", _certificatePassword);
@@ -163,7 +163,7 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
 
             if (!string.IsNullOrWhiteSpace(certPath))
             {
-                Debug.Console(0, "Assigning SSL Configuration");
+                Debug.LogInformation("Assigning SSL Configuration");
 
                 _httpsServer.SslConfiguration.ServerCertificate = new X509Certificate2(certPath, certPassword);
                 _httpsServer.SslConfiguration.ClientCertificateRequired = false;
@@ -172,13 +172,13 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
                 //this is just to test, you might want to actually validate
                 _httpsServer.SslConfiguration.ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                     {
-                        Debug.Console(0, "HTTPS ClientCerticateValidation Callback triggered");
+                        Debug.LogInformation("HTTPS ClientCerticateValidation Callback triggered");
                         return true;
                     };
             }
-            Debug.Console(0, "Adding Debug Client Service");
+            Debug.LogInformation("Adding Debug Client Service");
             _httpsServer.AddWebSocketService<DebugClient>(_path);
-            Debug.Console(0, "Assigning Log Info");
+            Debug.LogInformation("Assigning Log Info");
             _httpsServer.Log.Level = LogLevel.Trace;
             _httpsServer.Log.Output = (d, s) =>
             {
@@ -208,17 +208,17 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
                         level = 4;
                         break;
                 }
-                
-                Debug.Console(level, "{1} {0}\rCaller:{2}\rMessage:{3}\rs:{4}", d.Level.ToString(), d.Date.ToString(), d.Caller.ToString(), d.Message, s);
+                Debug.LogInformation("{1} {0}\rCaller:{2}\rMessage:{3}\rs:{4}", d.Level.ToString(), d.Date.ToString(), d.Caller.ToString(), d.Message, s);
             };
-            Debug.Console(0, "Starting");
+            Debug.LogInformation("Starting");
 
             _httpsServer.Start();
-            Debug.Console(0, "Ready");
+            Debug.LogInformation("Ready");
         }
         catch (Exception ex)
         {
-            Debug.Console(0, "WebSocket Failed to start {0}", ex.Message);
+            Debug.LogError(ex, "WebSocket Failed to start {0}", ex.Message);
+            Debug.LogVerbose("Stack Trace:\r{0}", ex.StackTrace);
         }
     }
 
@@ -229,7 +229,7 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
     /// calling this method, the server will no longer accept or process incoming connections.</remarks>
     public void StopServer()
     {
-        Debug.Console(0, "Stopping Websocket Server");
+        Debug.LogInformation("Stopping Websocket Server");
         _httpsServer?.Stop();
 
         _httpsServer = null;
@@ -291,20 +291,18 @@ public class DebugClient : WebSocketBehavior
     /// <summary>
     /// Initializes a new instance of the <see cref="DebugClient"/> class.
     /// </summary>
-    /// <remarks>This constructor creates a new <see cref="DebugClient"/> instance and logs its
-    /// creation using the <see cref="Debug.Console(int, string)"/> method with a debug level of 0.</remarks>
     public DebugClient()
     {
-        Debug.Console(0, "DebugClient Created");
+        Debug.LogInformation("DebugClient Created");
     }
-
+    
     /// <inheritdoc/>
     protected override void OnOpen()
     {
         base.OnOpen();
 
         var url = Context.WebSocket.Url;
-        Debug.Console(0, Debug.ErrorLogLevel.Notice, "New WebSocket Connection from: {0}", url);
+        Debug.LogInformation("New WebSocket Connection from: {0}", url);
 
         _connectionTime = DateTime.Now;
     }
@@ -314,7 +312,7 @@ public class DebugClient : WebSocketBehavior
     {
         base.OnMessage(e);
 
-        Debug.Console(0, "WebSocket UiClient Message: {0}", e.Data);
+        Debug.LogVerbose("WebSocket UiClient Message: {0}", e.Data);
     }
 
     /// <inheritdoc/>
@@ -322,8 +320,7 @@ public class DebugClient : WebSocketBehavior
     {
         base.OnClose(e);
 
-        Debug.Console(0, Debug.ErrorLogLevel.Notice, "WebSocket UiClient Closing: {0} reason: {1}", e.Code, e.Reason);
-
+        Debug.LogDebug("WebSocket UiClient Closing: {0} reason: {1}", e.Code, e.Reason);
     }
 
     /// <inheritdoc/>
@@ -331,6 +328,7 @@ public class DebugClient : WebSocketBehavior
     {
         base.OnError(e);
 
-        Debug.Console(2, Debug.ErrorLogLevel.Notice, "WebSocket UiClient Error: {0} message: {1}", e.Exception, e.Message);
+        Debug.LogError(e.Exception, "WebSocket UiClient Error: {0} message: {1}", e.Exception, e.Message);
+        Debug.LogVerbose("Stack Trace:\r{0}", e.Exception.StackTrace);
     }
 }

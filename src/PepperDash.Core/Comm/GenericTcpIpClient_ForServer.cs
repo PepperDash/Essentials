@@ -11,10 +11,9 @@ PepperDash Technology Corporation reserves all rights under applicable laws.
 ------------------------------------ */
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using PepperDash.Core.Logging;
@@ -210,7 +209,7 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
     /// <summary>
     /// private Timer for auto reconnect
     /// </summary>
-    CTimer RetryTimer;
+    Timer RetryTimer;
 
 
     /// <summary>
@@ -237,13 +236,13 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
     /// </summary>
     public int HeartbeatInterval = 50000;
 
-    CTimer HeartbeatSendTimer;
-    CTimer HeartbeatAckTimer;
+    Timer HeartbeatSendTimer;
+    Timer HeartbeatAckTimer;
     /// <summary>
     /// Used to force disconnection on a dead connect attempt
     /// </summary>
-    CTimer ConnectFailTimer;
-    CTimer WaitForSharedKey;
+    Timer ConnectFailTimer;
+    Timer WaitForSharedKey;
     private int ConnectionCount;
     /// <summary>
     /// Internal secure client
@@ -303,7 +302,7 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
     {
         if (programEventType == eProgramStatusEventType.Stopping || programEventType == eProgramStatusEventType.Paused)
         {
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Program stopping. Closing Client connection");
+            this.LogInformation("Program stopping. Closing Client connection");
             ProgramIsStopping = true;
             Disconnect();
         }
@@ -316,17 +315,17 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
     public void Connect()
     {
         ConnectionCount++;
-        Debug.Console(2, this, "Attempting connect Count:{0}", ConnectionCount);
+        this.LogDebug("Attempting connect Count:{0}", ConnectionCount);
 
 
         if (IsConnected)
         {
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Already connected. Ignoring.");
+            this.LogInformation("Already connected. Ignoring.");
             return;
         }
         if (IsTryingToConnect)
         {
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Already trying to connect. Ignoring.");
+            this.LogInformation("Already trying to connect. Ignoring.");
             return;
         }
         try
@@ -339,17 +338,17 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
             }
             if (string.IsNullOrEmpty(Hostname))
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Warning, "DynamicTcpClient: No address set");
+                this.LogWarning("DynamicTcpClient: No address set");
                 return;
             }
             if (Port < 1 || Port > 65535)
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Warning, "DynamicTcpClient: Invalid port");
+                this.LogWarning("DynamicTcpClient: Invalid port");
                 return;
             }
             if (string.IsNullOrEmpty(SharedKey) && SharedKeyRequired)
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Warning, "DynamicTcpClient: No Shared Key set");
+                this.LogWarning("DynamicTcpClient: No Shared Key set");
                 return;
             }
 
@@ -370,9 +369,10 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
 
             //var timeOfConnect = DateTime.Now.ToString("HH:mm:ss.fff");
 
-            ConnectFailTimer = new CTimer(o =>
+            ConnectFailTimer = new Timer(30000) { AutoReset = false };
+            ConnectFailTimer.Elapsed += (s, e) =>
             {
-                Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Connect attempt has not finished after 30sec Count:{0}", ConnectionCount);
+                this.LogError("Connect attempt has not finished after 30sec Count:{0}", ConnectionCount);
                 if (IsTryingToConnect)
                 {
                     IsTryingToConnect = false;
@@ -384,12 +384,13 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
                     //SecureClient.DisconnectFromServer();
                     //CheckClosedAndTryReconnect();
                 }
-            }, 30000);
+            };
+            ConnectFailTimer.Start();
 
-            Debug.Console(2, this,  "Making Connection Count:{0}", ConnectionCount);
+            this.LogDebug("Making Connection Count:{0}", ConnectionCount);
             Client.ConnectToServerAsync(o =>
             {
-                Debug.Console(2, this, "ConnectToServerAsync Count:{0} Ran!", ConnectionCount);
+                this.LogDebug("ConnectToServerAsync Count:{0} Ran!", ConnectionCount);
 
                 if (ConnectFailTimer != null)
                 {
@@ -399,22 +400,22 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
 
                 if (o.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
                 {
-                    Debug.Console(2, this, "Client connected to {0} on port {1}", o.AddressClientConnectedTo, o.LocalPortNumberOfClient);
+                    this.LogVerbose("Client connected to {0} on port {1}", o.AddressClientConnectedTo, o.LocalPortNumberOfClient);
                     o.ReceiveDataAsync(Receive);
 
                     if (SharedKeyRequired)
                     {
                         WaitingForSharedKeyResponse = true;
-                        WaitForSharedKey = new CTimer(timer =>
+                        WaitForSharedKey = new Timer(15000) { AutoReset = false };
+                        WaitForSharedKey.Elapsed += (s, e) =>
                         {
-
-                            Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Shared key exchange timer expired. IsReadyForCommunication={0}", IsReadyForCommunication);
-                            // Debug.Console(1, this, "Connect attempt failed {0}", c.ClientStatus);
+                            this.LogWarning("Shared key exchange timer expired. IsReadyForCommunication={0}", IsReadyForCommunication);
                             // This is the only case where we should call DisconectFromServer...Event handeler will trigger the cleanup 
                             o.DisconnectFromServer();
                             //CheckClosedAndTryReconnect();
                             //OnClientReadyForcommunications(false); // Should send false event
-                        }, 15000);
+                        };
+                        WaitForSharedKey.Start();
                     }
                     else
                     {
@@ -428,14 +429,15 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
                 }
                 else
                 {
-                    Debug.Console(1, this, "Connect attempt failed {0}", o.ClientStatus);
+                    this.LogWarning("Connect attempt failed {0}", o.ClientStatus);
                     CheckClosedAndTryReconnect();
                 }
             });
         }
         catch (Exception ex)
         {
-            Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Client connection exception: {0}", ex.Message);
+            this.LogException(ex, "Client connection exception: {0}", ex.Message);
+            this.LogVerbose("Stack Trace: {0}", ex.StackTrace);
             IsTryingToConnect = false;
             CheckClosedAndTryReconnect();
         }
@@ -472,7 +474,7 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
         if (Client != null)
         {
             //SecureClient.DisconnectFromServer();
-            Debug.Console(2, this, "Disconnecting Client {0}", DisconnectCalledByUser ? ", Called by user" : "");
+            this.LogVerbose("Disconnecting Client {0}", DisconnectCalledByUser ? ", Called by user" : "");
             Client.SocketStatusChange -= Client_SocketStatusChange;
             Client.Dispose();
             Client = null;
@@ -494,20 +496,22 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
     {
         if (Client != null)
         {
-            Debug.Console(2, this, "Cleaning up remotely closed/failed connection.");
+            this.LogVerbose("Cleaning up remotely closed/failed connection.");
             Cleanup();
         }
         if (!DisconnectCalledByUser && AutoReconnect)
         {
             var halfInterval = AutoReconnectIntervalMs / 2;
             var rndTime = new Random().Next(-halfInterval, halfInterval) + AutoReconnectIntervalMs;
-            Debug.Console(2, this, "Attempting reconnect in {0} ms, randomized", rndTime);
+            this.LogVerbose("Attempting reconnect in {0} ms, randomized", rndTime);
             if (RetryTimer != null)
             {
                 RetryTimer.Stop();
                 RetryTimer = null;
             }
-            RetryTimer = new CTimer(o => Connect(), rndTime);
+            RetryTimer = new Timer(rndTime) { AutoReset = false };
+            RetryTimer.Elapsed += (s, e) => Connect();
+            RetryTimer.Start();
         }
     }
 
@@ -526,18 +530,18 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
             {
                 var bytes = client.IncomingDataBuffer.Take(numBytes).ToArray();
                 str = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
-                Debug.Console(2, this, "Client Received:\r--------\r{0}\r--------", str);
+                this.LogVerbose("Client Received:\r--------\r{0}\r--------", str);
                 if (!string.IsNullOrEmpty(checkHeartbeat(str)))
                 {
                     if (SharedKeyRequired && str == "SharedKey:")
                     {
-                        Debug.Console(2, this, "Server asking for shared key, sending");
+                        this.LogVerbose("Server asking for shared key, sending");
                         SendText(SharedKey + "\n");
                     }
                     else if (SharedKeyRequired && str == "Shared Key Match")
                     {
                         StopWaitForSharedKeyTimer();
-                        Debug.Console(2, this, "Shared key confirmed. Ready for communication");
+                        this.LogVerbose("Shared key confirmed. Ready for communication");
                         OnClientReadyForcommunications(true); // Successful key exchange
                     }
                     else
@@ -553,7 +557,8 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
             }
             catch (Exception ex)
             {
-                Debug.Console(1, this, "Error receiving data: {1}. Error: {0}", ex.Message, str);
+                this.LogException(ex, "Error receiving data: {1}. Error: {0}", ex.Message, str);
+                this.LogVerbose("Stack Trace: {0}", ex.StackTrace);
             }
         }
         if (client.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED)
@@ -564,15 +569,19 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
     {
         if (HeartbeatEnabled)
         {
-            Debug.Console(2, this,  "Starting Heartbeat");
+            this.LogVerbose("Starting Heartbeat");
             if (HeartbeatSendTimer == null)
             {
 
-                HeartbeatSendTimer = new CTimer(this.SendHeartbeat, null, HeartbeatInterval, HeartbeatInterval);
+                HeartbeatSendTimer = new Timer(HeartbeatInterval) { AutoReset = true };
+                HeartbeatSendTimer.Elapsed += (s, e) => SendHeartbeat(null);
+                HeartbeatSendTimer.Start();
             }
             if (HeartbeatAckTimer == null)
             {
-                HeartbeatAckTimer = new CTimer(HeartbeatAckTimerFail, null, (HeartbeatInterval * 2), (HeartbeatInterval * 2));
+                HeartbeatAckTimer = new Timer(HeartbeatInterval * 2) { AutoReset = true };
+                HeartbeatAckTimer.Elapsed += (s, e) => HeartbeatAckTimerFail(null);
+                HeartbeatAckTimer.Start();
             }
         }
 
@@ -582,13 +591,13 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
 
         if (HeartbeatSendTimer != null)
         {
-            Debug.Console(2, this,  "Stoping Heartbeat Send");
+            this.LogVerbose("Stoping Heartbeat Send");
             HeartbeatSendTimer.Stop();
             HeartbeatSendTimer = null;
         }
         if (HeartbeatAckTimer != null)
         {
-            Debug.Console(2, this, "Stoping Heartbeat Ack");
+            this.LogVerbose("Stoping Heartbeat Ack");
             HeartbeatAckTimer.Stop();
             HeartbeatAckTimer = null;
         }
@@ -597,7 +606,7 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
     void SendHeartbeat(object notused)
     {
         this.SendText(HeartbeatString);
-        Debug.Console(2, this, "Sending Heartbeat");
+        this.LogVerbose("Sending Heartbeat");
 
     }
 
@@ -616,13 +625,17 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
                     {
                         if (HeartbeatAckTimer != null)
                         {
-                            HeartbeatAckTimer.Reset(HeartbeatInterval * 2);
+                            HeartbeatAckTimer.Stop();
+                            HeartbeatAckTimer.Interval = HeartbeatInterval * 2;
+                            HeartbeatAckTimer.Start();
                         }
                         else
                         {
-                            HeartbeatAckTimer = new CTimer(HeartbeatAckTimerFail, null, (HeartbeatInterval * 2), (HeartbeatInterval * 2));
+                            HeartbeatAckTimer = new Timer(HeartbeatInterval * 2) { AutoReset = true };
+                            HeartbeatAckTimer.Elapsed += (s, e) => HeartbeatAckTimerFail(null);
+                            HeartbeatAckTimer.Start();
                         }
-                        Debug.Console(2, this, "Heartbeat Received: {0}, from Server", HeartbeatString);
+                        this.LogVerbose("Heartbeat Received: {0}, from Server", HeartbeatString);
                         return remainingText;
                     }
                 }                    
@@ -630,7 +643,8 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
         }
         catch (Exception ex)
         {
-            Debug.Console(1, this, "Error checking heartbeat: {0}", ex.Message);
+            this.LogException(ex, "Error checking heartbeat: {0}", ex.Message);
+            this.LogVerbose("Stack Trace: {0}", ex.StackTrace);
         }
         return received;
     }
@@ -644,7 +658,7 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
 
             if (IsConnected)
             {
-                Debug.Console(1, Debug.ErrorLogLevel.Warning, "Heartbeat not received from Server...DISCONNECTING BECAUSE HEARTBEAT REQUIRED IS TRUE");
+                this.LogWarning("Heartbeat not received from Server...DISCONNECTING BECAUSE HEARTBEAT REQUIRED IS TRUE");
                 SendText("Heartbeat not received by server, closing connection");
                 CheckClosedAndTryReconnect();
             }
@@ -652,7 +666,8 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
         }
         catch (Exception ex)
         {
-            ErrorLog.Error("Heartbeat timeout Error on Client: {0}, {1}", Key, ex);
+            this.LogException(ex, "Heartbeat timeout Error on Client: {0}, {1}", Key, ex.Message);
+            this.LogVerbose("Stack Trace: {0}", ex.StackTrace);
         }
     }
 
@@ -685,14 +700,15 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
                         // HOW IN THE HELL DO WE CATCH AN EXCEPTION IN SENDING?????
                         if (n <= 0)
                         {
-                            Debug.Console(1, Debug.ErrorLogLevel.Warning, "[{0}] Sent zero bytes. Was there an error?", this.Key);
+                            this.LogWarning("[{0}] Sent zero bytes. Was there an error?", this.Key);
                         }
                     });
                 }
             }
             catch (Exception ex)
             {
-                Debug.Console(0, this, "Error sending text: {1}. Error: {0}", ex.Message, text);
+                this.LogException(ex, "Error sending text: {1}. Error: {0}", ex.Message, text);
+                this.LogVerbose("Stack Trace: {0}", ex.StackTrace);
             }
         }
     }
@@ -711,7 +727,8 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
             }
             catch (Exception ex)
             {
-                Debug.Console(0, this, "Error sending bytes. Error: {0}", ex.Message);
+                this.LogException(ex, "Error sending bytes. Error: {0}", ex.Message);
+                this.LogVerbose("Stack Trace: {0}", ex.StackTrace);
             }
         }
     }
@@ -730,7 +747,7 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
         }
         try
         {
-            Debug.Console(2, this, "Socket status change: {0} ({1})", client.ClientStatus, (ushort)(client.ClientStatus));
+            this.LogVerbose("Socket status change: {0} ({1})", client.ClientStatus, (ushort)(client.ClientStatus));
 
             OnConnectionChange();
             
@@ -744,7 +761,8 @@ public class GenericTcpIpClient_ForServer : Device, IAutoReconnect
         }
         catch (Exception ex)
         {
-            Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Error in socket status change callback. Error: {0}\r\r{1}", ex, ex.InnerException);
+            this.LogException(ex, "Error in socket status change callback. Error: {0}", ex.Message);
+            this.LogVerbose("Stack Trace: {0}", ex.StackTrace);
         }
     }
 

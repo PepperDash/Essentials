@@ -87,7 +87,7 @@ namespace PepperDash.Essentials.Room.MobileControl
             Eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(ipId, "127.0.0.2", Global.ControlSystem);
             var reg = Eisc.Register();
             if (reg != eDeviceRegistrationUnRegistrationResponse.Success)
-                Debug.Console(0, this, "Cannot connect EISC at IPID {0}: \r{1}", ipId, reg);
+                this.LogWarning("Cannot connect EISC at IPID {0}: \r{1}", ipId, reg);
 
             JoinMap = new MobileControlSIMPLRoomJoinMap(1);
 
@@ -109,7 +109,7 @@ namespace PepperDash.Essentials.Room.MobileControl
                             return;
                         }
 
-                        Debug.Console(1, this, "SIMPL EISC online={0}. Config is ready={1}. Use Essentials Config={2}",
+                        this.LogDebug("SIMPL EISC online={0}. Config is ready={1}. Use Essentials Config={2}",
                             a.DeviceOnLine, Eisc.BooleanOutput[JoinMap.ConfigIsReady.JoinNumber].BoolValue,
                             Eisc.BooleanOutput[JoinMap.ConfigIsLocal.JoinNumber].BoolValue);
 
@@ -143,7 +143,7 @@ namespace PepperDash.Essentials.Room.MobileControl
         /// </summary>
         public override bool CustomActivate()
         {
-            Debug.Console(0, this, "Final activation. Setting up actions and feedbacks");
+            this.LogDebug("Final activation. Setting up actions and feedbacks");
             //SetupFunctions();
             //SetupFeedbacks();
 
@@ -169,7 +169,6 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                 _directRouteMessenger.JoinMap.PrintJoinMapInfo();
 
-                // TODO: Update Source Bridge to use new JoinMap scheme
                 //_sourceBridge.JoinMap.PrintJoinMapInfo();
             }, "printmobilebridge", "Prints MC-SIMPL bridge EISC data", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -182,7 +181,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
             SetupDeviceMessengers();
 
-            Debug.Console(0, this, "******* ESSENTIALS CONFIG: \r{0}",
+            this.LogInformation("******* ESSENTIALS CONFIG: \r{0}",
                 JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 
             ConfigurationIsReady?.Invoke(this, new EventArgs());
@@ -497,7 +496,7 @@ namespace PepperDash.Essentials.Room.MobileControl
         /// </summary>
         private void LoadConfigValues()
         {
-            Debug.Console(1, this, "Loading configuration from SIMPL EISC bridge");
+            this.LogInformation("Loading configuration from SIMPL EISC bridge");
             ConfigIsLoaded = false;
 
             var co = ConfigReader.ConfigObject;
@@ -519,12 +518,12 @@ namespace PepperDash.Essentials.Room.MobileControl
             var rm = new DeviceConfig();
             if (co.Rooms.Count == 0)
             {
-                Debug.Console(0, this, "Adding room to config");
+                this.LogInformation("Adding room to config");
                 co.Rooms.Add(rm);
             }
             else
             {
-                Debug.Console(0, this, "Replacing Room[0] in config");
+                this.LogInformation("Replacing Room[0] in config");
                 co.Rooms[0] = rm;
             }
             rm.Name = Eisc.StringOutput[JoinMap.ConfigRoomName.JoinNumber].StringValue;
@@ -620,7 +619,7 @@ namespace PepperDash.Essentials.Room.MobileControl
                 var controllable = Eisc.BooleanOutput[JoinMap.SourceIsControllableJoinStart.JoinNumber + i].BoolValue;
                 var audioSource = Eisc.BooleanOutput[JoinMap.SourceIsAudioSourceJoinStart.JoinNumber + i].BoolValue;
 
-                Debug.Console(0, this, "Adding source {0} '{1}'", key, name);
+                this.LogInformation("Adding source {0} '{1}'", key, name);
 
                 var sourceKey = Eisc.StringOutput[JoinMap.SourceControlDeviceKeyJoinStart.JoinNumber + i].StringValue;
 
@@ -645,16 +644,16 @@ namespace PepperDash.Essentials.Room.MobileControl
                 // Look to see if this is a device that already exists in Essentials and get it
                 if (existingSourceDevice != null)
                 {
-                    Debug.Console(0, this, "Found device with key: {0} in Essentials.", key);
+                    this.LogInformation("Found device with key: {0} in Essentials.", key);
 
                     if (existingSourceDevice.Properties.Value<bool>(_syntheticDeviceKey))
                     {
-                        Debug.Console(0, this, "Updating previous device config with new values");
+                        this.LogInformation("Updating previous device config with new values");
                         existingSourceDevice = syntheticDevice;
                     }
                     else
                     {
-                        Debug.Console(0, this, "Using existing Essentials device (non synthetic)");
+                        this.LogInformation("Using existing Essentials device (non synthetic)");
                     }
                 }
                 else
@@ -759,7 +758,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
             SetupDeviceMessengers();
 
-            Debug.Console(0, this, "******* CONFIG FROM SIMPL: \r{0}",
+            this.LogDebug("******* CONFIG FROM SIMPL: \r{0}",
                 JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 
             ConfigurationIsReady?.Invoke(this, new EventArgs());
@@ -806,7 +805,7 @@ namespace PepperDash.Essentials.Room.MobileControl
                     continue;
                 }
 
-                Debug.Console(0, this, "Adding destination {0} - {1}", key, name);
+                this.LogInformation("Adding destination {0} - {1}", key, name);
 
                 eRoutingSignalType parsedType;
                 try
@@ -815,7 +814,7 @@ namespace PepperDash.Essentials.Room.MobileControl
                 }
                 catch
                 {
-                    Debug.Console(0, this, "Error parsing destination type: {0}", routeType);
+                    this.LogInformation("Error parsing destination type: {0}", routeType);
                     parsedType = eRoutingSignalType.AudioVideo;
                 }
 
@@ -852,15 +851,15 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                 if (existingDev != null)
                 {
-                    Debug.Console(0, this, "Found device with key: {0} in Essentials.", key);
+                    this.LogInformation("Found device with key: {0} in Essentials.", key);
 
                     if (existingDev.Properties.Value<bool>(_syntheticDeviceKey))
                     {
-                        Debug.Console(0, this, "Updating previous device config with new values");
+                        this.LogInformation("Updating previous device config with new values");
                     }
                     else
                     {
-                        Debug.Console(0, this, "Using existing Essentials device (non synthetic)");
+                        this.LogInformation("Using existing Essentials device (non synthetic)");
                     }
                 }
                 else
@@ -901,7 +900,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                         if (DeviceManager.GetDeviceForKey(messengerKey) != null)
                         {
-                            Debug.Console(2, this, "Messenger with key: {0} already exists. Skipping...", messengerKey);
+                            this.LogDebug("Messenger with key: {0} already exists. Skipping...", messengerKey);
                             continue;
                         }
 
@@ -909,7 +908,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                         if (dev == null)
                         {
-                            Debug.Console(1, this, "Unable to find device config for key: '{0}'", props.DeviceKey);
+                            this.LogDebug("Unable to find device config for key: '{0}'", props.DeviceKey);
                             continue;
                         }
 
@@ -918,13 +917,13 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                         if (type.Equals("simplcameramessenger"))
                         {
-                            Debug.Console(2, this, "Adding SIMPLCameraMessenger for: '{0}'", props.DeviceKey);
+                            this.LogDebug("Adding SIMPLCameraMessenger for: '{0}'", props.DeviceKey);
                             messenger = new SIMPLCameraMessenger(messengerKey, Eisc, "/device/" + props.DeviceKey,
                                 props.JoinStart);
                         }
                         else if (type.Equals("simplroutemessenger"))
                         {
-                            Debug.Console(2, this, "Adding SIMPLRouteMessenger for: '{0}'", props.DeviceKey);
+                            this.LogDebug("Adding SIMPLRouteMessenger for: '{0}'", props.DeviceKey);
                             messenger = new SIMPLRouteMessenger(messengerKey, Eisc, "/device/" + props.DeviceKey,
                                 props.JoinStart);
                         }
@@ -937,7 +936,7 @@ namespace PepperDash.Essentials.Room.MobileControl
                         }
                         else
                         {
-                            Debug.Console(2, this, "Unable to add messenger for device: '{0}' of type: '{1}'",
+                            this.LogDebug("Unable to add messenger for device: '{0}' of type: '{1}'",
                                 props.DeviceKey, type);
                         }
                     }
@@ -950,7 +949,7 @@ namespace PepperDash.Essentials.Room.MobileControl
                             if (dev is CameraBase)
                             {
                                 var camDevice = dev as CameraBase;
-                                Debug.Console(1, this, "Adding CameraBaseMessenger for device: {0}", dev.Key);
+                                this.LogDebug("Adding CameraBaseMessenger for device: {0}", dev.Key);
                                 var cameraMessenger = new CameraBaseMessenger(device.Key + "-" + Key, camDevice,
                                     "/device/" + device.Key);
                                 DeviceMessengers.Add(device.Key, cameraMessenger);
@@ -964,7 +963,8 @@ namespace PepperDash.Essentials.Room.MobileControl
             }
             catch (Exception e)
             {
-                Debug.Console(2, this, "Error Setting up Device Managers: {0}", e);
+                this.LogException(e,"Error Setting up Device Managers: {0}", e.Message);
+                this.LogVerbose("Stack Trace:\r{0}", e.StackTrace);
             }
         }
 
@@ -977,7 +977,7 @@ namespace PepperDash.Essentials.Room.MobileControl
             {
                 var count = Eisc.UShortOutput[JoinMap.NumberOfAuxFaders.JoinNumber].UShortValue;
 
-                Debug.Console(1, this, "The Fader Count is : {0}", count);
+                this.LogDebug("The Fader Count is : {0}", count);
 
                 // build volumes object, serialize and put in content of method below
 
@@ -1012,8 +1012,6 @@ namespace PepperDash.Essentials.Room.MobileControl
                     AuxFaders = auxFaderDict,
                     NumberOfAuxFaders = Eisc.UShortInput[JoinMap.NumberOfAuxFaders.JoinNumber].UShortValue
                 };
-
-                // TODO: Add property to status message to indicate if advanced sharing is supported and if users can change share mode
 
                 PostStatus(new
                 {
@@ -1082,7 +1080,7 @@ namespace PepperDash.Essentials.Room.MobileControl
         private void EISC_SigChange(object currentDevice, SigEventArgs args)
         {
             if (Debug.Level >= 1)
-                Debug.Console(1, this, "SIMPL EISC change: {0} {1}={2}", args.Sig.Type, args.Sig.Number,
+                this.LogVerbose("SIMPL EISC change: {0} {1}={2}", args.Sig.Type, args.Sig.Number,
                     args.Sig.StringValue);
             var uo = args.Sig.UserObject;
             if (uo != null)
@@ -1122,12 +1120,12 @@ namespace PepperDash.Essentials.Room.MobileControl
         protected override void UserCodeChange()
         {
 
-            Debug.Console(1, this, "Server user code changed: {0}", UserCode);
+            this.LogDebug("Server user code changed: {0}", UserCode);
 
             var qrUrl = string.Format("{0}/api/rooms/{1}/{3}/qr?x={2}", AppServerController.Host, AppServerController.SystemUuid, new Random().Next(), "room1");
             QrCodeUrl = qrUrl;
 
-            Debug.Console(1, this, "Server user code changed: {0} - {1}", UserCode, qrUrl);
+            this.LogDebug("Server user code changed: {0} - {1}", UserCode, qrUrl);
 
             OnUserCodeChanged();
 

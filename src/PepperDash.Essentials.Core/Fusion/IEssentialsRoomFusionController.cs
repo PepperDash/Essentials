@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using Timer = System.Timers.Timer;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
@@ -62,7 +63,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         private Event _currentMeeting;
         private RoomSchedule _currentSchedule;
-        private CTimer _dailyTimeRequestTimer;
+        private Timer _dailyTimeRequestTimer;
         private StatusMonitorCollection _errorMessageRollUp;
 
         private FusionRoomGuids _guids;
@@ -70,9 +71,9 @@ namespace PepperDash.Essentials.Core.Fusion
         private bool _isRegisteredForSchedulePushNotifications;
         private Event _nextMeeting;
 
-        private CTimer _pollTimer;
+        private Timer _pollTimer;
 
-        private CTimer _pushNotificationTimer;
+        private Timer _pushNotificationTimer;
 
         private string _roomOccupancyRemoteString;
 
@@ -729,15 +730,15 @@ namespace PepperDash.Essentials.Core.Fusion
                 RequestLocalDateTime(null);
 
                 // Setup timer to request time daily
-                if (_dailyTimeRequestTimer != null && !_dailyTimeRequestTimer.Disposed)
+                if (_dailyTimeRequestTimer != null)
                 {
                     _dailyTimeRequestTimer.Stop();
                     _dailyTimeRequestTimer.Dispose();
                 }
 
-                _dailyTimeRequestTimer = new CTimer(RequestLocalDateTime, null, 86400000, 86400000);
-
-                _dailyTimeRequestTimer.Reset(86400000, 86400000);
+                _dailyTimeRequestTimer = new Timer(86400000) { AutoReset = true };
+                _dailyTimeRequestTimer.Elapsed += (s, e) => RequestLocalDateTime(null);
+                _dailyTimeRequestTimer.Start();
             });
         }
 
@@ -950,25 +951,25 @@ namespace PepperDash.Essentials.Core.Fusion
                         {
                             case 1:
                                 _isRegisteredForSchedulePushNotifications = true;
-                                if (_pollTimer != null && !_pollTimer.Disposed)
+                                if (_pollTimer != null)
                                 {
                                     _pollTimer.Stop();
                                     _pollTimer.Dispose();
                                 }
-                                _pushNotificationTimer = new CTimer(RequestFullRoomSchedule, null,
-                                    PushNotificationTimeout, PushNotificationTimeout);
-                                _pushNotificationTimer.Reset(PushNotificationTimeout, PushNotificationTimeout);
+                                _pushNotificationTimer = new Timer(PushNotificationTimeout) { AutoReset = true };
+                                _pushNotificationTimer.Elapsed += (s, e) => RequestFullRoomSchedule(null);
+                                _pushNotificationTimer.Start();
                                 break;
                             case 0:
                                 _isRegisteredForSchedulePushNotifications = false;
-                                if (_pushNotificationTimer != null && !_pushNotificationTimer.Disposed)
+                                if (_pushNotificationTimer != null)
                                 {
                                     _pushNotificationTimer.Stop();
                                     _pushNotificationTimer.Dispose();
                                 }
-                                _pollTimer = new CTimer(RequestFullRoomSchedule, null, SchedulePollInterval,
-                                    SchedulePollInterval);
-                                _pollTimer.Reset(SchedulePollInterval, SchedulePollInterval);
+                                _pollTimer = new Timer(SchedulePollInterval) { AutoReset = true };
+                                _pollTimer.Elapsed += (s, e) => RequestFullRoomSchedule(null);
+                                _pollTimer.Start();
                                 break;
                         }
                     }
@@ -1121,7 +1122,10 @@ namespace PepperDash.Essentials.Core.Fusion
 
                             if (action.OuterXml.IndexOf("RequestSchedule", StringComparison.Ordinal) > -1)
                             {
-                                _pushNotificationTimer.Reset(PushNotificationTimeout, PushNotificationTimeout);
+                                _pushNotificationTimer.Stop();
+                                _pushNotificationTimer.Interval = PushNotificationTimeout;
+                                _pushNotificationTimer.Start();
+                                Debug.LogMessage(LogEventLevel.Verbose, this, "Received push notification for schedule change");
                             }
                         }
                         else // Not a push notification
@@ -1177,7 +1181,9 @@ namespace PepperDash.Essentials.Core.Fusion
 
                             if (!_isRegisteredForSchedulePushNotifications)
                             {
-                                _pollTimer.Reset(SchedulePollInterval, SchedulePollInterval);
+                                _pollTimer.Stop();
+                                _pollTimer.Interval = SchedulePollInterval;
+                                _pollTimer.Start();
                             }
 
                             // Fire Schedule Change Event 

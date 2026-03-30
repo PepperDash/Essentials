@@ -1,12 +1,13 @@
-﻿using Crestron.SimplSharp;
-using PepperDash.Core;
+﻿using PepperDash.Core;
 using PepperDash.Core.Logging;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Timer = System.Timers.Timer;
 
 namespace PepperDash.Essentials.Core;
 
@@ -73,7 +74,7 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombiner
         }
     }
 
-    private CTimer _scenarioChangeDebounceTimer;
+    private Timer _scenarioChangeDebounceTimer;
 
     private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
 
@@ -204,18 +205,22 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombiner
 
         if (_scenarioChangeDebounceTimer == null)
         {
-            _scenarioChangeDebounceTimer = new CTimer((o) => DetermineRoomCombinationScenario(), time);
+            _scenarioChangeDebounceTimer = new Timer(time) { AutoReset = false };
+            _scenarioChangeDebounceTimer.Elapsed += async (s, e) => await DetermineRoomCombinationScenario();
+            _scenarioChangeDebounceTimer.Start();
         }
         else
         {
-            _scenarioChangeDebounceTimer.Reset(time);
+            _scenarioChangeDebounceTimer.Stop();
+            _scenarioChangeDebounceTimer.Interval = time;
+            _scenarioChangeDebounceTimer.Start();
         }
     }
 
     /// <summary>
     /// Determines the current room combination scenario based on the state of the partition sensors
     /// </summary>
-    private void DetermineRoomCombinationScenario()
+    private async Task DetermineRoomCombinationScenario()
     {
         if (_scenarioChangeDebounceTimer != null)
         {
@@ -250,7 +255,7 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombiner
         if (currentScenario != null)
         {
             this.LogInformation("Found combination Scenario {scenarioKey}", currentScenario.Key);
-            ChangeScenario(currentScenario);
+            await ChangeScenario(currentScenario);
         }
     }
 

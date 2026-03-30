@@ -10,6 +10,7 @@ using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using JValue = NewtonsoftJson::Newtonsoft.Json.Linq.JValue;
 using JsonSerializationException = NewtonsoftJson::Newtonsoft.Json.JsonSerializationException;
 using JsonTextReader = NewtonsoftJson::Newtonsoft.Json.JsonTextReader;
+using PepperDash.Core.Logging;
 
 namespace PepperDash.Core.JsonToSimpl;
 
@@ -142,11 +143,10 @@ namespace PepperDash.Core.JsonToSimpl;
 		{
 			if (UnsavedValues.ContainsKey(path))
 			{
-				Debug.Console(0, "Master[{0}] WARNING - Attempt to add duplicate value for path '{1}'.\r Ingoring. Please ensure that path does not exist on multiple modules.", UniqueID, path);
+				this.LogWarning("Master[{0}] WARNING - Attempt to add duplicate value for path '{1}'.\r Ingoring. Please ensure that path does not exist on multiple modules.", UniqueID, path);
 			}
 			else
 				UnsavedValues.Add(path, value);
-			//Debug.Console(0, "Master[{0}] Unsaved size={1}", UniqueID, UnsavedValues.Count);
 		}
 
     /// <summary>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
@@ -186,9 +187,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public DateTime LastAckMessage => _lastAckMessage;
 
-        private CTimer _pingTimer;
+        private Timer _pingTimer;
 
-        private CTimer _serverReconnectTimer;
+        private Timer _serverReconnectTimer;
         private LogLevel _wsLogLevel = LogLevel.Error;
 
         /// <summary>
@@ -769,21 +770,6 @@ namespace PepperDash.Essentials
                         messengerAdded = true;
                     }
 
-                    if (device is IHasCurrentSourceInfoChange csiChange)
-                    {
-                        this.LogVerbose("Adding IHasCurrentSourceInfoMessenger for {deviceKey}", device.Key);
-
-                        var messenger = new IHasCurrentSourceInfoMessenger(
-                            $"{device.Key}-currentSource-{Key}",
-                            $"/device/{device.Key}",
-                            csiChange
-                        );
-
-                        AddDefaultDeviceMessenger(messenger);
-
-                        messengerAdded = true;
-                    }
-
                     if (device is ICurrentSources currentSources)
                     {
                         this.LogVerbose("Adding CurrentSourcesMessenger for {deviceKey}", device.Key);
@@ -990,19 +976,6 @@ namespace PepperDash.Essentials
 
                         AddDefaultDeviceMessenger(messenger);
 
-                        messengerAdded = true;
-                    }
-
-                    if (device is IHasCameras cameras)
-                    {
-                        this.LogVerbose("Adding IHasCamerasMessenger for {deviceKey}", device.Key
-                        );
-                        var messenger = new IHasCamerasMessenger(
-                            $"{device.Key}-cameras-{Key}",
-                            $"/device/{device.Key}",
-                            cameras
-                        );
-                        AddDefaultDeviceMessenger(messenger);
                         messengerAdded = true;
                     }
 
@@ -1343,7 +1316,7 @@ namespace PepperDash.Essentials
                 }
             }
 
-            var simplMessengers = _messengers.OfType<IDelayedConfiguration>().ToList();
+            var simplMessengers = _messengers.Values.OfType<IDelayedConfiguration>().ToList();
 
             if (simplMessengers.Count > 0)
             {
@@ -1404,8 +1377,9 @@ namespace PepperDash.Essentials
             _wsClient2.Log.Level = LogLevel.Trace;
 
             _wsClient2.SslConfiguration.EnabledSslProtocols =
-                System.Security.Authentication.SslProtocols.Tls11
-                | System.Security.Authentication.SslProtocols.Tls12;
+                // System.Security.Authentication.SslProtocols.Tls11
+                System.Security.Authentication.SslProtocols.Tls12 
+                | System.Security.Authentication.SslProtocols.Tls13;
 
             _wsClient2.OnMessage += HandleMessage;
             _wsClient2.OnOpen += HandleOpen;
@@ -2091,13 +2065,17 @@ namespace PepperDash.Essentials
         private void ResetPingTimer()
         {
             // This tells us we're online with the API and getting pings
-            _pingTimer.Reset(PingInterval);
+            _pingTimer.Stop();
+            _pingTimer.Interval = PingInterval;
+            _pingTimer.Start();
         }
 
         private void StartPingTimer()
         {
             StopPingTimer();
-            _pingTimer = new CTimer(PingTimerCallback, null, PingInterval);
+            _pingTimer = new Timer(PingInterval) { AutoReset = false };
+            _pingTimer.Elapsed += (s, e) => PingTimerCallback(null);
+            _pingTimer.Start();
         }
 
         private void StopPingTimer()
@@ -2136,10 +2114,9 @@ namespace PepperDash.Essentials
         private void StartServerReconnectTimer()
         {
             StopServerReconnectTimer();
-            _serverReconnectTimer = new CTimer(
-                ReconnectToServerTimerCallback,
-                ServerReconnectInterval
-            );
+            _serverReconnectTimer = new Timer(ServerReconnectInterval) { AutoReset = false };
+            _serverReconnectTimer.Elapsed += (s, e) => ReconnectToServerTimerCallback(null);
+            _serverReconnectTimer.Start();
             this.LogDebug("Reconnect Timer Started.");
         }
 

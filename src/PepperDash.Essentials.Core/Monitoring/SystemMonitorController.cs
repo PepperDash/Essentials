@@ -10,6 +10,7 @@ using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core.Bridges;
 using Serilog.Events;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace PepperDash.Essentials.Core.Monitoring;
 
@@ -20,7 +21,7 @@ namespace PepperDash.Essentials.Core.Monitoring;
 public class SystemMonitorController : EssentialsBridgeableDevice
 {
     private const long UptimePollTime = 300000;
-    private CTimer _uptimePollTimer;
+    private Timer _uptimePollTimer;
 
     private string _uptime;
     private string _lastStart;
@@ -147,7 +148,10 @@ public class SystemMonitorController : EssentialsBridgeableDevice
         CreateEthernetStatusFeedbacks();
         UpdateEthernetStatusFeeedbacks();
 
-        _uptimePollTimer = new CTimer(PollUptime, null, 0, UptimePollTime);
+        _uptimePollTimer = new Timer(UptimePollTime) { AutoReset = true };
+        _uptimePollTimer.Elapsed += (s, e) => PollUptime(null);
+        _uptimePollTimer.Start();
+        PollUptime(null);
 
         SystemMonitor.ProgramChange += SystemMonitor_ProgramChange;
         SystemMonitor.TimeZoneInformation.TimeZoneChange += TimeZoneInformation_TimeZoneChange;

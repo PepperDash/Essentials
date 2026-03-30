@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
 using PepperDash.Core.Logging;
@@ -92,7 +91,7 @@ public class GenericSecureTcpIpServer : Device
     /// <summary>
     /// Timer to operate the bandaid monitor client in a loop.
     /// </summary>
-    CTimer MonitorClientTimer;
+    Timer MonitorClientTimer;
 
     /// <summary>
     /// 
@@ -259,7 +258,7 @@ public class GenericSecureTcpIpServer : Device
     public string HeartbeatStringToMatch { get; set; }
 
     //private timers for Heartbeats per client
-    Dictionary<uint, CTimer> HeartbeatTimerDictionary = new Dictionary<uint, CTimer>();
+    Dictionary<uint, Timer> HeartbeatTimerDictionary = new Dictionary<uint, Timer>();
 
     //flags to show the secure server is waiting for client at index to send the shared key
     List<uint> WaitingForSharedKey = new List<uint>();
@@ -592,11 +591,17 @@ public class GenericSecureTcpIpServer : Device
                     if (noDelimiter.Contains(HeartbeatStringToMatch))
                     {
                         if (HeartbeatTimerDictionary.ContainsKey(clientIndex))
-                            HeartbeatTimerDictionary[clientIndex].Reset(HeartbeatRequiredIntervalMs);
+                        {
+                            HeartbeatTimerDictionary[clientIndex].Stop();
+                            HeartbeatTimerDictionary[clientIndex].Interval = HeartbeatRequiredIntervalMs;
+                            HeartbeatTimerDictionary[clientIndex].Start();
+                        }
                         else
                         {
-                            CTimer HeartbeatTimer = new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs);
-                            HeartbeatTimerDictionary.Add(clientIndex, HeartbeatTimer);
+                            var heartbeatTimer = new Timer(HeartbeatRequiredIntervalMs) { AutoReset = false };
+                            heartbeatTimer.Elapsed += (s, e) => HeartbeatTimer_CallbackFunction(clientIndex);
+                            heartbeatTimer.Start();
+                            HeartbeatTimerDictionary.Add(clientIndex, heartbeatTimer);
                         }
                         this.LogDebug("Heartbeat Received: {0}, from client index: {1}", HeartbeatStringToMatch, clientIndex);
                         // Return Heartbeat
@@ -607,11 +612,17 @@ public class GenericSecureTcpIpServer : Device
                 else
                 {
                     if (HeartbeatTimerDictionary.ContainsKey(clientIndex))
-                        HeartbeatTimerDictionary[clientIndex].Reset(HeartbeatRequiredIntervalMs);
+                    {
+                        HeartbeatTimerDictionary[clientIndex].Stop();
+                        HeartbeatTimerDictionary[clientIndex].Interval = HeartbeatRequiredIntervalMs;
+                        HeartbeatTimerDictionary[clientIndex].Start();
+                    }
                     else
                     {
-                        CTimer HeartbeatTimer = new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs);
-                        HeartbeatTimerDictionary.Add(clientIndex, HeartbeatTimer);
+                        var heartbeatTimer = new Timer(HeartbeatRequiredIntervalMs) { AutoReset = false };
+                        heartbeatTimer.Elapsed += (s, e) => HeartbeatTimer_CallbackFunction(clientIndex);
+                        heartbeatTimer.Start();
+                        HeartbeatTimerDictionary.Add(clientIndex, heartbeatTimer);
                     }
                     this.LogInformation("Heartbeat Received: {0}, from client index: {1}", received, clientIndex);
                 }
@@ -665,7 +676,6 @@ public class GenericSecureTcpIpServer : Device
                 SendTextToClient("Heartbeat not received by server, closing connection", clientIndex);
 
             var discoResult = SecureServer.Disconnect(clientIndex);
-            //Debug.Console(1, this, "{0}", discoResult);  
 
             if (HeartbeatTimerDictionary.ContainsKey(clientIndex))
             {
@@ -694,8 +704,6 @@ public class GenericSecureTcpIpServer : Device
         try
         {
 				
-
-           // Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SecureServerSocketStatusChange Index:{0} status:{1} Port:{2} IP:{3}", clientIndex, serverSocketStatus, this.SecureServer.GetPortNumberServerAcceptedConnectionFromForSpecificClient(clientIndex), this.SecureServer.GetLocalAddressServerAcceptedConnectionFromForSpecificClient(clientIndex));
             if (serverSocketStatus != SocketStatus.SOCKET_STATUS_CONNECTED)
             {
 					this.LogInformation("SecureServerSocketStatusChange ConnectedCLients: {0} ServerState: {1} Port: {2}", SecureServer.NumberOfClientsConnected, SecureServer.State, SecureServer.PortNumber);
@@ -725,7 +733,7 @@ public class GenericSecureTcpIpServer : Device
         //Use a thread for this event so that the server state updates to listening while this event is processed. Listening must be added to the server state
         //after every client connection so that the server can check and see if it is at max clients. Due to this the event fires and server listening enum bit flag
         //is not set. Putting in a thread allows the state to update before this event processes so that the subscribers to this event get accurate isListening in the event. 
-        Task.Run(() => onConnectionChange(clientIndex, server.GetServerSocketStatusForSpecificClient(clientIndex)));
+        System.Threading.Tasks.Task.Run(() => onConnectionChange(clientIndex, server.GetServerSocketStatusForSpecificClient(clientIndex)));
     }
 
     #endregion
@@ -770,7 +778,10 @@ public class GenericSecureTcpIpServer : Device
                     {
                         if (!HeartbeatTimerDictionary.ContainsKey(clientIndex))
                         {
-                            HeartbeatTimerDictionary.Add(clientIndex, new CTimer(HeartbeatTimer_CallbackFunction, clientIndex, HeartbeatRequiredIntervalMs));
+                            var heartbeatTimer = new Timer(HeartbeatRequiredIntervalMs) { AutoReset = false };
+                            heartbeatTimer.Elapsed += (s, e) => HeartbeatTimer_CallbackFunction(clientIndex);
+                            heartbeatTimer.Start();
+                            HeartbeatTimerDictionary.Add(clientIndex, heartbeatTimer);
                         }
                     }
 
@@ -860,8 +871,8 @@ public class GenericSecureTcpIpServer : Device
             //Check to see if there is a subscription to the TextReceivedQueueInvoke event. If there is start the dequeue thread. 
             if (handler != null)
             {
-                if (Monitor.TryEnter(_dequeueLock))
-                    Task.Run(() => DequeueEvent());
+                if (System.Threading.Monitor.TryEnter(_dequeueLock))
+                    System.Threading.Tasks.Task.Run(() => DequeueEvent());
             }
         }
 			else
@@ -894,7 +905,7 @@ public class GenericSecureTcpIpServer : Device
             this.LogError(e, "DequeueEvent error");
         }
         // Make sure to release the lock in case an exception above stops this thread, or we won't be able to restart it.
-        Monitor.Exit(_dequeueLock);
+        System.Threading.Monitor.Exit(_dequeueLock);
     }
 
     #endregion
@@ -991,7 +1002,9 @@ public class GenericSecureTcpIpServer : Device
         {
             return;
         }
-        MonitorClientTimer = new CTimer(o => RunMonitorClient(), 60000);
+        MonitorClientTimer = new Timer(60000) { AutoReset = false };
+        MonitorClientTimer.Elapsed += (s, e) => RunMonitorClient();
+        MonitorClientTimer.Start();
     }
 
     /// <summary>

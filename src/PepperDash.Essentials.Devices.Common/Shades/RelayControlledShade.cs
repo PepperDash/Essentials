@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Crestron.SimplSharp;
+using System.Timers;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -84,7 +84,9 @@ public class RelayControlledShade : ShadeBase, IShadesOpenCloseStop
     void PulseOutput(ISwitchedOutput output, int pulseTime)
     {
         output.On();
-        CTimer pulseTimer = new CTimer(new CTimerCallbackFunction((o) => output.Off()), pulseTime);
+        var pulseTimer = new Timer(pulseTime) { AutoReset = false };
+        pulseTimer.Elapsed += (s, e) => output.Off();
+        pulseTimer.Start();
     }
 
     /// <summary>

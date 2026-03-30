@@ -1329,7 +1329,6 @@ namespace PepperDash.Essentials.WebSocketServer
                 var suffix = filePath.Substring(_userAppBaseHref.Length, filePath.Length - _userAppBaseHref.Length);
                 if (suffix != "/")
                 {
-                    //Debug.Console(2, this, "Suffix: {0}", suffix);
                     filePath = filePath.Replace(suffix, "");
                 }
             }
