@@ -143,22 +143,6 @@ namespace PepperDash.Essentials.RoomBridges
             if (Room is IHasCurrentSourceInfoChange sscRoom)
                 sscRoom.CurrentSourceChange += Room_CurrentSingleSourceChange;
 
-            if (Room is IEssentialsHuddleVtc1Room vtcRoom)
-            {
-                if (vtcRoom.ScheduleSource != null)
-                {
-                    var key = vtcRoom.Key + "-" + Key;
-
-                    if (!AppServerController.CheckForDeviceMessenger(key))
-                    {
-                        var scheduleMessenger = new IHasScheduleAwarenessMessenger(key, vtcRoom.ScheduleSource,
-                            $"/room/{vtcRoom.Key}");
-                        AppServerController.AddDeviceMessenger(scheduleMessenger);
-                    }
-                }
-
-                vtcRoom.InCallFeedback.OutputChange += InCallFeedback_OutputChange;
-            }
 
             if (Room is IPrivacy privacyRoom)
             {
@@ -557,11 +541,6 @@ namespace PepperDash.Essentials.RoomBridges
                     IsCoolingDown = room.IsCoolingDownFeedback.BoolValue
                 };
 
-                if (room is IEssentialsHuddleVtc1Room vtcRoom)
-                {
-                    state.IsInCall = vtcRoom.InCallFeedback.BoolValue;
-                }
-
                 return state;
             }
             catch (Exception ex)
@@ -617,23 +596,6 @@ namespace PepperDash.Essentials.RoomBridges
                 if (room is IEssentialsRoomPropertiesConfig propertiesConfig)
                 {
                     configuration.HelpMessage = propertiesConfig.PropertiesConfig.HelpMessageForDisplay;
-                }
-
-                if (room is IEssentialsHuddleSpaceRoom huddleRoom && !string.IsNullOrEmpty(huddleRoom.PropertiesConfig.HelpMessageForDisplay))
-                {
-                    this.LogVerbose("Getting huddle room config");
-                    configuration.HelpMessage = huddleRoom.PropertiesConfig.HelpMessageForDisplay;
-                    configuration.UiBehavior = huddleRoom.PropertiesConfig.UiBehavior;
-                    configuration.DefaultPresentationSourceKey = huddleRoom.PropertiesConfig.DefaultSourceItem;
-
-                }
-
-                if (room is IEssentialsHuddleVtc1Room vtc1Room && !string.IsNullOrEmpty(vtc1Room.PropertiesConfig.HelpMessageForDisplay))
-                {
-                    this.LogVerbose("Getting vtc room config");
-                    configuration.HelpMessage = vtc1Room.PropertiesConfig.HelpMessageForDisplay;
-                    configuration.UiBehavior = vtc1Room.PropertiesConfig.UiBehavior;
-                    configuration.DefaultPresentationSourceKey = vtc1Room.PropertiesConfig.DefaultSourceItem;
                 }
 
                 if (room is IEssentialsTechRoom techRoom && !string.IsNullOrEmpty(techRoom.PropertiesConfig.HelpMessage))

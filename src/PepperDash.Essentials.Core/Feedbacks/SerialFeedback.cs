@@ -13,7 +13,9 @@ namespace PepperDash.Essentials.Core;
 /// </summary>
 public class SerialFeedback : Feedback
 {
-    public override string SerialValue { get { return _SerialValue; } } 
+
+    /// <inheritdoc	/>
+    public override string SerialValue { get { return _SerialValue; } }
     string _SerialValue;
 
     //public override eCueType Type { get { return eCueType.Serial; } }
@@ -25,20 +27,20 @@ public class SerialFeedback : Feedback
 
     List<StringInputSig> LinkedInputSigs = new List<StringInputSig>();
 
-    public SerialFeedback()
-    {
-    }
 
+    /// <inheritdoc	/>
     public SerialFeedback(string key)
         : base(key)
     {
     }
 
+    /// <inheritdoc	/>
     public override void FireUpdate()
     {
         throw new NotImplementedException("This feedback type does not use Funcs");
     }
 
+    /// <inheritdoc	/>
     public void FireUpdate(string newValue)
     {
         _SerialValue = newValue;
@@ -46,17 +48,20 @@ public class SerialFeedback : Feedback
         OnOutputChange(newValue);
     }
 
+    /// <inheritdoc	/>
     public void LinkInputSig(StringInputSig sig)
     {
         LinkedInputSigs.Add(sig);
         UpdateSig(sig);
     }
 
+    /// <inheritdoc	/>
     public void UnlinkInputSig(StringInputSig sig)
     {
         LinkedInputSigs.Remove(sig);
     }
 
+    /// <inheritdoc	/>
     public override string ToString()
     {
         return (InTestMode ? "TEST -- " : "") + SerialValue;

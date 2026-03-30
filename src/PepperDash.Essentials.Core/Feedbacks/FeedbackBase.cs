@@ -44,12 +44,6 @@ namespace PepperDash.Essentials.Core
         public bool InTestMode { get; protected set; }
 
         /// <summary>
-        /// Base Constructor - empty
-        /// </summary>
-        [Obsolete("use constructor with Key parameter. This constructor will be removed in a future version")]
-        protected Feedback() : this(null) { }
-
-        /// <summary>
         /// Constructor with Key parameter
         /// </summary>
         /// <param name="key">The key for the feedback</param>
