@@ -1,13 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
- /// <summary>
- /// Represents a GetFeedbacksForDeviceRequestHandler
- /// </summary>
+	/// <summary>
+	/// Represents a GetFeedbacksForDeviceRequestHandler
+	/// </summary>
 	public class GetFeedbacksForDeviceRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -51,8 +52,20 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var device = DeviceManager.GetDeviceForKey(deviceObj.ToString()) as IHasFeedback;
 			if (device == null)
 			{
-				context.Response.StatusCode = 404;
-				context.Response.StatusDescription = "Not Found";
+				context.Response.StatusCode = 200;
+				context.Response.StatusDescription = "OK";
+				context.Response.ContentType = "application/json";
+				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+				var resp = new
+				{
+					BoolValues = Array.Empty<object>(),
+					IntValues = Array.Empty<object>(),
+					SerialValues = Array.Empty<object>()
+				};
+				var respJs = JsonConvert.SerializeObject(resp, Formatting.Indented);
+
+				context.Response.Write(respJs, false);
+
 				context.Response.End();
 
 				return;
@@ -76,7 +89,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 					Value = feedback.IntValue
 				};
 
-			var stringFeedback = 
+			var stringFeedback =
 				from feedback in device.Feedbacks.OfType<StringFeedback>()
 				where !string.IsNullOrEmpty(feedback.Key)
 				select new
