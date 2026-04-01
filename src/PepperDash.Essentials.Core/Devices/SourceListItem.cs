@@ -138,7 +138,9 @@ namespace PepperDash.Essentials.Core
         /// 
         /// </summary>
         [JsonProperty("destinations")]
+        [Obsolete("This property is obsolete and will be removed in future versions.")]
         public List<eSourceListItemDestinationTypes> Destinations { get; set; }
+
         /// <summary>
         /// A means to reference a source list for this source item, in the event that this source has an input that can have sources routed to it
         /// </summary>
@@ -174,6 +176,12 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("syncProviderDeviceKey")]
         public string SyncProviderDeviceKey { get; set; }
+
+        /// <summary>
+        /// The key of the device that provides audio for this source item
+        /// </summary>
+        [JsonProperty("audioDeviceKey")]
+        public string AudioDeviceKey { get; set; }
 
         /// <summary>
         /// Indicates if the source supports USB connections
