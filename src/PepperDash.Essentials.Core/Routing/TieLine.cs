@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Core
 {
@@ -21,24 +21,24 @@ namespace PepperDash.Essentials.Core
         //public int InUseCount { get { return DestinationUsingThis.Count; } }
 
         /// <summary>
-        /// Gets the type of this tie line. Will either be the type of the destination port
-        /// or the type of OverrideType when it is set.
+        /// Gets the type of this tie line. Returns the intersection of signal types supported by both 
+        /// the source and destination ports (what signals can actually travel through this tie line),
+        /// or the OverrideType when it is set.
         /// </summary>
         public eRoutingSignalType Type
         {
             get
             {
                 if (OverrideType.HasValue) return OverrideType.Value;
-                return DestinationPort.Type;
+                return SourcePort.Type & DestinationPort.Type;
             }
         }
 
         /// <summary>
-        /// Use this to override the Type property for the destination port. For example,
-        /// when the tie line is type AudioVideo, and the signal flow should be limited to
-        /// Audio-only or Video only, changing this type will alter the signal paths
-        /// available to the routing algorithm without affecting the actual Type
-        /// of the destination port.
+        /// Use this to override the Type property. For example, when both ports support AudioVideo
+        /// but the physical cable only carries Audio or Video, setting this will limit the signal 
+        /// paths available to the routing algorithm without affecting the actual port types.
+        /// When set, this value is used instead of the calculated intersection of source and destination types.
         /// </summary>
         public eRoutingSignalType? OverrideType { get; set; }
 
@@ -79,7 +79,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="sourcePort">The source output port.</param>
         /// <param name="destinationPort">The destination input port.</param>
-        /// <param name="overrideType">The signal type to limit the link to. Overrides DestinationPort.Type for routing calculations.</param>
+        /// <param name="overrideType">The signal type to limit the link to. Overrides the calculated intersection of port types for routing calculations.</param>
         public TieLine(RoutingOutputPort sourcePort, RoutingInputPort destinationPort, eRoutingSignalType? overrideType) :
             this(sourcePort, destinationPort)
         {
@@ -91,7 +91,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="sourcePort">The source output port.</param>
         /// <param name="destinationPort">The destination input port.</param>
-        /// <param name="overrideType">The signal type to limit the link to. Overrides DestinationPort.Type for routing calculations.</param>
+        /// <param name="overrideType">The signal type to limit the link to. Overrides the calculated intersection of port types for routing calculations.</param>
         public TieLine(RoutingOutputPort sourcePort, RoutingInputPort destinationPort, eRoutingSignalType overrideType) :
             this(sourcePort, destinationPort)
         {
