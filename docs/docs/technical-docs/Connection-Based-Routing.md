@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Routing is defined by a connection graph or a wiring diagram. Routeable devices are sources, midpoints, or destinations. Devices are connected by tie lines. Tie lines represent the cables connecting devices, and have specific signal types (audio, video, audioVideo, secondaryAudio, usbInput, usbOutput). Routes are made by telling a destination to get a route from a source for a specific signal type. Combined signal types (e.g., audioVideo) are automatically split into separate routing operations.
+Routing is defined by a connection graph or a wiring diagram. Routable devices are sources, midpoints, or destinations. Devices are connected by tie lines. Tie lines represent the cables connecting devices, and have specific signal types (audio, video, audioVideo, secondaryAudio, usbInput, usbOutput). Routes are made by telling a destination to get a route from a source for a specific signal type. Combined signal types (e.g., audioVideo) are automatically split into separate routing operations.
 
 ## Summary
 
