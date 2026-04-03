@@ -339,17 +339,21 @@ namespace PepperDash.Essentials.Core
 
             RoutingInputPort goodInputPort = null;
 
+            // Take a snapshot to avoid InvalidOperationException if TieLineCollection.Default is
+            // modified concurrently (e.g. NVX tie line registration during route requests).
+            var tieLines = TieLineCollection.Default.ToList();
+
             IEnumerable<TieLine> destinationTieLines;
             TieLine directTie = null;
 
             if (destinationPort == null)
             {
-                destinationTieLines = TieLineCollection.Default.Where(t =>
+                destinationTieLines = tieLines.Where(t =>
                     t.DestinationPort.ParentDevice.Key == destination.Key && (t.Type.HasFlag(signalType) || signalType == eRoutingSignalType.AudioVideo));
             }
             else
             {
-                destinationTieLines = TieLineCollection.Default.Where(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && (t.Type.HasFlag(signalType)));
+                destinationTieLines = tieLines.Where(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && (t.Type.HasFlag(signalType)));
             }
 
             // find the TieLine without a port
