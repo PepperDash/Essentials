@@ -27,18 +27,19 @@ namespace PepperDash.Core
     public class DebugWebsocketSink : ILogEventSink
     {
         private HttpServer _httpsServer;
-        
+
         private string _path = "/debug/join/";
         private const string _certificateName = "selfCres";
         private const string _certificatePassword = "cres12345";
 
-        public int Port 
-        { get 
-            { 
-                
-                if(_httpsServer == null) return 0;
+        public int Port
+        {
+            get
+            {
+
+                if (_httpsServer == null) return 0;
                 return _httpsServer.Port;
-            } 
+            }
         }
 
         public string Url
@@ -54,7 +55,7 @@ namespace PepperDash.Core
         /// Gets or sets the IsRunning
         /// </summary>
         public bool IsRunning { get => _httpsServer?.IsListening ?? false; }
-        
+
 
         private readonly ITextFormatter _textFormatter;
 
@@ -130,7 +131,7 @@ namespace PepperDash.Core
         /// </summary>
         public void StartServerAndSetPort(int port)
         {
-            Debug.Console(0, "Starting Websocket Server on port: {0}", port);
+            Debug.LogInformation("Starting Websocket Server on port: {port}", port);
 
 
             Start(port, $"\\user\\{_certificateName}.pfx", _certificatePassword);
@@ -145,7 +146,7 @@ namespace PepperDash.Core
 
                 if (!string.IsNullOrWhiteSpace(certPath))
                 {
-                    Debug.Console(0, "Assigning SSL Configuration");
+                    Debug.LogInformation("Assigning SSL Configuration");
                     _httpsServer.SslConfiguration = new ServerSslConfiguration(new X509Certificate2(certPath, certPassword))
                     {
                         ClientCertificateRequired = false,
@@ -154,54 +155,24 @@ namespace PepperDash.Core
                         //this is just to test, you might want to actually validate
                         ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                         {
-                            Debug.Console(0, "HTTPS ClientCerticateValidation Callback triggered");
+                            Debug.LogInformation("HTTPS ClientCerticateValidation Callback triggered");
                             return true;
                         }
                     };
                 }
-                Debug.Console(0, "Adding Debug Client Service");
+                Debug.LogInformation("Adding Debug Client Service");
                 _httpsServer.AddWebSocketService<DebugClient>(_path);
-                Debug.Console(0, "Assigning Log Info");
+                Debug.LogInformation("Assigning Log Info");
                 _httpsServer.Log.Level = LogLevel.Trace;
-                _httpsServer.Log.Output = (d, s) =>
-                {
-                    uint level;
-
-                    switch(d.Level)
-                    {
-                        case WebSocketSharp.LogLevel.Fatal:
-                            level = 3;
-                            break;
-                        case WebSocketSharp.LogLevel.Error:
-                            level = 2;
-                            break;
-                        case WebSocketSharp.LogLevel.Warn:
-                            level = 1;
-                            break;
-                        case WebSocketSharp.LogLevel.Info:
-                            level = 0;
-                            break;
-                        case WebSocketSharp.LogLevel.Debug:
-                            level = 4;
-                            break;
-                        case WebSocketSharp.LogLevel.Trace:
-                            level = 5;
-                            break;
-                        default:
-                            level = 4;
-                            break;
-                    }
-                    
-                    Debug.Console(level, "{1} {0}\rCaller:{2}\rMessage:{3}\rs:{4}", d.Level.ToString(), d.Date.ToString(), d.Caller.ToString(), d.Message, s);
-                };
-                Debug.Console(0, "Starting");
+                _httpsServer.Log.Output = WriteWebSocketInternalLog;
+                Debug.LogInformation("Starting");
 
                 _httpsServer.Start();
-                Debug.Console(0, "Ready");
+                Debug.LogInformation("Ready");
             }
             catch (Exception ex)
             {
-                Debug.Console(0, "WebSocket Failed to start {0}", ex.Message);
+                Debug.LogError(ex, "WebSocket Failed to start: {message}", ex.Message);
             }
         }
 
@@ -210,18 +181,68 @@ namespace PepperDash.Core
         /// </summary>
         public void StopServer()
         {
-            Debug.Console(0, "Stopping Websocket Server");
+            Debug.LogInformation("Stopping Websocket Server");
 
-            _httpsServer.WebSocketServices[_path].Sessions.Broadcast("Server is stopping");
-
-            foreach (var session in _httpsServer.WebSocketServices[_path].Sessions.Sessions)
+            try
             {
-                session.Context.WebSocket.Close(1001, "Server is stopping" );
+                if (_httpsServer == null || !_httpsServer.IsListening)
+                {
+                    return;
+                }
+
+                // Prevent close-sequence internal websocket logs from re-entering the logging pipeline.
+                _httpsServer.Log.Output = (d, s) => { };
+
+                var serviceHost = _httpsServer.WebSocketServices[_path];
+
+                if (serviceHost == null)
+                {
+                    _httpsServer.Stop();
+                    _httpsServer = null;
+                    return;
+                }
+
+                serviceHost.Sessions.Broadcast("Server is stopping");
+
+                foreach (var session in serviceHost.Sessions.Sessions)
+                {
+                    if (session?.Context?.WebSocket != null && session.Context.WebSocket.IsAlive)
+                    {
+                        session.Context.WebSocket.Close(1001, "Server is stopping");
+                    }
+                }
+
+                _httpsServer.Stop();
+
+                _httpsServer = null;
+
             }
+            catch (Exception ex)
+            {
+                Debug.LogError(ex, "WebSocket Failed to stop gracefully {0}", ex.Message);
+                Debug.LogVerbose("Stack Trace\r\n{0}", ex.StackTrace);
+            }
+        }
 
-            _httpsServer?.Stop();
+        private static void WriteWebSocketInternalLog(LogData data, string supplemental)
+        {
+            try
+            {
+                if (data == null)
+                {
+                    return;
+                }
 
-            _httpsServer = null;
+                var message = string.IsNullOrWhiteSpace(data.Message) ? "<none>" : data.Message;
+                var details = string.IsNullOrWhiteSpace(supplemental) ? string.Empty : string.Format(" | details: {0}", supplemental);
+
+                // Use direct console output to avoid recursive log sink calls.
+                CrestronConsole.PrintLine(string.Format("WS[{0}] {1} | message: {2}{3}", data.Level, data.Date, message, details));
+            }
+            catch
+            {
+                // Never throw from websocket log callback.
+            }
         }
     }
 
@@ -262,7 +283,7 @@ namespace PepperDash.Core
 
         public DebugClient()
         {
-            Debug.Console(0, "DebugClient Created");
+            Debug.LogInformation("DebugClient Created");
         }
 
         protected override void OnOpen()
@@ -270,7 +291,7 @@ namespace PepperDash.Core
             base.OnOpen();
 
             var url = Context.WebSocket.Url;
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "New WebSocket Connection from: {0}", url);
+            Debug.LogInformation("New WebSocket Connection from: {url}", url);
 
             _connectionTime = DateTime.Now;
         }
@@ -279,14 +300,14 @@ namespace PepperDash.Core
         {
             base.OnMessage(e);
 
-            Debug.Console(0, "WebSocket UiClient Message: {0}", e.Data);
+            Debug.LogInformation("WebSocket UiClient Message: {data}", e.Data);
         }
 
         protected override void OnClose(CloseEventArgs e)
         {
             base.OnClose(e);
 
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "WebSocket UiClient Closing: {0} reason: {1}", e.Code, e.Reason);
+            Debug.LogInformation("WebSocket UiClient Closing: {code} reason: {reason}", e.Code, e.Reason);
 
         }
 
@@ -294,7 +315,7 @@ namespace PepperDash.Core
         {
             base.OnError(e);
 
-            Debug.Console(2, Debug.ErrorLogLevel.Notice, "WebSocket UiClient Error: {0} message: {1}", e.Exception, e.Message);
+            Debug.LogError(e.Exception, "WebSocket UiClient Error: {message}", e.Message);
         }
     }
 }
