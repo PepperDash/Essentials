@@ -90,7 +90,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// <param name="context"></param>
         protected override void HandlePost(HttpCwsContext context)
         {
-            Debug.WebsocketSink.StopServer();
+
+            Task.Run(() => Debug.WebsocketSink.StopServer());
 
             context.Response.StatusCode = 200;
             context.Response.StatusDescription = "OK";
@@ -98,6 +99,5 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
             Debug.LogMessage(LogEventLevel.Information, "Websocket Debug Session Stopped");
         }
-
     }
 }

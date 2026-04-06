@@ -211,6 +211,14 @@ namespace PepperDash.Core
         public void StopServer()
         {
             Debug.Console(0, "Stopping Websocket Server");
+
+            _httpsServer.WebSocketServices[_path].Sessions.Broadcast("Server is stopping");
+
+            foreach (var session in _httpsServer.WebSocketServices[_path].Sessions.Sessions)
+            {
+                session.Context.WebSocket.Close(1001, "Server is stopping" );
+            }
+
             _httpsServer?.Stop();
 
             _httpsServer = null;

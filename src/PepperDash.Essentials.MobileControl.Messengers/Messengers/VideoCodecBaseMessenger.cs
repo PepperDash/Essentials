@@ -922,8 +922,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             if (presetsCodec != null && Codec is IHasFarEndCameraControl &&
                 (Codec as IHasFarEndCameraControl).ControllingFarEndCameraFeedback.BoolValue)
+            {
                 currentPresets = presetsCodec.FarEndRoomPresets;
-            else if (presetsCodec != null) currentPresets = presetsCodec.NearEndPresets;
+            }
+            else if (presetsCodec != null)
+            {
+                currentPresets = presetsCodec.NearEndPresets;
+            }
+
+            if (currentPresets == null)
+            {
+                return new List<CodecRoomPreset>();
+            }
 
             return currentPresets;
         }
