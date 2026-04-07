@@ -15,6 +15,7 @@ using System.Threading;
 using Timeout = Crestron.SimplSharp.Timeout;
 using Serilog.Events;
 using System.Threading.Tasks;
+using PepperDash.Essentials.Core.Web;
 
 namespace PepperDash.Essentials;
 
@@ -56,7 +57,15 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
         }
         catch (Exception e)
         {
-            Debug.LogError(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
+            try
+            {
+                Debug.LogError(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
+            }
+            catch
+            {
+                // Debug may not be initialized (e.g. its own static ctor failed); fall back to console.
+                CrestronConsole.PrintLine($"FATAL INITIALIZE ERROR. System is in an inconsistent state\r\n{e.Message}\r\n{e.StackTrace}");
+            }
         }
     }
 
@@ -152,6 +161,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
         CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
             "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
 
+        DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
 
         if (!Debug.DoNotLoadConfigOnNextBoot)
         {
@@ -260,10 +270,10 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
                 PluginLoader.LoadPlugins();
 
                 Debug.LogMessage(LogEventLevel.Information, "Folder structure verified. Loading config...");
-                if (!ConfigReader.LoadConfig2())
+                if (!ConfigReader.LoadConfig2() || ConfigReader.ConfigObject == null)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Essentials Load complete with errors");
-                    return;
+                    Debug.LogMessage(LogEventLevel.Warning, "Unable to load config file. Please ensure a valid config file is present and restart the program.");
+                    // return;
                 }
 
                 Load();
@@ -385,43 +395,49 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
                 new Core.Monitoring.SystemMonitorController("systemMonitor"));
         }
 
-        foreach (var devConf in ConfigReader.ConfigObject.Devices)
+        if (ConfigReader.ConfigObject is not null)
         {
-            IKeyed newDev = null;
+            Debug.LogMessage(LogEventLevel.Warning, "LoadDevices: ConfigObject is null. Cannot load devices.");
 
-            try
+            foreach (var devConf in ConfigReader.ConfigObject.Devices)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Creating device '{deviceKey:l}', type '{deviceType:l}'", devConf.Key, devConf.Type);
-                // Skip this to prevent unnecessary warnings
-                if (devConf.Key == "processor")
+                IKeyed newDev = null;
+
+                try
                 {
-                    var prompt = Global.ControlSystem.ControllerPrompt;
+                    Debug.LogMessage(LogEventLevel.Information, "Creating device '{deviceKey:l}', type '{deviceType:l}'", devConf.Key, devConf.Type);
+                    // Skip this to prevent unnecessary warnings
+                    if (devConf.Key == "processor")
+                    {
+                        var prompt = Global.ControlSystem.ControllerPrompt;
 
-                    var typeMatch = string.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
-                                    string.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
+                        var typeMatch = string.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
+                                        string.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
 
-                    if (!typeMatch)
-                        Debug.LogMessage(LogEventLevel.Information,
-                            "WARNING: Config file defines processor type as '{deviceType:l}' but actual processor is '{processorType:l}'!  Some ports may not be available",
-                            devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
+                        if (!typeMatch)
+                            Debug.LogMessage(LogEventLevel.Information,
+                                "WARNING: Config file defines processor type as '{deviceType:l}' but actual processor is '{processorType:l}'!  Some ports may not be available",
+                                devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
 
 
-                    continue;
+                        continue;
+                    }
+
+
+                    if (newDev == null)
+                        newDev = Core.DeviceFactory.GetDevice(devConf);
+
+                    if (newDev != null)
+                        DeviceManager.AddDevice(newDev);
+                    else
+                        Debug.LogMessage(LogEventLevel.Information, "ERROR: Cannot load unknown device type '{deviceType:l}', key '{deviceKey:l}'.", devConf.Type, devConf.Key);
                 }
-
-
-                if (newDev == null)
-                    newDev = Core.DeviceFactory.GetDevice(devConf);
-
-                if (newDev != null)
-                    DeviceManager.AddDevice(newDev);
-                else
-                    Debug.LogMessage(LogEventLevel.Information, "ERROR: Cannot load unknown device type '{deviceType:l}', key '{deviceKey:l}'.", devConf.Type, devConf.Key);
+                catch (Exception e)
+                {
+                    Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.", args: new[] { devConf.Key });
+                }
             }
-            catch (Exception e)
-            {
-                Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.", args: new[] { devConf.Key });
-            }
+
         }
         Debug.LogMessage(LogEventLevel.Information, "All Devices Loaded.");
 
@@ -438,7 +454,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
 
         var tlc = TieLineCollection.Default;
 
-        if (ConfigReader.ConfigObject.TieLines == null)
+        if (ConfigReader.ConfigObject?.TieLines == null)
         {
             return;
         }
@@ -459,7 +475,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
     /// </summary>
     public void LoadRooms()
     {
-        if (ConfigReader.ConfigObject.Rooms == null)
+        if (ConfigReader.ConfigObject?.Rooms == null)
         {
             Debug.LogMessage(LogEventLevel.Information, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
             return;

@@ -1,14 +1,9 @@
-﻿extern alias NewtonsoftJson;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
-using Formatting = NewtonsoftJson::Newtonsoft.Json.Formatting;
-using JsonConvert = NewtonsoftJson::Newtonsoft.Json.JsonConvert;
-using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Core.Logging;
 
@@ -76,10 +71,13 @@ public class WebApiServer : IKeyName
 		Name = string.IsNullOrEmpty(name) ? DefaultName : name;
 		BasePath = string.IsNullOrEmpty(basePath) ? DefaultBasePath : basePath;
 
+		this.LogInformation("Creating Web API Server with Key: {Key}, Name: {Name}, BasePath: {BasePath}", Key, Name, BasePath);
+
 		if (_server == null) _server = new HttpCwsServer(BasePath);
 
 		_server.setProcessName(Key);
 		_server.HttpRequestHandler = new DefaultRequestHandler();
+		_server.ReceivedRequestEvent += ReceivedRequestEventHandler;
 
 		CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
 		CrestronEnvironment.EthernetEventHandler += CrestronEnvironment_EthernetEventHandler;
@@ -104,8 +102,12 @@ public class WebApiServer : IKeyName
 	/// <param name="ethernetEventArgs"></param>
 	void CrestronEnvironment_EthernetEventHandler(EthernetEventArgs ethernetEventArgs)
 	{
-		// Re-enable the server if the link comes back up and the status should be connected
-		if (ethernetEventArgs.EthernetEventType == eEthernetEventType.LinkUp && IsRegistered)
+		if (ethernetEventArgs.EthernetEventType != eEthernetEventType.LinkUp)
+		{
+			return;
+		}
+
+		if (IsRegistered)
 		{
 			this.LogInformation("Ethernet link up. Server is already registered.");
 			return;
@@ -116,14 +118,14 @@ public class WebApiServer : IKeyName
 		Start();
 	}
 
-	/// <summary>
-	/// Initialize method
-	/// </summary>
-	public void Initialize(string key, string basePath)
-	{
-		Key = key;
-		BasePath = string.IsNullOrEmpty(basePath) ? DefaultBasePath : basePath;
-	}
+	// /// <summary>
+	// /// Initialize method
+	// /// </summary>
+	// public void Initialize(string key, string basePath)
+	// {
+	// 	Key = key;
+	// 	BasePath = string.IsNullOrEmpty(basePath) ? DefaultBasePath : basePath;
+	// }
 
 	/// <summary>
 	/// Adds a route to CWS
@@ -214,12 +216,10 @@ public class WebApiServer : IKeyName
 					return;
 				}
 
-				IsRegistered = _server.Unregister() == false;
+				var unregistered = _server.Unregister();
+				IsRegistered = !unregistered;
 
-				this.LogDebug("Stopping server, unregistration {0}", IsRegistered ? "failed" : "was successful");
-
-				_server.Dispose();
-				_server = null;
+				this.LogDebug("Stopping server, unregistration {0}", unregistered ? "was successful" : "failed");
 			}
 			catch (Exception ex)
 			{
@@ -240,13 +240,12 @@ public class WebApiServer : IKeyName
 	{
 		try
 		{
-			var j = JsonConvert.SerializeObject(args.Context, Formatting.Indented);
-			this.LogVerbose("RecieveRequestEventHandler Context:\x0d\x0a{0}", j);
+			var req = args.Context?.Request;
+			this.LogVerbose("ReceivedRequestEventHandler: {Method} {Path}", req?.HttpMethod, req?.Path);
 		}
 		catch (Exception ex)
 		{
 			this.LogException(ex, "ReceivedRequestEventHandler Exception Message: {0}", ex.Message);
-			this.LogVerbose("ReceivedRequestEventHandler Exception StackTrace: {0}", ex.StackTrace);
 		}
 	}
 }

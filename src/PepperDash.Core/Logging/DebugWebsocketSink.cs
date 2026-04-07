@@ -1,8 +1,10 @@
 ﻿extern alias NewtonsoftJson;
 
 using System;
-﻿using Crestron.SimplSharp;
-using Org.BouncyCastle.Asn1.X509;
+using System.Security.Authentication;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using Crestron.SimplSharp;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
@@ -11,10 +13,8 @@ using Serilog.Formatting;
 using JObject = NewtonsoftJson::Newtonsoft.Json.Linq.JObject;
 using Serilog.Formatting.Json;
 using System.IO;
-using System.Security.Authentication;
 using WebSocketSharp;
 using WebSocketSharp.Server;
-using X509Certificate2 = System.Security.Cryptography.X509Certificates.X509Certificate2;
 using WebSocketSharp.Net;
 
 namespace PepperDash.Core;
@@ -29,21 +29,24 @@ namespace PepperDash.Core;
 public class DebugWebsocketSink : ILogEventSink, IKeyed
 {
     private HttpServer _httpsServer;
-    
+
     private readonly string _path = "/debug/join/";
     private const string _certificateName = "selfCres";
     private const string _certificatePassword = "cres12345";
+    private static string CertPath =>
+        $"{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}{_certificateName}.pfx";
 
     /// <summary>
     /// Gets the port number on which the HTTPS server is currently running.
     /// </summary>
-    public int Port 
-    { get 
-        { 
-            
-            if(_httpsServer == null) return 0;
+    public int Port
+    {
+        get
+        {
+
+            if (_httpsServer == null) return 0;
             return _httpsServer.Port;
-        } 
+        }
     }
 
     /// <summary>
@@ -55,15 +58,17 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
     {
         get
         {
-            if (_httpsServer == null) return "";
-            return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{_httpsServer.Port}{_httpsServer.WebSocketServices[_path].Path}";
+            if (_httpsServer == null || !_httpsServer.IsListening) return "";
+            var service = _httpsServer.WebSocketServices[_path];
+            if (service == null) return "";
+            return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{_httpsServer.Port}{service.Path}";
         }
     }
 
     /// <summary>
     /// Gets a value indicating whether the HTTPS server is currently listening for incoming connections.
     /// </summary>
-    public bool IsRunning { get => _httpsServer?.IsListening ?? false; }        
+    public bool IsRunning { get => _httpsServer?.IsListening ?? false; }
 
     /// <inheritdoc/>
     public string Key => "DebugWebsocketSink";
@@ -83,7 +88,7 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
 
         _textFormatter = formatProvider ?? new JsonFormatter();
 
-        if (!File.Exists($"\\user\\{_certificateName}.pfx"))
+        if (!File.Exists(CertPath))
             CreateCert();
 
         CrestronEnvironment.ProgramStatusEventHandler += type =>
@@ -97,29 +102,65 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
 
     private static void CreateCert()
     {
+        // NOTE: This method is called from the constructor, which is itself called during Debug's static
+        // constructor before _logger is assigned. Do NOT call any Debug.Log* methods here — use
+        // CrestronConsole.PrintLine only, to avoid a NullReferenceException that would poison the Debug type.
         try
-        {               
-            var utility = new BouncyCertificate();
-            
+        {
             var ipAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
             var hostName = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
             var domainName = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, 0);
 
-            Debug.LogInformation("DomainName: {0} | HostName: {1} | {1}.{0}@{2}", domainName, hostName, ipAddress);
+            CrestronConsole.PrintLine(string.Format("CreateCert: DomainName: {0} | HostName: {1} | {1}.{0}@{2}", domainName, hostName, ipAddress));
 
-            var certificate = utility.CreateSelfSignedCertificate(string.Format("CN={0}.{1}", hostName, domainName), [string.Format("{0}.{1}", hostName, domainName), ipAddress], [KeyPurposeID.id_kp_serverAuth, KeyPurposeID.id_kp_clientAuth]);
+            var subjectName = string.Format("CN={0}.{1}", hostName, domainName);
+            var fqdn = string.Format("{0}.{1}", hostName, domainName);
 
-            //Crestron fails to let us do this...perhaps it should be done through their Dll's but haven't tested               
+            using var rsa = RSA.Create(2048);
+
+            var request = new CertificateRequest(
+                subjectName,
+                rsa,
+                HashAlgorithmName.SHA256,
+                RSASignaturePadding.Pkcs1);
+
+            // Subject Key Identifier
+            request.CertificateExtensions.Add(
+                new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+            // Extended Key Usage: server + client auth
+            request.CertificateExtensions.Add(
+                new X509EnhancedKeyUsageExtension(
+                    new OidCollection
+                    {
+                        new Oid("1.3.6.1.5.5.7.3.1"), // id-kp-serverAuth
+                        new Oid("1.3.6.1.5.5.7.3.2")  // id-kp-clientAuth
+                    },
+                    false));
+
+            // Subject Alternative Names: DNS + IP
+            var sanBuilder = new SubjectAlternativeNameBuilder();
+            sanBuilder.AddDnsName(fqdn);
+            if (System.Net.IPAddress.TryParse(ipAddress, out var ip))
+                sanBuilder.AddIpAddress(ip);
+            request.CertificateExtensions.Add(sanBuilder.Build());
+
+            var notBefore = DateTimeOffset.UtcNow;
+            var notAfter = notBefore.AddYears(2);
+
+            using var cert = request.CreateSelfSigned(notBefore, notAfter);
 
             var separator = Path.DirectorySeparatorChar;
-                            
-            utility.CertificatePassword = _certificatePassword;
-            utility.WriteCertificate(certificate, @$"{separator}user{separator}", _certificateName);               
+            var outputPath = string.Format("{0}user{1}{2}.pfx", separator, separator, _certificateName);
+
+            var pfxBytes = cert.Export(X509ContentType.Pfx, _certificatePassword);
+            File.WriteAllBytes(outputPath, pfxBytes);
+
+            CrestronConsole.PrintLine(string.Format("CreateCert: Certificate written to {0}", outputPath));
         }
         catch (Exception ex)
         {
-            Debug.LogError(ex, "WSS CreateCert Failed: {0}", ex.Message);
-            Debug.LogVerbose("Stack Trace:\r{0}", ex.StackTrace);
+            CrestronConsole.PrintLine(string.Format("WSS CreateCert Failed: {0}\r\n{1}", ex.Message, ex.StackTrace));
         }
     }
 
@@ -137,7 +178,7 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
         var sw = new StringWriter();
         _textFormatter.Format(logEvent, sw);
 
-        _httpsServer.WebSocketServices[_path].Sessions.Broadcast(sw.ToString());           
+        _httpsServer.WebSocketServices[_path].Sessions.Broadcast(sw.ToString());
     }
 
     /// <summary>
@@ -152,20 +193,39 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
         Debug.LogInformation("Starting Websocket Server on port: {0}", port);
 
 
-        Start(port, $"\\user\\{_certificateName}.pfx", _certificatePassword);
+        Start(port, CertPath, _certificatePassword);
+    }
+
+    private static X509Certificate2 LoadOrRecreateCert(string certPath, string certPassword)
+    {
+        try
+        {
+            // EphemeralKeySet is required on Linux/OpenSSL (Crestron 4-series) to avoid
+            // key-container persistence failures, and avoids the private key export restriction.
+            return new X509Certificate2(certPath, certPassword, X509KeyStorageFlags.EphemeralKeySet);
+        }
+        catch (Exception ex)
+        {
+            // Cert is stale or was generated by an incompatible library (e.g. old BouncyCastle output).
+            // Delete it, regenerate with the BCL path, and retry once.
+            CrestronConsole.PrintLine(string.Format("SSL cert load failed ({0}); regenerating...", ex.Message));
+            try { File.Delete(certPath); } catch { }
+            CreateCert();
+            return new X509Certificate2(certPath, certPassword, X509KeyStorageFlags.EphemeralKeySet);
+        }
     }
 
     private void Start(int port, string certPath = "", string certPassword = "")
     {
         try
         {
-            _httpsServer = new HttpServer(port, true);                
+            _httpsServer = new HttpServer(port, true);
 
             if (!string.IsNullOrWhiteSpace(certPath))
             {
                 Debug.LogInformation("Assigning SSL Configuration");
 
-                _httpsServer.SslConfiguration.ServerCertificate = new X509Certificate2(certPath, certPassword);
+                _httpsServer.SslConfiguration.ServerCertificate = LoadOrRecreateCert(certPath, certPassword);
                 _httpsServer.SslConfiguration.ClientCertificateRequired = false;
                 _httpsServer.SslConfiguration.CheckCertificateRevocation = false;
                 _httpsServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
@@ -180,36 +240,7 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
             _httpsServer.AddWebSocketService<DebugClient>(_path);
             Debug.LogInformation("Assigning Log Info");
             _httpsServer.Log.Level = LogLevel.Trace;
-            _httpsServer.Log.Output = (d, s) =>
-            {
-                uint level;
-
-                switch(d.Level)
-                {
-                    case WebSocketSharp.LogLevel.Fatal:
-                        level = 3;
-                        break;
-                    case WebSocketSharp.LogLevel.Error:
-                        level = 2;
-                        break;
-                    case WebSocketSharp.LogLevel.Warn:
-                        level = 1;
-                        break;
-                    case WebSocketSharp.LogLevel.Info:
-                        level = 0;
-                        break;
-                    case WebSocketSharp.LogLevel.Debug:
-                        level = 4;
-                        break;
-                    case WebSocketSharp.LogLevel.Trace:
-                        level = 5;
-                        break;
-                    default:
-                        level = 4;
-                        break;
-                }
-                Debug.LogInformation("{1} {0}\rCaller:{2}\rMessage:{3}\rs:{4}", d.Level.ToString(), d.Date.ToString(), d.Caller.ToString(), d.Message, s);
-            };
+            _httpsServer.Log.Output = WriteWebSocketInternalLog;
             Debug.LogInformation("Starting");
 
             _httpsServer.Start();
@@ -219,6 +250,8 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
         {
             Debug.LogError(ex, "WebSocket Failed to start {0}", ex.Message);
             Debug.LogVerbose("Stack Trace:\r{0}", ex.StackTrace);
+            // Null out the server so callers can detect failure via IsRunning / Url null guards.
+            _httpsServer = null;
         }
     }
 
@@ -230,10 +263,69 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
     public void StopServer()
     {
         Debug.LogInformation("Stopping Websocket Server");
-        _httpsServer?.Stop();
 
-        _httpsServer = null;
+        try
+        {
+            if (_httpsServer == null || !_httpsServer.IsListening)
+            {
+                return;
+            }
+
+            // Prevent close-sequence internal websocket logs from re-entering the logging pipeline.
+            _httpsServer.Log.Output = (d, s) => { };
+
+            var serviceHost = _httpsServer.WebSocketServices[_path];
+
+            if (serviceHost == null)
+            {
+                _httpsServer.Stop();
+                _httpsServer = null;
+                return;
+            }
+
+            serviceHost.Sessions.Broadcast("Server is stopping");
+
+            foreach (var session in serviceHost.Sessions.Sessions)
+            {
+                if (session?.Context?.WebSocket != null && session.Context.WebSocket.IsAlive)
+                {
+                    session.Context.WebSocket.Close(1001, "Server is stopping");
+                }
+            }
+
+            _httpsServer.Stop();
+
+            _httpsServer = null;
+
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(ex, "WebSocket Failed to stop gracefully {0}", ex.Message);
+            Debug.LogVerbose("Stack Trace\r\n{0}", ex.StackTrace);
+        }
     }
+
+    private static void WriteWebSocketInternalLog(LogData data, string supplemental)
+    {
+        try
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            var message = string.IsNullOrWhiteSpace(data.Message) ? "<none>" : data.Message;
+            var details = string.IsNullOrWhiteSpace(supplemental) ? string.Empty : string.Format(" | details: {0}", supplemental);
+
+            // Use direct console output to avoid recursive log sink calls.
+            CrestronConsole.PrintLine(string.Format("WS[{0}] {1} | message: {2}{3}", data.Level, data.Date, message, details));
+        }
+        catch
+        {
+            // Never throw from websocket log callback.
+        }
+    }
+
 }
 
 /// <summary>
@@ -295,7 +387,7 @@ public class DebugClient : WebSocketBehavior
     {
         Debug.LogInformation("DebugClient Created");
     }
-    
+
     /// <inheritdoc/>
     protected override void OnOpen()
     {

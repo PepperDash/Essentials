@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core;
@@ -25,10 +26,6 @@ public class EssentialsWebApi : EssentialsDevice
     private readonly string _defaultBasePath = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance
         ? string.Format("/app{0:00}/api", InitialParametersClass.ApplicationNumber)
         : "/api";
-
-    private const int DebugTrace = 0;
-    private const int DebugInfo = 1;
-    private const int DebugVerbose = 2;
 
     /// <summary>
     /// Gets or sets the BasePath
@@ -230,7 +227,7 @@ public class EssentialsWebApi : EssentialsDevice
 
             _server.Start();
 
-            GetPaths();
+            PrintPaths();
 
             return;
         }
@@ -240,11 +237,11 @@ public class EssentialsWebApi : EssentialsDevice
 
         _server.Start();
 
-        GetPaths();
+        PrintPaths();
     }
 
     /// <summary>
-    /// Print the available pahts
+    /// Print the available paths
     /// </summary>
     /// <example>
     /// http(s)://{ipaddress}/cws/{basePath}
@@ -253,7 +250,7 @@ public class EssentialsWebApi : EssentialsDevice
     /// <summary>
     /// GetPaths method
     /// </summary>
-    public void GetPaths()
+    public void PrintPaths()
     {
         Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));
 
@@ -267,7 +264,7 @@ public class EssentialsWebApi : EssentialsDevice
             ? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws{BasePath}"
             : $"https://{currentIp}/cws{BasePath}";
 
-        Debug.LogMessage(LogEventLevel.Information, this, "Server:{path:l}", path);
+        Debug.LogMessage(LogEventLevel.Information, this, "Server: {path:l}", path);
 
         var routeCollection = _server.GetRouteCollection();
         if (routeCollection == null)

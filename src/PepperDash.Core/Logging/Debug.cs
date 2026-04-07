@@ -114,7 +114,7 @@ public static class Debug
     /// </summary>
     public static string PepperDashCoreVersion { get; private set; }
 
-    private static Timer _saveTimer;
+    // private static Timer _saveTimer;
 
 
     private const int defaultConsoleDebugTimeoutMin = 120;
@@ -235,7 +235,7 @@ public static class Debug
                     "appdebugfilter [params]", ConsoleAccessLevelEnum.AccessOperator);
             }
 
-            CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
+            // CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
 
             DoNotLoadConfigOnNextBoot = GetDoNotLoadOnNextBoot();
 
@@ -249,7 +249,8 @@ public static class Debug
         }
         catch (Exception ex)
         {
-            LogError(ex, "Exception in Debug static constructor: {message}", ex.Message);
+            // _logger may not have been initialized yet — do not call LogError here.
+            CrestronConsole.PrintLine($"Exception in Debug static constructor: {ex.Message}\r\n{ex.StackTrace}");
         }
     }
 
@@ -337,26 +338,26 @@ public static class Debug
         }
     }
 
-    /// <summary>
-    /// Used to save memory when shutting down
-    /// </summary>
-    /// <param name="programEventType"></param>
-    static void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
-    {
+    // /// <summary>
+    // /// Used to save memory when shutting down
+    // /// </summary>
+    // /// <param name="programEventType"></param>
+    // static void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+    // {
 
-        if (programEventType == eProgramStatusEventType.Stopping)
-        {
-            Log.CloseAndFlush();
+    //     if (programEventType == eProgramStatusEventType.Stopping)
+    //     {
+    //         Log.CloseAndFlush();
 
-            if (_saveTimer != null)
-            {
-                _saveTimer.Stop();
-                _saveTimer = null;
-            }
-            LogMessage(LogEventLevel.Information, "Saving debug settings");
-            SaveMemory();
-        }
-    }
+    //         if (_saveTimer != null)
+    //         {
+    //             _saveTimer.Stop();
+    //             _saveTimer = null;
+    //         }
+    //         LogMessage(LogEventLevel.Information, "Saving debug settings");
+    //         // SaveMemory();
+    //     }
+    // }
 
     /// <summary>
     /// Callback for console command
@@ -632,7 +633,7 @@ public static class Debug
     public static void SetDeviceDebugSettings(string deviceKey, object settings)
     {
         _contexts.SetDebugSettingsForKey(deviceKey, settings);
-        SaveMemoryOnTimeout();
+        // SaveMemoryOnTimeout();
     }
 
     /// <summary>
@@ -1005,83 +1006,82 @@ public static class Debug
     }
 
 
-    /// <summary>
-    /// Writes the memory object after timeout
-    /// </summary>
-    static void SaveMemoryOnTimeout()
-    {
-        LogInformation("Saving debug settings");
-        if (_saveTimer == null)
-        {
-            _saveTimer = new Timer(SaveTimeoutMs) { AutoReset = false };
-            _saveTimer.Elapsed += (s, e) =>
-            {
-                _saveTimer = null;
-                SaveMemory();
-            };
-            _saveTimer.Start();
-        }
-        else
-        {
-            _saveTimer.Stop();
-            _saveTimer.Interval = SaveTimeoutMs;
-            _saveTimer.Start();
-        }
-    }
+    // /// <summary>
+    // /// Writes the memory object after timeout
+    // /// </summary>
+    // static void SaveMemoryOnTimeout()
+    // {
+    //     LogInformation("Saving debug settings");
+    //     if (_saveTimer == null)
+    //     {
+    //         _saveTimer = new Timer(SaveTimeoutMs) { AutoReset = false };
+    //         _saveTimer.Elapsed += (s, e) =>
+    //         {
+    //             _saveTimer = null;
+    //             SaveMemory();
+    //         };
+    //         _saveTimer.Start();
+    //     }
+    //     else
+    //     {
+    //         _saveTimer.Stop();
+    //         _saveTimer.Interval = SaveTimeoutMs;
+    //         _saveTimer.Start();
+    //     }
+    // }
 
-    /// <summary>
-    /// Writes the memory - use SaveMemoryOnTimeout
-    /// </summary>
-    static void SaveMemory()
-    {
-        //var dir = @"\NVRAM\debug";
-        //if (!Directory.Exists(dir))
-        //    Directory.Create(dir);
+    // /// <summary>
+    // /// Writes the memory - use SaveMemoryOnTimeout
+    // /// </summary>
+    // static void SaveMemory()
+    // {
+    //     //var dir = @"\NVRAM\debug";
+    //     //if (!Directory.Exists(dir))
+    //     //    Directory.Create(dir);
 
-        try
-        {
-            var fileName = GetMemoryFileName();
+    //     try
+    //     {
+    //         var fileName = GetMemoryFileName();
 
-            LogInformation("Loading debug settings file from {fileName}", fileName);
+    //         LogInformation("Loading debug settings file from {fileName}", fileName);
 
-            using (var sw = new StreamWriter(fileName))
-            {
-                var json = JsonConvert.SerializeObject(_contexts);
-                sw.Write(json);
-                sw.Flush();
-            }
-        }
-        catch (Exception ex)
-        {
-            ErrorLog.Error("Exception saving debug settings: {message}", ex);
-            CrestronConsole.PrintLine("Exception saving debug settings: {message}", ex.Message);
-            return;
-        }
-    }
+    //         using (var sw = new StreamWriter(fileName))
+    //         {
+    //             var json = JsonConvert.SerializeObject(_contexts);
+    //             sw.Write(json);
+    //             sw.Flush();
+    //         }
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         LogError("Exception saving debug settings: {message}", ex);
+    //         return;
+    //     }
+    // }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    static void LoadMemory()
-    {
-        var file = GetMemoryFileName();
-        if (File.Exists(file))
-        {
-            using (var sr = new StreamReader(file))
-            {
-                var json = sr.ReadToEnd();
-                _contexts = JsonConvert.DeserializeObject<DebugContextCollection>(json);
+    // /// <summary>
+    // /// 
+    // /// </summary>
+    // static void LoadMemory()
+    // {
+    //     var file = GetMemoryFileName();
+    //     if (File.Exists(file))
+    //     {
+    //         using (var sr = new StreamReader(file))
+    //         {
+    //             var json = sr.ReadToEnd();
+    //             _contexts = JsonConvert.DeserializeObject<DebugContextCollection>(json);
 
-                if (_contexts != null)
-                {
-                    LogMessage(LogEventLevel.Debug, "Debug memory restored from file");
-                    return;
-                }
-            }
-        }
+    //             if (_contexts != null)
+    //             {
+    //                 LogMessage(LogEventLevel.Debug, "Debug memory restored from file");
+    //                 return;
+    //             }
+    //         }
+    //     }
 
-        _contexts = new DebugContextCollection();
-    }
+    //     _contexts = new DebugContextCollection();
+    // }
 
     /// <summary>
     /// Helper to get the file path for this app's debug memory

@@ -6,18 +6,23 @@ using PepperDash.Core.Web.RequestHandlers;
 using Serilog.Events;
 using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers;
 
+/// <summary>
+/// Represents a DebugSessionRequestHandler
+/// </summary>
 public class DebugSessionRequestHandler : WebApiBaseRequestHandler
-{    
-    private readonly DebugWebsocketSink _sink = new DebugWebsocketSink();
+{
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
     public DebugSessionRequestHandler()
         : base(true)
     {
     }
-
     /// <summary>
     /// Gets details for a debug session
     /// </summary>
@@ -41,21 +46,30 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
 
             var port = 0;
 
-            if (!_sink.IsRunning)
+            if (!Debug.WebsocketSink.IsRunning)
             {
                 Debug.LogMessage(LogEventLevel.Information, "Starting WS Server");
                 // Generate a random port within a specified range
                 port = new Random().Next(65435, 65535);
                 // Start the WS Server
-                _sink.StartServerAndSetPort(port);
+                Debug.WebsocketSink.StartServerAndSetPort(port);
                 Debug.SetWebSocketMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
             }
 
-            var url = _sink.Url;
+            if (!Debug.WebsocketSink.IsRunning)
+            {
+                context.Response.StatusCode = 500;
+                context.Response.StatusDescription = "Internal Server Error";
+                context.Response.Write(JsonConvert.SerializeObject(new { error = "Failed to start WebSocket debug server. Check logs for details." }), false);
+                context.Response.End();
+                return;
+            }
+
+            var url = Debug.WebsocketSink.Url;
 
             object data = new
             {
-                url = _sink.Url
+                url = Debug.WebsocketSink.Url
             };
 
             Debug.LogMessage(LogEventLevel.Information, "Debug Session URL: {0}", url);
@@ -82,7 +96,8 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
     /// <param name="context"></param>
     protected override void HandlePost(HttpCwsContext context)
     {
-        _sink.StopServer();
+
+        Task.Run(() => Debug.WebsocketSink.StopServer());
 
         context.Response.StatusCode = 200;
         context.Response.StatusDescription = "OK";

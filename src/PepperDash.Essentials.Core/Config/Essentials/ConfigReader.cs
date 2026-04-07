@@ -123,68 +123,48 @@ namespace PepperDash.Essentials.Core.Config;
             {
                 Debug.LogMessage(LogEventLevel.Information, "Loading config file: '{0}'", filePath);
 
+                var fileContents = fs.ReadToEnd();
+
                 if (localConfigFound)
                 {
-                    ConfigObject = JObject.Parse(fs.ReadToEnd()).ToObject<EssentialsConfig>();
-
-                    if (localConfigFound)
-                    {
-                        ConfigObject = JObject.Parse(fs.ReadToEnd()).ToObject<EssentialsConfig>();
-
-                        Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded Local Config");
-
-                        return true;
-                    }                   
-                    else
-                    {
-                        var parsedConfig = JObject.Parse(fs.ReadToEnd());
-
-                        // Check if it's a v2 config (check for "version" node)
-                        // this means it's already merged by the Portal API
-                        // from the v2 config tool
-                        var isV2Config = parsedConfig["versions"] != null;
-                        
-                        if (isV2Config)
-                        {
-                            Debug.LogMessage(LogEventLevel.Information, "Config file is a v2 format, no merge necessary.");
-                            ConfigObject = parsedConfig.ToObject<EssentialsConfig>();
-                            Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded v2 Config");
-                            return true;
-                        }
-
-                        // Extract SystemUrl and TemplateUrl into final config output
-                        ConfigObject = PortalConfigReader.MergeConfigs(parsedConfig).ToObject<EssentialsConfig>();
-
-                        if (parsedConfig["system_url"] != null)
-                        {
-                            ConfigObject.SystemUrl = parsedConfig["system_url"].Value<string>();
-                        }
-
-                        if (parsedConfig["template_url"] != null)
-                        {
-                            ConfigObject.TemplateUrl = parsedConfig["template_url"].Value<string>();
-                        }
-                    }
-
-                    Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded Merged Config");
-
-                    return true;
+                    ConfigObject = JObject.Parse(fileContents).ToObject<EssentialsConfig>();
+                    Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded Local Config");
+                    return ConfigObject != null;
                 }
                 else
                 {
-                    var doubleObj = JObject.Parse(fs.ReadToEnd());
-                    ConfigObject = PortalConfigReader.MergeConfigs(doubleObj).ToObject<EssentialsConfig>();
+                    var parsedConfig = JObject.Parse(fileContents);
 
-                    // Extract SystemUrl and TemplateUrl into final config output
+                    // Check if it's a v2 config (check for "version" node)
+                    // this means it's already merged by the Portal API
+                    // from the v2 config tool
+                    var isV2Config = parsedConfig["versions"] != null;
 
-                    if (doubleObj["system_url"] != null)
+                    if (isV2Config)
                     {
-                        ConfigObject.SystemUrl = doubleObj["system_url"].Value<string>();
+                        Debug.LogMessage(LogEventLevel.Information, "Config file is a v2 format, no merge necessary.");
+                        ConfigObject = parsedConfig.ToObject<EssentialsConfig>();
+                        Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded v2 Config");
+                        return ConfigObject != null;
                     }
 
-                    if (doubleObj["template_url"] != null)
+                    // Extract SystemUrl and TemplateUrl into final config output
+                    ConfigObject = PortalConfigReader.MergeConfigs(parsedConfig).ToObject<EssentialsConfig>();
+
+                    if (ConfigObject == null)
                     {
-                        ConfigObject.TemplateUrl = doubleObj["template_url"].Value<string>();
+                        Debug.LogMessage(LogEventLevel.Warning, "Config merge produced a null ConfigObject.");
+                        return false;
+                    }
+
+                    if (parsedConfig["system_url"] != null)
+                    {
+                        ConfigObject.SystemUrl = parsedConfig["system_url"].Value<string>();
+                    }
+
+                    if (parsedConfig["template_url"] != null)
+                    {
+                        ConfigObject.TemplateUrl = parsedConfig["template_url"].Value<string>();
                     }
                 }
 
