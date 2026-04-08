@@ -24,3 +24,4 @@ jobs:
       tag: ${{ needs.getVersion.outputs.tag }}
       channel: ${{ needs.getVersion.outputs.channel }}
       bypassPackageCheck: true
+      devToolsVersion: ${{ vars.ESSENTIALSDEVTOOLSVERSION }}
