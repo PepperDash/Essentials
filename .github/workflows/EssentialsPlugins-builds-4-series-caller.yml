@@ -6,9 +6,26 @@ on:
       - '**'
 
 jobs:
+  # runTests:
+  #   uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-tests.yml@main
+  #   secrets: inherit
+  runTests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 9.0.x
+    - name: Restore dependencies
+      working-directory: .
+      run: dotnet restore
+    - name: Test
+      working-directory: .
+      run: dotnet test --verbosity normal --no-restore --collect:"xplat code coverage"
   getVersion:
     uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-getversion.yml@main
     secrets: inherit
+    needs: runTests
   build-4Series:
     uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-4Series-builds.yml@main
     secrets: inherit

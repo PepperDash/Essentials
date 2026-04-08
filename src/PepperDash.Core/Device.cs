@@ -62,7 +62,6 @@ public class Device : IKeyName
 	public Device(string key, string name) : this(key)
 	{
 		Name = name;
-
 	}
 
 	//public Device(DeviceConfig config)
