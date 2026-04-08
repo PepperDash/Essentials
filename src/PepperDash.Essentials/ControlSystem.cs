@@ -632,6 +632,65 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
             File.Delete(file.FullName);
         }
 
+        var devToolsZipFiles = applicationDirectory.GetFiles("essentials-devtools*.zip");
+
+        if (devToolsZipFiles.Length > 1)
+        {
+            throw new Exception("Multiple essentials-devtools zip files found in application directory. Please ensure only one essentials-devtools*.zip file is present and retry.");
+        }
+
+        if (devToolsZipFiles.Length == 1)
+        {
+            var devToolsZipFile = devToolsZipFiles[0];
+            var programDir = new DirectoryInfo(Global.FilePathPrefix.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            var userOrNvramDir = programDir.Parent;
+            var rootDir = userOrNvramDir?.Parent;
+            if (rootDir == null)
+            {
+                throw new Exception($"Unable to determine root directory for debug html extraction. Current path: {Global.FilePathPrefix}");
+            }
+            var debugDir = Path.Combine(Path.Combine(rootDir.FullName, "html"), "debug");
+            var debugRoot = System.IO.Path.GetFullPath(debugDir);
+            if (!debugRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) &&
+                !debugRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+            {
+                debugRoot += Path.DirectorySeparatorChar;
+            }
+            Debug.LogMessage(LogEventLevel.Information, "Found essentials-devtools zip file: {zipFile:l}... Unzipping to {Destination}...", devToolsZipFile.FullName, debugDir);
+            using (var archive = ZipFile.OpenRead(devToolsZipFile.FullName))
+            {
+                foreach (var entry in archive.Entries)
+                {
+                    var destinationPath = Path.Combine(debugDir, entry.FullName);
+                    var fullDest = System.IO.Path.GetFullPath(destinationPath);
+                    if (!fullDest.StartsWith(debugRoot, StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidOperationException($"Entry '{entry.FullName}' is trying to extract outside of the target directory.");
+
+                    if (string.IsNullOrEmpty(entry.Name))
+                    {
+                        Directory.CreateDirectory(destinationPath);
+                        continue;
+                    }
+
+                    if (File.Exists(destinationPath))
+                        File.Delete(destinationPath);
+
+                    var parentDir = Path.GetDirectoryName(destinationPath);
+                    if (!string.IsNullOrEmpty(parentDir))
+                        Directory.CreateDirectory(parentDir);
+
+                    entry.ExtractToFile(destinationPath, true);
+                    Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
+                }
+            }
+        }
+
+        // cleaning up devtools zip files
+        foreach (var file in devToolsZipFiles)
+        {
+            File.Delete(file.FullName);
+        }
+
         var jsonFiles = applicationDirectory.GetFiles("*configurationFile*.json");
 
         if (jsonFiles.Length > 1)
