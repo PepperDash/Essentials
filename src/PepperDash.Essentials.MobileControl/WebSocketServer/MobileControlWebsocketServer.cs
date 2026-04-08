@@ -261,7 +261,7 @@ namespace PepperDash.Essentials.WebSocketServer
         /// Initialize method
         /// </summary>
         /// <inheritdoc />
-        public override void Initialize()
+        protected override void Initialize()
         {
             try
             {
@@ -276,7 +276,7 @@ namespace PepperDash.Essentials.WebSocketServer
                     {
                         ClientCertificateRequired = false,
                         CheckCertificateRevocation = false,
-                        EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11
+                        EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
                     };
                 }
 

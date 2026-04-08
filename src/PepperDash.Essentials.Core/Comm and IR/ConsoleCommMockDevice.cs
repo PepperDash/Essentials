@@ -57,7 +57,7 @@ namespace PepperDash.Essentials.Core;
   /// CustomActivate method
   /// </summary>
   /// <inheritdoc />
-		public override bool CustomActivate()
+		protected override bool CustomActivate()
 		{
 			Communication.Connect();
 			CommunicationMonitor.StatusChange += (o, a) => { Debug.LogMessage(LogEventLevel.Verbose, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };

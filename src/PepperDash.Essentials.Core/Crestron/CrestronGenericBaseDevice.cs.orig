@@ -36,7 +36,7 @@ namespace PepperDash.Essentials.Core
 		/// Make sure that overriding classes call this!
 		/// Registers the Crestron device, connects up to the base events, starts communication monitor
 		/// </summary>
-		public override bool CustomActivate()
+		protected override bool CustomActivate()
 		{
             Debug.LogMessage(LogEventLevel.Information, this, "Activating");
             var response = Hardware.RegisterWithLogging(Key);

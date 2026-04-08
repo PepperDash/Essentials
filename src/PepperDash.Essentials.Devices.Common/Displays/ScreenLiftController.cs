@@ -182,7 +182,7 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         /// CustomActivate method
         /// </summary>
         /// <inheritdoc />
-        public override bool CustomActivate()
+        protected override bool CustomActivate()
         {
             //Create ISwitchedOutput objects based on props
             switch (Mode)

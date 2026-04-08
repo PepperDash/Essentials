@@ -57,7 +57,7 @@ public class EiscApiAdvanced : BridgeApi, ICommunicationMonitor
         AddPostActivationAction(RegisterEisc);
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         CommunicationMonitor.Start();
         return base.CustomActivate();

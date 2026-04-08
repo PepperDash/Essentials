@@ -364,7 +364,7 @@ namespace PepperDash.Essentials.Touchpanel
         /// <summary>
         /// CustomActivate method
         /// </summary>
-        public override bool CustomActivate()
+        protected override bool CustomActivate()
         {
             var appMessenger = new ITswAppControlMessenger($"appControlMessenger-{Key}", $"/device/{Key}", this);
 

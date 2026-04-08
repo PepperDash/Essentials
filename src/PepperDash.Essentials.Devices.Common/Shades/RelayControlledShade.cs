@@ -45,7 +45,7 @@ public class RelayControlledShade : ShadeBase, IShadesOpenCloseStop
     }
 
     /// <inheritdoc />
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         //Create ISwitchedOutput objects based on props
         OpenRelay = GetSwitchedOutputFromDevice(Config.Relays.Open);

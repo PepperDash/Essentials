@@ -63,7 +63,7 @@ namespace PepperDash.Essentials.Core.Devices;
   /// CustomActivate method
   /// </summary>
   /// <inheritdoc />
-		public override bool CustomActivate()
+		protected override bool CustomActivate()
 		{
 			CommunicationMonitor.Start();
 			return true;

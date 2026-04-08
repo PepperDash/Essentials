@@ -141,7 +141,7 @@ namespace PepperDash.Essentials.Room.MobileControl
         /// <summary>
         /// CustomActivate method
         /// </summary>
-        public override bool CustomActivate()
+        protected override bool CustomActivate()
         {
             this.LogDebug("Final activation. Setting up actions and feedbacks");
             //SetupFunctions();

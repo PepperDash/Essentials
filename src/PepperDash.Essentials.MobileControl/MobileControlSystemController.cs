@@ -1283,7 +1283,7 @@ namespace PepperDash.Essentials
         }
 
         /// <inheritdoc />
-        public override void Initialize()
+        protected override void Initialize()
         {
             if (!Config.EnableMessengerSubscriptions)
             {

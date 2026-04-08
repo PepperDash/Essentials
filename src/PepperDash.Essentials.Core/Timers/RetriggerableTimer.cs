@@ -38,7 +38,7 @@ public class RetriggerableTimer : EssentialsDevice
     }
 
     /// <inheritdoc />
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         if (_propertiesConfig.StartTimerOnActivation)
         {

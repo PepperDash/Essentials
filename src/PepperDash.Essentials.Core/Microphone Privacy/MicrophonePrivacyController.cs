@@ -69,7 +69,7 @@ public class MicrophonePrivacyController : EssentialsDevice
         Inputs = new List<IDigitalInput>();
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         foreach (var i in Config.Inputs)
         {
@@ -105,7 +105,7 @@ public class MicrophonePrivacyController : EssentialsDevice
 
     #region Overrides of Device
 
-    public override void Initialize()
+    protected override void Initialize()
     {
         CheckPrivacyMode();
     }

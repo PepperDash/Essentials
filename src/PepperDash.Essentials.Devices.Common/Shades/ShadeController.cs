@@ -34,7 +34,7 @@ public class ShadeController : EssentialsDevice, IShades
     }
 
     /// <inheritdoc />
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         foreach (var shadeConfig in Config.Shades)
         {

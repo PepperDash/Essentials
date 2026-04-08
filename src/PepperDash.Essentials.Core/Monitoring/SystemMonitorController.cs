@@ -168,6 +168,20 @@ public class SystemMonitorController : EssentialsBridgeableDevice
         _uptimePollTimer = null;
     }
 
+    /// <summary>
+    /// Polls the uptime and last start time from the control system and updates the feedbacks
+     /// This is necessary because there is no event that is fired when these values change, so we have to poll for them
+     /// at a regular interval
+     /// Uptime is also polled on activation to get initial values
+     /// Uptime is polled every 5 minutes (300000 ms) which should be often enough to keep the values updated without causing performance issues
+     /// Note: polling uptime can cause a delay in the feedback update, so it is done in a separate thread to avoid blocking the main thread
+     /// Note: this method uses CrestronConsole.SendControlSystemCommand which can be slow, so it is not recommended to call this method more often than every 5 minutes
+     /// Note: this method will not work on a server as the "uptime" command is not available, but it will not cause any issues either as it will just return an empty string
+     /// Note: if you need more real-time uptime updates, you could consider implementing a custom solution that tracks uptime internally and updates the feedbacks accordingly, but this would require more complex implementation and testing
+     /// Note: if you implement a custom solution for tracking uptime, you should still consider polling the uptime from the control system at a regular interval (e.g. every hour) to ensure that your internal tracking is accurate and to account for any potential issues that may arise with your custom implementation
+     /// Note: if you implement a custom solution for tracking uptime, you should also consider implementing a way to reset the uptime (e.g. on program start) to ensure that it reflects the actual uptime of the control system accurately
+    /// </summary>
+    /// <param name="obj"></param>
     public void PollUptime(object obj)
     {
         var consoleResponse = string.Empty;
@@ -306,13 +320,15 @@ public class SystemMonitorController : EssentialsBridgeableDevice
         }
     }
 
-    public override bool CustomActivate()
+    /// <inheritdoc />
+    protected override bool CustomActivate()
     {
         RefreshSystemMonitorData();
 
         return base.CustomActivate();
     }
 
+    /// <inheritdoc />
     public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
     {
         var joinMap = new SystemMonitorJoinMap(joinStart);
@@ -675,6 +691,9 @@ public class SystemMonitorController : EssentialsBridgeableDevice
                         CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_DHCP_STATE, adapterIndex));
         }
 
+        /// <summary>
+        /// Updates all the ethernet status feedbacks for this interface
+        /// </summary>
         public void UpdateEthernetStatus()
         {
             HostNameFeedback.FireUpdate();
@@ -692,26 +711,77 @@ public class SystemMonitorController : EssentialsBridgeableDevice
     }
 }
 
+
+/// <summary>
+/// Represents a collection of feedbacks related to the status of a program running on the control system, including its operating state, registration state, and various pieces of information about the program such as its name, compile time, and environment. This class also includes methods for retrieving program information and responding to program change events to keep the feedbacks updated in real-time.
+/// </summary>
 public class ProgramStatusFeedbacks
 {
+    /// <summary>
+    /// Event that is fired when any of the program information properties change, allowing external classes to respond to changes in program information in real-time
+    /// </summary>
     public event EventHandler<ProgramInfoEventArgs> ProgramInfoChanged;
 
+    /// <summary>
+    /// Gets or sets the Program associated with this collection of feedbacks
+    /// </summary>
     public Program Program;
 
+    /// <summary>
+    /// Gets or sets the ProgramInfo object that contains detailed information about the program, such as its file name, compile time, environment, and other relevant properties. This object is updated whenever there is a change in the program's operating state or registration state, ensuring that the feedbacks always reflect the most current information about the program.
+    /// </summary>
     public ProgramInfo ProgramInfo { get; set; }
 
+    /// <summary>
+    /// Gets or sets the ProgramStartedFeedback, which is a BoolFeedback that indicates whether the program is currently started (true) or not (false). This feedback is updated in real-time based on the program's operating state, allowing external classes to easily monitor whether the program is running or not.
+    /// </summary>
     public BoolFeedback ProgramStartedFeedback;
+
+    /// <summary>
+    /// Gets or sets the ProgramStoppedFeedback, which is a BoolFeedback that indicates whether the program is currently stopped (true) or not (false). This feedback is updated in real-time based on the program's operating state, allowing external classes to easily monitor whether the program is stopped or not.
+    /// </summary>
     public BoolFeedback ProgramStoppedFeedback;
+
+    /// <summary>
+    /// Gets or sets the ProgramRegisteredFeedback, which is a BoolFeedback that indicates whether the program is currently registered (true) or not (false). This feedback is updated in real-time based on the program's registration state, allowing external classes to easily monitor whether the program is registered or not.
+    /// </summary>
     public BoolFeedback ProgramRegisteredFeedback;
+
+    /// <summary>
+    /// Gets or sets the ProgramUnregisteredFeedback, which is a BoolFeedback that indicates whether the program is currently unregistered (true) or not (false). This feedback is updated in real-time based on the program's registration state, allowing external classes to easily monitor whether the program is unregistered or not.
+    /// </summary>
     public BoolFeedback ProgramUnregisteredFeedback;
 
+    /// <summary>
+    /// Gets or sets the ProgramNameFeedback, which is a StringFeedback that provides the name of the program file. This feedback is updated in real-time based on changes to the program's information, allowing external classes to easily access the current name of the program file.
+    /// </summary>
     public StringFeedback ProgramNameFeedback;
+    
+    /// <summary>
+    /// Gets or sets the ProgramCompileTimeFeedback, which is a StringFeedback that provides the compile time of the program. This feedback is updated in real-time based on changes to the program's information, allowing external classes to easily access the current compile time of the program.
+    /// </summary>
     public StringFeedback ProgramCompileTimeFeedback;
+
+    /// <summary>
+    /// Gets or sets the CrestronDataBaseVersionFeedback, which is a StringFeedback that provides the version of the Crestron database used by the program. This feedback is updated in real-time based on changes to the program's information, allowing external classes to easily access the current version of the Crestron database used by the program.
+    /// </summary>
     public StringFeedback CrestronDataBaseVersionFeedback;
-    // SIMPL windows version
+
+    /// <summary>
+    /// Gets or sets the EnvironmentVersionFeedback, which is a StringFeedback that provides the environment version of the program. This feedback is updated in real-time based on changes to the program's information, allowing external classes to easily access the current environment version of the program.
+    /// </summary>
     public StringFeedback EnvironmentVersionFeedback;
+
+    /// <summary>
+    /// Gets or sets the AggregatedProgramInfoFeedback, which is a StringFeedback that provides a JSON serialized string of the entire ProgramInfo object. This feedback is updated in real-time based on changes to the program's information, allowing external classes to easily access all current information about the program in a single feedback.
+    /// </summary>
     public StringFeedback AggregatedProgramInfoFeedback;
 
+
+    /// <summary>
+    /// Constructor for the ProgramStatusFeedbacks class, which initializes all feedbacks based on the provided Program object and retrieves the initial program information to populate the feedbacks with accurate data. This constructor also sets up the necessary event handlers to ensure that the feedbacks are updated in real-time as changes occur to the program's operating state or registration state.
+    /// </summary>
+    /// <param name="program"></param>
     public ProgramStatusFeedbacks(Program program)
     {
         ProgramInfo = new ProgramInfo(program.Number);
@@ -851,6 +921,9 @@ public class ProgramStatusFeedbacks
         OnProgramInfoChanged();
     }
 
+    /// <summary>
+    /// Fires the ProgramInfoChanged event to notify external classes that they should update any properties related to program information based on changes to the program's operating state or registration state. This method is called whenever there is a change in the program's information, ensuring that all feedbacks and external classes that rely on program information are always up-to-date with the most current information about the program.
+    /// </summary>
     public void OnProgramInfoChanged()
     {
         //Debug.LogMessage(LogEventLevel.Debug, "Firing ProgramInfoChanged for slot: {0}", Program.Number);

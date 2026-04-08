@@ -87,7 +87,7 @@ namespace PepperDash.Essentials.Core;
         /// CustomActivate method
         /// </summary>
         /// <inheritdoc />
-		public override bool CustomActivate()
+		protected override bool CustomActivate()
 		{
         Debug.LogMessage(LogEventLevel.Information, this, "Activating");
         if (!PreventRegistration)

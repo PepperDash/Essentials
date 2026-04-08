@@ -208,7 +208,7 @@ public class EssentialsWebApi : EssentialsDevice
     /// <summary>
     /// Initializes the CWS class
     /// </summary>
-    public override void Initialize()
+    protected override void Initialize()
     {
         AddRoute(new HttpCwsRoute("apiPaths")
         {

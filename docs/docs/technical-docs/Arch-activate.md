@@ -32,7 +32,7 @@ If the `CustomActivate()` method is long, consider breaking it up into many smal
 Note: It is best-practice in Essentials to not write arbitrarily-timed startup sequences to ensure that a "system" or room is functional. Rather, we encourage the developer to use various properties and conditions on devices to aggregate together "room is ready" statuses that can trigger further action. This ensures that all devices can be up and alive, allowing them to be debugged within a program that may otherwise be misbehaving - as well as not making users and expensive developers wait for code to start up!
 
 ```cs
-public override bool CustomActivate()
+protected override bool CustomActivate()
 {
     Debug.Console(0, this, "Final activation. Setting up actions and feedbacks");
     SetupFunctions();
@@ -52,7 +52,7 @@ We can see in the example below that during the `CustomActivate()` phase, we def
 ### **Example**
 
 ```cs
-public override bool CustomActivate()
+protected override bool CustomActivate()
 {
     foreach (var i in Config.Inputs)
     {
@@ -115,7 +115,7 @@ The main task that should be undertaken in the `Initialize()` method for any 3rd
 
 ### Example (from `PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec`)
 ```cs
-        public override void Initialize()
+        protected override void Initialize()
         {
             var socket = Communication as ISocketStatus;
             if (socket != null)

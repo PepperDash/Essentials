@@ -87,7 +87,7 @@ public abstract class EssentialsDevice : Device
     /// Override this method to perform any initialization that requires all devices to be activated. This method is called automatically after the DeviceManager.AllDevicesActivated event is fired, and should not be called directly.
     /// </summary>
     /// <returns></returns>
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         CreateMobileControlMessengers();
 

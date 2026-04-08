@@ -309,7 +309,7 @@ namespace PepperDash.Essentials.Core.Fusion
         }
 
         /// <inheritdoc />
-        public override void Initialize()
+        protected override void Initialize()
         {
 
             GenerateGuidFile(GetGuidFilePath(_config.IpIdInt));
@@ -501,12 +501,6 @@ namespace PepperDash.Essentials.Core.Fusion
             // Moved to 
             CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(JoinMap.Display1CurrentSourceName.JoinNumber, JoinMap.Display1CurrentSourceName.AttributeName,
                 eSigIoMask.InputSigOnly);
-            // Don't think we need to get current status of this as nothing should be alive yet. 
-            if (Room is IHasCurrentSourceInfoChange hasCurrentSourceInfoChange)
-            {
-                hasCurrentSourceInfoChange.CurrentSourceChange += Room_CurrentSourceInfoChange;
-            }
-
 
             FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction(Room.PowerOnToDefaultOrLastSource);
             FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() =>
@@ -1747,38 +1741,6 @@ namespace PepperDash.Essentials.Core.Fusion
                 return -1;
             }
             return Convert.ToInt32(capture.Groups[1].Value);
-        }
-
-        /// <summary>
-        /// Event handler for when room source changes
-        /// </summary>
-        protected void Room_CurrentSourceInfoChange(SourceListItem info, ChangeType type)
-        {
-            // Handle null. Nothing to do when switching from or to null
-            if (info == null || info.SourceDevice == null)
-            {
-                return;
-            }
-
-            if (info.SourceDevice is Device dev)
-            {
-                if (type == ChangeType.WillChange)
-                {
-                    if (_sourceToFeedbackSigs.ContainsKey(dev))
-                    {
-                        _sourceToFeedbackSigs[dev].BoolValue = false;
-                    }
-                }
-                else
-                {
-                    if (_sourceToFeedbackSigs.ContainsKey(dev))
-                    {
-                        _sourceToFeedbackSigs[dev].BoolValue = true;
-                    }
-                    //var name = (room == null ? "" : room.Name);
-                    CurrentRoomSourceNameSig.InputSig.StringValue = dev.Name;
-                }
-            }
         }
 
         /// <summary>

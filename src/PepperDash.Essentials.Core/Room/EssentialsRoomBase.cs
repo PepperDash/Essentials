@@ -250,7 +250,7 @@ public abstract class EssentialsRoomBase : ReconfigurableDevice, IEssentialsRoom
         });
     }
 
-    public override bool CustomActivate()
+    protected override bool CustomActivate()
     {
         SetUpMobileControl();
 
