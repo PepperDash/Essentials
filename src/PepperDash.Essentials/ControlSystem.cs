@@ -7,6 +7,8 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Diagnostics;
 using PepperDash.Core;
+using PepperDash.Core.Abstractions;
+using PepperDash.Core.Adapters;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
@@ -46,6 +48,14 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
     {
         try
         {
+            // Register Crestron service adapters BEFORE the first reference to Debug,
+            // so that Debug's static constructor uses these implementations instead of
+            // calling the Crestron SDK statics directly.
+            DebugServiceRegistration.Register(
+                new CrestronEnvironmentAdapter(),
+                new CrestronConsoleAdapter(),
+                new CrestronDataStoreAdapter());
+
             Crestron.SimplSharpPro.CrestronThread.Thread.MaxNumberOfUserThreads = 400;
 
             Global.ControlSystem = this;

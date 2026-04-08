@@ -11,6 +11,7 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronLogger;
 using Formatting = NewtonsoftJson::Newtonsoft.Json.Formatting;
 using JsonConvert = NewtonsoftJson::Newtonsoft.Json.JsonConvert;
+using PdCore = PepperDash.Core.Abstractions;
 using PepperDash.Core.Logging;
 using Serilog;
 using Serilog.Context;
@@ -44,6 +45,13 @@ public static class Debug
     };
 
     private static ILogger _logger;
+
+    // Injected service abstractions. Populated by DebugServiceRegistration.Register()
+    // before the Debug static constructor runs. Null when running on hardware without
+    // pre-registration (the static ctor falls back to the Crestron SDK directly).
+    private static PdCore.ICrestronEnvironment _environment;
+    private static PdCore.ICrestronConsole _console;
+    private static PdCore.ICrestronDataStore _dataStore;
 
     private static readonly LoggingLevelSwitch consoleLoggingLevelSwitch;
 
@@ -107,7 +115,7 @@ public static class Debug
     /// <summary>
     /// Indicates whether the code is running on an appliance or not. Used to determine file paths and other appliance vs server differences
     /// </summary>
-    public static bool IsRunningOnAppliance = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance;
+    public static bool IsRunningOnAppliance; // set in static constructor
 
     /// <summary>
     /// Version for the currently loaded PepperDashCore dll
@@ -145,102 +153,114 @@ public static class Debug
     {
         try
         {
-            CrestronDataStoreStatic.InitCrestronDataStore();
+            // Pick up services pre-registered by the composition root (or test setup).
+            // If null, fall back to direct Crestron SDK calls for production hardware.
+            _environment = PdCore.DebugServiceRegistration.Environment;
+            _console = PdCore.DebugServiceRegistration.Console;
+            _dataStore = PdCore.DebugServiceRegistration.DataStore;
+
+            IsRunningOnAppliance = _environment?.DevicePlatform == PdCore.DevicePlatform.Appliance;
+
+            _dataStore?.InitStore();
 
             consoleDebugTimer = new Timer(defaultConsoleDebugTimeoutMin * 60000) { AutoReset = false };
             consoleDebugTimer.Elapsed += (s, e) =>
             {
                 SetDebugLevel(LogEventLevel.Information);
-                CrestronConsole.ConsoleCommandResponse($"Console debug level reset to {LogEventLevel.Information} after timeout of {defaultConsoleDebugTimeoutMin} minutes");
+                _console?.ConsoleCommandResponse($"Console debug level reset to {LogEventLevel.Information} after timeout of {defaultConsoleDebugTimeoutMin} minutes");
             };
 
             var defaultConsoleLevel = GetStoredLogEventLevel(LevelStoreKey);
-
             var defaultWebsocketLevel = GetStoredLogEventLevel(WebSocketLevelStoreKey);
-
             var defaultErrorLogLevel = GetStoredLogEventLevel(ErrorLogLevelStoreKey);
-
             var defaultFileLogLevel = GetStoredLogEventLevel(FileLevelStoreKey);
 
             consoleLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultConsoleLevel);
-
             websocketLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultWebsocketLevel);
-
             errorLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultErrorLogLevel);
-
             fileLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultFileLogLevel);
 
             websocketSink = new DebugWebsocketSink(new JsonFormatter(renderMessage: true));
 
-            var logFilePath = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ?
-                $@"{Directory.GetApplicationRootDirectory()}{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}debug{Path.DirectorySeparatorChar}app{InitialParametersClass.ApplicationNumber}{Path.DirectorySeparatorChar}global-log.log" :
-                $@"{Directory.GetApplicationRootDirectory()}{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}debug{Path.DirectorySeparatorChar}room{InitialParametersClass.RoomId}{Path.DirectorySeparatorChar}global-log.log";
+            var appRoot = _environment?.GetApplicationRootDirectory()
+                ?? System.IO.Path.GetTempPath();
+            var sep = System.IO.Path.DirectorySeparatorChar;
+            var appNum = _environment?.ApplicationNumber ?? 0;
+            var roomId = _environment?.RoomId ?? 0;
 
-            CrestronConsole.PrintLine($"Saving log files to {logFilePath}");
+            var logFilePath = IsRunningOnAppliance
+                ? $"{appRoot}{sep}user{sep}debug{sep}app{appNum}{sep}global-log.log"
+                : $"{appRoot}{sep}user{sep}debug{sep}room{roomId}{sep}global-log.log";
 
-            var errorLogTemplate = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance
-                ? "{@t:fff}ms [{@l:u4}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}"
-                : "[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}";
+            _console?.PrintLine($"Saving log files to {logFilePath}");
 
+            // Build the base Serilog pipeline — sinks that require the Crestron SDK are
+            // added conditionally so the logger remains usable in test environments.
             _defaultLoggerConfiguration = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
-                .Enrich.With(new CrestronEnricher())
                 .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: consoleLoggingLevelSwitch)
                 .WriteTo.Sink(websocketSink, levelSwitch: websocketLoggingLevelSwitch)
-                .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: errorLogLevelSwitch)
                 .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
-                    retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 30 : 60,
+                    retainedFileCountLimit: IsRunningOnAppliance ? 30 : 60,
                     levelSwitch: fileLoggingLevelSwitch
                 );
 
-            // Instantiate the root logger
-            _loggerConfiguration = _defaultLoggerConfiguration;
-
-            _logger = _loggerConfiguration.CreateLogger();
-            // Get the assembly version and print it to console and the log
-            GetVersion();
-
-            string msg = $"[App {InitialParametersClass.ApplicationNumber}] Using PepperDash_Core v{PepperDashCoreVersion}";
-
-            if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Server)
+            // Add Crestron-specific enricher and error-log sink only when running on hardware.
+            if (_environment != null)
             {
-                msg = $"[Room {InitialParametersClass.RoomId}] Using PepperDash_Core v{PepperDashCoreVersion}";
+                var errorLogTemplate = IsRunningOnAppliance
+                    ? "{@t:fff}ms [{@l:u4}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}"
+                    : "[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}";
+
+                _defaultLoggerConfiguration
+                    .Enrich.With(new CrestronEnricher())
+                    .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: errorLogLevelSwitch);
             }
 
-            CrestronConsole.PrintLine(msg);
+            _loggerConfiguration = _defaultLoggerConfiguration;
+            _logger = _loggerConfiguration.CreateLogger();
 
+            GetVersion();
+
+            string msg = IsRunningOnAppliance
+                ? $"[App {appNum}] Using PepperDash_Core v{PepperDashCoreVersion}"
+                : $"[Room {roomId}] Using PepperDash_Core v{PepperDashCoreVersion}";
+
+            _console?.PrintLine(msg);
             LogMessage(LogEventLevel.Information, msg);
 
             IncludedExcludedKeys = new Dictionary<string, object>();
 
-            if (CrestronEnvironment.RuntimeEnvironment == eRuntimeEnvironment.SimplSharpPro)
+            if (_environment?.RuntimeEnvironment == PdCore.RuntimeEnvironment.SimplSharpPro)
             {
-                // Add command to console
-                CrestronConsole.AddNewConsoleCommand(SetDoNotLoadOnNextBootFromConsole, "donotloadonnextboot",
-                    "donotloadonnextboot:P [true/false]: Should the application load on next boot", ConsoleAccessLevelEnum.AccessOperator);
+                _console?.AddNewConsoleCommand(SetDoNotLoadOnNextBootFromConsole, "donotloadonnextboot",
+                    "donotloadonnextboot:P [true/false]: Should the application load on next boot",
+                    PdCore.ConsoleAccessLevel.AccessOperator);
 
-                CrestronConsole.AddNewConsoleCommand(SetDebugFromConsole, "appdebug",
+                _console?.AddNewConsoleCommand(SetDebugFromConsole, "appdebug",
                     "appdebug:P [0-5]: Sets the application's console debug message level",
-                    ConsoleAccessLevelEnum.AccessOperator);
-                CrestronConsole.AddNewConsoleCommand(ShowDebugLog, "appdebuglog",
-                    "appdebuglog:P [all] Use \"all\" for full log.",
-                    ConsoleAccessLevelEnum.AccessOperator);
-                CrestronConsole.AddNewConsoleCommand(s => CrestronLogger.Clear(false), "appdebugclear",
-                    "appdebugclear:P Clears the current custom log",
-                    ConsoleAccessLevelEnum.AccessOperator);
-                CrestronConsole.AddNewConsoleCommand(SetDebugFilterFromConsole, "appdebugfilter",
-                    "appdebugfilter [params]", ConsoleAccessLevelEnum.AccessOperator);
-            }
+                    PdCore.ConsoleAccessLevel.AccessOperator);
 
-            // CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
+                _console?.AddNewConsoleCommand(ShowDebugLog, "appdebuglog",
+                    "appdebuglog:P [all] Use \"all\" for full log.",
+                    PdCore.ConsoleAccessLevel.AccessOperator);
+
+                _console?.AddNewConsoleCommand(s => CrestronLogger.Clear(false), "appdebugclear",
+                    "appdebugclear:P Clears the current custom log",
+                    PdCore.ConsoleAccessLevel.AccessOperator);
+
+                _console?.AddNewConsoleCommand(SetDebugFilterFromConsole, "appdebugfilter",
+                    "appdebugfilter [params]",
+                    PdCore.ConsoleAccessLevel.AccessOperator);
+            }
 
             DoNotLoadConfigOnNextBoot = GetDoNotLoadOnNextBoot();
 
             if (DoNotLoadConfigOnNextBoot)
-                CrestronConsole.PrintLine(string.Format("Program {0} will not load config after next boot.  Use console command go:{0} to load the config manually", InitialParametersClass.ApplicationNumber));
+                _console?.PrintLine($"Program {appNum} will not load config after next boot.  Use console command go:{appNum} to load the config manually");
 
             consoleLoggingLevelSwitch.MinimumLevelChanged += (sender, args) =>
             {
@@ -250,18 +270,20 @@ public static class Debug
         catch (Exception ex)
         {
             // _logger may not have been initialized yet — do not call LogError here.
-            CrestronConsole.PrintLine($"Exception in Debug static constructor: {ex.Message}\r\n{ex.StackTrace}");
+            // _console may also be null; fall back to CrestronConsole as last resort.
+            try { _console?.PrintLine($"Exception in Debug static constructor: {ex.Message}\r\n{ex.StackTrace}"); }
+            catch { CrestronConsole.PrintLine($"Exception in Debug static constructor: {ex.Message}\r\n{ex.StackTrace}"); }
         }
     }
 
     private static bool GetDoNotLoadOnNextBoot()
     {
-        var err = CrestronDataStoreStatic.GetLocalBoolValue(DoNotLoadOnNextBootKey, out var doNotLoad);
+        if (_dataStore == null) return false;
 
-        if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+        if (!_dataStore.TryGetLocalBool(DoNotLoadOnNextBootKey, out var doNotLoad))
         {
-            LogError("Error retrieving DoNotLoadOnNextBoot value: {err}", err);
-            doNotLoad = false;
+            LogError("Error retrieving DoNotLoadOnNextBoot value");
+            return false;
         }
 
         return doNotLoad;
@@ -294,17 +316,17 @@ public static class Debug
     {
         try
         {
-            var result = CrestronDataStoreStatic.GetLocalIntValue(levelStoreKey, out int logLevel);
+            if (_dataStore == null) return LogEventLevel.Information;
 
-            if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+            if (!_dataStore.TryGetLocalInt(levelStoreKey, out int logLevel))
             {
-                CrestronConsole.Print($"Unable to retrieve stored log level for {levelStoreKey}.\r\nError: {result}.\r\nSetting level to {LogEventLevel.Information}\r\n");
+                _console?.Print($"Unable to retrieve stored log level for {levelStoreKey}. Setting level to {LogEventLevel.Information}\r\n");
                 return LogEventLevel.Information;
             }
 
             if (logLevel < 0 || logLevel > 5)
             {
-                CrestronConsole.PrintLine($"Stored Log level not valid for {levelStoreKey}: {logLevel}. Setting level to {LogEventLevel.Information}");
+                _console?.PrintLine($"Stored Log level not valid for {levelStoreKey}: {logLevel}. Setting level to {LogEventLevel.Information}");
                 return LogEventLevel.Information;
             }
 
@@ -312,7 +334,7 @@ public static class Debug
         }
         catch (Exception ex)
         {
-            CrestronConsole.PrintLine($"Exception retrieving log level for {levelStoreKey}: {ex.Message}");
+            _console?.PrintLine($"Exception retrieving log level for {levelStoreKey}: {ex.Message}");
             return LogEventLevel.Information;
         }
     }
@@ -369,7 +391,7 @@ public static class Debug
         {
             if (levelString.Trim() == "?")
             {
-                CrestronConsole.ConsoleCommandResponse(
+                _console?.ConsoleCommandResponse(
                 
                 "Used to set the minimum level of debug messages to be printed to the console:\r\n" +
                 "[LogLevel] [TimeoutInMinutes]\r\n" +
@@ -386,7 +408,7 @@ public static class Debug
 
             if (string.IsNullOrEmpty(levelString.Trim()))
             {
-                CrestronConsole.ConsoleCommandResponse("AppDebug level = {0}", consoleLoggingLevelSwitch.MinimumLevel);
+                _console?.ConsoleCommandResponse($"AppDebug level = {consoleLoggingLevelSwitch.MinimumLevel}");
                 return;
             }
 
@@ -406,7 +428,7 @@ public static class Debug
             {
                 if (levelInt < 0 || levelInt > 5)
                 {
-                    CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level. If using a number, value must be between 0-5");
+                    _console?.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level. If using a number, value must be between 0-5");
                     return;
                 }
                 SetDebugLevel((uint)levelInt);
@@ -420,11 +442,11 @@ public static class Debug
                 return;
             }
 
-            CrestronConsole.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level");
+            _console?.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level");
         }
         catch
         {
-            CrestronConsole.ConsoleCommandResponse("Usage: appdebug:P [0-5]");
+            _console?.ConsoleCommandResponse("Usage: appdebug:P [0-5]");
         }
     }
 
@@ -439,7 +461,7 @@ public static class Debug
         {
             logLevel = LogEventLevel.Information;
 
-            CrestronConsole.ConsoleCommandResponse($"{level} not valid. Setting level to {logLevel}");
+            _console?.ConsoleCommandResponse($"{level} not valid. Setting level to {logLevel}");
 
             SetDebugLevel(logLevel, timeout);
         }
@@ -460,17 +482,14 @@ public static class Debug
 
         consoleLoggingLevelSwitch.MinimumLevel = level;
 
-        CrestronConsole.ConsoleCommandResponse("[Application {0}], Debug level set to {1}\r\n",
-            InitialParametersClass.ApplicationNumber, consoleLoggingLevelSwitch.MinimumLevel);
+        var appNum = _environment?.ApplicationNumber ?? 0;
+        _console?.ConsoleCommandResponse($"[Application {appNum}], Debug level set to {consoleLoggingLevelSwitch.MinimumLevel}\r\n");
+        _console?.ConsoleCommandResponse($"Storing level {level}:{(int)level}");
 
-        CrestronConsole.ConsoleCommandResponse($"Storing level {level}:{(int)level}");
-
-        var err = CrestronDataStoreStatic.SetLocalIntValue(LevelStoreKey, (int)level);
-
-        CrestronConsole.ConsoleCommandResponse($"Store result: {err}:{(int)level}");
-
-        if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
-            CrestronConsole.PrintLine($"Error saving console debug level setting: {err}");
+        if (_dataStore != null && !_dataStore.SetLocalInt(LevelStoreKey, (int)level))
+            _console?.PrintLine($"Error saving console debug level setting");
+        else
+            _console?.ConsoleCommandResponse($"Store result: {(int)level}");
     }
 
     /// <summary>
@@ -481,10 +500,8 @@ public static class Debug
     {
         websocketLoggingLevelSwitch.MinimumLevel = level;
 
-        var err = CrestronDataStoreStatic.SetLocalUintValue(WebSocketLevelStoreKey, (uint)level);
-
-        if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
-            LogMessage(LogEventLevel.Information, "Error saving websocket debug level setting: {error}", err);
+        if (_dataStore != null && !_dataStore.SetLocalUint(WebSocketLevelStoreKey, (uint)level))
+            LogMessage(LogEventLevel.Information, "Error saving websocket debug level setting");
 
         LogMessage(LogEventLevel.Information, "Websocket debug level set to {0}", websocketLoggingLevelSwitch.MinimumLevel);
     }
@@ -498,10 +515,8 @@ public static class Debug
     {
         errorLogLevelSwitch.MinimumLevel = level;
 
-        var err = CrestronDataStoreStatic.SetLocalUintValue(ErrorLogLevelStoreKey, (uint)level);
-
-        if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
-            LogMessage(LogEventLevel.Information, "Error saving Error Log debug level setting: {error}", err);
+        if (_dataStore != null && !_dataStore.SetLocalUint(ErrorLogLevelStoreKey, (uint)level))
+            LogMessage(LogEventLevel.Information, "Error saving Error Log debug level setting");
 
         LogMessage(LogEventLevel.Information, "Error log debug level set to {0}", errorLogLevelSwitch.MinimumLevel);
     }
@@ -513,10 +528,8 @@ public static class Debug
     {
         fileLoggingLevelSwitch.MinimumLevel = level;
 
-        var err = CrestronDataStoreStatic.SetLocalUintValue(FileLevelStoreKey, (uint)level);
-
-        if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
-            LogMessage(LogEventLevel.Information, "Error saving File debug level setting: {error}", err);
+        if (_dataStore != null && !_dataStore.SetLocalUint(FileLevelStoreKey, (uint)level))
+            LogMessage(LogEventLevel.Information, "Error saving File debug level setting");
 
         LogMessage(LogEventLevel.Information, "File debug level set to {0}", fileLoggingLevelSwitch.MinimumLevel);
     }
@@ -531,7 +544,7 @@ public static class Debug
         {
             if (string.IsNullOrEmpty(stateString.Trim()))
             {
-                CrestronConsole.ConsoleCommandResponse("DoNotLoadOnNextBoot = {0}", DoNotLoadConfigOnNextBoot);
+                _console?.ConsoleCommandResponse($"DoNotLoadOnNextBoot = {DoNotLoadConfigOnNextBoot}");
                 return;
             }
 
@@ -539,7 +552,7 @@ public static class Debug
         }
         catch
         {
-            CrestronConsole.ConsoleCommandResponse("Usage: donotloadonnextboot:P [true/false]");
+            _console?.ConsoleCommandResponse("Usage: donotloadonnextboot:P [true/false]");
         }
     }
 
@@ -655,10 +668,8 @@ public static class Debug
     {
         DoNotLoadConfigOnNextBoot = state;
 
-        var err = CrestronDataStoreStatic.SetLocalBoolValue(DoNotLoadOnNextBootKey, state);
-
-        if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
-            LogError("Error saving console debug level setting: {err}", err);
+        if (_dataStore != null && !_dataStore.SetLocalBool(DoNotLoadOnNextBootKey, state))
+            LogError("Error saving DoNotLoadConfigOnNextBoot setting");
 
         LogInformation("Do Not Load Config on Next Boot set to {state}", DoNotLoadConfigOnNextBoot);
     }
@@ -668,9 +679,10 @@ public static class Debug
     /// </summary>
     public static void ShowDebugLog(string s)
     {
+        if (_environment == null) return; // CrestronLogger not available in test environments
         var loglist = CrestronLogger.PrintTheLog(s.ToLower() == "all");
         foreach (var l in loglist)
-            CrestronConsole.ConsoleCommandResponse(l + CrestronEnvironment.NewLine);
+            _console?.ConsoleCommandResponse(l + CrestronEnvironment.NewLine);
     }
 
     /// <summary>

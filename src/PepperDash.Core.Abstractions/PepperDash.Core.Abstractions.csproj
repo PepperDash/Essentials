@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PepperDash.Core.Abstractions</RootNamespace>
+    <AssemblyName>PepperDash.Core.Abstractions</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Title>PepperDash Core Abstractions</Title>
+    <Company>PepperDash Technologies</Company>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/PepperDash/PepperDashCore</RepositoryUrl>
+    <NullableContextOptions>enable</NullableContextOptions>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <InformationalVersion>$(Version)</InformationalVersion>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <!-- No Crestron SDK reference — this project must remain hardware-agnostic so test projects can reference it -->
+  </PropertyGroup>
+</Project>

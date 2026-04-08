@@ -51,6 +51,9 @@
     <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PepperDash.Core.Abstractions\PepperDash.Core.Abstractions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="Comm\._GenericSshClient.cs" />
     <Compile Remove="Comm\._GenericTcpIpClient.cs" />
     <Compile Remove="Comm\DynamicTCPServer.cs" />
