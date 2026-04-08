@@ -271,6 +271,8 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
 
             _ = new Core.DeviceFactory();
 
+            LoadAssets();
+
             Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 
             var filesReady = SetupFilesystem();
