@@ -51,16 +51,31 @@ public class MicrophonePrivacyController : EssentialsDevice
     
     bool _enableLeds;
 
+    /// <summary>
+    /// Gets or sets the list of digital inputs that are used to toggle the privacy state. Each input is expected to be momentary contact closure that triggers a change in the privacy state when activated. The controller will subscribe to the OutputChange event of each input's InputStateFeedback to monitor for changes in the input state and respond accordingly by toggling the privacy state and updating the LED indicators if enabled.
+    /// </summary>
     public List<IDigitalInput> Inputs { get; private set; }
 
+    /// <summary>
+    /// Gets or sets the GenericRelayDevice that is used to indicate the privacy state with a red LED. When the privacy mode is active, the red LED will be turned on to provide a visual indication of the privacy state. The controller will manage the state of this relay based on changes in the privacy mode, ensuring that it accurately reflects whether the privacy mode is currently active or not.
+    /// </summary>
     public GenericRelayDevice RedLedRelay { get; private set; }
     bool _redLedRelayState;
 
+    /// <summary>
+    /// Gets or sets the GenericRelayDevice that is used to indicate the privacy state with a green LED. When the privacy mode is inactive, the green LED will be turned on to provide a visual indication of the privacy state. The controller will manage the state of this relay based on changes in the privacy mode, ensuring that it accurately reflects whether the privacy mode is currently active or not.
+    /// </summary>
     public GenericRelayDevice GreenLedRelay { get; private set; }
     bool _greenLedRelayState;
 
+    /// <inheritdoc />
     public IPrivacy PrivacyDevice { get; private set; }
 
+    /// <summary>
+    /// Constructor for the MicrophonePrivacyController class, which initializes the controller with the specified key and configuration. The constructor sets up the necessary properties and collections for managing the digital inputs, LED relays, and privacy device. It also prepares the controller for activation by ensuring that all required components are properly initialized and ready to be used when the controller is activated in the system.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="config"></param>
     public MicrophonePrivacyController(string key, MicrophonePrivacyControllerConfig config) :
         base(key)
     {
@@ -105,6 +120,7 @@ public class MicrophonePrivacyController : EssentialsDevice
 
     #region Overrides of Device
 
+    /// <inheritdoc />
     protected override void Initialize()
     {
         CheckPrivacyMode();
@@ -112,6 +128,7 @@ public class MicrophonePrivacyController : EssentialsDevice
 
     #endregion
 
+    /// <inheritdoc />
     public void SetPrivacyDevice(IPrivacy privacyDevice)
     {
         PrivacyDevice = privacyDevice;
@@ -240,13 +257,21 @@ public class MicrophonePrivacyController : EssentialsDevice
     }
 }
 
+/// <summary>
+/// Factory for creating MicrophonePrivacyController devices
+/// </summary>
 public class MicrophonePrivacyControllerFactory : EssentialsDeviceFactory<MicrophonePrivacyController>
 {
+    /// <summary>
+    /// Constructor for the MicrophonePrivacyControllerFactory class, which initializes the factory and sets up the necessary type names for device creation. This factory is responsible for creating instances of the MicrophonePrivacyController device based on the provided configuration and device key when requested by the system.
+    /// </summary>
     public MicrophonePrivacyControllerFactory()
     {
         TypeNames = new List<string>() { "microphoneprivacycontroller" };
     }
 
+
+    /// <inheritdoc />
     public override EssentialsDevice BuildDevice(DeviceConfig dc)
     {
         Debug.LogMessage(LogEventLevel.Debug, "Factory Attempting to create new MIcrophonePrivacyController Device");
