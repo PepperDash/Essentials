@@ -57,6 +57,9 @@ public sealed class CrestronEnvironmentAdapter : PdCore.ICrestronEnvironment
     public string GetApplicationRootDirectory() =>
         Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
 
+    /// <inheritdoc/>
+    public bool IsHardwareRuntime => true;
+
     private static PdCore.ProgramStatusEventType MapProgramStatus(eProgramStatusEventType type) =>
         type switch
         {

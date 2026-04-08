@@ -96,7 +96,7 @@ public static class Debug
     /// <summary>
     /// The name of the file containing the current debug settings.
     /// </summary>
-    public static string FileName = string.Format(@"app{0}Debug.json", InitialParametersClass.ApplicationNumber);
+    public static string FileName = "app0Debug.json"; // default; updated in static ctor using _environment.ApplicationNumber
 
     /// <summary>
     /// Debug level to set for a given program.
@@ -161,6 +161,9 @@ public static class Debug
 
             IsRunningOnAppliance = _environment?.DevicePlatform == PdCore.DevicePlatform.Appliance;
 
+            // Update FileName now that _environment is available (avoids Crestron SDK ref in field initializer).
+            FileName = $"app{_environment?.ApplicationNumber ?? 0}Debug.json";
+
             _dataStore?.InitStore();
 
             consoleDebugTimer = new Timer(defaultConsoleDebugTimeoutMin * 60000) { AutoReset = false };
@@ -180,7 +183,7 @@ public static class Debug
             errorLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultErrorLogLevel);
             fileLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultFileLogLevel);
 
-            websocketSink = new DebugWebsocketSink(new JsonFormatter(renderMessage: true));
+            websocketSink = TryCreateWebsocketSink();
 
             var appRoot = _environment?.GetApplicationRootDirectory()
                 ?? System.IO.Path.GetTempPath();
@@ -200,7 +203,6 @@ public static class Debug
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
                 .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: consoleLoggingLevelSwitch)
-                .WriteTo.Sink(websocketSink, levelSwitch: websocketLoggingLevelSwitch)
                 .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
@@ -208,8 +210,12 @@ public static class Debug
                     levelSwitch: fileLoggingLevelSwitch
                 );
 
-            // Add Crestron-specific enricher and error-log sink only when running on hardware.
-            if (_environment != null)
+            // Websocket sink is null when DebugWebsocketSink failed to construct (e.g. test env).
+            if (websocketSink != null)
+                _defaultLoggerConfiguration.WriteTo.Sink(websocketSink, levelSwitch: websocketLoggingLevelSwitch);
+
+            // Add Crestron-specific enricher and error-log sink only on real hardware.
+            if (_environment?.IsHardwareRuntime == true)
             {
                 var errorLogTemplate = IsRunningOnAppliance
                     ? "{@t:fff}ms [{@l:u4}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}"
@@ -271,8 +277,34 @@ public static class Debug
         {
             // _logger may not have been initialized yet — do not call LogError here.
             // _console may also be null; fall back to CrestronConsole as last resort.
+            // IMPORTANT: this catch block must not throw — any exception escaping a static
+            // constructor permanently faults the type, making the entire class unusable.
             try { _console?.PrintLine($"Exception in Debug static constructor: {ex.Message}\r\n{ex.StackTrace}"); }
-            catch { CrestronConsole.PrintLine($"Exception in Debug static constructor: {ex.Message}\r\n{ex.StackTrace}"); }
+            catch
+            {
+                try { CrestronConsole.PrintLine($"Exception in Debug static constructor: {ex.Message}\r\n{ex.StackTrace}"); }
+                catch { /* CrestronConsole unavailable (test/dev env) — swallow to keep type initializer healthy */ }
+            }
+        }
+        finally
+        {
+            // Guarantee _logger is never null — all Debug.Log* calls are safe even if the
+            // ctor failed partway through (e.g. on a dev machine without Crestron hardware).
+            _logger ??= new LoggerConfiguration().MinimumLevel.Fatal().CreateLogger();
+        }
+    }
+
+    /// <summary>Creates the WebSocket sink, returning null if construction fails in a test/dev environment.</summary>
+    private static DebugWebsocketSink? TryCreateWebsocketSink()
+    {
+        try
+        {
+            return new DebugWebsocketSink(new JsonFormatter(renderMessage: true));
+        }
+        catch
+        {
+            _console?.PrintLine("DebugWebsocketSink could not be created in this environment; websocket logging disabled.");
+            return null;
         }
     }
 

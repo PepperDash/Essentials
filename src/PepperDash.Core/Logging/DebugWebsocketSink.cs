@@ -91,13 +91,18 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
         if (!File.Exists(CertPath))
             CreateCert();
 
-        CrestronEnvironment.ProgramStatusEventHandler += type =>
+        try
         {
-            if (type == eProgramStatusEventType.Stopping)
+            CrestronEnvironment.ProgramStatusEventHandler += type =>
             {
-                StopServer();
-            }
-        };
+                if (type == eProgramStatusEventType.Stopping)
+                    StopServer();
+            };
+        }
+        catch
+        {
+            // CrestronEnvironment is not available in test / dev environments — safe to skip.
+        }
     }
 
     private static void CreateCert()

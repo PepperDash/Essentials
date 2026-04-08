@@ -19,6 +19,9 @@ public class FakeCrestronEnvironment : ICrestronEnvironment
 
     public string GetApplicationRootDirectory() => System.IO.Path.GetTempPath();
 
+    /// <inheritdoc/>
+    public bool IsHardwareRuntime => false;
+
     /// <summary>Simulates a program status event for tests.</summary>
     public void RaiseProgramStatus(ProgramStatusEventType type) =>
         ProgramStatusChanged?.Invoke(this, new ProgramStatusEventArgs(type));

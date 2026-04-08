@@ -21,5 +21,9 @@
   <!-- Reference the Abstractions project only — no Crestron SDK dependency -->
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Core.Abstractions\PepperDash.Core.Abstractions.csproj" />
+    <!-- PepperDash.Core is referenced so we can test Device and other concrete types.
+         DebugServiceRegistration.Register() is called via a [ModuleInitializer] before any
+         test runs, so Debug's static constructor uses fakes and never touches the Crestron SDK. -->
+    <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />
   </ItemGroup>
 </Project>

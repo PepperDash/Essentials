@@ -258,8 +258,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     throw new ArgumentNullException("device");
                 }
 
-                message.SetInterfaces(_deviceInterfaces);
-
                 message.Key = _device.Key;
 
                 message.Name = _device.Name;
@@ -285,8 +283,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             try
             {
-                deviceState.SetInterfaces(_deviceInterfaces);
-
                 deviceState.Key = _device.Key;
 
                 deviceState.Name = _device.Name;

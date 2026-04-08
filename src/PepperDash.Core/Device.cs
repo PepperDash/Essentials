@@ -75,7 +75,7 @@ public class Device : IKeyName
 	/// Adds a pre activation action
 	/// </summary>
 	/// <param name="act"></param>
-	public void AddPreActivationAction(Action act)
+	protected void AddPreActivationAction(Action act)
 	{
 		if (_PreActivationActions == null)
 			_PreActivationActions = new List<Action>();
@@ -89,7 +89,7 @@ public class Device : IKeyName
 	/// <summary>
 	/// AddPostActivationAction method
 	/// </summary>
-	public void AddPostActivationAction(Action act)
+	protected void AddPostActivationAction(Action act)
 	{
 		if (_PostActivationActions == null)
 			_PostActivationActions = new List<Action>();
@@ -156,7 +156,7 @@ public class Device : IKeyName
 	/// <summary>
 	/// CustomActivate method
 	/// </summary>
-	public virtual bool CustomActivate() { return true; }
+	protected virtual bool CustomActivate() { return true; }
 
 	/// <summary>
 	/// Call to deactivate device - unlink events, etc.  Overriding classes do not
@@ -168,7 +168,7 @@ public class Device : IKeyName
 	/// <summary>
 	/// Call this method to start communications with a device. Overriding classes do not need to call base.Initialize()
 	/// </summary>
-	public virtual void Initialize()
+	protected virtual void Initialize()
 	{
 	}
 

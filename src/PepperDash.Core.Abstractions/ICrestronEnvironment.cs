@@ -29,6 +29,13 @@ public interface ICrestronEnvironment
 
     /// <summary>Gets the application root directory path.</summary>
     string GetApplicationRootDirectory();
+
+    /// <summary>
+    /// Returns <c>true</c> when running on real Crestron hardware.
+    /// Returns <c>false</c> in test / dev environments so that SDK-specific
+    /// sinks and enrichers can be safely skipped.
+    /// </summary>
+    bool IsHardwareRuntime { get; }
 }
 
 /// <summary>
