@@ -18,6 +18,7 @@ namespace PepperDash.Essentials.Core.Web;
 public class EssentialsWebApi : EssentialsDevice
 {
     private readonly WebApiServer _server;
+    private readonly WebApiServer _debugServer;
 
     ///<example>
     /// http(s)://{ipaddress}/cws/{basePath}
@@ -67,6 +68,9 @@ public class EssentialsWebApi : EssentialsDevice
             BasePath = string.IsNullOrEmpty(config.BasePath) ? _defaultBasePath : config.BasePath;
 
         _server = new WebApiServer(Key, Name, BasePath);
+
+        _debugServer = new WebApiServer($"{key}-debug-app", $"{name} Debug App", "/debug");
+        _debugServer.SetFallbackHandler(new ServeDebugAppRequestHandler());
 
         SetupRoutes();
     }
@@ -226,6 +230,7 @@ public class EssentialsWebApi : EssentialsDevice
             Debug.LogMessage(LogEventLevel.Verbose, "Starting Essentials Web API on {0} Appliance", is4Series ? "4-series" : "3-series");
 
             _server.Start();
+            _debugServer.Start();
 
             PrintPaths();
 
@@ -236,6 +241,7 @@ public class EssentialsWebApi : EssentialsDevice
         Debug.LogMessage(LogEventLevel.Verbose, "Starting Essentials Web API on Virtual Control Server");
 
         _server.Start();
+        _debugServer.Start();
 
         PrintPaths();
     }
@@ -277,6 +283,12 @@ public class EssentialsWebApi : EssentialsDevice
         {
             Debug.LogMessage(LogEventLevel.Information, this, "{routeName:l}: {routePath:l}/{routeUrl:l}", route.Name, path, route.Url);
         }
+
+        var debugPath = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
+            ? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws/debug"
+            : $"https://{currentIp}/cws/debug";
+        Debug.LogMessage(LogEventLevel.Information, this, "Debug App: {debugPath:l}", debugPath);
+
         Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));
     }
 }

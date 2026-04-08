@@ -51,7 +51,7 @@ public static class Debug
 
     private static readonly LoggingLevelSwitch errorLogLevelSwitch;
 
-    private static readonly LoggingLevelSwitch fileLevelSwitch;
+    private static readonly LoggingLevelSwitch fileLoggingLevelSwitch;
 
     /// <summary>
     /// The minimum log level for messages to be sent to the console sink
@@ -168,7 +168,7 @@ public static class Debug
 
             errorLogLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultErrorLogLevel);
 
-            fileLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultFileLogLevel);
+            fileLoggingLevelSwitch = new LoggingLevelSwitch(initialMinimumLevel: defaultFileLogLevel);
 
             websocketSink = new DebugWebsocketSink(new JsonFormatter(renderMessage: true));
 
@@ -193,7 +193,7 @@ public static class Debug
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
                     retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 30 : 60,
-                    levelSwitch: fileLevelSwitch
+                    levelSwitch: fileLoggingLevelSwitch
                 );
 
             // Instantiate the root logger
@@ -413,7 +413,8 @@ public static class Debug
                 return;
             }
 
-            if (Enum.TryParse<LogEventLevel>(levelString, out var levelEnum))
+            // make this parse attempt case-insensitive to allow for more flexible command usage
+            if (Enum.TryParse<LogEventLevel>(levelString, true, out var levelEnum))
             {
                 SetDebugLevel(levelEnum);
                 return;
@@ -483,7 +484,7 @@ public static class Debug
         var err = CrestronDataStoreStatic.SetLocalUintValue(WebSocketLevelStoreKey, (uint)level);
 
         if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
-            LogMessage(LogEventLevel.Information, "Error saving websocket debug level setting: {erro}", err);
+            LogMessage(LogEventLevel.Information, "Error saving websocket debug level setting: {error}", err);
 
         LogMessage(LogEventLevel.Information, "Websocket debug level set to {0}", websocketLoggingLevelSwitch.MinimumLevel);
     }
@@ -502,7 +503,7 @@ public static class Debug
         if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
             LogMessage(LogEventLevel.Information, "Error saving Error Log debug level setting: {error}", err);
 
-        LogMessage(LogEventLevel.Information, "Error log debug level set to {0}", websocketLoggingLevelSwitch.MinimumLevel);
+        LogMessage(LogEventLevel.Information, "Error log debug level set to {0}", errorLogLevelSwitch.MinimumLevel);
     }
 
     /// <summary>
@@ -510,14 +511,14 @@ public static class Debug
     /// </summary>
     public static void SetFileMinimumDebugLevel(LogEventLevel level)
     {
-        errorLogLevelSwitch.MinimumLevel = level;
+        fileLoggingLevelSwitch.MinimumLevel = level;
 
-        var err = CrestronDataStoreStatic.SetLocalUintValue(ErrorLogLevelStoreKey, (uint)level);
+        var err = CrestronDataStoreStatic.SetLocalUintValue(FileLevelStoreKey, (uint)level);
 
         if (err != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
             LogMessage(LogEventLevel.Information, "Error saving File debug level setting: {error}", err);
 
-        LogMessage(LogEventLevel.Information, "File debug level set to {0}", websocketLoggingLevelSwitch.MinimumLevel);
+        LogMessage(LogEventLevel.Information, "File debug level set to {0}", fileLoggingLevelSwitch.MinimumLevel);
     }
 
     /// <summary>
