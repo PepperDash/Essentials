@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectType>Program</ProjectType>
-    <Configurations>Debug;Release;Debug 4.7.2</Configurations>
+    <Configurations>Debug;Release;</Configurations>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>PepperDash.Essentials</RootNamespace>
