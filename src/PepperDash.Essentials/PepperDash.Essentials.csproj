@@ -28,6 +28,11 @@
     <DocumentationFile>bin\$(Configuration)\PepperDashEssentials.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PepperDash.Essentials.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.128" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>

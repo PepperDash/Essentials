@@ -42,6 +42,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDash.Core.Tests", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDash.Essentials.Core.Tests", "src\PepperDash.Essentials.Core.Tests\PepperDash.Essentials.Core.Tests.csproj", "{F508E0BA-E885-424F-9D4C-359CF0011DEF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDash.Essentials.Tests", "src\PepperDash.Essentials.Tests\PepperDash.Essentials.Tests.csproj", "{841EE676-7784-4456-8F76-3697C6D432A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug 4.7.2|Any CPU = Debug 4.7.2|Any CPU
@@ -181,6 +183,24 @@ Global
 		{F508E0BA-E885-424F-9D4C-359CF0011DEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F508E0BA-E885-424F-9D4C-359CF0011DEF}.Release|x64.ActiveCfg = Release|Any CPU
 		{F508E0BA-E885-424F-9D4C-359CF0011DEF}.Release|x86.ActiveCfg = Release|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug 4.7.2|Any CPU.ActiveCfg = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug 4.7.2|Any CPU.Build.0 = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug 4.7.2|x64.ActiveCfg = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug 4.7.2|x64.Build.0 = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug 4.7.2|x86.ActiveCfg = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug 4.7.2|x86.Build.0 = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug|x64.Build.0 = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Debug|x86.Build.0 = Debug|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Release|x64.ActiveCfg = Release|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Release|x64.Build.0 = Release|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Release|x86.ActiveCfg = Release|Any CPU
+		{841EE676-7784-4456-8F76-3697C6D432A6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -194,6 +214,7 @@ Global
 		{E5336563-1194-501E-BC4A-79AD9283EF90} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{680BA287-E61F-4B8D-BD7A-84C2504F5F9C} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{F508E0BA-E885-424F-9D4C-359CF0011DEF} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{841EE676-7784-4456-8F76-3697C6D432A6} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6907A4BF-7201-47CF-AAB1-3597F3B8E1C3}
