@@ -26,7 +26,7 @@ Types of things in `DeviceManager`:
 
 A Device doesn't always represent a physical piece of hardware, but rather a logical construct that "does something" and is used by one or more other devices in the running program.  For example, we create a room device, and its corresponding Fusion device, and that room has a Cisco codec device, with an attached SSh client device. All of these lie in a flat collection in the `DeviceManager`.
 
-> The `DeviceManager` is nothing more than a modified collection of things, and technically those things don't have to be Devices, but must at least implement the `IKeyed` (`PepperDash.Core.IKeyed`) interface (simply so items can be looked up by their key.) Items in the `DeviceManager` that are Devices are run through additional steps of [activation](~/docs/Arch-activate.md#2-pre-activation) at startup.  This collection of devices is all interrelated by their string keys.
+> The `DeviceManager` is nothing more than a modified collection of things, and technically those things don't have to be Devices, but must at least implement the `IKeyed` (`PepperDash.Core.IKeyed`) interface (simply so items can be looked up by their key.) Items in the `DeviceManager` that are Devices are run through additional steps of [activation](~/docs/technical-docs/Arch-activate.md#2-pre-activation) at startup.  This collection of devices is all interrelated by their string keys.
 
 In this flat design, we spin up devices, and then introduce them to their "coworkers and bosses" - the other devices and logical units that they will interact with - and get them all operating together to form a running unit. For example: A room configuration will contain a "VideoCodecKey" property and a "DefaultDisplayKey" property. The `DeviceManager` provides the room with the codec or displays having the appropriate keys. What the room does with those is dependent on its coding.
 
@@ -38,4 +38,4 @@ This flat structure ensures that every device in a system exists in one place an
 
 ![Architecture overview](~/docs/images/arch-overview.png)
 
-Next: [Configurable lifecycle](~/docs/Arch-lifecycle.md)
+Next: [Configurable lifecycle](~/docs/technical-docs/Arch-lifecycle.md)

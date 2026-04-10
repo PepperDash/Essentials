@@ -16,13 +16,20 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.Config
 {
+    /// <summary>
+    /// ConfigUpdater class
+    /// </summary>
     public static class ConfigUpdater
     {
+        /// <summary>
+        /// ConfigStatusChanged event
+        /// </summary>
         public static event EventHandler<ConfigStatusEventArgs> ConfigStatusChanged;
 
         /// <summary>
         /// GetConfigFromServer method
         /// </summary>
+        /// <param name="url">URL of the config server</param>
         public static void GetConfigFromServer(string url)
         {
             Debug.LogMessage(LogEventLevel.Information, "Attempting to get new config from '{0}'", url);
@@ -210,13 +217,44 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         public enum eUpdateStatus
     {
+        /// <summary>
+        /// UpdateStarted status
+        /// </summary>
         UpdateStarted,
+
+        /// <summary>
+        /// ConfigFileReceived status
+        /// </summary>
         ConfigFileReceived,
+
+        /// <summary>
+        /// ArchivingConfigs status
+        /// </summary>
         ArchivingConfigs,
+
+        /// <summary>
+        /// DeletingLocalConfig status
+        /// </summary>
         DeletingLocalConfig,
+
+        /// <summary>
+        /// WritingConfigFile status
+        /// </summary>
         WritingConfigFile,
+
+        /// <summary>
+        /// RestartingProgram status
+        /// </summary>
         RestartingProgram,
+
+        /// <summary>
+        /// UpdateSucceeded status
+        /// </summary>
         UpdateSucceeded,
+
+        /// <summary>
+        /// UpdateFailed status
+        /// </summary>
         UpdateFailed
     }
 
@@ -230,6 +268,10 @@ namespace PepperDash.Essentials.Core.Config
         /// </summary>
         public eUpdateStatus UpdateStatus { get; private set; }
 
+        /// <summary>
+        /// ConfigStatusEventArgs Constructor
+        /// </summary>
+        /// <param name="status"></param>
         public ConfigStatusEventArgs(eUpdateStatus status)
         {
             UpdateStatus = status;

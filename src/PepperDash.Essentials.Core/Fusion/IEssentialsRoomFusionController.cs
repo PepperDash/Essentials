@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Timers;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
@@ -698,18 +699,26 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <param name="args"></param>
         protected void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
-            if (args.DeviceOnLine)
+            if (!args.DeviceOnLine)
             {
-                CrestronInvoke.BeginInvoke((o) =>
-                {
-                    CrestronEnvironment.Sleep(200);
+                return;
+            }
 
-                    // Send Push Notification Action request:
+            if (!_config.EnableSchedulePushNotifications)
+            {
+                return;
+            }
 
-                    const string requestId = "InitialPushRequest";
+            Task.Run(() =>
+            {
+                // CrestronEnvironment.Sleep(200);
+
+                // Send Push Notification Action request:
+
+                const string requestId = "InitialPushRequest";
 
 
-                    var actionRequest =
+                var actionRequest =
                         string.Format("<RequestAction>\n<RequestID>{0}</RequestID>\n", requestId) +
                         "<ActionID>RegisterPushModel</ActionID>\n" +
                         "<Parameters>\n" +
@@ -734,27 +743,26 @@ namespace PepperDash.Essentials.Core.Fusion
                         "</Parameters>\n" +
                         "</RequestAction>\n";
 
-                    Debug.LogMessage(LogEventLevel.Verbose, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
+                Debug.LogMessage(LogEventLevel.Verbose, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
 
-                    FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
+                FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
 
-                    GetCustomProperties();
+                GetCustomProperties();
 
-                    // Request current Fusion Server Time
-                    RequestLocalDateTime(null);
+                // Request current Fusion Server Time
+                RequestLocalDateTime(null);
 
-                    // Setup timer to request time daily
-                    if (_dailyTimeRequestTimer != null && !_dailyTimeRequestTimer.Disposed)
-                    {
-                        _dailyTimeRequestTimer.Stop();
-                        _dailyTimeRequestTimer.Dispose();
-                    }
+                // Setup timer to request time daily
+                if (_dailyTimeRequestTimer != null && !_dailyTimeRequestTimer.Disposed)
+                {
+                    _dailyTimeRequestTimer.Stop();
+                    _dailyTimeRequestTimer.Dispose();
+                }
 
-                    _dailyTimeRequestTimer = new CTimer(RequestLocalDateTime, null, 86400000, 86400000);
+                _dailyTimeRequestTimer = new CTimer(RequestLocalDateTime, null, 86400000, 86400000);
 
-                    _dailyTimeRequestTimer.Reset(86400000, 86400000);
-                });
-            }
+                _dailyTimeRequestTimer.Reset(86400000, 86400000);
+            });
         }
 
         /// <summary>
@@ -785,7 +793,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
             var requestTest =
                 string.Format(
-                    "<RequestSchedule><RequestID>FullSchedleRequest</RequestID><RoomID>{0}</RoomID><Start>{1}</Start><HourSpan>24</HourSpan></RequestSchedule>",
+                    "<RequestSchedule><RequestID>FullScheduleRequest</RequestID><RoomID>{0}</RoomID><Start>{1}</Start><HourSpan>24</HourSpan></RequestSchedule>",
                     RoomGuid, currentTime);
 
             Debug.LogMessage(LogEventLevel.Verbose, this, "Sending Fusion ScheduleQuery: \n{0}", requestTest);
@@ -960,7 +968,7 @@ namespace PepperDash.Essentials.Core.Fusion
                                                  select parameter.Attributes
                         into attributes
                                                  where attributes["ID"].Value == "Registered"
-                                                 select Int32.Parse(attributes["Value"].Value))
+                                                 select int.Parse(attributes["Value"].Value))
                     {
                         switch (isRegistered)
                         {
@@ -1112,7 +1120,7 @@ namespace PepperDash.Essentials.Core.Fusion
         protected void FusionRoomSchedule_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender,
             SigEventArgs args)
         {
-            Debug.LogMessage(LogEventLevel.Verbose, this, "Scehdule Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event,
+            Debug.LogMessage(LogEventLevel.Verbose, this, "Schedule Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event,
                 args.Sig.Name, args.Sig.StringValue);
 
 

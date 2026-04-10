@@ -9,10 +9,21 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRoomEventSchedule
     {
+        /// <summary>
+        /// Adds or updates a scheduled event
+        /// </summary>
+        /// <param name="eventConfig"></param>
         void AddOrUpdateScheduledEvent(ScheduledEventConfig eventConfig);
 
+        /// <summary>
+        /// Removes a scheduled event by its key
+        /// </summary>
+        /// <returns></returns>
         List<ScheduledEventConfig> GetScheduledEvents();
 
+        /// <summary>
+        /// Removes a scheduled event by its key
+        /// </summary>
         event EventHandler<ScheduledEventEventArgs> ScheduledEventsChanged;
     }
 

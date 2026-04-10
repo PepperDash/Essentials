@@ -5,7 +5,15 @@ namespace PepperDash.Essentials.Core
   /// </summary>
   public interface IHasVolumeControlWithFeedback : IHasVolumeControl
   {
+    /// <summary>
+    /// SetVolume method
+    /// </summary>
+    /// <param name="level">The volume level to set</param>
     void SetVolume(ushort level);
+
+    /// <summary>
+    /// VolumeLevelFeedback property
+    /// </summary>
     IntFeedback VolumeLevelFeedback { get; }
   }
 }

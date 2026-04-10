@@ -23,6 +23,9 @@ namespace PepperDash.Essentials.Core.Privacy
 
         bool initialized;
 
+        /// <summary>
+        /// Gets or sets whether LED control is enabled
+        /// </summary>
         public bool EnableLeds
         {
             get
@@ -69,6 +72,11 @@ namespace PepperDash.Essentials.Core.Privacy
         /// </summary>
         public IPrivacy PrivacyDevice { get; private set; }
 
+        /// <summary>
+        /// Constructor for MicrophonePrivacyController
+        /// </summary>
+        /// <param name="key">key of the controller device</param>
+        /// <param name="config">configuration for the controller device</param>
         public MicrophonePrivacyController(string key, MicrophonePrivacyControllerConfig config) :
             base(key)
         {
@@ -264,6 +272,9 @@ namespace PepperDash.Essentials.Core.Privacy
     /// </summary>
     public class MicrophonePrivacyControllerFactory : EssentialsDeviceFactory<MicrophonePrivacyController>
     {
+        /// <summary>
+        /// Constructor for MicrophonePrivacyControllerFactory
+        /// </summary>
         public MicrophonePrivacyControllerFactory()
         {
             TypeNames = new List<string>() { "microphoneprivacycontroller" };

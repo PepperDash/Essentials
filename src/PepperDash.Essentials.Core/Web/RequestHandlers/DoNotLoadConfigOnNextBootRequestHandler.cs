@@ -5,9 +5,9 @@ using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
- /// <summary>
- /// Represents a DoNotLoadConfigOnNextBootRequestHandler
- /// </summary>
+	/// <summary>
+	/// Represents a DoNotLoadConfigOnNextBootRequestHandler
+	/// </summary>
 	public class DoNotLoadConfigOnNextBootRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -79,15 +79,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		}
 	}
 
- /// <summary>
- /// Represents a Data
- /// </summary>
+	/// <summary>
+	/// Represents a Data
+	/// </summary>
 	public class Data
 	{
+		/// <summary>
+		/// Gets or sets the DoNotLoadConfigOnNextBoot
+		/// </summary>
 		[JsonProperty("doNotLoadConfigOnNextBoot", NullValueHandling = NullValueHandling.Ignore)]
-  /// <summary>
-  /// Gets or sets the DoNotLoadConfigOnNextBoot
-  /// </summary>
 		public bool DoNotLoadConfigOnNextBoot { get; set; }
 	}
 }

@@ -13,10 +13,10 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsRoomScheduledEventsConfig
     {
-        [JsonProperty("scheduledEvents")]
         /// <summary>
         /// Gets or sets the ScheduledEvents
         /// </summary>
+        [JsonProperty("scheduledEvents")]
         public List<ScheduledEventConfig> ScheduledEvents;
     }
 
@@ -25,49 +25,52 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class ScheduledEventConfig
     {
-        [JsonProperty("key")]
         /// <summary>
         /// Gets or sets the Key
         /// </summary>
+        [JsonProperty("key")]
         public string Key;
 
-        [JsonProperty("name")]
         /// <summary>
         /// Gets or sets the Name
         /// </summary>
+        [JsonProperty("name")]
         public string Name;
 
+        /// <summary>
+        /// Gets or sets the Days
+        /// </summary>
         [JsonProperty("days")]
         public ScheduledEventCommon.eWeekDays Days;
 
-        [JsonProperty("time")]
         /// <summary>
         /// Gets or sets the Time
         /// </summary>
+        [JsonProperty("time")]
         public string Time;
 
-        [JsonProperty("actions")]
         /// <summary>
         /// Gets or sets the Actions
         /// </summary>
+        [JsonProperty("actions")]
         public List<DeviceActionWrapper> Actions;
 
-        [JsonProperty("persistent")]
         /// <summary>
         /// Gets or sets the Persistent
         /// </summary>
+        [JsonProperty("persistent")]
         public bool Persistent;
 
-        [JsonProperty("acknowledgeable")]
         /// <summary>
         /// Gets or sets the Acknowledgeable
         /// </summary>
+        [JsonProperty("acknowledgeable")]
         public bool Acknowledgeable;
 
-        [JsonProperty("enable")]
         /// <summary>
         /// Gets or sets the Enable
         /// </summary>
+        [JsonProperty("enable")]
         public bool Enable;
     }
 }

@@ -25,11 +25,15 @@
         /// contact,versiport
         /// </summary>
         public string Type { get; set; }
+
         /// <summary>
         /// Input number if contact
         /// </summary>
         public int Number { get; set; }
 
+        /// <summary>
+        /// TriggerOnClose indicates if the trigger is on close
+        /// </summary>
         public bool TriggerOnClose { get; set; }
 
     }

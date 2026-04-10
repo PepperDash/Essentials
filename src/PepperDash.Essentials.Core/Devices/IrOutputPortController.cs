@@ -26,10 +26,24 @@ namespace PepperDash.Essentials.Core
 		uint IrPortUid;
 		IROutputPort IrPort;
 
+		/// <summary>
+		/// Gets the DriverLoaded feedback
+		/// </summary>
         public BoolFeedback DriverLoaded { get; private set; }
 
+		/// <summary>
+		/// Gets or sets the StandardIrPulseTime
+		/// </summary>
 		public ushort StandardIrPulseTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the DriverFilepath
+		/// </summary>
 		public string DriverFilepath { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the DriverIsLoaded
+		/// </summary>
 		public bool DriverIsLoaded { get; private set; }
 
         /// <summary>
@@ -37,9 +51,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public string[] IrFileCommands { get { return IrPort.AvailableStandardIRCmds(IrPortUid); } }
 
-  /// <summary>
-  /// Gets or sets the UseBridgeJoinMap
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the UseBridgeJoinMap
+		/// </summary>
 		public bool UseBridgeJoinMap { get; private set; }
 
 		/// <summary>
@@ -61,6 +75,12 @@ namespace PepperDash.Essentials.Core
 			LoadDriver(irDriverFilepath);
 		}
 
+		/// <summary>
+		/// Constructor for IrDevice base class using post activation function to get port
+		/// </summary>
+		/// <param name="key">key of the device</param>
+		/// <param name="postActivationFunc">function to call post activation</param>
+		/// <param name="config">config of the device</param>
 	    public IrOutputPortController(string key, Func<DeviceConfig, IROutputPort> postActivationFunc,
 	        DeviceConfig config)
 	        : base(key)
@@ -105,9 +125,9 @@ namespace PepperDash.Essentials.Core
             });
 	    }
 
-     /// <summary>
-     /// PrintAvailableCommands method
-     /// </summary>
+		/// <summary>
+		/// PrintAvailableCommands method
+		/// </summary>
 	    public void PrintAvailableCommands()
 	    {
             Debug.LogMessage(LogEventLevel.Verbose, this, "Available IR Commands in IR File {0}", IrPortUid);
@@ -121,10 +141,7 @@ namespace PepperDash.Essentials.Core
 	    /// <summary>
 		/// Loads the IR driver at path
 		/// </summary>
-		/// <param name="path"></param>
-  /// <summary>
-  /// LoadDriver method
-  /// </summary>
+		/// <param name="path">path of the IR driver file</param>
 		public void LoadDriver(string path)
 		{
             Debug.LogMessage(LogEventLevel.Verbose, this, "***Loading IR File***");
@@ -148,10 +165,12 @@ namespace PepperDash.Essentials.Core
 		}
 
 
-  /// <summary>
-  /// PressRelease method
-  /// </summary>
-  /// <inheritdoc />
+		/// <summary>
+		/// PressRelease method
+		/// </summary>
+		/// <param name="command">IR command to send</param>
+		/// <param name="state">true to press, false to release</param>
+		/// <inheritdoc />
 		public virtual void PressRelease(string command, bool state)
 		{
 			Debug.LogMessage(LogEventLevel.Verbose, this, "IR:'{0}'={1}", command, state);
@@ -176,10 +195,12 @@ namespace PepperDash.Essentials.Core
 				IrPort.Release();
 		}
 
-  /// <summary>
-  /// Pulse method
-  /// </summary>
-  /// <inheritdoc />
+		/// <summary>
+		/// Pulse method
+		/// </summary>
+		/// <param name="command">IR command to send</param>
+		/// <param name="time">time to pulse the command</param>
+		/// <inheritdoc />
 		public virtual void Pulse(string command, ushort time)
 		{
 			if (IrPort == null)
@@ -201,6 +222,7 @@ namespace PepperDash.Essentials.Core
 		/// <summary>
 		/// Notifies the console when a bad command is used.
 		/// </summary>
+		/// <param name="command">command that was not found</param>
 		protected void NoIrCommandError(string command)
 		{
 			Debug.LogMessage(LogEventLevel.Verbose, this, "Device {0}: IR Driver {1} does not contain command {2}",

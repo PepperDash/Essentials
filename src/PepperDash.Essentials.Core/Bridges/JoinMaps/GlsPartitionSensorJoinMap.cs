@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 
         #region Digital
 
+        /// <summary>
+        /// Sensor Is Online
+        /// </summary>
         [JoinName("IsOnline")]
         public JoinDataComplete IsOnline = new JoinDataComplete(
             new JoinData
@@ -25,7 +28,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
-        
+        /// <summary>
+        /// Sensor Enable
+        /// </summary>
         [JoinName("Enable")]
         public JoinDataComplete Enable = new JoinDataComplete(
             new JoinData
@@ -40,6 +45,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+        /// <summary>
+        /// Sensor Partition Sensed
+        /// </summary>
         [JoinName("PartitionSensed")]
         public JoinDataComplete PartitionSensed = new JoinDataComplete(
             new JoinData
@@ -54,6 +62,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+        /// <summary>
+        /// Sensor Partition Not Sensed
+        /// </summary>
         [JoinName("PartitionNotSensed")]
         public JoinDataComplete PartitionNotSensed = new JoinDataComplete(
             new JoinData
@@ -68,6 +79,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+        /// <summary>
+        /// Sensor Increase Sensitivity
+        /// </summary>
         [JoinName("IncreaseSensitivity")]
         public JoinDataComplete IncreaseSensitivity = new JoinDataComplete(
             new JoinData
@@ -82,6 +96,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+        /// <summary>
+        /// Sensor Decrease Sensitivity
+        /// </summary>
         [JoinName("DecreaseSensitivity")]
         public JoinDataComplete DecreaseSensitivity = new JoinDataComplete(
             new JoinData
@@ -100,6 +117,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 
         #region Analog
 
+        /// <summary>
+        /// Sensor Sensitivity
+        /// </summary>
         [JoinName("Sensitivity")]
         public JoinDataComplete Sensitivity = new JoinDataComplete(
             new JoinData
@@ -119,6 +139,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 
         #region Serial
 
+        /// <summary>
+        /// Sensor Name
+        /// </summary>
         [JoinName("Name")]
         public JoinDataComplete Name = new JoinDataComplete(
             new JoinData

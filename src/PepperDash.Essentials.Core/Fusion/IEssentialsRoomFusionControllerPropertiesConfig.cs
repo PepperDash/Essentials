@@ -75,4 +75,11 @@ public class IEssentialsRoomFusionControllerPropertiesConfig
     /// </summary>
     [JsonProperty("helpRequestTimeoutMs")]
     public int HelpRequestTimeoutMs { get; set; } = 30000;
+
+    /// <summary>
+    /// Gets or sets whether to enable schedule push notifications
+    /// </summary>
+    /// <remarks>Defaults to false to skip getting schedule unless required</remarks>
+    [JsonProperty("enableSchedulePushNotifications")]
+    public bool EnableSchedulePushNotifications { get; set; } = false;
 }

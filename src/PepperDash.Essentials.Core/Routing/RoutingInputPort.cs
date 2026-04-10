@@ -21,6 +21,9 @@ namespace PepperDash.Essentials.Core
 		/// <param name="selector">An object used to refer to this port in the IRouting device's ExecuteSwitch method.
 		/// May be string, number, whatever</param>
 		/// <param name="parent">The IRoutingInputs object this lives on</param>
+        /// <param name="key">key of the port</param>
+        /// <param name="type">type of the routing signal</param>
+        /// <param name="connType">connection type of the port</param>
 		public RoutingInputPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType,
 			object selector, IRoutingInputs parent)
 			: this (key, type, connType, selector, parent, false)
@@ -32,6 +35,12 @@ namespace PepperDash.Essentials.Core
 		/// the ports that link a DM card to a DM matrix bus
 		/// </summary>
 		/// <param name="isInternal">true for internal ports</param>
+        /// <param name="key">key of the port</param>
+        /// <param name="type">type of the routing signal</param>
+        /// <param name="connType">connection type of the port</param>
+        /// <param name="selector">An object used to refer to this port in the IRouting device's ExecuteSwitch method.
+        /// May be string, number, whatever</param>
+        /// <param name="parent">The IRoutingInputs object this lives on</param>
 		public RoutingInputPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType,
 			object selector, IRoutingInputs parent, bool isInternal)
 			: base(key, type, connType, selector, isInternal)

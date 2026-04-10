@@ -12,8 +12,14 @@ namespace PepperDash.Essentials.Core.Routing
     /// </summary>
     public interface IVideoSync : IKeyed
     {
+        /// <summary>
+        /// Gets whether or not video sync is detected
+        /// </summary>
         bool VideoSyncDetected { get; }
 
+        /// <summary>
+        /// Event raised when video sync changes
+        /// </summary>
         event EventHandler VideoSyncChanged;
     }
 }

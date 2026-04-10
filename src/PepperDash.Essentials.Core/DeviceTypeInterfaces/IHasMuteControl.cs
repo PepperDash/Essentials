@@ -5,6 +5,9 @@ namespace PepperDash.Essentials.Core
   /// </summary>
   public interface IHasMuteControl
   {
+    /// <summary>
+    /// MuteToggle method
+    /// </summary>
     void MuteToggle();
   }
 }

@@ -49,7 +49,9 @@ namespace PepperDash.Essentials.Core.Config
 		public string DestinationPort { get; set; }
 
 		/// <summary>
-		/// Optional override for the signal type of the tie line. If set, this overrides the destination port's type for routing calculations.
+		/// Optional override for the signal type of the tie line. If set, this overrides the calculated 
+		/// intersection of source and destination port types for routing calculations. Useful when the 
+		/// physical cable supports fewer signal types than both ports are capable of.
 		/// </summary>
 		[JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
 		[JsonConverter(typeof(StringEnumConverter))]
@@ -94,6 +96,32 @@ namespace PepperDash.Essentials.Core.Config
 			{
 				LogError("Destination does not contain port");
 				return null;
+			}
+
+			// Validate signal type compatibility
+			if (OverrideType.HasValue)
+			{
+				// When override type is specified, both ports must support it
+				if (!sourceOutputPort.Type.HasFlag(OverrideType.Value))
+				{
+					LogError($"Override type '{OverrideType.Value}' is not supported by source port '{SourcePort}' (type: {sourceOutputPort.Type})");
+					return null;
+				}
+
+				if (!destinationInputPort.Type.HasFlag(OverrideType.Value))
+				{
+					LogError($"Override type '{OverrideType.Value}' is not supported by destination port '{DestinationPort}' (type: {destinationInputPort.Type})");
+					return null;
+				}
+			}
+			else
+			{
+				// Without override type, ports must have at least one common signal type flag
+				if ((sourceOutputPort.Type & destinationInputPort.Type) == 0)
+				{
+					LogError($"Incompatible signal types: source port '{SourcePort}' (type: {sourceOutputPort.Type}) has no common signal types with destination port '{DestinationPort}' (type: {destinationInputPort.Type})");
+					return null;
+				}
 			}
 
 			return new TieLine(sourceOutputPort, destinationInputPort, OverrideType);

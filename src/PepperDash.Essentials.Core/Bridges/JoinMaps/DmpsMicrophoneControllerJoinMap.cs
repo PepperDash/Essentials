@@ -7,26 +7,45 @@ namespace PepperDash.Essentials.Core.Bridges
     /// </summary>
     public class DmpsMicrophoneControllerJoinMap : JoinMapBaseAdvanced
     {
+
+        /// <summary>
+        /// Mic Gain dB Set / Get
+        /// </summary>
         [JoinName("MicGain")]
         public JoinDataComplete MicGain = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Mic Gain dB Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Mic Gain 16bit Scaled Set / Get
+        /// </summary>
         [JoinName("MicGainScaled")]
         public JoinDataComplete MicGainScaled = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
             new JoinMetadata { Description = "Mic Gain 16bit Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
-
+        
+        /// <summary>
+        /// Mic Mute On Set / Get
+        /// </summary>
         [JoinName("MicMuteOn")]
         public JoinDataComplete MicMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Mic Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Mic Mute Off Set / Get
+        /// </summary>
         [JoinName("MicMuteOff")]
         public JoinDataComplete MicMuteOff = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
             new JoinMetadata { Description = "Mic Mute Off Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Mic Gain Scaled Send Enable/Disable
+        /// </summary>
         [JoinName("MicGainScaledSend")]
         public JoinDataComplete MicGainScaledSend = new JoinDataComplete(new JoinData { JoinNumber = 3, JoinSpan = 1 },
             new JoinMetadata { Description = "Mic Gain Scaled Send Enable/Disable", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
+        
+        /// <summary>
+        /// Mic Name Get
+        /// </summary>
         [JoinName("MicName")]
         public JoinDataComplete MicName = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Mic Name Get", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });

@@ -10,6 +10,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRoutingFeedback : IKeyName
     {
+        /// <summary>
+        /// Event raised when a numeric switch changes
+        /// </summary>
         event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
         //void OnSwitchChange(RoutingNumericEventArgs e);
     }

@@ -19,10 +19,13 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Submits the password
         /// </summary>
-        /// <param name="password"></param>
+        /// <param name="password">The password to submit</param>
         void SubmitPassword(string password);
     }
 
+    /// <summary>
+    /// PasswordPromptEventArgs class
+    /// </summary>
     public class PasswordPromptEventArgs : EventArgs
     {
         /// <summary>
@@ -45,6 +48,13 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public string Message { get; private set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="lastAttemptIncorrect">indicates if the last submitted password was incorrect</param>
+        /// <param name="loginFailed">indicates if the login attempt failed</param>
+        /// <param name="loginCancelled">indicates if the login attempt was cancelled</param>
+        /// <param name="message">provides a message related to the password prompt</param>
         public PasswordPromptEventArgs(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
         {
             LastAttemptWasIncorrect = lastAttemptIncorrect;

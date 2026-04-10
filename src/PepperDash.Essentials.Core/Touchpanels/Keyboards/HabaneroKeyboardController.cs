@@ -27,8 +27,14 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         /// </summary>
         public StringFeedback OutputFeedback { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the IsVisible
+        /// </summary>
         public bool IsVisible { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the DotComButtonString
+        /// </summary>
         public string DotComButtonString { get; set; }
 
         /// <summary>
@@ -441,21 +447,33 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
     }
 
     /// <summary>
-    /// 
+    /// Event args for keyboard key presses
     /// </summary>
     public class KeyboardControllerPressEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the Text
+        /// </summary>
         public string Text { get; private set; }
+
         /// <summary>
         /// Gets or sets the SpecialKey
         /// </summary>
         public KeyboardSpecialKey SpecialKey { get; private set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="text"></param>
         public KeyboardControllerPressEventArgs(string text)
         {
             Text = text;
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="key">special keyboard key</param>
         public KeyboardControllerPressEventArgs(KeyboardSpecialKey key)
         {
             SpecialKey = key;
@@ -467,6 +485,29 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
     /// </summary>
     public enum KeyboardSpecialKey
     {
-        None = 0, Backspace, Clear, GoButton, SecondaryButton
+        /// <summary>
+        /// None
+        /// </summary>
+        None = 0, 
+        
+        /// <summary>
+        /// Backspace
+        /// </summary>
+        Backspace, 
+        
+        /// <summary>
+        /// Clear
+        /// </summary>
+        Clear, 
+        
+        /// <summary>
+        /// GoButton
+        /// </summary>
+        GoButton, 
+        
+        /// <summary>
+        /// SecondaryButton
+        /// </summary>
+        SecondaryButton
     }
 }

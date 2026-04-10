@@ -20,6 +20,13 @@ namespace PepperDash.Essentials.Core
 	{
 		GenericBase Device;
 
+		/// <summary>
+		/// Constructor for CrestronGenericBaseCommunicationMonitor
+		/// </summary>
+		/// <param name="parent">parent device</param>
+		/// <param name="device">device to monitor</param>
+		/// <param name="warningTime">time before warning status</param>
+		/// <param name="errorTime">time before error status</param>
 		public CrestronGenericBaseCommunicationMonitor(IKeyed parent, GenericBase device, long warningTime, long errorTime)
 			: base(parent, warningTime, errorTime)
 		{

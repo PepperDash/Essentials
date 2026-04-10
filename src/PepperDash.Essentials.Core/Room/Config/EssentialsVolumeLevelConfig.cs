@@ -12,8 +12,20 @@ namespace PepperDash.Essentials.Room.Config
         /// Gets or sets the Master
         /// </summary>
         public EssentialsVolumeLevelConfig Master { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Program
+        /// </summary>
         public EssentialsVolumeLevelConfig Program { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AudioCallRx
+        /// </summary>
         public EssentialsVolumeLevelConfig AudioCallRx { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AudioCallTx
+        /// </summary>
         public EssentialsVolumeLevelConfig AudioCallTx { get; set; }
     }
 

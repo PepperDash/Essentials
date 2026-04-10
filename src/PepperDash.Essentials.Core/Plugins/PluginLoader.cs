@@ -174,9 +174,6 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="assembly"></param>
         /// <returns></returns>
-        /// <summary>
-        /// GetAssemblyVersion method
-        /// </summary>
         public static string GetAssemblyVersion(Assembly assembly)
         {
             var ver = assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
@@ -198,11 +195,8 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Checks if the filename matches an already loaded assembly file's name
         /// </summary>
-        /// <param name="filename"></param>
+        /// <param name="name">name of loaded assembly</param>
         /// <returns>True if file already matches loaded assembly file.</returns>
-        /// <summary>
-        /// CheckIfAssemblyLoaded method
-        /// </summary>
         public static bool CheckIfAssemblyLoaded(string name)
         {
             Debug.LogMessage(LogEventLevel.Verbose, "Checking if assembly: {0} is loaded...", name);
@@ -238,9 +232,6 @@ namespace PepperDash.Essentials
         /// Used by console command to report the currently loaded assemblies and versions
         /// </summary>
         /// <param name="command"></param>
-        /// <summary>
-        /// ReportAssemblyVersions method
-        /// </summary>
         public static void ReportAssemblyVersions(string command)
         {
             CrestronConsole.ConsoleCommandResponse("Essentials Version: {0}" + CrestronEnvironment.NewLine, Global.AssemblyVersion);
@@ -257,6 +248,7 @@ namespace PepperDash.Essentials
             //    CrestronConsole.ConsoleCommandResponse("{0} Version: {1}" + CrestronEnvironment.NewLine, assembly.Name, assembly.Version);
             //}
         }
+        
         /// <summary>
         /// Moves any .dll assemblies not already loaded from the plugins folder to loadedPlugins folder
         /// </summary>

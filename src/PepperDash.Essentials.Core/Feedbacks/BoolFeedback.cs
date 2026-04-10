@@ -63,6 +63,10 @@ namespace PepperDash.Essentials.Core
             ValueFunc = valueFunc;
         }
 
+        /// <summary>
+        /// Sets the ValueFunc
+        /// </summary>
+        /// <param name="newFunc">New function to set as the ValueFunc</param>
         public void SetValueFunc(Func<bool> newFunc)
         {
             ValueFunc = newFunc;
@@ -153,6 +157,10 @@ namespace PepperDash.Essentials.Core
             LinkedCrestronFeedbacks.Remove(feedback);
         }
 
+        /// <summary>
+        /// ToString override
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return (InTestMode ? "TEST -- " : "") + BoolValue.ToString();

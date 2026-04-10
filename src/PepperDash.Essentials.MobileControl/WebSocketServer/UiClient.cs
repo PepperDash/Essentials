@@ -27,6 +27,15 @@ namespace PepperDash.Essentials.WebSocketServer
         public string Id { get; private set; }
 
         /// <summary>
+        /// Updates the client ID - only accessible from within the assembly (e.g., by the server)
+        /// </summary>
+        /// <param name="newId">The new client ID</param>
+        internal void UpdateId(string newId)
+        {
+            Id = newId;
+        }
+
+        /// <summary>
         /// Token associated with this client
         /// </summary>
         public string Token { get; private set; }

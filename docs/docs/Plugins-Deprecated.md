@@ -1,6 +1,6 @@
 # Deprecated
 
-**Note : this entry is out of date - please see [Plugins](~/docs/Plugins.md)**
+**Note : this entry is out of date - please see [Plugins](~/docs/technical-docs/Plugins.md)**
 
 ## What are Essentials Plugins?
 

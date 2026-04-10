@@ -8,10 +8,19 @@ namespace PepperDash.Essentials.Core.DeviceInfo
     /// </summary>
     public interface IDeviceInfoProvider:IKeyed
     {
+        /// <summary>
+        /// Gets the DeviceInfo
+        /// </summary>
         DeviceInfo DeviceInfo { get; }
 
+        /// <summary>
+        /// Event fired when DeviceInfo changes
+        /// </summary>
         event DeviceInfoChangeHandler DeviceInfoChanged;
 
+        /// <summary>
+        /// Updates the DeviceInfo
+        /// </summary>
         void UpdateDeviceInfo();
     }
 

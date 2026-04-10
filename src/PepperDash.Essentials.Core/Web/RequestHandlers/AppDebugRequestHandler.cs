@@ -80,16 +80,16 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		}
 	}
 
- /// <summary>
- /// Represents a AppDebug
- /// </summary>
+	/// <summary>
+	/// Represents a AppDebug
+	/// </summary>
 	public class AppDebug
 	{
-		[JsonProperty("minimumLevel", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(StringEnumConverter))]
         /// <summary>
         /// Gets or sets the MinimumLevel
         /// </summary>
+		[JsonProperty("minimumLevel", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public LogEventLevel MinimumLevel { get; set; }
 	}
 }

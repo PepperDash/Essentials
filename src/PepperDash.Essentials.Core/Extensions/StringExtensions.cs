@@ -7,6 +7,9 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// StringExtensions class
+    /// </summary>
     public static class StringExtensions
     {
         /// <summary>
@@ -14,9 +17,6 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="s">string input</param>
         /// <returns>null if the string is emtpy, otherwise returns the string</returns>
-        /// <summary>
-        /// NullIfEmpty method
-        /// </summary>
         public static string NullIfEmpty(this string s)
         {
             return string.IsNullOrEmpty(s) ? null : s;
@@ -27,9 +27,6 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="s">string input</param>
         /// <returns>null if the string is wempty or made of only whitespace characters, otherwise returns the string</returns>
-        /// <summary>
-        /// NullIfWhiteSpace method
-        /// </summary>
         public static string NullIfWhiteSpace(this string s)
         {
             return string.IsNullOrEmpty(s.Trim()) ? null : s;
@@ -41,9 +38,6 @@ namespace PepperDash.Essentials.Core
         /// <param name="s">input string</param>
         /// <param name="newString">string to replace with if input string is empty or whitespace</param>
         /// <returns>returns newString if s is null, emtpy, or made of whitespace characters, otherwise returns s</returns>
-        /// <summary>
-        /// ReplaceIfNullOrEmpty method
-        /// </summary>
         public static string ReplaceIfNullOrEmpty(this string s, string newString)
         {
             return string.IsNullOrEmpty(s) ? newString : s;
@@ -56,9 +50,6 @@ namespace PepperDash.Essentials.Core
         /// <param name="toCheck">String to check in Source String</param>
         /// <param name="comp">Comparison parameters</param>
         /// <returns>true of string contains "toCheck"</returns>
-        /// <summary>
-        /// Contains method
-        /// </summary>
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {
             if (string.IsNullOrEmpty(source)) return false;
@@ -70,9 +61,6 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="source">String to Trim</param>
         /// <returns>Trimmed String</returns>
-        /// <summary>
-        /// TrimAll method
-        /// </summary>
         public static string TrimAll(this string source)
         {
             return string.IsNullOrEmpty(source) ? string.Empty : source.TrimStart().TrimEnd();
@@ -84,9 +72,6 @@ namespace PepperDash.Essentials.Core
         /// <param name="source">String to Trim</param>
         /// <param name="chars">Char Array to trim from string</param>
         /// <returns>Trimmed String</returns>
-        /// <summary>
-        /// TrimAll method
-        /// </summary>
         public static string TrimAll(this string source, char[] chars)
         {
             return string.IsNullOrEmpty(source) ? string.Empty : source.TrimStart(chars).TrimEnd(chars);
