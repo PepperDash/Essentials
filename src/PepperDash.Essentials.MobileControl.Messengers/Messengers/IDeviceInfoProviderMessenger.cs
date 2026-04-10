@@ -10,19 +10,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// Facilitates communication of device information by providing mechanisms for status updates and  device
     /// information reporting.
     /// </summary>
-    /// <remarks>The <see cref="DeviceInfoMessenger"/> class integrates with an <see
+    /// <remarks>The <see cref="IDeviceInfoProviderMessenger"/> class integrates with an <see
     /// cref="IDeviceInfoProvider"/> to  manage device-specific information. It uses a debounce timer to limit the
     /// frequency of updates,  ensuring efficient communication. The timer is initialized with a 1-second interval and
     /// is disabled  by default. This class also subscribes to device information change events and provides actions for
     /// reporting full device status and triggering updates.</remarks>
-    public class DeviceInfoMessenger : MessengerBase
+    public class IDeviceInfoProviderMessenger : MessengerBase
     {
         private readonly IDeviceInfoProvider _deviceInfoProvider;
 
         private readonly Timer debounceTimer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceInfoMessenger"/> class, which facilitates communication
+        /// Initializes a new instance of the <see cref="IDeviceInfoProviderMessenger"/> class, which facilitates communication
         /// of device information.
         /// </summary>
         /// <remarks>The messenger uses a debounce timer to limit the frequency of certain operations. The
@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="key">A unique identifier for the messenger instance.</param>
         /// <param name="messagePath">The path used for sending and receiving messages.</param>
         /// <param name="device">An implementation of <see cref="IDeviceInfoProvider"/> that provides device-specific information.</param>
-        public DeviceInfoMessenger(string key, string messagePath, IDeviceInfoProvider device) : base(key, messagePath, device as Device)
+        public IDeviceInfoProviderMessenger(string key, string messagePath, IDeviceInfoProvider device) : base(key, messagePath, device as Device)
         {
             _deviceInfoProvider = device;
 

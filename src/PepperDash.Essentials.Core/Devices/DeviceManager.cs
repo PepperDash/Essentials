@@ -469,14 +469,14 @@ public static class DeviceManager
             CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Input Ports:{2}", s, inputPorts.Count, CrestronEnvironment.NewLine);
             foreach (var routingInputPort in inputPorts)
             {
-                CrestronConsole.ConsoleCommandResponse("{0}{1}", routingInputPort.Key, CrestronEnvironment.NewLine);
+                CrestronConsole.ConsoleCommandResponse("key: {0} signalType: {1}{2}", routingInputPort.Key, routingInputPort.Type, CrestronEnvironment.NewLine);
             }
         }
         if (outputPorts == null) return;
         CrestronConsole.ConsoleCommandResponse("Device {0} has {1} Output Ports:{2}", s, outputPorts.Count, CrestronEnvironment.NewLine);
         foreach (var routingOutputPort in outputPorts)
         {
-            CrestronConsole.ConsoleCommandResponse("{0}{1}", routingOutputPort.Key, CrestronEnvironment.NewLine);
+            CrestronConsole.ConsoleCommandResponse("key: {0} signalType: {1}{2}", routingOutputPort.Key, routingOutputPort.Type, CrestronEnvironment.NewLine);
         }
     }
 

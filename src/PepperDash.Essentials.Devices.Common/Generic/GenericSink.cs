@@ -32,7 +32,7 @@ public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputP
     {
         InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-        var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo | eRoutingSignalType.SecondaryAudio, eRoutingPortConnectionType.Hdmi, null, this);
+        var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
 
         InputPorts.Add(inputPort);
 

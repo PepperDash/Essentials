@@ -17,16 +17,128 @@ namespace PepperDash.Essentials.Core;
 /// </summary>
 public static class Extensions
 {
+
     /// <summary>
     /// Stores pending route requests, keyed by the destination device key.
     /// Used primarily to handle routing requests while a device is cooling down.
     /// </summary>
     private static readonly Dictionary<string, RouteRequest> RouteRequests = new Dictionary<string, RouteRequest>();
 
+
+    /// <summary>
+    /// A collection of RouteDescriptors for each signal type.
+    /// </summary>
+    public static readonly Dictionary<eRoutingSignalType, RouteDescriptorCollection> RouteDescriptors = new Dictionary<eRoutingSignalType, RouteDescriptorCollection>()
+        {
+            { eRoutingSignalType.Audio, new RouteDescriptorCollection() },
+            { eRoutingSignalType.Video, new RouteDescriptorCollection() },
+            { eRoutingSignalType.AudioVideo, new RouteDescriptorCollection() }
+        };
+
     /// <summary>
     /// A queue to process route requests and releases sequentially.
     /// </summary>
     private static readonly GenericQueue routeRequestQueue = new GenericQueue("routingQueue");
+
+    /// <summary>
+    /// Indexed lookup of TieLines by destination device key for faster queries.
+    /// </summary>
+    private static Dictionary<string, List<TieLine>> _tieLinesByDestination;
+
+    /// <summary>
+    /// Indexed lookup of TieLines by source device key for faster queries.
+    /// </summary>
+    private static Dictionary<string, List<TieLine>> _tieLinesBySource;
+
+    /// <summary>
+    /// Cache of failed route attempts to avoid re-checking impossible paths.
+    /// Format: "sourceKey|destKey|signalType"
+    /// </summary>
+    private static readonly HashSet<string> _impossibleRoutes = new HashSet<string>();
+
+    /// <summary>
+    /// Indexes all TieLines by source and destination device keys for faster lookups.
+    /// Should be called once at system startup after all TieLines are created.
+    /// </summary>
+    public static void IndexTieLines()
+    {
+        try
+        {
+            Debug.LogMessage(LogEventLevel.Information, "Indexing TieLines for faster route discovery");
+
+            _tieLinesByDestination = TieLineCollection.Default
+                .GroupBy(t => t.DestinationPort.ParentDevice.Key)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            _tieLinesBySource = TieLineCollection.Default
+                .GroupBy(t => t.SourcePort.ParentDevice.Key)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            Debug.LogMessage(LogEventLevel.Information, "TieLine indexing complete. {0} destination keys, {1} source keys",
+                null, _tieLinesByDestination.Count, _tieLinesBySource.Count);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Exception indexing TieLines: {exception}", ex.Message);
+            Debug.LogDebug(ex, "Stack Trace: ");
+        }
+    }
+
+    /// <summary>
+    /// Gets TieLines connected to a destination device.
+    /// Uses indexed lookup if available, otherwise falls back to LINQ query.
+    /// </summary>
+    /// <param name="destinationKey">The destination device key</param>
+    /// <returns>List of TieLines connected to the destination</returns>
+    private static IEnumerable<TieLine> GetTieLinesForDestination(string destinationKey)
+    {
+        if (_tieLinesByDestination != null && _tieLinesByDestination.TryGetValue(destinationKey, out List<TieLine> tieLines))
+        {
+            return tieLines;
+        }
+
+        // Fallback to LINQ if index not available
+        return TieLineCollection.Default.Where(t => t.DestinationPort.ParentDevice.Key == destinationKey);
+    }
+
+    /// <summary>
+    /// Gets TieLines connected to a source device.
+    /// Uses indexed lookup if available, otherwise falls back to LINQ query.
+    /// </summary>
+    /// <param name="sourceKey">The source device key</param>
+    /// <returns>List of TieLines connected to the source</returns>
+    private static IEnumerable<TieLine> GetTieLinesForSource(string sourceKey)
+    {
+        if (_tieLinesBySource != null && _tieLinesBySource.TryGetValue(sourceKey, out List<TieLine> tieLines))
+        {
+            return tieLines;
+        }
+
+        // Fallback to LINQ if index not available
+        return TieLineCollection.Default.Where(t => t.SourcePort.ParentDevice.Key == sourceKey);
+    }
+
+    /// <summary>
+    /// Creates a cache key for route impossibility tracking.
+    /// </summary>
+    /// <param name="sourceKey">Source device key</param>
+    /// <param name="destKey">Destination device key</param>
+    /// <param name="type">Signal type</param>
+    /// <returns>Cache key string</returns>
+    private static string GetRouteKey(string sourceKey, string destKey, eRoutingSignalType type)
+    {
+        return string.Format("{0}|{1}|{2}", sourceKey, destKey, type);
+    }
+
+    /// <summary>
+    /// Clears the impossible routes cache. Should be called if TieLines are added/removed at runtime.
+    /// </summary>
+    public static void ClearImpossibleRoutesCache()
+    {
+        _impossibleRoutes.Clear();
+        Debug.LogMessage(LogEventLevel.Information, "Impossible routes cache cleared");
+    }
+
 
     /// <summary>
     /// Gets any existing RouteDescriptor for a destination, clears it using ReleaseRoute
@@ -108,8 +220,7 @@ public static class Extensions
     public static (RouteDescriptor, RouteDescriptor) GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, RoutingInputPort destinationPort, RoutingOutputPort sourcePort)
     {
         // if it's a single signal type, find the route
-        if (!signalType.HasFlag(eRoutingSignalType.AudioVideo) && 
-            !(signalType.HasFlag(eRoutingSignalType.Video) && signalType.HasFlag(eRoutingSignalType.SecondaryAudio)))
+        if (!signalType.HasFlag(eRoutingSignalType.AudioVideo))
         {
             var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, signalType);
             Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
@@ -129,17 +240,9 @@ public static class Extensions
 
         Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key);
 
-        RouteDescriptor audioRouteDescriptor;
+        var audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
 
-        if (signalType.HasFlag(eRoutingSignalType.SecondaryAudio))
-        {
-            audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.SecondaryAudio);
-        } else
-        {
-            audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
-        }
-
-        var audioSuccess = destination.GetRouteToSource(source, null, null, signalType.HasFlag(eRoutingSignalType.SecondaryAudio) ? eRoutingSignalType.SecondaryAudio : eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
+        var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
 
         if (!audioSuccess)
             Debug.LogMessage(LogEventLevel.Debug, "Cannot find audio route to {0}", destination, source.Key);
@@ -165,9 +268,11 @@ public static class Extensions
         if (!audioSuccess && !videoSuccess)
             return (null, null);
 
-
-        return (audioRouteDescriptor, videoRouteDescriptor);
+        // Return null for descriptors that have no routes
+        return (audioSuccess && audioRouteDescriptor.Routes.Count > 0 ? audioRouteDescriptor : null,
+                videoSuccess && videoRouteDescriptor.Routes.Count > 0 ? videoRouteDescriptor : null);
     }
+
 
     /// <summary>
     /// Internal method to handle the logic for releasing an existing route and making a new one.
@@ -192,13 +297,13 @@ public static class Extensions
             Source = source,
             SourcePort = sourcePort,
             SignalType = signalType
-        };            
+        };
 
         var coolingDevice = destination as IWarmingCooling;
 
         //We already have a route request for this device, and it's a cooling device and is cooling
         if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-        {                
+        {
             coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRouteRequest.HandleCooldown;
 
             coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
@@ -212,7 +317,7 @@ public static class Extensions
 
         //New Request
         if (coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-        {               
+        {
             coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
 
             RouteRequests.Add(destination.Key, routeRequest);
@@ -232,9 +337,9 @@ public static class Extensions
             Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
         }
 
-        routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination,destinationPort?.Key ?? string.Empty, false));
+        routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, destinationPort?.Key ?? string.Empty, false));
 
-        routeRequestQueue.Enqueue(new RouteRequestQueueItem(RunRouteRequest, routeRequest));            
+        routeRequestQueue.Enqueue(new RouteRequestQueueItem(RunRouteRequest, routeRequest));
     }
 
     /// <summary>
@@ -249,7 +354,48 @@ public static class Extensions
             if (request.Source == null)
                 return;
 
-            var (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
+            RouteDescriptor audioOrSingleRoute = null;
+            RouteDescriptor videoRoute = null;
+
+            // Try to use pre-loaded route descriptors first
+            if (request.SignalType.HasFlag(eRoutingSignalType.AudioVideo))
+            {
+                // For AudioVideo routes, check both Audio and Video collections
+                if (RouteDescriptors.TryGetValue(eRoutingSignalType.Audio, out RouteDescriptorCollection audioCollection))
+                {
+                    audioOrSingleRoute = audioCollection.Descriptors.FirstOrDefault(d =>
+                        d.Source.Key == request.Source.Key &&
+                        d.Destination.Key == request.Destination.Key &&
+                        (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key));
+                }
+
+                if (RouteDescriptors.TryGetValue(eRoutingSignalType.Video, out RouteDescriptorCollection videoCollection))
+                {
+                    videoRoute = videoCollection.Descriptors.FirstOrDefault(d =>
+                        d.Source.Key == request.Source.Key &&
+                        d.Destination.Key == request.Destination.Key &&
+                        (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key));
+                }
+            }
+            else
+            {
+                // For single signal type routes
+                if (RouteDescriptors.TryGetValue(request.SignalType, out RouteDescriptorCollection collection))
+                {
+                    audioOrSingleRoute = collection.Descriptors.FirstOrDefault(d =>
+                        d.Source.Key == request.Source.Key &&
+                        d.Destination.Key == request.Destination.Key &&
+                        (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key));
+                }
+            }
+
+            // If no pre-loaded route found, build it dynamically
+            if (audioOrSingleRoute == null && videoRoute == null)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, "No pre-loaded route found, building dynamically", request.Destination);
+                (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
+            }
+
 
             if (audioOrSingleRoute == null && videoRoute == null)
                 return;
@@ -265,7 +411,8 @@ public static class Extensions
 
             audioOrSingleRoute.ExecuteRoutes();
             videoRoute?.ExecuteRoutes();
-        } catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.LogMessage(ex, "Exception Running Route Request {request}", null, request);
         }
@@ -298,9 +445,86 @@ public static class Extensions
                 Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
                 current.ReleaseRoutes(clearRoute);
             }
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
-            Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'",null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+            Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'", null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+        }
+    }
+
+    /// <summary>
+    /// Maps destination input ports to source output ports for all routing devices.
+    /// </summary>
+    public static void MapDestinationsToSources()
+    {
+        try
+        {
+            // Index TieLines before mapping if not already done
+            if (_tieLinesByDestination == null || _tieLinesBySource == null)
+            {
+                IndexTieLines();
+            }
+
+            var sinks = DeviceManager.AllDevices.OfType<IRoutingInputs>().Where(d => !(d is IRoutingInputsOutputs));
+            var sources = DeviceManager.AllDevices.OfType<IRoutingOutputs>().Where(d => !(d is IRoutingInputsOutputs));
+
+            foreach (var sink in sinks)
+            {
+                foreach (var source in sources)
+                {
+                    foreach (var inputPort in sink.InputPorts)
+                    {
+                        foreach (var outputPort in source.OutputPorts)
+                        {
+                            var (audioOrSingleRoute, videoRoute) = sink.GetRouteToSource(source, inputPort.Type, inputPort, outputPort);
+
+                            if (audioOrSingleRoute == null && videoRoute == null)
+                            {
+                                continue;
+                            }
+
+                            if (audioOrSingleRoute != null)
+                            {
+                                // Only add routes that have actual switching steps
+                                if (audioOrSingleRoute.Routes == null || audioOrSingleRoute.Routes.Count == 0)
+                                {
+                                    continue;
+                                }
+
+                                // Add to the appropriate collection(s) based on signal type
+                                // Note: A single route descriptor with combined flags (e.g., AudioVideo) will be added once per matching signal type
+                                if (audioOrSingleRoute.SignalType.HasFlag(eRoutingSignalType.Audio))
+                                {
+                                    RouteDescriptors[eRoutingSignalType.Audio].AddRouteDescriptor(audioOrSingleRoute);
+                                }
+                                if (audioOrSingleRoute.SignalType.HasFlag(eRoutingSignalType.Video))
+                                {
+                                    RouteDescriptors[eRoutingSignalType.Video].AddRouteDescriptor(audioOrSingleRoute);
+                                }
+                                if (audioOrSingleRoute.SignalType.HasFlag(eRoutingSignalType.Usb))
+                                {
+                                    RouteDescriptors[eRoutingSignalType.Usb].AddRouteDescriptor(audioOrSingleRoute);
+                                }
+                                if (videoRoute != null)
+                                {
+                                    // Only add routes that have actual switching steps
+                                    if (videoRoute.Routes == null || videoRoute.Routes.Count == 0)
+                                    {
+                                        continue;
+                                    }
+
+                                    RouteDescriptors[eRoutingSignalType.Video].AddRouteDescriptor(videoRoute);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Exception mapping routes: {exception}", ex.Message);
+            Debug.LogDebug(ex, "Stack Trace: ");
         }
     }
 
@@ -311,9 +535,9 @@ public static class Extensions
     /// </summary>
     /// <param name="destination"></param>
     /// <param name="source"></param>
-    /// <param name="destinationPort">The RoutingOutputPort whose link is being checked for a route</param>
+    /// <param name="destinationPort">The RoutingInputPort whose link is being checked for a route</param>
     /// <param name="sourcePort">The RoutingOutputPort whose link is being checked for a route</param>
-    /// <param name="outputPortToUse">The RoutingOutputPort to use for the route</param>
+    /// <param name="outputPortToUse">The RoutingOutputPort whose link is being checked for a route</param>
     /// <param name="alreadyCheckedDevices">Prevents Devices from being twice-checked</param>
     /// <param name="signalType">This recursive function should not be called with AudioVideo</param>
     /// <param name="cycle">Just an informational counter</param>
@@ -325,42 +549,53 @@ public static class Extensions
     {
         cycle++;
 
+        var routeKey = GetRouteKey(source.Key, destination.Key, signalType);
+        if (_impossibleRoutes.Contains(routeKey))
+        {
+            Debug.LogMessage(LogEventLevel.Verbose, "Route {0} is cached as impossible, skipping", null, routeKey);
+            return false;
+        }
+
         Debug.LogMessage(LogEventLevel.Verbose, "GetRouteToSource: {cycle} {sourceKey}:{sourcePortKey}--> {destinationKey}:{destinationPortKey} {type}", null, cycle, source.Key, sourcePort?.Key ?? "auto", destination.Key, destinationPort?.Key ?? "auto", signalType.ToString());
 
         RoutingInputPort goodInputPort = null;
+
+        // Use indexed lookup instead of LINQ query
+        var allDestinationTieLines = GetTieLinesForDestination(destination.Key);
 
         IEnumerable<TieLine> destinationTieLines;
         TieLine directTie = null;
 
         if (destinationPort == null)
         {
-            destinationTieLines = TieLineCollection.Default.Where(t =>
-                t.DestinationPort.ParentDevice.Key == destination.Key && (t.Type.HasFlag(signalType) || signalType == eRoutingSignalType.AudioVideo));
+            destinationTieLines = allDestinationTieLines.Where(t =>
+                t.Type.HasFlag(signalType) || signalType == eRoutingSignalType.AudioVideo);
         }
         else
         {
-            destinationTieLines = TieLineCollection.Default.Where(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && (t.Type.HasFlag(signalType)));
+            destinationTieLines = allDestinationTieLines.Where(t =>
+                    t.DestinationPort.Key == destinationPort.Key && t.Type.HasFlag(signalType));
         }
 
         // find the TieLine without a port
         if (destinationPort == null && sourcePort == null)
         {
-            directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.SourcePort.ParentDevice.Key == source.Key);
+            directTie = destinationTieLines.FirstOrDefault(t => t.SourcePort.ParentDevice.Key == source.Key);
         }
         // find a tieLine to a specific destination port without a specific source port
         else if (destinationPort != null && sourcePort == null)
         {
-            directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && t.SourcePort.ParentDevice.Key == source.Key);
+            directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.Key == destinationPort.Key && t.SourcePort.ParentDevice.Key == source.Key);
         }
         // find a tieline to a specific source port without a specific destination port
         else if (destinationPort == null & sourcePort != null)
         {
-            directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.SourcePort.ParentDevice.Key == source.Key && t.SourcePort.Key == sourcePort.Key);
+            directTie = destinationTieLines.FirstOrDefault(t => t.SourcePort.ParentDevice.Key == source.Key && t.SourcePort.Key == sourcePort.Key);
         }
         // find a tieline to a specific source port and destination port
         else if (destinationPort != null && sourcePort != null)
         {
-            directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.ParentDevice.Key == destination.Key && t.DestinationPort.Key == destinationPort.Key && t.SourcePort.ParentDevice.Key == source.Key && t.SourcePort.Key == sourcePort.Key);
+            directTie = destinationTieLines.FirstOrDefault(t => t.DestinationPort.Key == destinationPort.Key && t.SourcePort.ParentDevice.Key == source.Key && t.SourcePort.Key == sourcePort.Key);
         }
 
         if (directTie != null) // Found a tie directly to the source
@@ -415,6 +650,10 @@ public static class Extensions
         if (goodInputPort == null)
         {
             Debug.LogMessage(LogEventLevel.Verbose, "No route found to {0}", destination, source.Key);
+
+            // Cache this as an impossible route
+            _impossibleRoutes.Add(routeKey);
+
             return false;
         }
 

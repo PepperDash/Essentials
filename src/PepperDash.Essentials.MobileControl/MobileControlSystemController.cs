@@ -774,7 +774,7 @@ namespace PepperDash.Essentials
                     {
                         this.LogVerbose("Adding CurrentSourcesMessenger for {deviceKey}", device.Key);
 
-                        var messenger = new CurrentSourcesMessenger($"{device.Key}-currentSources-{Key}", $"/device/{device.Key}", currentSources);
+                        var messenger = new ICurrentSourcesMessenger($"{device.Key}-currentSources-{Key}", $"/device/{device.Key}", currentSources);
 
                         AddDefaultDeviceMessenger(messenger);
 
@@ -803,7 +803,7 @@ namespace PepperDash.Essentials
                         this.LogVerbose("Adding IHasDeviceInfoMessenger for {deviceKey}", device.Key
                         );
 
-                        var messenger = new DeviceInfoMessenger(
+                        var messenger = new IDeviceInfoProviderMessenger(
                             $"{device.Key}-deviceInfo-{Key}",
                             $"/device/{device.Key}",
                             provider

@@ -27,16 +27,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Control signal type
         /// </summary>
-        UsbOutput = 8,
+        Usb = 8,
 
-        /// <summary>
-        /// Control signal type
-        /// </summary>
-        UsbInput = 16,
-
-        /// <summary>
-        /// Secondary audio signal type
-        /// </summary>
-        SecondaryAudio = 32
 	}
 }

@@ -12,17 +12,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
   /// <summary>
   /// Represents a IHasCurrentSourceInfoMessenger
   /// </summary>
-  public class CurrentSourcesMessenger : MessengerBase
+  public class ICurrentSourcesMessenger : MessengerBase
   {
     private readonly ICurrentSources sourceDevice;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CurrentSourcesMessenger"/> class.
+    /// Initializes a new instance of the <see cref="ICurrentSourcesMessenger"/> class.
     /// </summary>
     /// <param name="key">The key.</param>
     /// <param name="messagePath">The message path.</param>
     /// <param name="device">The device.</param>
-    public CurrentSourcesMessenger(string key, string messagePath, ICurrentSources device) : base(key, messagePath, device as IKeyName)
+    public ICurrentSourcesMessenger(string key, string messagePath, ICurrentSources device) : base(key, messagePath, device as IKeyName)
     {
       sourceDevice = device;
     }

@@ -179,6 +179,11 @@ public class EssentialsWebApi : EssentialsDevice
                 Name = "Get Routing Ports for a device",
                 RouteHandler = new GetRoutingPortsHandler()
             },
+            new HttpCwsRoute("routingDevicesAndTieLines")
+            {
+                Name = "Get Routing Devices and TieLines",
+                RouteHandler = new GetRoutingDevicesAndTieLinesHandler()
+            },
         };
 
         AddRoute(routes);
