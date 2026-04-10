@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -12,6 +14,21 @@ namespace PepperDash.Essentials.Core.Routing
     public class RoutingFeedbackManager : EssentialsDevice
     {
         /// <summary>
+        /// Maps midpoint device keys to the set of sink device keys that are downstream
+        /// </summary>
+        private Dictionary<string, HashSet<string>> midpointToSinksMap;
+
+        /// <summary>
+        /// Debounce timers for each sink device to prevent rapid successive updates
+        /// </summary>
+        private readonly Dictionary<string, CTimer> updateTimers = new Dictionary<string, CTimer>();
+
+        /// <summary>
+        /// Debounce delay in milliseconds
+        /// </summary>
+        private const long DEBOUNCE_MS = 500;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RoutingFeedbackManager"/> class.
         /// </summary>
         /// <param name="key">The unique key for this manager device.</param>
@@ -19,8 +36,98 @@ namespace PepperDash.Essentials.Core.Routing
         public RoutingFeedbackManager(string key, string name)
             : base(key, name)
         {
+            AddPreActivationAction(BuildMidpointSinkMap);
             AddPreActivationAction(SubscribeForMidpointFeedback);
             AddPreActivationAction(SubscribeForSinkFeedback);
+        }
+
+        /// <summary>
+        /// Builds a map of which sink devices are downstream of each midpoint device
+        /// for performance optimization in HandleMidpointUpdate
+        /// </summary>
+        private void BuildMidpointSinkMap()
+        {
+            midpointToSinksMap = new Dictionary<string, HashSet<string>>();
+
+            var sinks = DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitchingWithInputPort>();
+            var midpoints = DeviceManager.AllDevices.OfType<IRoutingWithFeedback>();
+
+            foreach (var sink in sinks)
+            {
+                if (sink.CurrentInputPort == null)
+                    continue;
+
+                // Find all upstream midpoints for this sink
+                var upstreamMidpoints = GetUpstreamMidpoints(sink);
+
+                foreach (var midpointKey in upstreamMidpoints)
+                {
+                    if (!midpointToSinksMap.ContainsKey(midpointKey))
+                        midpointToSinksMap[midpointKey] = new HashSet<string>();
+
+                    midpointToSinksMap[midpointKey].Add(sink.Key);
+                }
+            }
+
+            Debug.LogMessage(
+                Serilog.Events.LogEventLevel.Information,
+                "Built midpoint-to-sink map with {count} midpoints",
+                this,
+                midpointToSinksMap.Count
+            );
+        }
+
+        /// <summary>
+        /// Gets all upstream midpoint device keys for a given sink
+        /// </summary>
+        private HashSet<string> GetUpstreamMidpoints(IRoutingSinkWithSwitchingWithInputPort sink)
+        {
+            var result = new HashSet<string>();
+            var visited = new HashSet<string>();
+
+            if (sink.CurrentInputPort == null)
+                return result;
+
+            var tieLine = TieLineCollection.Default.FirstOrDefault(tl =>
+                tl.DestinationPort.Key == sink.CurrentInputPort.Key &&
+                tl.DestinationPort.ParentDevice.Key == sink.CurrentInputPort.ParentDevice.Key);
+
+            if (tieLine == null)
+                return result;
+
+            TraceUpstreamMidpoints(tieLine, result, visited);
+            return result;
+        }
+
+        /// <summary>
+        /// Recursively traces upstream to find all midpoint devices
+        /// </summary>
+        private void TraceUpstreamMidpoints(TieLine tieLine, HashSet<string> midpoints, HashSet<string> visited)
+        {
+            if (tieLine == null || visited.Contains(tieLine.SourcePort.ParentDevice.Key))
+                return;
+
+            visited.Add(tieLine.SourcePort.ParentDevice.Key);
+
+            if (tieLine.SourcePort.ParentDevice is IRoutingWithFeedback midpoint)
+            {
+                midpoints.Add(midpoint.Key);
+
+                // Find upstream TieLines connected to this midpoint's inputs
+                var midpointInputs = (midpoint as IRoutingInputs)?.InputPorts;
+                if (midpointInputs != null)
+                {
+                    foreach (var inputPort in midpointInputs)
+                    {
+                        var upstreamTieLine = TieLineCollection.Default.FirstOrDefault(tl =>
+                            tl.DestinationPort.Key == inputPort.Key &&
+                            tl.DestinationPort.ParentDevice.Key == inputPort.ParentDevice.Key);
+
+                        if (upstreamTieLine != null)
+                            TraceUpstreamMidpoints(upstreamTieLine, midpoints, visited);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -52,7 +159,7 @@ namespace PepperDash.Essentials.Core.Routing
 
         /// <summary>
         /// Handles the RouteChanged event from a midpoint device.
-        /// Triggers an update for all sink devices.
+        /// Only triggers updates for sink devices that are downstream of this midpoint.
         /// </summary>
         /// <param name="midpoint">The midpoint device that reported a route change.</param>
         /// <param name="newRoute">The descriptor of the new route.</param>
@@ -63,12 +170,33 @@ namespace PepperDash.Essentials.Core.Routing
         {
             try
             {
-                var devices =
-                    DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitchingWithInputPort>();
-
-                foreach (var device in devices)
+                // Only update affected sinks (performance optimization)
+                if (midpointToSinksMap != null && midpointToSinksMap.TryGetValue(midpoint.Key, out var affectedSinkKeys))
                 {
-                    UpdateDestination(device, device.CurrentInputPort);
+                    Debug.LogMessage(
+                        Serilog.Events.LogEventLevel.Debug,
+                        "Midpoint {midpoint} changed, updating {count} downstream sinks",
+                        this,
+                        midpoint.Key,
+                        affectedSinkKeys.Count
+                    );
+
+                    foreach (var sinkKey in affectedSinkKeys)
+                    {
+                        if (DeviceManager.GetDeviceForKey(sinkKey) is IRoutingSinkWithSwitchingWithInputPort sink)
+                        {
+                            UpdateDestination(sink, sink.CurrentInputPort);
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogMessage(
+                        Serilog.Events.LogEventLevel.Debug,
+                        "Midpoint {midpoint} changed but has no downstream sinks in map",
+                        this,
+                        midpoint.Key
+                    );
                 }
             }
             catch (Exception ex)
@@ -113,10 +241,60 @@ namespace PepperDash.Essentials.Core.Routing
         /// <summary>
         /// Updates the CurrentSourceInfo and CurrentSourceInfoKey properties on a destination (sink) device
         /// based on its currently selected input port by tracing the route back through tie lines.
+        /// Uses debouncing to prevent rapid successive updates.
         /// </summary>
         /// <param name="destination">The destination sink device to update.</param>
         /// <param name="inputPort">The currently selected input port on the destination device.</param>
         private void UpdateDestination(
+            IRoutingSinkWithSwitching destination,
+            RoutingInputPort inputPort
+        )
+        {
+            if (destination == null)
+                return;
+
+            var key = destination.Key;
+
+            // Cancel existing timer for this sink
+            if (updateTimers.TryGetValue(key, out var existingTimer))
+            {
+                existingTimer.Stop();
+                existingTimer.Dispose();
+            }
+
+            // Start new debounced timer
+            updateTimers[key] = new CTimer(_ =>
+            {
+                try
+                {
+                    UpdateDestinationImmediate(destination, inputPort);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogMessage(
+                        ex,
+                        "Error in debounced update for destination {destinationKey}: {message}",
+                        this,
+                        destination.Key,
+                        ex.Message
+                    );
+                }
+                finally
+                {
+                    if (updateTimers.ContainsKey(key))
+                    {
+                        updateTimers[key]?.Dispose();
+                        updateTimers.Remove(key);
+                    }
+                }
+            }, null, DEBOUNCE_MS);
+        }
+
+        /// <summary>
+        /// Immediately updates the CurrentSourceInfo for a destination device.
+        /// Called after debounce delay.
+        /// </summary>
+        private void UpdateDestinationImmediate(
             IRoutingSinkWithSwitching destination,
             RoutingInputPort inputPort
         )
@@ -309,105 +487,98 @@ namespace PepperDash.Essentials.Core.Routing
         }
 
         /// <summary>
-        /// Recursively traces a route back from a given tie line to find the root source tie line.
-        /// It navigates through midpoint devices (<see cref="IRoutingWithFeedback"/>) by checking their current routes.
+        /// Traces a route back from a given tie line to find the root source tie line.
+        /// Leverages the existing Extensions.GetRouteToSource method with loop protection.
         /// </summary>
         /// <param name="tieLine">The starting tie line (typically connected to a sink or midpoint).</param>
         /// <returns>The <see cref="TieLine"/> connected to the original source device, or null if the source cannot be determined.</returns>
         private TieLine GetRootTieLine(TieLine tieLine)
         {
-            TieLine nextTieLine = null;
             try
             {
-                //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "**Following tieLine {tieLine}**", this, tieLine);
-
-                if (tieLine.SourcePort.ParentDevice is IRoutingWithFeedback midpoint)
+                if (!(tieLine.DestinationPort.ParentDevice is IRoutingInputs sink))
                 {
-                    // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLine Source device {sourceDevice} is midpoint", this, midpoint);
-
-                    if (midpoint.CurrentRoutes == null || midpoint.CurrentRoutes.Count == 0)
-                    {
-                        Debug.LogMessage(
-                            Serilog.Events.LogEventLevel.Debug,
-                            "Midpoint {midpointKey} has no routes",
-                            this,
-                            midpoint.Key
-                        );
-                        return null;
-                    }
-
-                    var currentRoute = midpoint.CurrentRoutes.FirstOrDefault(route =>
-                    {
-                        //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Checking {route} against {tieLine}", this, route, tieLine);
-
-                        return route.OutputPort != null
-                            && route.InputPort != null
-                            && route.OutputPort?.Key == tieLine.SourcePort.Key
-                            && route.OutputPort?.ParentDevice.Key
-                                == tieLine.SourcePort.ParentDevice.Key;
-                    });
-
-                    if (currentRoute == null)
-                    {
-                        Debug.LogMessage(
-                            Serilog.Events.LogEventLevel.Debug,
-                            "No route through midpoint {midpoint} for outputPort {outputPort}",
-                            this,
-                            midpoint.Key,
-                            tieLine.SourcePort
-                        );
-                        return null;
-                    }
-
-                    //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found currentRoute {currentRoute} through {midpoint}", this, currentRoute, midpoint);
-
-                    nextTieLine = TieLineCollection.Default.FirstOrDefault(tl =>
-                    {
-                        //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Checking {route} against {tieLine}", tl.DestinationPort.Key, currentRoute.InputPort.Key);
-                        return tl.DestinationPort.Key == currentRoute.InputPort.Key
-                            && tl.DestinationPort.ParentDevice.Key
-                                == currentRoute.InputPort.ParentDevice.Key;
-                    });
-
-                    if (nextTieLine != null)
-                    {
-                        //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found next tieLine {tieLine}. Walking the chain", this, nextTieLine);
-                        return GetRootTieLine(nextTieLine);
-                    }
-
-                    //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root tieLine {tieLine}", this,nextTieLine);
-                    return nextTieLine;
+                    Debug.LogMessage(
+                        Serilog.Events.LogEventLevel.Debug,
+                        "TieLine destination {device} is not IRoutingInputs",
+                        this,
+                        tieLine.DestinationPort.ParentDevice.Key
+                    );
+                    return null;
                 }
 
-                //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLIne Source Device {sourceDeviceKey} is IRoutingSource: {isIRoutingSource}", this, tieLine.SourcePort.ParentDevice.Key, tieLine.SourcePort.ParentDevice is IRoutingSource);
-                //Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "TieLine Source Device interfaces: {typeFullName}:{interfaces}", this, tieLine.SourcePort.ParentDevice.GetType().FullName, tieLine.SourcePort.ParentDevice.GetType().GetInterfaces().Select(i => i.Name));
+                // Get all potential sources (devices that only have outputs, not inputs+outputs)
+                var sources = DeviceManager.AllDevices
+                            .OfType<IRoutingOutputs>()
+                            .Where(s => !(s is IRoutingInputsOutputs));
 
-                if (
-                    tieLine.SourcePort.ParentDevice is IRoutingSource
-                    || tieLine.SourcePort.ParentDevice is IRoutingOutputs
-                ) //end of the chain
+                // Try each signal type that this TieLine supports
+                var signalTypes = new[]
                 {
-                    // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root: {tieLine}", this, tieLine);
-                    return tieLine;
+                    eRoutingSignalType.Audio,
+                    eRoutingSignalType.Video,
+                    eRoutingSignalType.AudioVideo,
+                    eRoutingSignalType.SecondaryAudio,
+                    eRoutingSignalType.UsbInput,
+                    eRoutingSignalType.UsbOutput
+                };
+
+                foreach (var signalType in signalTypes)
+                {
+                    if (!tieLine.Type.HasFlag(signalType))
+                        continue;
+
+                    foreach (var source in sources)
+                    {
+                        // Use the optimized route discovery with loop protection
+                        var (route, _) = sink.GetRouteToSource(
+                            source,
+                            signalType,
+                            tieLine.DestinationPort,
+                            null
+                        );
+
+                        if (route != null && route.Routes != null && route.Routes.Count > 0)
+                        {
+                            // Found a valid route - return the source TieLine
+                            var sourceTieLine = TieLineCollection.Default.FirstOrDefault(tl =>
+                                tl.SourcePort.ParentDevice.Key == source.Key &&
+                                tl.Type.HasFlag(signalType));
+
+                            if (sourceTieLine != null)
+                            {
+                                Debug.LogMessage(
+                                    Serilog.Events.LogEventLevel.Debug,
+                                    "Found route from {source} to {sink} with {count} hops",
+                                    this,
+                                    source.Key,
+                                    sink.Key,
+                                    route.Routes.Count
+                                );
+                                return sourceTieLine;
+                            }
+                        }
+                    }
                 }
 
-                nextTieLine = TieLineCollection.Default.FirstOrDefault(tl =>
-                    tl.DestinationPort.Key == tieLine.SourcePort.Key
-                    && tl.DestinationPort.ParentDevice.Key == tieLine.SourcePort.ParentDevice.Key
+                Debug.LogMessage(
+                    Serilog.Events.LogEventLevel.Debug,
+                    "No route found to any source from {sink}",
+                    this,
+                    sink.Key
                 );
-
-                if (nextTieLine != null)
-                {
-                    return GetRootTieLine(nextTieLine);
-                }
+                return null;
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error walking tieLines: {Exception}", this, ex);
+                Debug.LogMessage(
+                    ex,
+                    "Error getting root tieLine: {Exception}",
+                    this,
+                    ex
+                );
                 return null;
             }
-
-            return null;
         }
     }
 }
