@@ -35,7 +35,7 @@ namespace PepperDash.Essentials.Core.Config;
         /// <summary>
         /// LoadConfig2 method
         /// </summary>
-		public static bool LoadConfig2()
+		public static bool LoadConfig()
 		{
 			Debug.LogMessage(LogEventLevel.Information, "Loading unmerged system/template portal configuration file.");
 			try

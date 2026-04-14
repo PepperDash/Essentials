@@ -314,11 +314,13 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
                 PluginLoader.LoadPlugins();
 
                 Debug.LogMessage(LogEventLevel.Information, "Folder structure verified. Loading config...");
-                if (!ConfigReader.LoadConfig2() || ConfigReader.ConfigObject == null)
+                if (!ConfigReader.LoadConfig() || ConfigReader.ConfigObject == null)
                 {
                     Debug.LogMessage(LogEventLevel.Warning, "Unable to load config file. Please ensure a valid config file is present and restart the program.");
                     // return;
                 }
+
+                CheckPluginVersionsAgainstConfig();
 
                 Load();
                 Debug.LogMessage(LogEventLevel.Information, "Essentials load complete");
@@ -352,6 +354,55 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
     }
 
 
+    private void CheckPluginVersionsAgainstConfig()
+    {
+        var versions = ConfigReader.ConfigObject.Versions;
+
+        if (versions != null)
+        {
+            var pluginVersions = PluginLoader.EssentialsPluginAssemblies
+                .Select(a =>
+                {
+                    var packageId = a.GetCustomAttributes<AssemblyMetadataAttribute>()
+                        .FirstOrDefault(attr => attr.Key == "NuGetPackageId")?.Value
+                        ?? a.Name;
+                    return (packageId, version: a.Version.ToString());
+                })
+                .ToDictionary(x => x.packageId, x => x.version);
+
+            if (versions.Essentials != null)
+            {
+                if (pluginVersions.TryGetValue("PepperDashEssentials", out var pluginVersion))
+                {
+                    if (pluginVersion != versions.Essentials)
+                    {
+                        Debug.LogMessage(LogEventLevel.Warning,
+                            "Essentials version mismatch. Config version: {configVersion:l}, Loaded plugin version: {pluginVersion:l}",
+                            versions.Essentials, pluginVersion);
+                    }
+                }
+            }
+
+
+            foreach (var version in versions.Packages)
+            {
+                if (pluginVersions.TryGetValue(version.PackageId, out var pluginVersion))
+                {
+                    if (pluginVersion != version.Version)
+                    {
+                        Debug.LogMessage(LogEventLevel.Warning,
+                            "Plugin version mismatch for {pluginKey:l}. Config version: {configVersion:l}, Loaded plugin version: {pluginVersion:l}",
+                            version.PackageId, version.Version, pluginVersion);
+                    }
+                }
+                else
+                {
+                    Debug.LogMessage(LogEventLevel.Warning,
+                        "Plugin {pluginKey:l} specified in config versions but not found in loaded plugins.", version.PackageId);
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Verifies filesystem is set up. IR, SGD, and programX folders
