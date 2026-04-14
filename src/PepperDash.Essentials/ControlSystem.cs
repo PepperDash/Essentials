@@ -356,10 +356,18 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
 
     private void CheckPluginVersionsAgainstConfig()
     {
-        var versions = ConfigReader.ConfigObject.Versions;
-
-        if (versions != null)
+        try
         {
+            Debug.LogInformation("Checking plugin versions against config...");
+
+            if (ConfigReader.ConfigObject == null)
+                return;
+
+            var versions = ConfigReader.ConfigObject.Versions;
+
+            if (versions == null)
+                return;
+
             var pluginVersions = PluginLoader.EssentialsPluginAssemblies
                 .Select(a =>
                 {
@@ -383,6 +391,8 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
                 }
             }
 
+            if (versions.Packages == null)
+                return;
 
             foreach (var version in versions.Packages)
             {
@@ -401,6 +411,11 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
                         "Plugin {pluginKey:l} specified in config versions but not found in loaded plugins.", version.PackageId);
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            InitializationExceptions.Add(ex);
+            Debug.LogMessage(ex, "Error checking plugin versions against config. Continuing with load.");
         }
     }
 
