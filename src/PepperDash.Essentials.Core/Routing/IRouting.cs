@@ -19,8 +19,3 @@ public interface IRouting : IRoutingInputsOutputs
         /// <param name="signalType">type of signal</param>
 		void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType);        
 }    
-
-/*public interface IRouting<TInputSelector,TOutputSelector> : IRoutingInputsOutputs
-{
-    void ExecuteSwitch(TInputSelector inputSelector, TOutputSelector outputSelector, eRoutingSignalType signalType);
-}*/
