@@ -184,6 +184,11 @@ public class EssentialsWebApi : EssentialsDevice
                 Name = "Get Routing Devices and TieLines",
                 RouteHandler = new GetRoutingDevicesAndTieLinesHandler()
             },
+            new HttpCwsRoute("initializationExceptions")
+            {
+                Name = "Get Initialization Exceptions",
+                RouteHandler = new GetInitializationExceptionsRequestHandler()
+            }
         };
 
         AddRoute(routes);
@@ -297,3 +302,4 @@ public class EssentialsWebApi : EssentialsDevice
         Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));
     }
 }
+

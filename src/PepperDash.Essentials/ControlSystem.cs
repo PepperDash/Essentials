@@ -18,6 +18,8 @@ using Timeout = Crestron.SimplSharp.Timeout;
 using Serilog.Events;
 using System.Threading.Tasks;
 using PepperDash.Essentials.Core.Web;
+using System.Collections.Generic;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials;
 
@@ -28,11 +30,18 @@ namespace PepperDash.Essentials;
 /// <remarks>This class extends <see cref="CrestronControlSystem"/> and serves as the entry point for the control
 /// system. It manages the initialization of devices, rooms, tie lines, and other system components. Additionally, it
 /// provides methods for platform determination, configuration loading, and system teardown.</remarks>
-public class ControlSystem : CrestronControlSystem, ILoadConfig
+public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitializationExceptions
 {
     private Timer startTimer;
     private ManualResetEventSlim initializeEvent;
     private const long StartupTime = 500;
+
+    /// <summary>
+    /// List of exceptions that occurred during initialization.
+    /// This can be used to report issues with loading devices or tie lines without crashing the entire system,
+    /// which allows for partial functionality in cases where some components are misconfigured or have issues.
+    /// </summary>
+    public List<Exception> InitializationExceptions { get; private set; } = new List<Exception>();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ControlSystem"/> class, setting up the system's global state and
@@ -457,6 +466,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
                 }
                 catch (Exception e)
                 {
+                    InitializationExceptions.Add(e);
                     Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.", args: new[] { devConf.Key });
                 }
             }
@@ -482,12 +492,22 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
             return;
         }
 
-        foreach (var tieLineConfig in ConfigReader.ConfigObject.TieLines)
+        try
         {
-            var newTL = tieLineConfig.GetTieLine();
-            if (newTL != null)
-                tlc.Add(newTL);
+
+            foreach (var tieLineConfig in ConfigReader.ConfigObject.TieLines)
+            {
+                var newTL = tieLineConfig.GetTieLine();
+                if (newTL != null)
+                    tlc.Add(newTL);
+            }
         }
+        catch (Exception e)
+        {
+            InitializationExceptions.Add(e);
+            Debug.LogMessage(e, "ERROR: Creating tie line. Skipping tie line.");
+        }
+
 
         Debug.LogMessage(LogEventLevel.Information, "All Tie Lines Loaded.");
 
@@ -796,6 +816,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig
             }
             catch (Exception ex)
             {
+                InitializationExceptions.Add(ex);
                 Debug.LogMessage(ex, "Exception loading room {roomKey}:{roomType}", null, roomConfig.Key, roomConfig.Type);
                 continue;
             }
