@@ -191,6 +191,9 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
         CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
             "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
 
+        CrestronConsole.AddNewConsoleCommand(PrintInitializationExceptions, 
+            "getinitializationexceptions", "Reports any exceptions that occurred during initialization", ConsoleAccessLevelEnum.AccessOperator);
+
         DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
 
         if (!Debug.DoNotLoadConfigOnNextBoot)
@@ -823,8 +826,28 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
         }
 
         Debug.LogMessage(LogEventLevel.Information, "All Rooms Loaded.");
+    }
 
+    private void PrintInitializationExceptions(string args)
+    {
+        if(args.Contains("?"))
+        {
+            CrestronConsole.ConsoleCommandResponse("Usage: getinitializationexceptions\r\n");
+            CrestronConsole.ConsoleCommandResponse("Reports any exceptions that occurred during initialization.\r\n");
+            return;
+        }
 
+        if (InitializationExceptions.Count == 0)
+        {
+            CrestronConsole.ConsoleCommandResponse("No initialization exceptions occurred.\r\n");
+            return;
+        }
+
+        CrestronConsole.ConsoleCommandResponse("Initialization Exceptions:\r\n");
+        foreach (var ex in InitializationExceptions)
+        {
+            CrestronConsole.ConsoleCommandResponse(" - {0}: {1}\r\n", ex.GetType().FullName, ex.Message);
+        }
     }
 
 
