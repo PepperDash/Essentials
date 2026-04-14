@@ -186,6 +186,12 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
             /// </summary>
             [JsonProperty("id")]
             public string Id { get; set; }
+
+            /// <summary>
+            /// The URL that was displayed in the webview that was cleared.  
+            /// </summary>
+            [JsonProperty("url")]
+            public string Url { get; set; }
         }
 
         /// <summary>
