@@ -363,7 +363,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
             var pluginVersions = PluginLoader.EssentialsPluginAssemblies
                 .Select(a =>
                 {
-                    var packageId = a.GetCustomAttributes<AssemblyMetadataAttribute>()
+                    var packageId = a.Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                         .FirstOrDefault(attr => attr.Key == "NuGetPackageId")?.Value
                         ?? a.Name;
                     return (packageId, version: a.Version.ToString());
@@ -374,7 +374,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
             {
                 if (pluginVersions.TryGetValue("PepperDashEssentials", out var pluginVersion))
                 {
-                    if (pluginVersion != versions.Essentials)
+                    if (pluginVersion != versions.Essentials.PackageId)
                     {
                         Debug.LogMessage(LogEventLevel.Warning,
                             "Essentials version mismatch. Config version: {configVersion:l}, Loaded plugin version: {pluginVersion:l}",
