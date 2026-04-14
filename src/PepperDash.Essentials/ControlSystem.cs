@@ -127,84 +127,92 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
 
     private void StartSystem(object preventInitialization)
     {
-        DeterminePlatform();
-
-        // Print .NET runtime version
-        Debug.LogMessage(LogEventLevel.Information, "Running on .NET runtime version: {0}", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
-
-        if (Debug.DoNotLoadConfigOnNextBoot)
+        try
         {
-            CrestronConsole.AddNewConsoleCommand(s => Task.Run(() => GoWithLoad()), "go", "Loads configuration file",
+            DeterminePlatform();
+
+            // Print .NET runtime version
+            Debug.LogMessage(LogEventLevel.Information, "Running on .NET runtime version: {0}", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
+
+            if (Debug.DoNotLoadConfigOnNextBoot)
+            {
+                CrestronConsole.AddNewConsoleCommand(s => Task.Run(() => GoWithLoad()), "go", "Loads configuration file",
+                    ConsoleAccessLevelEnum.AccessOperator);
+            }
+
+            CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(BridgeHelper.JoinmapMarkdown, "getjoinmapmarkdown"
+                , "generate markdown of map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(s => Debug.LogMessage(LogEventLevel.Information, "CONSOLE MESSAGE: {0}", s), "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(ListTieLines,
+                "listtielines", "Prints out all tie lines. Usage: listtielines [signaltype]", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(VisualizeRoutes, "visualizeroutes",
+                "Visualizes routes by signal type",
                 ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(VisualizeCurrentRoutes, "visualizecurrentroutes",
+                "Visualizes current active routes from DefaultCollection",
+                ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(s =>
+            {
+                foreach (var tl in TieLineCollection.Default)
+                    CrestronConsole.ConsoleCommandResponse("  {0}{1}", tl, CrestronEnvironment.NewLine);
+            },
+            "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(s =>
+            {
+                CrestronConsole.ConsoleCommandResponse
+                    ("Current running configuration. This is the merged system and template configuration" + CrestronEnvironment.NewLine);
+                CrestronConsole.ConsoleCommandResponse(Newtonsoft.Json.JsonConvert.SerializeObject
+                    (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
+            }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(s =>
+                CrestronConsole.ConsoleCommandResponse(
+                "This system can be found at the following URLs:{2}" +
+                "System URL:   {0}{2}" +
+                "Template URL: {1}{2}",
+                ConfigReader.ConfigObject.SystemUrl,
+                ConfigReader.ConfigObject.TemplateUrl,
+                CrestronEnvironment.NewLine),
+                "portalinfo",
+                "Shows portal URLS from configuration",
+                ConsoleAccessLevelEnum.AccessOperator);
+
+
+            CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
+                "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(PrintInitializationExceptions,
+                "getinitexceptions", "Reports any exceptions that occurred during initialization", ConsoleAccessLevelEnum.AccessOperator);
+
+            DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
+
+            if (!Debug.DoNotLoadConfigOnNextBoot)
+            {
+                GoWithLoad();
+                return;
+            }
+
+            if (!(bool)preventInitialization)
+            {
+                SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            }
         }
-
-        CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(BridgeHelper.JoinmapMarkdown, "getjoinmapmarkdown"
-            , "generate markdown of map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(s => Debug.LogMessage(LogEventLevel.Information, "CONSOLE MESSAGE: {0}", s), "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(ListTieLines,
-            "listtielines", "Prints out all tie lines. Usage: listtielines [signaltype]", ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(VisualizeRoutes, "visualizeroutes",
-            "Visualizes routes by signal type",
-            ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(VisualizeCurrentRoutes, "visualizecurrentroutes",
-            "Visualizes current active routes from DefaultCollection",
-            ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(s =>
+        catch (Exception e)
         {
-            foreach (var tl in TieLineCollection.Default)
-                CrestronConsole.ConsoleCommandResponse("  {0}{1}", tl, CrestronEnvironment.NewLine);
-        },
-        "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(s =>
-        {
-            CrestronConsole.ConsoleCommandResponse
-                ("Current running configuration. This is the merged system and template configuration" + CrestronEnvironment.NewLine);
-            CrestronConsole.ConsoleCommandResponse(Newtonsoft.Json.JsonConvert.SerializeObject
-                (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
-        }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(s =>
-            CrestronConsole.ConsoleCommandResponse(
-            "This system can be found at the following URLs:{2}" +
-            "System URL:   {0}{2}" +
-            "Template URL: {1}{2}",
-            ConfigReader.ConfigObject.SystemUrl,
-            ConfigReader.ConfigObject.TemplateUrl,
-            CrestronEnvironment.NewLine),
-            "portalinfo",
-            "Shows portal URLS from configuration",
-            ConsoleAccessLevelEnum.AccessOperator);
-
-
-        CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
-            "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
-
-        CrestronConsole.AddNewConsoleCommand(PrintInitializationExceptions, 
-            "getinitializationexceptions", "Reports any exceptions that occurred during initialization", ConsoleAccessLevelEnum.AccessOperator);
-
-        DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
-
-        if (!Debug.DoNotLoadConfigOnNextBoot)
-        {
-            GoWithLoad();
-            return;
-        }
-
-        if (!(bool)preventInitialization)
-        {
-            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            InitializationExceptions.Add(e);
+            Debug.LogFatal(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
         }
     }
 
@@ -277,6 +285,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
         }
         catch (Exception e)
         {
+            InitializationExceptions.Add(e);
             Debug.LogMessage(e, "Unable to determine platform due to exception");
         }
     }
@@ -331,7 +340,8 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
         }
         catch (Exception e)
         {
-            Debug.LogMessage(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
+            InitializationExceptions.Add(e);
+            Debug.LogFatal(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
         }
         finally
         {
@@ -830,7 +840,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
 
     private void PrintInitializationExceptions(string args)
     {
-        if(args.Contains("?"))
+        if (args.Contains("?"))
         {
             CrestronConsole.ConsoleCommandResponse("Usage: getinitializationexceptions\r\n");
             CrestronConsole.ConsoleCommandResponse("Reports any exceptions that occurred during initialization.\r\n");
