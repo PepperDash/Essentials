@@ -238,10 +238,16 @@ namespace PepperDash.Essentials.WebSocketServer
 
             var routes = new List<HttpCwsRoute>
             {
-                new HttpCwsRoute($"devices/{Key}/client")
+                new HttpCwsRoute($"device/{Key}/client")
                 {
                     Name = "ClientHandler",
                     RouteHandler = new UiClientHandler(this)
+                },
+
+                new HttpCwsRoute($"device/{Key}/deleteAllUiClients")
+                {
+                    Name = "DeleteAllClientsHandler",
+                    RouteHandler = new DeleteAllUiClientsHandler(this)
                 },
             };
 
@@ -908,7 +914,7 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <summary>
         /// Removes all clients from the server
         /// </summary>
-        private void RemoveAllTokens(string s)
+        public void RemoveAllTokens(string s)
         {
             if (s == "?" || string.IsNullOrEmpty(s))
             {
