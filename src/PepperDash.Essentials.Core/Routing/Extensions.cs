@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -56,8 +57,9 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Cache of failed route attempts to avoid re-checking impossible paths.
         /// Format: "sourceKey|destKey|signalType"
+        /// Uses ConcurrentDictionary as a thread-safe set (byte value is unused).
         /// </summary>
-        private static readonly HashSet<string> _impossibleRoutes = new HashSet<string>();
+        private static readonly ConcurrentDictionary<string, byte> _impossibleRoutes = new ConcurrentDictionary<string, byte>();
 
         /// <summary>
         /// Indexes all TieLines by source and destination device keys for faster lookups.
@@ -579,7 +581,7 @@ namespace PepperDash.Essentials.Core
 
             // Check if this route has already been determined to be impossible
             var routeKey = GetRouteKey(source.Key, destination.Key, signalType);
-            if (_impossibleRoutes.Contains(routeKey))
+            if (_impossibleRoutes.ContainsKey(routeKey))
             {
                 Debug.LogMessage(LogEventLevel.Verbose, "Route {0} is cached as impossible, skipping", null, routeKey);
                 return false;
@@ -681,7 +683,7 @@ namespace PepperDash.Essentials.Core
                 Debug.LogMessage(LogEventLevel.Verbose, "No route found to {0}", destination, source.Key);
 
                 // Cache this as an impossible route
-                _impossibleRoutes.Add(routeKey);
+                _impossibleRoutes.TryAdd(routeKey, 0);
 
                 return false;
             }
