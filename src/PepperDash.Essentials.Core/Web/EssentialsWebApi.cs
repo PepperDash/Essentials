@@ -257,7 +257,7 @@ namespace PepperDash.Essentials.Core.Web
         }
 
         /// <summary>
-        /// Print the available pahts
+        /// Print the available paths
         /// </summary>
         /// <example>
         /// http(s)://{ipaddress}/cws/{basePath}

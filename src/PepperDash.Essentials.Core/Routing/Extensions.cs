@@ -3,10 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Crestron.SimplSharpPro.Keypads;
 using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Routing;
-using Serilog.Events;
 using Debug = PepperDash.Core.Debug;
 
 
@@ -69,7 +67,7 @@ namespace PepperDash.Essentials.Core
         {
             try
             {
-                Debug.LogMessage(LogEventLevel.Information, "Indexing TieLines for faster route discovery");
+                Debug.LogInformation("Indexing TieLines for faster route discovery");
 
                 _tieLinesByDestination = TieLineCollection.Default
                     .GroupBy(t => t.DestinationPort.ParentDevice.Key)
@@ -79,8 +77,8 @@ namespace PepperDash.Essentials.Core
                     .GroupBy(t => t.SourcePort.ParentDevice.Key)
                     .ToDictionary(g => g.Key, g => g.ToList());
 
-                Debug.LogMessage(LogEventLevel.Information, "TieLine indexing complete. {0} destination keys, {1} source keys",
-                    null, _tieLinesByDestination.Count, _tieLinesBySource.Count);
+                Debug.LogInformation("TieLine indexing complete. {0} destination keys, {1} source keys",
+                    _tieLinesByDestination.Count, _tieLinesBySource.Count);
             }
             catch (Exception ex)
             {
@@ -128,11 +126,13 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="sourceKey">Source device key</param>
         /// <param name="destKey">Destination device key</param>
+        /// <param name="sourcePortKey">Source port key</param>
+        /// <param name="destinationPortKey">Destination port key</param>
         /// <param name="type">Signal type</param>
         /// <returns>Cache key string</returns>
-        private static string GetRouteKey(string sourceKey, string destKey, eRoutingSignalType type)
+        private static string GetRouteKey(string sourceKey, string destKey, string sourcePortKey, string destinationPortKey, eRoutingSignalType type)
         {
-            return string.Format("{0}|{1}|{2}", sourceKey, destKey, type);
+            return $"{sourceKey}|{destKey}|{sourcePortKey}|{destinationPortKey}|{type}";
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace PepperDash.Essentials.Core
         public static void ClearImpossibleRoutesCache()
         {
             _impossibleRoutes.Clear();
-            Debug.LogMessage(LogEventLevel.Information, "Impossible routes cache cleared");
+            Debug.LogInformation("Impossible routes cache cleared");
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace PepperDash.Essentials.Core
         {
             // Remove this line before committing!!!!!
             var frame = new StackFrame(1, true);
-            Debug.LogMessage(LogEventLevel.Information, "ReleaseAndMakeRoute Called from {method} with params {destinationKey}:{sourceKey}:{signalType}:{destinationPortKey}:{sourcePortKey}", frame.GetMethod().Name, destination.Key, source.Key, signalType.ToString(), destinationPortKey, sourcePortKey);
+            Debug.LogInformation("ReleaseAndMakeRoute Called from {method} with params {destinationKey}:{sourceKey}:{signalType}:{destinationPortKey}:{sourcePortKey}", frame.GetMethod().Name, destination.Key, source.Key, signalType.ToString(), destinationPortKey, sourcePortKey);
 
             var inputPort = string.IsNullOrEmpty(destinationPortKey) ? null : destination.InputPorts.FirstOrDefault(p => p.Key == destinationPortKey);
             var outputPort = string.IsNullOrEmpty(sourcePortKey) ? null : source.OutputPorts.FirstOrDefault(p => p.Key == sourcePortKey);
@@ -211,13 +211,13 @@ namespace PepperDash.Essentials.Core
         /// <param name="destinationKey">destination device key</param>
         public static void RemoveRouteRequestForDestination(string destinationKey)
         {
-            Debug.LogMessage(LogEventLevel.Information, "Removing route request for {destination}", null, destinationKey);
+            Debug.LogInformation("Removing route request for {destination}", destinationKey);
 
             var result = RouteRequests.Remove(destinationKey);
 
             var messageTemplate = result ? "Route Request for {destination} removed" : "Route Request for {destination} not found";
 
-            Debug.LogMessage(LogEventLevel.Information, messageTemplate, null, destinationKey);
+            Debug.LogInformation(messageTemplate, destinationKey);
         }
 
         /// <summary>
@@ -233,8 +233,8 @@ namespace PepperDash.Essentials.Core
             if (!signalType.HasFlag(eRoutingSignalType.AudioVideo) &&
                 !(signalType.HasFlag(eRoutingSignalType.Video) && signalType.HasFlag(eRoutingSignalType.SecondaryAudio)))
             {
-                var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, signalType);
-                Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
+                var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, sourcePort, signalType);
+                Debug.LogDebug(destination, "Attempting to build source route from {sourceKey} of type {type}", source.Key, signalType);
 
                 if (!destination.GetRouteToSource(source, null, null, signalType, 0, singleTypeRouteDescriptor, destinationPort, sourcePort))
                     singleTypeRouteDescriptor = null;
@@ -242,46 +242,46 @@ namespace PepperDash.Essentials.Core
                 var routes = singleTypeRouteDescriptor?.Routes ?? new List<RouteSwitchDescriptor>();
                 foreach (var route in routes)
                 {
-                    Debug.LogMessage(LogEventLevel.Verbose, "Route for device: {route}", destination, route.ToString());
+                    Debug.LogVerbose(destination, "Route for device: {route}", route.ToString());
                 }
 
                 return (singleTypeRouteDescriptor, null);
             }
             // otherwise, audioVideo needs to be handled as two steps.
 
-            Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {destinationKey} to {sourceKey} of type {type}", destination, source.Key, signalType);
+            Debug.LogDebug(destination, "Attempting to build source route from {destinationKey} to {sourceKey} of type {type}", source.Key, signalType);
 
             RouteDescriptor audioRouteDescriptor;
 
             if (signalType.HasFlag(eRoutingSignalType.SecondaryAudio))
             {
-                audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.SecondaryAudio);
+                audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, sourcePort, eRoutingSignalType.SecondaryAudio);
             }
             else
             {
-                audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
+                audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, sourcePort, eRoutingSignalType.Audio);
             }
 
             var audioSuccess = destination.GetRouteToSource(source, null, null, signalType.HasFlag(eRoutingSignalType.SecondaryAudio) ? eRoutingSignalType.SecondaryAudio : eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
 
             if (!audioSuccess)
-                Debug.LogMessage(LogEventLevel.Debug, "Cannot find audio route to {0}", destination, source.Key);
+                Debug.LogDebug(destination, "Cannot find audio route to {0}", source.Key);
 
-            var videoRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Video);
+            var videoRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, sourcePort, eRoutingSignalType.Video);
 
             var videoSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Video, 0, videoRouteDescriptor, destinationPort, sourcePort);
 
             if (!videoSuccess)
-                Debug.LogMessage(LogEventLevel.Debug, "Cannot find video route to {0}", destination, source.Key);
+                Debug.LogDebug(destination, "Cannot find video route to {0}", source.Key);
 
             foreach (var route in audioRouteDescriptor.Routes)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "Audio route for device: {route}", destination, route.ToString());
+                Debug.LogVerbose(destination, "Audio route for device: {route}", route.ToString());
             }
 
             foreach (var route in videoRouteDescriptor.Routes)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "Video route for device: {route}", destination, route.ToString());
+                Debug.LogVerbose(destination, "Video route for device: {route}", route.ToString());
             }
 
 
@@ -306,8 +306,8 @@ namespace PepperDash.Essentials.Core
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
             if (source == null) throw new ArgumentNullException(nameof(source));
-            if (destinationPort == null) Debug.LogMessage(LogEventLevel.Information, "Destination port is null");
-            if (sourcePort == null) Debug.LogMessage(LogEventLevel.Information, "Source port is null");
+            if (destinationPort == null) Debug.LogDebug("Destination port is null");
+            if (sourcePort == null) Debug.LogDebug("Source port is null");
 
             var routeRequest = new RouteRequest
             {
@@ -329,7 +329,7 @@ namespace PepperDash.Essentials.Core
 
                 RouteRequests[destination.Key] = routeRequest;
 
-                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
+                Debug.LogInformation("Device: {destination} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {sourceKey}", destination.Key, routeRequest.Source.Key);
 
                 return;
             }
@@ -341,7 +341,7 @@ namespace PepperDash.Essentials.Core
 
                 RouteRequests.Add(destination.Key, routeRequest);
 
-                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is cooling down. Storing route request to route to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
+                Debug.LogInformation("Device: {destination} is cooling down. Storing route request to route to source key: {sourceKey}", destination.Key, routeRequest.Source.Key);
                 return;
             }
 
@@ -353,7 +353,7 @@ namespace PepperDash.Essentials.Core
 
                 RouteRequests.Remove(destination.Key);
 
-                Debug.LogMessage(LogEventLevel.Information, "Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", null, destination.Key, routeRequest.Source.Key);
+                Debug.LogInformation("Device: {destination} is NOT cooling down.  Removing stored route request and routing to source key: {sourceKey}", destination.Key, routeRequest.Source.Key);
             }
 
             routeRequestQueue.Enqueue(new ReleaseRouteQueueItem(ReleaseRouteInternal, destination, destinationPort?.Key ?? string.Empty, false));
@@ -469,7 +469,8 @@ namespace PepperDash.Essentials.Core
                         audioOrSingleRoute = audioCollection.Descriptors.FirstOrDefault(d =>
                             d.Source.Key == request.Source.Key &&
                             d.Destination.Key == request.Destination.Key &&
-                            (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key));
+                            (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key) &&
+                            (request.SourcePort == null || d.OutputPort?.Key == request.SourcePort.Key));
                     }
 
                     if (RouteDescriptors.TryGetValue(eRoutingSignalType.Video, out RouteDescriptorCollection videoCollection))
@@ -477,7 +478,8 @@ namespace PepperDash.Essentials.Core
                         videoRoute = videoCollection.Descriptors.FirstOrDefault(d =>
                             d.Source.Key == request.Source.Key &&
                             d.Destination.Key == request.Destination.Key &&
-                            (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key));
+                            (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key) &&
+                            (request.SourcePort == null || d.OutputPort?.Key == request.SourcePort.Key));
                     }
                 }
                 else
@@ -492,14 +494,15 @@ namespace PepperDash.Essentials.Core
                         audioOrSingleRoute = collection.Descriptors.FirstOrDefault(d =>
                             d.Source.Key == request.Source.Key &&
                             d.Destination.Key == request.Destination.Key &&
-                            (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key));
+                            (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key) &&
+                            (request.SourcePort == null || d.OutputPort?.Key == request.SourcePort.Key));
                     }
                 }
 
                 // If no pre-loaded route found, build it dynamically
                 if (audioOrSingleRoute == null && videoRoute == null)
                 {
-                    Debug.LogMessage(LogEventLevel.Debug, "No pre-loaded route found, building dynamically", request.Destination);
+                    Debug.LogDebug(request.Destination, "No pre-loaded route found, building dynamically");
                     (audioOrSingleRoute, videoRoute) = request.Destination.GetRouteToSource(request.Source, request.SignalType, request.DestinationPort, request.SourcePort);
                 }
 
@@ -513,14 +516,15 @@ namespace PepperDash.Essentials.Core
                     RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(videoRoute);
                 }
 
-                Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
+                Debug.LogVerbose(request.Destination, "Executing full route");
 
                 audioOrSingleRoute.ExecuteRoutes();
                 videoRoute?.ExecuteRoutes();
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Exception Running Route Request {request}", null, request);
+                Debug.LogError("Exception Running Route Request {request}: {exception}", request, ex.Message);
+                Debug.LogDebug(ex, "Stack Trace: ");
             }
         }
 
@@ -534,7 +538,7 @@ namespace PepperDash.Essentials.Core
         {
             try
             {
-                Debug.LogMessage(LogEventLevel.Information, "Release route for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+                Debug.LogInformation(destination, "Release route for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
 
                 if (RouteRequests.TryGetValue(destination.Key, out RouteRequest existingRequest) && destination is IWarmingCooling)
                 {
@@ -548,13 +552,14 @@ namespace PepperDash.Essentials.Core
                 var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPortKey);
                 if (current != null)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
+                    Debug.LogInformation(destination, "Releasing current route: {0}", current.Source.Key);
                     current.ReleaseRoutes(clearRoute);
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Exception releasing route for '{destination}':'{inputPortKey}'", null, destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
+                Debug.LogError("Exception releasing route for '{destination}':'{inputPortKey}': {exception}", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey, ex.Message);
+                Debug.LogDebug(ex, "Stack Trace: ");
             }
         }
 
@@ -580,14 +585,14 @@ namespace PepperDash.Essentials.Core
             cycle++;
 
             // Check if this route has already been determined to be impossible
-            var routeKey = GetRouteKey(source.Key, destination.Key, signalType);
+            var routeKey = GetRouteKey(source.Key, destination.Key, sourcePort?.Key ?? "auto", destinationPort?.Key ?? "auto", signalType);
             if (_impossibleRoutes.ContainsKey(routeKey))
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "Route {0} is cached as impossible, skipping", null, routeKey);
+                Debug.LogVerbose("Route {0} is cached as impossible, skipping", routeKey);
                 return false;
             }
 
-            Debug.LogMessage(LogEventLevel.Verbose, "GetRouteToSource: {cycle} {sourceKey}:{sourcePortKey}--> {destinationKey}:{destinationPortKey} {type}", null, cycle, source.Key, sourcePort?.Key ?? "auto", destination.Key, destinationPort?.Key ?? "auto", signalType.ToString());
+            Debug.LogVerbose("GetRouteToSource: {cycle} {sourceKey}:{sourcePortKey}--> {destinationKey}:{destinationPortKey} {type}", null, cycle, source.Key, sourcePort?.Key ?? "auto", destination.Key, destinationPort?.Key ?? "auto", signalType.ToString());
 
             RoutingInputPort goodInputPort = null;
 
@@ -635,7 +640,7 @@ namespace PepperDash.Essentials.Core
             }
             else // no direct-connect.  Walk back devices.
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "is not directly connected to {sourceKey}. Walking down tie lines", destination, source.Key);
+                Debug.LogVerbose(destination, "is not directly connected to {sourceKey}. Walking down tie lines", source.Key);
 
                 // No direct tie? Run back out on the inputs' attached devices... 
                 // Only the ones that are routing devices
@@ -653,13 +658,13 @@ namespace PepperDash.Essentials.Core
                     // Check if this previous device has already been walked
                     if (alreadyCheckedDevices.Contains(midpointDevice))
                     {
-                        Debug.LogMessage(LogEventLevel.Verbose, "Skipping input {midpointDeviceKey} on {destinationKey}, this was already checked", destination, midpointDevice.Key, destination.Key);
+                        Debug.LogVerbose(destination, "Skipping input {midpointDeviceKey} on {destinationKey}, this was already checked", midpointDevice.Key, destination.Key);
                         continue;
                     }
 
                     var midpointOutputPort = tieLine.SourcePort;
 
-                    Debug.LogMessage(LogEventLevel.Verbose, "Trying to find route on {midpointDeviceKey}", destination, midpointDevice.Key);
+                    Debug.LogVerbose(destination, "Trying to find route on {midpointDeviceKey}", midpointDevice.Key);
 
                     // haven't seen this device yet.  Do it.  Pass the output port to the next
                     // level to enable switching on success
@@ -668,9 +673,9 @@ namespace PepperDash.Essentials.Core
 
                     if (upstreamRoutingSuccess)
                     {
-                        Debug.LogMessage(LogEventLevel.Verbose, "Upstream device route found", destination);
-                        Debug.LogMessage(LogEventLevel.Verbose, "Route found on {midpointDeviceKey}", destination, midpointDevice.Key);
-                        Debug.LogMessage(LogEventLevel.Verbose, "TieLine: SourcePort: {SourcePort} DestinationPort: {DestinationPort}", destination, tieLine.SourcePort, tieLine.DestinationPort);
+                        Debug.LogVerbose(destination, "Upstream device route found");
+                        Debug.LogVerbose(destination, "Route found on {midpointDeviceKey}", midpointDevice.Key);
+                        Debug.LogVerbose(destination, "TieLine: SourcePort: {SourcePort} DestinationPort: {DestinationPort}", tieLine.SourcePort, tieLine.DestinationPort);
                         goodInputPort = tieLine.DestinationPort;
                         break; // Stop looping the inputs in this cycle
                     }
@@ -680,7 +685,7 @@ namespace PepperDash.Essentials.Core
 
             if (goodInputPort == null)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "No route found to {0}", destination, source.Key);
+                Debug.LogVerbose(destination, "No route found to {0}", source.Key);
 
                 // Cache this as an impossible route
                 _impossibleRoutes.TryAdd(routeKey, 0);
@@ -700,7 +705,7 @@ namespace PepperDash.Essentials.Core
                 routeTable.Routes.Add(new RouteSwitchDescriptor(outputPortToUse, goodInputPort));
             }
             else // device is merely IRoutingInputOutputs
-                Debug.LogMessage(LogEventLevel.Verbose, "No routing. Passthrough device", destination);
+                Debug.LogVerbose(destination, "No routing. Passthrough device");
 
             return true;
         }

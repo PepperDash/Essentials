@@ -51,20 +51,25 @@ namespace PepperDash.Essentials.Core
                 t.Destination == descriptor.Destination &&
                 t.SignalType == descriptor.SignalType &&
                 ((t.InputPort == null && descriptor.InputPort == null) ||
-                 (t.InputPort != null && descriptor.InputPort != null && t.InputPort.Key == descriptor.InputPort.Key)));
+                 (t.InputPort != null && descriptor.InputPort != null && t.InputPort.Key == descriptor.InputPort.Key)) &&
+                ((t.OutputPort == null && descriptor.OutputPort == null) ||
+                    (t.OutputPort != null && descriptor.OutputPort != null && t.OutputPort.Key == descriptor.OutputPort.Key)));
 
             if (existingRoute != null)
             {
-                Debug.LogMessage(LogEventLevel.Information, descriptor.Destination,
-                    "Route from {0} to {1}:{2} ({3}) already exists in this collection",
+                Debug.LogInformation(descriptor.Destination,
+                    "Route from {source}:{outputPort} to {destination}:{inputPort} ({signalType}) already exists in this collection",
                     descriptor?.Source?.Key,
+                    descriptor?.OutputPort?.Key ?? "auto",
                     descriptor?.Destination?.Key,
                     descriptor?.InputPort?.Key ?? "auto",
-                    descriptor?.SignalType);
+                    descriptor?.SignalType
+                    );
                 return;
             }
-            Debug.LogMessage(LogEventLevel.Verbose, "Adding route descriptor: {0} -> {1}:{2} ({3})",
+            Debug.LogVerbose("Adding route descriptor: {source}:{outputPort} -> {destination}:{inputPort} ({signalType})",
                 descriptor?.Source?.Key,
+                descriptor?.OutputPort?.Key ?? "auto",
                 descriptor?.Destination?.Key,
                 descriptor?.InputPort?.Key ?? "auto",
                 descriptor?.SignalType);
