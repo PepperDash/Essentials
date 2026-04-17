@@ -77,6 +77,11 @@ namespace PepperDash.Essentials.Core.Web
         {
             var routes = new List<HttpCwsRoute>
             {
+                new HttpCwsRoute("login")
+                {
+                    Name = "Root",
+                    RouteHandler = new LoginRequestHandler()
+                },
                 new HttpCwsRoute("versions")
                 {
                     Name = "ReportVersions",
