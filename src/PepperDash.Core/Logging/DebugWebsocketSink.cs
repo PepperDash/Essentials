@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -12,11 +8,11 @@ using Crestron.SimplSharp;
 using WebSocketSharp;
 using System.Security.Authentication;
 using WebSocketSharp.Net;
-using X509Certificate2 = System.Security.Cryptography.X509Certificates.X509Certificate2;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using Org.BouncyCastle.Asn1.X509;
 using Serilog.Formatting;
-using Newtonsoft.Json.Linq;
 using Serilog.Formatting.Json;
 
 namespace PepperDash.Core
@@ -27,18 +23,23 @@ namespace PepperDash.Core
     public class DebugWebsocketSink : ILogEventSink
     {
         private HttpServer _httpsServer;
-        
+
         private string _path = "/debug/join/";
         private const string _certificateName = "selfCres";
         private const string _certificatePassword = "cres12345";
 
-        public int Port 
-        { get 
-            { 
-                
-                if(_httpsServer == null) return 0;
+        private static string CertPath =>
+    $"{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}{_certificateName}.pfx";
+
+
+        public int Port
+        {
+            get
+            {
+
+                if (_httpsServer == null) return 0;
                 return _httpsServer.Port;
-            } 
+            }
         }
 
         public string Url
@@ -54,60 +55,105 @@ namespace PepperDash.Core
         /// Gets or sets the IsRunning
         /// </summary>
         public bool IsRunning { get => _httpsServer?.IsListening ?? false; }
-        
+
 
         private readonly ITextFormatter _textFormatter;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DebugWebsocketSink"/> class with the specified text formatter.
+        /// </summary>
+        /// <remarks>This constructor initializes the WebSocket sink and ensures that a certificate is
+        /// available for secure communication. If the required certificate does not exist, it will be created
+        /// automatically. Additionally, the sink is configured to stop the server when the program is
+        /// stopping.</remarks>
+        /// <param name="formatProvider">The text formatter used to format log messages. If null, a default JSON formatter is used.</param>
         public DebugWebsocketSink(ITextFormatter formatProvider)
         {
 
             _textFormatter = formatProvider ?? new JsonFormatter();
 
-            if (!File.Exists($"\\user\\{_certificateName}.pfx"))
-                CreateCert(null);
+            if (!File.Exists(CertPath))
+                CreateCert();
 
-            CrestronEnvironment.ProgramStatusEventHandler += type =>
-            {
-                if (type == eProgramStatusEventType.Stopping)
-                {
-                    StopServer();
-                }
-            };
-        }
-
-        private void CreateCert(string[] args)
-        {
             try
             {
-                //Debug.Console(0,"CreateCert Creating Utility");
-                CrestronConsole.PrintLine("CreateCert Creating Utility");
-                //var utility = new CertificateUtility();
-                var utility = new BouncyCertificate();
-                //Debug.Console(0, "CreateCert Calling CreateCert");
-                CrestronConsole.PrintLine("CreateCert Calling CreateCert");
-                //utility.CreateCert();
+                CrestronEnvironment.ProgramStatusEventHandler += type =>
+                {
+                    if (type == eProgramStatusEventType.Stopping)
+                        StopServer();
+                };
+            }
+            catch
+            {
+                // CrestronEnvironment is not available in test / dev environments — safe to skip.
+            }
+        }
+
+        private static void CreateCert()
+        {
+            // NOTE: This method is called from the constructor, which is itself called during Debug's static
+            // constructor before _logger is assigned. Do NOT call any Debug.Log* methods here — use
+            // CrestronConsole.PrintLine only, to avoid a NullReferenceException that would poison the Debug type.
+            try
+            {
                 var ipAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
                 var hostName = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
                 var domainName = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, 0);
 
-                //Debug.Console(0, "DomainName: {0} | HostName: {1} | {1}.{0}@{2}", domainName, hostName, ipAddress);
-                CrestronConsole.PrintLine(string.Format("DomainName: {0} | HostName: {1} | {1}.{0}@{2}", domainName, hostName, ipAddress));
+                CrestronConsole.PrintLine(string.Format("CreateCert: DomainName: {0} | HostName: {1} | {1}.{0}@{2}", domainName, hostName, ipAddress));
 
-                var certificate = utility.CreateSelfSignedCertificate(string.Format("CN={0}.{1}", hostName, domainName), new[] { string.Format("{0}.{1}", hostName, domainName), ipAddress }, new[] { KeyPurposeID.id_kp_serverAuth, KeyPurposeID.id_kp_clientAuth });
-                //Crestron fails to let us do this...perhaps it should be done through their Dll's but haven't tested
-                //Debug.Print($"CreateCert Storing Certificate To My.LocalMachine");
-                //utility.AddCertToStore(certificate, StoreName.My, StoreLocation.LocalMachine);
-                //Debug.Console(0, "CreateCert Saving Cert to \\user\\");
-                CrestronConsole.PrintLine("CreateCert Saving Cert to \\user\\");
-                utility.CertificatePassword = _certificatePassword;
-                utility.WriteCertificate(certificate, @"\user\", _certificateName);
-                //Debug.Console(0, "CreateCert Ending CreateCert");
-                CrestronConsole.PrintLine("CreateCert Ending CreateCert");
+                var subjectName = string.Format("CN={0}.{1}", hostName, domainName);
+                var fqdn = string.Format("{0}.{1}", hostName, domainName);
+
+                using (var rsa = RSA.Create(2048))
+                {
+
+                    var request = new CertificateRequest(
+                        subjectName,
+                        rsa,
+                        HashAlgorithmName.SHA256,
+                        RSASignaturePadding.Pkcs1);
+
+                    // Subject Key Identifier
+                    request.CertificateExtensions.Add(
+                        new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+                    // Extended Key Usage: server + client auth
+                    request.CertificateExtensions.Add(
+                        new X509EnhancedKeyUsageExtension(
+                            new OidCollection
+                            {
+                        new Oid("1.3.6.1.5.5.7.3.1"), // id-kp-serverAuth
+                        new Oid("1.3.6.1.5.5.7.3.2")  // id-kp-clientAuth
+                            },
+                            false));
+
+                    // Subject Alternative Names: DNS + IP
+                    var sanBuilder = new SubjectAlternativeNameBuilder();
+                    sanBuilder.AddDnsName(fqdn);
+                    if (System.Net.IPAddress.TryParse(ipAddress, out var ip))
+                        sanBuilder.AddIpAddress(ip);
+                    request.CertificateExtensions.Add(sanBuilder.Build());
+
+                    var notBefore = DateTimeOffset.UtcNow;
+                    var notAfter = notBefore.AddYears(2);
+
+                    using (var cert = request.CreateSelfSigned(notBefore, notAfter))
+                    {
+
+                        var separator = Path.DirectorySeparatorChar;
+                        var outputPath = string.Format("{0}user{1}{2}.pfx", separator, separator, _certificateName);
+
+                        var pfxBytes = cert.Export(X509ContentType.Pfx, _certificatePassword);
+                        File.WriteAllBytes(outputPath, pfxBytes);
+
+                        CrestronConsole.PrintLine(string.Format("CreateCert: Certificate written to {0}", outputPath));
+                    }
+                }
             }
             catch (Exception ex)
             {
-                //Debug.Console(0, "WSS CreateCert Failed\r\n{0}\r\n{1}", ex.Message, ex.StackTrace);
-                CrestronConsole.PrintLine(string.Format("WSS CreateCert Failed\r\n{0}\r\n{1}", ex.Message, ex.StackTrace));
+                CrestronConsole.PrintLine(string.Format("WSS CreateCert Failed: {0}\r\n{1}", ex.Message, ex.StackTrace));
             }
         }
 
@@ -126,14 +172,37 @@ namespace PepperDash.Core
         }
 
         /// <summary>
-        /// StartServerAndSetPort method
+        /// Starts the WebSocket server on the specified port and configures it with the appropriate certificate.
         /// </summary>
+        /// <remarks>This method initializes the WebSocket server and binds it to the specified port.  It
+        /// also applies the server's certificate for secure communication. Ensure that the port is not already in use
+        /// and that the certificate file is accessible.</remarks>
+        /// <param name="port">The port number on which the WebSocket server will listen. Must be a valid, non-negative port number.</param>
         public void StartServerAndSetPort(int port)
         {
-            Debug.Console(0, "Starting Websocket Server on port: {0}", port);
+            Debug.LogInformation("Starting Websocket Server on port: {0}", port);
 
 
-            Start(port, $"\\user\\{_certificateName}.pfx", _certificatePassword);
+            Start(port, CertPath, _certificatePassword);
+        }
+
+        private static X509Certificate2 LoadOrRecreateCert(string certPath, string certPassword)
+        {
+            try
+            {
+                // EphemeralKeySet is required on Linux/OpenSSL (Crestron 4-series) to avoid
+                // key-container persistence failures, and avoids the private key export restriction.
+                return new X509Certificate2(certPath, certPassword, X509KeyStorageFlags.EphemeralKeySet);
+            }
+            catch (Exception ex)
+            {
+                // Cert is stale or was generated by an incompatible library (e.g. old BouncyCastle output).
+                // Delete it, regenerate with the BCL path, and retry once.
+                CrestronConsole.PrintLine(string.Format("SSL cert load failed ({0}); regenerating...", ex.Message));
+                try { File.Delete(certPath); } catch { }
+                CreateCert();
+                return new X509Certificate2(certPath, certPassword, X509KeyStorageFlags.EphemeralKeySet);
+            }
         }
 
         private void Start(int port, string certPath = "", string certPassword = "")
@@ -142,66 +211,37 @@ namespace PepperDash.Core
             {
                 _httpsServer = new HttpServer(port, true);
 
-
                 if (!string.IsNullOrWhiteSpace(certPath))
                 {
-                    Debug.Console(0, "Assigning SSL Configuration");
-                    _httpsServer.SslConfiguration = new ServerSslConfiguration(new X509Certificate2(certPath, certPassword))
-                    {
-                        ClientCertificateRequired = false,
-                        CheckCertificateRevocation = false,
-                        EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls,
-                        //this is just to test, you might want to actually validate
-                        ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
-                        {
-                            Debug.Console(0, "HTTPS ClientCerticateValidation Callback triggered");
-                            return true;
-                        }
-                    };
-                }
-                Debug.Console(0, "Adding Debug Client Service");
-                _httpsServer.AddWebSocketService<DebugClient>(_path);
-                Debug.Console(0, "Assigning Log Info");
-                _httpsServer.Log.Level = LogLevel.Trace;
-                _httpsServer.Log.Output = (d, s) =>
-                {
-                    uint level;
+                    Debug.LogInformation("Assigning SSL Configuration");
 
-                    switch(d.Level)
-                    {
-                        case WebSocketSharp.LogLevel.Fatal:
-                            level = 3;
-                            break;
-                        case WebSocketSharp.LogLevel.Error:
-                            level = 2;
-                            break;
-                        case WebSocketSharp.LogLevel.Warn:
-                            level = 1;
-                            break;
-                        case WebSocketSharp.LogLevel.Info:
-                            level = 0;
-                            break;
-                        case WebSocketSharp.LogLevel.Debug:
-                            level = 4;
-                            break;
-                        case WebSocketSharp.LogLevel.Trace:
-                            level = 5;
-                            break;
-                        default:
-                            level = 4;
-                            break;
-                    }
-                    
-                    Debug.Console(level, "{1} {0}\rCaller:{2}\rMessage:{3}\rs:{4}", d.Level.ToString(), d.Date.ToString(), d.Caller.ToString(), d.Message, s);
-                };
-                Debug.Console(0, "Starting");
+                    _httpsServer.SslConfiguration.ServerCertificate = LoadOrRecreateCert(certPath, certPassword);
+                    _httpsServer.SslConfiguration.ClientCertificateRequired = false;
+                    _httpsServer.SslConfiguration.CheckCertificateRevocation = false;
+                    _httpsServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
+                    //this is just to test, you might want to actually validate
+                    _httpsServer.SslConfiguration.ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+                        {
+                            Debug.LogInformation("HTTPS ClientCerticateValidation Callback triggered");
+                            return true;
+                        };
+                }
+                Debug.LogInformation("Adding Debug Client Service");
+                _httpsServer.AddWebSocketService<DebugClient>(_path);
+                Debug.LogInformation("Assigning Log Info");
+                _httpsServer.Log.Level = LogLevel.Trace;
+                _httpsServer.Log.Output = WriteWebSocketInternalLog;
+                Debug.LogInformation("Starting");
 
                 _httpsServer.Start();
-                Debug.Console(0, "Ready");
+                Debug.LogInformation("Ready");
             }
             catch (Exception ex)
             {
-                Debug.Console(0, "WebSocket Failed to start {0}", ex.Message);
+                Debug.LogError(ex, "WebSocket Failed to start {0}", ex.Message);
+                Debug.LogVerbose("Stack Trace:\r{0}", ex.StackTrace);
+                // Null out the server so callers can detect failure via IsRunning / Url null guards.
+                _httpsServer = null;
             }
         }
 
@@ -210,10 +250,68 @@ namespace PepperDash.Core
         /// </summary>
         public void StopServer()
         {
-            Debug.Console(0, "Stopping Websocket Server");
-            _httpsServer?.Stop();
+            Debug.LogInformation("Stopping Websocket Server");
 
-            _httpsServer = null;
+            try
+            {
+                if (_httpsServer == null || !_httpsServer.IsListening)
+                {
+                    return;
+                }
+
+                // Prevent close-sequence internal websocket logs from re-entering the logging pipeline.
+                _httpsServer.Log.Output = (d, s) => { };
+
+                var serviceHost = _httpsServer.WebSocketServices[_path];
+
+                if (serviceHost == null)
+                {
+                    _httpsServer.Stop();
+                    _httpsServer = null;
+                    return;
+                }
+
+                serviceHost.Sessions.Broadcast("Server is stopping");
+
+                foreach (var session in serviceHost.Sessions.Sessions)
+                {
+                    if (session?.Context?.WebSocket != null && session.Context.WebSocket.IsAlive)
+                    {
+                        session.Context.WebSocket.Close(1001, "Server is stopping");
+                    }
+                }
+
+                _httpsServer.Stop();
+
+                _httpsServer = null;
+
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(ex, "WebSocket Failed to stop gracefully {0}", ex.Message);
+                Debug.LogVerbose("Stack Trace\r\n{0}", ex.StackTrace);
+            }
+        }
+
+        private static void WriteWebSocketInternalLog(LogData data, string supplemental)
+        {
+            try
+            {
+                if (data == null)
+                {
+                    return;
+                }
+
+                var message = string.IsNullOrWhiteSpace(data.Message) ? "<none>" : data.Message;
+                var details = string.IsNullOrWhiteSpace(supplemental) ? string.Empty : string.Format(" | details: {0}", supplemental);
+
+                // Use direct console output to avoid recursive log sink calls.
+                CrestronConsole.PrintLine(string.Format("WS[{0}] {1} | message: {2}{3}", data.Level, data.Date, message, details));
+            }
+            catch
+            {
+                // Never throw from websocket log callback.
+            }
         }
     }
 
