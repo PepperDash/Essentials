@@ -75,6 +75,8 @@ public class WebApiServer : IKeyName
 
 		if (_server == null) _server = new HttpCwsServer(BasePath);
 
+		 _server.AuthenticateAllRoutes = false;
+
 		_server.setProcessName(Key);
 		_server.HttpRequestHandler = new DefaultRequestHandler();
 		_server.ReceivedRequestEvent += ReceivedRequestEventHandler;

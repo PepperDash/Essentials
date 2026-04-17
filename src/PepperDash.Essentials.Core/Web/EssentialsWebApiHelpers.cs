@@ -40,12 +40,18 @@ public static class EssentialsWebApiHelpers
 	/// </summary>
 	public static object MapToDeviceListObject(IKeyed device)
 	{
+		var interfaces = device.GetType()
+			.GetInterfaces()
+			.Select(i => i.Name)
+			.ToList();
+
 		return new
 		{
 			device.Key,
 			Name = (device is IKeyName)
 				? (device as IKeyName).Name
-				: "---"
+				: "---",
+			Interfaces = interfaces
 		};
 	}
 

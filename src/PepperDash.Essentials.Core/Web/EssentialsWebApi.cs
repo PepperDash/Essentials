@@ -69,6 +69,7 @@ public class EssentialsWebApi : EssentialsDevice
 
         _server = new WebApiServer(Key, Name, BasePath);
 
+
         _debugServer = new WebApiServer($"{key}-debug-app", $"{name} Debug App", "/debug");
         _debugServer.SetFallbackHandler(new ServeDebugAppRequestHandler());
 
@@ -79,6 +80,11 @@ public class EssentialsWebApi : EssentialsDevice
     {
         var routes = new List<HttpCwsRoute>
         {
+            new HttpCwsRoute("login")
+            {
+                Name = "Root",
+                RouteHandler = new LoginRequestHandler()
+            },
             new HttpCwsRoute("versions")
             {
                 Name = "ReportVersions",

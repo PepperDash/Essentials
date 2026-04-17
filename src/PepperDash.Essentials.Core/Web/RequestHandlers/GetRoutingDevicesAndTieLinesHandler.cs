@@ -40,26 +40,26 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 if (device is IRoutingInputs inputDevice)
                 {
                     deviceInfo.HasInputs = true;
-                    deviceInfo.InputPorts = inputDevice.InputPorts.Select(p => new PortInfo
+                    deviceInfo.InputPorts = [.. inputDevice.InputPorts.Select(p => new PortInfo
                     {
                         Key = p.Key,
                         SignalType = p.Type.ToString(),
                         ConnectionType = p.ConnectionType.ToString(),
                         IsInternal = p.IsInternal
-                    }).ToList();
+                    })];
                 }
 
                 // Check if device implements IRoutingOutputs
                 if (device is IRoutingOutputs outputDevice)
                 {
                     deviceInfo.HasOutputs = true;
-                    deviceInfo.OutputPorts = outputDevice.OutputPorts.Select(p => new PortInfo
+                    deviceInfo.OutputPorts = [.. outputDevice.OutputPorts.Select(p => new PortInfo
                     {
                         Key = p.Key,
                         SignalType = p.Type.ToString(),
                         ConnectionType = p.ConnectionType.ToString(),
                         IsInternal = p.IsInternal
-                    }).ToList();
+                    })];
                 }
 
                 // Check if device implements IRoutingInputsOutputs
@@ -86,10 +86,31 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 IsInternal = tl.IsInternal
             }).ToList();
 
+            // Get current active routes from DefaultCollection, grouped by signal type
+            var currentRoutes = RouteDescriptorCollection.DefaultCollection.Descriptors
+                .GroupBy(d => d.SignalType.ToString())
+                .Select(g => new CurrentRouteGroupInfo
+                {
+                    SignalType = g.Key,
+                    Routes = [.. g.Select(d => new ActiveRouteInfo
+                    {
+                        SourceDeviceKey = d.Source.Key,
+                        DestinationDeviceKey = d.Destination.Key,
+                        DestinationInputPortKey = d.InputPort?.Key,
+                        Steps = [.. d.Routes.Select(r => new RouteSwitchStepInfo
+                        {
+                            SwitchingDeviceKey = r.SwitchingDevice?.Key,
+                            InputPortKey = r.InputPort?.Key,
+                            OutputPortKey = r.OutputPort?.Key
+                        })]
+                    })]
+                }).ToList();
+
             var response = new RoutingSystemInfo
             {
                 Devices = devices,
-                TieLines = tielines
+                TieLines = tielines,
+                CurrentRoutes = currentRoutes
             };
 
             var jsonResponse = JsonConvert.SerializeObject(response, Formatting.Indented);
@@ -121,6 +142,12 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// </summary>
         [JsonProperty("tieLines")]
         public List<TieLineInfo> TieLines { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current active routes in the system, grouped by signal type
+        /// </summary>
+        [JsonProperty("currentRoutes")]
+        public List<CurrentRouteGroupInfo> CurrentRoutes { get; set; }
     }
 
     /// <summary>
@@ -237,5 +264,78 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// </summary>
         [JsonProperty("isInternal")]
         public bool IsInternal { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a group of active routes for a given signal type
+    /// </summary>
+    public class CurrentRouteGroupInfo
+    {
+        /// <summary>
+        /// Gets or sets the signal type for the group of active routes (e.g., AudioVideo, Audio, Video, etc.)
+        /// </summary>
+        [JsonProperty("signalType")]
+        public string SignalType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of active routes for the given signal type
+        /// </summary>
+        [JsonProperty("routes")]
+        public List<ActiveRouteInfo> Routes { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a single active route from a source to a destination
+    /// </summary>
+    public class ActiveRouteInfo
+    {
+        /// <summary>
+        /// Gets or sets the key of the source device for the active route
+        /// </summary>
+        [JsonProperty("sourceDeviceKey")]
+        public string SourceDeviceKey { get; set; }
+
+        /// <summary> 
+        /// Gets or sets the key of the destination device for the active route
+        /// </summary>
+        [JsonProperty("destinationDeviceKey")]
+        public string DestinationDeviceKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key of the destination input port for the active route, if applicable
+        /// </summary>
+        [JsonProperty("destinationInputPortKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string DestinationInputPortKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of switching steps for the active route
+        /// </summary>
+        [JsonProperty("steps")]
+        public List<RouteSwitchStepInfo> Steps { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a single switching step within a route
+    /// </summary>
+    public class RouteSwitchStepInfo
+    {
+        /// <summary>
+        /// Gets or sets the key of the switching device for the route step
+        /// </summary>
+        [JsonProperty("switchingDeviceKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string SwitchingDeviceKey { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the key of the input port for the route step, if applicable
+        /// </summary>
+        [JsonProperty("inputPortKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string InputPortKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key of the output port for the route step, if applicable
+        /// </summary>
+        [JsonProperty("outputPortKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string OutputPortKey { get; set; }
     }
 }
