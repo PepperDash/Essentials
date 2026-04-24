@@ -1,7 +1,10 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
@@ -12,14 +15,11 @@ using PepperDash.Core.Adapters;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Routing;
-using System.Threading;
-using Timeout = Crestron.SimplSharp.Timeout;
-using Serilog.Events;
-using System.Threading.Tasks;
-using PepperDash.Essentials.Core.Web;
-using System.Collections.Generic;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Web;
+using Serilog.Events;
+using Timeout = Crestron.SimplSharp.Timeout;
 
 namespace PepperDash.Essentials;
 
@@ -506,52 +506,57 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
                 new Core.Monitoring.SystemMonitorController("systemMonitor"));
         }
 
-        if (ConfigReader.ConfigObject is not null)
+        if (ConfigReader.ConfigObject is null)
         {
             Debug.LogMessage(LogEventLevel.Warning, "LoadDevices: ConfigObject is null. Cannot load devices.");
+            return;
+        }
 
-            foreach (var devConf in ConfigReader.ConfigObject.Devices)
+        Debug.LogInformation("Loading devices from config.");
+
+        foreach (var devConf in ConfigReader.ConfigObject.Devices)
+        {
+            IKeyed newDev = null;
+
+            try
             {
-                IKeyed newDev = null;
-
-                try
+                Debug.LogMessage(LogEventLevel.Information, "Creating device '{deviceKey:l}', type '{deviceType:l}'", devConf.Key, devConf.Type);
+                // Skip this to prevent unnecessary warnings
+                if (devConf.Key == "processor")
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Creating device '{deviceKey:l}', type '{deviceType:l}'", devConf.Key, devConf.Type);
-                    // Skip this to prevent unnecessary warnings
-                    if (devConf.Key == "processor")
-                    {
-                        var prompt = Global.ControlSystem.ControllerPrompt;
+                    var prompt = Global.ControlSystem.ControllerPrompt;
 
-                        var typeMatch = string.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
-                                        string.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
+                    var typeMatch = string.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
+                                    string.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
 
-                        if (!typeMatch)
-                            Debug.LogMessage(LogEventLevel.Information,
-                                "WARNING: Config file defines processor type as '{deviceType:l}' but actual processor is '{processorType:l}'!  Some ports may not be available",
-                                devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
+                    if (!typeMatch)
+                        Debug.LogMessage(LogEventLevel.Information,
+                            "WARNING: Config file defines processor type as '{deviceType:l}' but actual processor is '{processorType:l}'!  Some ports may not be available",
+                            devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
 
 
-                        continue;
-                    }
-
-
-                    if (newDev == null)
-                        newDev = Core.DeviceFactory.GetDevice(devConf);
-
-                    if (newDev != null)
-                        DeviceManager.AddDevice(newDev);
-                    else
-                        Debug.LogMessage(LogEventLevel.Information, "ERROR: Cannot load unknown device type '{deviceType:l}', key '{deviceKey:l}'.", devConf.Type, devConf.Key);
+                    continue;
                 }
-                catch (Exception e)
-                {
-                    InitializationExceptions.Add(e);
-                    Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.", args: new[] { devConf.Key });
-                }
+
+
+                if (newDev == null)
+                    newDev = Core.DeviceFactory.GetDevice(devConf);
+
+                if (newDev != null)
+                    DeviceManager.AddDevice(newDev);
+                else
+                    Debug.LogMessage(LogEventLevel.Information, "ERROR: Cannot load unknown device type '{deviceType:l}', key '{deviceKey:l}'.", devConf.Type, devConf.Key);
             }
-
+            catch (Exception e)
+            {
+                InitializationExceptions.Add(e);
+                Debug.LogMessage(e, "ERROR: Creating device {deviceKey:l}. Skipping device.", args: new[] { devConf.Key });
+            }
         }
         Debug.LogMessage(LogEventLevel.Information, "All Devices Loaded.");
+
+        return;
+
 
     }
 
