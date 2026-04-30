@@ -5,6 +5,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PepperDash.Core.Logging;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Core.Web
@@ -25,24 +26,24 @@ namespace PepperDash.Core.Web
 		private readonly CCriticalSection _serverLock = new CCriticalSection();
 		private HttpCwsServer _server;
 
-  /// <summary>
-  /// Gets or sets the Key
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the Key
+		/// </summary>
 		public string Key { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the Name
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the Name
+		/// </summary>
 		public string Name { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the BasePath
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the BasePath
+		/// </summary>
 		public string BasePath { get; private set; }
 
-  /// <summary>
-  /// Gets or sets the IsRegistered
-  /// </summary>
+		/// <summary>
+		/// Gets or sets the IsRegistered
+		/// </summary>
 		public bool IsRegistered { get; private set; }
 
 		/// <summary>
@@ -91,7 +92,7 @@ namespace PepperDash.Core.Web
 		/// <param name="key"></param>
 		/// <param name="name"></param>
 		/// <param name="basePath"></param>
-		public WebApiServer(string key, string name, string basePath)			
+		public WebApiServer(string key, string name, string basePath)
 		{
 			Key = key;
 			Name = string.IsNullOrEmpty(name) ? DefaultName : name;
@@ -139,9 +140,9 @@ namespace PepperDash.Core.Web
 			Start();
 		}
 
-  /// <summary>
-  /// Initialize method
-  /// </summary>
+		/// <summary>
+		/// Initialize method
+		/// </summary>
 		public void Initialize(string key, string basePath)
 		{
 			Key = key;
@@ -167,9 +168,9 @@ namespace PepperDash.Core.Web
 		/// Removes a route from CWS
 		/// </summary>
 		/// <param name="route"></param>
-  /// <summary>
-  /// RemoveRoute method
-  /// </summary>
+		/// <summary>
+		/// RemoveRoute method
+		/// </summary>
 		public void RemoveRoute(HttpCwsRoute route)
 		{
 			if (route == null)
@@ -181,9 +182,25 @@ namespace PepperDash.Core.Web
 			_server.Routes.Remove(route);
 		}
 
-  /// <summary>
-  /// GetRouteCollection method
-  /// </summary>
+		/// <summary>
+		/// Sets the fallback request handler that is invoked when no registered route
+		/// matches an incoming request.  Must be called before <see cref="Start"/>.
+		/// </summary>
+		/// <param name="handler">The handler to use as the server-level fallback.</param>
+		public void SetFallbackHandler(IHttpCwsHandler handler)
+		{
+			if (handler == null)
+			{
+				this.LogWarning("SetFallbackHandler: handler parameter is null, ignoring");
+				return;
+			}
+
+			_server.HttpRequestHandler = handler;
+		}
+
+		/// <summary>
+		/// GetRouteCollection method
+		/// </summary>
 		public HttpCwsRouteCollection GetRouteCollection()
 		{
 			return _server.Routes;
@@ -227,9 +244,9 @@ namespace PepperDash.Core.Web
 			}
 		}
 
-  /// <summary>
-  /// Stop method
-  /// </summary>
+		/// <summary>
+		/// Stop method
+		/// </summary>
 		public void Stop()
 		{
 			try

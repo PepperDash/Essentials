@@ -17,6 +17,9 @@ namespace PepperDash.Essentials.Core.Web
     {
         private readonly WebApiServer _server;
 
+        private readonly WebApiServer _debugServer;
+
+
         ///<example>
         /// http(s)://{ipaddress}/cws/{basePath}
         /// http(s)://{ipaddress}/VirtualControl/Rooms/{roomId}/cws/{basePath}
@@ -69,6 +72,9 @@ namespace PepperDash.Essentials.Core.Web
                 BasePath = string.IsNullOrEmpty(config.BasePath) ? _defaultBasePath : config.BasePath;
 
             _server = new WebApiServer(Key, Name, BasePath);
+
+            _debugServer = new WebApiServer($"{key}-debug-app", $"{name} Debug App", "/debug");
+            _debugServer.SetFallbackHandler(new ServeDebugAppRequestHandler());
 
             SetupRoutes();
         }
@@ -242,6 +248,7 @@ namespace PepperDash.Essentials.Core.Web
                 Debug.LogMessage(LogEventLevel.Verbose, "Starting Essentials Web API on {0} Appliance", is4Series ? "4-series" : "3-series");
 
                 _server.Start();
+                _debugServer.Start();
 
                 GetPaths();
 
@@ -252,7 +259,8 @@ namespace PepperDash.Essentials.Core.Web
             Debug.LogMessage(LogEventLevel.Verbose, "Starting Essentials Web API on Virtual Control Server");
 
             _server.Start();
-
+            _debugServer.Start();
+            
             GetPaths();
         }
 
