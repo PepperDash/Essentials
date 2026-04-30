@@ -460,7 +460,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                if (args.Contains("?"))
+                if (!string.IsNullOrEmpty(args) && args.Contains("?"))
                 {
                     CrestronConsole.ConsoleCommandResponse("Usage: listtielines [signaltype]\r\n");
                     CrestronConsole.ConsoleCommandResponse("Signal types: Audio, Video, SecondaryAudio, AudioVideo, UsbInput, UsbOutput\r\n");
@@ -506,7 +506,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                if (args.Contains("?"))
+                if (!string.IsNullOrEmpty(args) && args.Contains("?"))
                 {
                     CrestronConsole.ConsoleCommandResponse("Usage: visualizeroutes [signaltype] [-s source] [-d destination]\r\n");
                     CrestronConsole.ConsoleCommandResponse("  signaltype: Audio, Video, AudioVideo, etc.\r\n");
@@ -555,7 +555,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                if (args.Contains("?"))
+                if (!string.IsNullOrEmpty(args) && args.Contains("?"))
                 {
                     CrestronConsole.ConsoleCommandResponse("Usage: visualizecurrentroutes [signaltype] [-s source] [-d destination]\r\n");
                     CrestronConsole.ConsoleCommandResponse("  signaltype: Audio, Video, AudioVideo, etc.\r\n");

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp;
+using System.Timers;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
@@ -21,7 +21,12 @@ namespace PepperDash.Essentials.Core.Routing
         /// <summary>
         /// Debounce timers for each sink device to prevent rapid successive updates
         /// </summary>
-        private readonly Dictionary<string, CTimer> updateTimers = new Dictionary<string, CTimer>();
+        private readonly Dictionary<string, Timer> updateTimers = new Dictionary<string, Timer>();
+
+        /// <summary>
+        /// Lock object protecting all access to <see cref="updateTimers"/>.
+        /// </summary>
+        private readonly object _timerLock = new object();
 
         /// <summary>
         /// Debounce delay in milliseconds
@@ -50,7 +55,6 @@ namespace PepperDash.Essentials.Core.Routing
             midpointToSinksMap = new Dictionary<string, HashSet<string>>();
 
             var sinks = DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitchingWithInputPort>();
-            var midpoints = DeviceManager.AllDevices.OfType<IRoutingWithFeedback>();
 
             foreach (var sink in sinks)
             {
@@ -212,8 +216,45 @@ namespace PepperDash.Essentials.Core.Routing
         }
 
         /// <summary>
+        /// Removes a sink from every midpoint set in the map and re-adds it based on its
+        /// current input port. Call this whenever a sink's selected input changes so that
+        /// HandleMidpointUpdate always sees an up-to-date downstream set.
+        /// </summary>
+        private void RebuildMapForSink(IRoutingSinkWithSwitchingWithInputPort sink)
+        {
+            if (midpointToSinksMap == null)
+                return;
+
+            // Remove this sink from all existing midpoint sets
+            foreach (var set in midpointToSinksMap.Values)
+                set.Remove(sink.Key);
+
+            // Drop any midpoint entries that are now empty
+            var emptyKeys = midpointToSinksMap
+                .Where(kvp => kvp.Value.Count == 0)
+                .Select(kvp => kvp.Key)
+                .ToList();
+            foreach (var k in emptyKeys)
+                midpointToSinksMap.Remove(k);
+
+            // Re-add the sink under every midpoint that is upstream of its new input
+            if (sink.CurrentInputPort == null)
+                return;
+
+            var upstreamMidpoints = GetUpstreamMidpoints(sink);
+            foreach (var midpointKey in upstreamMidpoints)
+            {
+                if (!midpointToSinksMap.ContainsKey(midpointKey))
+                    midpointToSinksMap[midpointKey] = new HashSet<string>();
+
+                midpointToSinksMap[midpointKey].Add(sink.Key);
+            }
+        }
+
+        /// <summary>
         /// Handles the InputChanged event from a sink device.
-        /// Triggers an update for the specific sink device.
+        /// Updates the midpoint-to-sink map for the new input path, then triggers
+        /// a source-info update for the sink.
         /// </summary>
         /// <param name="sender">The sink device that reported an input change.</param>
         /// <param name="currentInputPort">The new input port selected on the sink device.</param>
@@ -224,6 +265,10 @@ namespace PepperDash.Essentials.Core.Routing
         {
             try
             {
+                // Keep the map current so HandleMidpointUpdate can find this sink
+                if (sender is IRoutingSinkWithSwitchingWithInputPort sinkWithInputPort)
+                    RebuildMapForSink(sinkWithInputPort);
+
                 UpdateDestination(sender, currentInputPort);
             }
             catch (Exception ex)
@@ -255,15 +300,13 @@ namespace PepperDash.Essentials.Core.Routing
 
             var key = destination.Key;
 
-            // Cancel existing timer for this sink
-            if (updateTimers.TryGetValue(key, out var existingTimer))
-            {
-                existingTimer.Stop();
-                existingTimer.Dispose();
-            }
+            // Cancel and replace any existing timer under the lock so no callback
+            // can race with us while we swap the entry.
+            Timer timerToDispose = null;
+            Timer newTimer = null;
 
-            // Start new debounced timer
-            updateTimers[key] = new CTimer(_ =>
+            newTimer = new Timer(DEBOUNCE_MS) { AutoReset = false };
+            newTimer.Elapsed += (s, e) =>
             {
                 try
                 {
@@ -281,13 +324,36 @@ namespace PepperDash.Essentials.Core.Routing
                 }
                 finally
                 {
-                    if (updateTimers.ContainsKey(key))
+                    // Remove the entry first so a concurrent UpdateDestination call
+                    // cannot re-dispose whatever timer we're about to dispose.
+                    Timer selfTimer = null;
+                    lock (_timerLock)
                     {
-                        updateTimers[key]?.Dispose();
-                        updateTimers.Remove(key);
+                        if (updateTimers.TryGetValue(key, out var current) && ReferenceEquals(current, newTimer))
+                        {
+                            selfTimer = current;
+                            updateTimers.Remove(key);
+                        }
                     }
+                    selfTimer?.Dispose();
                 }
-            }, null, DEBOUNCE_MS);
+            };
+
+            lock (_timerLock)
+            {
+                if (updateTimers.TryGetValue(key, out var existingTimer))
+                    timerToDispose = existingTimer;
+
+                updateTimers[key] = newTimer;
+            }
+
+            // Dispose the old timer outside the lock to avoid holding the lock during disposal.
+            // Dispose implicitly stops the timer, preventing its Elapsed event from firing.
+            timerToDispose?.Dispose();
+
+            // Start after the lock is released so the Elapsed callback cannot deadlock
+            // trying to acquire _timerLock while we still hold it.
+            newTimer.Start();
         }
 
         /// <summary>
@@ -384,7 +450,8 @@ namespace PepperDash.Essentials.Core.Routing
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error getting sourceTieLine: {Exception}", this, ex);
+                Debug.LogError(this, "Error getting sourceTieLine: {message}", ex.Message);
+                Debug.LogDebug(ex, "StackTrace: ");
                 return;
             }
 
@@ -408,6 +475,11 @@ namespace PepperDash.Essentials.Core.Routing
                             return roomDefaultDisplay.DefaultDisplay.Key == destination.Key;
                         }
 
+                        if (ConfigReader.ConfigObject.GetDestinationListForKey(r.DestinationListKey)?.FirstOrDefault(d => d.Value.SinkKey == destination.Key) != null)
+                        {
+                            return true;
+                        }
+
                         return false;
                     }
                 );
@@ -429,10 +501,8 @@ namespace PepperDash.Essentials.Core.Routing
 
             if (sourceList == null)
             {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
+                Debug.LogDebug(this,
                     "No source list found for source list key {key}. Unable to find source for tieLine {sourceTieLine}",
-                    this,
                     room.SourceListKey,
                     sourceTieLine
                 );
@@ -461,10 +531,8 @@ namespace PepperDash.Essentials.Core.Routing
 
             if (source == null)
             {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
+                Debug.LogDebug(this,
                     "No source found for device {key}. Creating transient source for {destination}",
-                    this,
                     sourceTieLine.SourcePort.ParentDevice.Key,
                     destination
                 );
@@ -498,10 +566,8 @@ namespace PepperDash.Essentials.Core.Routing
             {
                 if (!(tieLine.DestinationPort.ParentDevice is IRoutingInputs sink))
                 {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Debug,
+                    Debug.LogDebug(this,
                         "TieLine destination {device} is not IRoutingInputs",
-                        this,
                         tieLine.DestinationPort.ParentDevice.Key
                     );
                     return null;
@@ -540,17 +606,21 @@ namespace PepperDash.Essentials.Core.Routing
 
                         if (route != null && route.Routes != null && route.Routes.Count > 0)
                         {
-                            // Found a valid route - return the source TieLine
+                            // Routes[0] is the hop nearest the source: its InputPort is the
+                            // port on the first switching device that receives the signal from
+                            // the source side. The TieLine whose DestinationPort matches that
+                            // port is the exact tie that was traversed, giving us the precise
+                            // source output port via SourcePort — regardless of how many output
+                            // ports the source device has.
+                            var firstHop = route.Routes[0];
                             var sourceTieLine = TieLineCollection.Default.FirstOrDefault(tl =>
-                                tl.SourcePort.ParentDevice.Key == source.Key &&
-                                tl.Type.HasFlag(signalType));
+                                tl.DestinationPort.Key == firstHop.InputPort.Key &&
+                                tl.DestinationPort.ParentDevice.Key == firstHop.InputPort.ParentDevice.Key);
 
                             if (sourceTieLine != null)
                             {
-                                Debug.LogMessage(
-                                    Serilog.Events.LogEventLevel.Debug,
-                                    "Found route from {source} to {sink} with {count} hops",
-                                    this,
+                                Debug.LogDebug(this,
+                                "Found route from {source} to {sink} with {count} hops",
                                     source.Key,
                                     sink.Key,
                                     route.Routes.Count
@@ -561,22 +631,14 @@ namespace PepperDash.Essentials.Core.Routing
                     }
                 }
 
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
-                    "No route found to any source from {sink}",
-                    this,
-                    sink.Key
-                );
+                Debug.LogDebug(this, "No route found to any source from {sink}", sink.Key);
                 return null;
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(
-                    ex,
-                    "Error getting root tieLine: {Exception}",
-                    this,
-                    ex
-                );
+                Debug.LogError(this, "Error getting root tieLine: {message}", ex.Message);
+                Debug.LogDebug(ex, "StackTrace: ");
+
                 return null;
             }
         }

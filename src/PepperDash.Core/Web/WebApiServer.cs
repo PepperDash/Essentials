@@ -46,9 +46,6 @@ namespace PepperDash.Core.Web
 		/// </summary>
 		public bool IsRegistered { get; private set; }
 
-		/// <summary>
-		/// Http request handler
-		/// </summary>
 		//public IHttpCwsHandler HttpRequestHandler
 		//{
 		//    get { return _server.HttpRequestHandler; }
@@ -59,9 +56,6 @@ namespace PepperDash.Core.Web
 		//    }
 		//}
 
-		/// <summary>
-		/// Received request event handler
-		/// </summary>
 		//public event EventHandler<HttpCwsRequestEventArgs> ReceivedRequestEvent
 		//{
 		//    add { _server.ReceivedRequestEvent += new HttpCwsRequestEventHandler(value); }
@@ -117,7 +111,7 @@ namespace PepperDash.Core.Web
 		{
 			if (programEventType != eProgramStatusEventType.Stopping) return;
 
-			Debug.Console(DebugInfo, this, "Program stopping. stopping server");
+			this.LogInformation("Program stopping. stopping server");
 
 			Stop();
 		}
@@ -131,11 +125,11 @@ namespace PepperDash.Core.Web
 			// Re-enable the server if the link comes back up and the status should be connected
 			if (ethernetEventArgs.EthernetEventType == eEthernetEventType.LinkUp && IsRegistered)
 			{
-				Debug.Console(DebugInfo, this, "Ethernet link up. Server is alreedy registered.");
+				this.LogInformation("Ethernet link up. Server is alreedy registered.");
 				return;
 			}
 
-			Debug.Console(DebugInfo, this, "Ethernet link up. Starting server");
+			this.LogInformation("Ethernet link up. Starting server");
 
 			Start();
 		}
@@ -156,7 +150,7 @@ namespace PepperDash.Core.Web
 		{
 			if (route == null)
 			{
-				Debug.Console(DebugInfo, this, "Failed to add route, route parameter is null");
+				this.LogWarning("Failed to add route, route parameter is null");
 				return;
 			}
 
@@ -168,14 +162,11 @@ namespace PepperDash.Core.Web
 		/// Removes a route from CWS
 		/// </summary>
 		/// <param name="route"></param>
-		/// <summary>
-		/// RemoveRoute method
-		/// </summary>
 		public void RemoveRoute(HttpCwsRoute route)
 		{
 			if (route == null)
 			{
-				Debug.Console(DebugInfo, this, "Failed to remote route, orute parameter is null");
+				this.LogWarning("Failed to remove route, route parameter is null");
 				return;
 			}
 
@@ -217,26 +208,24 @@ namespace PepperDash.Core.Web
 
 				if (_server == null)
 				{
-					Debug.Console(DebugInfo, this, "Server is null, unable to start");
+					this.LogWarning("Server is null, unable to start");
 					return;
 				}
 
 				if (IsRegistered)
 				{
-					Debug.Console(DebugInfo, this, "Server has already been started");
+					this.LogWarning("Server has already been started");
 					return;
 				}
 
 				IsRegistered = _server.Register();
 
-				Debug.Console(DebugInfo, this, "Starting server, registration {0}", IsRegistered ? "was successful" : "failed");
+				this.LogInformation("Starting server, registration {registrationResult}", IsRegistered ? "was successful" : "failed");
 			}
 			catch (Exception ex)
 			{
-				Debug.Console(DebugInfo, this, "Start Exception Message: {0}", ex.Message);
-				Debug.Console(DebugVerbose, this, "Start Exception StackTrace: {0}", ex.StackTrace);
-				if (ex.InnerException != null)
-					Debug.Console(DebugVerbose, this, "Start Exception InnerException: {0}", ex.InnerException);
+				this.LogError("Start Exception Message: {message}", ex.Message);
+				this.LogDebug(ex, "Start Exception StackTrace");
 			}
 			finally
 			{
@@ -255,23 +244,21 @@ namespace PepperDash.Core.Web
 
 				if (_server == null)
 				{
-					Debug.Console(DebugInfo, this, "Server is null or has already been stopped");
+					this.LogWarning("Server is null or has already been stopped");
 					return;
 				}
 
 				IsRegistered = _server.Unregister() == false;
 
-				Debug.Console(DebugInfo, this, "Stopping server, unregistration {0}", IsRegistered ? "failed" : "was successful");
+				this.LogInformation("Stopping server, unregistration {unregistrationResult}", IsRegistered ? "failed" : "was successful");
 
 				_server.Dispose();
 				_server = null;
 			}
 			catch (Exception ex)
 			{
-				Debug.Console(DebugInfo, this, "Server Stop Exception Message: {0}", ex.Message);
-				Debug.Console(DebugVerbose, this, "Server Stop Exception StackTrace: {0}", ex.StackTrace);
-				if (ex.InnerException != null)
-					Debug.Console(DebugVerbose, this, "Server Stop Exception InnerException: {0}", ex.InnerException);
+				this.LogError("Server Stop Exception Message: {message}", ex.Message);
+				this.LogDebug(ex, "Server Stop Exception StackTrace");
 			}
 			finally
 			{
@@ -292,14 +279,12 @@ namespace PepperDash.Core.Web
 			try
 			{
 				var j = JsonConvert.SerializeObject(args.Context, Formatting.Indented);
-				Debug.Console(DebugVerbose, this, "RecieveRequestEventHandler Context:\x0d\x0a{0}", j);
+				this.LogVerbose("RecieveRequestEventHandler Context:\x0d\x0a{0}", j);
 			}
 			catch (Exception ex)
 			{
-				Debug.Console(DebugInfo, this, "ReceivedRequestEventHandler Exception Message: {0}", ex.Message);
-				Debug.Console(DebugVerbose, this, "ReceivedRequestEventHandler Exception StackTrace: {0}", ex.StackTrace);
-				if (ex.InnerException != null)
-					Debug.Console(DebugVerbose, this, "ReceivedRequestEventHandler Exception InnerException: {0}", ex.InnerException);
+				this.LogError("ReceivedRequestEventHandler Exception Message: {message}", ex.Message);
+				this.LogDebug(ex, "ReceivedRequestEventHandler Exception StackTrace: {stackTrace}", ex.StackTrace);
 			}
 		}
 	}

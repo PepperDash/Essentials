@@ -1,10 +1,8 @@
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
-using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
-using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.WebSocketServer;
-using Serilog.Events;
+
 
 namespace PepperDash.Essentials.WebApiHandlers
 {
