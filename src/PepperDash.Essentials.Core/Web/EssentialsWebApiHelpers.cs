@@ -36,17 +36,25 @@ namespace PepperDash.Essentials.Core.Web
 			};
 		}
 
+		
+
 		/// <summary>
 		/// MapToDeviceListObject method
 		/// </summary>
 		public static object MapToDeviceListObject(IKeyed device)
 		{
+			var interfaces = device.GetType()
+				.GetInterfaces()
+				.Select(i => i.Name)
+				.ToList();
+
 			return new
 			{
                 device.Key,
 				Name = (device is IKeyName)
 					? (device as IKeyName).Name
-					: "---"
+					: "---",
+				Interfaces = interfaces
 			};
 		}
 
@@ -110,5 +118,10 @@ namespace PepperDash.Essentials.Core.Web
 				CType = device.Value.Type == null ? "---": device.Value.Type.ToString()
 			};
 		}
-	}
+
+        internal static bool IsAuthenticated(HttpCwsContext context)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

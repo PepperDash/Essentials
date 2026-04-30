@@ -1,7 +1,7 @@
-﻿using PepperDash.Core;
-using Serilog.Events;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using PepperDash.Core;
+using Serilog.Events;
 
 
 namespace PepperDash.Essentials.Core
@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core
     public class RouteDescriptorCollection
     {
         /// <summary>
-        /// DefaultCollection static property
+        /// Gets the default collection of RouteDescriptors.
         /// </summary>
         public static RouteDescriptorCollection DefaultCollection
         {
@@ -28,6 +28,11 @@ namespace PepperDash.Essentials.Core
         private readonly List<RouteDescriptor> RouteDescriptors = new List<RouteDescriptor>();
 
         /// <summary>
+        /// Gets an enumerable collection of all RouteDescriptors in this collection.
+        /// </summary>
+        public IEnumerable<RouteDescriptor> Descriptors => RouteDescriptors.AsReadOnly();
+
+        /// <summary>
         /// Adds a RouteDescriptor to the list.  If an existing RouteDescriptor for the
         /// destination exists already, it will not be added - in order to preserve
         /// proper route releasing.
@@ -40,13 +45,34 @@ namespace PepperDash.Essentials.Core
                 return;
             }
 
-            if (RouteDescriptors.Any(t => t.Destination == descriptor.Destination)
-                && RouteDescriptors.Any(t => t.Destination == descriptor.Destination && t.InputPort != null && descriptor.InputPort != null && t.InputPort.Key == descriptor.InputPort.Key))
+            // Check if a route already exists with the same source, destination, input port, AND signal type
+            var existingRoute = RouteDescriptors.FirstOrDefault(t =>
+                t.Source == descriptor.Source &&
+                t.Destination == descriptor.Destination &&
+                t.SignalType == descriptor.SignalType &&
+                ((t.InputPort == null && descriptor.InputPort == null) ||
+                 (t.InputPort != null && descriptor.InputPort != null && t.InputPort.Key == descriptor.InputPort.Key)) &&
+                ((t.OutputPort == null && descriptor.OutputPort == null) ||
+                    (t.OutputPort != null && descriptor.OutputPort != null && t.OutputPort.Key == descriptor.OutputPort.Key)));
+
+            if (existingRoute != null)
             {
-                Debug.LogMessage(LogEventLevel.Debug, descriptor.Destination,
-                    "Route to [{0}] already exists in global routes table", descriptor?.Source?.Key);
+                Debug.LogInformation(descriptor.Destination,
+                    "Route from {source}:{outputPort} to {destination}:{inputPort} ({signalType}) already exists in this collection",
+                    descriptor?.Source?.Key,
+                    descriptor?.OutputPort?.Key ?? "auto",
+                    descriptor?.Destination?.Key,
+                    descriptor?.InputPort?.Key ?? "auto",
+                    descriptor?.SignalType
+                    );
                 return;
             }
+            Debug.LogVerbose("Adding route descriptor: {source}:{outputPort} -> {destination}:{inputPort} ({signalType})",
+                descriptor?.Source?.Key,
+                descriptor?.OutputPort?.Key ?? "auto",
+                descriptor?.Destination?.Key,
+                descriptor?.InputPort?.Key ?? "auto",
+                descriptor?.SignalType);
             RouteDescriptors.Add(descriptor);
         }
 
@@ -61,11 +87,11 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Gets the RouteDescriptor for a destination and input port key. Returns null if no matching RouteDescriptor exists.
+        /// Gets the route descriptor for a specific destination and input port
         /// </summary>
-        /// <param name="destination"></param>
-        /// <param name="inputPortKey"></param>
-        /// <returns></returns>
+        /// <param name="destination">The destination device</param>
+        /// <param name="inputPortKey">The input port key</param>
+        /// <returns>The matching RouteDescriptor or null if not found</returns>
         public RouteDescriptor GetRouteDescriptorForDestinationAndInputPort(IRoutingInputs destination, string inputPortKey)
         {
             Debug.LogMessage(LogEventLevel.Information, "Getting route descriptor for '{destination}':'{inputPortKey}'", destination?.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
@@ -82,7 +108,7 @@ namespace PepperDash.Essentials.Core
         {
             Debug.LogMessage(LogEventLevel.Information, "Removing route descriptor for '{destination}':'{inputPortKey}'", destination.Key ?? null, string.IsNullOrEmpty(inputPortKey) ? "auto" : inputPortKey);
 
-            var descr = string.IsNullOrEmpty(inputPortKey) 
+            var descr = string.IsNullOrEmpty(inputPortKey)
                 ? GetRouteDescriptorForDestination(destination)
                 : GetRouteDescriptorForDestinationAndInputPort(destination, inputPortKey);
             if (descr != null)
@@ -93,70 +119,4 @@ namespace PepperDash.Essentials.Core
             return descr;
         }
     }
-
-    /*/// <summary>
-    /// A collection of RouteDescriptors - typically the static DefaultCollection is used
-    /// </summary>
-    /// <summary>
-    /// Represents a RouteDescriptorCollection
-    /// </summary>
-    public class RouteDescriptorCollection<TInputSelector, TOutputSelector>
-	{
-		public static RouteDescriptorCollection<TInputSelector, TOutputSelector> DefaultCollection
-		{
-			get
-			{
-				if (_DefaultCollection == null)
-					_DefaultCollection = new RouteDescriptorCollection<TInputSelector, TOutputSelector>();
-				return _DefaultCollection;
-			}
-		}
-		private static RouteDescriptorCollection<TInputSelector, TOutputSelector> _DefaultCollection;
-
-		private readonly List<RouteDescriptor> RouteDescriptors = new List<RouteDescriptor>();
-
-		/// <summary>
-		/// Adds a RouteDescriptor to the list.  If an existing RouteDescriptor for the
-		/// destination exists already, it will not be added - in order to preserve
-		/// proper route releasing.
-		/// </summary>
-		/// <param name="descriptor"></param>
-  /// <summary>
-  /// AddRouteDescriptor method
-  /// </summary>
-		public void AddRouteDescriptor(RouteDescriptor descriptor)
-		{
-			if (RouteDescriptors.Any(t => t.Destination == descriptor.Destination))
-			{
-				Debug.LogMessage(LogEventLevel.Debug, descriptor.Destination, 
-					"Route to [{0}] already exists in global routes table", descriptor.Source.Key);
-				return;
-			}
-			RouteDescriptors.Add(descriptor);
-		}
-
-		/// <summary>
-		/// Gets the RouteDescriptor for a destination
-		/// </summary>
-		/// <returns>null if no RouteDescriptor for a destination exists</returns>
-  /// <summary>
-  /// GetRouteDescriptorForDestination method
-  /// </summary>
-		public RouteDescriptor GetRouteDescriptorForDestination(IRoutingInputs<TInputSelector> destination)
-		{
-			return RouteDescriptors.FirstOrDefault(rd => rd.Destination == destination);
-		}
-
-		/// <summary>
-		/// Returns the RouteDescriptor for a given destination AND removes it from collection.
-		/// Returns null if no route with the provided destination exists.
-		/// </summary>
-		public RouteDescriptor RemoveRouteDescriptor(IRoutingInputs<TInputSelector> destination)
-		{
-			var descr = GetRouteDescriptorForDestination(destination);
-			if (descr != null)
-				RouteDescriptors.Remove(descr);
-			return descr;
-		}
-	}*/
 }
