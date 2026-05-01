@@ -183,11 +183,12 @@ namespace PepperDash.Core
         Cresnet = 8,
         Cec = 9,
         Udp = 10,
+        UdpClient = 11,
     }
 }
 ```
 
-These enumerations are not case sensitive.  Not all methods are valid for a ```genericComm``` device.  For a comport, the only valid type would be ```Com```.  For a direct network socket, valid options are ```Ssh```, ```Tcpip```, ```Telnet```, and ```Udp```.
+    These enumerations are not case sensitive.  Not all methods are valid for a ```genericComm``` device.  For a comport, the only valid type would be ```Com```.  For a direct network socket, valid options are ```Ssh```, ```Tcpip```, ```Telnet```, ```UdpClient```, and ```Udp```.
 
 ##### ComParams
 
@@ -287,7 +288,7 @@ This property maps to the number of the port on the device you have mapped the r
 
 ##### TcpSshParams
 
-A ```Ssh```, ```TcpIp```, or ```Udp``` device requires a ```tcpSshProperties``` object to set the propeties of the socket.
+A ```Ssh```, ```TcpIp```, ```UdpClient```, or ```Udp``` device requires a ```tcpSshProperties``` object to set the propeties of the socket.
 
 ```Json
 {
@@ -304,7 +305,7 @@ A ```Ssh```, ```TcpIp```, or ```Udp``` device requires a ```tcpSshProperties``` 
 
 **```address```**
 
-This is the IP address, hostname, or FQDN of the resource you wish to open a socket to.  In the case of a UDP device, you can set either a single whitelist address with this data, or an appropriate broadcast address.
+This is the IP address, hostname, or FQDN of the resource you wish to open a socket to.  Use ```UdpClient``` for outbound UDP to a remote endpoint.  Use ```Udp``` when you need Essentials to bind a local UDP listener.
 
 **```port```**
 

@@ -96,6 +96,17 @@ namespace PepperDash.Essentials.Core
 							comm = udp;
 							break;
 						}
+					case eControlMethod.UdpClient:
+						{
+							var udpClient = new GenericUdpClient(deviceConfig.Key + "-udpClient", c.Address, c.Port, c.BufferSize)
+							{
+								AutoReconnect = c.AutoReconnect
+							};
+							if (udpClient.AutoReconnect)
+								udpClient.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
+							comm = udpClient;
+							break;
+						}
 					case eControlMethod.Telnet:
 						break;
 					case eControlMethod.SecureTcpIp:
