@@ -56,6 +56,10 @@ namespace PepperDash.Core
         /// </summary>
         Udp,
         /// <summary>
+        /// UDP client
+        /// </summary>
+        UdpClient,
+        /// <summary>
         /// HTTP client
         /// </summary>
         Http,
