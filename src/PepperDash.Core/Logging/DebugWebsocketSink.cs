@@ -61,7 +61,12 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
             if (_httpsServer == null || !_httpsServer.IsListening) return "";
             var service = _httpsServer.WebSocketServices[_path];
             if (service == null) return "";
-            return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{_httpsServer.Port}{service.Path}";
+
+            // Use CSLAN IP if available, otherwise fallback to primary IP. This ensures we provide a reachable URL in dual-stack environments.
+            if (!string.IsNullOrEmpty(CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1)))
+                return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1)}:{_httpsServer.Port}{service.Path}";
+            else
+                return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{_httpsServer.Port}{service.Path}";
         }
     }
 
