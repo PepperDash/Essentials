@@ -429,7 +429,7 @@ namespace PepperDash.Essentials.WebSocketServer
 
             using (var sw = new StreamWriter(File.Open($"{userAppPath}{localConfigFolderName}{Global.DirectorySeparator}{appConfigFileName}", FileMode.Create, FileAccess.ReadWrite)))
             {
-                // Write the LAN application configuration file. Used when a request comes in for the application config from the LAN 
+                // Write the LAN application configuration file. Used when a request comes in for the application config from the LAN
                 var lanAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter);
 
                 this.LogDebug("LAN Adapter ID: {lanAdapterId}", lanAdapterId);
@@ -1448,14 +1448,15 @@ namespace PepperDash.Essentials.WebSocketServer
 
                 if (!socket.IsAlive)
                 {
-                    this.LogError("Unable to send message to client {id}. Client is disconnected: {message}", clientId, message);
+                    this.LogDebug("Unable to send message to client {id}. Client is disconnected: {message}", clientId, message);
                     return;
                 }
+
                 socket.Send(message);
             }
             else
             {
-                this.LogWarning("Unable to find client with ID: {clientId}", clientId);
+                this.LogDebug("Unable to find client with ID: {clientId}", clientId);
             }
         }
     }
