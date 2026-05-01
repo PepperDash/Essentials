@@ -52,13 +52,13 @@ namespace PepperDash.Core
         /// </summary>
         Cec,
         /// <summary>
-        /// UDP Server
+        /// UDP client
         /// </summary>
         Udp,
         /// <summary>
-        /// UDP client
+        /// UDP server
         /// </summary>
-        UdpClient,
+        UdpServer,
         /// <summary>
         /// HTTP client
         /// </summary>

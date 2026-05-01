@@ -92,19 +92,19 @@ namespace PepperDash.Essentials.Core
 						}
 					case eControlMethod.Udp:
 						{
-							var udp = new GenericUdpServer(deviceConfig.Key + "-udp", c.Address, c.Port, c.BufferSize);
-							comm = udp;
-							break;
-						}
-					case eControlMethod.UdpClient:
-						{
-							var udpClient = new GenericUdpClient(deviceConfig.Key + "-udpClient", c.Address, c.Port, c.BufferSize)
+							var udp = new GenericUdpClient(deviceConfig.Key + "-udp", c.Address, c.Port, c.BufferSize)
 							{
 								AutoReconnect = c.AutoReconnect
 							};
-							if (udpClient.AutoReconnect)
-								udpClient.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
-							comm = udpClient;
+							if (udp.AutoReconnect)
+								udp.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
+							comm = udp;
+							break;
+						}
+					case eControlMethod.UdpServer:
+						{
+							var udpServer = new GenericUdpServer(deviceConfig.Key + "-udpServer", c.Address, c.Port, c.BufferSize);
+							comm = udpServer;
 							break;
 						}
 					case eControlMethod.Telnet:
