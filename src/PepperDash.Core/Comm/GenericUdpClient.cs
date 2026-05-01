@@ -23,6 +23,7 @@ namespace PepperDash.Core
         private UdpClient client;
         private CancellationTokenSource receiveCancellationTokenSource;
         private bool connectEnabled;
+        private bool connectionRefusedLogged;
         private SocketStatus clientStatus = SocketStatus.SOCKET_STATUS_NO_CONNECT;
 
         /// <summary>
@@ -321,6 +322,8 @@ namespace PepperDash.Core
                         if (bytes == null || bytes.Length == 0)
                             continue;
 
+                        connectionRefusedLogged = false;
+
                         var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
 
                         this.PrintReceivedBytes(bytes);
@@ -339,6 +342,20 @@ namespace PepperDash.Core
                     }
                     catch (NetSocketException ex)
                     {
+                        if (ex.SocketErrorCode == SocketError.ConnectionRefused)
+                        {
+                            if (!connectionRefusedLogged)
+                            {
+                                Debug.Console(1, Debug.ErrorLogLevel.Warning,
+                                    "GenericUdpClient '{0}': Remote endpoint refused UDP traffic or is no longer listening",
+                                    Key);
+                                connectionRefusedLogged = true;
+                            }
+
+                            HandleDisconnected();
+                            return;
+                        }
+
                         Debug.LogMessage(ex, "UDP receive error for {0}", this, Key);
                         HandleDisconnected();
                         return;
