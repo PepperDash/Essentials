@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronSockets;
 using ThreadingTimeout = System.Threading.Timeout;
 using NetSocketException = System.Net.Sockets.SocketException;
 
@@ -22,7 +21,7 @@ namespace PepperDash.Core
 
         private UdpClient client;
         private CancellationTokenSource receiveCancellationTokenSource;
-        private bool connectEnabled;
+        private bool _connectEnabled;
         private bool connectionRefusedLogged;
         private SocketStatus clientStatus = SocketStatus.SOCKET_STATUS_NO_CONNECT;
 
@@ -125,6 +124,15 @@ namespace PepperDash.Core
         }
 
         /// <summary>
+        /// Will be set and unset by Connect and Disconnect only
+        /// </summary>
+        public bool ConnectEnabled
+        {
+            get { lock (stateLock) { return _connectEnabled; } }
+            private set { lock (stateLock) { _connectEnabled = value; } }
+        }
+
+        /// <summary>
         /// Gets or sets the AutoReconnect
         /// </summary>
         public bool AutoReconnect { get; set; }
@@ -158,7 +166,7 @@ namespace PepperDash.Core
 
             reconnectTimer = new Timer(o =>
             {
-                if (connectEnabled)
+                if (ConnectEnabled)
                     Connect();
             }, null, ThreadingTimeout.Infinite, ThreadingTimeout.Infinite);
         }
@@ -176,7 +184,7 @@ namespace PepperDash.Core
 
             reconnectTimer = new Timer(o =>
             {
-                if (connectEnabled)
+                if (ConnectEnabled)
                     Connect();
             }, null, ThreadingTimeout.Infinite, ThreadingTimeout.Infinite);
         }
@@ -226,10 +234,10 @@ namespace PepperDash.Core
                 return;
             }
 
+            ConnectEnabled = true;
+
             lock (stateLock)
             {
-                connectEnabled = true;
-
                 if (client != null)
                     return;
 
@@ -259,9 +267,10 @@ namespace PepperDash.Core
         /// </summary>
         public void Disconnect()
         {
+            ConnectEnabled = false;
+
             lock (stateLock)
             {
-                connectEnabled = false;
                 reconnectTimer.Change(ThreadingTimeout.Infinite, ThreadingTimeout.Infinite);
                 CleanupClient();
                 ClientStatus = SocketStatus.SOCKET_STATUS_NO_CONNECT;
@@ -382,7 +391,7 @@ namespace PepperDash.Core
 
         private void StartReconnectTimer()
         {
-            if (AutoReconnect && connectEnabled)
+            if (AutoReconnect && ConnectEnabled)
                 reconnectTimer.Change(AutoReconnectIntervalMs, ThreadingTimeout.Infinite);
         }
 

@@ -188,7 +188,7 @@ namespace PepperDash.Core
 }
 ```
 
-    These enumerations are not case sensitive.  Not all methods are valid for a ```genericComm``` device.  For a comport, the only valid type would be ```Com```.  For a direct network socket, valid options are ```Ssh```, ```Tcpip```, ```Telnet```, ```Udp```, and ```UdpServer```.
+These enumerations are not case sensitive.  Not all methods are valid for a ```genericComm``` device.  For a comport, the only valid type would be ```Com```.  For a direct network socket, valid options are ```Ssh```, ```Tcpip```, ```Telnet```, ```Udp```, and ```UdpServer```.
 
 ##### ComParams
 
@@ -288,7 +288,7 @@ This property maps to the number of the port on the device you have mapped the r
 
 ##### TcpSshParams
 
-A ```Ssh```, ```TcpIp```, ```Udp```, or ```UdpServer``` device requires a ```tcpSshProperties``` object to set the propeties of the socket.
+A ```Ssh```, ```TcpIp```, ```Udp```, or ```UdpServer``` device requires a ```tcpSshProperties``` object to set the properties of the socket.
 
 ```Json
 {
