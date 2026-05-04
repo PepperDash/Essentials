@@ -153,11 +153,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// Resolves the absolute path of the /HTML/debug folder on the processor.
         /// </summary>
         /// <remarks>
-        /// On a 4-series appliance, <c>Global.FilePathPrefix</c> is
-        /// <c>{root}/user/programX/</c>, so walking up two parents gives the
-        /// processor root that contains the <c>html</c> folder.
-        /// On Virtual Control, <c>Global.FilePathPrefix</c> is <c>{root}/User/</c>,
-        /// so only one parent hop is needed.
+        /// <c>Global.FilePathPrefix</c> is always <c>{root}/user/programX/</c> (or
+        /// equivalent), so walking up two parents gives the processor root that
+        /// contains the <c>html</c> folder.  This mirrors the two-hop strategy used
+        /// by <c>AssetLoader.ExtractDevToolsZip</c> so that serving and extraction
+        /// always resolve to the same directory.
         /// </remarks>
         private static string GetHtmlDebugPath()
         {
@@ -166,17 +166,10 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 var separators = new[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar };
                 var programDir = new DirectoryInfo(Global.FilePathPrefix.TrimEnd(separators));
 
-                DirectoryInfo rootDir;
-                if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Server)
-                {
-                    // Virtual Control: {root}/User/ → one parent up = {root}
-                    rootDir = programDir.Parent;
-                }
-                else
-                {
-                    // 4-series appliance: {root}/user/programX/ → two parents up = {root}
-                    rootDir = programDir.Parent?.Parent;
-                }
+                // Walk up two levels: {root}/user/programX/ → {root}/user/ → {root}
+                // This matches the path calculation used in AssetLoader.ExtractDevToolsZip.
+                var userOrNvramDir = programDir.Parent;
+                var rootDir = userOrNvramDir?.Parent;
 
                 if (rootDir == null)
                 {
