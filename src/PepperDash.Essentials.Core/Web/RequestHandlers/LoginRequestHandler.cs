@@ -71,8 +71,10 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 {
                     context.Response.StatusCode = 401;
                     context.Response.StatusDescription = "Bad Request";
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+                    context.Response.Write(JsonConvert.SerializeObject(new { Error = "Unauthorized" }, Formatting.Indented), false);
                     context.Response.End();
-
                     return;
                 }
 

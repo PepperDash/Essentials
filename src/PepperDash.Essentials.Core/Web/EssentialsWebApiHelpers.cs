@@ -36,7 +36,7 @@ namespace PepperDash.Essentials.Core.Web
 			};
 		}
 
-		
+
 
 		/// <summary>
 		/// MapToDeviceListObject method
@@ -119,9 +119,5 @@ namespace PepperDash.Essentials.Core.Web
 			};
 		}
 
-        internal static bool IsAuthenticated(HttpCwsContext context)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

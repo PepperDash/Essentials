@@ -174,6 +174,22 @@ namespace PepperDash.Core.Web
 		}
 
 		/// <summary>
+		/// Sets the fallback request handler that is invoked when no registered route
+		/// matches an incoming request.  Must be called before <see cref="Start"/>.
+		/// </summary>
+		/// <param name="handler">The handler to use as the server-level fallback.</param>
+		public void SetFallbackHandler(IHttpCwsHandler handler)
+		{
+			if (handler == null)
+			{
+				this.LogWarning("SetFallbackHandler: handler parameter is null, ignoring");
+				return;
+			}
+
+			_server.HttpRequestHandler = handler;
+		}
+
+		/// <summary>
 		/// GetRouteCollection method
 		/// </summary>
 		public HttpCwsRouteCollection GetRouteCollection()
