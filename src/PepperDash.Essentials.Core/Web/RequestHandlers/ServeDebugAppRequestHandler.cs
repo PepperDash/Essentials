@@ -125,7 +125,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 if (TextExtensions.Contains(ext))
                 {
                     string content;
-                    using (var reader = new StreamReader(resolvedCandidate))
+                    using (var reader = new StreamReader(resolvedCandidate, Encoding.UTF8))
                         content = reader.ReadToEnd();
 
                     context.Response.ContentEncoding = Encoding.UTF8;
@@ -141,10 +141,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(LogEventLevel.Error,
-                    "ServeDebugAppRequestHandler: Unhandled error serving '{rawUrl:l}': {ex}",
-                    context.Request.RawUrl, ex.Message);
-                try { SendResponse(context, 500, "Internal Server Error"); } catch { /* best-effort */ }
+                Debug.LogMessage(LogEventLevel.Error, ex,
+                    "ServeDebugAppRequestHandler: Unhandled error serving '{rawUrl:l}'",
+                    context.Request.RawUrl);
+                try { SendResponse(context, 500, "Internal Server Error"); }
+                catch { /* best-effort */ }
             }
         }
 
@@ -189,8 +190,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(LogEventLevel.Error,
-                    "ServeDebugAppRequestHandler: Error resolving HTML debug path: {ex}", ex.Message);
+                Debug.LogMessage(LogEventLevel.Error, ex,
+                    "ServeDebugAppRequestHandler: Error resolving HTML debug path");
                 return null;
             }
         }
