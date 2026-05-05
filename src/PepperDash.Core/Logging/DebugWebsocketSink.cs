@@ -8,10 +8,17 @@ using Crestron.SimplSharp;
 using WebSocketSharp;
 using System.Security.Authentication;
 using WebSocketSharp.Net;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.IO;
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Crypto.Operators;
+using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Pkcs;
+using Org.BouncyCastle.Security;
+using Org.BouncyCastle.X509;
 using Serilog.Formatting;
 using Serilog.Formatting.Json;
 
@@ -114,51 +121,62 @@ namespace PepperDash.Core
                 var subjectName = string.Format("CN={0}.{1}", hostName, domainName);
                 var fqdn = string.Format("{0}.{1}", hostName, domainName);
 
-                using (var rsa = RSA.Create(2048))
+                var random = new SecureRandom();
+
+                // Generate RSA 2048 key pair
+                var keyPairGenerator = new RsaKeyPairGenerator();
+                keyPairGenerator.Init(new KeyGenerationParameters(random, 2048));
+                var keyPair = keyPairGenerator.GenerateKeyPair();
+
+                // Build certificate
+                var certGenerator = new X509V3CertificateGenerator();
+                certGenerator.SetSerialNumber(BigInteger.ValueOf(Math.Abs(DateTime.UtcNow.Ticks)));
+                certGenerator.SetIssuerDN(new X509Name(subjectName));
+                certGenerator.SetSubjectDN(new X509Name(subjectName));
+                certGenerator.SetNotBefore(DateTime.UtcNow);
+                certGenerator.SetNotAfter(DateTime.UtcNow.AddYears(2));
+                certGenerator.SetPublicKey(keyPair.Public);
+
+                // Extended Key Usage: server + client auth
+                certGenerator.AddExtension(X509Extensions.ExtendedKeyUsage, false,
+                    new ExtendedKeyUsage(new[] { KeyPurposeID.id_kp_serverAuth, KeyPurposeID.id_kp_clientAuth }));
+
+                // Subject Alternative Names: DNS + IP
+                System.Net.IPAddress parsedIp;
+                if (System.Net.IPAddress.TryParse(ipAddress, out parsedIp))
                 {
-
-                    var request = new CertificateRequest(
-                        subjectName,
-                        rsa,
-                        HashAlgorithmName.SHA256,
-                        RSASignaturePadding.Pkcs1);
-
-                    // Subject Key Identifier
-                    request.CertificateExtensions.Add(
-                        new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
-
-                    // Extended Key Usage: server + client auth
-                    request.CertificateExtensions.Add(
-                        new X509EnhancedKeyUsageExtension(
-                            new OidCollection
-                            {
-                        new Oid("1.3.6.1.5.5.7.3.1"), // id-kp-serverAuth
-                        new Oid("1.3.6.1.5.5.7.3.2")  // id-kp-clientAuth
-                            },
-                            false));
-
-                    // Subject Alternative Names: DNS + IP
-                    var sanBuilder = new SubjectAlternativeNameBuilder();
-                    sanBuilder.AddDnsName(fqdn);
-                    if (System.Net.IPAddress.TryParse(ipAddress, out var ip))
-                        sanBuilder.AddIpAddress(ip);
-                    request.CertificateExtensions.Add(sanBuilder.Build());
-
-                    var notBefore = DateTimeOffset.UtcNow;
-                    var notAfter = notBefore.AddYears(2);
-
-                    using (var cert = request.CreateSelfSigned(notBefore, notAfter))
-                    {
-
-                        var separator = Path.DirectorySeparatorChar;
-                        var outputPath = string.Format("{0}user{1}{2}.pfx", separator, separator, _certificateName);
-
-                        var pfxBytes = cert.Export(X509ContentType.Pfx, _certificatePassword);
-                        File.WriteAllBytes(outputPath, pfxBytes);
-
-                        CrestronConsole.PrintLine(string.Format("CreateCert: Certificate written to {0}", outputPath));
-                    }
+                    certGenerator.AddExtension(X509Extensions.SubjectAlternativeName, false,
+                        new GeneralNames(new GeneralName[] {
+                            new GeneralName(GeneralName.DnsName, fqdn),
+                            new GeneralName(GeneralName.IPAddress, ipAddress)
+                        }));
                 }
+                else
+                {
+                    certGenerator.AddExtension(X509Extensions.SubjectAlternativeName, false,
+                        new GeneralNames(new GeneralName(GeneralName.DnsName, fqdn)));
+                }
+
+                // Sign with SHA256withRSA
+                var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", keyPair.Private, random);
+                var certificate = certGenerator.Generate(signatureFactory);
+
+                // Export as PKCS12/PFX
+                var pkcs12Store = new Pkcs12StoreBuilder().Build();
+                var certEntry = new X509CertificateEntry(certificate);
+                pkcs12Store.SetCertificateEntry(_certificateName, certEntry);
+                pkcs12Store.SetKeyEntry(_certificateName, new AsymmetricKeyEntry(keyPair.Private), new[] { certEntry });
+
+                var separator = Path.DirectorySeparatorChar;
+                var outputPath = string.Format("{0}user{1}{2}.pfx", separator, separator, _certificateName);
+
+                using (var ms = new MemoryStream())
+                {
+                    pkcs12Store.Save(ms, _certificatePassword.ToCharArray(), random);
+                    File.WriteAllBytes(outputPath, ms.ToArray());
+                }
+
+                CrestronConsole.PrintLine(string.Format("CreateCert: Certificate written to {0}", outputPath));
             }
             catch (Exception ex)
             {
