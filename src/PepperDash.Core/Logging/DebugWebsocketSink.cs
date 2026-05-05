@@ -51,8 +51,10 @@ namespace PepperDash.Core
                 if (service == null) return "";
 
                 // Use CSLAN IP if available, otherwise fallback to primary IP. This ensures we provide a reachable URL in dual-stack environments.
-                if (!string.IsNullOrEmpty(CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1)))
-                    return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1)}:{_httpsServer.Port}{service.Path}";
+                var cslanIp = CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
+                if (!string.IsNullOrEmpty(cslanIp) && cslanIp != "Invalid Value")
+                    return $"wss://{cslanIp}:{_httpsServer.Port}{service.Path}";
                 else
                     return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{_httpsServer.Port}{service.Path}";
             }
