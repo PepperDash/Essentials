@@ -87,7 +87,7 @@ namespace PepperDash.Essentials
                         $"{d.Key}-cameraBase-{ck}", (CameraBase)d, mp),
                     predicate: d => d is CameraBase && !(d is IHasCameraControls)
                 ),
-                
+
                 new MessengerFactoryEntry(
                     typeof(IHasCameraControls),
                     (d, mp, ck) => new CameraBaseMessenger<IHasCameraControls>(
@@ -116,9 +116,9 @@ namespace PepperDash.Essentials
 
                 // ── Displays ─────────────────────────────────────────────────────────────
                 new MessengerFactoryEntry(
-                    typeof(DisplayBase),
-                    (d, mp, ck) => new DisplayBaseMessenger(
-                        $"{d.Key}-displayBase-{ck}", mp, (DisplayBase)d)
+                    typeof(IRoutingSinkWithSwitching),
+                    (d, mp, ck) => new IRoutingSinkWithSwitchingMessenger(
+                        $"{d.Key}-displayBase-{ck}", mp, (IRoutingSinkWithSwitching)d)
                 ),
                 new MessengerFactoryEntry(
                     typeof(TwoWayDisplayBase),

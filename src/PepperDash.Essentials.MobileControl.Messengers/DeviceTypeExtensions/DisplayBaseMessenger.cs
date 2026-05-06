@@ -3,6 +3,7 @@ using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.AppServer;
 using PepperDash.Essentials.AppServer.Messengers;
+using PepperDash.Essentials.Core;
 using System.Linq;
 using DisplayBase = PepperDash.Essentials.Devices.Common.Displays.DisplayBase;
 
@@ -11,17 +12,17 @@ namespace PepperDash.Essentials.Room.MobileControl
     /// <summary>
     /// Represents a DisplayBaseMessenger
     /// </summary>
-    public class DisplayBaseMessenger : MessengerBase
+    public class IRoutingSinkWithSwitchingMessenger : MessengerBase
     {
-        private readonly DisplayBase display;
+        private readonly IRoutingSinkWithSwitching display;
 
         /// <summary>
-        /// Create an instance of the <see cref="DisplayBaseMessenger"/> class.
+        /// Create an instance of the <see cref="IRoutingSinkWithSwitchingMessenger"/> class.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="messagePath"></param>
         /// <param name="device"></param>
-        public DisplayBaseMessenger(string key, string messagePath, DisplayBase device) : base(key, messagePath, device)
+        public IRoutingSinkWithSwitchingMessenger(string key, string messagePath, IRoutingSinkWithSwitching device) : base(key, messagePath, device)
         {
             display = device;
         }
