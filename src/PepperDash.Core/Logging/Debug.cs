@@ -272,6 +272,11 @@ public static class Debug
             {
                 LogMessage(LogEventLevel.Information, "Console debug level set to {minimumLevel}", consoleLoggingLevelSwitch.MinimumLevel);
             };
+
+            errorLogLevelSwitch.MinimumLevelChanged += (sender, args) =>
+            {
+                LogMessage(LogEventLevel.Information, "Error log debug level set to {minimumLevel}", errorLogLevelSwitch.MinimumLevel);
+            };
         }
         catch (Exception ex)
         {
@@ -424,61 +429,88 @@ public static class Debug
             if (levelString.Trim() == "?")
             {
                 _console?.ConsoleCommandResponse(
-                
-                "Used to set the minimum level of debug messages to be printed to the console:\r\n" +
-                "[LogLevel] [TimeoutInMinutes]\r\n" +
-                 "If TimeoutInMinutes is not provided, it will default to 120 minutes.  If provided, the level will reset to Information after the timeout period elapses.\r\n" +
-                 "LogLevel can be either a number from 0-5 or a log level name.  If using a number, the mapping is as follows:\r\n" +
-                $"{_logLevels[0]} = 0\r\n" +
-                $"{_logLevels[1]} = 1\r\n" +
-                $"{_logLevels[2]} = 2\r\n" +
-                $"{_logLevels[3]} = 3\r\n" +
-                $"{_logLevels[4]} = 4\r\n" +
-                $"{_logLevels[5]} = 5");
+                "Used to set the minimum level of debug messages:\r\n" +
+                "Usage: appdebug:P [sink] [level] [timeoutMinutes]\r\n" +
+                "  sink (optional): console (default), errorlog, websocket, file, all\r\n" +
+                "  timeoutMinutes (optional, console sink only): level resets to Information after this many minutes (default 120)\r\n" +
+                $"  level: {string.Join(", ", _logLevels.Values)}");
                 return;
             }
 
             if (string.IsNullOrEmpty(levelString.Trim()))
             {
-                _console?.ConsoleCommandResponse($"AppDebug level = {consoleLoggingLevelSwitch.MinimumLevel}");
+                _console?.ConsoleCommandResponse($"Console log level = {consoleLoggingLevelSwitch.MinimumLevel}\r\n");
+                _console?.ConsoleCommandResponse($"File log level = {fileLoggingLevelSwitch.MinimumLevel}\r\n");
+                _console?.ConsoleCommandResponse($"Error log level = {errorLogLevelSwitch.MinimumLevel}\r\n");
+                _console?.ConsoleCommandResponse($"Websocket log level = {websocketLoggingLevelSwitch.MinimumLevel}\r\n");
                 return;
             }
 
-            // split on space to allow for potential future addition of timeout parameter without breaking existing command usage
-            var parts = Regex.Split(levelString.Trim(), @"\s+");
-            levelString = parts[0];
+            var tokens = Regex.Split(levelString.Trim(), @"\s+");
 
-            if (parts.Length > 1 && long.TryParse(parts[1], out var timeout))
+            // Determine whether the first token is a sink name or a level
+            var knownSinks = new[] { "console", "errorlog", "websocket", "file", "all" };
+            string sinkName;
+            string levelToken;
+            long timeoutMinutes = defaultConsoleDebugTimeoutMin;
+
+            if (tokens.Length >= 2 && Array.IndexOf(knownSinks, tokens[0].ToLowerInvariant()) >= 0)
             {
-                timeout = Math.Max(timeout, 1); // enforce minimum timeout of 1 minute
-                consoleDebugTimer.Interval = timeout * 60000;
+                // First token is a sink name
+                sinkName = tokens[0].ToLowerInvariant();
+                levelToken = tokens[1];
+
+                if (tokens.Length >= 3 && long.TryParse(tokens[2], out var parsedTimeout))
+                    timeoutMinutes = Math.Max(parsedTimeout, 1);
+            }
+            else
+            {
+                // No sink prefix — treat as console with optional timeout as second token
+                sinkName = "console";
+                levelToken = tokens[0];
+
+                if (tokens.Length >= 2 && long.TryParse(tokens[1], out var parsedTimeout))
+                    timeoutMinutes = Math.Max(parsedTimeout, 1);
             }
 
-            // first try to parse as int for backward compatibility with existing usage of numeric levels
+            // Parse the level
+            LogEventLevel level;
 
-            if (int.TryParse(levelString, out var levelInt))
+            if (!Enum.TryParse(levelToken, true, out level))
             {
-                if (levelInt < 0 || levelInt > 5)
-                {
-                    _console?.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level. If using a number, value must be between 0-5");
-                    return;
-                }
-                SetDebugLevel((uint)levelInt);
+                _console?.ConsoleCommandResponse($"Error: Unable to parse '{levelToken}' to valid log level. Valid levels: {string.Join(", ", _logLevels.Values)}");
                 return;
             }
 
-            // make this parse attempt case-insensitive to allow for more flexible command usage
-            if (Enum.TryParse<LogEventLevel>(levelString, true, out var levelEnum))
+            // Apply to the specified sink(s)
+            switch (sinkName)
             {
-                SetDebugLevel(levelEnum);
-                return;
+                case "console":
+                    SetDebugLevel(level, (int)timeoutMinutes);
+                    break;
+                case "errorlog":
+                    SetErrorLogMinimumDebugLevel(level);
+                    break;
+                case "websocket":
+                    SetWebSocketMinimumDebugLevel(level);
+                    break;
+                case "file":
+                    SetFileMinimumDebugLevel(level);
+                    break;
+                case "all":
+                    SetDebugLevel(level, (int)timeoutMinutes);
+                    SetErrorLogMinimumDebugLevel(level);
+                    SetWebSocketMinimumDebugLevel(level);
+                    SetFileMinimumDebugLevel(level);
+                    break;
+                default:
+                    _console?.ConsoleCommandResponse($"Error: Unknown sink '{sinkName}'. Valid sinks: console, errorlog, websocket, file, all");
+                    break;
             }
-
-            _console?.ConsoleCommandResponse($"Error: Unable to parse {levelString} to valid log level");
         }
         catch
         {
-            _console?.ConsoleCommandResponse("Usage: appdebug:P [0-5]");
+            _console?.ConsoleCommandResponse("Usage: appdebug:P [sink] [level] [timeoutMinutes]");
         }
     }
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core;
@@ -84,7 +86,10 @@ public abstract class EssentialsDevice : Device
     }
 
     /// <summary>
-    /// Override this method to perform any initialization that requires all devices to be activated. This method is called automatically after the DeviceManager.AllDevicesActivated event is fired, and should not be called directly.
+    /// Override this method to perform any initialization that requires all devices to be activated. 
+    /// This method is called automatically after the DeviceManager.AllDevicesActivated event is fired, 
+    /// and should not be called directly.
+    /// If this is not called then no Mobile Control messengers will be created.
     /// </summary>
     /// <returns></returns>
     protected override bool CustomActivate()
@@ -99,7 +104,21 @@ public abstract class EssentialsDevice : Device
     /// </summary>
     protected virtual void CreateMobileControlMessengers()
     {
+        var controller = DeviceManager.AllDevices
+            .OfType<IMobileControl>()
+            .FirstOrDefault();
 
+        if (controller == null)
+        {
+            Debug.LogMessage(
+                LogEventLevel.Warning,
+                this,
+                "No IMobileControl controller found; default messengers will not be registered for {key}",
+                Key);
+            return;
+        }
+
+        controller.AddDefaultMessengersForDevice(this);
     }
 }
 

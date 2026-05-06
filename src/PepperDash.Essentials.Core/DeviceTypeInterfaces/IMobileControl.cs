@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
@@ -68,4 +70,19 @@ public interface IMobileControl : IKeyed
     /// <param name="key">messenger key to find</param>
     /// <returns>Messenger if found, null otherwise</returns>
     IMobileControlRoomMessenger GetRoomMessenger(string key);
+
+    /// <summary>
+    /// Registers default mobile-control messengers for the given device based on the
+    /// interfaces it implements. When <paramref name="interfaces"/> is <c>null</c> all
+    /// applicable messengers are added; when a list is supplied only messengers whose
+    /// registry entry type appears in that list are added.
+    /// </summary>
+    /// <param name="device">The device to add messengers for.</param>
+    /// <param name="interfaces">
+    /// Optional filter. Pass <c>typeof(IBasicVolumeControls)</c>,
+    /// <c>typeof(IHasInputs&lt;string&gt;)</c>, etc. to restrict which messengers are
+    /// created. Pass <c>null</c> (or omit the argument) to add all applicable messengers.
+    /// </param>
+    void AddDefaultMessengersForDevice(EssentialsDevice device, IEnumerable<Type> interfaces = null);
+
 }
