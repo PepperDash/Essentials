@@ -10,19 +10,19 @@ using PepperDash.Essentials.Core.Presets;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     /// <summary>
-    /// Represents a DevicePresetsModelMessenger
+    /// Represents a ITvPresetsProviderMessenger
     /// </summary>
-    public class DevicePresetsModelMessenger : MessengerBase
+    public class ITvPresetsProviderMessenger : MessengerBase
     {
         private readonly ITvPresetsProvider _presetsDevice;
 
         /// <summary>
-        /// Constructor for DevicePresetsModelMessenger
+        /// Constructor for ITvPresetsProviderMessenger
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="messagePath">The message path.</param>
         /// <param name="presetsDevice">The presets device.</param>
-        public DevicePresetsModelMessenger(string key, string messagePath, ITvPresetsProvider presetsDevice)
+        public ITvPresetsProviderMessenger(string key, string messagePath, ITvPresetsProvider presetsDevice)
             : base(key, messagePath, presetsDevice as Device)
         {
             _presetsDevice = presetsDevice;

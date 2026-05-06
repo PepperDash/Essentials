@@ -11,17 +11,17 @@ namespace PepperDash.Essentials.AppServer.Messengers;
 /// <summary>
 /// Represents a RoomEventScheduleMessenger
 /// </summary>
-public class RoomEventScheduleMessenger : MessengerBase
+public class IRoomEventScheduleMessenger : MessengerBase
 {
     private readonly IRoomEventSchedule _room;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RoomEventScheduleMessenger"/> class.
+    /// Initializes a new instance of the <see cref="IRoomEventScheduleMessenger"/> class.
     /// </summary>
     /// <param name="key"></param>
     /// <param name="messagePath"></param>
     /// <param name="room"></param>
-    public RoomEventScheduleMessenger(string key, string messagePath, IRoomEventSchedule room)
+    public IRoomEventScheduleMessenger(string key, string messagePath, IRoomEventSchedule room)
         : base(key, messagePath, room as IKeyName)
     {
         _room = room;

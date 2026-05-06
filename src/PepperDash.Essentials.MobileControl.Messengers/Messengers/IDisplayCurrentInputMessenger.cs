@@ -1,25 +1,27 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Devices.Common.Displays;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     /// <summary>
-    /// Represents a TwoWayDisplayBaseMessenger
+    /// Represents a messenger for a display device that has current input information.
     /// </summary>
-    public class TwoWayDisplayBaseMessenger : MessengerBase
+    public class IDisplayCurrentInputMessenger : MessengerBase
     {
-        private readonly TwoWayDisplayBase _display;
+        private readonly IDisplayCurrentInput _display;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TwoWayDisplayBaseMessenger"/> class.
+        /// Initializes a new instance of the <see cref="IDisplayCurrentInputMessenger"/> class.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="messagePath"></param>
         /// <param name="display"></param>
-        public TwoWayDisplayBaseMessenger(string key, string messagePath, TwoWayDisplayBase display)
-            : base(key, messagePath, display)
+        public IDisplayCurrentInputMessenger(string key, string messagePath, IDisplayCurrentInput display)
+            : base(key, messagePath, display as IKeyName)
         {
             _display = display;
         }
@@ -31,9 +33,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         public void SendFullStatus(string id = null)
         {
-            var messageObj = new TwoWayDisplayBaseStateMessage
+            var messageObj = new CurrentInputStateMessage
             {
-                //PowerState = _display.PowerIsOnFeedback.BoolValue,
                 CurrentInput = _display.CurrentInputFeedback.StringValue
             };
 
@@ -47,11 +48,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
-            AddAction("/displayStatus", (id, content) => SendFullStatus(id));
+            AddAction("/currentInputStatus", (id, content) => SendFullStatus(id));
 
             _display.CurrentInputFeedback.OutputChange += CurrentInputFeedbackOnOutputChange;
-            _display.IsCoolingDownFeedback.OutputChange += IsCoolingFeedbackOnOutputChange;
-            _display.IsWarmingUpFeedback.OutputChange += IsWarmingFeedbackOnOutputChange;
         }
 
         private void CurrentInputFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
@@ -59,24 +58,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostStatusMessage(JToken.FromObject(new
             {
                 currentInput = feedbackEventArgs.StringValue
-            })
-            );
-        }
-
-        private void IsWarmingFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
-        {
-            PostStatusMessage(JToken.FromObject(new
-            {
-                isWarming = feedbackEventArgs.BoolValue
-            })
-            );
-        }
-
-        private void IsCoolingFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
-        {
-            PostStatusMessage(JToken.FromObject(new
-            {
-                isCooling = feedbackEventArgs.BoolValue
             })
             );
 
@@ -89,7 +70,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Represents a TwoWayDisplayBaseStateMessage
     /// </summary>
-    public class TwoWayDisplayBaseStateMessage : DeviceStateMessageBase
+    public class CurrentInputStateMessage : DeviceStateMessageBase
     {
         //[JsonProperty("powerState", NullValueHandling = NullValueHandling.Ignore)]
         //public bool? PowerState { get; set; }

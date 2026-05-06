@@ -83,14 +83,14 @@ namespace PepperDash.Essentials
                 // CameraBase only when the device does NOT also implement IHasCameraControls
                 new MessengerFactoryEntry(
                     typeof(CameraBase),
-                    (d, mp, ck) => new CameraBaseMessenger<CameraBase>(
+                    (d, mp, ck) => new CameraControlMessenger<CameraBase>(
                         $"{d.Key}-cameraBase-{ck}", (CameraBase)d, mp),
                     predicate: d => d is CameraBase && !(d is IHasCameraControls)
                 ),
 
                 new MessengerFactoryEntry(
                     typeof(IHasCameraControls),
-                    (d, mp, ck) => new CameraBaseMessenger<IHasCameraControls>(
+                    (d, mp, ck) => new CameraControlMessenger<IHasCameraControls>(
                         $"{d.Key}-hasCamerasWithControls-{ck}", (IHasCameraControls)d, mp)
                 ),
                 new MessengerFactoryEntry(
@@ -102,7 +102,7 @@ namespace PepperDash.Essentials
                 // ── Routing ──────────────────────────────────────────────────────────────
                 // BlueJeansPc implements IRunRouteAction
                 new MessengerFactoryEntry(
-                    typeof(BlueJeansPc),
+                    typeof(IRunRouteAction),
                     (d, mp, ck) => new RunRouteActionMessenger(
                         $"{d.Key}-runRouteAction-{ck}", (IRunRouteAction)d, mp)
                 ),
@@ -110,7 +110,7 @@ namespace PepperDash.Essentials
                 // ── Presets ──────────────────────────────────────────────────────────────
                 new MessengerFactoryEntry(
                     typeof(ITvPresetsProvider),
-                    (d, mp, ck) => new DevicePresetsModelMessenger(
+                    (d, mp, ck) => new ITvPresetsProviderMessenger(
                         $"{d.Key}-presets-{ck}", mp, (ITvPresetsProvider)d)
                 ),
 
@@ -121,9 +121,14 @@ namespace PepperDash.Essentials
                         $"{d.Key}-displayBase-{ck}", mp, (IRoutingSinkWithSwitching)d)
                 ),
                 new MessengerFactoryEntry(
-                    typeof(TwoWayDisplayBase),
-                    (d, mp, ck) => new TwoWayDisplayBaseMessenger(
-                        $"{d.Key}-twoWayDisplay-{ck}", mp, (TwoWayDisplayBase)d)
+                    typeof(IDisplayCurrentInput),
+                    (d, mp, ck) => new IDisplayCurrentInputMessenger(
+                        $"{d.Key}-twoWayDisplay-{ck}", mp, (IDisplayCurrentInput)d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IWarmingCooling),
+                    (d, mp, ck) => new IWarmingCoolingMessenger(
+                        $"{d.Key}-warmingCooling-{ck}", mp, d)
                 ),
 
                 // ── Audio / Video ─────────────────────────────────────────────────────────
@@ -160,9 +165,9 @@ namespace PepperDash.Essentials
                         $"{d.Key}-videoCodec-{ck}", (VideoCodecBase)d, mp)
                 ),
                 new MessengerFactoryEntry(
-                    typeof(AudioCodecBase),
-                    (d, mp, ck) => new AudioCodecBaseMessenger(
-                        $"{d.Key}-audioCodec-{ck}", (AudioCodecBase)d, mp)
+                    typeof(IDialerCallStatus),
+                    (d, mp, ck) => new IDialerCallStatusMessenger(
+                        $"{d.Key}-audioCodec-{ck}", (IDialerCallStatus)d, mp)
                 ),
 
                 // ── Set-top box controls ──────────────────────────────────────────────────
@@ -294,7 +299,7 @@ namespace PepperDash.Essentials
                 // ── Event schedule ────────────────────────────────────────────────────────
                 new MessengerFactoryEntry(
                     typeof(IRoomEventSchedule),
-                    (d, mp, ck) => new RoomEventScheduleMessenger(
+                    (d, mp, ck) => new IRoomEventScheduleMessenger(
                         $"{d.Key}-schedule-{ck}", mp, (IRoomEventSchedule)d)
                 ),
 

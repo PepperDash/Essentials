@@ -6,11 +6,19 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec;
 
-public abstract class AudioCodecBase : EssentialsDevice, IHasDialer, IUsageTracking, IAudioCodecInfo
+/// <summary>
+/// Base class for audio codecs. Provides common properties and methods for audio codecs, 
+/// as well as a common implementation of IDialerCallStatus to allow the AudioCodecBaseMessenger 
+/// to get call status information without requiring the full AudioCodecBase class. 
+/// This is useful for devices that have dialer call status information but do not need to implement 
+/// the full AudioCodecBase class.
+/// </summary>
+public abstract class AudioCodecBase : EssentialsDevice, IDialerCallStatus, IUsageTracking, IAudioCodecInfo
 {
-
+    /// <inheritdoc />
     public event EventHandler<CodecCallStatusItemChangeEventArgs> CallStatusChange;
 
+    /// <inheritdoc />
     public AudioCodecInfo CodecInfo { get; protected set; }
 
     #region IUsageTracking Members
@@ -41,8 +49,14 @@ public abstract class AudioCodecBase : EssentialsDevice, IHasDialer, IUsageTrack
     }
 
     // In most cases only a single call can be active
+    /// <inheritdoc />
     public List<CodecActiveCallItem> ActiveCalls { get; set; }
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="name"></param>
     public AudioCodecBase(string key, string name)
         : base(key, name)
     {
@@ -83,15 +97,21 @@ public abstract class AudioCodecBase : EssentialsDevice, IHasDialer, IUsageTrack
 
     #region IHasDialer Members
 
+    /// <inheritdoc />
     public abstract void Dial(string number);
 
+    /// <inheritdoc />
     public abstract void EndCall(CodecActiveCallItem activeCall);
 
+    /// <inheritdoc />
     public abstract void EndAllCalls();
 
+    /// <inheritdoc />
     public abstract void AcceptCall(CodecActiveCallItem item);
 
+
     public abstract void RejectCall(CodecActiveCallItem item);
+
 
     public abstract void SendDtmf(string digit);
 

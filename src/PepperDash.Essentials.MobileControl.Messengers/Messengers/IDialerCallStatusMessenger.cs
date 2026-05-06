@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using PepperDash.Core;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     /// <summary>
-    /// Provides a messaging bridge for an AudioCodecBase device
+    /// Provides a messaging bridge for an IDialerCallStatus device
     /// </summary>
-    public class AudioCodecBaseMessenger : MessengerBase
+    public class IDialerCallStatusMessenger : MessengerBase
     {
         /// <summary>
         /// Device being bridged
         /// </summary>
-        public AudioCodecBase Codec { get; private set; }
+        public IDialerCallStatus Codec { get; private set; }
 
         /// <summary>
         /// Constuctor
@@ -22,8 +23,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="key"></param>
         /// <param name="codec"></param>
         /// <param name="messagePath"></param>
-        public AudioCodecBaseMessenger(string key, AudioCodecBase codec, string messagePath)
-            : base(key, messagePath, codec)
+        public IDialerCallStatusMessenger(string key, IDialerCallStatus codec, string messagePath)
+            : base(key, messagePath, codec as IKeyName)
         {
             Codec = codec ?? throw new ArgumentNullException("codec");
             codec.CallStatusChange += Codec_CallStatusChange;

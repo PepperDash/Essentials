@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Messenger for a CameraBase device
     /// </summary>
-    public class CameraBaseMessenger<T> : MessengerBase where T : IKeyed
+    public class CameraControlMessenger<T> : MessengerBase where T : IKeyed
     {
         /// <summary>
         /// Gets or sets the Camera
@@ -24,7 +24,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="key"></param>
         /// <param name="camera"></param>
         /// <param name="messagePath"></param>
-        public CameraBaseMessenger(string key, T camera, string messagePath)
+        public CameraControlMessenger(string key, T camera, string messagePath)
             : base(key, messagePath, camera as IKeyName)
         {
             if (camera == null)
