@@ -27,7 +27,7 @@ namespace PepperDash.Essentials
         private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
-        private const string minimumFirmwareVersion = "2.8006.00110";
+        // private const string minimumFirmwareVersion = "2.8006.00110";
 
         /// <summary>
         /// Initializes a new instance of the ControlSystem class
@@ -50,21 +50,21 @@ namespace PepperDash.Essentials
         {
 
             // Get FW version and stop if it's too low to run this version of Essentials.  Must be greater than v2.8006.00110
-            var fwVersion = InitialParametersClass.FirmwareVersion;
+            // var fwVersion = InitialParametersClass.FirmwareVersion;
 
-            Debug.LogInformation("Control System Hardware Version: {fwVersion}", fwVersion);
+            // Debug.LogInformation("Control System Hardware Version: {fwVersion}", fwVersion);
 
-            // split the version into parts and compare against minimumFirmwareVersion
-            var versionParts = fwVersion.Split('.').Select(int.Parse).ToArray();
-            var minParts = minimumFirmwareVersion.Split('.').Select(int.Parse).ToArray();
-            if (versionParts.Length < minParts.Length
-                || versionParts[0] < minParts[0]
-                || (versionParts[0] == minParts[0] && versionParts[1] < minParts[1])
-                || (versionParts[0] == minParts[0] && versionParts[1] == minParts[1] && versionParts[2] <= minParts[2]))
-            {
-                Debug.LogFatal("Firmware version {fwVersion} is too low to run this version of Essentials. Please upgrade to greater than v{minimumFirmwareVersion}.", fwVersion, minimumFirmwareVersion);
-                return;
-            }
+            // // split the version into parts and compare against minimumFirmwareVersion
+            // var versionParts = fwVersion.Split('.').Select(int.Parse).ToArray();
+            // var minParts = minimumFirmwareVersion.Split('.').Select(int.Parse).ToArray();
+            // if (versionParts.Length < minParts.Length
+            //     || versionParts[0] < minParts[0]
+            //     || (versionParts[0] == minParts[0] && versionParts[1] < minParts[1])
+            //     || (versionParts[0] == minParts[0] && versionParts[1] == minParts[1] && versionParts[2] <= minParts[2]))
+            // {
+            //     Debug.LogFatal("Firmware version {fwVersion} is too low to run this version of Essentials. Please upgrade to greater than v{minimumFirmwareVersion}.", fwVersion, minimumFirmwareVersion);
+            //     return;
+            // }
 
             // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
             // to allow any HD-BaseT DM endpoints to register first.
@@ -130,14 +130,8 @@ namespace PepperDash.Essentials
                     (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented).Replace(Environment.NewLine, "\r\n"));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-                CrestronConsole.ConsoleCommandResponse(
-                "This system can be found at the following URLs:{2}" +
-                "System URL:   {0}{2}" +
-                "Template URL: {1}{2}",
-                ConfigReader.ConfigObject.SystemUrl,
-                ConfigReader.ConfigObject.TemplateUrl,
-                CrestronEnvironment.NewLine),
+            CrestronConsole.AddNewConsoleCommand(
+                PrintPortalInfo,
                 "portalinfo",
                 "Shows portal URLS from configuration",
                 ConsoleAccessLevelEnum.AccessOperator);
@@ -158,6 +152,29 @@ namespace PepperDash.Essentials
             {
                 SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
             }
+        }
+
+        private void PrintPortalInfo(string args)
+        {
+            if(ConfigReader.ConfigObject == null)
+            {
+                CrestronConsole.ConsoleCommandResponse("No configuration loaded. Cannot show portal URLs.");
+                return;
+            }
+
+             if (string.IsNullOrEmpty(ConfigReader.ConfigObject.SystemUrl) && string.IsNullOrEmpty(ConfigReader.ConfigObject.TemplateUrl))
+             {
+                 CrestronConsole.ConsoleCommandResponse("No portal URLs defined in config.");
+                 return;
+             }
+
+            CrestronConsole.ConsoleCommandResponse(
+                "This system can be found at the following URLs:{2}" +
+                "System URL:   {0}{2}" +
+                "Template URL: {1}{2}",
+                ConfigReader.ConfigObject?.SystemUrl,
+                ConfigReader.ConfigObject?.TemplateUrl,
+                CrestronEnvironment.NewLine);
         }
 
         /// <summary>
@@ -257,11 +274,6 @@ namespace PepperDash.Essentials
                 PluginLoader.AddProgramAssemblies();
 
                 _ = new Core.DeviceFactory();
-                // _ = new Devices.Common.DeviceFactory();
-                // _ = new DeviceFactory();
-
-                // _ = new ProcessorExtensionDeviceFactory();
-                // _ = new MobileControlFactory();
 
                 LoadAssets(Global.ApplicationDirectoryPathPrefix, Global.FilePathPrefix);
 
@@ -274,10 +286,9 @@ namespace PepperDash.Essentials
                     PluginLoader.LoadPlugins();
 
                     Debug.LogMessage(LogEventLevel.Information, "Folder structure verified. Loading config...");
-                    if (!ConfigReader.LoadConfig2())
+                    if (!ConfigReader.LoadConfig2() || ConfigReader.ConfigObject == null)
                     {
-                        Debug.LogMessage(LogEventLevel.Information, "Essentials Load complete with errors");
-                        return;
+                        Debug.LogMessage(LogEventLevel.Warning, "Unable to load config file.");
                     }
 
                     Load();
@@ -399,6 +410,12 @@ namespace PepperDash.Essentials
                     new Core.Monitoring.SystemMonitorController("systemMonitor"));
             }
 
+            if (ConfigReader.ConfigObject is null)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, "LoadDevices: ConfigObject is null. Cannot load devices.");
+                return;
+            }
+
             foreach (var devConf in ConfigReader.ConfigObject.Devices)
             {
                 IKeyed newDev = null;
@@ -452,7 +469,7 @@ namespace PepperDash.Essentials
 
             var tlc = TieLineCollection.Default;
 
-            if (ConfigReader.ConfigObject.TieLines == null)
+            if (ConfigReader.ConfigObject?.TieLines == null)
             {
                 return;
             }
@@ -749,7 +766,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public void LoadRooms()
         {
-            if (ConfigReader.ConfigObject.Rooms == null)
+            if (ConfigReader.ConfigObject?.Rooms == null)
             {
                 Debug.LogMessage(LogEventLevel.Information, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
                 return;
@@ -786,13 +803,13 @@ namespace PepperDash.Essentials
         /// </summary>
         void LoadLogoServer()
         {
-            if (ConfigReader.ConfigObject.Rooms == null)
+            if (ConfigReader.ConfigObject?.Rooms == null)
             {
                 Debug.LogMessage(LogEventLevel.Information, "No rooms configured. Bypassing Logo server startup.");
                 return;
             }
 
-            if (
+            if (ConfigReader.ConfigObject?.Rooms == null ||
                 !ConfigReader.ConfigObject.Rooms.Any(
                     CheckRoomConfig))
             {

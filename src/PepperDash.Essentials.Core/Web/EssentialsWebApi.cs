@@ -20,6 +20,8 @@ namespace PepperDash.Essentials.Core.Web
         private readonly WebApiServer _debugServer;
 
 
+
+
         ///<example>
         /// http(s)://{ipaddress}/cws/{basePath}
         /// http(s)://{ipaddress}/VirtualControl/Rooms/{roomId}/cws/{basePath}
@@ -260,7 +262,7 @@ namespace PepperDash.Essentials.Core.Web
 
             _server.Start();
             _debugServer.Start();
-            
+
             GetPaths();
         }
 
@@ -301,7 +303,15 @@ namespace PepperDash.Essentials.Core.Web
             {
                 Debug.LogMessage(LogEventLevel.Information, this, "{routeName:l}: {routePath:l}/{routeUrl:l}", route.Name, path, route.Url);
             }
+            Debug.LogInformation(this, "Web API initialized and ready to accept requests");
+
             Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));
+
+            var debugAppUrl = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
+   ? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws/debug"
+   : $"https://{currentIp}/cws/debug";
+
+            Debug.LogMessage(LogEventLevel.Information, this, "Developer Tools Web App available at: {debugAppUrl:l}", debugAppUrl);
         }
     }
 }
