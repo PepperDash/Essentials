@@ -27,7 +27,7 @@ namespace PepperDash.Essentials
         private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
-        private const string minimumFirmwareVersion = "2.8006.00110";
+        // private const string minimumFirmwareVersion = "2.8006.00110";
 
         /// <summary>
         /// Initializes a new instance of the ControlSystem class
@@ -50,21 +50,21 @@ namespace PepperDash.Essentials
         {
 
             // Get FW version and stop if it's too low to run this version of Essentials.  Must be greater than v2.8006.00110
-            var fwVersion = InitialParametersClass.FirmwareVersion;
+            // var fwVersion = InitialParametersClass.FirmwareVersion;
 
-            Debug.LogInformation("Control System Hardware Version: {fwVersion}", fwVersion);
+            // Debug.LogInformation("Control System Hardware Version: {fwVersion}", fwVersion);
 
-            // split the version into parts and compare against minimumFirmwareVersion
-            var versionParts = fwVersion.Split('.').Select(int.Parse).ToArray();
-            var minParts = minimumFirmwareVersion.Split('.').Select(int.Parse).ToArray();
-            if (versionParts.Length < minParts.Length
-                || versionParts[0] < minParts[0]
-                || (versionParts[0] == minParts[0] && versionParts[1] < minParts[1])
-                || (versionParts[0] == minParts[0] && versionParts[1] == minParts[1] && versionParts[2] <= minParts[2]))
-            {
-                Debug.LogFatal("Firmware version {fwVersion} is too low to run this version of Essentials. Please upgrade to greater than v{minimumFirmwareVersion}.", fwVersion, minimumFirmwareVersion);
-                return;
-            }
+            // // split the version into parts and compare against minimumFirmwareVersion
+            // var versionParts = fwVersion.Split('.').Select(int.Parse).ToArray();
+            // var minParts = minimumFirmwareVersion.Split('.').Select(int.Parse).ToArray();
+            // if (versionParts.Length < minParts.Length
+            //     || versionParts[0] < minParts[0]
+            //     || (versionParts[0] == minParts[0] && versionParts[1] < minParts[1])
+            //     || (versionParts[0] == minParts[0] && versionParts[1] == minParts[1] && versionParts[2] <= minParts[2]))
+            // {
+            //     Debug.LogFatal("Firmware version {fwVersion} is too low to run this version of Essentials. Please upgrade to greater than v{minimumFirmwareVersion}.", fwVersion, minimumFirmwareVersion);
+            //     return;
+            // }
 
             // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
             // to allow any HD-BaseT DM endpoints to register first.
