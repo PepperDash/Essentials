@@ -276,7 +276,7 @@ namespace PepperDash.Essentials
                     Debug.LogMessage(LogEventLevel.Information, "Folder structure verified. Loading config...");
                     if (!ConfigReader.LoadConfig2() || ConfigReader.ConfigObject == null)
                     {
-                        Debug.LogMessage(LogEventLevel.Warning, "Unable to load config file. Please ensure a valid config file is present and restart the program.");
+                        Debug.LogMessage(LogEventLevel.Warning, "Unable to load config file.");
                     }
 
                     Load();

@@ -273,6 +273,7 @@ namespace PepperDash.Core
                         var rsaParams = DotNetUtilities.ToRSAParameters(
                             (RsaPrivateCrtKeyParameters)keyEntry.Key);
                         var rsa = new RSACryptoServiceProvider();
+                        rsa.PersistKeyInCsp = false;
                         rsa.ImportParameters(rsaParams);
                         cert.PrivateKey = rsa;
 
