@@ -177,14 +177,8 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
                     (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-                CrestronConsole.ConsoleCommandResponse(
-                "This system can be found at the following URLs:{2}" +
-                "System URL:   {0}{2}" +
-                "Template URL: {1}{2}",
-                ConfigReader.ConfigObject.SystemUrl,
-                ConfigReader.ConfigObject.TemplateUrl,
-                CrestronEnvironment.NewLine),
+            CrestronConsole.AddNewConsoleCommand(
+                PrintPortalInfo,
                 "portalinfo",
                 "Shows portal URLS from configuration",
                 ConsoleAccessLevelEnum.AccessOperator);
@@ -214,6 +208,30 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
             InitializationExceptions.Add(e);
             Debug.LogFatal(e, "FATAL INITIALIZE ERROR. System is in an inconsistent state");
         }
+    }
+
+
+    private void PrintPortalInfo(string args)
+    {
+        if (ConfigReader.ConfigObject == null)
+        {
+            CrestronConsole.ConsoleCommandResponse("No configuration loaded. Cannot show portal URLs.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(ConfigReader.ConfigObject.SystemUrl) && string.IsNullOrEmpty(ConfigReader.ConfigObject.TemplateUrl))
+        {
+            CrestronConsole.ConsoleCommandResponse("No portal URLs defined in config.");
+            return;
+        }
+
+        CrestronConsole.ConsoleCommandResponse(
+            "This system can be found at the following URLs:{2}" +
+            "System URL:   {0}{2}" +
+            "Template URL: {1}{2}",
+            ConfigReader.ConfigObject?.SystemUrl,
+            ConfigReader.ConfigObject?.TemplateUrl,
+            CrestronEnvironment.NewLine);
     }
 
     /// <summary>
