@@ -274,10 +274,9 @@ namespace PepperDash.Essentials
                     PluginLoader.LoadPlugins();
 
                     Debug.LogMessage(LogEventLevel.Information, "Folder structure verified. Loading config...");
-                    if (!ConfigReader.LoadConfig2())
+                    if (!ConfigReader.LoadConfig2() || ConfigReader.ConfigObject == null)
                     {
-                        Debug.LogMessage(LogEventLevel.Information, "Essentials Load complete with errors");
-                        return;
+                        Debug.LogMessage(LogEventLevel.Warning, "Unable to load config file. Please ensure a valid config file is present and restart the program.");
                     }
 
                     Load();
@@ -399,6 +398,12 @@ namespace PepperDash.Essentials
                     new Core.Monitoring.SystemMonitorController("systemMonitor"));
             }
 
+            if (ConfigReader.ConfigObject is null)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, "LoadDevices: ConfigObject is null. Cannot load devices.");
+                return;
+            }
+
             foreach (var devConf in ConfigReader.ConfigObject.Devices)
             {
                 IKeyed newDev = null;
@@ -452,7 +457,7 @@ namespace PepperDash.Essentials
 
             var tlc = TieLineCollection.Default;
 
-            if (ConfigReader.ConfigObject.TieLines == null)
+            if (ConfigReader.ConfigObject?.TieLines == null)
             {
                 return;
             }
@@ -749,7 +754,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public void LoadRooms()
         {
-            if (ConfigReader.ConfigObject.Rooms == null)
+            if (ConfigReader.ConfigObject?.Rooms == null)
             {
                 Debug.LogMessage(LogEventLevel.Information, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
                 return;
@@ -786,13 +791,13 @@ namespace PepperDash.Essentials
         /// </summary>
         void LoadLogoServer()
         {
-            if (ConfigReader.ConfigObject.Rooms == null)
+            if (ConfigReader.ConfigObject?.Rooms == null)
             {
                 Debug.LogMessage(LogEventLevel.Information, "No rooms configured. Bypassing Logo server startup.");
                 return;
             }
 
-            if (
+            if (ConfigReader.ConfigObject?.Rooms == null ||
                 !ConfigReader.ConfigObject.Rooms.Any(
                     CheckRoomConfig))
             {
