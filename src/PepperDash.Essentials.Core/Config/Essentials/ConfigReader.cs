@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Core.Config;
         /// <summary>
         /// Local Config Present Message
         /// </summary>
-	    public const string LocalConfigPresent =
+	    public const string LocalConfigPresentBanner =
         @"
 ***************************************************
 ************* Using Local config file *************

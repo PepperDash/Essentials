@@ -305,7 +305,15 @@ public class EssentialsWebApi : EssentialsDevice
             : $"https://{currentIp}/cws/debug";
         Debug.LogMessage(LogEventLevel.Information, this, "Debug App: {debugPath:l}", debugPath);
 
+        Debug.LogInformation(this, "Web API initialized and ready to accept requests");
+
         Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));
+
+        var debugAppUrl = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
+? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws/debug"
+: $"https://{currentIp}/cws/debug";
+
+        Debug.LogMessage(LogEventLevel.Information, this, "Developer Tools Web App available at: {debugAppUrl:l}", debugAppUrl);
     }
 }
 
