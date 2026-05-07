@@ -130,14 +130,8 @@ namespace PepperDash.Essentials
                     (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented).Replace(Environment.NewLine, "\r\n"));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-                CrestronConsole.ConsoleCommandResponse(
-                "This system can be found at the following URLs:{2}" +
-                "System URL:   {0}{2}" +
-                "Template URL: {1}{2}",
-                ConfigReader.ConfigObject.SystemUrl,
-                ConfigReader.ConfigObject.TemplateUrl,
-                CrestronEnvironment.NewLine),
+            CrestronConsole.AddNewConsoleCommand(
+                PrintPortalInfo,
                 "portalinfo",
                 "Shows portal URLS from configuration",
                 ConsoleAccessLevelEnum.AccessOperator);
@@ -158,6 +152,29 @@ namespace PepperDash.Essentials
             {
                 SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
             }
+        }
+
+        private void PrintPortalInfo(string args)
+        {
+            if(ConfigReader.ConfigObject == null)
+            {
+                CrestronConsole.ConsoleCommandResponse("No configuration loaded. Cannot show portal URLs.");
+                return;
+            }
+
+             if (string.IsNullOrEmpty(ConfigReader.ConfigObject.SystemUrl) && string.IsNullOrEmpty(ConfigReader.ConfigObject.TemplateUrl))
+             {
+                 CrestronConsole.ConsoleCommandResponse("No portal URLs defined in config.");
+                 return;
+             }
+
+            CrestronConsole.ConsoleCommandResponse(
+                "This system can be found at the following URLs:{2}" +
+                "System URL:   {0}{2}" +
+                "Template URL: {1}{2}",
+                ConfigReader.ConfigObject?.SystemUrl,
+                ConfigReader.ConfigObject?.TemplateUrl,
+                CrestronEnvironment.NewLine);
         }
 
         /// <summary>
@@ -257,11 +274,6 @@ namespace PepperDash.Essentials
                 PluginLoader.AddProgramAssemblies();
 
                 _ = new Core.DeviceFactory();
-                // _ = new Devices.Common.DeviceFactory();
-                // _ = new DeviceFactory();
-
-                // _ = new ProcessorExtensionDeviceFactory();
-                // _ = new MobileControlFactory();
 
                 LoadAssets(Global.ApplicationDirectoryPathPrefix, Global.FilePathPrefix);
 
