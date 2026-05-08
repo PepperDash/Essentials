@@ -171,14 +171,14 @@ namespace PepperDash.Core.WebApi.Presets
 
 					J2SMaster.LoadWithJson(preset.Data);
 					if (handler != null)
-						PresetReceived(this, new PresetReceivedEventArgs(preset, true));
+						handler(this, new PresetReceivedEventArgs(preset, true));
 				}
 				else // no existing preset
 				{
 					CurrentPreset = new Preset();
 					LoadDefaultPresetData();
 					if (handler != null)
-						PresetReceived(this, new PresetReceivedEventArgs(null, false));
+						handler(this, new PresetReceivedEventArgs(null, false));
 				}
 			}
 			catch (HttpException e)
