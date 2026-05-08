@@ -107,11 +107,11 @@ namespace PepperDash.Core.WebApi.Presets
 				var user = JsonConvert.DeserializeObject<User>(resp.ContentString);
 				CurrentUser = user;
 				if (handler != null)
-					UserReceived(this, new UserReceivedEventArgs(user, true));
+					handler(this, new UserReceivedEventArgs(user, true));
 			}
 			else
 				if (handler != null)
-					UserReceived(this, new UserReceivedEventArgs(null, false));
+					handler(this, new UserReceivedEventArgs(null, false));
 		}
 
 		/// <summary>
