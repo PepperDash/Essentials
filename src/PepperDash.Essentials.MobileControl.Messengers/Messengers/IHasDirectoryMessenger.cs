@@ -30,6 +30,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
+            AddAction("/fullStatus", (id, content) => SendFullStatus());
+
+            AddAction("/directoryStatus", (id, content) => SendFullStatus());
+
             AddAction("/getDirectory", (id, content) => GetDirectoryRoot());
 
             AddAction("/directoryById", (id, content) =>
@@ -116,6 +120,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             _directory.GetDirectoryParentFolderContents();
         }
+
+        private void SendFullStatus()
+        {
+            PostStatusMessage(new IHasDirectoryStateMessage
+            {
+                CurrentDirectory = _directory.CurrentDirectoryResult,
+                InitialPhonebookSyncComplete = _directory.PhonebookSyncState.InitialSyncComplete,
+                HasDirectory = true,
+                HasDirectorySearch = true,
+             });
+        }
     }
 
     public class IHasDirectoryStateMessage : DeviceStateMessageBase
@@ -125,5 +140,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         [JsonProperty("initialPhonebookSyncComplete", NullValueHandling = NullValueHandling.Ignore)]
         public bool? InitialPhonebookSyncComplete { get; set; }
+
+        [JsonProperty("hasDirectory", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? HasDirectory { get; set; }
+
+        [JsonProperty("hasDirectorySearch", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? HasDirectorySearch { get; set; }
+
     }
 }

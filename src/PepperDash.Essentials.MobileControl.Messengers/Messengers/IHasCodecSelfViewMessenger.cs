@@ -28,12 +28,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
+            AddAction("/fullStatus", (id, content) => SendFullStatus());
+
+            AddAction("/cameraSelfViewStatus", (id, content) => SendFullStatus());
+
             AddAction("/cameraSelfView", (id, content) => _selfView.SelfViewModeToggle());
 
             _selfView.SelfviewIsOnFeedback.OutputChange += SelfviewIsOnFeedback_OutputChange;
         }
 
         private void SelfviewIsOnFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            PostCameraSelfView();
+        }
+
+        private void SendFullStatus()
         {
             PostCameraSelfView();
         }

@@ -227,13 +227,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     };
                 }
 
-                if (Codec is IHasDirectory directoryCodec)
-                {
-                    status.HasDirectory = true;
-                    status.HasDirectorySearch = true;
-                    status.CurrentDirectory = directoryCodec.CurrentDirectoryResult;
-                }
-
                 var codecType = Codec.GetType();
 
                 status.CameraSelfViewIsOn = Codec is IHasCodecSelfView && (Codec as IHasCodecSelfView).SelfviewIsOnFeedback.BoolValue;
@@ -387,12 +380,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         public string CurrentDialString { get; set; }
 
 
-        /// <summary>
-        /// Gets or sets the CurrentDirectory
-        /// </summary>
-        [JsonProperty("currentDirectory", NullValueHandling = NullValueHandling.Ignore)]
-        public CodecDirectory CurrentDirectory { get; set; }
-
 
         /// <summary>
         /// Gets or sets the DirectorySelectedFolderName
@@ -403,11 +390,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         [JsonProperty("hasCameras", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasCameras { get; set; }
 
-        [JsonProperty("hasDirectory", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? HasDirectory { get; set; }
 
-        [JsonProperty("hasDirectorySearch", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? HasDirectorySearch { get; set; }
 
         [JsonProperty("hasPresets", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasPresets { get; set; }
