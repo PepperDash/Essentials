@@ -801,6 +801,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Fires up a logo server if not already running
         /// </summary>
+        [Obsolete("Logo server is no longer supported and will be removed in a future release.")]
         void LoadLogoServer()
         {
             if (ConfigReader.ConfigObject?.Rooms == null)

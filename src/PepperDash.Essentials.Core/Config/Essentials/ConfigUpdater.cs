@@ -19,6 +19,7 @@ namespace PepperDash.Essentials.Core.Config
     /// <summary>
     /// ConfigUpdater class
     /// </summary>
+    [Obsolete("ConfigUpdater is no longer supported and will be removed in a future release.")]
     public static class ConfigUpdater
     {
         /// <summary>
@@ -81,7 +82,7 @@ namespace PepperDash.Essentials.Core.Config
         {
             var handler = ConfigStatusChanged;
 
-            if(handler != null)
+            if (handler != null)
             {
                 handler(typeof(ConfigUpdater), new ConfigStatusEventArgs(status));
             }
@@ -89,7 +90,7 @@ namespace PepperDash.Essentials.Core.Config
 
         static void WriteConfigToFile(string configData)
         {
-            var filePath = Global.FilePathPrefix+ "configurationFile-updated.json";
+            var filePath = Global.FilePathPrefix + "configurationFile-updated.json";
 
             try
             {
@@ -104,7 +105,7 @@ namespace PepperDash.Essentials.Core.Config
                 Debug.LogMessage(LogEventLevel.Debug, "Error parsing new config: {0}", e);
 
                 OnStatusUpdate(eUpdateStatus.UpdateFailed);
-            }           
+            }
         }
 
         /// <summary>
@@ -149,11 +150,11 @@ namespace PepperDash.Essentials.Core.Config
                 // Directory exists, first clear any contents
                 var archivedConfigFiles = ConfigReader.GetConfigFiles(archiveDirectoryPath + Global.DirectorySeparator + Global.ConfigFileName + ".bak");
 
-                if(archivedConfigFiles != null || archivedConfigFiles.Length > 0)
+                if (archivedConfigFiles != null && archivedConfigFiles.Length > 0)
                 {
                     Debug.LogMessage(LogEventLevel.Information, "{0} Existing files found in archive folder.  Deleting.", archivedConfigFiles.Length);
 
-                    for (int i = 0; i < archivedConfigFiles.Length; i++ )
+                    for (int i = 0; i < archivedConfigFiles.Length; i++)
                     {
                         var file = archivedConfigFiles[i];
                         Debug.LogMessage(LogEventLevel.Information, "Deleting archived file: '{0}'", file.FullName);
@@ -170,9 +171,9 @@ namespace PepperDash.Essentials.Core.Config
 
                 // Moves the file and appends the .bak extension
                 var fileDest = archiveDirectoryPath + "/" + file.Name + ".bak";
-                if(!File.Exists(fileDest))
+                if (!File.Exists(fileDest))
                 {
-                  file.MoveTo(fileDest);
+                    file.MoveTo(fileDest);
                 }
                 else
                     Debug.LogMessage(LogEventLevel.Information, "Cannot move file to archive folder.  Existing file already exists with same name: '{0}'", fileDest);
@@ -207,15 +208,15 @@ namespace PepperDash.Essentials.Core.Config
 
             CrestronConsole.SendControlSystemCommand(string.Format("progreset -p:{0}", InitialParametersClass.ApplicationNumber), ref response);
 
-            Debug.LogMessage(LogEventLevel.Debug, "Console Response: {0}", response);          
+            Debug.LogMessage(LogEventLevel.Debug, "Console Response: {0}", response);
         }
 
     }
 
-        /// <summary>
-        /// Enumeration of eUpdateStatus values
-        /// </summary>
-        public enum eUpdateStatus
+    /// <summary>
+    /// Enumeration of eUpdateStatus values
+    /// </summary>
+    public enum eUpdateStatus
     {
         /// <summary>
         /// UpdateStarted status

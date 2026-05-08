@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -18,6 +19,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// Sets the interfaces implemented by the device sending the message
     /// </summary>
     /// <param name="interfaces"></param>
+    [Obsolete("SetInterfaces is no longer supported and will be removed in a future release.  Interfaces for all devices are now retrieved via the /joinroom endpoint in the MobileControlWebsocketServer")]
     public void SetInterfaces(List<string> interfaces)
     {
       Interfaces = interfaces;
