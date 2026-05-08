@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro.DeviceSupport;
-using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Core.Intersystem;
 using PepperDash.Core.Intersystem.Tokens;
@@ -29,7 +28,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec;
 /// Also contains the logic to link commonly implemented interfaces to the API bridge.
 /// </summary>
 public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutputs,
-	IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced, IHasStandbyMode
+	IUsageTracking, ICodecCallControls, IHasContentSharing, ICodecAudio, IVideoCodecInfo, IBridgeAdvanced, IHasStandbyMode, IHasReady
 {
 	private const int XSigEncoding = 28591;
 
@@ -338,7 +337,7 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 	/// <summary>
 	/// Fired when the Codec is ready to be used
 	/// </summary>
-	public event EventHandler<EventArgs> IsReadyChange;
+	public event EventHandler<IsReadyEventArgs> IsReadyEvent;
 
 	/// <summary>
 	/// Dials the specified meeting
@@ -405,7 +404,7 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 				try
 				{
 					IsReady = true;
-					IsReadyChange?.Invoke(this, new EventArgs());
+					IsReadyEvent?.Invoke(this, new IsReadyEventArgs(IsReady));
 				}
 				catch (Exception e)
 				{
@@ -498,7 +497,7 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutpu
 		LinkVideoCodecInfoToApi(trilist, joinMap);
 
 		// Register for this event to link any functions that require the codec to be ready first
-		codec.IsReadyChange += (o, a) =>
+		codec.IsReadyEvent += (o, a) =>
 			{
 				if (codec is IHasCodecCameras)
 				{

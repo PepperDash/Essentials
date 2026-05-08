@@ -81,7 +81,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             foreach (var cam in CameraController.Cameras)
             {
-                cameraList.Add(new KeyName{
+                cameraList.Add(new KeyName
+                {
                     Key = cam.Key,
                     Name = cam.Name
                 });
@@ -96,10 +97,27 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 };
             }
 
+            string mode = "";
+
+            if (CameraController is IHasCameraAutoMode speakerTrackCodec)
+            {
+                mode = speakerTrackCodec.CameraAutoModeIsOnFeedback.BoolValue
+                    ? eCameraControlMode.Auto.ToString().ToLower()
+                    : eCameraControlMode.Manual.ToString().ToLower();
+            }
+
+            if (CameraController is IHasCameraOff cameraOffCodec)
+            {
+                if (cameraOffCodec.CameraIsOffFeedback.BoolValue)
+                    mode = eCameraControlMode.Off.ToString().ToLower();
+            }
+
             var state = new IHasCamerasWithControlsStateMessage
             {
                 CameraList = cameraList,
-                SelectedCamera = selectedCamera
+                SelectedCamera = selectedCamera,
+                CameraMode = mode,
+                HasCameraAutoMode = CameraController is IHasCameraAutoMode,
             };
 
             PostStatusMessage(state, clientId);
@@ -122,6 +140,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         [JsonProperty("selectedCamera", NullValueHandling = NullValueHandling.Ignore)]
         public IKeyName SelectedCamera { get; set; }
+
+        /// <summary>
+        /// Indicates whether the device has any cameras. Null if unknown or not applicable.
+        /// </summary>
+        [JsonProperty("hasCameras", NullValueHandling = NullValueHandling.Ignore)]
+        public bool HasCameras { get; set; } = true; // Since this messenger should only be used for devices with cameras, default to true unless specified otherwise.
+   
+        [JsonProperty("hasCameraAutoMode", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? HasCameraAutoMode { get; set; }
+
+        [JsonProperty("cameraMode", NullValueHandling = NullValueHandling.Ignore)]
+        public string CameraMode { get; set; }
     }
 
     class KeyName : IKeyName

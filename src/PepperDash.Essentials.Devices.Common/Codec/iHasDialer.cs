@@ -53,5 +53,7 @@ public interface IHasDialer
     /// Gets a value indicating whether the device is currently in a call
     /// </summary>
     bool IsInCall { get; }
+
+    
 }
 

@@ -249,6 +249,35 @@ namespace PepperDash.Essentials.AppServer.Messengers
             return presetsCodec.NearEndPresets;
         }
 
+        private Camera GetSelectedCamera(IHasCodecCameras camerasCodec)
+        {
+            var camera = new Camera();
+
+            if (camerasCodec.SelectedCameraFeedback != null)
+                camera.Key = camerasCodec.SelectedCameraFeedback.StringValue;
+            if (camerasCodec.SelectedCamera != null)
+            {
+                camera.Name = camerasCodec.SelectedCamera.Name;
+
+                if(camerasCodec.SelectedCamera is IHasCameraPtzControl cameraControls)
+                {
+                    camera.Capabilities = new CameraCapabilities()
+                    {
+                        CanPan = cameraControls is IHasCameraPanControl,
+                        CanTilt = cameraControls is IHasCameraTiltControl,
+                        CanZoom = cameraControls is IHasCameraZoomControl,
+                        CanFocus = cameraControls is IHasCameraFocusControl,
+                    };
+                };
+            }
+
+            if (camerasCodec.ControllingFarEndCameraFeedback != null)
+                camera.IsFarEnd = camerasCodec.ControllingFarEndCameraFeedback.BoolValue;
+
+
+            return camera;
+        }
+
         private void PostCameraMode()
         {
             try
@@ -294,6 +323,31 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 this.LogError(ex, "Error posting camera presets");
             }
         }
+
+        private void SendFullStatus()
+        {
+            try
+            {
+                PostStatusMessage(new IHasCodecCamerasStateMessage
+                {
+                    CameraMode = GetCameraMode(),
+                    Cameras = new CameraStatus
+                    {
+                        CameraManualIsSupported = true,
+                        CameraAutoIsSupported = _codec.SupportsCameraAutoMode,
+                        CameraOffIsSupported = _codec.SupportsCameraOff,
+                        CameraMode = GetCameraMode(),
+                        Cameras = _cameraCodec.Cameras,
+                        SelectedCamera = GetSelectedCamera(_cameraCodec)
+                    },
+                    Presets = GetCurrentPresets()
+                });
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error sending full camera status");
+            }
+        }
     }
 
     public class IHasCodecCamerasStateMessage : DeviceStateMessageBase
@@ -306,5 +360,96 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         [JsonProperty("presets", NullValueHandling = NullValueHandling.Ignore)]
         public List<CodecRoomPreset> Presets { get; set; }
+
+        [JsonProperty("cameraSupportsAutoMode", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CameraSupportsAutoMode { get; set; }
+
+        [JsonProperty("cameraSupportsOffMode", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CameraSupportsOffMode { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a CameraStatus
+    /// </summary>
+    public class CameraStatus
+    {
+        [JsonProperty("cameraManualSupported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CameraManualIsSupported { get; set; }
+
+        [JsonProperty("cameraAutoSupported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CameraAutoIsSupported { get; set; }
+
+        [JsonProperty("cameraOffSupported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CameraOffIsSupported { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the CameraMode
+        /// </summary>
+        [JsonProperty("cameraMode", NullValueHandling = NullValueHandling.Ignore)]
+        public string CameraMode { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the Cameras
+        /// </summary>
+        [JsonProperty("cameraList", NullValueHandling = NullValueHandling.Ignore)]
+        public List<IHasCameraControls> Cameras { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the SelectedCamera
+        /// </summary>
+        [JsonProperty("selectedCamera", NullValueHandling = NullValueHandling.Ignore)]
+        public Camera SelectedCamera { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a Camera
+    /// </summary>
+    public class Camera
+    {
+
+        /// <summary>
+        /// Gets or sets the Key
+        /// </summary>
+        [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
+        public string Key { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the Name
+        /// </summary>
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
+
+        [JsonProperty("isFarEnd", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsFarEnd { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the Capabilities
+        /// </summary>
+        [JsonProperty("capabilities", NullValueHandling = NullValueHandling.Ignore)]
+        public CameraCapabilities Capabilities { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a CameraCapabilities
+    /// </summary>
+    public class CameraCapabilities
+    {
+        [JsonProperty("canPan", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CanPan { get; set; }
+
+        [JsonProperty("canTilt", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CanTilt { get; set; }
+
+        [JsonProperty("canZoom", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CanZoom { get; set; }
+
+        [JsonProperty("canFocus", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? CanFocus { get; set; }
+
     }
 }

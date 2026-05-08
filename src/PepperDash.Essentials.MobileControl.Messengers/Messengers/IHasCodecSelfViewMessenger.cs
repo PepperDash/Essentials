@@ -53,7 +53,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 PostStatusMessage(new IHasCodecSelfViewStateMessage
                 {
-                    CameraSelfViewIsOn = _selfView.SelfviewIsOnFeedback.BoolValue
+                    CameraSelfViewIsOn = _selfView.SelfviewIsOnFeedback.BoolValue,
+                    ShowSelfViewByDefault = _selfView.ShowSelfViewByDefault
                 });
             }
             catch (Exception ex)
@@ -63,9 +64,23 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// State message for <see cref="IHasCodecSelfView"/>
+    /// </summary>
     public class IHasCodecSelfViewStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the codec's self view is currently on. Null if unknown or not applicable.
+         ///
+        /// </summary>
         [JsonProperty("cameraSelfView", NullValueHandling = NullValueHandling.Ignore)]
         public bool? CameraSelfViewIsOn { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the codec is set to show self view by default. Null if unknown or not applicable.
+         ///
+        /// </summary>
+        [JsonProperty("showSelfViewByDefault", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? ShowSelfViewByDefault { get; set; }
     }
 }

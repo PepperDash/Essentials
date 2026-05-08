@@ -5,7 +5,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// <summary>
     /// Implements a common set of data about a codec
     /// </summary>
-    public interface iVideoCodecInfo
+    public interface IVideoCodecInfo
     {
         /// <summary>
         /// Gets the codec information

@@ -65,7 +65,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 {
                     PostStatusMessage(new IHasCallHistoryStateMessage
                     {
-                        RecentCalls = recents
+                        RecentCalls = recents,
                     });
                 }
             }
@@ -76,9 +76,22 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
     }
 
+    /// <summary>
+    /// State message for <see cref="IHasCallHistory"/>
+    ///
+    /// </summary>
     public class IHasCallHistoryStateMessage : DeviceStateMessageBase
     {
+        /// <summary>
+        /// Gets or sets the list of recent calls. Null if unknown or not applicable.
+        /// </summary>
         [JsonProperty("recentCalls", NullValueHandling = NullValueHandling.Ignore)]
         public List<CodecCallHistory.CallHistoryEntry> RecentCalls { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the device has call history functionality. Null if unknown or not applicable.
+        /// </summary>
+        [JsonProperty("hasRecents", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? HasRecents { get; set; } = true; // Since this messenger should only be used for devices with call history, default to true unless specified otherwise.
     }
 }

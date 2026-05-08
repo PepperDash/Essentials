@@ -14,6 +14,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.Displays;
 using PepperDash.Essentials.Devices.Common.SoftCodec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Room.MobileControl;
 
 namespace PepperDash.Essentials
@@ -161,9 +162,39 @@ namespace PepperDash.Essentials
 
                 // ── Codecs ───────────────────────────────────────────────────────────────
                 new MessengerFactoryEntry(
-                    typeof(VideoCodecBase),
-                    (d, mp, ck) => new VideoCodecBaseMessenger(
-                        $"{d.Key}-videoCodec-{ck}", (VideoCodecBase)d, mp)
+                    typeof(IHasReady),
+                    (d, mp, ck) => new IHasReadyMessenger(
+                        $"{d.Key}-ready-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasDialer),
+                    (d, mp, ck) => new IHasDialerMessenger(
+                        $"{d.Key}-dialer-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(ICodecCallControls),
+                    (d, mp, ck) => new ICallControlsMessenger(
+                        $"{d.Key}-callControls-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasContentSharing),
+                    (d, mp, ck) => new IHasContentSharingMessenger(
+                        $"{d.Key}-contentSharing-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasStandbyMode),
+                    (d, mp, ck) => new IHasStandbyModeMessenger(
+                        $"{d.Key}-standby-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IPrivacy),
+                    (d, mp, ck) => new IPrivacyMessenger(
+                        $"{d.Key}-privacy-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(                    
+                    typeof(IVideoCodecInfo),
+                    (d, mp, ck) => new IVideoCodecInfoMessenger(
+                        $"{d.Key}-codecInfo-{ck}", mp, d)
                 ),
                 new MessengerFactoryEntry(
                     typeof(IHasDirectory),
@@ -187,6 +218,11 @@ namespace PepperDash.Essentials
                     predicate: d => d is VideoCodecBase && d is IHasCodecCameras
                 ),
                 new MessengerFactoryEntry(
+                    typeof(IHasCodecRoomPresets),
+                    (d, mp, ck) => new IHasCodecRoomPresetsMessenger(
+                        $"{d.Key}-codecRoomPresets-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
                     typeof(IHasCodecSelfView),
                     (d, mp, ck) => new IHasCodecSelfViewMessenger(
                         $"{d.Key}-selfView-{ck}", mp, d)
@@ -200,6 +236,16 @@ namespace PepperDash.Essentials
                     typeof(IHasFarEndContentStatus),
                     (d, mp, ck) => new IHasFarEndContentStatusMessenger(
                         $"{d.Key}-farEndContent-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasMeetingInfo),
+                    (d, mp, ck) => new IHasMeetingInfoMessenger(
+                        $"{d.Key}-meetingInfo-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasStartMeeting),
+                    (d, mp, ck) => new IHasStartMeetingMessenger(
+                        $"{d.Key}-startMeeting-{ck}", mp, d)
                 ),
                 new MessengerFactoryEntry(
                     typeof(IDialerCallStatus),

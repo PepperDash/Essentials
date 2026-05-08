@@ -129,7 +129,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 InitialPhonebookSyncComplete = _directory.PhonebookSyncState.InitialSyncComplete,
                 HasDirectory = true,
                 HasDirectorySearch = true,
-             });
+            });
         }
     }
 
@@ -146,6 +146,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         [JsonProperty("hasDirectorySearch", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasDirectorySearch { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DirectorySelectedFolderName
+        /// </summary>
+        [JsonProperty("directorySelectedFolderName", NullValueHandling = NullValueHandling.Ignore)]
+        public string DirectorySelectedFolderName { get; set; }
 
     }
 }
