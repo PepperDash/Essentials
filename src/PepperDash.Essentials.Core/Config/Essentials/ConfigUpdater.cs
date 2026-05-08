@@ -150,7 +150,7 @@ namespace PepperDash.Essentials.Core.Config
                 // Directory exists, first clear any contents
                 var archivedConfigFiles = ConfigReader.GetConfigFiles(archiveDirectoryPath + Global.DirectorySeparator + Global.ConfigFileName + ".bak");
 
-                if (archivedConfigFiles != null || archivedConfigFiles.Length > 0)
+                if (archivedConfigFiles != null && archivedConfigFiles.Length > 0)
                 {
                     Debug.LogMessage(LogEventLevel.Information, "{0} Existing files found in archive folder.  Deleting.", archivedConfigFiles.Length);
 
