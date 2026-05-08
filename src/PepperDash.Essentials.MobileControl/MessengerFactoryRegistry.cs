@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Shades;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Cameras;
+using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.Displays;
 using PepperDash.Essentials.Devices.Common.SoftCodec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
@@ -95,7 +96,7 @@ namespace PepperDash.Essentials
                 ),
                 new MessengerFactoryEntry(
                     typeof(IHasCamerasWithControls),
-                    (d, mp, ck) => new IHasCamerasWithControlMessenger(
+                    (d, mp, ck) => new IHasCamerasWithControlsMessenger(
                         $"{d.Key}-cameras-{ck}", mp, (IHasCamerasWithControls)d)
                 ),
 
@@ -163,6 +164,42 @@ namespace PepperDash.Essentials
                     typeof(VideoCodecBase),
                     (d, mp, ck) => new VideoCodecBaseMessenger(
                         $"{d.Key}-videoCodec-{ck}", (VideoCodecBase)d, mp)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasDirectory),
+                    (d, mp, ck) => new IHasDirectoryMessenger(
+                        $"{d.Key}-directory-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasCallHistory),
+                    (d, mp, ck) => new IHasCallHistoryMessenger(
+                        $"{d.Key}-callHistory-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IPasswordPrompt),
+                    (d, mp, ck) => new IPasswordPromptMessenger(
+                        $"{d.Key}-passwordPrompt-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasCodecCameras),
+                    (d, mp, ck) => new IHasCodecCamerasMessenger(
+                        $"{d.Key}-codecCameras-{ck}", mp, (VideoCodecBase)d),
+                    predicate: d => d is VideoCodecBase && d is IHasCodecCameras
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasCodecSelfView),
+                    (d, mp, ck) => new IHasCodecSelfViewMessenger(
+                        $"{d.Key}-selfView-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasCodecLayouts),
+                    (d, mp, ck) => new IHasCodecLayoutsMessenger(
+                        $"{d.Key}-codecLayouts-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasFarEndContentStatus),
+                    (d, mp, ck) => new IHasFarEndContentStatusMessenger(
+                        $"{d.Key}-farEndContent-{ck}", mp, d)
                 ),
                 new MessengerFactoryEntry(
                     typeof(IDialerCallStatus),

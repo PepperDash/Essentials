@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Messenger for devices that implement the IHasCameras interface.
     /// </summary>
-    public class IHasCamerasWithControlMessenger : MessengerBase
+    public class IHasCamerasWithControlsMessenger : MessengerBase
     {
         /// <summary>
         /// Device being bridged that implements IHasCameras interface.
@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="cameraController"></param>
         /// <param name="messagePath"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public IHasCamerasWithControlMessenger(string key, string messagePath, IHasCamerasWithControls cameraController)
+        public IHasCamerasWithControlsMessenger(string key, string messagePath, IHasCamerasWithControls cameraController)
             : base(key, messagePath, cameraController)
         {
             CameraController = cameraController ?? throw new ArgumentNullException("cameraController");

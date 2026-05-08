@@ -9,6 +9,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Diagnostics;
+using Crestron.SimplSharpPro.UC;
 using PepperDash.Core;
 using PepperDash.Core.Abstractions;
 using PepperDash.Core.Adapters;
