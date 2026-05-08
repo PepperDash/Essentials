@@ -11,6 +11,7 @@ namespace PepperDash.Core
     /// <summary>
     /// Represents a debugging context
     /// </summary>
+    [Obsolete("DebugContext is no longer supported and will be removed in a future release.")]
     public class DebugContext
     {
         /// <summary>

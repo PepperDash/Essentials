@@ -7,9 +7,10 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Interfaces
 {
- /// <summary>
- /// Defines the contract for ILogStrings
- /// </summary>
+	/// <summary>
+	/// Defines the contract for ILogStrings
+	/// </summary>
+	[Obsolete("ILogStrings is no longer supported and will be removed in a future release.")]
 	public interface ILogStrings : IKeyed
 	{
 		/// <summary>

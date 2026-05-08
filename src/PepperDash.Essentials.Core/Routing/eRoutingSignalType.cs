@@ -27,16 +27,19 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Control signal type
         /// </summary>
+        [Obsolete("UsbOutput is no longer supported and will be removed in a future release.")]
         UsbOutput = 8,
 
         /// <summary>
         /// Control signal type
         /// </summary>
+        [Obsolete("UsbInput is no longer supported and will be removed in a future release.")]
         UsbInput = 16,
 
         /// <summary>
         /// Secondary audio signal type
         /// </summary>
+        [Obsolete("SecondaryAudio is no longer supported and will be removed in a future release.")]
         SecondaryAudio = 32
 	}
 }

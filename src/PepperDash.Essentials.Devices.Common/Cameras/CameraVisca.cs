@@ -17,6 +17,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     /// <summary>
     /// Represents a CameraVisca
     /// </summary>
+    [Obsolete("CameraVisca is no longer supported and will be removed in a future release.  Use the CameraVisca plugin instead.")]
+
     public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IHasPowerControlWithFeedback, IBridgeAdvanced, IHasCameraFocusControl, IHasAutoFocusMode
     {
         private readonly CameraViscaPropertiesConfig PropertiesConfig;
