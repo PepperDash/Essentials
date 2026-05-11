@@ -262,7 +262,13 @@ namespace PepperDash.Core
                     using (var ms = new MemoryStream())
                     {
                         store.Save(ms, passwordChars, new SecureRandom());
-                        return new X509Certificate2(ms.ToArray(), certPassword);
+                        var cert = new X509Certificate2(ms.ToArray(), certPassword);
+
+                        if (!cert.HasPrivateKey)
+                            throw new InvalidOperationException(
+                                string.Format("Certificate loaded from '{0}' does not contain a private key and cannot be used as a server certificate.", certPath));
+
+                        return cert;
                     }
                 }
             }
