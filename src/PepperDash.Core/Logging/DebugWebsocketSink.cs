@@ -15,12 +15,10 @@ using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Operators;
-using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
-using System.Security.Cryptography;
 using Serilog.Formatting;
 using Serilog.Formatting.Json;
 
@@ -244,9 +242,10 @@ namespace PepperDash.Core
 
         /// <summary>
         /// Loads a PKCS#12 file written by BouncyCastle and returns an <see cref="X509Certificate2"/> with
-        /// private key attached via <see cref="RSACryptoServiceProvider"/>.
-        /// Using BouncyCastle's own reader avoids the .NET/Mono PFX parser, which can reject
-        /// BouncyCastle-generated archives on the Crestron runtime.
+        /// private key attached.
+        /// The PFX is parsed and re-encoded by BouncyCastle (ensuring format compatibility), then passed as
+        /// raw bytes to <see cref="X509Certificate2"/> so neither <c>RSACryptoServiceProvider</c> nor the
+        /// <c>EphemeralKeySet</c> flag (unsupported on the Crestron/Mono runtime) is needed.
         /// </summary>
         private static X509Certificate2 LoadCertFromBouncyCastle(string certPath, string certPassword)
         {
@@ -258,26 +257,12 @@ namespace PepperDash.Core
                     var store = new Pkcs12StoreBuilder().Build();
                     store.Load(stream, passwordChars);
 
-                    foreach (string alias in store.Aliases)
+                    // Re-encode through BouncyCastle to guarantee PKCS#12 format compatibility,
+                    // then hand raw bytes to X509Certificate2 — no RSACryptoServiceProvider needed.
+                    using (var ms = new MemoryStream())
                     {
-                        if (!store.IsKeyEntry(alias)) continue;
-
-                        var keyEntry = store.GetKey(alias);
-                        var certChain = store.GetCertificateChain(alias);
-                        if (certChain == null || certChain.Length == 0) continue;
-
-                        // Build X509Certificate2 from raw DER — no PFX parsing by .NET needed.
-                        var cert = new X509Certificate2(certChain[0].Certificate.GetEncoded());
-
-                        // Attach the private key via RSACryptoServiceProvider (available on all target runtimes).
-                        var rsaParams = DotNetUtilities.ToRSAParameters(
-                            (RsaPrivateCrtKeyParameters)keyEntry.Key);
-                        var rsa = new RSACryptoServiceProvider();
-                        rsa.PersistKeyInCsp = false;
-                        rsa.ImportParameters(rsaParams);
-                        cert.PrivateKey = rsa;
-
-                        return cert;
+                        store.Save(ms, passwordChars, new SecureRandom());
+                        return new X509Certificate2(ms.ToArray(), certPassword);
                     }
                 }
             }
@@ -285,8 +270,6 @@ namespace PepperDash.Core
             {
                 Array.Clear(passwordChars, 0, passwordChars.Length);
             }
-
-            throw new InvalidOperationException("No key entry found in PKCS#12 store: " + certPath);
         }
 
         private void Start(int port, string certPath = "", string certPassword = "")

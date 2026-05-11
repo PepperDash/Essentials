@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronAuthentication;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
@@ -91,7 +92,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 context.Response.StatusDescription = "OK";
                 context.Response.ContentType = "application/json";
                 context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-                context.Response.Write(JsonConvert.SerializeObject(new { Token = token }, Formatting.Indented), false);
+                context.Response.Write(JsonConvert.SerializeObject(
+                    new LoginResponse 
+                        { UserName = token.UserName, 
+                        Password = token.Password, 
+                        Access = token.Access, 
+                        State = token.State, 
+                        Groups = token.Groups, 
+                        ADConnect = token.ADConnect, 
+                        Valid = token.Valid }, Formatting.Indented), false);
                 context.Response.End();
             }
             catch (System.Exception ex)
@@ -120,5 +129,46 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// Gets or sets the password.
         /// </summary>
         public string Password { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a LoginResponse
+    /// </summary>
+    internal class LoginResponse
+    {
+        /// <summary>
+        /// Gets or sets the username.
+        /// </summary>
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the password.
+        /// </summary>
+        public string Password { get; set; }
+
+        /// <summary>
+        /// Gets or sets the access level.
+        /// </summary>
+        public Authentication.UserAuthenticationLevelEnum Access { get; set; }
+
+        /// <summary>
+        /// Gets or sets the token authenticated state.
+        /// </summary>
+        public Authentication.eTokenAuthenticatedState State { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of groups.
+        /// </summary>
+        public List<string> Groups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the active directory connection flag.
+        /// </summary>
+        public int ADConnect { get; set; }
+
+        /// <summary>
+        /// Gets or sets the valid flag indicating whether the token is valid.
+        /// </summary>
+        public bool Valid { get; set; }
     }
 }
