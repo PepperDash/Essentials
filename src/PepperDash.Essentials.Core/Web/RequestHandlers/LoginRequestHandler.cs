@@ -93,14 +93,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 context.Response.ContentType = "application/json";
                 context.Response.ContentEncoding = System.Text.Encoding.UTF8;
                 context.Response.Write(JsonConvert.SerializeObject(
-                    new LoginResponse 
-                        { UserName = token.UserName, 
-                        Password = token.Password, 
-                        Access = token.Access, 
-                        State = token.State, 
-                        Groups = token.Groups, 
-                        ADConnect = token.ADConnect, 
-                        Valid = token.Valid }, Formatting.Indented), false);
+                    new
+                        {
+                            UserName = token.UserName,
+                            Access = token.Access,
+                            State = token.State,
+                            Groups = token.Groups,
+                            ADConnect = token.ADConnect,
+                            Valid = token.Valid
+                        }, Formatting.Indented), false);
                 context.Response.End();
             }
             catch (System.Exception ex)
