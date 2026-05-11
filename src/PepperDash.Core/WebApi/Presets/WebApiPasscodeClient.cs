@@ -107,11 +107,11 @@ namespace PepperDash.Core.WebApi.Presets
 				var user = JsonConvert.DeserializeObject<User>(resp.ContentString);
 				CurrentUser = user;
 				if (handler != null)
-					UserReceived(this, new UserReceivedEventArgs(user, true));
+					handler(this, new UserReceivedEventArgs(user, true));
 			}
 			else
 				if (handler != null)
-					UserReceived(this, new UserReceivedEventArgs(null, false));
+					handler(this, new UserReceivedEventArgs(null, false));
 		}
 
 		/// <summary>
@@ -171,14 +171,14 @@ namespace PepperDash.Core.WebApi.Presets
 
 					J2SMaster.LoadWithJson(preset.Data);
 					if (handler != null)
-						PresetReceived(this, new PresetReceivedEventArgs(preset, true));
+						handler(this, new PresetReceivedEventArgs(preset, true));
 				}
 				else // no existing preset
 				{
 					CurrentPreset = new Preset();
 					LoadDefaultPresetData();
 					if (handler != null)
-						PresetReceived(this, new PresetReceivedEventArgs(null, false));
+						handler(this, new PresetReceivedEventArgs(null, false));
 				}
 			}
 			catch (HttpException e)
