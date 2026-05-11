@@ -98,7 +98,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                          Token = new LoginResponse
                          {
                              UserName = token.UserName,
-                             Password = token.Password,
                              Access = token.Access,
                              State = token.State,
                              Groups = token.Groups,
@@ -145,11 +144,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// Gets or sets the username.
         /// </summary>
         public string UserName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the password.
-        /// </summary>
-        public string Password { get; set; }
 
         /// <summary>
         /// Gets or sets the access level.
