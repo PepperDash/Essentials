@@ -27,8 +27,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <inheritdoc />
         protected override void RegisterActions()
         {
-            AddAction("/status", (id, content) => SendFullStatus(id));
-
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
             AddAction("/shutdownPromptStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/setShutdownPromptSeconds", (id, content) =>

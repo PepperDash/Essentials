@@ -29,6 +29,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             base.RegisterActions();
 
             AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+            AddAction("/contentSharingStatus", (id, content) => SendFullStatus(id));
             AddAction("/sharingStart", (id, content) => _sharing.StartSharing());
             AddAction("/sharingStop", (id, content) => _sharing.StopSharing());
         }

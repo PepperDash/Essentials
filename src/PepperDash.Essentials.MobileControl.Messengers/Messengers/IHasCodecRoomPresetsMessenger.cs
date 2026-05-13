@@ -31,6 +31,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             base.RegisterActions();
 
             AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+            AddAction("/roomPresetsStatus", (id, content) => SendFullStatus(id));
         }
 
         private void Presets_ListHasChanged(object sender, EventArgs e)

@@ -107,7 +107,7 @@ namespace PepperDash.Essentials.RoomBridges
 
 
             // Source Changes and room off
-            AddAction("/status", (id, content) =>
+            AddAction("/fullStatus", (id, content) =>
             {
                 SendFullStatusForClientId(id, Room);
             });

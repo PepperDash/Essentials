@@ -33,7 +33,12 @@ public class IRoomEventScheduleMessenger : MessengerBase
     protected override void RegisterActions()
     {
         AddAction("/saveScheduledEvents", (id, content) => SaveScheduledEvents(content.ToObject<List<ScheduledEventConfig>>()));
-        AddAction("/status", (id, content) =>
+        AddAction("/fullStatus", (id, content) =>
+        {
+            var events = _room.GetScheduledEvents();
+            SendFullStatus(events, id);
+        });
+        AddAction("/roomEventStatus", (id, content) =>
         {
             var events = _room.GetScheduledEvents();
 

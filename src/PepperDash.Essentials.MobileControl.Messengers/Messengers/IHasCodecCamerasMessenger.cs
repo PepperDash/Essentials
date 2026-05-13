@@ -27,6 +27,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             _codec = codec ?? throw new ArgumentNullException(nameof(codec));
             _cameraCodec = codec as IHasCodecCameras ?? throw new ArgumentException("codec must implement IHasCodecCameras", nameof(codec));
+    
+            _cameraCodec.CameraSelected += CameraCodec_CameraSelected;
         }
 
         /// <inheritdoc />
@@ -38,7 +40,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             _cameraCodec.CameraSelected += CameraCodec_CameraSelected;
 
-            AddAction("/fullStatus", (id, content) => PostSelectedCamera());
+            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/codecCamerasStatus", (id, content) => SendFullStatus());
 
             AddAction("/cameraSelect", (id, content) =>
             {

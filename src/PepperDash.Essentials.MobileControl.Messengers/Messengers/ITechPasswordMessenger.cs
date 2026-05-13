@@ -27,8 +27,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         protected override void RegisterActions()
         {
 
-            AddAction("/status", (id, content) => SendFullStatus(id));
-
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
             AddAction("/techPasswordStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/validateTechPassword", (id, content) =>

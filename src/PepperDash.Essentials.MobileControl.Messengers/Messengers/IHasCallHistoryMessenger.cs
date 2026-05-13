@@ -31,6 +31,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             base.RegisterActions();
 
             AddAction("/fullStatus", (id, content) => PostCallHistory());
+            AddAction("/callHistoryStatus", (id, content) => PostCallHistory());
 
             AddAction("/getCallHistory", (id, content) => PostCallHistory());
         }
