@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronSockets;
 using ThreadingTimeout = System.Threading.Timeout;
 using NetSocketException = System.Net.Sockets.SocketException;
 
