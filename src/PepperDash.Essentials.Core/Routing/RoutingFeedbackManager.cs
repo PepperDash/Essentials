@@ -49,8 +49,8 @@ namespace PepperDash.Essentials.Core.Routing
         {
             midpointToSinksMap = new Dictionary<string, HashSet<string>>();
 
-            var sinks = DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitchingWithInputPort>();
-            var midpoints = DeviceManager.AllDevices.OfType<IRoutingWithFeedback>();
+            var sinks = DeviceManager.AllDevices.OfType<IRoutingSinkWithFeedback>();
+            var midpoints = DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>();
 
             foreach (var sink in sinks)
             {
@@ -80,7 +80,7 @@ namespace PepperDash.Essentials.Core.Routing
         /// <summary>
         /// Gets all upstream midpoint device keys for a given sink
         /// </summary>
-        private HashSet<string> GetUpstreamMidpoints(IRoutingSinkWithSwitchingWithInputPort sink)
+        private HashSet<string> GetUpstreamMidpoints(IRoutingSinkWithFeedback sink)
         {
             var result = new HashSet<string>();
             var visited = new HashSet<string>();
@@ -109,7 +109,7 @@ namespace PepperDash.Essentials.Core.Routing
 
             visited.Add(tieLine.SourcePort.ParentDevice.Key);
 
-            if (tieLine.SourcePort.ParentDevice is IRoutingWithFeedback midpoint)
+            if (tieLine.SourcePort.ParentDevice is IRoutingMidpointWithFeedback midpoint)
             {
                 midpoints.Add(midpoint.Key);
 
@@ -131,11 +131,11 @@ namespace PepperDash.Essentials.Core.Routing
         }
 
         /// <summary>
-        /// Subscribes to the RouteChanged event on all devices implementing <see cref="IRoutingWithFeedback"/>.
+        /// Subscribes to the RouteChanged event on all devices implementing <see cref="IRoutingMidpointWithFeedback"/>.
         /// </summary>
         private void SubscribeForMidpointFeedback()
         {
-            var midpointDevices = DeviceManager.AllDevices.OfType<IRoutingWithFeedback>();
+            var midpointDevices = DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>();
 
             foreach (var device in midpointDevices)
             {
@@ -144,12 +144,12 @@ namespace PepperDash.Essentials.Core.Routing
         }
 
         /// <summary>
-        /// Subscribes to the InputChanged event on all devices implementing <see cref="IRoutingSinkWithSwitchingWithInputPort"/>.
+        /// Subscribes to the InputChanged event on all devices implementing <see cref="IRoutingSinkWithFeedback"/>.
         /// </summary>
         private void SubscribeForSinkFeedback()
         {
             var sinkDevices =
-                DeviceManager.AllDevices.OfType<IRoutingSinkWithSwitchingWithInputPort>();
+                DeviceManager.AllDevices.OfType<IRoutingSinkWithFeedback>();
 
             foreach (var device in sinkDevices)
             {
@@ -164,7 +164,7 @@ namespace PepperDash.Essentials.Core.Routing
         /// <param name="midpoint">The midpoint device that reported a route change.</param>
         /// <param name="newRoute">The descriptor of the new route.</param>
         private void HandleMidpointUpdate(
-            IRoutingWithFeedback midpoint,
+            IRoutingMidpointWithFeedback midpoint,
             RouteSwitchDescriptor newRoute
         )
         {
@@ -183,7 +183,7 @@ namespace PepperDash.Essentials.Core.Routing
 
                     foreach (var sinkKey in affectedSinkKeys)
                     {
-                        if (DeviceManager.GetDeviceForKey(sinkKey) is IRoutingSinkWithSwitchingWithInputPort sink)
+                        if (DeviceManager.GetDeviceForKey(sinkKey) is IRoutingSinkWithFeedback sink)
                         {
                             UpdateDestination(sink, sink.CurrentInputPort);
                         }
@@ -218,7 +218,7 @@ namespace PepperDash.Essentials.Core.Routing
         /// <param name="sender">The sink device that reported an input change.</param>
         /// <param name="currentInputPort">The new input port selected on the sink device.</param>
         private void HandleSinkUpdate(
-            IRoutingSinkWithSwitching sender,
+            IRoutingSinkWithFeedback sender,
             RoutingInputPort currentInputPort
         )
         {
@@ -246,7 +246,7 @@ namespace PepperDash.Essentials.Core.Routing
         /// <param name="destination">The destination sink device to update.</param>
         /// <param name="inputPort">The currently selected input port on the destination device.</param>
         private void UpdateDestination(
-            IRoutingSinkWithSwitching destination,
+            IRoutingSinkWithFeedback destination,
             RoutingInputPort inputPort
         )
         {
@@ -298,7 +298,7 @@ namespace PepperDash.Essentials.Core.Routing
         /// Called after debounce delay.
         /// </summary>
         private void UpdateDestinationImmediate(
-            IRoutingSinkWithSwitching destination,
+            IRoutingSinkWithFeedback destination,
             RoutingInputPort inputPort
         )
         {
@@ -491,7 +491,7 @@ namespace PepperDash.Essentials.Core.Routing
                 // Get all potential sources (devices that only have outputs, not inputs+outputs)
                 var sources = DeviceManager.AllDevices
                             .OfType<IRoutingOutputs>()
-                            .Where(s => !(s is IRoutingInputsOutputs));
+                            .Where(s => !(s is IRoutingMidpoint));
 
                 // Try each signal type that this TieLine supports
                 var signalTypes = new[]

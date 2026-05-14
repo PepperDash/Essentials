@@ -12,11 +12,16 @@ namespace PepperDash.Essentials.Devices.Common;
 /// <summary>
 /// Represents and audio endpoint
 /// </summary>
-public class GenericAudioOut : EssentialsDevice, IRoutingSink
+public class GenericAudioOut : EssentialsDevice, IRoutingSinkWithFeedback
 {
 	/// <inheritdoc/>
 	public RoutingInputPort CurrentInputPort => AnyAudioIn;
 
+	/// <inheritdoc/>
+	public event InputChangedEventHandler InputChanged;
+
+	/// <inheritdoc/>
+	public void ExecuteSwitch(object inputSelector) { }
 
 	/// <inheritdoc/> 
 	public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; private set; }

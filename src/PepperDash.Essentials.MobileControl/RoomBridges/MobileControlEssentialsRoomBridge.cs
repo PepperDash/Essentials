@@ -140,9 +140,6 @@ namespace PepperDash.Essentials.RoomBridges
             if (Room is IRunDefaultPresentRoute defaultRoom)
                 AddAction("/defaultsource", (id, content) => defaultRoom.RunDefaultPresentRoute());
 
-            if (Room is IHasCurrentSourceInfoChange sscRoom)
-                sscRoom.CurrentSourceChange += Room_CurrentSingleSourceChange;
-
 
             if (Room is IPrivacy privacyRoom)
             {
@@ -353,9 +350,9 @@ namespace PepperDash.Essentials.RoomBridges
             string shareText;
             bool isSharing;
 
-            if (Room is IHasCurrentSourceInfoChange srcInfoRoom && Room is IHasVideoCodec vcRoom && vcRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && srcInfoRoom.CurrentSourceInfo != null)
+            if (Room is IHasVideoCodec vcRoom && vcRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue)
             {
-                shareText = srcInfoRoom.CurrentSourceInfo.PreferredName;
+                shareText = "Sharing";
                 isSharing = true;
             }
             else
@@ -470,18 +467,7 @@ namespace PepperDash.Essentials.RoomBridges
         }
 
 
-        private void Room_CurrentSingleSourceChange(SourceListItem info, ChangeType type)
-        {
-            /* Example message
-             * {
-                  "type":"/room/status",
-                  "content": {
-                    "selectedSourceKey": "off",
-                  }
-                }
-             */
 
-        }
 
         /// <summary>
         /// Sends the full status of the room to the server
@@ -512,7 +498,7 @@ namespace PepperDash.Essentials.RoomBridges
             {
                 this.LogVerbose("GetFullStatus");
 
-                var sourceKey = room is IHasCurrentSourceInfoChange ? (room as IHasCurrentSourceInfoChange).CurrentSourceInfoKey : null;
+                var sourceKey = (string)null;
 
                 var volumes = new Dictionary<string, Volume>();
                 if (room is IHasCurrentVolumeControls rmVc)

@@ -5,7 +5,7 @@ namespace PepperDash.Essentials.Core
   /// <summary>
   /// Identifies a device that contains audio zones
   /// </summary>
-  public interface IAudioZones : IRouting
+  public interface IAudioZones : IRoutingMidpointWithFeedback
   {
     /// <summary>
     /// Gets the collection of audio zones

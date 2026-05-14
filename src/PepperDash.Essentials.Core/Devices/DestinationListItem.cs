@@ -18,16 +18,16 @@ public class DestinationListItem
     [JsonProperty("sinkKey")]
     public string SinkKey { get; set; }
 
-    private IRoutingSink _sinkDevice;
+    private IRoutingSinkWithFeedback _sinkDevice;
 
     /// <summary>
     /// Gets the actual device instance for this destination. 
     /// Lazily loads the device from the DeviceManager using the SinkKey.
     /// </summary>
     [JsonIgnore]
-    public IRoutingSink SinkDevice
+    public IRoutingSinkWithFeedback SinkDevice
     {
-        get { return _sinkDevice ?? (_sinkDevice = DeviceManager.GetDeviceForKey(SinkKey) as IRoutingSink); }
+        get { return _sinkDevice ?? (_sinkDevice = DeviceManager.GetDeviceForKey(SinkKey) as IRoutingSinkWithFeedback); }
     }
 
     /// <summary>

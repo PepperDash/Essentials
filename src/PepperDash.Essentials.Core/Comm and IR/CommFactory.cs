@@ -155,10 +155,10 @@ namespace PepperDash.Essentials.Core;
 				}
 
 
-				var inputsOutputs = dev as IRoutingInputsOutputs;
+				var inputsOutputs = dev as IRoutingMidpoint;
 				if (inputsOutputs == null)
 				{
-					Debug.LogMessage(LogEventLevel.Information, "GetCecPort: Device '{0}' does not support IRoutingInputsOutputs, failed to get CEC port called '{1}'",
+					Debug.LogMessage(LogEventLevel.Information, "GetCecPort: Device '{0}' does not support IRoutingMidpoint, failed to get CEC port called '{1}'",
 						config.ControlPortDevKey, config.ControlPortName);
 
 					return null;

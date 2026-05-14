@@ -9,6 +9,6 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
 /// It is designed to be implemented by devices that require these capabilities,
 /// such as projectors, displays, and other visual output devices.
 /// </summary>
-public interface IDisplay : IHasFeedback, IRoutingSinkWithSwitching, IHasPowerControl, IWarmingCooling, IUsageTracking, IKeyName
+public interface IDisplay : IHasFeedback, IRoutingSinkWithFeedback, IHasPowerControl, IWarmingCooling, IUsageTracking, IKeyName
 {
 }

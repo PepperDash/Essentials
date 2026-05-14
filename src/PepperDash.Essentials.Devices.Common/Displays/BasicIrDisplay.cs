@@ -229,7 +229,7 @@ public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
 		t.Start();
 	}
 
-	#region IRoutingSink Members
+	#region IRoutingSinkWithFeedback Members
 
 	/// <summary>
 	/// Typically called by the discovery routing algorithm.

@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Devices.Common.Generic;
 /// <summary>
 /// Represents a GenericSink
 /// </summary>
-public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputPort, ICurrentSources
+public class GenericSink : EssentialsDevice, IRoutingSinkWithFeedback
 {
 	/// <inheritdoc/> 
 	public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; private set; }
@@ -104,42 +104,12 @@ public class GenericSink : EssentialsDevice, IRoutingSinkWithSwitchingWithInputP
     /// </summary>
     public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
-    /// <summary>
-    /// Gets or sets the CurrentSourceInfoKey
-    /// </summary>
-    public string CurrentSourceInfoKey { get; set; }
-
     private SourceListItem _currentSource;
-    /// <summary>
-    /// Gets or sets the CurrentSourceInfo
-    /// </summary>
-    public SourceListItem CurrentSourceInfo
-    {
-        get => _currentSource;
-        set
-        {
-            if (value == _currentSource)
-            {
-                return;
-            }
-
-            CurrentSourceChange?.Invoke(_currentSource, ChangeType.WillChange);
-
-            _currentSource = value;
-
-            CurrentSourceChange?.Invoke(_currentSource, ChangeType.DidChange);
-        }
-    }
 
     /// <summary>
     /// Gets the current input port
     /// </summary>
     public RoutingInputPort CurrentInputPort => InputPorts[0];
-
-    /// <summary>
-    /// Event fired when the current source changes
-    /// </summary>
-    public event SourceInfoChangeHandler CurrentSourceChange;
 
     /// <inheritdoc />
     public event InputChangedEventHandler InputChanged;

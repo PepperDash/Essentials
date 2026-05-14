@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec;
 /// <summary>
 /// Class representing a BlueJeans soft codec running on an in-room PC.
 /// </summary>
-public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
+public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSinkWithFeedback
 {
 
     /// <summary>
@@ -28,6 +28,12 @@ public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
     /// This is used by the routing system to determine where to route video sources when this device is a destination
     /// </summary>
     public RoutingInputPort CurrentInputPort => AnyVideoIn;
+
+    /// <inheritdoc/>
+    public event InputChangedEventHandler InputChanged;
+
+    /// <inheritdoc/>
+    public void ExecuteSwitch(object inputSelector) { }
 
     /// <inheritdoc/> 
     public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; private set; }
@@ -170,16 +176,7 @@ public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
                 }
 
                 // store the name and UI info for routes
-                if (item.SourceKey == "none")
-                {
-                    CurrentSourceInfoKey = routeKey;
-                    CurrentSourceInfo = null;
-                }
-                else if (item.SourceKey != null)
-                {
-                    CurrentSourceInfoKey = routeKey;
-                    CurrentSourceInfo = item;
-                }
+                // CurrentSourceInfo tracking removed in v3 interface consolidation
 
                 // report back when done
                 if (successCallback != null)
@@ -196,9 +193,9 @@ public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
     /// <returns></returns>
     bool DoRoute(SourceRouteListItem route)
     {
-        IRoutingSink dest = null;
+        IRoutingSinkWithFeedback dest = null;
 
-        dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
+        dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkWithFeedback;
 
         if (dest == null)
         {
@@ -227,42 +224,5 @@ public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
 
 
 
-    #region IHasCurrentSourceInfoChange Members
 
-    /// <inheritdoc />
-    public string CurrentSourceInfoKey { get; set; }
-
-    /// <summary>
-    /// The SourceListItem last run - containing names and icons 
-    /// </summary>
-    public SourceListItem CurrentSourceInfo
-    {
-        get { return _CurrentSourceInfo; }
-        set
-        {
-            if (value == _CurrentSourceInfo) return;
-
-            var handler = CurrentSourceChange;
-            // remove from in-use tracker, if so equipped
-            if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-                (_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
-
-            if (handler != null)
-                handler(_CurrentSourceInfo, ChangeType.WillChange);
-
-            _CurrentSourceInfo = value;
-
-            // add to in-use tracking
-            if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-                (_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
-            if (handler != null)
-                handler(_CurrentSourceInfo, ChangeType.DidChange);
-        }
-    }
-    SourceListItem _CurrentSourceInfo;
-
-    /// <inheritdoc />
-    public event SourceInfoChangeHandler CurrentSourceChange;
-
-    #endregion
 }

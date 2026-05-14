@@ -45,7 +45,7 @@
         /// <inheritdoc />
         public override string ToString()
         {
-            if (SwitchingDevice is IRouting)
+            if (SwitchingDevice is IRoutingMidpointWithFeedback)
                 return $"{(SwitchingDevice != null ? SwitchingDevice.Key : "No Device")} switches output {(OutputPort != null ? OutputPort.Key : "No output port")} to input {(InputPort != null ? InputPort.Key : "No input port")}";
             else
                 return $"{(SwitchingDevice != null ? SwitchingDevice.Key : "No Device")} switches to input {(InputPort != null ? InputPort.Key : "No input port")}";

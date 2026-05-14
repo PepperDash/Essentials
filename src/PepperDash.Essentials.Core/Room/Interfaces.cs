@@ -25,7 +25,7 @@ public interface IHasDefaultDisplay
     /// <summary>
     /// The default display for the room, used for presentation routing and other default routes
     /// </summary>
-    IRoutingSink DefaultDisplay { get; }
+    IRoutingSinkWithFeedback DefaultDisplay { get; }
 }
 
 /// <summary>

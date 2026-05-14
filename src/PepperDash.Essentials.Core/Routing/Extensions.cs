@@ -465,8 +465,8 @@ public static class Extensions
                 IndexTieLines();
             }
 
-            var sinks = DeviceManager.AllDevices.OfType<IRoutingInputs>().Where(d => !(d is IRoutingInputsOutputs));
-            var sources = DeviceManager.AllDevices.OfType<IRoutingOutputs>().Where(d => !(d is IRoutingInputsOutputs));
+            var sinks = DeviceManager.AllDevices.OfType<IRoutingInputs>().Where(d => !(d is IRoutingMidpoint));
+            var sources = DeviceManager.AllDevices.OfType<IRoutingOutputs>().Where(d => !(d is IRoutingMidpoint));
 
             foreach (var sink in sinks)
             {
@@ -544,7 +544,7 @@ public static class Extensions
     /// <param name="routeTable">The RouteDescriptor being populated as the route is discovered</param>
     /// <returns>true if source is hit</returns>
     private static bool GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source,
-        RoutingOutputPort outputPortToUse, List<IRoutingInputsOutputs> alreadyCheckedDevices,
+        RoutingOutputPort outputPortToUse, List<IRoutingMidpoint> alreadyCheckedDevices,
             eRoutingSignalType signalType, int cycle, RouteDescriptor routeTable, RoutingInputPort destinationPort, RoutingOutputPort sourcePort)
     {
         cycle++;
@@ -608,16 +608,16 @@ public static class Extensions
 
             // No direct tie? Run back out on the inputs' attached devices... 
             // Only the ones that are routing devices
-            var midpointTieLines = destinationTieLines.Where(t => t.SourcePort.ParentDevice is IRoutingInputsOutputs);
+            var midpointTieLines = destinationTieLines.Where(t => t.SourcePort.ParentDevice is IRoutingMidpoint);
 
             //Create a list for tracking already checked devices to avoid loops, if it doesn't already exist from previous iteration
             if (alreadyCheckedDevices == null)
-                alreadyCheckedDevices = new List<IRoutingInputsOutputs>();
-            alreadyCheckedDevices.Add(destination as IRoutingInputsOutputs);
+                alreadyCheckedDevices = new List<IRoutingMidpoint>();
+            alreadyCheckedDevices.Add(destination as IRoutingMidpoint);
 
             foreach (var tieLine in midpointTieLines)
             {
-                var midpointDevice = tieLine.SourcePort.ParentDevice as IRoutingInputsOutputs;
+                var midpointDevice = tieLine.SourcePort.ParentDevice as IRoutingMidpoint;
 
                 // Check if this previous device has already been walked
                 if (alreadyCheckedDevices.Contains(midpointDevice))
@@ -659,12 +659,12 @@ public static class Extensions
 
         // we have a route on corresponding inputPort. *** Do the route ***
 
-        if (destination is IRoutingSink)
+        if (destination is IRoutingSinkWithFeedback)
         {
             // it's a sink device
             routeTable.Routes.Add(new RouteSwitchDescriptor(goodInputPort));
         }
-        else if (destination is IRouting)
+        else if (destination is IRoutingMidpointWithFeedback)
         {
             routeTable.Routes.Add(new RouteSwitchDescriptor(outputPortToUse, goodInputPort));
         }

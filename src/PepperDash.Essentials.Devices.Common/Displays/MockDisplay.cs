@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays;
 /// <summary>
 /// Represents a mock display device for testing and simulation purposes.
 /// </summary>
-public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string>, IRoutingSinkWithSwitchingWithInputPort, IHasPowerControlWithFeedback
+public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string>, IHasPowerControlWithFeedback
 {
     /// <inheritdoc />
     public ISelectableItems<string> Inputs { get; private set; }

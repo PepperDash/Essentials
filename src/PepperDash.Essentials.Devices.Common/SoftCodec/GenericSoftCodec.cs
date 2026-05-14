@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec;
 /// <summary>
 /// Represents a GenericSoftCodec
 /// </summary>
-public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingSinkWithSwitchingWithInputPort
+public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingSinkWithFeedback
 {
     private RoutingInputPort _currentInputPort;
 
@@ -142,45 +142,10 @@ public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingSinkWi
     public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
     /// <summary>
+    /// <summary>
     /// Gets or sets the OutputPorts
     /// </summary>
     public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
-    /// <summary>
-    /// Gets or sets the CurrentSourceInfoKey
-    /// </summary>
-    public string CurrentSourceInfoKey { get; set; }
-
-    /// <summary>
-    /// Gets or sets the CurrentSourceInfo
-    /// </summary>
-    public SourceListItem CurrentSourceInfo
-    {
-        get
-        {
-            return _CurrentSourceInfo;
-        }
-        set
-        {
-            if (value == _CurrentSourceInfo) return;
-
-            var handler = CurrentSourceChange;
-
-            if (handler != null)
-                handler(_CurrentSourceInfo, ChangeType.WillChange);
-
-            _CurrentSourceInfo = value;
-
-            if (handler != null)
-                handler(_CurrentSourceInfo, ChangeType.DidChange);
-        }
-    }
-
-    SourceListItem _CurrentSourceInfo;
-
-    /// <summary>
-    /// Event fired when the current source changes
-    /// </summary>
-    public event SourceInfoChangeHandler CurrentSourceChange;
 
     /// <summary>
     /// Event fired when the input changes

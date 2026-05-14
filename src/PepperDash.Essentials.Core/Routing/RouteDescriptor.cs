@@ -74,13 +74,13 @@ public class RouteDescriptor
         {
             Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", null, route.ToString());
 
-            if (route.SwitchingDevice is IRoutingSinkWithSwitching sink)
+            if (route.SwitchingDevice is IRoutingSinkWithFeedback sink)
             {
                 sink.ExecuteSwitch(route.InputPort.Selector);
                 continue;
             }
 
-            if (route.SwitchingDevice is IRouting switchingDevice)
+            if (route.SwitchingDevice is IRoutingMidpointWithFeedback switchingDevice)
             {
                 switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
 
@@ -97,9 +97,9 @@ public class RouteDescriptor
     /// <param name="clearRoute">If true, attempts to clear the route on the switching devices (e.g., set input to null/0).</param>
     public void ReleaseRoutes(bool clearRoute = false)
     {
-        foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
+        foreach (var route in Routes.Where(r => r.SwitchingDevice is IRoutingMidpointWithFeedback))
         {
-            if (route.SwitchingDevice is IRouting switchingDevice)
+            if (route.SwitchingDevice is IRoutingMidpointWithFeedback switchingDevice)
             {
                 if (clearRoute)
                 {

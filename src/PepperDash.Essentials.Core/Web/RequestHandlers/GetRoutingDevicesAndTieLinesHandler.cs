@@ -62,8 +62,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     })];
                 }
 
-                // Check if device implements IRoutingInputsOutputs
-                if (device is IRoutingInputsOutputs)
+                // Check if device implements IRoutingMidpoint
+                if (device is IRoutingMidpoint)
                 {
                     deviceInfo.HasInputsAndOutputs = true;
                 }

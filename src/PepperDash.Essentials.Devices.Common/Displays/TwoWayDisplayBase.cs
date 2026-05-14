@@ -7,7 +7,7 @@ namespace PepperDash.Essentials.Devices.Common.Displays
   /// Abstract base class for two-way display devices that provide feedback capabilities.
   /// Extends DisplayBase with routing feedback and power control feedback functionality.
   /// </summary>
-  public abstract class TwoWayDisplayBase : DisplayBase, IRoutingFeedback, IHasPowerControlWithFeedback
+  public abstract class TwoWayDisplayBase : DisplayBase, IHasPowerControlWithFeedback
   {
     /// <summary>
     /// Gets feedback for the current input selection on the display.

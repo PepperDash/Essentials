@@ -116,9 +116,9 @@ namespace PepperDash.Essentials
 
                 // ── Displays ─────────────────────────────────────────────────────────────
                 new MessengerFactoryEntry(
-                    typeof(IRoutingSinkWithSwitching),
-                    (d, mp, ck) => new IRoutingSinkWithSwitchingMessenger(
-                        $"{d.Key}-displayBase-{ck}", mp, (IRoutingSinkWithSwitching)d)
+                    typeof(IRoutingSinkWithFeedback),
+                    (d, mp, ck) => new IRoutingSinkWithFeedbackMessenger(
+                        $"{d.Key}-displayBase-{ck}", mp, (IRoutingSinkWithFeedback)d)
                 ),
                 new MessengerFactoryEntry(
                     typeof(IDisplayCurrentInput),
@@ -337,9 +337,9 @@ namespace PepperDash.Essentials
                 // ── Matrix routing ────────────────────────────────────────────────────────
                 // Preserving original key format (no controller key suffix)
                 new MessengerFactoryEntry(
-                    typeof(IMatrixRouting),
-                    (d, mp, _) => new IMatrixRoutingMessenger(
-                        $"{d.Key}-matrixRouting", mp, (IMatrixRouting)d)
+                    typeof(IRoutingMidpointWithFeedback),
+                    (d, mp, _) => new IRoutingMidpointWithFeedbackMessenger(
+                        $"{d.Key}-matrixRouting", mp, (IRoutingMidpointWithFeedback)d)
                 ),
 
                 // ── Environmental sensors ─────────────────────────────────────────────────
