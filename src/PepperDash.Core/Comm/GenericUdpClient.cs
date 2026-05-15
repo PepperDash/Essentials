@@ -313,6 +313,8 @@ namespace PepperDash.Core
         /// </summary>
         public void SendText(string text)
         {
+            this.PrintSentText(text);
+
             var bytes = Encoding.GetEncoding(28591).GetBytes(text);
             SendBytes(bytes);
         }
