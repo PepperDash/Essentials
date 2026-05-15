@@ -188,7 +188,7 @@ namespace PepperDash.Core
 }
 ```
 
-    These enumerations are not case sensitive.  Not all methods are valid for a ```genericComm``` device.  For a comport, the only valid type would be ```Com```.  For a direct network socket, valid options are ```Ssh```, ```Tcpip```, ```Telnet```, ```UdpClient```, and ```Udp```.
+These enumerations are not case sensitive.  Not all methods are valid for a ```genericComm``` device.  For a comport, the only valid type would be ```Com```.  For a direct network socket, valid options are ```Ssh```, ```Tcpip```, ```Telnet```, ```UdpClient```, and ```Udp```.
 
 ##### ComParams
 
