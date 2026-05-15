@@ -383,14 +383,26 @@ namespace PepperDash.Core
                     catch (NetSocketException ex)
                     {
                         Debug.LogMessage(ex, "UDP receive error for {0}", this, Key);
-                        HandleDisconnected();
-                        return;
+
+                        if (AutoReconnect)
+                        {
+                            HandleDisconnected();
+                            return;
+                        }
+
+                        continue;
                     }
                     catch (Exception ex)
                     {
                         Debug.LogMessage(ex, "Unexpected UDP receive error for {0}", this, Key);
-                        HandleDisconnected();
-                        return;
+
+                        if (AutoReconnect)
+                        {
+                            HandleDisconnected();
+                            return;
+                        }
+
+                        continue;
                     }
                 }
             }, token);
