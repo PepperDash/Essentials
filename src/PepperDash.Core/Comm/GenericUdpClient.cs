@@ -336,7 +336,10 @@ namespace PepperDash.Core
 
                 var udpClient = client;
                 if (!IsConnected || udpClient == null)
+                {
+                    Debug.Console(1, Debug.ErrorLogLevel.Warning, "GenericUdpClient '{0}': Cannot send bytes because the client is not connected", Key);
                     return;
+                }
 
                 udpClient.Send(bytes, bytes.Length);
             }
