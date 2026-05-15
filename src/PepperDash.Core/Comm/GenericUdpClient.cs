@@ -225,30 +225,71 @@ namespace PepperDash.Core
                 return;
             }
 
+            var hostname = Hostname;
+            var port = Port;
+            var bufferSize = BufferSize;
+            UdpClient newClient = null;
+            CancellationTokenSource newReceiveCancellationTokenSource = null;
+            CancellationToken startReceiveToken = default(CancellationToken);
+            var shouldStartReceive = false;
+
             lock (stateLock)
             {
                 connectEnabled = true;
 
                 if (client != null)
                     return;
+            }
 
-                try
+            try
+            {
+                newReceiveCancellationTokenSource = new CancellationTokenSource();
+                newClient = new UdpClient();
+                newClient.Client.ReceiveBufferSize = bufferSize;
+                newClient.Client.SendBufferSize = bufferSize;
+                newClient.Connect(hostname, port);
+
+                lock (stateLock)
                 {
-                    receiveCancellationTokenSource = new CancellationTokenSource();
-                    client = new UdpClient();
-                    client.Client.ReceiveBufferSize = BufferSize;
-                    client.Client.SendBufferSize = BufferSize;
-                    client.Connect(Hostname, Port);
+                    if (!connectEnabled || client != null)
+                    {
+                        newClient.Close();
+                        newReceiveCancellationTokenSource.Cancel();
+                        newReceiveCancellationTokenSource.Dispose();
+                        return;
+                    }
+
+                    receiveCancellationTokenSource = newReceiveCancellationTokenSource;
+                    client = newClient;
                     ClientStatus = SocketStatus.SOCKET_STATUS_CONNECTED;
                     reconnectTimer.Change(ThreadingTimeout.Infinite, ThreadingTimeout.Infinite);
-                    StartReceive(receiveCancellationTokenSource.Token);
+                    startReceiveToken = receiveCancellationTokenSource.Token;
+                    shouldStartReceive = true;
                 }
-                catch (Exception ex)
+
+                if (shouldStartReceive)
+                    StartReceive(startReceiveToken);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogMessage(ex, "Error connecting UDP client {0}", this, Key);
+
+                if (newClient != null)
+                    newClient.Close();
+
+                if (newReceiveCancellationTokenSource != null)
                 {
-                    Debug.LogMessage(ex, "Error connecting UDP client {0}", this, Key);
-                    CleanupClient();
-                    ClientStatus = SocketStatus.SOCKET_STATUS_NO_CONNECT;
-                    StartReconnectTimer();
+                    newReceiveCancellationTokenSource.Cancel();
+                    newReceiveCancellationTokenSource.Dispose();
+                }
+
+                lock (stateLock)
+                {
+                    if (connectEnabled && client == null)
+                    {
+                        ClientStatus = SocketStatus.SOCKET_STATUS_NO_CONNECT;
+                        StartReconnectTimer();
+                    }
                 }
             }
         }
