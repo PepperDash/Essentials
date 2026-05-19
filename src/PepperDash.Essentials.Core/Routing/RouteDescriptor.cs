@@ -20,22 +20,27 @@ namespace PepperDash.Essentials.Core
         public IRoutingInputs Destination { get; private set; }
 
         /// <summary>
-        /// Gets or sets the InputPort
+        /// The InputPort on the destination device for this route, if applicable.  May be null if the route is not for a specific input port.
         /// </summary>
         public RoutingInputPort InputPort { get; private set; }
 
         /// <summary>
-        /// Gets or sets the Source
+        /// Gets the source device (sink or midpoint) for the route.
         /// </summary>
         public IRoutingOutputs Source { get; private set; }
 
         /// <summary>
-        /// Gets or sets the SignalType
+        /// Gets the OutputPort on the source device for this route, if applicable.  May be null if the route is not for a specific output port.
+        /// </summary>
+        public RoutingOutputPort OutputPort { get; private set; }
+
+        /// <summary>
+        /// Gets the signal type for this route.
         /// </summary>
         public eRoutingSignalType SignalType { get; private set; }
 
         /// <summary>
-        /// Gets or sets the Routes
+        /// Gets the collection of route switch descriptors for this route.
         /// </summary>
         public List<RouteSwitchDescriptor> Routes { get; private set; }
 
@@ -56,11 +61,24 @@ namespace PepperDash.Essentials.Core
         /// <param name="destination">The destination device.</param>
         /// <param name="inputPort">The destination input port (optional).</param>
         /// <param name="signalType">The signal type for this route.</param>
-        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, eRoutingSignalType signalType)
+        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, eRoutingSignalType signalType) : this(source, destination, inputPort, null, signalType)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route with specific destination input and source output ports.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="destination"></param>
+        /// <param name="inputPort"></param>
+        /// <param name="outputPort"></param>
+        /// <param name="signalType"></param>
+        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, RoutingOutputPort outputPort, eRoutingSignalType signalType)
         {
             Destination = destination;
             InputPort = inputPort;
             Source = source;
+            OutputPort = outputPort;
             SignalType = signalType;
             Routes = new List<RouteSwitchDescriptor>();
         }
@@ -72,7 +90,7 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var route in Routes)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", null, route.ToString());
+                Debug.LogVerbose("ExecuteRoutes: {0}", route.ToString());
 
                 if (route.SwitchingDevice is IRoutingSinkWithSwitching sink)
                 {
@@ -86,7 +104,7 @@ namespace PepperDash.Essentials.Core
 
                     route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
 
-                    Debug.LogMessage(LogEventLevel.Verbose, "Output port {0} routing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+                    Debug.LogVerbose("Output port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
                 }
             }
         }
@@ -95,15 +113,15 @@ namespace PepperDash.Essentials.Core
         /// Releases the usage tracking for the route and optionally clears the route on the switching devices.
         /// </summary>
         /// <param name="clearRoute">If true, attempts to clear the route on the switching devices (e.g., set input to null/0).</param>
-        
-        
+
+
         public void ReleaseRoutes(bool clearRoute = false)
         {
             foreach (var route in Routes.Where(r => r.SwitchingDevice is IRouting))
             {
                 if (route.SwitchingDevice is IRouting switchingDevice)
                 {
-                    if(clearRoute)
+                    if (clearRoute)
                     {
                         try
                         {
@@ -112,6 +130,7 @@ namespace PepperDash.Essentials.Core
                         catch (Exception e)
                         {
                             Debug.LogError("Error executing switch: {exception}", e.Message);
+                            Debug.LogDebug(e, "Stack Trace: ");
                         }
                     }
 
@@ -123,11 +142,11 @@ namespace PepperDash.Essentials.Core
                     if (route.OutputPort.InUseTracker != null)
                     {
                         route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
-                        Debug.LogMessage(LogEventLevel.Verbose, "Port {0} releasing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+                        Debug.LogVerbose("Port {0} releasing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
                     }
                     else
                     {
-                        Debug.LogMessage(LogEventLevel.Error, "InUseTracker is null for OutputPort {0}", null, route.OutputPort.Key);
+                        Debug.LogVerbose("InUseTracker is null for OutputPort {0}", route.OutputPort.Key);
                     }
                 }
             }
@@ -137,98 +156,11 @@ namespace PepperDash.Essentials.Core
         /// Returns a string representation of the route descriptor, including source, destination, and individual route steps.
         /// </summary>
         /// <returns>A string describing the route.</returns>
-        
-        
-        
         public override string ToString()
         {
             var routesText = Routes.Select(r => r.ToString()).ToArray();
-            return string.Format("Route table from {0} to {1}:\r{2}", Source.Key, Destination.Key, string.Join("\r", routesText));
+            return $"Route table from {Source.Key} to {Destination.Key} for {SignalType}:\r\n    {string.Join("\r\n    ", routesText)}";
         }
     }
 
-    /*/// <summary>
-    /// Represents an collection of individual route steps between Source and Destination
-    /// </summary>
-    /// <summary>
-    /// Represents a RouteDescriptor
-    /// </summary>
-    public class RouteDescriptor<TInputSelector, TOutputSelector>
-    {
-        /// <summary>
-        /// Gets or sets the Destination
-        /// </summary>
-        public IRoutingInputs<TInputSelector> Destination { get; private set; }
-        /// <summary>
-        /// Gets or sets the Source
-        /// </summary>
-        public IRoutingOutputs<TOutputSelector> Source { get; private set; }
-        /// <summary>
-        /// Gets or sets the SignalType
-        /// </summary>
-        public eRoutingSignalType SignalType { get; private set; }
-        public List<RouteSwitchDescriptor<TInputSelector, TOutputSelector>> Routes { get; private set; }
-
-
-        public RouteDescriptor(IRoutingOutputs<TOutputSelector> source, IRoutingInputs<TInputSelector> destination, eRoutingSignalType signalType)
-        {
-            Destination = destination;
-            Source = source;
-            SignalType = signalType;
-            Routes = new List<RouteSwitchDescriptor<TInputSelector, TOutputSelector>>();
-        }
-
-        /// <summary>
-        /// ExecuteRoutes method
-        /// </summary>
-        public void ExecuteRoutes()
-        {
-            foreach (var route in Routes)
-            {
-                Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", null, route.ToString());
-
-                if (route.SwitchingDevice is IRoutingSinkWithSwitching<TInputSelector> sink)
-                {
-                    sink.ExecuteSwitch(route.InputPort.Selector);
-                    continue;
-                }
-
-                if (route.SwitchingDevice is IRouting switchingDevice)
-                {
-                    switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
-
-                    route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
-
-                    Debug.LogMessage(LogEventLevel.Verbose, "Output port {0} routing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
-                }
-            }
-        }
-
-        /// <summary>
-        /// ReleaseRoutes method
-        /// </summary>
-        public void ReleaseRoutes()
-        {
-            foreach (var route in Routes)
-            {
-                if (route.SwitchingDevice is IRouting<TInputSelector, TOutputSelector>)
-                {
-                    // Pull the route from the port.  Whatever is watching the output's in use tracker is
-                    // responsible for responding appropriately.
-                    route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
-                    Debug.LogMessage(LogEventLevel.Verbose, "Port {0} releasing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
-                }
-            }
-        }
-
-        /// <summary>
-        /// ToString method
-        /// </summary>
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            var routesText = Routes.Select(r => r.ToString()).ToArray();
-            return string.Format("Route table from {0} to {1}:\r{2}", Source.Key, Destination.Key, string.Join("\r", routesText));
-        }
-    }*/
 }

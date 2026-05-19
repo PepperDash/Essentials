@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using Crestron.SimplSharp;
@@ -28,6 +27,8 @@ namespace PepperDash.Essentials
         private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
+        // private const string minimumFirmwareVersion = "2.8006.00110";
+
         /// <summary>
         /// Initializes a new instance of the ControlSystem class
         /// </summary>
@@ -47,6 +48,24 @@ namespace PepperDash.Essentials
         /// <inheritdoc />
         public override void InitializeSystem()
         {
+
+            // Get FW version and stop if it's too low to run this version of Essentials.  Must be greater than v2.8006.00110
+            // var fwVersion = InitialParametersClass.FirmwareVersion;
+
+            // Debug.LogInformation("Control System Hardware Version: {fwVersion}", fwVersion);
+
+            // // split the version into parts and compare against minimumFirmwareVersion
+            // var versionParts = fwVersion.Split('.').Select(int.Parse).ToArray();
+            // var minParts = minimumFirmwareVersion.Split('.').Select(int.Parse).ToArray();
+            // if (versionParts.Length < minParts.Length
+            //     || versionParts[0] < minParts[0]
+            //     || (versionParts[0] == minParts[0] && versionParts[1] < minParts[1])
+            //     || (versionParts[0] == minParts[0] && versionParts[1] == minParts[1] && versionParts[2] <= minParts[2]))
+            // {
+            //     Debug.LogFatal("Firmware version {fwVersion} is too low to run this version of Essentials. Please upgrade to greater than v{minimumFirmwareVersion}.", fwVersion, minimumFirmwareVersion);
+            //     return;
+            // }
+
             // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
             // to allow any HD-BaseT DM endpoints to register first.
             bool preventInitializationComplete = Global.ControlSystemIsDmpsType;
@@ -92,12 +111,16 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(s => Debug.LogMessage(LogEventLevel.Information, "CONSOLE MESSAGE: {0}", s), "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-            {
-                foreach (var tl in TieLineCollection.Default)
-                    CrestronConsole.ConsoleCommandResponse("  {0}{1}", tl, CrestronEnvironment.NewLine);
-            },
-            "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(ListTieLines,
+            "listtielines", "Prints out all tie lines. Usage: listtielines [signaltype]", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(VisualizeRoutes, "visualizeroutes",
+                "Visualizes routes by signal type",
+                ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(VisualizeCurrentRoutes, "visualizecurrentroutes",
+                "Visualizes current active routes from DefaultCollection",
+                ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
@@ -107,14 +130,8 @@ namespace PepperDash.Essentials
                     (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented).Replace(Environment.NewLine, "\r\n"));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-                CrestronConsole.ConsoleCommandResponse(
-                "This system can be found at the following URLs:{2}" +
-                "System URL:   {0}{2}" +
-                "Template URL: {1}{2}",
-                ConfigReader.ConfigObject.SystemUrl,
-                ConfigReader.ConfigObject.TemplateUrl,
-                CrestronEnvironment.NewLine),
+            CrestronConsole.AddNewConsoleCommand(
+                PrintPortalInfo,
                 "portalinfo",
                 "Shows portal URLS from configuration",
                 ConsoleAccessLevelEnum.AccessOperator);
@@ -135,6 +152,29 @@ namespace PepperDash.Essentials
             {
                 SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
             }
+        }
+
+        private void PrintPortalInfo(string args)
+        {
+            if(ConfigReader.ConfigObject == null)
+            {
+                CrestronConsole.ConsoleCommandResponse("No configuration loaded. Cannot show portal URLs.");
+                return;
+            }
+
+             if (string.IsNullOrEmpty(ConfigReader.ConfigObject.SystemUrl) && string.IsNullOrEmpty(ConfigReader.ConfigObject.TemplateUrl))
+             {
+                 CrestronConsole.ConsoleCommandResponse("No portal URLs defined in config.");
+                 return;
+             }
+
+            CrestronConsole.ConsoleCommandResponse(
+                "This system can be found at the following URLs:{2}" +
+                "System URL:   {0}{2}" +
+                "Template URL: {1}{2}",
+                ConfigReader.ConfigObject?.SystemUrl,
+                ConfigReader.ConfigObject?.TemplateUrl,
+                CrestronEnvironment.NewLine);
         }
 
         /// <summary>
@@ -234,13 +274,8 @@ namespace PepperDash.Essentials
                 PluginLoader.AddProgramAssemblies();
 
                 _ = new Core.DeviceFactory();
-                // _ = new Devices.Common.DeviceFactory();
-                // _ = new DeviceFactory();
 
-                // _ = new ProcessorExtensionDeviceFactory();
-                // _ = new MobileControlFactory();
-
-                LoadAssets();
+                LoadAssets(Global.ApplicationDirectoryPathPrefix, Global.FilePathPrefix);
 
                 Debug.LogMessage(LogEventLevel.Information, "Starting Essentials load from configuration");
 
@@ -251,10 +286,9 @@ namespace PepperDash.Essentials
                     PluginLoader.LoadPlugins();
 
                     Debug.LogMessage(LogEventLevel.Information, "Folder structure verified. Loading config...");
-                    if (!ConfigReader.LoadConfig2())
+                    if (!ConfigReader.LoadConfig2() || ConfigReader.ConfigObject == null)
                     {
-                        Debug.LogMessage(LogEventLevel.Information, "Essentials Load complete with errors");
-                        return;
+                        Debug.LogMessage(LogEventLevel.Warning, "Unable to load config file.");
                     }
 
                     Load();
@@ -376,6 +410,12 @@ namespace PepperDash.Essentials
                     new Core.Monitoring.SystemMonitorController("systemMonitor"));
             }
 
+            if (ConfigReader.ConfigObject is null)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, "LoadDevices: ConfigObject is null. Cannot load devices.");
+                return;
+            }
+
             foreach (var devConf in ConfigReader.ConfigObject.Devices)
             {
                 IKeyed newDev = null;
@@ -429,7 +469,7 @@ namespace PepperDash.Essentials
 
             var tlc = TieLineCollection.Default;
 
-            if (ConfigReader.ConfigObject.TieLines == null)
+            if (ConfigReader.ConfigObject?.TieLines == null)
             {
                 return;
             }
@@ -443,6 +483,282 @@ namespace PepperDash.Essentials
 
             Debug.LogMessage(LogEventLevel.Information, "All Tie Lines Loaded.");
 
+            Extensions.MapDestinationsToSources();
+
+            Debug.LogMessage(LogEventLevel.Information, "All Routes Mapped.");
+        }
+
+
+
+        /// <summary>
+        /// Visualizes routes in a tree format for better understanding of signal paths
+        /// </summary>
+        private void ListTieLines(string args)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(args) && args.Contains("?"))
+                {
+                    CrestronConsole.ConsoleCommandResponse("Usage: listtielines [signaltype]\r\n");
+                    CrestronConsole.ConsoleCommandResponse("Signal types: Audio, Video, SecondaryAudio, AudioVideo, UsbInput, UsbOutput\r\n");
+                    return;
+                }
+
+                eRoutingSignalType? signalTypeFilter = null;
+                if (!string.IsNullOrEmpty(args))
+                {
+                    eRoutingSignalType parsedType;
+                    if (Enum.TryParse(args.Trim(), true, out parsedType))
+                    {
+                        signalTypeFilter = parsedType;
+                    }
+                    else
+                    {
+                        CrestronConsole.ConsoleCommandResponse("Invalid signal type: {0}\r\n", args.Trim());
+                        CrestronConsole.ConsoleCommandResponse("Valid types: Audio, Video, SecondaryAudio, AudioVideo, UsbInput, UsbOutput\r\n");
+                        return;
+                    }
+                }
+
+                var tielines = signalTypeFilter.HasValue
+                    ? TieLineCollection.Default.Where(tl => tl.Type.HasFlag(signalTypeFilter.Value))
+                    : TieLineCollection.Default;
+
+                var count = 0;
+                foreach (var tl in tielines)
+                {
+                    CrestronConsole.ConsoleCommandResponse("  {0}{1}", tl, CrestronEnvironment.NewLine);
+                    count++;
+                }
+
+                CrestronConsole.ConsoleCommandResponse("\r\nTotal: {0} tieline{1}{2}", count, count == 1 ? "" : "s", CrestronEnvironment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                CrestronConsole.ConsoleCommandResponse("Error listing tielines: {0}\r\n", ex.Message);
+            }
+        }
+
+        private void VisualizeRoutes(string args)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(args) && args.Contains("?"))
+                {
+                    CrestronConsole.ConsoleCommandResponse("Usage: visualizeroutes [signaltype] [-s source] [-d destination]\r\n");
+                    CrestronConsole.ConsoleCommandResponse("  signaltype: Audio, Video, AudioVideo, etc.\r\n");
+                    CrestronConsole.ConsoleCommandResponse("  -s: Filter by source key (partial match)\r\n");
+                    CrestronConsole.ConsoleCommandResponse("  -d: Filter by destination key (partial match)\r\n");
+                    return;
+                }
+
+                ParseRouteFilters(args, out eRoutingSignalType? signalTypeFilter, out string sourceFilter, out string destFilter);
+
+                CrestronConsole.ConsoleCommandResponse("\r\n+===========================================================================+\r\n");
+                CrestronConsole.ConsoleCommandResponse("|                         ROUTE VISUALIZATION                               |\r\n");
+                CrestronConsole.ConsoleCommandResponse("+===========================================================================+\r\n\r\n");
+
+                foreach (var descriptorCollection in Extensions.RouteDescriptors.Where(kv => kv.Value.Descriptors.Count() > 0))
+                {
+                    // Filter by signal type if specified
+                    if (signalTypeFilter.HasValue && descriptorCollection.Key != signalTypeFilter.Value)
+                        continue;
+
+                    CrestronConsole.ConsoleCommandResponse("\r\n+--- Signal Type: {0} ({1} routes) ---\r\n",
+                        descriptorCollection.Key,
+                        descriptorCollection.Value.Descriptors.Count());
+
+                    foreach (var descriptor in descriptorCollection.Value.Descriptors)
+                    {
+                        // Filter by source/dest if specified
+                        if (sourceFilter != null && !descriptor.Source.Key.ToLower().Contains(sourceFilter))
+                            continue;
+                        if (destFilter != null && !descriptor.Destination.Key.ToLower().Contains(destFilter))
+                            continue;
+
+                        VisualizeRouteDescriptor(descriptor);
+                    }
+                }
+
+                CrestronConsole.ConsoleCommandResponse("\r\n");
+            }
+            catch (Exception ex)
+            {
+                CrestronConsole.ConsoleCommandResponse("Error visualizing routes: {0}\r\n", ex.Message);
+            }
+        }
+
+        private void VisualizeCurrentRoutes(string args)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(args) && args.Contains("?"))
+                {
+                    CrestronConsole.ConsoleCommandResponse("Usage: visualizecurrentroutes [signaltype] [-s source] [-d destination]\r\n");
+                    CrestronConsole.ConsoleCommandResponse("  signaltype: Audio, Video, AudioVideo, etc.\r\n");
+                    CrestronConsole.ConsoleCommandResponse("  -s: Filter by source key (partial match)\r\n");
+                    CrestronConsole.ConsoleCommandResponse("  -d: Filter by destination key (partial match)\r\n");
+                    return;
+                }
+
+                ParseRouteFilters(args, out eRoutingSignalType? signalTypeFilter, out string sourceFilter, out string destFilter);
+
+                CrestronConsole.ConsoleCommandResponse("\r\n+===========================================================================+\r\n");
+                CrestronConsole.ConsoleCommandResponse("|                    CURRENT ROUTES VISUALIZATION                            |\r\n");
+                CrestronConsole.ConsoleCommandResponse("+===========================================================================+\r\n\r\n");
+
+                var hasRoutes = false;
+
+                // Get all descriptors from DefaultCollection
+                var allDescriptors = RouteDescriptorCollection.DefaultCollection.Descriptors;
+
+                // Group by signal type
+                var groupedByType = allDescriptors.GroupBy(d => d.SignalType);
+
+                foreach (var group in groupedByType)
+                {
+                    var signalType = group.Key;
+
+                    // Filter by signal type if specified
+                    if (signalTypeFilter.HasValue && signalType != signalTypeFilter.Value)
+                        continue;
+
+                    var filteredDescriptors = group.Where(d =>
+                    {
+                        if (sourceFilter != null && !d.Source.Key.ToLower().Contains(sourceFilter))
+                            return false;
+                        if (destFilter != null && !d.Destination.Key.ToLower().Contains(destFilter))
+                            return false;
+                        return true;
+                    }).ToList();
+
+                    if (filteredDescriptors.Count == 0)
+                        continue;
+
+                    hasRoutes = true;
+                    CrestronConsole.ConsoleCommandResponse("\r\n+--- Signal Type: {0} ({1} routes) ---\r\n",
+                        signalType,
+                        filteredDescriptors.Count);
+
+                    foreach (var descriptor in filteredDescriptors)
+                    {
+                        VisualizeRouteDescriptor(descriptor);
+                    }
+                }
+
+                if (!hasRoutes)
+                {
+                    CrestronConsole.ConsoleCommandResponse("\r\nNo active routes found in current state.\r\n");
+                }
+
+                CrestronConsole.ConsoleCommandResponse("\r\n");
+            }
+            catch (Exception ex)
+            {
+                CrestronConsole.ConsoleCommandResponse("Error visualizing current state: {0}\r\n", ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Parses route filter arguments from command line
+        /// </summary>
+        /// <param name="args">Command line arguments</param>
+        /// <param name="signalTypeFilter">Parsed signal type filter (if any)</param>
+        /// <param name="sourceFilter">Parsed source filter (if any)</param>
+        /// <param name="destFilter">Parsed destination filter (if any)</param>
+        private void ParseRouteFilters(string args, out eRoutingSignalType? signalTypeFilter, out string sourceFilter, out string destFilter)
+        {
+            signalTypeFilter = null;
+            sourceFilter = null;
+            destFilter = null;
+
+            if (string.IsNullOrEmpty(args))
+                return;
+
+            var parts = args.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var part = parts[i];
+
+                // Check for flags
+                if (part == "-s" && i + 1 < parts.Length)
+                {
+                    sourceFilter = parts[++i].ToLower();
+                }
+                else if (part == "-d" && i + 1 < parts.Length)
+                {
+                    destFilter = parts[++i].ToLower();
+                }
+                // Try to parse as signal type if not a flag and no signal type set yet
+                else if (!part.StartsWith("-") && !signalTypeFilter.HasValue)
+                {
+                    if (Enum.TryParse(part, true, out eRoutingSignalType parsedType))
+                    {
+                        signalTypeFilter = parsedType;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Visualizes a single route descriptor in a tree format
+        /// </summary>
+        private void VisualizeRouteDescriptor(RouteDescriptor descriptor)
+        {
+            CrestronConsole.ConsoleCommandResponse("|\r\n");
+            CrestronConsole.ConsoleCommandResponse("|-- {0} --> {1}\r\n",
+                descriptor.Source.Key,
+                descriptor.Destination.Key);
+
+            if (descriptor.Routes == null || descriptor.Routes.Count == 0)
+            {
+                CrestronConsole.ConsoleCommandResponse("|   +-- (No switching steps)\r\n");
+                return;
+            }
+
+            for (int i = 0; i < descriptor.Routes.Count; i++)
+            {
+                var route = descriptor.Routes[i];
+                var isLast = i == descriptor.Routes.Count - 1;
+                var prefix = isLast ? "+" : "|";
+                var continuation = isLast ? " " : "|";
+
+                if (route.SwitchingDevice != null)
+                {
+                    CrestronConsole.ConsoleCommandResponse("|   {0}-- [{1}] {2}\r\n",
+                        prefix,
+                        route.SwitchingDevice.Key,
+                        GetSwitchDescription(route));
+
+                    // Add visual connection line for non-last items
+                    if (!isLast)
+                        CrestronConsole.ConsoleCommandResponse("|   {0}      |\r\n", continuation);
+                }
+                else
+                {
+                    CrestronConsole.ConsoleCommandResponse("|   {0}-- {1}\r\n", prefix, route.ToString());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a readable description of the switching operation
+        /// </summary>
+        private string GetSwitchDescription(RouteSwitchDescriptor route)
+        {
+            if (route.OutputPort != null && route.InputPort != null)
+            {
+                return string.Format("{0} -> {1}", route.OutputPort.Key, route.InputPort.Key);
+            }
+            else if (route.InputPort != null)
+            {
+                return string.Format("-> {0}", route.InputPort.Key);
+            }
+            else
+            {
+                return "(passthrough)";
+            }
         }
 
         /// <summary>
@@ -450,7 +766,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public void LoadRooms()
         {
-            if (ConfigReader.ConfigObject.Rooms == null)
+            if (ConfigReader.ConfigObject?.Rooms == null)
             {
                 Debug.LogMessage(LogEventLevel.Information, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
                 return;
@@ -485,15 +801,16 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Fires up a logo server if not already running
         /// </summary>
+        [Obsolete("Logo server is no longer supported and will be removed in a future release.")]
         void LoadLogoServer()
         {
-            if (ConfigReader.ConfigObject.Rooms == null)
+            if (ConfigReader.ConfigObject?.Rooms == null)
             {
                 Debug.LogMessage(LogEventLevel.Information, "No rooms configured. Bypassing Logo server startup.");
                 return;
             }
 
-            if (
+            if (ConfigReader.ConfigObject?.Rooms == null ||
                 !ConfigReader.ConfigObject.Rooms.Any(
                     CheckRoomConfig))
             {
@@ -544,142 +861,8 @@ namespace PepperDash.Essentials
             }
         }
 
-        private static void LoadAssets()
-        {
-            var applicationDirectory = new DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
-            Debug.LogMessage(LogEventLevel.Information, "Searching: {applicationDirectory:l} for embedded assets - {Destination}", applicationDirectory.FullName, Global.FilePathPrefix);
+        internal static void LoadAssets(string applicationDirectoryPath, string filePathPrefix) =>
+            AssetLoader.Load(applicationDirectoryPath, filePathPrefix);
 
-            var zipFiles = applicationDirectory.GetFiles("assets*.zip");
-
-            if (zipFiles.Length > 1)
-            {
-                throw new Exception("Multiple assets zip files found. Cannot continue.");
-            }
-
-            if (zipFiles.Length == 1)
-            {
-                var zipFile = zipFiles[0];
-                var assetsRoot = System.IO.Path.GetFullPath(Global.FilePathPrefix);
-                if (!assetsRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) && !assetsRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
-                {
-                    assetsRoot += Path.DirectorySeparatorChar;
-                }
-                Debug.LogMessage(LogEventLevel.Information, "Found assets zip file: {zipFile:l}... Unzipping...", zipFile.FullName);
-                using (var archive = ZipFile.OpenRead(zipFile.FullName))
-                {
-                    foreach (var entry in archive.Entries)
-                    {
-                        var destinationPath = Path.Combine(Global.FilePathPrefix, entry.FullName);
-                        var fullDest = System.IO.Path.GetFullPath(destinationPath);
-                        if (!fullDest.StartsWith(assetsRoot, StringComparison.OrdinalIgnoreCase))
-                            throw new InvalidOperationException($"Entry '{entry.FullName}' is trying to extract outside of the target directory.");
-
-                        if (string.IsNullOrEmpty(entry.Name))
-                        {
-                            Directory.CreateDirectory(destinationPath);
-                            continue;
-                        }
-
-                        // If a directory exists where a file should go, delete it
-                        if (Directory.Exists(destinationPath))
-                            Directory.Delete(destinationPath, true);
-
-                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
-                        entry.ExtractToFile(destinationPath, true);
-                        Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
-                    }
-                }
-            }
-
-            // cleaning up zip files
-            foreach (var file in zipFiles)
-            {
-                File.Delete(file.FullName);
-            }
-
-            var htmlZipFiles = applicationDirectory.GetFiles("htmlassets*.zip");
-
-            if (htmlZipFiles.Length > 1)
-            {
-                throw new Exception("Multiple htmlassets zip files found in application directory. Please ensure only one htmlassets*.zip file is present and retry.");
-            }
-
-
-            if (htmlZipFiles.Length == 1)
-            {
-                var htmlZipFile = htmlZipFiles[0];
-                var programDir = new DirectoryInfo(Global.FilePathPrefix.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-                var userOrNvramDir = programDir.Parent;
-                var rootDir = userOrNvramDir?.Parent;
-                if (rootDir == null)
-                {
-                    throw new Exception($"Unable to determine root directory for html extraction. Current path: {Global.FilePathPrefix}");
-                }
-                var htmlDir = Path.Combine(rootDir.FullName, "html");
-                var htmlRoot = System.IO.Path.GetFullPath(htmlDir);
-                if (!htmlRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) &&
-                    !htmlRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
-                {
-                    htmlRoot += Path.DirectorySeparatorChar;
-                }
-                Debug.LogMessage(LogEventLevel.Information, "Found htmlassets zip file: {zipFile:l}... Unzipping...", htmlZipFile.FullName);
-                using (var archive = ZipFile.OpenRead(htmlZipFile.FullName))
-                {
-                    foreach (var entry in archive.Entries)
-                    {
-                        var destinationPath = Path.Combine(htmlDir, entry.FullName);
-                        var fullDest = System.IO.Path.GetFullPath(destinationPath);
-                        if (!fullDest.StartsWith(htmlRoot, StringComparison.OrdinalIgnoreCase))
-                            throw new InvalidOperationException($"Entry '{entry.FullName}' is trying to extract outside of the target directory.");
-
-                        if (string.IsNullOrEmpty(entry.Name))
-                        {
-                            Directory.CreateDirectory(destinationPath);
-                            continue;
-                        }
-
-                        // Only delete the file if it exists and is a file, not a directory
-                        if (File.Exists(destinationPath))
-                            File.Delete(destinationPath);
-
-                        var parentDir = Path.GetDirectoryName(destinationPath);
-                        if (!string.IsNullOrEmpty(parentDir))
-                            Directory.CreateDirectory(parentDir);
-
-                        entry.ExtractToFile(destinationPath, true);
-                        Debug.LogMessage(LogEventLevel.Information, "Extracted: {entry:l} to {Destination}", entry.FullName, destinationPath);
-                    }
-                }
-            }
-
-            // cleaning up html zip files
-            foreach (var file in htmlZipFiles)
-            {
-                File.Delete(file.FullName);
-            }
-
-            var jsonFiles = applicationDirectory.GetFiles("*configurationFile*.json");
-
-            if (jsonFiles.Length > 1)
-            {
-                Debug.LogError("Multiple configuration files found in application directory: {@jsonFiles}", jsonFiles.Select(f => f.FullName).ToArray());
-                throw new Exception("Multiple configuration files found. Cannot continue.");
-            }
-
-            if (jsonFiles.Length == 1)
-            {
-                var jsonFile = jsonFiles[0];
-                var finalPath = Path.Combine(Global.FilePathPrefix, jsonFile.Name);
-                Debug.LogMessage(LogEventLevel.Information, "Found configuration file: {jsonFile:l}... Moving to: {Destination}", jsonFile.FullName, finalPath);
-
-                if (File.Exists(finalPath))
-                {
-                    Debug.LogMessage(LogEventLevel.Information, "Removing existing configuration file: {Destination}", finalPath);
-                    File.Delete(finalPath);
-                }
-
-                jsonFile.MoveTo(finalPath);
-            }
-        }
     }
 }
