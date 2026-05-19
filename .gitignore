@@ -397,3 +397,4 @@ api/
 *.DS_Store
 /._PepperDash.Essentials.4Series.sln
 dotnet
+*.lscache

@@ -32,17 +32,29 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             PostStatusMessage(new PresetStateMessage
             {
-                Favorites = _presetsDevice.TvPresets.PresetsList
+                Favorites = _presetsDevice.TvPresets?.PresetsList ?? new List<PresetChannel>()
             }, id);
         }
 
         private void RecallPreset(ISetTopBoxNumericKeypad device, string channel)
         {
+            if (_presetsDevice.TvPresets == null)
+            {
+                this.LogWarning("TvPresets is null, cannot recall preset");
+                return;
+            }
+
             _presetsDevice.TvPresets.Dial(channel, device);
         }
 
         private void SavePresets(List<PresetChannel> presets)
         {
+            if (_presetsDevice.TvPresets == null)
+            {
+                this.LogWarning("TvPresets is null, cannot save presets");
+                return;
+            }
+
             _presetsDevice.TvPresets.UpdatePresets(presets);
         }
 
@@ -89,7 +101,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 SavePresets(presets);
             });
 
-            _presetsDevice.TvPresets.PresetsSaved += (p) => SendPresets();
+            if (_presetsDevice.TvPresets != null)
+            {
+                _presetsDevice.TvPresets.PresetsSaved += (p) => SendPresets();
+            }
+            else
+            {
+                this.LogWarning("TvPresets is null for {key}, preset saved events will not be tracked", Key);
+            }
         }
 
         #endregion
