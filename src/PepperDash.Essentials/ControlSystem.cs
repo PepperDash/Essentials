@@ -140,13 +140,18 @@ namespace PepperDash.Essentials
             CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
                 "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
 
-            DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
+
+            var apiServer = new EssentialsWebApi("essentialsWebApi", "Essentials Web API");
+            DeviceManager.AddDevice(apiServer);
 
             if (!Debug.DoNotLoadConfigOnNextBoot)
             {
                 GoWithLoad();
                 return;
             }
+
+            // Init the API server even if we're not loading config to allow for dynamic loading via console command
+            apiServer.Initialize();
 
             if (!(bool)preventInitialization)
             {

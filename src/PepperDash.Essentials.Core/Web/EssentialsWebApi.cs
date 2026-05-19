@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Core.Web
 
         private readonly WebApiServer _debugServer;
 
-
+        private bool isInitialized;
 
 
         ///<example>
@@ -230,6 +230,11 @@ namespace PepperDash.Essentials.Core.Web
         /// <inheritdoc />
         public override void Initialize()
         {
+            if (isInitialized)
+            {
+                return;
+            }
+
             AddRoute(new HttpCwsRoute("apiPaths")
             {
                 Name = "GetPaths",
@@ -264,6 +269,8 @@ namespace PepperDash.Essentials.Core.Web
             _debugServer.Start();
 
             GetPaths();
+
+            isInitialized = true;
         }
 
         /// <summary>

@@ -69,14 +69,14 @@ namespace PepperDash.Essentials.Core.Config
 			// Get the source device
 			if (!(DeviceManager.GetDeviceForKey(SourceKey) is IRoutingOutputs sourceDev))
 			{
-				LogError("Routable source not found");
+				LogError($"Routable source not found for key '{SourceKey}'");
 				return null;
 			}
 
 			// Get the destination device
 			if (!(DeviceManager.GetDeviceForKey(DestinationKey) is IRoutingInputs destDev))
 			{
-				LogError("Routable destination not found");
+				LogError($"Routable destination not found for key '{DestinationKey}'");
 				return null;
 			}
 
@@ -85,7 +85,7 @@ namespace PepperDash.Essentials.Core.Config
 
 			if (sourceOutputPort == null)
 			{
-				LogError("Source does not contain port");
+				LogError($"Source '{SourceKey}' does not contain port '{SourcePort}'");
 				return null;
 			}
 
@@ -94,7 +94,7 @@ namespace PepperDash.Essentials.Core.Config
 
 			if (destinationInputPort == null)
 			{
-				LogError("Destination does not contain port");
+				LogError($"Destination '{DestinationKey}' does not contain port '{DestinationPort}'");
 				return null;
 			}
 
