@@ -1154,10 +1154,12 @@ namespace PepperDash.Essentials.WebSocketServer
 
             byte[] body;
 
-            if (!UiClientContexts.TryGetValue(token, out UiClientContext clientContext))
+            if (string.IsNullOrEmpty(token) || !UiClientContexts.TryGetValue(token, out UiClientContext clientContext))
             {
-                var message = "Token invalid or has expired";
-                res.StatusCode = 401;
+                var message = string.IsNullOrEmpty(token)
+                    ? "Token is required"
+                    : "Token invalid or has expired";
+                res.StatusCode = string.IsNullOrEmpty(token) ? 400 : 401;
                 res.ContentType = "application/json";
                 this.LogVerbose("{message}", message);
                 body = Encoding.UTF8.GetBytes(message);
