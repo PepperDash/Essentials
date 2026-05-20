@@ -18,74 +18,75 @@ namespace PepperDash.Core
         /// <summary>
         /// RS232/422/485
         /// </summary>
-        Com,
+        Com = 1,
         /// <summary>
         /// Crestron IpId (most Crestron ethernet devices)
         /// </summary>
-        IpId,
+        IpId = 2,
         /// <summary>
         /// Crestron IpIdTcp (HD-MD series, etc.)
         /// </summary>
-        IpidTcp,
+        IpidTcp = 3,
         /// <summary>
         /// Crestron IR control
         /// </summary>
-        IR,
+        IR = 4,
         /// <summary>
         /// SSH client
         /// </summary>
-        Ssh,
+        Ssh = 5,
         /// <summary>
         /// TCP/IP client
         /// </summary>
-        Tcpip,
+        Tcpip = 6,
         /// <summary>
         /// Telnet
         /// </summary>
-        Telnet,
+        Telnet = 7,
         /// <summary>
         /// Crestnet device
         /// </summary>
-        Cresnet,
+        Cresnet = 8,
         /// <summary>
         /// CEC Control, via a DM HDMI port
         /// </summary>
-        Cec,
+        Cec = 9,
         /// <summary>
         /// UDP Server
         /// </summary>
-        Udp,
-        /// <summary>
-        /// UDP client
-        /// </summary>
-        UdpClient,
+        Udp = 10,
+
         /// <summary>
         /// HTTP client
         /// </summary>
-        Http,
+        Http = 11,
         /// <summary>
         /// HTTPS client
         /// </summary>
-        Https,
+        Https = 12,
         /// <summary>
         /// Websocket client
         /// </summary>
-        Ws,
+        Ws = 13,
         /// <summary>
         /// Secure Websocket client 
         /// </summary>
-        Wss,
+        Wss = 14,
         /// <summary>
         /// Secure TCP/IP
         /// </summary>
-        SecureTcpIp,
+        SecureTcpIp = 15,
         /// <summary>
         /// Used when comms needs to be handled in SIMPL and bridged opposite the normal direction
         /// </summary>
-        ComBridge,
+        ComBridge = 16,
         /// <summary>
         /// InfinetEX control
         /// </summary>
-        InfinetEx
+        InfinetEx = 17,
+        /// <summary>
+        /// UDP client
+        /// </summary>
+        UdpClient = 18,
     }
 }
