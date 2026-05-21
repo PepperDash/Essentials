@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 	/// <summary>
 	/// Base class for video codec devices
 	/// </summary>
-	public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutputs,
+	public abstract class VideoCodecBase : ReconfigurableDevice,
 		IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced, IHasStandbyMode
 	{
 		private const int XSigEncoding = 28591;
