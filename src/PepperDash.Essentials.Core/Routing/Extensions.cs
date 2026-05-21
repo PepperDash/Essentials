@@ -249,7 +249,7 @@ namespace PepperDash.Essentials.Core
             }
             // otherwise, audioVideo needs to be handled as two steps.
 
-            Debug.LogDebug(destination, "Attempting to build source route from {destinationKey} to {sourceKey} of type {type}", source.Key, signalType);
+            Debug.LogDebug(destination, "Attempting to build source route from {destinationKey} to {sourceKey} of type {type}", destination.Key, source.Key, signalType);
 
             RouteDescriptor audioRouteDescriptor;
 
@@ -374,23 +374,27 @@ namespace PepperDash.Essentials.Core
                     IndexTieLines();
                 }
 
-                var sinks = DeviceManager.AllDevices.OfType<IRoutingInputs>().Where(d => !(d is IRoutingInputsOutputs));
-                var sources = DeviceManager.AllDevices.OfType<IRoutingOutputs>().Where(d => !(d is IRoutingInputsOutputs));
+                var sinks = DeviceManager.AllDevices.OfType<IRoutingInputs>();
+                var sources = DeviceManager.AllDevices.OfType<IRoutingOutputs>();
 
-                foreach (var sink in sinks)
+                foreach (var sink in sinks.Where(d => !(d is IRoutingInputsOutputs)))
                 {
-                    foreach (var source in sources)
+                    foreach (var source in sources.Where(d => !(d is IRoutingInputsOutputs)))
                     {
                         foreach (var inputPort in sink.InputPorts)
                         {
                             foreach (var outputPort in source.OutputPorts)
                             {
-                                var (audioOrSingleRoute, videoRoute) = sink.GetRouteToSource(source, inputPort.Type, inputPort, outputPort);
+                                var (audioOrSingleRoute, videoRoute) = sink.GetRouteToSource(source, outputPort.Type, inputPort, outputPort);
 
                                 if (audioOrSingleRoute == null && videoRoute == null)
                                 {
                                     continue;
                                 }
+
+                                Debug.LogVerbose("AudioOrSingleRoute Found: {audioRoute}", audioOrSingleRoute);
+
+                                Debug.LogVerbose("VideoRoute Found: {videoRoute}", videoRoute);
 
                                 if (audioOrSingleRoute != null)
                                 {
@@ -646,6 +650,8 @@ namespace PepperDash.Essentials.Core
                 // Only the ones that are routing devices
                 var midpointTieLines = destinationTieLines.Where(t => t.SourcePort.ParentDevice is IRoutingInputsOutputs);
 
+                Debug.LogVerbose(destination, "Found {tieLineCount} tie lines to walk for {destinationKey}", midpointTieLines.Count(), destination.Key);
+
                 //Create a list for tracking already checked devices to avoid loops, if it doesn't already exist from previous iteration
                 if (alreadyCheckedDevices == null)
                     alreadyCheckedDevices = new List<IRoutingInputsOutputs>();
@@ -685,7 +691,7 @@ namespace PepperDash.Essentials.Core
 
             if (goodInputPort == null)
             {
-                Debug.LogVerbose(destination, "No route found to {0}", source.Key);
+                Debug.LogVerbose(destination, "No route found to {0} from destination {1} for type {2}", source.Key, destination.Key, signalType);
 
                 // Cache this as an impossible route
                 _impossibleRoutes.TryAdd(routeKey, 0);

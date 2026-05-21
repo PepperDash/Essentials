@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// <summary>
     /// Represents a MockVC
     /// </summary>
-    public class MockVC : VideoCodecBase, IRoutingSource, IHasCallHistory, IHasScheduleAwareness, IHasCallFavorites, IHasDirectory, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets
+    public class MockVC : VideoCodecBase, IRoutingSource, IHasCallHistory, IHasScheduleAwareness, IHasCallFavorites, IHasDirectory, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IRoutingInputs
     {
         /// <summary>
         /// Gets or sets the PropertiesConfig
