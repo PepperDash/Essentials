@@ -185,12 +185,15 @@ namespace PepperDash.Essentials.Core
 
                 partition.PartitionPresentFeedback.OutputChange += PartitionPresentFeedback_OutputChange;
 
+                this.LogDebug("ROOM_COMBINER_PARTITION_SETUP partition='{0}' defaultToManualMode={1} IsInAutoMode={2}", pConfig.Key, _propertiesConfig.defaultToManualMode, IsInAutoMode);
+
                 Partitions.Add(partition);
             }
         }
 
         private void PartitionPresentFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
+            this.LogDebug("ROOM_COMBINER_PARTITION_SENSOR_FIRED IsInAutoMode={0} — triggering debounce timer", IsInAutoMode);
             StartDebounceTimer();
         }
 
@@ -217,6 +220,15 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         private void DetermineRoomCombinationScenario()
         {
+            // RACE CONDITION FIX: Don't determine scenario from partition sensors if in manual mode
+            // Partition sensor events should not override defaultToManualMode: true setting
+            // This prevents automatic scenario changes when user has explicitly set manual mode
+            if (!IsInAutoMode)
+            {
+                this.LogDebug("ROOM_COMBINER_PARTITION_EVENT_IGNORED IsInAutoMode=false — manual mode prevents sensor-driven scenario changes");
+                return;
+            }
+
             if (_scenarioChangeDebounceTimer != null)
             {
                 _scenarioChangeDebounceTimer.Dispose();
