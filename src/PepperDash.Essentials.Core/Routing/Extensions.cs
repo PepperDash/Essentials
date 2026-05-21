@@ -374,12 +374,14 @@ namespace PepperDash.Essentials.Core
                     IndexTieLines();
                 }
 
-                var sinks = DeviceManager.AllDevices.OfType<IRoutingInputs>();
-                var sources = DeviceManager.AllDevices.OfType<IRoutingOutputs>();
+                var sinks = DeviceManager.AllDevices.OfType<IRoutingInputs>()
+                    .Where(d => !(d is IRoutingInputsOutputs)).ToList();
+                var sources = DeviceManager.AllDevices.OfType<IRoutingOutputs>()
+                    .Where(d => !(d is IRoutingInputsOutputs)).ToList();
 
-                foreach (var sink in sinks.Where(d => !(d is IRoutingInputsOutputs)))
+                foreach (var sink in sinks)
                 {
-                    foreach (var source in sources.Where(d => !(d is IRoutingInputsOutputs)))
+                    foreach (var source in sources)
                     {
                         foreach (var inputPort in sink.InputPorts)
                         {
@@ -392,10 +394,6 @@ namespace PepperDash.Essentials.Core
                                     continue;
                                 }
 
-                                Debug.LogVerbose("AudioOrSingleRoute Found: {audioRoute}", audioOrSingleRoute);
-
-                                Debug.LogVerbose("VideoRoute Found: {videoRoute}", videoRoute);
-
                                 if (audioOrSingleRoute != null)
                                 {
                                     // Only add routes that have actual switching steps
@@ -403,6 +401,10 @@ namespace PepperDash.Essentials.Core
                                     {
                                         continue;
                                     }
+
+                                    Debug.LogVerbose("Route mapped: {source} -> {sink} via {input}/{output}, type {type}",
+                                        source.Key, sink.Key,
+                                        inputPort.Key, outputPort.Key, audioOrSingleRoute.SignalType);
 
                                     // Add to the appropriate collection(s) based on signal type
                                     // Note: A single route descriptor with combined flags (e.g., AudioVideo) will be added once per matching signal type
@@ -434,6 +436,10 @@ namespace PepperDash.Essentials.Core
                                     {
                                         continue;
                                     }
+
+                                    Debug.LogVerbose("Video route mapped: {source} -> {sink} via {input}/{output}",
+                                        source.Key, sink.Key,
+                                        inputPort.Key, outputPort.Key);
 
                                     RouteDescriptors[eRoutingSignalType.Video].AddRouteDescriptor(videoRoute);
                                 }
@@ -648,10 +654,12 @@ namespace PepperDash.Essentials.Core
 
                 // No direct tie? Run back out on the inputs' attached devices... 
                 // Only the ones that are routing devices
-                var midpointTieLines = destinationTieLines.Where(t => t.SourcePort.ParentDevice is IRoutingInputsOutputs);
+                var midpointTieLines = destinationTieLines
+                    .Where(t => t.SourcePort.ParentDevice is IRoutingInputsOutputs)
+                    .ToList();
 
-                Debug.LogVerbose(destination, "Found {tieLineCount} tie lines to walk for {destinationKey}", midpointTieLines.Count(), destination.Key);
-
+                Debug.LogVerbose(destination, "Found {tieLineCount} tie lines to walk for {destinationKey}", midpointTieLines.Count, destination.Key);
+                
                 //Create a list for tracking already checked devices to avoid loops, if it doesn't already exist from previous iteration
                 if (alreadyCheckedDevices == null)
                     alreadyCheckedDevices = new List<IRoutingInputsOutputs>();
