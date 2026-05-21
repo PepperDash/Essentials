@@ -262,6 +262,11 @@ namespace PepperDash.Essentials.Core
             if (currentScenario != null)
             {
                 this.LogInformation("Found combination Scenario {scenarioKey}", currentScenario.Key);
+                if (!IsInAutoMode)
+                {
+                    this.LogDebug("ROOM_COMBINER_PARTITION_EVENT_IGNORED IsInAutoMode=false manual mode prevents sensor-driven scenario changes");
+                    return;
+                }
                 ChangeScenario(currentScenario);
             }
         }
@@ -459,6 +464,10 @@ namespace PepperDash.Essentials.Core
                         Debug.LogMessage(LogEventLevel.Debug, this, "Unable to find partition with key: '{0}'", partitionState.PartitionKey);
                     }
                 }
+                
+                // Update _currentScenario and fire event to notify subscribers
+                _currentScenario = scenario;
+                RoomCombinationScenarioChanged?.Invoke(this, new EventArgs());
             }
             else
             {
