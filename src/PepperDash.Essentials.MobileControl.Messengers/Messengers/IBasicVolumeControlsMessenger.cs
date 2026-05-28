@@ -9,19 +9,19 @@ using PepperDash.Essentials.Core;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
     /// <summary>
-    /// Represents a DeviceVolumeMessenger
+    /// Represents a IBasicVolumeControlsMessenger
     /// </summary>
-    public class DeviceVolumeMessenger : MessengerBase
+    public class IBasicVolumeControlsMessenger : MessengerBase
     {
         private readonly IBasicVolumeControls device;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceVolumeMessenger"/> class.
+        /// Initializes a new instance of the <see cref="IBasicVolumeControlsMessenger"/> class.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="messagePath">The message path.</param>
         /// <param name="device">The device.</param>
-        public DeviceVolumeMessenger(string key, string messagePath, IBasicVolumeControls device)
+        public IBasicVolumeControlsMessenger(string key, string messagePath, IBasicVolumeControls device)
             : base(key, messagePath, device)
         {
             this.device = device;
@@ -40,6 +40,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 {
                     Volume = new Volume
                     {
+                        Label = device.Name,
                         Level = feedbackDevice?.VolumeLevelFeedback.IntValue ?? -1,
                         Muted = feedbackDevice?.MuteFeedback.BoolValue ?? false,
                         HasMute = true,  // assume all devices have mute for now
@@ -50,6 +51,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 {
                     messageObj.Volume.RawValue = volumeAdvanced.RawVolumeLevel.ToString();
                     messageObj.Volume.Units = volumeAdvanced.Units;
+                    messageObj.Volume.MaxLevel = volumeAdvanced.MaxVolumeLevel;
                 }
 
                 PostStatusMessage(messageObj, id);
@@ -155,6 +157,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 {
                     message.Volume.RawValue = volumeAdvanced.RawVolumeLevel.ToString();
                     message.Volume.Units = volumeAdvanced.Units;
+                    message.Volume.MaxLevel = volumeAdvanced.MaxVolumeLevel;
                 }
 
                 PostStatusMessage(JToken.FromObject(message));
@@ -220,5 +223,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
         [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("units", NullValueHandling = NullValueHandling.Ignore)]
         public eVolumeLevelUnits? Units { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MaxLevel. Defaults to 65535, which is the standard for Crestron devices. This is used by the mobile control app to determine how to scale the volume level for display and input purposes.
+        /// </summary>
+        [JsonProperty("maxLevel", NullValueHandling = NullValueHandling.Ignore)]
+        public int MaxLevel { get; set; } = 65535;
     }
 }

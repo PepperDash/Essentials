@@ -14,6 +14,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Room.MobileControl;
+using PepperDash.Essentials.RoomBridges;
 
 namespace PepperDash.Essentials
 {
@@ -134,7 +135,7 @@ namespace PepperDash.Essentials
                 // ── Audio / Video ─────────────────────────────────────────────────────────
                 new MessengerFactoryEntry(
                     typeof(IBasicVolumeControls),
-                    (d, mp, ck) => new DeviceVolumeMessenger(
+                    (d, mp, ck) => new IBasicVolumeControlsMessenger(
                         $"{d.Key}-volume-{ck}", mp, (IBasicVolumeControls)d)
                 ),
                 new MessengerFactoryEntry(
@@ -403,6 +404,13 @@ namespace PepperDash.Essentials
                     typeof(ILevelControls),
                     (d, mp, ck) => new ILevelControlsMessenger(
                         $"{d.Key}-levelControls-{ck}", mp, (ILevelControls)d)
+                ),
+
+                // ── Essentials Room ─────────────────────────────────────────────────────────
+                new MessengerFactoryEntry(
+                    typeof(IEssentialsRoom),
+                    (d, mp, ck) => new MobileControlEssentialsRoomBridge(
+                        (IEssentialsRoom)d)
                 ),
             };
     }

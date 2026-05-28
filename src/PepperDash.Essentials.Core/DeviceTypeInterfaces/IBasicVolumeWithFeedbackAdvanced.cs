@@ -14,5 +14,10 @@ namespace PepperDash.Essentials.Core
     /// Gets the volume level units
     /// </summary>
     eVolumeLevelUnits Units { get; }
+
+    /// <summary>
+    /// Gets the maximum volume level
+    /// </summary>
+    int MaxVolumeLevel { get; }
   }
 }

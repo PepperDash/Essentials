@@ -8,7 +8,7 @@ namespace PepperDash.Essentials.Core;
 /// <summary>
 /// Represents a level control item in a list, which can be used to control volume or mute functionality.
 /// </summary>
-public class LevelControlListItem : AudioControlListItemBase
+public class LevelControlListItem : AudioConptrolListItemBase
 {
 
     /// <summary>
