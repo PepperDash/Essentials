@@ -76,6 +76,6 @@ public class DevicePropertiesConverter : JsonConverter
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
-        throw new NotImplementedException("SOD OFF HOSER");
+        throw new NotImplementedException();
     }
 }
