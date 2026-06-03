@@ -15,6 +15,7 @@ namespace PepperDash.Essentials.Core;
 [Description("The base Essentials Device Class")]
 public abstract class EssentialsDevice : Device
 {
+
     /// <summary>
     /// Event that fires when the device has completed initialization. This is useful for any setup that needs to occur after all devices have been activated.
     /// </summary>
