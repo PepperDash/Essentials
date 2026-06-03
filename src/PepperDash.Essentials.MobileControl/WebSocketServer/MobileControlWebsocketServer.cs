@@ -403,11 +403,11 @@ namespace PepperDash.Essentials.WebSocketServer
                     ip = csIpAddress.ToString();
                 }
 
-                var appUrl = $"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
+                var appUrl = $"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app/?token={touchpanel.Key}";
 
                 this.LogVerbose("Sending URL {appUrl} to touchpanel {touchpanelKey}", appUrl, touchpanel.Touchpanel.Key);
 
-                touchpanel.Touchpanel.SetAppUrl($"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}");
+                touchpanel.Touchpanel.SetAppUrl($"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app/?token={touchpanel.Key}");
             }
         }
 
@@ -1228,7 +1228,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 Config = _parent.GetConfigWithPluginVersion(),
                 CodeExpires = new DateTime().AddYears(1),
                 UserCode = bridge.UserCode,
-                UserAppUrl = string.Format("http://{0}:{1}/mc/app",
+                UserAppUrl = string.Format("http://{0}:{1}/mc/app/",
                 CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0),
                 Port),
                 WebSocketUrl = wsUrl,

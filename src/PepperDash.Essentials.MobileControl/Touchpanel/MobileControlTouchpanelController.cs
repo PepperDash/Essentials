@@ -519,7 +519,7 @@ namespace PepperDash.Essentials.Touchpanel
                 return false;
             }) ? csIpAddress.ToString() : processorIp;
 
-            var match = Regex.Match(url, @"^http://([^:/]+):\d+/mc/app\?token=.+$");
+            var match = Regex.Match(url, @"^http://([^:/]+):\d+/mc/app/?\?token=.+$");
             if (match.Success)
             {
                 string ipa = match.Groups[1].Value;
@@ -583,7 +583,17 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public void SetAppUrl(string url)
         {
-            _appUrl = GetUrlWithCorrectIp(url);
+            if(localConfig.DevelopmentServerAddress != null)
+            {
+                url = Regex.Replace(url, @"^http://[^/]+", $"http://{localConfig.DevelopmentServerAddress}");
+                this.LogInformation("Using development server IP, updated URL: {url}", url);
+            }
+            else
+            {
+                url = GetUrlWithCorrectIp(url);
+            }
+
+            _appUrl = url;
 
             AppUrlFeedback.FireUpdate();
         }
