@@ -6,7 +6,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Defines the contract for IDspPresets
     /// </summary>
-    public interface IDspPresets
+    public interface IDspPresets : IKeyed
     {
         /// <summary>
         /// Gets the Presets
