@@ -149,7 +149,7 @@ namespace PepperDash.Essentials.Core
 		public override bool Deactivate()
 		{
 			if (Port == null)
-				return false;
+				return true;
 
 			Port.SerialDataReceived -= Port_SerialDataReceived;
 			return Port.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
