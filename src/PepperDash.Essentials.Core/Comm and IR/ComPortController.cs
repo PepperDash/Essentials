@@ -114,17 +114,6 @@ namespace PepperDash.Essentials.Core
 			Port.SerialDataReceived += Port_SerialDataReceived;
 		}
 
-		/// <summary>
-		/// Destructor
-		/// </summary>
-		~ComPortController()
-		{
-			if (Port == null)
-				return;
-
-			Port.SerialDataReceived -= Port_SerialDataReceived;
-		}
-
 		void Port_SerialDataReceived(ComPort ReceivingComPort, ComPortSerialDataEventArgs args)
 		{
 			OnDataReceived(args.SerialData);
@@ -162,6 +151,7 @@ namespace PepperDash.Essentials.Core
 			if (Port == null)
 				return false;
 
+			Port.SerialDataReceived -= Port_SerialDataReceived;
 			return Port.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
 		}
 
