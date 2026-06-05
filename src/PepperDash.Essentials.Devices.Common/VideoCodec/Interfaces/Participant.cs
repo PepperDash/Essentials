@@ -16,6 +16,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
     public bool IsHost { get; set; }
 
     /// <summary>
+    /// Gets or sets the IsCohost
+    /// </summary>
+    public bool IsCohost { get; set; }
+
+    /// <summary>
     /// Gets or sets the IsMyself
     /// </summary>
     public bool IsMyself { get; set; }
