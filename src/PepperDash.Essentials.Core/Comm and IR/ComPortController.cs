@@ -119,6 +119,9 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		~ComPortController()
 		{
+			if (Port == null)
+				return;
+
 			Port.SerialDataReceived -= Port_SerialDataReceived;
 		}
 
@@ -156,6 +159,9 @@ namespace PepperDash.Essentials.Core
 		/// <inheritdoc />
 		public override bool Deactivate()
 		{
+			if (Port == null)
+				return false;
+
 			return Port.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
 		}
 
