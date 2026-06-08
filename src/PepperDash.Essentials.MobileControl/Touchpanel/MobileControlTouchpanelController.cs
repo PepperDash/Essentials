@@ -583,6 +583,12 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public void SetAppUrl(string url)
         {
+            if (string.IsNullOrEmpty(url))
+            {
+                this.LogInformation("AppUrl is null or empty, skipping SetAppUrl");
+                return;
+            }
+
             if(localConfig.DevelopmentServerAddress != null)
             {
                 url = Regex.Replace(url, @"^http://[^/]+", $"http://{localConfig.DevelopmentServerAddress}");
