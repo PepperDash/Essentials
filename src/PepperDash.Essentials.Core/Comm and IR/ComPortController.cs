@@ -50,6 +50,7 @@ namespace PepperDash.Essentials.Core
 			ComPort.ComPortSpec spec, EssentialsControlPropertiesConfig config) : base(key)
 		{
 			StreamDebugging = new CommunicationStreamDebugging(key);
+			CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
 
 			Spec = spec;
 
@@ -70,6 +71,8 @@ namespace PepperDash.Essentials.Core
 		public ComPortController(string key, ComPort port, ComPort.ComPortSpec spec)
 			: base(key)
 		{
+			CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
+
 			if (port == null)
 			{
 				Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Invalid com port, continuing but comms will not function");
@@ -140,6 +143,12 @@ namespace PepperDash.Essentials.Core
 			}
 
 			if (!eventSubscribed) Debug.LogMessage(LogEventLevel.Warning, this, "Received data but no handler is registered");
+		}
+
+		void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+		{
+			if (programEventType == eProgramStatusEventType.Stopping)
+				Deactivate();
 		}
 
 		/// <summary>
