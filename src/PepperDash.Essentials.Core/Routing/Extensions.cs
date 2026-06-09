@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -51,13 +50,6 @@ namespace PepperDash.Essentials.Core
         /// Indexed lookup of TieLines by source device key for faster queries.
         /// </summary>
         private static Dictionary<string, List<TieLine>> _tieLinesBySource;
-
-        /// <summary>
-        /// Cache of failed route attempts to avoid re-checking impossible paths.
-        /// Format: "sourceKey|destKey|signalType"
-        /// Uses ConcurrentDictionary as a thread-safe set (byte value is unused).
-        /// </summary>
-        private static readonly ConcurrentDictionary<string, byte> _impossibleRoutes = new ConcurrentDictionary<string, byte>();
 
         /// <summary>
         /// Indexes all TieLines by source and destination device keys for faster lookups.
@@ -119,29 +111,6 @@ namespace PepperDash.Essentials.Core
 
             // Fallback to LINQ if index not available
             return TieLineCollection.Default.Where(t => t.SourcePort.ParentDevice.Key == sourceKey);
-        }
-
-        /// <summary>
-        /// Creates a cache key for route impossibility tracking.
-        /// </summary>
-        /// <param name="sourceKey">Source device key</param>
-        /// <param name="destKey">Destination device key</param>
-        /// <param name="sourcePortKey">Source port key</param>
-        /// <param name="destinationPortKey">Destination port key</param>
-        /// <param name="type">Signal type</param>
-        /// <returns>Cache key string</returns>
-        private static string GetRouteKey(string sourceKey, string destKey, string sourcePortKey, string destinationPortKey, eRoutingSignalType type)
-        {
-            return $"{sourceKey}|{destKey}|{sourcePortKey}|{destinationPortKey}|{type}";
-        }
-
-        /// <summary>
-        /// Clears the impossible routes cache. Should be called if TieLines are added/removed at runtime.
-        /// </summary>
-        public static void ClearImpossibleRoutesCache()
-        {
-            _impossibleRoutes.Clear();
-            Debug.LogInformation("Impossible routes cache cleared");
         }
 
         /// <summary>
@@ -588,14 +557,6 @@ namespace PepperDash.Essentials.Core
         {
             cycle++;
 
-            // Check if this route has already been determined to be impossible
-            var routeKey = GetRouteKey(source.Key, destination.Key, sourcePort?.Key ?? "auto", destinationPort?.Key ?? "auto", signalType);
-            if (_impossibleRoutes.ContainsKey(routeKey))
-            {
-                Debug.LogVerbose("Route {0} is cached as impossible, skipping", routeKey);
-                return false;
-            }
-
             Debug.LogVerbose("GetRouteToSource: {cycle} {sourceKey}:{sourcePortKey}--> {destinationKey}:{destinationPortKey} {type}", null, cycle, source.Key, sourcePort?.Key ?? "auto", destination.Key, destinationPort?.Key ?? "auto", signalType.ToString());
 
             RoutingInputPort goodInputPort = null;
@@ -692,9 +653,6 @@ namespace PepperDash.Essentials.Core
             if (goodInputPort == null)
             {
                 Debug.LogVerbose(destination, "No route found to {0} from destination {1} for type {2}", source.Key, destination.Key, signalType);
-
-                // Cache this as an impossible route
-                _impossibleRoutes.TryAdd(routeKey, 0);
 
                 return false;
             }
