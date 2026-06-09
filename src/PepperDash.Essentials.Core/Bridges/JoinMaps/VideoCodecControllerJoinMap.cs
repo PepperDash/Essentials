@@ -347,7 +347,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
 			},
 			new JoinMetadata
 			{
-				Description = "Dial Phone",
+				Description = "Phone hook state FB",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.Digital
 			});
