@@ -1370,7 +1370,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
 			},
 			new JoinMetadata
 			{
-				Description = "Directory Select Row and Feedback",
+				Description = "Directory Select Row",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Analog
 			});
@@ -1413,7 +1413,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
         },
         new JoinMetadata
         {
-            Description = "Directory Select Row and Feedback",
+            Description = "Directory Selected Row FB",
             JoinCapabilities = eJoinCapabilities.ToSIMPL,
             JoinType = eJoinType.Analog
         });
