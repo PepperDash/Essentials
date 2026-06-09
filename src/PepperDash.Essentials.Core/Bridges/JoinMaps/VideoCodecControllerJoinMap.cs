@@ -442,22 +442,6 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
 				JoinType = eJoinType.Digital
 			});
 
-		/// <summary>
-		/// Directory Line Selected
-		/// </summary>
-		[JoinName("DirectoryLineSelected")]
-		public JoinDataComplete DirectoryLineSelected = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 101,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Directory Line Selected FB",
-				JoinCapabilities = eJoinCapabilities.FromSIMPL,
-				JoinType = eJoinType.Digital
-			});
 
 		/// <summary>
 		/// Directory Is Root
@@ -1873,7 +1857,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
 			},
 			new JoinMetadata
 			{
-				Description = "advance selfview position",
+				Description = "Current selfview PIP position string FB",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.Serial
 			});
