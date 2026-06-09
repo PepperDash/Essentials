@@ -1226,7 +1226,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
         new JoinMetadata
         {
             Description = "Toggles the participant's audio mute status",
-            JoinCapabilities = eJoinCapabilities.ToSIMPL,
+            JoinCapabilities = eJoinCapabilities.FromSIMPL,
             JoinType = eJoinType.Digital
         });
 
@@ -1240,7 +1240,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
         new JoinMetadata
         {
             Description = "Toggles the participant's video mute status",
-            JoinCapabilities = eJoinCapabilities.ToSIMPL,
+            JoinCapabilities = eJoinCapabilities.FromSIMPL,
             JoinType = eJoinType.Digital
         });
 
@@ -1254,7 +1254,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
         new JoinMetadata
         {
             Description = "Toggles the participant's pin status",
-            JoinCapabilities = eJoinCapabilities.ToSIMPL,
+            JoinCapabilities = eJoinCapabilities.FromSIMPL,
             JoinType = eJoinType.Digital
         });
 
@@ -1402,7 +1402,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
         new JoinMetadata
         {
             Description = "Reports the number of contact methods for the selected contact",
-            JoinCapabilities = eJoinCapabilities.FromSIMPL,
+            JoinCapabilities = eJoinCapabilities.ToSIMPL,
             JoinType = eJoinType.Analog
         });
 
@@ -1448,7 +1448,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
 			new JoinMetadata
 			{
 				Description = "Camera Preset Select",
-				JoinCapabilities = eJoinCapabilities.ToSIMPL,
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Analog
 			});
 
@@ -1462,7 +1462,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
         new JoinMetadata
         {
             Description = "Far End Preset Preset Select",
-            JoinCapabilities = eJoinCapabilities.ToSIMPL,
+            JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
             JoinType = eJoinType.Analog
         });
 
@@ -1578,7 +1578,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps;
 			new JoinMetadata
 			{
 				Description = "Value to dial when ManualDial digital join is pulsed",
-				JoinCapabilities = eJoinCapabilities.ToSIMPL,
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Serial
 			});
 
