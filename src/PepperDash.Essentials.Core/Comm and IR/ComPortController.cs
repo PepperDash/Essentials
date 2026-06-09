@@ -38,6 +38,8 @@ namespace PepperDash.Essentials.Core
 
 		ComPort Port;
 		ComPort.ComPortSpec Spec;
+		private readonly object _deactivateLock = new object();
+		private bool _isDeactivated;
 
 		/// <summary>
 		/// Constructor
@@ -148,7 +150,9 @@ namespace PepperDash.Essentials.Core
 		void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
 		{
 			if (programEventType == eProgramStatusEventType.Stopping)
+			{
 				Deactivate();
+			}
 		}
 
 		/// <summary>
@@ -157,6 +161,16 @@ namespace PepperDash.Essentials.Core
 		/// <inheritdoc />
 		public override bool Deactivate()
 		{
+			lock (_deactivateLock)
+			{
+				if (_isDeactivated)
+					return true;
+
+				_isDeactivated = true;
+			}
+
+			CrestronEnvironment.ProgramStatusEventHandler -= CrestronEnvironment_ProgramStatusEventHandler;
+
 			if (Port == null)
 				return true;
 
