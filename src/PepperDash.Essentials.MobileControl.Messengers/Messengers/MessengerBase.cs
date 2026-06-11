@@ -84,19 +84,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             : this(key, messagePath)
         {
             _device = device;
-
-            _deviceInterfaces = GetInterfaces(_device as Device);
         }
 
-        /// <summary>
-        /// Gets the interfaces implmented on the device
-        /// </summary>
-        /// <param name="device"></param>
-        /// <returns></returns>
-        private List<string> GetInterfaces(Device device)
-        {
-            return device?.GetType().GetInterfaces().Select((i) => i.Name).ToList() ?? new List<string>();
-        }
 
         /// <summary>
         /// Registers this messenger with appserver controller
@@ -261,6 +250,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 message.Key = _device.Key;
 
                 message.Name = _device.Name;
+
+                message.MessageBasePath = MessagePath;
 
                 var token = JToken.FromObject(message);
 
