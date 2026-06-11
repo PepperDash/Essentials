@@ -94,6 +94,5 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         [JsonProperty("isInCall", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsInCall { get; set; }
-
     }
 }
