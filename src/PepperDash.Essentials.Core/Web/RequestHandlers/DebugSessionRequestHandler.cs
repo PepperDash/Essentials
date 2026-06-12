@@ -58,15 +58,18 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     // Start the WS Server
                     Debug.WebsocketSink.StartServerAndSetPort(port);
                     Debug.SetWebSocketMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
+                }
 
-                    // Attempt to forward the port to the CS LAN
-                    try
+                // Attempt to get the CS LAN IP and forward the port
+                try
+                {
+                    var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
+                        EthernetAdapterType.EthernetCSAdapter);
+                    csIp = CrestronEthernetHelper.GetEthernetParameter(
+                        CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
+                    if (port > 0)
                     {
-                        var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
-                            EthernetAdapterType.EthernetCSAdapter);
-                        csIp = CrestronEthernetHelper.GetEthernetParameter(
-                            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
-
                         var result = CrestronEthernetHelper.AddPortForwarding(
                             (ushort)port, (ushort)port, csIp,
                             CrestronEthernetHelper.ePortMapTransport.TCP);
@@ -80,25 +83,26 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                             Debug.LogMessage(LogEventLevel.Information, "Port {0} forwarded to CS LAN for debug websocket", port);
                         }
                     }
-                    catch (ArgumentException)
-                    {
-                        Debug.LogMessage(LogEventLevel.Debug, "This processor does not have a CS LAN adapter; skipping port forwarding");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogMessage(LogEventLevel.Warning, "Error automatically forwarding debug websocket port to CS LAN: {0}", ex.Message);
-                    }
+                }
+                catch (ArgumentException)
+                {
+                    Debug.LogMessage(LogEventLevel.Debug, "This processor does not have a CS LAN adapter; skipping port forwarding");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogMessage(LogEventLevel.Warning, "Error automatically forwarding debug websocket port to CS LAN: {0}", ex.Message);
                 }
 
                 var url = Debug.WebsocketSink.Url;
 
-                object data = new
+                var data = new
                 {
                     url = Debug.WebsocketSink.Url,
-                    csLanUrl = csIp != null ? url.Replace(ip, csIp) : null
+                    fallbackUrl = csIp != null ? url.Replace(csIp, ip) : null
                 };
 
                 Debug.LogMessage(LogEventLevel.Information, "Debug Session URL: {0}", url);
+                Debug.LogMessage(LogEventLevel.Information, "Fallback Debug Session URL: {0}", data.fallbackUrl);
 
                 // Return the port number with the full url of the WS Server
                 var res = JsonConvert.SerializeObject(data);
