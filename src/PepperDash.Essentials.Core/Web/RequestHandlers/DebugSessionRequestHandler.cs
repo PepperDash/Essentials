@@ -17,7 +17,10 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
     /// Represents a DebugSessionRequestHandler
     /// </summary>
     public class DebugSessionRequestHandler : WebApiBaseRequestHandler
-    {    
+    {
+        private CTimer _portForwardTimeoutTimer;
+        private readonly object _timerLock = new object();
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -81,6 +84,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                         else
                         {
                             Debug.LogMessage(LogEventLevel.Information, "Port {0} forwarded to CS LAN for debug websocket", port);
+                            StartPortForwardTimeout(port, csIp);
                         }
                     }
                 }
@@ -126,6 +130,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// <param name="context"></param>
         protected override void HandlePost(HttpCwsContext context)
         {
+            CancelPortForwardTimeout();
+
             var port = Debug.WebsocketSink.Port;
 
             Debug.WebsocketSink.StopServer();
@@ -172,6 +178,56 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
             context.Response.End();
 
             Debug.LogMessage(LogEventLevel.Information, "Websocket Debug Session Stopped");
+        }
+
+        private void StartPortForwardTimeout(int port, string csIp)
+        {
+            lock (_timerLock)
+            {
+                _portForwardTimeoutTimer?.Dispose();
+                _portForwardTimeoutTimer = new CTimer(_ =>
+                {
+                    if (Debug.WebsocketSink.HasActiveConnections)
+                    {
+                        Debug.LogMessage(LogEventLevel.Debug, "Debug websocket has active connections; keeping port forward");
+                        return;
+                    }
+
+                    Debug.LogMessage(LogEventLevel.Information, "No debug websocket connection within 30 seconds; removing port forward for port {0}", port);
+
+                    try
+                    {
+                        var result = CrestronEthernetHelper.RemovePortForwarding(
+                            (ushort)port, (ushort)port, csIp,
+                            CrestronEthernetHelper.ePortMapTransport.TCP);
+
+                        if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                        {
+                            Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding on timeout: {0}", result);
+                        }
+                        else
+                        {
+                            Debug.LogMessage(LogEventLevel.Information, "Port forwarding for port {0} removed due to timeout", port);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding on timeout: {0}", ex.Message);
+                    }
+                }, 30000);
+            }
+        }
+
+        /// <summary>
+        /// Cancels the port forward timeout timer if a session is being explicitly stopped.
+        /// </summary>
+        private void CancelPortForwardTimeout()
+        {
+            lock (_timerLock)
+            {
+                _portForwardTimeoutTimer?.Dispose();
+                _portForwardTimeoutTimer = null;
+            }
         }
 
     }
