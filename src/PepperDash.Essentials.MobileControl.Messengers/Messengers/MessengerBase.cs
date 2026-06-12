@@ -264,6 +264,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                 message.Name = _device.Name;
 
+                message.MessageBasePath = MessagePath;
+
+
                 var token = JToken.FromObject(message);
 
                 PostStatusMessage(token, MessagePath, clientId);
