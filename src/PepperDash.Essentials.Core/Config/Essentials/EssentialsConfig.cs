@@ -101,6 +101,20 @@ public class VersionData
     public NugetVersion Essentials { get; set; }
 
     /// <summary>
+    /// Gets or sets the list of UserInterfaces
+    /// </summary>
+    [JsonProperty("userInterfaces")]
+    public List<AppVersion> UserInterfaces { get; set; }
+
+    /// <summary>
+    /// Gets or sets the TouchpanelWrapperApp version
+    /// This is the .ch5z app that gets loaded to a Crestron touch panel that allows it 
+    /// to run an HTML5 user interface.
+    /// </summary>
+    [JsonProperty("touchpanelWrapperApp")]
+    public AppVersion TouchpanelWrapperApp { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of Packages
     /// </summary>
     [JsonProperty("packages")]
@@ -111,9 +125,26 @@ public class VersionData
     /// </summary>
     public VersionData()
     {
+        UserInterfaces = new List<UserInterfaces>();
         Packages = new List<NugetVersion>();
     }
 }
+
+public class AppVersion
+{
+    /// <summary>
+    /// Gets or sets the Version
+    /// </summary>
+    [JsonProperty("version")]
+    public string Version { get; set; }
+
+    /// <summary>
+    /// Gets or sets the RepoUrl
+    /// </summary>
+    [JsonProperty("repoUrl")]
+    public string RepoUrl { get; set; }
+}
+
 
 /// <summary>
 /// Represents a NugetVersion
@@ -131,10 +162,16 @@ public class NugetVersion
     /// </summary>
     [JsonProperty("packageId")]
     public string PackageId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the RepoUrl
+    /// </summary>
+    [JsonProperty("repoUrl")]
+    public string RepoUrl { get; set; }
 }
 
 /// <summary>
-/// 
+/// Represents the configuration for a system and its template
 /// </summary>
 public class SystemTemplateConfigs
 {
