@@ -348,9 +348,9 @@ namespace PepperDash.Essentials.Core
                 var sources = DeviceManager.AllDevices.OfType<IRoutingOutputs>()
                     .Where(d => !(d is IRoutingInputsOutputs)).ToList();
 
-                foreach (var sink in sinks)
+                foreach (var sink in sinks.Where(d => !(d is IRoutingInputsOutputs)))
                 {
-                    foreach (var source in sources)
+                    foreach (var source in sources.Where(d => !(d is IRoutingInputsOutputs)))
                     {
                         foreach (var inputPort in sink.InputPorts)
                         {
@@ -362,6 +362,10 @@ namespace PepperDash.Essentials.Core
                                 {
                                     continue;
                                 }
+
+                                Debug.LogVerbose("AudioOrSingleRoute Found: {audioRoute}", audioOrSingleRoute);
+
+                                Debug.LogVerbose("VideoRoute Found: {videoRoute}", videoRoute);
 
                                 if (audioOrSingleRoute != null)
                                 {

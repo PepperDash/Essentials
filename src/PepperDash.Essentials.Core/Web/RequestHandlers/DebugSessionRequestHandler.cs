@@ -57,6 +57,36 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     // Start the WS Server
                     Debug.WebsocketSink.StartServerAndSetPort(port);
                     Debug.SetWebSocketMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
+
+                    // Attempt to forward the port to the CS LAN
+                    try
+                    {
+                        var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
+                            EthernetAdapterType.EthernetCSAdapter);
+                        var csIp = CrestronEthernetHelper.GetEthernetParameter(
+                            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
+                        var result = CrestronEthernetHelper.AddPortForwarding(
+                            (ushort)port, (ushort)port, csIp,
+                            CrestronEthernetHelper.ePortMapTransport.TCP);
+
+                        if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                        {
+                            Debug.LogMessage(LogEventLevel.Warning, "Error adding port forwarding for debug websocket: {0}", result);
+                        }
+                        else
+                        {
+                            Debug.LogMessage(LogEventLevel.Information, "Port {0} forwarded to CS LAN for debug websocket", port);
+                        }
+                    }
+                    catch (ArgumentException)
+                    {
+                        Debug.LogMessage(LogEventLevel.Debug, "This processor does not have a CS LAN adapter; skipping port forwarding");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogMessage(LogEventLevel.Warning, "Error automatically forwarding debug websocket port to CS LAN: {0}", ex.Message);
+                    }
                 }
 
                 var url = Debug.WebsocketSink.Url;
@@ -90,7 +120,39 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// <param name="context"></param>
         protected override void HandlePost(HttpCwsContext context)
         {
+            var port = Debug.WebsocketSink.Port;
+
             Debug.WebsocketSink.StopServer();
+
+            // Remove the port forwarding entry
+            try
+            {
+                var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
+                    EthernetAdapterType.EthernetCSAdapter);
+                var csIp = CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
+                var result = CrestronEthernetHelper.RemovePortForwarding(
+                    (ushort)port, (ushort)port, csIp,
+                    CrestronEthernetHelper.ePortMapTransport.TCP);
+
+                if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                {
+                    Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for debug websocket: {0}", result);
+                }
+                else
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Port forwarding for port {0} removed", port);
+                }
+            }
+            catch (ArgumentException)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, "This processor does not have a CS LAN adapter; skipping port forwarding removal");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, "Error removing debug websocket port forwarding: {0}", ex.Message);
+            }
 
             context.Response.StatusCode = 200;
             context.Response.StatusDescription = "OK";

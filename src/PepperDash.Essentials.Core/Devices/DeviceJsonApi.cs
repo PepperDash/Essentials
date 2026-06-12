@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core
@@ -176,7 +177,20 @@ namespace PepperDash.Essentials.Core
         {
             if (!conversionType.IsEnum)
             {
-                return Convert.ChangeType(value, conversionType, System.Globalization.CultureInfo.InvariantCulture);
+                if (conversionType == typeof(byte[]) && value is string byteString)
+                {
+                    var unescaped = UnescapeString(byteString);
+                    return System.Text.Encoding.GetEncoding(28591).GetBytes(unescaped);
+                }
+
+                var converted = Convert.ChangeType(value, conversionType, System.Globalization.CultureInfo.InvariantCulture);
+
+                if (conversionType == typeof(string) && converted is string s)
+                {
+                    return UnescapeString(s);
+                }
+
+                return converted;
             }
 
             var stringValue = Convert.ToString(value);
@@ -187,6 +201,32 @@ namespace PepperDash.Essentials.Core
                     String.Format("{0} cannot be converted to a string prior to conversion to enum"));
             }
             return Enum.Parse(conversionType, stringValue, true);
+        }
+
+        /// <summary>
+        /// Processes escape sequences in a string, converting sequences like \r, \n, \t, \xHH
+        /// to their corresponding non-printable ASCII characters.
+        /// </summary>
+        private static string UnescapeString(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            return Regex.Replace(input, @"\\(r|n|t|\\|x[0-9A-Fa-f]{2})", match =>
+            {
+                var seq = match.Groups[1].Value;
+                switch (seq)
+                {
+                    case "r": return "\r";
+                    case "n": return "\n";
+                    case "t": return "\t";
+                    case "\\": return "\\";
+                    default:
+                        // \xHH hex escape
+                        var hex = seq.Substring(1);
+                        return ((char)Convert.ToInt32(hex, 16)).ToString();
+                }
+            });
         }
 
         /// <summary>
