@@ -48,6 +48,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
 
                 var port = 0;
+                string csIp = null;
 
                 if (!Debug.WebsocketSink.IsRunning)
                 {
@@ -63,7 +64,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     {
                         var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
                             EthernetAdapterType.EthernetCSAdapter);
-                        var csIp = CrestronEthernetHelper.GetEthernetParameter(
+                        csIp = CrestronEthernetHelper.GetEthernetParameter(
                             CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
 
                         var result = CrestronEthernetHelper.AddPortForwarding(
@@ -93,7 +94,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
                 object data = new
                 {
-                    url = Debug.WebsocketSink.Url
+                    url = Debug.WebsocketSink.Url,
+                    csLanUrl = csIp != null ? url.Replace(ip, csIp) : null
                 };
 
                 Debug.LogMessage(LogEventLevel.Information, "Debug Session URL: {0}", url);
