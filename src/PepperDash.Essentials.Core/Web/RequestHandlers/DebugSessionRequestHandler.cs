@@ -132,17 +132,24 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 var csIp = CrestronEthernetHelper.GetEthernetParameter(
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
 
-                var result = CrestronEthernetHelper.RemovePortForwarding(
-                    (ushort)port, (ushort)port, csIp,
-                    CrestronEthernetHelper.ePortMapTransport.TCP);
-
-                if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                if (port <= 0)
                 {
-                    Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for debug websocket: {0}", result);
+                    Debug.LogMessage(LogEventLevel.Debug, "Debug websocket port is not set; skipping port forwarding removal");
                 }
                 else
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Port forwarding for port {0} removed", port);
+                    var result = CrestronEthernetHelper.RemovePortForwarding(
+                        (ushort)port, (ushort)port, csIp,
+                        CrestronEthernetHelper.ePortMapTransport.TCP);
+
+                    if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                    {
+                        Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for debug websocket: {0}", result);
+                    }
+                    else
+                    {
+                        Debug.LogMessage(LogEventLevel.Information, "Port forwarding for port {0} removed", port);
+                    }
                 }
             }
             catch (ArgumentException)
