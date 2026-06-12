@@ -125,7 +125,8 @@ public class VersionData
     /// </summary>
     public VersionData()
     {
-        UserInterfaces = new List<UserInterfaces>();
+        UserInterfaces = new List<AppVersion>();
+        TouchpanelWrapperApp = new AppVersion();
         Packages = new List<NugetVersion>();
     }
 }
