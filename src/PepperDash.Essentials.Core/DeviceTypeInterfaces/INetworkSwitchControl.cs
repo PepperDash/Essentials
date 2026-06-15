@@ -95,7 +95,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         VlanChangeInProgress,
 
         /// <summary>
-        /// Indicates that the access VLAN on a port has changed, either through a successful call to SetPortVlan
+        /// Indicates that the access VLAN on a port has changed, either through a successful call to SetPortVlan or an external change detected by polling.
         /// </summary>
         VlanChanged,
 
