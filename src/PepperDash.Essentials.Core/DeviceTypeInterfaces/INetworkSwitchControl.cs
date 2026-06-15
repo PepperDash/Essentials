@@ -115,7 +115,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         PoeEnableInProgress,
 
         /// <summary>
-        /// Indicates that the PoE state on a port has changed, either through a successful call to SetPortPoeState
+        /// Indicates that PoE has been enabled on the port, either through a successful call to SetPortPoeState or an external change detected by polling.
         /// </summary>
         PoEEnabled
     }
