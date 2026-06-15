@@ -80,7 +80,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     }
 
     /// <summary>
-    /// Event arguments for port state changes on a network switch, such as VLAN changes or PoE state changes.
+    /// Enumeration of network switch port state change event types (e.g. VLAN changes or PoE state changes).
     /// </summary>
     public enum NetworkSwitchPortEventType
     {
