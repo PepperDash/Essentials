@@ -251,6 +251,16 @@ namespace PepperDash.Essentials
                     (d, mp, ck) => new IDialerCallStatusMessenger(
                         $"{d.Key}-audioCodec-{ck}", (IDialerCallStatus)d, mp)
                 ),
+                new MessengerFactoryEntry(
+                    typeof(IAudioCodecInfo),
+                    (d, mp, ck) => new IAudioCodecInfoMessenger(
+                        $"{d.Key}-audioCodecInfo-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IAudioCodecPhonebook),
+                    (d, mp, ck) => new IAudioCodecPhonebookMessenger(
+                        $"{d.Key}-audioCodecPhonebook-{ck}", mp, d)
+                ),
 
                 // ── Set-top box controls ──────────────────────────────────────────────────
                 new MessengerFactoryEntry(

@@ -281,84 +281,92 @@ public class DeviceJsonApi
     /// </summary>
     public static object FindObjectOnPath(string deviceObjectPath)
     {
-        var path = deviceObjectPath.Split('.');
-
-        var dev = DeviceManager.GetDeviceForKey(path[0]);
-        if (dev == null)
+        try
         {
-            Debug.LogMessage(LogEventLevel.Information, "Device {0} not found", path[0]);
-            return null;
-        }
+            var path = deviceObjectPath.Split('.');
 
-        // loop through any dotted properties
-        object obj = dev;
-        if (path.Length > 1)
-        {
-            for (int i = 1; i < path.Length; i++)
+            var dev = DeviceManager.GetDeviceForKey(path[0]);
+            if (dev == null)
             {
-                var objName = path[i];
-                string indexStr = null;
-                var indexOpen = objName.IndexOf('[');
-                if (indexOpen != -1)
-                {
-                    var indexClose = objName.IndexOf(']');
-                    if (indexClose == -1)
-                    {
-                        Debug.LogMessage(LogEventLevel.Information, dev, "ERROR Unmatched index brackets");
-                        return null;
-                    }
-                    // Get the index and strip quotes if any
-                    indexStr = objName.Substring(indexOpen + 1, indexClose - indexOpen - 1).Replace("\"", "");
-                    objName = objName.Substring(0, indexOpen);
-                    Debug.LogMessage(LogEventLevel.Information, dev, "  Checking for collection '{0}', index '{1}'", objName, indexStr);
-                }
+                Debug.LogMessage(LogEventLevel.Information, "Device {0} not found", path[0]);
+                return null;
+            }
 
-                Type oType = obj.GetType();
-                var prop = oType.GetProperty(objName);
-                if (prop == null)
+            // loop through any dotted properties
+            object obj = dev;
+            if (path.Length > 1)
+            {
+                for (int i = 1; i < path.Length; i++)
                 {
-                    Debug.LogMessage(LogEventLevel.Information, dev, "Property {0} not found on {1}", objName, path[i - 1]);
-                    return null;
-                }
-                // if there's an index, try to get the property
-                if (indexStr != null)
-                {
-                    if (!typeof(ICollection).IsAssignableFrom(prop.PropertyType))
+                    var objName = path[i];
+                    string indexStr = null;
+                    var indexOpen = objName.IndexOf('[');
+                    if (indexOpen != -1)
                     {
-                        Debug.LogMessage(LogEventLevel.Information, dev, "Property {0} is not collection", objName);
-                        return null;
-                    }
-                    var collection = prop.GetValue(obj, null) as ICollection;
-                    // Get the indexed items "property"
-                    var indexedPropInfo = prop.PropertyType.GetProperty("Item");
-                    // These are the parameters for the indexing. Only care about one
-                    var indexParams = indexedPropInfo.GetIndexParameters();
-                    if (indexParams.Length > 0)
-                    {
-                        Debug.LogMessage(LogEventLevel.Information, "  Indexed, param type: {0}", indexParams[0].ParameterType.Name);
-                        var properParam = Convert.ChangeType(indexStr, indexParams[0].ParameterType,
-                            System.Globalization.CultureInfo.InvariantCulture);
-                        try
+                        var indexClose = objName.IndexOf(']');
+                        if (indexClose == -1)
                         {
-                            obj = indexedPropInfo.GetValue(collection, new object[] { properParam });
-                        }
-                        // if the index is bad, catch it here.
-                        catch (TargetInvocationException e)
-                        {
-                            if (e.InnerException is ArgumentOutOfRangeException)
-                                Debug.LogMessage(LogEventLevel.Information, "  Index Out of range");
-                            else if (e.InnerException is KeyNotFoundException)
-                                Debug.LogMessage(LogEventLevel.Information, "  Key not found");
+                            Debug.LogMessage(LogEventLevel.Information, dev, "ERROR Unmatched index brackets");
                             return null;
                         }
+                        // Get the index and strip quotes if any
+                        indexStr = objName.Substring(indexOpen + 1, indexClose - indexOpen - 1).Replace("\"", "");
+                        objName = objName.Substring(0, indexOpen);
+                        Debug.LogMessage(LogEventLevel.Information, dev, "  Checking for collection '{0}', index '{1}'", objName, indexStr);
                     }
 
+                    Type oType = obj.GetType();
+                    var prop = oType.GetProperty(objName);
+                    if (prop == null)
+                    {
+                        Debug.LogMessage(LogEventLevel.Information, dev, "Property {0} not found on {1}", objName, path[i - 1]);
+                        return null;
+                    }
+                    // if there's an index, try to get the property
+                    if (indexStr != null)
+                    {
+                        if (!typeof(ICollection).IsAssignableFrom(prop.PropertyType))
+                        {
+                            Debug.LogMessage(LogEventLevel.Information, dev, "Property {0} is not collection", objName);
+                            return null;
+                        }
+                        var collection = prop.GetValue(obj, null) as ICollection;
+                        // Get the indexed items "property"
+                        var indexedPropInfo = prop.PropertyType.GetProperty("Item");
+                        // These are the parameters for the indexing. Only care about one
+                        var indexParams = indexedPropInfo.GetIndexParameters();
+                        if (indexParams.Length > 0)
+                        {
+                            Debug.LogMessage(LogEventLevel.Information, "  Indexed, param type: {0}", indexParams[0].ParameterType.Name);
+                            var properParam = Convert.ChangeType(indexStr, indexParams[0].ParameterType,
+                                System.Globalization.CultureInfo.InvariantCulture);
+                            try
+                            {
+                                obj = indexedPropInfo.GetValue(collection, new object[] { properParam });
+                            }
+                            // if the index is bad, catch it here.
+                            catch (TargetInvocationException e)
+                            {
+                                if (e.InnerException is ArgumentOutOfRangeException)
+                                    Debug.LogMessage(LogEventLevel.Information, "  Index Out of range");
+                                else if (e.InnerException is KeyNotFoundException)
+                                    Debug.LogMessage(LogEventLevel.Information, "  Key not found");
+                                return null;
+                            }
+                        }
+
+                    }
+                    else
+                        obj = prop.GetValue(obj, null);
                 }
-                else
-                    obj = prop.GetValue(obj, null);
             }
+            return obj;
         }
-        return obj;
+        catch (Exception e)
+        {
+            Debug.LogMessage(LogEventLevel.Error, e, "Error finding object on path {deviceObjectPath}", deviceObjectPath);
+            return null;
+        }
     }
 
     /// <summary>

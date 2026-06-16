@@ -28,6 +28,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             : base(key, messagePath, device)
         {
             _phonebook = device as IAudioCodecPhonebook ?? throw new ArgumentNullException(nameof(device));
+
+            _phonebook.ListChanged += (sender, args) => SendFullStatus();
         }
 
         /// <inheritdoc />
@@ -43,7 +45,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 var entry = content.ToObject<SetPhonebookEntryContent>();
                 _phonebook.SetPhonebookEntry(entry.Index, entry.Name, entry.Number);
-                SendFullStatus();
+            });
+
+            AddAction("/dialEntry", (id, content) =>
+            {
+                var request = content.ToObject<MobileControlSimpleContent<int>>();
+                _phonebook.DialPhonebookEntry(request.Value);
             });
         }
 

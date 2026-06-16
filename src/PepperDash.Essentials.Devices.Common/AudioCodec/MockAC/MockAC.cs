@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -8,15 +9,34 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec;
 
-public class MockAC : AudioCodecBase
+public class MockAC : AudioCodecBase, IAudioCodecPhonebook
 {
+    public event EventHandler<PhonebookListChangedEventArgs> ListChanged;
+
+    public List<CodecPhonebookEntry> PhonebookEntries { get; }
+
     public MockAC(string key, string name, MockAcPropertiesConfig props)
         : base(key, name)
     {
         CodecInfo = new MockAudioCodecInfo();
 
         CodecInfo.PhoneNumber = props.PhoneNumber;
+
+        PhonebookEntries = new List<CodecPhonebookEntry>
+        {
+            new() { Name = "Judge Chambers", Number = "5551001" },
+            new() { Name = "Clerk Office", Number = "5551002" },
+            new() { Name = "Court Reporter", Number = "5551003" },
+            new() { Name = "Jury Room", Number = "5551004" },
+            new() { Name = "Witness Room", Number = "5551005" },
+            new() { Name = "Prosecution", Number = "5551006" },
+            new() { Name = "Defense Counsel", Number = "5551007" },
+            new() { Name = "Bailiff Station", Number = "5551008" },
+            new() { Name = "Conference Room A", Number = "5551009" },
+            new() { Name = "Conference Room B", Number = "5551010" },
+        };
     }
+
 
     public override void Dial(string number)
     {
@@ -77,6 +97,29 @@ public class MockAC : AudioCodecBase
     public override void SendDtmf(string s)
     {
         Debug.LogMessage(LogEventLevel.Debug, this, "BEEP BOOP SendDTMF: {0}", s);
+    }
+
+    public void SetPhonebookEntry(int index, string name, string number)
+    {
+        if (index < 0 || index >= PhonebookEntries.Count)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, this, "SetPhonebookEntry: index {0} out of range", index);
+            return;
+        }
+
+        PhonebookEntries[index] = new CodecPhonebookEntry { Name = name, Number = number };
+        ListChanged?.Invoke(this, new PhonebookListChangedEventArgs(PhonebookEntries));
+    }
+
+    public void DialPhonebookEntry(int index)
+    {
+        if (index < 0 || index >= PhonebookEntries.Count)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, this, "DialPhonebookEntry: index {0} out of range", index);
+            return;
+        }
+
+        Dial(PhonebookEntries[index].Number);
     }
 
     /// <summary>
