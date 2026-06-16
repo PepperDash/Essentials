@@ -242,6 +242,12 @@ namespace PepperDash.Essentials
 
             AddPreActivationAction(() => LinkSystemMonitorToAppServer());
 
+            AddPreActivationAction(() =>
+            {
+                var actionMessenger = new DeviceActionMessenger("deviceActionMessenger-" + Key, "/action");
+                AddDeviceMessenger(actionMessenger);
+            });
+
             AddPreActivationAction(() => AddWebApiPaths());
 
             AddPreActivationAction(() =>

@@ -393,16 +393,19 @@ public class DeviceActionWrapper
     /// <summary>
     /// The key of the device to call the method on
     /// </summary>
+    [JsonProperty("deviceKey")]
     public string DeviceKey { get; set; }
 
     /// <summary>
     /// The name of the method to call
     /// </summary>
+    [JsonProperty("methodName")]
     public string MethodName { get; set; }
 
     /// <summary>
     /// The parameters to pass to the method. This should be an array of objects matching the parameters of the method being called. If the method has no parameters, this can be omitted or set to null.
     /// </summary>
+    [JsonProperty("params")]
     public object[] Params { get; set; }
 }
 
