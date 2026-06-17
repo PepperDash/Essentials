@@ -15,6 +15,8 @@ public class MockAC : AudioCodecBase, IAudioCodecPhonebook
 
     public List<CodecPhonebookEntry> PhonebookEntries { get; }
 
+    private int maxCalls = 2;
+
     public MockAC(string key, string name, MockAcPropertiesConfig props)
         : base(key, name)
     {
@@ -40,7 +42,7 @@ public class MockAC : AudioCodecBase, IAudioCodecPhonebook
 
     public override void Dial(string number)
     {
-        if (!IsInCall)
+        if (ActiveCalls.Count < maxCalls)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Dial: {0}", number);
             var call = new CodecActiveCallItem()
