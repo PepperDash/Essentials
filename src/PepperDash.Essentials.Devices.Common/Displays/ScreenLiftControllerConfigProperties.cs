@@ -41,5 +41,23 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         /// </summary>
         [JsonProperty("muteOnScreenUp")]
         public bool MuteOnScreenUp { get; set; }
+
+        /// <summary>
+        /// When true, this controller does NOT automatically lower when its assigned display powers on
+        /// (warms up). Manual Raise/Lower still work, and the power-off auto-raise is unaffected. Intended
+        /// for a projector screen that must not auto-drop in a public space for safety, while the projector
+        /// lift (a separate controller) can still drop automatically.
+        /// </summary>
+        [JsonProperty("disableAutoLowerOnPowerOn")]
+        public bool DisableAutoLowerOnPowerOn { get; set; }
+
+        /// <summary>
+        /// When true, this controller does NOT automatically raise when its assigned display powers off
+        /// (cools down). Manual Raise/Lower still work, and the power-on auto-lower is unaffected. The
+        /// companion to <see cref="DisableAutoLowerOnPowerOn"/>; together they make a controller fully
+        /// manual while leaving other controllers (e.g. the lift) on their default automatic behavior.
+        /// </summary>
+        [JsonProperty("disableAutoRaiseOnPowerOff")]
+        public bool DisableAutoRaiseOnPowerOff { get; set; }
     }
 }
