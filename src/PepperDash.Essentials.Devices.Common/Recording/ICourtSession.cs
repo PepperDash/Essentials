@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Plugin
+namespace PepperDash.Essentials.Devices.Common.Recording
 {
 	/// <summary>
 	/// Defines the contract for court session management including
