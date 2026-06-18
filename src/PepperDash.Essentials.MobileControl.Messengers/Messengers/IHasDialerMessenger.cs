@@ -47,6 +47,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 var s = content.ToObject<MobileControlSimpleContent<string>>();
                 _dialer.SendDtmf(s.Value);
             });
+
+            AddAction("/acceptCall", (id, content) => 
+            {
+                var callItem = content.ToObject<CodecActiveCallItem>();
+                _dialer.AcceptCall(callItem);                
+            });
+
+            AddAction("/rejectCall", (id, content) =>
+            {
+                var callItem = content.ToObject<CodecActiveCallItem>();
+                _dialer.RejectCall(callItem);
+            });
         }
 
         private void Dialer_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
@@ -55,7 +67,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 var state = new IHasDialerStateMessage
                 {
-                    IsInCall = _dialer.IsInCall
+                    IsInCall = _dialer.IsInCall,
+                    CallItem = e.CallItem
                 };
 
                 PostStatusMessage(state);
@@ -94,5 +107,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         [JsonProperty("isInCall", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsInCall { get; set; }
+
+        [JsonProperty("callItem", NullValueHandling = NullValueHandling.Ignore)]
+        public CodecActiveCallItem CallItem { get; set; }
     }
 }
