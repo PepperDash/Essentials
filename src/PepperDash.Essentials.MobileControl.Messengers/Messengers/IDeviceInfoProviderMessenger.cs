@@ -30,7 +30,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="key">A unique identifier for the messenger instance.</param>
         /// <param name="messagePath">The path used for sending and receiving messages.</param>
         /// <param name="device">An implementation of <see cref="IDeviceInfoProvider"/> that provides device-specific information.</param>
-        public IDeviceInfoProviderMessenger(string key, string messagePath, IDeviceInfoProvider device) : base(key, messagePath, device as Device)
+        public IDeviceInfoProviderMessenger(string key, string messagePath, IDeviceInfoProvider device) 
+            : base(key, messagePath, device as Device)
         {
             _deviceInfoProvider = device;
 
