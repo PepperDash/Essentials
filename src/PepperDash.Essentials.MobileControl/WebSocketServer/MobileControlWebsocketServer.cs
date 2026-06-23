@@ -1354,27 +1354,48 @@ namespace PepperDash.Essentials.WebSocketServer
                 }
             }
 
-            // Set ContentType based on file type
+            // Set ContentType based on file type. Use filePath so query params do not break extension checks.
             if (filePath.EndsWith(".html"))
             {
                 this.LogVerbose("Client requesting User App");
 
                 res.ContentType = "text/html";
             }
-            else
+            else if (filePath.EndsWith(".js"))
             {
-                if (path.EndsWith(".js"))
-                {
-                    res.ContentType = "application/javascript";
-                }
-                else if (path.EndsWith(".css"))
-                {
-                    res.ContentType = "text/css";
-                }
-                else if (path.EndsWith(".json"))
-                {
-                    res.ContentType = "application/json";
-                }
+                res.ContentType = "application/javascript";
+            }
+            else if (filePath.EndsWith(".css"))
+            {
+                res.ContentType = "text/css";
+            }
+            else if (filePath.EndsWith(".json"))
+            {
+                res.ContentType = "application/json";
+            }
+            else if (filePath.EndsWith(".svg"))
+            {
+                res.ContentType = "image/svg+xml";
+            }
+            else if (filePath.EndsWith(".png"))
+            {
+                res.ContentType = "image/png";
+            }
+            else if (filePath.EndsWith(".jpg") || filePath.EndsWith(".jpeg"))
+            {
+                res.ContentType = "image/jpeg";
+            }
+            else if (filePath.EndsWith(".gif"))
+            {
+                res.ContentType = "image/gif";
+            }
+            else if (filePath.EndsWith(".webp"))
+            {
+                res.ContentType = "image/webp";
+            }
+            else if (filePath.EndsWith(".ico"))
+            {
+                res.ContentType = "image/x-icon";
             }
 
             this.LogVerbose("Attempting to serve file: {filePath}", filePath);
