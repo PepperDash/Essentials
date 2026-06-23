@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// <summary>
     /// Represents a MockVC
     /// </summary>
-    public class MockVC : VideoCodecBase, IRoutingSource, IHasCallHistory, IHasScheduleAwareness, IHasCallFavorites, IHasDirectory, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets
+    public class MockVC : VideoCodecBase, IHasCallHistory, IHasScheduleAwareness, IHasCallFavorites, IHasDirectory, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IRoutingSinkWithFeedback
     {
         /// <summary>
         /// Gets or sets the PropertiesConfig
@@ -854,6 +854,32 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public void SelectFarEndPreset(int i)
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Selecting Far End Preset: {0}", i);
+        }
+
+        #endregion
+
+        #region IRoutingSinkWithFeedback Members
+
+        public RoutingInputPort CurrentInputPort { get; private set; }
+
+        public event InputChangedEventHandler InputChanged;
+
+        #endregion
+
+        #region ICurrentSources Members
+
+        public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; private set; } = new Dictionary<eRoutingSignalType, IRoutingSource>();
+
+        public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; } = new Dictionary<eRoutingSignalType, string>();
+
+        public event EventHandler<CurrentSourcesChangedEventArgs> CurrentSourcesChanged;
+
+        public void SetCurrentSource(eRoutingSignalType signalType, IRoutingSource sourceDevice)
+        {
+            CurrentSources.TryGetValue(signalType, out var previousSource);
+            CurrentSources[signalType] = sourceDevice;
+            CurrentSourceKeys[signalType] = sourceDevice?.Key;
+            CurrentSourcesChanged?.Invoke(this, new CurrentSourcesChangedEventArgs(signalType, previousSource, sourceDevice));
         }
 
         #endregion

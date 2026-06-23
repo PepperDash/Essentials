@@ -196,7 +196,7 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
                     return;
                 }
 
-                Debug.LogMessage(LogEventLevel.Information, "No debug websocket connection within 30 seconds; removing port forward for port {0}", port);
+                Debug.LogMessage(LogEventLevel.Information, "No debug websocket connection within timeout; removing port forward for port {0}", port);
 
                 try
                 {
@@ -217,7 +217,7 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
                 {
                     Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding on timeout: {0}", ex.Message);
                 }
-            }, 30000);
+            }, 120000);
         }
     }
 

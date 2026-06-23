@@ -210,7 +210,7 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
                 {
                     Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding on timeout: {0}", ex.Message);
                 }
-            }, 30000);
+            }, 120000);
         }
     }
 

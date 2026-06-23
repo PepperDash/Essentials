@@ -262,6 +262,7 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
             }
             Debug.LogInformation("Adding Debug Client Service");
             _httpsServer.AddWebSocketService<DebugClient>(_path);
+            _httpsServer.OnGet += HandleHttpGet;
             Debug.LogInformation("Assigning Log Info");
             _httpsServer.Log.Level = LogLevel.Trace;
             _httpsServer.Log.Output = WriteWebSocketInternalLog;
@@ -277,6 +278,16 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
             // Null out the server so callers can detect failure via IsRunning / Url null guards.
             _httpsServer = null;
         }
+    }
+
+    private void HandleHttpGet(object sender, HttpRequestEventArgs e)
+    {
+        var res = e.Response;
+        var body = System.Text.Encoding.UTF8.GetBytes(
+            "<html><body><h2>Certificate accepted.</h2><p>You can close this tab and return to the application.</p></body></html>");
+        res.ContentType = "text/html";
+        res.ContentLength64 = body.Length;
+        res.Close(body, true);
     }
 
     /// <summary>

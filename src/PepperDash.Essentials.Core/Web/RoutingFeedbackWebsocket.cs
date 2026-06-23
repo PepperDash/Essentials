@@ -113,6 +113,7 @@ public class RoutingFeedbackWebsocket : IKeyed
             _httpsServer.SslConfiguration.ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 
             _httpsServer.AddWebSocketService<RoutingFeedbackClient>(_path);
+            _httpsServer.OnGet += HandleHttpGet;
             _httpsServer.Log.Level = LogLevel.Warn;
             _httpsServer.Start();
 
@@ -336,6 +337,16 @@ public class RoutingFeedbackWebsocket : IKeyed
         if (service == null) return;
 
         service.Sessions.Broadcast(message);
+    }
+
+    private void HandleHttpGet(object sender, HttpRequestEventArgs e)
+    {
+        var res = e.Response;
+        var body = System.Text.Encoding.UTF8.GetBytes(
+            "<html><body><h2>Certificate accepted.</h2><p>You can close this tab and return to the application.</p></body></html>");
+        res.ContentType = "text/html";
+        res.ContentLength64 = body.Length;
+        res.Close(body, true);
     }
 
     private static X509Certificate2 LoadCert(string certPath, string certPassword)
