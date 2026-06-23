@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Timers;
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
@@ -11,6 +12,7 @@ using Newtonsoft.Json.Serialization;
 using PepperDash.Core;
 using Serilog.Events;
 using WebSocketSharp;
+using WebSocketSharp.Net;
 using WebSocketSharp.Server;
 
 namespace PepperDash.Essentials.Core.Web;
@@ -113,6 +115,7 @@ public class RoutingFeedbackWebsocket : IKeyed
             _httpsServer.SslConfiguration.ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 
             _httpsServer.AddWebSocketService<RoutingFeedbackClient>(_path, () => new RoutingFeedbackClient(this));
+            _httpsServer.OnGet += HandleHttpGet;
             _httpsServer.Log.Level = LogLevel.Warn;
             _httpsServer.Start();
 
@@ -335,6 +338,23 @@ public class RoutingFeedbackWebsocket : IKeyed
         if (service == null) return;
 
         service.Sessions.Broadcast(message);
+    }
+
+    private void HandleHttpGet(object sender, HttpRequestEventArgs e)
+    {
+        var res = e.Response;
+        res.ContentType = "text/html";
+        res.ContentEncoding = Encoding.UTF8;
+        res.StatusCode = 200;
+
+        const string html = @"<!DOCTYPE html>
+<html><head><title>Essentials Routing Feedback</title></head>
+<body style=""font-family:sans-serif;padding:2rem;text-align:center"">
+<h2>Certificate Accepted</h2>
+<p>You may close this tab and return to the configuration app.</p>
+</body></html>";
+
+        res.WriteContent(Encoding.UTF8.GetBytes(html));
     }
 
     private static X509Certificate2 LoadCert(string certPath, string certPassword)
