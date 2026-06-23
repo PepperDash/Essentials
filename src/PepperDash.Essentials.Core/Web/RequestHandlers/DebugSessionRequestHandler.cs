@@ -15,6 +15,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers;
 /// </summary>
 public class DebugSessionRequestHandler : WebApiBaseRequestHandler
 {
+    private CTimer _portForwardTimeoutTimer;
+    private readonly object _timerLock = new object();
 
     /// <summary>
     /// Constructor
@@ -45,6 +47,7 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
                 CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
 
             var port = 0;
+            string csIp = null;
 
             if (!Debug.WebsocketSink.IsRunning)
             {
@@ -54,6 +57,40 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
                 // Start the WS Server
                 Debug.WebsocketSink.StartServerAndSetPort(port);
                 Debug.SetWebSocketMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
+            }
+
+            // Attempt to get the CS LAN IP and forward the port
+            try
+            {
+                var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
+                    EthernetAdapterType.EthernetCSAdapter);
+                csIp = CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
+                if (port > 0)
+                {
+                    var result = CrestronEthernetHelper.AddPortForwarding(
+                        (ushort)port, (ushort)port, csIp,
+                        CrestronEthernetHelper.ePortMapTransport.TCP);
+
+                    if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                    {
+                        Debug.LogMessage(LogEventLevel.Warning, "Error forwarding port {0} to CS LAN: {1}", port, result);
+                    }
+                    else
+                    {
+                        Debug.LogMessage(LogEventLevel.Information, "Port {0} forwarded to CS LAN for debug websocket", port);
+                        StartPortForwardTimeout(port, csIp);
+                    }
+                }
+            }
+            catch (ArgumentException)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, "This processor does not have a CS LAN adapter; skipping port forwarding");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, "Error automatically forwarding debug websocket port to CS LAN: {0}", ex.Message);
             }
 
             if (!Debug.WebsocketSink.IsRunning)
@@ -67,12 +104,14 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
 
             var url = Debug.WebsocketSink.Url;
 
-            object data = new
+            var data = new
             {
-                url = Debug.WebsocketSink.Url
+                url = Debug.WebsocketSink.Url,
+                fallbackUrl = csIp != null ? url.Replace(csIp, ip) : null
             };
 
             Debug.LogMessage(LogEventLevel.Information, "Debug Session URL: {0}", url);
+            Debug.LogMessage(LogEventLevel.Information, "Fallback Debug Session URL: {0}", data.fallbackUrl);
 
             // Return the port number with the full url of the WS Server
             var res = JsonConvert.SerializeObject(data);
@@ -96,8 +135,41 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
     /// <param name="context"></param>
     protected override void HandlePost(HttpCwsContext context)
     {
+        CancelPortForwardTimeout();
+
+        var port = Debug.WebsocketSink.Port;
 
         Task.Run(() => Debug.WebsocketSink.StopServer());
+
+        // Remove port forwarding if CS LAN exists
+        try
+        {
+            var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
+                EthernetAdapterType.EthernetCSAdapter);
+            var csIp = CrestronEthernetHelper.GetEthernetParameter(
+                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
+            var result = CrestronEthernetHelper.RemovePortForwarding(
+                (ushort)port, (ushort)port, csIp,
+                CrestronEthernetHelper.ePortMapTransport.TCP);
+
+            if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for port {0}: {1}", port, result);
+            }
+            else
+            {
+                Debug.LogMessage(LogEventLevel.Information, "Port forwarding for port {0} removed", port);
+            }
+        }
+        catch (ArgumentException)
+        {
+            // No CS LAN adapter
+        }
+        catch (Exception ex)
+        {
+            Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding: {0}", ex.Message);
+        }
 
         context.Response.StatusCode = 200;
         context.Response.StatusDescription = "OK";
@@ -106,4 +178,53 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
         Debug.LogMessage(LogEventLevel.Information, "Websocket Debug Session Stopped");
     }
 
+    private void StartPortForwardTimeout(int port, string csIp)
+    {
+        lock (_timerLock)
+        {
+            _portForwardTimeoutTimer?.Dispose();
+            _portForwardTimeoutTimer = new CTimer(_ =>
+            {
+                if (Debug.WebsocketSink.HasActiveConnections)
+                {
+                    Debug.LogMessage(LogEventLevel.Debug, "Debug websocket has active connections; keeping port forward");
+                    return;
+                }
+
+                Debug.LogMessage(LogEventLevel.Information, "No debug websocket connection within 30 seconds; removing port forward for port {0}", port);
+
+                try
+                {
+                    var result = CrestronEthernetHelper.RemovePortForwarding(
+                        (ushort)port, (ushort)port, csIp,
+                        CrestronEthernetHelper.ePortMapTransport.TCP);
+
+                    if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                    {
+                        Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding on timeout: {0}", result);
+                    }
+                    else
+                    {
+                        Debug.LogMessage(LogEventLevel.Information, "Port forwarding for port {0} removed due to timeout", port);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding on timeout: {0}", ex.Message);
+                }
+            }, 30000);
+        }
+    }
+
+    /// <summary>
+    /// Cancels the port forward timeout timer if a session is being explicitly stopped.
+    /// </summary>
+    private void CancelPortForwardTimeout()
+    {
+        lock (_timerLock)
+        {
+            _portForwardTimeoutTimer?.Dispose();
+            _portForwardTimeoutTimer = null;
+        }
+    }
 }

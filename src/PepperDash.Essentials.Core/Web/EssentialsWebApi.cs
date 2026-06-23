@@ -190,6 +190,11 @@ public class EssentialsWebApi : EssentialsDevice
                 Name = "Get Routing Devices and TieLines",
                 RouteHandler = new GetRoutingDevicesAndTieLinesHandler()
             },
+            new HttpCwsRoute("routingFeedbackSession")
+            {
+                Name = "Routing Feedback WebSocket Session",
+                RouteHandler = new RoutingFeedbackSessionRequestHandler()
+            },
             new HttpCwsRoute("initializationExceptions")
             {
                 Name = "Get Initialization Exceptions",

@@ -61,10 +61,10 @@ public interface IRunDirectRouteAction
     /// <summary>
     /// Runs a direct route from a source to a destination with an optional signal type for routing.
     /// </summary>
-    /// <param name="sourceKey"></param>
-    /// <param name="destinationKey"></param>
+    /// <param name="source"></param>
+    /// <param name="destination"></param>
     /// <param name="type"></param>
-    void RunDirectRoute(string sourceKey, string destinationKey, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
+    void RunDirectRoute(string source, string destination, eRoutingSignalType type = eRoutingSignalType.AudioVideo);
 }
 
 /// <summary>

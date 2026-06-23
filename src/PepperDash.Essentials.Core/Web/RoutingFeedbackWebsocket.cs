@@ -1,0 +1,433 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using System.Timers;
+using Crestron.SimplSharp;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using PepperDash.Core;
+using Serilog.Events;
+using WebSocketSharp;
+using WebSocketSharp.Server;
+
+namespace PepperDash.Essentials.Core.Web;
+
+/// <summary>
+/// WebSocket service that broadcasts real-time routing state changes to connected clients.
+/// Subscribes to route-changed events on midpoint and sink devices and pushes updates
+/// to all connected WebSocket clients.
+/// </summary>
+public class RoutingFeedbackWebsocket : IKeyed
+{
+    private HttpServer _httpsServer;
+    private readonly string _path = "/routing/join/";
+    private const string _certificateName = "selfCres";
+    private const string _certificatePassword = "cres12345";
+    private const long DEBOUNCE_MS = 200;
+
+    private static string CertPath =>
+        $"{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}{_certificateName}.pfx";
+
+    private readonly Dictionary<string, Timer> _debounceTimers = new Dictionary<string, Timer>();
+
+    private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
+    {
+        ContractResolver = new CamelCasePropertyNamesContractResolver(),
+        NullValueHandling = NullValueHandling.Ignore
+    };
+
+    /// <inheritdoc/>
+    public string Key => "RoutingFeedbackWebsocket";
+
+    /// <summary>
+    /// Gets the port number on which the server is currently running.
+    /// </summary>
+    public int Port => _httpsServer?.Port ?? 0;
+
+    /// <summary>
+    /// Gets the WebSocket URL for the current server instance.
+    /// </summary>
+    public string Url
+    {
+        get
+        {
+            if (_httpsServer == null || !_httpsServer.IsListening) return "";
+            var service = _httpsServer.WebSocketServices[_path];
+            if (service == null) return "";
+
+            var ip = CrestronEthernetHelper.GetEthernetParameter(
+                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
+            if (string.IsNullOrEmpty(ip))
+                ip = CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
+
+            return $"wss://{ip}:{_httpsServer.Port}{service.Path}";
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the server is currently listening.
+    /// </summary>
+    public bool IsRunning => _httpsServer?.IsListening ?? false;
+
+    /// <summary>
+    /// Gets a value indicating whether there are active WebSocket connections.
+    /// </summary>
+    public bool HasActiveConnections
+    {
+        get
+        {
+            if (_httpsServer == null || !_httpsServer.IsListening) return false;
+            var service = _httpsServer.WebSocketServices[_path];
+            if (service == null) return false;
+            return service.Sessions.Count > 0;
+        }
+    }
+
+    /// <summary>
+    /// Starts the WebSocket server on the specified port and subscribes to routing events.
+    /// </summary>
+    /// <param name="port">The port to listen on.</param>
+    public void StartServerAndSetPort(int port)
+    {
+        if (IsRunning)
+        {
+            Debug.LogMessage(LogEventLevel.Information, "Routing feedback WebSocket already running on port {port}", this, Port);
+            return;
+        }
+
+        Debug.LogMessage(LogEventLevel.Information, "Starting Routing Feedback WebSocket on port: {port}", this, port);
+
+        try
+        {
+            _httpsServer = new HttpServer(port, true);
+
+            var cert = LoadCert(CertPath, _certificatePassword);
+            _httpsServer.SslConfiguration.ServerCertificate = cert;
+            _httpsServer.SslConfiguration.ClientCertificateRequired = false;
+            _httpsServer.SslConfiguration.CheckCertificateRevocation = false;
+            _httpsServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
+            _httpsServer.SslConfiguration.ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+
+            _httpsServer.AddWebSocketService<RoutingFeedbackClient>(_path, () => new RoutingFeedbackClient(this));
+            _httpsServer.Log.Level = LogLevel.Warn;
+            _httpsServer.Start();
+
+            SubscribeToRoutingEvents();
+
+            Debug.LogMessage(LogEventLevel.Information, "Routing Feedback WebSocket ready at {url}", this, Url);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(ex, "Routing Feedback WebSocket failed to start: {message}", this, ex.Message);
+            _httpsServer = null;
+        }
+    }
+
+    /// <summary>
+    /// Stops the WebSocket server and unsubscribes from routing events.
+    /// </summary>
+    public void StopServer()
+    {
+        UnsubscribeFromRoutingEvents();
+
+        try
+        {
+            if (_httpsServer == null || !_httpsServer.IsListening)
+                return;
+
+            _httpsServer.Log.Output = (d, s) => { };
+            _httpsServer.Stop();
+            _httpsServer = null;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(ex, "Routing Feedback WebSocket failed to stop: {message}", this, ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Builds and returns the full current routing state snapshot to send to newly connected clients.
+    /// </summary>
+    internal string GetSnapshotMessage()
+    {
+        var midpointRoutes = new Dictionary<string, List<MidpointRouteDto>>();
+        var sinkRoutes = new Dictionary<string, SinkRouteDto>();
+
+        // Collect midpoint current routes
+        var midpointDevices = DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>();
+        foreach (var device in midpointDevices)
+        {
+            if (device.CurrentRoutes == null || device.CurrentRoutes.Count == 0)
+                continue;
+
+            midpointRoutes[device.Key] = device.CurrentRoutes
+                .Where(r => r.InputPort != null)
+                .Select(r => new MidpointRouteDto
+                {
+                    InputPortKey = r.InputPort.Key,
+                    OutputPortKey = r.OutputPort?.Key,
+                    SignalType = r.InputPort.Type.ToString()
+                })
+                .ToList();
+        }
+
+        // Collect sink current sources
+        var sinkDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithFeedback>();
+        foreach (var device in sinkDevices)
+        {
+            if (device.CurrentInputPort == null)
+                continue;
+
+            // Trace back to find source
+            var tieLine = TieLineCollection.Default.FirstOrDefault(tl =>
+                tl.DestinationPort.Key == device.CurrentInputPort.Key &&
+                tl.DestinationPort.ParentDevice.Key == device.CurrentInputPort.ParentDevice.Key);
+
+            if (tieLine != null)
+            {
+                sinkRoutes[device.Key] = new SinkRouteDto
+                {
+                    InputPortKey = device.CurrentInputPort.Key,
+                    SourceDeviceKey = tieLine.SourcePort.ParentDevice.Key,
+                    SignalType = device.CurrentInputPort.Type.ToString()
+                };
+            }
+        }
+
+        var snapshot = new RoutingSnapshotDto
+        {
+            Type = "snapshot",
+            MidpointRoutes = midpointRoutes,
+            SinkRoutes = sinkRoutes
+        };
+
+        return JsonConvert.SerializeObject(snapshot, JsonSettings);
+    }
+
+    private void SubscribeToRoutingEvents()
+    {
+        var midpointDevices = DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>();
+        foreach (var device in midpointDevices)
+        {
+            device.RouteChanged += HandleMidpointRouteChanged;
+        }
+
+        var sinkDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithFeedback>();
+        foreach (var device in sinkDevices)
+        {
+            device.InputChanged += HandleSinkInputChanged;
+        }
+    }
+
+    private void UnsubscribeFromRoutingEvents()
+    {
+        var midpointDevices = DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>();
+        foreach (var device in midpointDevices)
+        {
+            device.RouteChanged -= HandleMidpointRouteChanged;
+        }
+
+        var sinkDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithFeedback>();
+        foreach (var device in sinkDevices)
+        {
+            device.InputChanged -= HandleSinkInputChanged;
+        }
+    }
+
+    private void HandleMidpointRouteChanged(IRoutingMidpointWithFeedback midpoint, RouteSwitchDescriptor newRoute)
+    {
+        DebounceBroadcast($"midpoint-{midpoint.Key}", () =>
+        {
+            var routes = midpoint.CurrentRoutes?
+                .Where(r => r.InputPort != null)
+                .Select(r => new MidpointRouteDto
+                {
+                    InputPortKey = r.InputPort.Key,
+                    OutputPortKey = r.OutputPort?.Key,
+                    SignalType = r.InputPort.Type.ToString()
+                })
+                .ToList() ?? new List<MidpointRouteDto>();
+
+            var msg = new MidpointRouteChangedDto
+            {
+                Type = "midpointRouteChanged",
+                DeviceKey = midpoint.Key,
+                Routes = routes
+            };
+
+            Broadcast(JsonConvert.SerializeObject(msg, JsonSettings));
+        });
+    }
+
+    private void HandleSinkInputChanged(IRoutingSinkWithFeedback sender, RoutingInputPort currentInputPort)
+    {
+        DebounceBroadcast($"sink-{sender.Key}", () =>
+        {
+            var sourceDeviceKey = "";
+            if (currentInputPort != null)
+            {
+                var tieLine = TieLineCollection.Default.FirstOrDefault(tl =>
+                    tl.DestinationPort.Key == currentInputPort.Key &&
+                    tl.DestinationPort.ParentDevice.Key == currentInputPort.ParentDevice.Key);
+                sourceDeviceKey = tieLine?.SourcePort.ParentDevice.Key ?? "";
+            }
+
+            var msg = new SinkInputChangedDto
+            {
+                Type = "sinkInputChanged",
+                DeviceKey = sender.Key,
+                InputPortKey = currentInputPort?.Key ?? "",
+                SourceDeviceKey = sourceDeviceKey,
+                SignalType = currentInputPort?.Type.ToString() ?? ""
+            };
+
+            Broadcast(JsonConvert.SerializeObject(msg, JsonSettings));
+        });
+    }
+
+    private void DebounceBroadcast(string key, Action action)
+    {
+        lock (_debounceTimers)
+        {
+            if (_debounceTimers.TryGetValue(key, out var existingTimer))
+            {
+                existingTimer.Stop();
+                existingTimer.Dispose();
+            }
+
+            var timer = new Timer(DEBOUNCE_MS) { AutoReset = false };
+            timer.Elapsed += (s, e) =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError(ex, "Error in debounced routing broadcast for {key}: {message}", this, key, ex.Message);
+                }
+                finally
+                {
+                    lock (_debounceTimers)
+                    {
+                        if (_debounceTimers.ContainsKey(key))
+                        {
+                            _debounceTimers[key]?.Dispose();
+                            _debounceTimers.Remove(key);
+                        }
+                    }
+                }
+            };
+            timer.Start();
+            _debounceTimers[key] = timer;
+        }
+    }
+
+    private void Broadcast(string message)
+    {
+        if (_httpsServer == null || !_httpsServer.IsListening) return;
+
+        var service = _httpsServer.WebSocketServices[_path];
+        if (service == null) return;
+
+        service.Sessions.Broadcast(message);
+    }
+
+    private static X509Certificate2 LoadCert(string certPath, string certPassword)
+    {
+        return new X509Certificate2(certPath, certPassword, X509KeyStorageFlags.EphemeralKeySet);
+    }
+
+    // ── DTOs ─────────────────────────────────────────────────────────────────
+
+    private class RoutingSnapshotDto
+    {
+        public string Type { get; set; }
+        public Dictionary<string, List<MidpointRouteDto>> MidpointRoutes { get; set; }
+        public Dictionary<string, SinkRouteDto> SinkRoutes { get; set; }
+    }
+
+    private class MidpointRouteChangedDto
+    {
+        public string Type { get; set; }
+        public string DeviceKey { get; set; }
+        public List<MidpointRouteDto> Routes { get; set; }
+    }
+
+    private class SinkInputChangedDto
+    {
+        public string Type { get; set; }
+        public string DeviceKey { get; set; }
+        public string InputPortKey { get; set; }
+        public string SourceDeviceKey { get; set; }
+        public string SignalType { get; set; }
+    }
+
+    private class MidpointRouteDto
+    {
+        public string InputPortKey { get; set; }
+        public string OutputPortKey { get; set; }
+        public string SignalType { get; set; }
+    }
+
+    private class SinkRouteDto
+    {
+        public string InputPortKey { get; set; }
+        public string SourceDeviceKey { get; set; }
+        public string SignalType { get; set; }
+    }
+}
+
+/// <summary>
+/// WebSocket client behavior for routing feedback connections.
+/// Sends a full state snapshot on connect.
+/// </summary>
+public class RoutingFeedbackClient : WebSocketBehavior
+{
+    private readonly RoutingFeedbackWebsocket _owner;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RoutingFeedbackClient"/> class.
+    /// </summary>
+    /// <param name="owner">The owning <see cref="RoutingFeedbackWebsocket"/> instance.</param>
+    public RoutingFeedbackClient(RoutingFeedbackWebsocket owner)
+    {
+        _owner = owner;
+    }
+
+    /// <inheritdoc/>
+    protected override void OnOpen()
+    {
+        base.OnOpen();
+        Debug.LogMessage(LogEventLevel.Information, "Routing feedback client connected from: {url}", _owner, Context.WebSocket.Url);
+
+        // Send full state snapshot to the newly connected client
+        try
+        {
+            var snapshot = _owner.GetSnapshotMessage();
+            Send(snapshot);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(ex, "Error sending routing snapshot to client: {message}", _owner, ex.Message);
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override void OnClose(CloseEventArgs e)
+    {
+        base.OnClose(e);
+        Debug.LogMessage(LogEventLevel.Debug, "Routing feedback client disconnected: {code} {reason}", _owner, e.Code, e.Reason);
+    }
+
+    /// <inheritdoc/>
+    protected override void OnError(WebSocketSharp.ErrorEventArgs e)
+    {
+        base.OnError(e);
+        Debug.LogError(e.Exception, "Routing feedback client error: {message}", _owner, e.Message);
+    }
+}

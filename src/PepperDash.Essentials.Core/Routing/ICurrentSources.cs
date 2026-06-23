@@ -36,6 +36,7 @@ namespace PepperDash.Essentials.Core.Routing
     /// This method updates the current source for the specified signal type and notifies any subscribers of the change.
     /// </summary>
     /// <param name="signalType">The signal type to update.</param>
+    /// 
     /// <param name="sourceDevice">The source device to set as the current source.</param>
     void SetCurrentSource(eRoutingSignalType signalType, IRoutingSource sourceDevice);
 

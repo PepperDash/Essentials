@@ -75,6 +75,20 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
     /// </summary>
     public bool IsRunning { get => _httpsServer?.IsListening ?? false; }
 
+    /// <summary>
+    /// Gets a value indicating whether there are active WebSocket connections.
+    /// </summary>
+    public bool HasActiveConnections
+    {
+        get
+        {
+            if (_httpsServer == null || !_httpsServer.IsListening) return false;
+            var service = _httpsServer.WebSocketServices[_path];
+            if (service == null) return false;
+            return service.Sessions.Count > 0;
+        }
+    }
+
     /// <inheritdoc/>
     public string Key => "DebugWebsocketSink";
 
