@@ -10,20 +10,15 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Core.Web.RequestHandlers;
 
 /// <summary>
-/// Handles HTTP requests to start and retrieve the routing feedback WebSocket session URL.
-/// GET returns the current URL (starting the server if necessary).
-/// POST stops the server.
+/// Handles HTTP requests to start and stop the routing feedback WebSocket session.
+/// GET starts the server and returns connection URLs. POST stops the session.
+/// Automatically configures port forwarding for Crestron processors with a CS LAN adapter.
 /// </summary>
 public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
 {
     private static readonly RoutingFeedbackWebsocket _instance = new RoutingFeedbackWebsocket();
     private CTimer _portForwardTimeoutTimer;
     private readonly object _timerLock = new object();
-
-    /// <summary>
-    /// Gets the singleton RoutingFeedbackWebsocket instance.
-    /// </summary>
-    public static RoutingFeedbackWebsocket Instance => _instance;
 
     /// <summary>
     /// Constructor
@@ -34,7 +29,7 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
     }
 
     /// <summary>
-    /// Handles GET requests: starts the routing feedback WebSocket if not running and returns the URL.
+    /// Starts the routing feedback WebSocket server and returns the connection URL.
     /// </summary>
     protected override void HandleGet(HttpCwsContext context)
     {
@@ -44,7 +39,6 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
                 CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
 
             var port = 0;
-            string csIp = null;
 
             if (!_instance.IsRunning)
             {
@@ -52,8 +46,13 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
                 port = new Random().Next(65335, 65434);
                 _instance.StartServerAndSetPort(port);
             }
+            else
+            {
+                port = _instance.Port;
+            }
 
-            // Attempt to get the CS LAN IP and forward the port
+            // Always ensure port forwarding is active — it may have been removed by timeout
+            string csIp = null;
             try
             {
                 var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
@@ -91,10 +90,8 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
             {
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = "Internal Server Error";
-                context.Response.ContentType = "application/json";
-                context.Response.ContentEncoding = Encoding.UTF8;
                 context.Response.Write(
-                    JsonConvert.SerializeObject(new { error = "Failed to start routing feedback WebSocket server." }),
+                    JsonConvert.SerializeObject(new { error = "Failed to start routing feedback WebSocket server. Check logs for details." }),
                     false);
                 context.Response.End();
                 return;
@@ -109,20 +106,21 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
             };
 
             Debug.LogMessage(LogEventLevel.Information, "Routing Feedback Session URL: {0}", url);
-            Debug.LogMessage(LogEventLevel.Information, "Fallback Routing Feedback Session URL: {0}", data.fallbackUrl);
+            if (data.fallbackUrl != null)
+                Debug.LogMessage(LogEventLevel.Information, "Routing Feedback Fallback URL: {0}", data.fallbackUrl);
 
-            var json = JsonConvert.SerializeObject(data);
+            var res = JsonConvert.SerializeObject(data);
 
-            context.Response.StatusCode = 200;
-            context.Response.StatusDescription = "OK";
             context.Response.ContentType = "application/json";
             context.Response.ContentEncoding = Encoding.UTF8;
-            context.Response.Write(json, false);
+            context.Response.StatusCode = 200;
+            context.Response.StatusDescription = "OK";
+            context.Response.Write(res, false);
             context.Response.End();
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Debug.LogError(ex, "Error handling routing feedback session GET: {message}", ex.Message);
+            Debug.LogMessage(LogEventLevel.Error, "Error handling routing feedback session request: {0}", e);
             context.Response.StatusCode = 500;
             context.Response.StatusDescription = "Internal Server Error";
             context.Response.End();
@@ -130,58 +128,51 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
     }
 
     /// <summary>
-    /// Handles POST requests: stops the routing feedback WebSocket server.
+    /// Stops the routing feedback WebSocket session and removes port forwarding.
     /// </summary>
     protected override void HandlePost(HttpCwsContext context)
     {
+        CancelPortForwardTimeout();
+
+        var port = _instance.Port;
+
+        _instance.StopServer();
+
+        // Remove port forwarding if CS LAN exists
         try
         {
-            CancelPortForwardTimeout();
+            var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
+                EthernetAdapterType.EthernetCSAdapter);
+            var csIp = CrestronEthernetHelper.GetEthernetParameter(
+                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
 
-            var port = _instance.Port;
-            _instance.StopServer();
+            var result = CrestronEthernetHelper.RemovePortForwarding(
+                (ushort)port, (ushort)port, csIp,
+                CrestronEthernetHelper.ePortMapTransport.TCP);
 
-            // Remove port forwarding if CS LAN exists
-            try
+            if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
             {
-                var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
-                    EthernetAdapterType.EthernetCSAdapter);
-                var csIp = CrestronEthernetHelper.GetEthernetParameter(
-                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
-
-                var result = CrestronEthernetHelper.RemovePortForwarding(
-                    (ushort)port, (ushort)port, csIp,
-                    CrestronEthernetHelper.ePortMapTransport.TCP);
-
-                if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
-                {
-                    Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for port {0}: {1}", port, result);
-                }
-                else
-                {
-                    Debug.LogMessage(LogEventLevel.Information, "Port forwarding for port {0} removed", port);
-                }
+                Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for routing port {0}: {1}", port, result);
             }
-            catch (ArgumentException)
+            else
             {
-                // No CS LAN adapter
+                Debug.LogMessage(LogEventLevel.Information, "Port forwarding for routing port {0} removed", port);
             }
-            catch (Exception ex)
-            {
-                Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding: {0}", ex.Message);
-            }
-
-            context.Response.StatusCode = 200;
-            context.Response.StatusDescription = "OK";
-            context.Response.End();
+        }
+        catch (ArgumentException)
+        {
+            // No CS LAN adapter
         }
         catch (Exception ex)
         {
-            Debug.LogError(ex, "Error handling routing feedback session POST: {message}", ex.Message);
-            context.Response.StatusCode = 500;
-            context.Response.StatusDescription = "Internal Server Error";
-            context.Response.End();
+            Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for routing: {0}", ex.Message);
         }
+
+        context.Response.StatusCode = 200;
+        context.Response.StatusDescription = "OK";
+        context.Response.End();
+
+        Debug.LogMessage(LogEventLevel.Information, "Routing Feedback WebSocket Session Stopped");
     }
 
     private void StartPortForwardTimeout(int port, string csIp)
@@ -194,6 +185,7 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
                 if (_instance.HasActiveConnections)
                 {
                     Debug.LogMessage(LogEventLevel.Debug, "Routing feedback websocket has active connections; keeping port forward");
+                    StartPortForwardTimeout(port, csIp);
                     return;
                 }
 
@@ -211,7 +203,7 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
                     }
                     else
                     {
-                        Debug.LogMessage(LogEventLevel.Information, "Port forwarding for port {0} removed due to timeout", port);
+                        Debug.LogMessage(LogEventLevel.Information, "Port forwarding for routing port {0} removed due to timeout", port);
                     }
                 }
                 catch (Exception ex)

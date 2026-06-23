@@ -58,8 +58,12 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
                 Debug.WebsocketSink.StartServerAndSetPort(port);
                 Debug.SetWebSocketMinimumDebugLevel(Serilog.Events.LogEventLevel.Verbose);
             }
+            else
+            {
+                port = Debug.WebsocketSink.Port;
+            }
 
-            // Attempt to get the CS LAN IP and forward the port
+            // Always ensure port forwarding is active — it may have been removed by timeout
             try
             {
                 var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
@@ -188,6 +192,7 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
                 if (Debug.WebsocketSink.HasActiveConnections)
                 {
                     Debug.LogMessage(LogEventLevel.Debug, "Debug websocket has active connections; keeping port forward");
+                    StartPortForwardTimeout(port, csIp);
                     return;
                 }
 

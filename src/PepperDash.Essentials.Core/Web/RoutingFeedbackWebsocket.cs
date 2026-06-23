@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Timers;
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
@@ -12,7 +11,6 @@ using Newtonsoft.Json.Serialization;
 using PepperDash.Core;
 using Serilog.Events;
 using WebSocketSharp;
-using WebSocketSharp.Net;
 using WebSocketSharp.Server;
 
 namespace PepperDash.Essentials.Core.Web;
@@ -114,11 +112,11 @@ public class RoutingFeedbackWebsocket : IKeyed
             _httpsServer.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
             _httpsServer.SslConfiguration.ClientCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 
-            _httpsServer.AddWebSocketService<RoutingFeedbackClient>(_path, () => new RoutingFeedbackClient(this));
-            _httpsServer.OnGet += HandleHttpGet;
+            _httpsServer.AddWebSocketService<RoutingFeedbackClient>(_path);
             _httpsServer.Log.Level = LogLevel.Warn;
             _httpsServer.Start();
 
+            RoutingFeedbackClient.Owner = this;
             SubscribeToRoutingEvents();
 
             Debug.LogMessage(LogEventLevel.Information, "Routing Feedback WebSocket ready at {url}", this, Url);
@@ -340,23 +338,6 @@ public class RoutingFeedbackWebsocket : IKeyed
         service.Sessions.Broadcast(message);
     }
 
-    private void HandleHttpGet(object sender, HttpRequestEventArgs e)
-    {
-        var res = e.Response;
-        res.ContentType = "text/html";
-        res.ContentEncoding = Encoding.UTF8;
-        res.StatusCode = 200;
-
-        const string html = @"<!DOCTYPE html>
-<html><head><title>Essentials Routing Feedback</title></head>
-<body style=""font-family:sans-serif;padding:2rem;text-align:center"">
-<h2>Certificate Accepted</h2>
-<p>You may close this tab and return to the configuration app.</p>
-</body></html>";
-
-        res.WriteContent(Encoding.UTF8.GetBytes(html));
-    }
-
     private static X509Certificate2 LoadCert(string certPath, string certPassword)
     {
         return new X509Certificate2(certPath, certPassword, X509KeyStorageFlags.EphemeralKeySet);
@@ -408,32 +389,34 @@ public class RoutingFeedbackWebsocket : IKeyed
 /// </summary>
 public class RoutingFeedbackClient : WebSocketBehavior
 {
-    private readonly RoutingFeedbackWebsocket _owner;
+    /// <summary>
+    /// Static reference to the owning <see cref="RoutingFeedbackWebsocket"/> instance.
+    /// Set before the server starts accepting connections.
+    /// </summary>
+    internal static RoutingFeedbackWebsocket Owner { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RoutingFeedbackClient"/> class.
     /// </summary>
-    /// <param name="owner">The owning <see cref="RoutingFeedbackWebsocket"/> instance.</param>
-    public RoutingFeedbackClient(RoutingFeedbackWebsocket owner)
+    public RoutingFeedbackClient()
     {
-        _owner = owner;
     }
 
     /// <inheritdoc/>
     protected override void OnOpen()
     {
         base.OnOpen();
-        Debug.LogMessage(LogEventLevel.Information, "Routing feedback client connected from: {url}", _owner, Context.WebSocket.Url);
+        Debug.LogMessage(LogEventLevel.Information, "Routing feedback client connected from: {url}", Owner, Context.WebSocket.Url);
 
         // Send full state snapshot to the newly connected client
         try
         {
-            var snapshot = _owner.GetSnapshotMessage();
+            var snapshot = Owner.GetSnapshotMessage();
             Send(snapshot);
         }
         catch (Exception ex)
         {
-            Debug.LogError(ex, "Error sending routing snapshot to client: {message}", _owner, ex.Message);
+            Debug.LogError(ex, "Error sending routing snapshot to client: {message}", Owner, ex.Message);
         }
     }
 
@@ -441,13 +424,13 @@ public class RoutingFeedbackClient : WebSocketBehavior
     protected override void OnClose(CloseEventArgs e)
     {
         base.OnClose(e);
-        Debug.LogMessage(LogEventLevel.Debug, "Routing feedback client disconnected: {code} {reason}", _owner, e.Code, e.Reason);
+        Debug.LogMessage(LogEventLevel.Debug, "Routing feedback client disconnected: {code} {reason}", Owner, e.Code, e.Reason);
     }
 
     /// <inheritdoc/>
     protected override void OnError(WebSocketSharp.ErrorEventArgs e)
     {
         base.OnError(e);
-        Debug.LogError(e.Exception, "Routing feedback client error: {message}", _owner, e.Message);
+        Debug.LogError(e.Exception, "Routing feedback client error: {message}", Owner, e.Message);
     }
 }
