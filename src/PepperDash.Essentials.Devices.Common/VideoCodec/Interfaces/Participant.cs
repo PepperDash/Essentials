@@ -61,6 +61,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
     public bool AudioMuteFb { get; set; }
 
     /// <summary>
+    /// Gets or sets the VideoMuteFb
+    /// </summary>
+    [JsonProperty("videoMuteFb")]
+    public bool VideoMuteFb { get; set; }
+
+    /// <summary>
     /// Gets or sets the HandIsRaisedFb
     /// </summary>
     [JsonProperty("handIsRaisedFb")]
