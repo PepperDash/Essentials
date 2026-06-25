@@ -36,11 +36,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/getDirectory", (id, content) => GetDirectoryRoot());
 
+            AddAction("/setCurrentDirectoryToRoot", (id, content) => _directory.SetCurrentDirectoryToRoot());
+
             AddAction("/directoryById", (id, content) =>
             {
                 var msg = content.ToObject<MobileControlSimpleContent<string>>();
                 GetDirectory(msg.Value);
             });
+
+            AddAction("/getDirectoryPareentFolderContents", (id, content) => _directory.GetDirectoryParentFolderContents());
 
             AddAction("/directorySearch", (id, content) =>
             {
@@ -52,6 +56,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             _directory.DirectoryResultReturned += DirectoryResultReturned;
             _directory.PhonebookSyncState.InitialSyncCompleted += PhonebookSyncState_InitialSyncCompleted;
+
+            _directory.CurrentDirectoryResultIsNotDirectoryRoot.OutputChange += (s, e) =>
+            {
+                PostStatusMessage(new IHasDirectoryStateMessage
+                {
+                    DirectorySelectedFolderIsNotRoot = _directory.CurrentDirectoryResultIsNotDirectoryRoot?.BoolValue
+                });
+            };
         }
 
         private void DirectoryResultReturned(object sender, DirectoryEventArgs e)
@@ -125,16 +137,22 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             PostStatusMessage(new IHasDirectoryStateMessage
             {
+                DirectoryRoot = _directory.DirectoryRoot,
                 CurrentDirectory = _directory.CurrentDirectoryResult,
                 InitialPhonebookSyncComplete = _directory.PhonebookSyncState.InitialSyncComplete,
                 HasDirectory = true,
                 HasDirectorySearch = true,
+                DirectorySelectedFolderName = _directory.CurrentDirectoryResult?.CurrentDirectoryResults?.Count > 0 ? _directory.CurrentDirectoryResult.CurrentDirectoryResults[0].Name : null,
+                DirectorySelectedFolderIsNotRoot = _directory.CurrentDirectorResultIsNotDirectoryRoot?.BoolValue
             });
         }
     }
 
     public class IHasDirectoryStateMessage : DeviceStateMessageBase
     {
+        [JsonProperty("directoryRoot", NullValueHandling = NullValueHandling.Ignore)]
+        public CodecDirectory DirectoryRoot { get; set; }
+
         [JsonProperty("currentDirectory", NullValueHandling = NullValueHandling.Ignore)]
         public CodecDirectory CurrentDirectory { get; set; }
 
@@ -152,6 +170,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         [JsonProperty("directorySelectedFolderName", NullValueHandling = NullValueHandling.Ignore)]
         public string DirectorySelectedFolderName { get; set; }
+
+        [JsonProperty("directorySelectedFolderIsNotRoot", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? DirectorySelectedFolderIsNotRoot { get; set; }
 
     }
 }

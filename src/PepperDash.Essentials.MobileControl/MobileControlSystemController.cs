@@ -1501,8 +1501,14 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Handles a batch request for full status of multiple devices.
-        /// Triggers all registered messengers for each device key in parallel,
+        /// Handles a batch request for device status. Supports two content formats:
+        /// <para>
+        /// Granular format: <c>{ "devices": { "deviceKey": ["/fullStatus", "/layoutStatus"], ... } }</c>
+        /// </para>
+        /// <para>
+        /// Legacy format: <c>{ "deviceKeys": ["deviceKey1", "deviceKey2"] }</c> (equivalent to /fullStatus for each)
+        /// </para>
+        /// Triggers the specified action paths for each device in parallel,
         /// then sends an /system/initialSyncComplete message after all have been processed.
         /// </summary>
         private void HandleBatchDeviceFullStatus(string clientId, JToken content)
@@ -1513,11 +1519,37 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            var deviceKeys = content.SelectToken("deviceKeys")?.ToObject<List<string>>();
+            // Build a dictionary of deviceKey -> list of action paths
+            Dictionary<string, List<string>> deviceActionPaths;
 
-            if (deviceKeys == null || deviceKeys.Count == 0)
+            var devicesToken = content.SelectToken("devices");
+            if (devicesToken != null)
             {
-                this.LogWarning("BatchDeviceFullStatus: No device keys provided");
+                // Granular format: { "devices": { "key": ["/path1", "/path2"], ... } }
+                deviceActionPaths = devicesToken.ToObject<Dictionary<string, List<string>>>();
+            }
+            else
+            {
+                // Legacy format: { "deviceKeys": ["key1", "key2"] } -> each gets /fullStatus
+                var deviceKeys = content.SelectToken("deviceKeys")?.ToObject<List<string>>();
+
+                if (deviceKeys == null || deviceKeys.Count == 0)
+                {
+                    this.LogWarning("BatchDeviceFullStatus: No device keys or devices provided");
+                    SendMessageObject(new MobileControlMessage
+                    {
+                        Type = "/system/initialSyncComplete",
+                        ClientId = clientId
+                    });
+                    return;
+                }
+
+                deviceActionPaths = deviceKeys.ToDictionary(k => k, _ => new List<string> { "/fullStatus" });
+            }
+
+            if (deviceActionPaths == null || deviceActionPaths.Count == 0)
+            {
+                this.LogWarning("BatchDeviceFullStatus: Empty devices dictionary");
                 SendMessageObject(new MobileControlMessage
                 {
                     Type = "/system/initialSyncComplete",
@@ -1526,38 +1558,49 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            this.LogInformation("BatchDeviceFullStatus: Processing {count} device keys", deviceKeys.Count);
+            this.LogInformation("BatchDeviceFullStatus: Processing {count} devices", deviceActionPaths.Count);
 
             var tasks = new List<Task>();
 
-            foreach (var deviceKey in deviceKeys)
+            foreach (var kvp in deviceActionPaths)
             {
-                var fullStatusPath = $"/device/{deviceKey}/fullStatus";
+                var deviceKey = kvp.Key;
+                var actionPaths = kvp.Value;
 
-                var handlers = _actionDictionary
-                    .Where(kv => fullStatusPath.StartsWith(kv.Key + "/"))
-                    .SelectMany(kv => kv.Value)
-                    .ToList();
-
-                if (handlers.Count == 0)
+                if (actionPaths == null || actionPaths.Count == 0)
                 {
-                    this.LogDebug("BatchDeviceFullStatus: No handlers for {deviceKey}", deviceKey);
                     continue;
                 }
 
-                foreach (var handler in handlers)
+                foreach (var actionPath in actionPaths)
                 {
-                    tasks.Add(Task.Run(() =>
+                    var fullPath = $"/device/{deviceKey}{actionPath}";
+
+                    var handlers = _actionDictionary
+                        .Where(kv => fullPath.StartsWith(kv.Key + "/"))
+                        .SelectMany(kv => kv.Value)
+                        .ToList();
+
+                    if (handlers.Count == 0)
                     {
-                        try
+                        this.LogDebug("BatchDeviceFullStatus: No handlers for {deviceKey} at path {actionPath}", deviceKey, actionPath);
+                        continue;
+                    }
+
+                    foreach (var handler in handlers)
+                    {
+                        tasks.Add(Task.Run(() =>
                         {
-                            handler.Action(fullStatusPath, clientId, JToken.FromObject(new { deviceKey }));
-                        }
-                        catch (Exception ex)
-                        {
-                            this.LogError("BatchDeviceFullStatus: Exception in handler for {deviceKey}: {message}", deviceKey, ex.Message);
-                        }
-                    }));
+                            try
+                            {
+                                handler.Action(fullPath, clientId, JToken.FromObject(new { deviceKey }));
+                            }
+                            catch (Exception ex)
+                            {
+                                this.LogError("BatchDeviceFullStatus: Exception in handler for {deviceKey} at {actionPath}: {message}", deviceKey, actionPath, ex.Message);
+                            }
+                        }));
+                    }
                 }
             }
 

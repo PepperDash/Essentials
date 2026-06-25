@@ -40,10 +40,11 @@ namespace PepperDash.Essentials
         public bool EnableApiServer { get; set; } = true;
 
         /// <summary>
-        /// Enable subscriptions for Messengers
+        /// Enable subscriptions for Messengers.
+        /// Defaults to true for v3.x+
         /// </summary>
         [JsonProperty("enableMessengerSubscriptions")]
-        public bool EnableMessengerSubscriptions { get; set; }
+        public bool EnableMessengerSubscriptions { get; set; } = true;
     }
 
     /// <summary>

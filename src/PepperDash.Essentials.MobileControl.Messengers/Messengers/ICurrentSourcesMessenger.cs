@@ -50,7 +50,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
       };
     }
 
-    private void SendCurrentSourceStatus(string id = null)
+    private void SendCurrentSourceStatus(string id)
     {
       var message = new CurrentSourcesStateMessage
       {
