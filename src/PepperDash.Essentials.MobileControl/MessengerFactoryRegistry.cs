@@ -237,6 +237,17 @@ namespace PepperDash.Essentials
                         $"{d.Key}-farEndContent-{ck}", mp, d)
                 ),
                 new MessengerFactoryEntry(
+                    typeof(IHasParticipantAudioMute),
+                    (d, mp, ck) => new IHasParticipantAudioMuteMessenger(
+                        $"{d.Key}-participantAudioMute-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasParticipantVideoMute),
+                    (d, mp, ck) => new IHasParticipantVideoMuteMessenger(
+                        $"{d.Key}-participantVideoMute-{ck}", mp, d),
+                    predicate: d => d is IHasParticipantVideoMute && !(d is IHasParticipantAudioMute)
+                ),
+                new MessengerFactoryEntry(
                     typeof(IHasMeetingInfo),
                     (d, mp, ck) => new IHasMeetingInfoMessenger(
                         $"{d.Key}-meetingInfo-{ck}", mp, d)
