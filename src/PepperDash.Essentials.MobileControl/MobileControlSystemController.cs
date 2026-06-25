@@ -196,14 +196,14 @@ namespace PepperDash.Essentials
             _receiveQueue = new GenericQueue(
                 key + "-rxqueue",
                     System.Threading.ThreadPriority.Highest,
-                25
+                100
             );
 
             // The queue that will collect the outgoing messages in the order they are received
             _transmitToServerQueue = new GenericQueue(
                 key + "-txqueue",
                 System.Threading.ThreadPriority.Highest,
-                25
+                100
             );
 
             if (Config.DirectServer != null && Config.DirectServer.EnableDirectServer)
@@ -218,7 +218,7 @@ namespace PepperDash.Essentials
                 _transmitToClientsQueue = new GenericQueue(
                     key + "-clienttxqueue",
                     System.Threading.ThreadPriority.Highest,
-                    25
+                    100
                 );
             }
 
@@ -1500,6 +1500,87 @@ namespace PepperDash.Essentials
             });
         }
 
+        /// <summary>
+        /// Handles a batch request for full status of multiple devices.
+        /// Triggers all registered messengers for each device key in parallel,
+        /// then sends an /system/initialSyncComplete message after all have been processed.
+        /// </summary>
+        private void HandleBatchDeviceFullStatus(string clientId, JToken content)
+        {
+            if (content == null)
+            {
+                this.LogWarning("BatchDeviceFullStatus: content is null");
+                return;
+            }
+
+            var deviceKeys = content.SelectToken("deviceKeys")?.ToObject<List<string>>();
+
+            if (deviceKeys == null || deviceKeys.Count == 0)
+            {
+                this.LogWarning("BatchDeviceFullStatus: No device keys provided");
+                SendMessageObject(new MobileControlMessage
+                {
+                    Type = "/system/initialSyncComplete",
+                    ClientId = clientId
+                });
+                return;
+            }
+
+            this.LogInformation("BatchDeviceFullStatus: Processing {count} device keys", deviceKeys.Count);
+
+            var tasks = new List<Task>();
+
+            foreach (var deviceKey in deviceKeys)
+            {
+                var fullStatusPath = $"/device/{deviceKey}/fullStatus";
+
+                var handlers = _actionDictionary
+                    .Where(kv => fullStatusPath.StartsWith(kv.Key + "/"))
+                    .SelectMany(kv => kv.Value)
+                    .ToList();
+
+                if (handlers.Count == 0)
+                {
+                    this.LogDebug("BatchDeviceFullStatus: No handlers for {deviceKey}", deviceKey);
+                    continue;
+                }
+
+                foreach (var handler in handlers)
+                {
+                    tasks.Add(Task.Run(() =>
+                    {
+                        try
+                        {
+                            handler.Action(fullStatusPath, clientId, JToken.FromObject(new { deviceKey }));
+                        }
+                        catch (Exception ex)
+                        {
+                            this.LogError("BatchDeviceFullStatus: Exception in handler for {deviceKey}: {message}", deviceKey, ex.Message);
+                        }
+                    }));
+                }
+            }
+
+            // After all handlers have completed and enqueued their responses, send sync complete
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.WhenAll(tasks);
+                }
+                catch (Exception ex)
+                {
+                    this.LogError("BatchDeviceFullStatus: Exception waiting for tasks: {message}", ex.Message);
+                }
+
+                SendMessageObject(new MobileControlMessage
+                {
+                    Type = "/system/initialSyncComplete",
+                    ClientId = clientId
+                });
+            });
+        }
+
         private void SendDeviceInterfaces(string clientId)
         {
             this.LogDebug("Sending Device interfaces");
@@ -1601,6 +1682,9 @@ namespace PepperDash.Essentials
                         break;
                     case "/system/clientJoined":
                         HandleClientJoined(message.Content);
+                        break;
+                    case "/system/batchDeviceFullStatus":
+                        HandleBatchDeviceFullStatus(message.ClientId, message.Content);
                         break;
                     case "/system/reboot":
                         SystemMonitorController.ProcessorReboot();

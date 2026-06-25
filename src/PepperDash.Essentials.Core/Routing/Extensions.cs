@@ -411,6 +411,20 @@ public static class Extensions
 
             audioOrSingleRoute.ExecuteRoutes();
             videoRoute?.ExecuteRoutes();
+
+            // Update ICurrentSources on the destination if it implements the interface
+            if (request.Destination is ICurrentSources currentSourcesDevice && request.Source is IRoutingSource routingSource)
+            {
+                if (request.SignalType.HasFlag(eRoutingSignalType.Audio) || request.SignalType.HasFlag(eRoutingSignalType.AudioVideo))
+                {
+                    currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Audio, routingSource);
+                }
+
+                if (request.SignalType.HasFlag(eRoutingSignalType.Video) || request.SignalType.HasFlag(eRoutingSignalType.AudioVideo))
+                {
+                    currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Video, routingSource);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -444,6 +458,31 @@ public static class Extensions
             {
                 Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
                 current.ReleaseRoutes(clearRoute);
+            }
+
+            // Clear ICurrentSources on the destination if clearing the route
+            if (clearRoute && destination is ICurrentSources currentSourcesDevice)
+            {
+                if (current != null)
+                {
+                    var signalType = current.SignalType;
+
+                    if (signalType.HasFlag(eRoutingSignalType.Audio) || signalType.HasFlag(eRoutingSignalType.AudioVideo))
+                    {
+                        currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Audio, null);
+                    }
+
+                    if (signalType.HasFlag(eRoutingSignalType.Video) || signalType.HasFlag(eRoutingSignalType.AudioVideo))
+                    {
+                        currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Video, null);
+                    }
+                }
+                else
+                {
+                    // No route descriptor found, clear all signal types
+                    currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Audio, null);
+                    currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Video, null);
+                }
             }
         }
         catch (Exception ex)

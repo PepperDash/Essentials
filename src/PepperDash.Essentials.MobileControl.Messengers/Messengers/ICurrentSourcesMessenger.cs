@@ -42,12 +42,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
       {
         // need to copy the dictionaries to avoid enumeration issues
         var currentSourceKeys = sourceDevice.CurrentSourceKeys.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        var currentSources = sourceDevice.CurrentSources.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         
         PostStatusMessage(JToken.FromObject(new
         {
           currentSourceKeys,
-          currentSources,
         }));
       };
     }
@@ -57,7 +55,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
       var message = new CurrentSourcesStateMessage
       {
         CurrentSourceKeys = sourceDevice.CurrentSourceKeys,
-        CurrentSources = sourceDevice.CurrentSources
       };
 
       PostStatusMessage(message, id);
@@ -75,11 +72,5 @@ namespace PepperDash.Essentials.AppServer.Messengers
     [JsonProperty("currentSourceKeys", NullValueHandling = NullValueHandling.Ignore)]
     public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; set; }
 
-
-    /// <summary>
-    /// Gets or sets the CurrentSource
-    /// </summary>
-    [JsonProperty("currentSources")]
-    public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; set; }
   }
 }

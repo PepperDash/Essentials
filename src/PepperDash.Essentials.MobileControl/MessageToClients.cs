@@ -16,35 +16,46 @@ namespace PepperDash.Essentials
   /// </summary>
   public class MessageToClients : IQueueMessage
   {
+    private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
+    {
+      NullValueHandling = NullValueHandling.Ignore,
+      Converters = { new IsoDateTimeConverter() }
+    };
+
     private readonly MobileControlWebsocketServer _server;
-    private readonly object msgToSend;
+    private readonly string _serializedMessage;
+    private readonly string _clientId;
 
     /// <summary>
-    /// Message to send to Direct Server Clients
+    /// Message to send to Direct Server Clients.
+    /// Serialization occurs here in the caller's thread context (parallel) rather than on the queue thread (sequential).
     /// </summary>
     /// <param name="msg">message object to send</param>
     /// <param name="server">WebSocket server instance</param>
     public MessageToClients(object msg, MobileControlWebsocketServer server)
     {
       _server = server;
-      msgToSend = msg;
+      _serializedMessage = JsonConvert.SerializeObject(msg, Formatting.None, SerializerSettings);
+      _clientId = (msg as MobileControlMessage)?.ClientId;
     }
 
     /// <summary>
-    /// Message to send to Direct Server Clients
+    /// Message to send to Direct Server Clients.
+    /// Serialization occurs here in the caller's thread context (parallel) rather than on the queue thread (sequential).
     /// </summary>
     /// <param name="msg">message object to send</param>
     /// <param name="server">WebSocket server instance</param>
     public MessageToClients(DeviceStateMessageBase msg, MobileControlWebsocketServer server)
     {
       _server = server;
-      msgToSend = msg;
+      _serializedMessage = JsonConvert.SerializeObject(msg, Formatting.None, SerializerSettings);
+      _clientId = null;
     }
 
     #region Implementation of IQueueMessage
 
     /// <summary>
-    /// Dispatch method
+    /// Dispatch method - only handles WebSocket send since serialization was done at construction time
     /// </summary>
     public void Dispatch()
     {
@@ -56,24 +67,18 @@ namespace PepperDash.Essentials
           return;
         }
 
-        var message = JsonConvert.SerializeObject(msgToSend, Formatting.None,
-        new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, Converters = { new IsoDateTimeConverter() } });
-
-        var clientSpecificMessage = msgToSend as MobileControlMessage;
-        if (clientSpecificMessage.ClientId != null)
+        if (_clientId != null)
         {
-          var clientId = clientSpecificMessage.ClientId;
+          _server.LogVerbose("Message TX To client {clientId}: {message}", _clientId, _serializedMessage);
 
-          _server.LogVerbose("Message TX To client {clientId}: {message}", clientId, message);
-
-          _server.SendMessageToClient(clientId, message);
+          _server.SendMessageToClient(_clientId, _serializedMessage);
 
           return;
         }
 
-        _server.SendMessageToAllClients(message);
+        _server.SendMessageToAllClients(_serializedMessage);
 
-        _server.LogVerbose("Message TX To all clients: {message}", message);
+        _server.LogVerbose("Message TX To all clients: {message}", _serializedMessage);
       }
       catch (ThreadAbortException)
       {

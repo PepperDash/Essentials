@@ -13,35 +13,43 @@ namespace PepperDash.Essentials
     /// </summary>
     public class TransmitMessage : IQueueMessage
     {
+        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            Converters = { new IsoDateTimeConverter() }
+        };
+
         private readonly WebSocket _ws;
-        private readonly object msgToSend;
+        private readonly string _serializedMessage;
 
         /// <summary>
-        /// Initialize a message to send
+        /// Initialize a message to send.
+        /// Serialization occurs here in the caller's thread context rather than on the queue thread.
         /// </summary>
         /// <param name="msg">message object to send</param>
         /// <param name="ws">WebSocket instance</param>
         public TransmitMessage(object msg, WebSocket ws)
         {
             _ws = ws;
-            msgToSend = msg;
+            _serializedMessage = JsonConvert.SerializeObject(msg, Formatting.None, SerializerSettings);
         }
 
         /// <summary>
-        /// Initialize a message to send
+        /// Initialize a message to send.
+        /// Serialization occurs here in the caller's thread context rather than on the queue thread.
         /// </summary>
         /// <param name="msg">message object to send</param>
         /// <param name="ws">WebSocket instance</param>
         public TransmitMessage(DeviceStateMessageBase msg, WebSocket ws)
         {
             _ws = ws;
-            msgToSend = msg;
+            _serializedMessage = JsonConvert.SerializeObject(msg, Formatting.None, SerializerSettings);
         }
 
         #region Implementation of IQueueMessage
 
         /// <summary>
-        /// Dispatch method
+        /// Dispatch method - only handles WebSocket send since serialization was done at construction time
         /// </summary>
         public void Dispatch()
         {
@@ -59,13 +67,9 @@ namespace PepperDash.Essentials
                     return;
                 }
 
+                Debug.LogVerbose("Message TX: {0}", _serializedMessage);
 
-                var message = JsonConvert.SerializeObject(msgToSend, Formatting.None,
-                    new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, Converters = { new IsoDateTimeConverter() } });
-
-                Debug.LogVerbose("Message TX: {0}", message);
-
-                _ws.Send(message);
+                _ws.Send(_serializedMessage);
             }
             catch (Exception ex)
             {

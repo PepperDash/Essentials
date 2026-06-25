@@ -100,14 +100,17 @@ public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingSinkWi
 				continue;
 			}
 
+			if (!signalType.HasFlag(type))
+			{
+				this.LogDebug("Skipping {type}", type);
+				continue;
+			}
+
 			this.LogDebug("setting {type}", type);
 
-			var previousSource = CurrentSources[type];
+			CurrentSources.TryGetValue(type, out var previousSource);
 
-			if (signalType.HasFlag(type))
-			{
-				UpdateCurrentSources(type, previousSource, sourceDevice);
-			}
+			UpdateCurrentSources(type, previousSource, sourceDevice);
 		}
 	}
 
@@ -125,11 +128,11 @@ public class GenericSoftCodec : EssentialsDevice, IRoutingSource, IRoutingSinkWi
 		// Update the current source key for the specified signal type
 		if (CurrentSourceKeys.ContainsKey(signalType))
 		{
-			CurrentSourceKeys[signalType] = sourceDevice.Key;
+			CurrentSourceKeys[signalType] = sourceDevice?.Key;
 		}
 		else
 		{
-			CurrentSourceKeys.Add(signalType, sourceDevice.Key);
+			CurrentSourceKeys.Add(signalType, sourceDevice?.Key);
 		}
 
 		// Raise the CurrentSourcesChanged event
