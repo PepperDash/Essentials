@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -43,6 +44,7 @@ namespace PepperDash.Essentials
         /// Enable subscriptions for Messengers
         /// </summary>
         [JsonProperty("enableMessengerSubscriptions")]
+        [Obsolete("This property is obsolete and will be removed in a future version. All messengers are now subscription based.")]
         public bool EnableMessengerSubscriptions { get; set; }
     }
 
