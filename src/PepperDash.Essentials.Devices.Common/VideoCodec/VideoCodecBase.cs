@@ -272,6 +272,8 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 	/// </summary>
 	public abstract void Dial(string number);
 
+	public abstract void Dial(string number, string password);
+
 	/// <summary>
 	/// Ends the specified call
 	/// </summary>

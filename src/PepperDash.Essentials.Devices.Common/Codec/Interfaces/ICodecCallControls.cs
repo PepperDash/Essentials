@@ -18,4 +18,11 @@ public interface ICodecCallControls : IHasDialer
     /// </summary>
     /// <param name="meeting">The meeting to dial</param>
     void Dial(Meeting meeting);
+
+    /// <summary>
+    /// Dials the specified number with an optional password
+    /// </summary>
+    /// <param name="number">The number to dial</param>
+    /// <param name="password">The optional password for the call</param>
+    void Dial(string number, string password);
 }

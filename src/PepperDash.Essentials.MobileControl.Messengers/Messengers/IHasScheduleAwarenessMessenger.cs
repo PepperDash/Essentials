@@ -21,7 +21,7 @@ public class IHasScheduleAwarenessMessenger : MessengerBase
 
     protected override void RegisterActions()
     {
-        AddAction("/schedule/fullStatus", (id, content) => SendFullScheduleObject());
+        AddAction("/schedule/fullStatus", (id, content) => SendFullScheduleObject(id));
     }
 
     private void CodecSchedule_MeetingEventChange(object sender, MeetingEventArgs e)
@@ -45,13 +45,13 @@ public class IHasScheduleAwarenessMessenger : MessengerBase
     /// <summary>
     /// Helper method to send the full schedule data
     /// </summary>
-    private void SendFullScheduleObject()
+    private void SendFullScheduleObject(string id = null)
     {
         PostStatusMessage(new FullScheduleMessage
         {
             Meetings = ScheduleSource.CodecSchedule.Meetings,
             MeetingWarningMinutes = ScheduleSource.CodecSchedule.MeetingWarningMinutes
-        });
+        }, id);
     }
 }
 

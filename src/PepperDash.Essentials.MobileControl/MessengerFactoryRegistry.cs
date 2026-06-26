@@ -172,8 +172,13 @@ namespace PepperDash.Essentials
                 ),
                 new MessengerFactoryEntry(
                     typeof(ICodecCallControls),
-                    (d, mp, ck) => new ICallControlsMessenger(
+                    (d, mp, ck) => new ICodecCallControlsMessenger(
                         $"{d.Key}-callControls-{ck}", mp, d)
+                ),
+                new MessengerFactoryEntry(
+                    typeof(IHasScheduleAwareness),
+                    (d, mp, ck) => new IHasScheduleAwarenessMessenger(
+                        $"{d.Key}-schedule-{ck}", (IHasScheduleAwareness)d, mp)
                 ),
                 new MessengerFactoryEntry(
                     typeof(IHasContentSharing),

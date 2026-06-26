@@ -205,6 +205,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         }
 
+        public override void Dial(string number, string password) 
+        {
+            Debug.LogMessage(LogEventLevel.Debug, this, "Dial: {0} with password: {1}", number, password);
+            var call = new CodecActiveCallItem() { Name = number, Number = number, Id = number, Status = eCodecCallStatus.Dialing, Direction = eCodecCallDirection.Outgoing, Type = eCodecCallType.Video };
+            ActiveCalls.Add(call);
+            OnCallStatusChange(call);
+            //ActiveCallCountFeedback.FireUpdate();
+            // Simulate 2-second ring, then connecting, then connected
+            var dialTimer = new Timer(2000) { AutoReset = false };
+            dialTimer.Elapsed += (s, e) =>
+            {
+                call.Type = eCodecCallType.Video;
+                SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
+                var connectTimer = new Timer(1000) { AutoReset = false };
+                connectTimer.Elapsed += (ss, ee) => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call);
+                connectTimer.Start();
+            };
+            dialTimer.Start();
+        }
+
         /// <inheritdoc />
         public override void EndCall(CodecActiveCallItem call)
         {

@@ -14,12 +14,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Provides a messaging bridge for devices implementing <see cref="ICodecCallControls"/>
     /// </summary>
-    public class ICallControlsMessenger : MessengerBase
+    public class ICodecCallControlsMessenger : MessengerBase
     {
         private readonly ICodecCallControls _callControls;
 
-        /// Initializes a new instance of the <see cref="ICallControlsMessenger"/> class.
-        public ICallControlsMessenger(string key, string messagePath, EssentialsDevice device)
+        /// Initializes a new instance of the <see cref="CodecCallControlsMessenger"/> class.
+        public ICodecCallControlsMessenger(string key, string messagePath, EssentialsDevice device)
             : base(key, messagePath, device)
         {
             _callControls = device as ICodecCallControls ?? throw new ArgumentNullException(nameof(device));
@@ -37,6 +37,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/dialMeeting", (id, content) =>
                 _callControls.Dial(content.ToObject<Meeting>()));
+
+            AddAction("/dialNumber", (id, content) =>
+            {
+                var message = content.ToObject<ICallControlsDialMeetingMessage>();
+                _callControls.Dial(message.Number, message.Password);
+            });
 
             AddAction("/endCallById", (id, content) =>
             {
@@ -112,5 +118,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
         [JsonProperty("calls", NullValueHandling = NullValueHandling.Ignore)]
         public List<CodecActiveCallItem> Calls { get; set; }
 
+    }
+
+    public class ICallControlsDialMeetingMessage 
+    {
+        [JsonProperty("number", Required = Required.Always)]
+        public string Number { get; set; }
+
+        [JsonProperty("password", NullValueHandling = NullValueHandling.Ignore)]
+        public string Password { get; set; }
     }
 }

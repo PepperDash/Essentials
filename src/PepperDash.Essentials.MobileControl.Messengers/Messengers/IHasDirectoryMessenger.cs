@@ -143,7 +143,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 HasDirectory = true,
                 HasDirectorySearch = true,
                 DirectorySelectedFolderName = _directory.CurrentDirectoryResult?.CurrentDirectoryResults?.Count > 0 ? _directory.CurrentDirectoryResult.CurrentDirectoryResults[0].Name : null,
-                DirectorySelectedFolderIsNotRoot = _directory.CurrentDirectorResultIsNotDirectoryRoot?.BoolValue
+                DirectorySelectedFolderIsNotRoot = _directory.CurrentDirectoryResultIsNotDirectoryRoot?.BoolValue
             });
         }
     }
