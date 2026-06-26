@@ -41,7 +41,7 @@ namespace PepperDash.Essentials
         public bool EnableApiServer { get; set; } = true;
 
         /// <summary>
-        /// Retained for backward compatibility only. This property is obsolete; all messengers are now subscription based.
+        /// Enables subscriptions for messengers
         /// </summary>
         [JsonProperty("enableMessengerSubscriptions")]
         [Obsolete("This property is obsolete and will be removed in a future version. All messengers are now subscription based.")]
