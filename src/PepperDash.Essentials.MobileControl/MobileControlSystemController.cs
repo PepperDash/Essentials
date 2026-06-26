@@ -59,14 +59,14 @@ namespace PepperDash.Essentials
             new Dictionary<string, IMobileControlMessenger>();
 
         /// <summary>
-        /// Get the custom messengers with subscriptions
+        /// Get the custom messengers
         /// </summary>
-        public ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions> Messengers => new ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions>(_messengers.Values.OfType<IMobileControlMessengerWithSubscriptions>().ToDictionary(k => k.Key, v => v));
+        public ReadOnlyDictionary<string, IMobileControlMessenger> Messengers => new ReadOnlyDictionary<string, IMobileControlMessenger>(_messengers);
 
         /// <summary>
         /// Get the default messengers
         /// </summary>
-        public ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions> DefaultMessengers => new ReadOnlyDictionary<string, IMobileControlMessengerWithSubscriptions>(_defaultMessengers.Values.OfType<IMobileControlMessengerWithSubscriptions>().ToDictionary(k => k.Key, v => v));
+        public ReadOnlyDictionary<string, IMobileControlMessenger> DefaultMessengers => new ReadOnlyDictionary<string, IMobileControlMessenger>(_defaultMessengers);
 
         private readonly GenericQueue _transmitToServerQueue;
 
@@ -534,23 +534,12 @@ namespace PepperDash.Essentials
                 messenger.MessagePath
             );
 
-            if (messenger is IMobileControlMessengerWithSubscriptions subMessenger)
-            {
-                subMessenger.RegisterWithAppServer(this, Config.EnableMessengerSubscriptions);
-                return;
-            }
-
             messenger.RegisterWithAppServer(this);
         }
 
         /// <inheritdoc />
         protected override void Initialize()
         {
-            if (!Config.EnableMessengerSubscriptions)
-            {
-                this.LogWarning("Messenger subscriptions disabled. add \"enableMessengerSubscriptions\": true to config for {key} to enable.", Key);
-            }
-
             foreach (var messenger in _messengers)
             {
                 try

@@ -30,9 +30,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
-            AddAction("/directoryStatus", (id, content) => SendFullStatus());
+            AddAction("/directoryStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/getDirectory", (id, content) => GetDirectoryRoot());
 
@@ -49,7 +49,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             AddAction("/directorySearch", (id, content) =>
             {
                 var msg = content.ToObject<MobileControlSimpleContent<string>>();
-                GetDirectory(msg.Value);
+                _directory.SearchDirectory(msg.Value);
             });
 
             AddAction("/directoryBack", (id, content) => GetPreviousDirectory());
@@ -133,7 +133,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             _directory.GetDirectoryParentFolderContents();
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             PostStatusMessage(new IHasDirectoryStateMessage
             {
@@ -144,7 +144,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 HasDirectorySearch = true,
                 DirectorySelectedFolderName = _directory.CurrentDirectoryResult?.CurrentDirectoryResults?.Count > 0 ? _directory.CurrentDirectoryResult.CurrentDirectoryResults[0].Name : null,
                 DirectorySelectedFolderIsNotRoot = _directory.CurrentDirectoryResultIsNotDirectoryRoot?.BoolValue
-            });
+            }, id);
         }
     }
 

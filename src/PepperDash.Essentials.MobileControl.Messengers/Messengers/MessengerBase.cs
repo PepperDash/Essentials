@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp.Net;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
@@ -13,17 +12,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// Provides a messaging bridge
     /// </summary>
-    public abstract class MessengerBase : EssentialsDevice, IMobileControlMessengerWithSubscriptions
+    public abstract class MessengerBase : EssentialsDevice, IMobileControlMessenger
     {
         /// <summary>
         /// The device this messenger is associated with
         /// </summary>
         protected IKeyName _device;
-
-        /// <summary>
-        /// Enable subscriptions
-        /// </summary>
-        protected bool enableMessengerSubscriptions;
 
         /// <summary>
         /// List of clients subscribed to this messenger
@@ -100,21 +94,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
             RegisterActions();
         }
 
-        /// <summary>
-        /// Register this messenger with appserver controller
-        /// </summary>
-        /// <param name="appServerController">Parent controller for this messenger</param>
-        /// <param name="enableMessengerSubscriptions">Enable subscriptions</param>
-        public void RegisterWithAppServer(IMobileControl appServerController, bool enableMessengerSubscriptions)
-        {
-            this.enableMessengerSubscriptions = enableMessengerSubscriptions;
-            AppServerController = appServerController ?? throw new ArgumentNullException("appServerController");
-
-            AppServerController.AddAction(this, HandleMessage);
-
-            RegisterActions();
-        }
-
         private void HandleMessage(string path, string id, JToken content)
         {
             // replace base path with empty string. Should leave something like /fullStatus
@@ -123,6 +102,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             if (!_actions.TryGetValue(route, out var action))
             {
                 return;
+            }
+
+            // Auto-subscribe the client on any incoming action
+            if (!string.IsNullOrEmpty(id))
+            {
+                SubscribeClient(id);
             }
 
             this.LogDebug("Executing action for path {path}", path);
@@ -176,21 +161,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
-        /// Add client to the susbscription list for unsolicited feedback
+        /// Add client to the subscription list for unsolicited feedback
         /// </summary>
         /// <param name="clientId">Client ID to add</param>
-        protected void SubscribeClient(string clientId)
+        private void SubscribeClient(string clientId)
         {
-            if (!enableMessengerSubscriptions)
-            {
-                return;
-            }
-
             lock (_subscriberLock)
             {
                 if (!subscriberIds.Add(clientId))
                 {
-                    this.LogVerbose("Client {clientId} already subscribed", clientId);
                     return;
                 }
             }
@@ -204,24 +183,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="clientId">Client ID to remove</param>
         public void UnsubscribeClient(string clientId)
         {
-            if (!enableMessengerSubscriptions)
-            {
-                return;
-            }
-
             bool wasSubscribed;
             lock (_subscriberLock)
             {
-                wasSubscribed = subscriberIds.Contains(clientId);
-                if (wasSubscribed)
-                {
-                    subscriberIds.Remove(clientId);
-                }
+                wasSubscribed = subscriberIds.Remove(clientId);
             }
 
             if (!wasSubscribed)
             {
-                this.LogVerbose("Client with ID {clientId} is not subscribed", clientId);
                 return;
             }
 
@@ -301,35 +270,26 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             try
             {
-                // Allow for legacy method to continue without subscriptions
-                if (!enableMessengerSubscriptions)
+                var messageType = !string.IsNullOrEmpty(type) ? type : MessagePath;
+
+                // If clientId is provided, send directly to that client
+                if (!string.IsNullOrEmpty(clientId))
                 {
-                    AppServerController?.SendMessageObject(new MobileControlMessage { Type = !string.IsNullOrEmpty(type) ? type : MessagePath, ClientId = clientId, Content = content });
+                    AppServerController?.SendMessageObject(new MobileControlMessage { Type = messageType, ClientId = clientId, Content = content });
                     return;
                 }
 
-                // handle subscription feedback
-                // If client is null or empty, this message is unsolicited feedback. Iterate through the subscriber list and send to all interested parties
-                if (string.IsNullOrEmpty(clientId))
+                // Unsolicited feedback: send to all subscribers
+                List<string> subscriberSnapshot;
+                lock (_subscriberLock)
                 {
-                    // Create a snapshot of subscribers to avoid collection modification during iteration
-                    List<string> subscriberSnapshot;
-                    lock (_subscriberLock)
-                    {
-                        subscriberSnapshot = new List<string>(subscriberIds);
-                    }
-
-                    foreach (var client in subscriberSnapshot)
-                    {
-                        AppServerController?.SendMessageObject(new MobileControlMessage { Type = !string.IsNullOrEmpty(type) ? type : MessagePath, ClientId = client, Content = content });
-                    }
-
-                    return;
+                    subscriberSnapshot = new List<string>(subscriberIds);
                 }
 
-                SubscribeClient(clientId);
-
-                AppServerController?.SendMessageObject(new MobileControlMessage { Type = !string.IsNullOrEmpty(type) ? type : MessagePath, ClientId = clientId, Content = content });
+                foreach (var client in subscriberSnapshot)
+                {
+                    AppServerController?.SendMessageObject(new MobileControlMessage { Type = messageType, ClientId = client, Content = content });
+                }
             }
             catch (Exception ex)
             {

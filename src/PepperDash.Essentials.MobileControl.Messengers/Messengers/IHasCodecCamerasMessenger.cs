@@ -40,8 +40,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             _cameraCodec.CameraSelected += CameraCodec_CameraSelected;
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
-            AddAction("/codecCamerasStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
+            AddAction("/codecCamerasStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/cameraSelect", (id, content) =>
             {
@@ -327,7 +327,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             try
             {
@@ -344,7 +344,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                         SelectedCamera = GetSelectedCamera(_cameraCodec)
                     },
                     Presets = GetCurrentPresets()
-                });
+                }, id);
             }
             catch (Exception ex)
             {

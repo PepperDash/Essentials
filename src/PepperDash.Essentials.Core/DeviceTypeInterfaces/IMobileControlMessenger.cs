@@ -27,5 +27,11 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// </summary>
     /// <param name="appServerController"></param>
     void RegisterWithAppServer(IMobileControl appServerController);
+
+    /// <summary>
+    /// Unsubscribe a client from this messenger
+    /// </summary>
+    /// <param name="clientId">Client ID to remove from subscription list</param>
+    void UnsubscribeClient(string clientId);
   }
 }

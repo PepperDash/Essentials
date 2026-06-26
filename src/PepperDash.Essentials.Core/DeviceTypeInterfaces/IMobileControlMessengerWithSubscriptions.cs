@@ -1,23 +1,14 @@
+using System;
 using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
   /// <summary>
-  /// Defines the contract for IMobileControlMessenger
+  /// Obsolete. Use <see cref="IMobileControlMessenger"/> directly.
+  /// Subscriptions are now always enabled in MessengerBase.
   /// </summary>
+  [Obsolete("Use IMobileControlMessenger directly. Subscriptions are always enabled.")]
   public interface IMobileControlMessengerWithSubscriptions : IMobileControlMessenger
   {
-    /// <summary>
-    /// Unsubscribe a client from this messenger
-    /// </summary>
-    /// <param name="clientId"></param>
-    void UnsubscribeClient(string clientId);
-
-    /// <summary>
-    /// Register this messenger with the AppServerController
-    /// </summary>
-    /// <param name="appServerController">parent for this messenger</param>
-    /// <param name="enableMessengerSubscriptions">Enable messenger subscriptions</param>
-    void RegisterWithAppServer(IMobileControl appServerController, bool enableMessengerSubscriptions);
   }
 }

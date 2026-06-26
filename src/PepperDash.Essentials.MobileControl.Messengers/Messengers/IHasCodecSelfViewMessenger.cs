@@ -28,9 +28,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
-            AddAction("/cameraSelfViewStatus", (id, content) => SendFullStatus());
+            AddAction("/cameraSelfViewStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/cameraSelfView", (id, content) => _selfView.SelfViewModeToggle());
 
@@ -42,12 +42,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostCameraSelfView();
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
-            PostCameraSelfView();
+            PostCameraSelfView(id);
         }
 
-        private void PostCameraSelfView()
+        private void PostCameraSelfView(string id = null)
         {
             try
             {
@@ -55,7 +55,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 {
                     CameraSelfViewIsOn = _selfView.SelfviewIsOnFeedback.BoolValue,
                     ShowSelfViewByDefault = _selfView.ShowSelfViewByDefault
-                });
+                }, id);
             }
             catch (Exception ex)
             {

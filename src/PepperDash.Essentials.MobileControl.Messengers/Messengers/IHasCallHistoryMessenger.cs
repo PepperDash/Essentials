@@ -30,10 +30,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => PostCallHistory());
-            AddAction("/callHistoryStatus", (id, content) => PostCallHistory());
+            AddAction("/fullStatus", (id, content) => PostCallHistory(id));
+            AddAction("/callHistoryStatus", (id, content) => PostCallHistory(id));
 
-            AddAction("/getCallHistory", (id, content) => PostCallHistory());
+            AddAction("/getCallHistory", (id, content) => PostCallHistory(id));
         }
 
         private void CallHistory_RecentCallsListHasChanged(object sender, EventArgs e)
@@ -57,7 +57,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        private void PostCallHistory()
+        private void PostCallHistory(string id = null)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     PostStatusMessage(new IHasCallHistoryStateMessage
                     {
                         RecentCalls = recents,
-                    });
+                    }, id);
                 }
             }
             catch (Exception ex)

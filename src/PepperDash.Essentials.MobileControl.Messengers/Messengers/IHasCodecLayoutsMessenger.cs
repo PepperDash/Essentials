@@ -28,12 +28,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             SendFullStatus();
         }
 
-        private void SendFullStatus()
+        private void SendFullStatus(string id = null)
         {
             PostStatusMessage(new IHasCodecLayoutsStateMessage
             {
                 CurrentLayout = _layouts.LocalLayoutFeedback.StringValue
-            });
+            }, id);
         }
 
         /// <inheritdoc />
@@ -41,9 +41,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             base.RegisterActions();
 
-            AddAction("/fullStatus", (id, content) => SendFullStatus());
+            AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
-            AddAction("/layoutStatus", (id, content) => SendFullStatus());
+            AddAction("/layoutStatus", (id, content) => SendFullStatus(id));
 
             AddAction("/cameraRemoteView", (id, content) => _layouts.LocalLayoutToggle());
             AddAction("/cameraLayout", (id, content) => _layouts.LocalLayoutToggle());
