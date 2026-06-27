@@ -1,10 +1,12 @@
+using System;
 using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
   /// <summary>
-  /// Defines the contract for IMobileControlMessenger
+  /// Obsolete: messengers are subscription based by default; use IMobileControlMessenger instead.
   /// </summary>
+  [Obsolete("This interface is obsolete and will be removed in a future version. All messengers are now subscription based.")]
   public interface IMobileControlMessengerWithSubscriptions : IMobileControlMessenger
   {
     /// <summary>
