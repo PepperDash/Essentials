@@ -1,4 +1,5 @@
-﻿using PepperDash.Core;
+﻿using System;
+using PepperDash.Core;
 using Serilog.Events;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,8 @@ public class RouteDescriptorCollection
     private static RouteDescriptorCollection _DefaultCollection;
 
     private readonly List<RouteDescriptor> RouteDescriptors = new List<RouteDescriptor>();
+
+    public event EventHandler RouteDescriptorCollectionChanged;
 
     /// <summary>
     /// Gets an enumerable collection of all RouteDescriptors in this collection.
@@ -70,6 +73,8 @@ public class RouteDescriptorCollection
             descriptor?.InputPort?.Key ?? "auto",
             descriptor?.SignalType);
         RouteDescriptors.Add(descriptor);
+
+        RouteDescriptorCollectionChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -110,7 +115,10 @@ public class RouteDescriptorCollection
             ? GetRouteDescriptorForDestination(destination)
             : GetRouteDescriptorForDestinationAndInputPort(destination, inputPortKey);
         if (descr != null)
+        {
             RouteDescriptors.Remove(descr);
+            RouteDescriptorCollectionChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         Debug.LogMessage(LogEventLevel.Information, "Found route descriptor {routeDescriptor}", destination, descr);
 
