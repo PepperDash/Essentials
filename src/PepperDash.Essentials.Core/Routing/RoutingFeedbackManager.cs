@@ -225,6 +225,7 @@ namespace PepperDash.Essentials.Core.Routing
             try
             {
                 UpdateDestination(sender, currentInputPort);
+
             }
             catch (Exception ex)
             {
@@ -340,11 +341,6 @@ namespace PepperDash.Essentials.Core.Routing
                         inputPort
                     );
 
-                    var tempSourceListItem = new SourceListItem
-                    {
-                        SourceKey = "$transient",
-                        Name = inputPort.Key,
-                    };
 
                     return;
                 }
@@ -371,12 +367,16 @@ namespace PepperDash.Essentials.Core.Routing
                         inputPort
                     );
 
-                    var tempSourceListItem = new SourceListItem
-                    {
-                        SourceKey = "$transient",
-                        Name = "None",
-                    };
 
+                    // determine all the tie lines between the source and destination to determine the signal type
+                    // the type is the union of all the tie lines between the source and destination
+
+                    // For now we assume the type matches the tie line connected to the destination
+                    destination.SetCurrentSource(firstTieLine.Type, null);
+
+                    // remove existing descriptor if any
+                    RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPort.Key);
+                    
                     return;
                 }
             }
@@ -386,83 +386,24 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found root TieLine {tieLine}", this, sourceTieLine);
 
-            // Does not handle combinable scenarios or other scenarios where a display might be part of multiple rooms yet.
-            var room = DeviceManager
-                .AllDevices.OfType<IEssentialsRoom>()
-                .FirstOrDefault(
-                    (r) =>
-                    {
+            // Get the routes from the destination to the source using the existing GetRouteToSource method
+            var routes = destination.GetRouteToSource(
+                sourceTieLine.SourcePort.ParentDevice as IRoutingOutputs,
+                sourceTieLine.Type,
+                inputPort,
+                sourceTieLine.SourcePort
+            );
 
-                        if (r is IHasDefaultDisplay roomDefaultDisplay)
-                        {
-                            return roomDefaultDisplay.DefaultDisplay.Key == destination.Key;
-                        }
+            // remove existing descriptor if any
+            RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPort.Key);
 
-                        return false;
-                    }
-                );
+            // Add the new route descriptors to the collection
+            RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(routes.Item1);
 
-            if (room == null)
+            if(routes.Item2 != null)
             {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
-                    "No room found for display {destination}",
-                    this,
-                    destination.Key
-                );
-                return;
-            }
-
-            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found room {room} for destination {destination}", this, room.Key, destination.Key);
-
-            var sourceList = ConfigReader.ConfigObject.GetSourceListForKey(room.SourceListKey);
-
-            if (sourceList == null)
-            {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
-                    "No source list found for source list key {key}. Unable to find source for tieLine {sourceTieLine}",
-                    this,
-                    room.SourceListKey,
-                    sourceTieLine
-                );
-                return;
-            }
-
-            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Found sourceList for room {room}", this, room.Key);
-
-            var sourceListItem = sourceList.FirstOrDefault(sli =>
-            {
-                //// Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose,
-                //   "SourceListItem {sourceListItem}:{sourceKey} tieLine sourceport device key {sourcePortDeviceKey}",
-                //   this,
-                //   sli.Key,
-                //   sli.Value.SourceKey,
-                //   sourceTieLine.SourcePort.ParentDevice.Key);
-
-                return sli.Value.SourceKey.Equals(
-                    sourceTieLine.SourcePort.ParentDevice.Key,
-                    StringComparison.InvariantCultureIgnoreCase
-                );
-            });
-
-            var source = sourceListItem.Value;
-            var sourceKey = sourceListItem.Key;
-
-            if (source == null)
-            {
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
-                    "No source found for device {key}. Creating transient source for {destination}",
-                    this,
-                    sourceTieLine.SourcePort.ParentDevice.Key,
-                    destination
-                );
-
-
-                return;
+                RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(routes.Item2);
             }
 
         }

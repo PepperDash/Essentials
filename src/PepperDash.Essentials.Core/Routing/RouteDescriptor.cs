@@ -7,137 +7,160 @@ using PepperDash.Core;
 using Serilog.Events;
 
 
-namespace PepperDash.Essentials.Core;
-
-/// <summary>
-/// Represents a collection of individual route steps between a Source and a Destination device for a specific signal type.
-/// </summary>
-public class RouteDescriptor
+namespace PepperDash.Essentials.Core
 {
     /// <summary>
-    /// The destination device (sink or midpoint) for the route.
+    /// Represents a collection of individual route steps between a Source and a Destination device for a specific signal type.
     /// </summary>
-    public IRoutingInputs Destination { get; private set; }
-
-    /// <summary>
-    /// The specific input port on the destination device used for this route. Can be null if not specified or applicable.
-    /// </summary>
-    public RoutingInputPort InputPort { get; private set; }
-
-    /// <summary>
-    /// The source device for the route.
-    /// </summary>
-    public IRoutingOutputs Source { get; private set; }
-
-    /// <summary>
-    /// The type of signal being routed (e.g., Audio, Video). This descriptor represents a single signal type.
-    /// </summary>
-    public eRoutingSignalType SignalType { get; private set; }
-
-    /// <summary>
-    /// A list of individual switching steps required to establish the route.
-    /// </summary>
-    public List<RouteSwitchDescriptor> Routes { get; private set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route without a specific destination input port.
-    /// </summary>
-    /// <param name="source">The source device.</param>
-    /// <param name="destination">The destination device.</param>
-    /// <param name="signalType">The type of signal being routed.</param>
-    public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, eRoutingSignalType signalType) : this(source, destination, null, signalType)
+    public class RouteDescriptor
     {
-    }
+        /// <summary>
+        /// The destination device (sink or midpoint) for the route.
+        /// </summary>
+        public IRoutingInputs Destination { get; private set; }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route with a specific destination input port.
-    /// </summary>
-    /// <param name="source">The source device.</param>
-    /// <param name="destination">The destination device.</param>
-    /// <param name="inputPort">The destination input port (optional).</param>
-    /// <param name="signalType">The signal type for this route.</param>
-    public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, eRoutingSignalType signalType)
-    {
-        Destination = destination;
-        InputPort = inputPort;
-        Source = source;
-        SignalType = signalType;
-        Routes = new List<RouteSwitchDescriptor>();
-    }
+        /// <summary>
+        /// The InputPort on the destination device for this route, if applicable.  May be null if the route is not for a specific input port.
+        /// </summary>
+        public RoutingInputPort InputPort { get; private set; }
 
-    /// <summary>
-    /// Executes all the switching steps defined in the <see cref="Routes"/> list.
-    /// </summary>
-    public void ExecuteRoutes()
-    {
-        foreach (var route in Routes)
+        /// <summary>
+        /// Gets the source device (sink or midpoint) for the route.
+        /// </summary>
+        public IRoutingOutputs Source { get; private set; }
+
+        /// <summary>
+        /// Gets the OutputPort on the source device for this route, if applicable.  May be null if the route is not for a specific output port.
+        /// </summary>
+        public RoutingOutputPort OutputPort { get; private set; }
+
+        /// <summary>
+        /// Gets the signal type for this route.
+        /// </summary>
+        public eRoutingSignalType SignalType { get; private set; }
+
+        /// <summary>
+        /// Gets the collection of route switch descriptors for this route.
+        /// </summary>
+        public List<RouteSwitchDescriptor> Routes { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route without a specific destination input port.
+        /// </summary>
+        /// <param name="source">The source device.</param>
+        /// <param name="destination">The destination device.</param>
+        /// <param name="signalType">The type of signal being routed.</param>
+        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, eRoutingSignalType signalType) : this(source, destination, null, signalType)
         {
-            Debug.LogMessage(LogEventLevel.Verbose, "ExecuteRoutes: {0}", null, route.ToString());
-
-            if (route.SwitchingDevice is IRoutingSinkWithFeedback sink)
-            {
-                sink.ExecuteSwitch(route.InputPort.Selector);
-                continue;
-            }
-
-            if (route.SwitchingDevice is IRoutingMidpointWithFeedback switchingDevice)
-            {
-                switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
-
-                route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
-
-                Debug.LogMessage(LogEventLevel.Verbose, "Output port {0} routing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
-            }
         }
-    }
 
-    /// <summary>
-    /// Releases the usage tracking for the route and optionally clears the route on the switching devices.
-    /// </summary>
-    /// <param name="clearRoute">If true, attempts to clear the route on the switching devices (e.g., set input to null/0).</param>
-    public void ReleaseRoutes(bool clearRoute = false)
-    {
-        foreach (var route in Routes.Where(r => r.SwitchingDevice is IRoutingMidpointWithFeedback))
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route with a specific destination input port.
+        /// </summary>
+        /// <param name="source">The source device.</param>
+        /// <param name="destination">The destination device.</param>
+        /// <param name="inputPort">The destination input port (optional).</param>
+        /// <param name="signalType">The signal type for this route.</param>
+        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, eRoutingSignalType signalType) : this(source, destination, inputPort, null, signalType)
         {
-            if (route.SwitchingDevice is IRoutingMidpointWithFeedback switchingDevice)
-            {
-                if (clearRoute)
-                {
-                    try
-                    {
-                        switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError("Error executing switch: {exception}", e.Message);
-                    }
-                }
+        }
 
-                if (route.OutputPort == null)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RouteDescriptor"/> class for a route with specific destination input and source output ports.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="destination"></param>
+        /// <param name="inputPort"></param>
+        /// <param name="outputPort"></param>
+        /// <param name="signalType"></param>
+        public RouteDescriptor(IRoutingOutputs source, IRoutingInputs destination, RoutingInputPort inputPort, RoutingOutputPort outputPort, eRoutingSignalType signalType)
+        {
+            Destination = destination;
+            InputPort = inputPort;
+            Source = source;
+            OutputPort = outputPort;
+            SignalType = signalType;
+            Routes = new List<RouteSwitchDescriptor>();
+        }
+
+        /// <summary>
+        /// ExecuteRoutes method
+        /// </summary>
+        public void ExecuteRoutes()
+        {
+            foreach (var route in Routes)
+            {
+                Debug.LogVerbose("ExecuteRoutes: {0}", route.ToString());
+
+                if (route.SwitchingDevice is IRoutingSinkWithFeedback sink)
                 {
+                    sink.ExecuteSwitch(route.InputPort.Selector);
                     continue;
                 }
 
-                if (route.OutputPort.InUseTracker != null)
+                if (route.SwitchingDevice is IRoutingMidpointWithFeedback switchingDevice)
                 {
-                    route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
-                    Debug.LogMessage(LogEventLevel.Verbose, "Port {0} releasing. Count={1}", null, route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
-                }
-                else
-                {
-                    Debug.LogMessage(LogEventLevel.Error, "InUseTracker is null for OutputPort {0}", null, route.OutputPort.Key);
+                    switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
+
+                    route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
+
+                    Debug.LogVerbose("Output port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
                 }
             }
         }
+
+        /// <summary>
+        /// Releases the usage tracking for the route and optionally clears the route on the switching devices.
+        /// </summary>
+        /// <param name="clearRoute">If true, attempts to clear the route on the switching devices (e.g., set input to null/0).</param>
+
+
+        public void ReleaseRoutes(bool clearRoute = false)
+        {
+            foreach (var route in Routes.Where(r => r.SwitchingDevice is IRoutingMidpointWithFeedback))
+            {
+                if (route.SwitchingDevice is IRoutingMidpointWithFeedback switchingDevice)
+                {
+                    if (clearRoute)
+                    {
+                        try
+                        {
+                            switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError("Error executing switch: {exception}", e.Message);
+                            Debug.LogDebug(e, "Stack Trace: ");
+                        }
+                    }
+
+                    if (route.OutputPort == null)
+                    {
+                        continue;
+                    }
+
+                    if (route.OutputPort.InUseTracker != null)
+                    {
+                        route.OutputPort.InUseTracker.RemoveUser(Destination, "destination-" + SignalType);
+                        Debug.LogVerbose("Port {0} releasing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+                    }
+                    else
+                    {
+                        Debug.LogVerbose("InUseTracker is null for OutputPort {0}", route.OutputPort.Key);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a string representation of the route descriptor, including source, destination, and individual route steps.
+        /// </summary>
+        /// <returns>A string describing the route.</returns>
+        public override string ToString()
+        {
+            var routesText = Routes.Select(r => r.ToString()).ToArray();
+            return $"Route table from {Source.Key} to {Destination.Key} for {SignalType}:\r\n    {string.Join("\r\n    ", routesText)}";
+        }
     }
 
-    /// <summary>
-    /// Returns a string representation of the route descriptor, including source, destination, and individual route steps.
-    /// </summary>
-    /// <returns>A string describing the route.</returns>
-    public override string ToString()
-    {
-        var routesText = Routes.Select(r => r.ToString()).ToArray();
-        return $"Route table from {Source.Key} to {Destination.Key} for {SignalType}:\r\n    {string.Join("\r\n    ", routesText)}";
-    }
 }

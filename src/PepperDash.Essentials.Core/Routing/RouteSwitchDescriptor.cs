@@ -2,6 +2,7 @@
 {
     /// <summary>
     /// Represents a RouteSwitchDescriptor
+    /// This represents a switch to be made on an IRoutingInputs device, which could be a matrix switcher or a sink device.
     /// </summary>
     public class RouteSwitchDescriptor
     {

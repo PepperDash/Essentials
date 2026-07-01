@@ -28,6 +28,9 @@ public class RouteDescriptorCollection
 
     private readonly List<RouteDescriptor> RouteDescriptors = new List<RouteDescriptor>();
 
+    /// <summary>
+    /// Event raised when the collection of RouteDescriptors changes (add/remove).  This is useful for updating routing status in the UI, for example.
+    /// </summary>
     public event EventHandler RouteDescriptorCollectionChanged;
 
     /// <summary>

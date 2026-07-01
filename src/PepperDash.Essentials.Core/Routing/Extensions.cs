@@ -222,7 +222,7 @@ public static class Extensions
         // if it's a single signal type, find the route
         if (!signalType.HasFlag(eRoutingSignalType.AudioVideo))
         {
-            var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, signalType);
+            var singleTypeRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, sourcePort, signalType);
             Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key, signalType);
 
             if (!destination.GetRouteToSource(source, null, null, signalType, 0, singleTypeRouteDescriptor, destinationPort, sourcePort))
@@ -240,14 +240,14 @@ public static class Extensions
 
         Debug.LogMessage(LogEventLevel.Debug, "Attempting to build source route from {sourceKey} of type {type}", destination, source.Key);
 
-        var audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Audio);
+        var audioRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, sourcePort, eRoutingSignalType.Audio);
 
         var audioSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Audio, 0, audioRouteDescriptor, destinationPort, sourcePort);
 
         if (!audioSuccess)
             Debug.LogMessage(LogEventLevel.Debug, "Cannot find audio route to {0}", destination, source.Key);
 
-        var videoRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, eRoutingSignalType.Video);
+        var videoRouteDescriptor = new RouteDescriptor(source, destination, destinationPort, sourcePort, eRoutingSignalType.Video);
 
         var videoSuccess = destination.GetRouteToSource(source, null, null, eRoutingSignalType.Video, 0, videoRouteDescriptor, destinationPort, sourcePort);
 
@@ -366,7 +366,8 @@ public static class Extensions
                     audioOrSingleRoute = audioCollection.Descriptors.FirstOrDefault(d =>
                         d.Source.Key == request.Source.Key &&
                         d.Destination.Key == request.Destination.Key &&
-                        (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key));
+                        (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key) &&
+                        (request.SourcePort == null || d.OutputPort?.Key == request.SourcePort.Key));
                 }
 
                 if (RouteDescriptors.TryGetValue(eRoutingSignalType.Video, out RouteDescriptorCollection videoCollection))
@@ -374,7 +375,8 @@ public static class Extensions
                     videoRoute = videoCollection.Descriptors.FirstOrDefault(d =>
                         d.Source.Key == request.Source.Key &&
                         d.Destination.Key == request.Destination.Key &&
-                        (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key));
+                        (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key) &&
+                        (request.SourcePort == null || d.OutputPort?.Key == request.SourcePort.Key));
                 }
             }
             else
@@ -385,7 +387,8 @@ public static class Extensions
                     audioOrSingleRoute = collection.Descriptors.FirstOrDefault(d =>
                         d.Source.Key == request.Source.Key &&
                         d.Destination.Key == request.Destination.Key &&
-                        (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key));
+                        (request.DestinationPort == null || d.InputPort?.Key == request.DestinationPort.Key) &&
+                        (request.SourcePort == null || d.OutputPort?.Key == request.SourcePort.Key));
                 }
             }
 
