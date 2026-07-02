@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
@@ -296,19 +297,14 @@ namespace PepperDash.Essentials.Core
         {
             var secretPresent = provider.TestSecret(key);
 
-            Debug.LogMessage(LogEventLevel.Verbose, provider, "SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
+            provider.LogVerbose("SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
 
             if (!secretPresent)
                 return
-                    String.Format(
-                        "Unable to update secret for {0}:{1} - Please use the 'SetSecret' command to modify it");
+                    $"Unable to update secret for {provider.Key}:{key} - Please use the 'SetSecret' command to modify it";
             var response = provider.SetSecret(key, secret)
-                ? String.Format(
-                    "Secret successfully set for {0}:{1}",
-                    provider.Key, key)
-                : String.Format(
-                    "Unable to set secret for {0}:{1}",
-                    provider.Key, key);
+                ? $"Secret successfully set for {provider.Key}:{key}"
+                : $"Unable to set secret for {provider.Key}:{key}";
             return response;
         }
 
@@ -316,19 +312,14 @@ namespace PepperDash.Essentials.Core
         {
             var secretPresent = provider.TestSecret(key);
 
-            Debug.LogMessage(LogEventLevel.Verbose, provider, "SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
+            provider.LogVerbose("SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
 
             if (secretPresent)
                 return
-                    String.Format(
-                        "Unable to set secret for {0}:{1} - Please use the 'UpdateSecret' command to modify it");
+                    $"Unable to set secret for {provider.Key}:{key} - Please use the 'UpdateSecret' command to modify it";
             var response = provider.SetSecret(key, secret)
-                ? String.Format(
-                    "Secret successfully set for {0}:{1}",
-                    provider.Key, key)
-                : String.Format(
-                    "Unable to set secret for {0}:{1}",
-                    provider.Key, key);
+                ? $"Secret successfully set for {provider.Key}:{key}"
+                : $"Unable to set secret for {provider.Key}:{key}";
             return response;
 
         }
@@ -377,15 +368,10 @@ namespace PepperDash.Essentials.Core
 
             var key = args[1];
 
-
             provider.SetSecret(key, "");
             response = provider.SetSecret(key, "")
-                ? String.Format(
-                    "Secret successfully deleted for {0}:{1}",
-                    provider.Key, key)
-                : String.Format(
-                    "Unable to delete secret for {0}:{1}",
-                    provider.Key, key);
+                ? $"Secret successfully deleted for {provider.Key}:{key}"
+                : $"Unable to delete secret for {provider.Key}:{key}";
             CrestronConsole.ConsoleCommandResponse(response);
             return;
 
