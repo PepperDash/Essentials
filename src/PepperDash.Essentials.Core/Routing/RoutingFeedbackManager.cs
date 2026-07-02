@@ -14,9 +14,12 @@ namespace PepperDash.Essentials.Core.Routing
     public class RoutingFeedbackManager : EssentialsDevice
     {
         /// <summary>
-        /// Maps midpoint device keys to the set of sink device keys that are downstream
+        /// Maps midpoint device keys to the set of downstream sink input ports, derived from the
+        /// static tie-line topology. Because it is built from topology rather than a sink's currently
+        /// reported input, sinks that never report an input (i.e. <see cref="IRoutingSinkWithFeedback.CurrentInputPort"/>
+        /// stays null, such as codecs fed from an external matrix) are still mapped and updated.
         /// </summary>
-        private Dictionary<string, HashSet<string>> midpointToSinksMap;
+        private Dictionary<string, HashSet<RoutingInputPort>> midpointToSinkInputsMap;
 
         /// <summary>
         /// Debounce timers for each sink device to prevent rapid successive updates
@@ -42,30 +45,39 @@ namespace PepperDash.Essentials.Core.Routing
         }
 
         /// <summary>
-        /// Builds a map of which sink devices are downstream of each midpoint device
-        /// for performance optimization in HandleMidpointUpdate
+        /// Builds a map of which sink input ports are downstream of each midpoint device
+        /// for performance optimization in HandleMidpointUpdate.
+        /// The map is derived from the static tie-line topology (every sink input port is traced
+        /// upstream), so it does not depend on a sink having already reported its current input.
         /// </summary>
         private void BuildMidpointSinkMap()
         {
-            midpointToSinksMap = new Dictionary<string, HashSet<string>>();
+            midpointToSinkInputsMap = new Dictionary<string, HashSet<RoutingInputPort>>();
 
             var sinks = DeviceManager.AllDevices.OfType<IRoutingSinkWithFeedback>();
-            var midpoints = DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>();
 
             foreach (var sink in sinks)
             {
-                if (sink.CurrentInputPort == null)
+                // Trace from every input port on the sink (static topology) rather than only the
+                // currently-selected input. Sinks that never report an input still get mapped.
+                var inputPorts = (sink as IRoutingInputs)?.InputPorts;
+                if (inputPorts == null)
                     continue;
 
-                // Find all upstream midpoints for this sink
-                var upstreamMidpoints = GetUpstreamMidpoints(sink);
-
-                foreach (var midpointKey in upstreamMidpoints)
+                foreach (var inputPort in inputPorts)
                 {
-                    if (!midpointToSinksMap.ContainsKey(midpointKey))
-                        midpointToSinksMap[midpointKey] = new HashSet<string>();
+                    var upstreamMidpoints = GetUpstreamMidpointsForInput(inputPort);
 
-                    midpointToSinksMap[midpointKey].Add(sink.Key);
+                    foreach (var midpointKey in upstreamMidpoints)
+                    {
+                        if (!midpointToSinkInputsMap.TryGetValue(midpointKey, out var inputs))
+                        {
+                            inputs = new HashSet<RoutingInputPort>();
+                            midpointToSinkInputsMap[midpointKey] = inputs;
+                        }
+
+                        inputs.Add(inputPort);
+                    }
                 }
             }
 
@@ -73,24 +85,25 @@ namespace PepperDash.Essentials.Core.Routing
                 Serilog.Events.LogEventLevel.Information,
                 "Built midpoint-to-sink map with {count} midpoints",
                 this,
-                midpointToSinksMap.Count
+                midpointToSinkInputsMap.Count
             );
         }
 
         /// <summary>
-        /// Gets all upstream midpoint device keys for a given sink
+        /// Gets all upstream midpoint device keys reachable from a specific sink input port
+        /// by walking the static tie-line topology.
         /// </summary>
-        private HashSet<string> GetUpstreamMidpoints(IRoutingSinkWithFeedback sink)
+        private HashSet<string> GetUpstreamMidpointsForInput(RoutingInputPort inputPort)
         {
             var result = new HashSet<string>();
             var visited = new HashSet<string>();
 
-            if (sink.CurrentInputPort == null)
+            if (inputPort == null)
                 return result;
 
             var tieLine = TieLineCollection.Default.FirstOrDefault(tl =>
-                tl.DestinationPort.Key == sink.CurrentInputPort.Key &&
-                tl.DestinationPort.ParentDevice.Key == sink.CurrentInputPort.ParentDevice.Key);
+                tl.DestinationPort.Key == inputPort.Key &&
+                tl.DestinationPort.ParentDevice.Key == inputPort.ParentDevice.Key);
 
             if (tieLine == null)
                 return result;
@@ -171,22 +184,34 @@ namespace PepperDash.Essentials.Core.Routing
             try
             {
                 // Only update affected sinks (performance optimization)
-                if (midpointToSinksMap != null && midpointToSinksMap.TryGetValue(midpoint.Key, out var affectedSinkKeys))
+                if (midpointToSinkInputsMap != null && midpointToSinkInputsMap.TryGetValue(midpoint.Key, out var affectedInputPorts))
                 {
                     Debug.LogMessage(
                         Serilog.Events.LogEventLevel.Debug,
-                        "Midpoint {midpoint} changed, updating {count} downstream sinks",
+                        "Midpoint {midpoint} changed, updating {count} downstream sink inputs",
                         this,
                         midpoint.Key,
-                        affectedSinkKeys.Count
+                        affectedInputPorts.Count
                     );
 
-                    foreach (var sinkKey in affectedSinkKeys)
+                    // Avoid redundant updates when a feedback-reporting sink has several mapped inputs.
+                    var updatedSinkKeys = new HashSet<string>();
+
+                    foreach (var inputPort in affectedInputPorts)
                     {
-                        if (DeviceManager.GetDeviceForKey(sinkKey) is IRoutingSinkWithFeedback sink)
-                        {
-                            UpdateDestination(sink, sink.CurrentInputPort);
-                        }
+                        if (!(inputPort.ParentDevice is IRoutingSinkWithFeedback sink))
+                            continue;
+
+                        // Sinks that report their input drive updates off the currently-selected input.
+                        // Sinks that never report an input (CurrentInputPort == null, e.g. a codec fed
+                        // from an external matrix) fall back to the static topology input port so that
+                        // matrix route changes still propagate.
+                        var portToUse = sink.CurrentInputPort ?? inputPort;
+
+                        if (sink.CurrentInputPort != null && !updatedSinkKeys.Add(sink.Key))
+                            continue;
+
+                        UpdateDestination(sink, portToUse);
                     }
                 }
                 else
