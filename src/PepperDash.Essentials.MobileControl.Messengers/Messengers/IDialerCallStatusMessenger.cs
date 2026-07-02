@@ -32,7 +32,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         /// <inheritdoc />
         protected override void RegisterActions()
-
         {
             base.RegisterActions();
 

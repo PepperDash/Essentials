@@ -168,7 +168,13 @@ namespace PepperDash.Essentials
                 new MessengerFactoryEntry(
                     typeof(IHasDialer),
                     (d, mp, ck) => new IHasDialerMessenger(
-                        $"{d.Key}-dialer-{ck}", mp, d)
+                        $"{d.Key}-dialer-{ck}", mp, d),
+                    // IDialerCallStatus and ICodecCallControls both extend IHasDialer and each already
+                    // provide their own richer messenger (posting a "calls" array) subscribed to the same
+                    // CallStatusChange event and the same "/device/{key}" message path. Without this
+                    // exclusion, a device implementing either interface would get both messengers posting
+                    // conflicting state shapes ("callItem" vs "calls") to the same clients.
+                    predicate: d => d is IHasDialer && !(d is IDialerCallStatus) && !(d is ICodecCallControls)
                 ),
                 new MessengerFactoryEntry(
                     typeof(ICodecCallControls),
