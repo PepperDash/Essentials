@@ -1,11 +1,11 @@
 <Project>
   <PropertyGroup>
-    <Version>2.29.0-local</Version>
+    <Version>2.36.6-local</Version>
     <InformationalVersion>$(Version)</InformationalVersion>
     <Authors>PepperDash Technology</Authors>
     <Company>PepperDash Technology</Company>
     <Product>PepperDash Essentials</Product>
-    <Copyright>Copyright ©  2025</Copyright>
+    <Copyright>Copyright © 2026</Copyright>
     <RepositoryUrl>https://github.com/PepperDash/Essentials</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Crestron; 4series</PackageTags>
