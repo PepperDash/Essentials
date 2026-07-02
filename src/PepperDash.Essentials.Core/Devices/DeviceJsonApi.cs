@@ -78,9 +78,7 @@ public class DeviceJsonApi
             }
             var mParams = method.GetParameters();
 
-            var convertedParams = mParams
-                                .Select((p, i) => ConvertType(action.Params[i], p.ParameterType))
-                                .ToArray();
+            var convertedParams = BuildConvertedParams(mParams, action.Params);
 
             Task.Run(() =>
                 {
@@ -142,9 +140,7 @@ public class DeviceJsonApi
             }
             var mParams = method.GetParameters();
 
-            var convertedParams = mParams
-                                .Select((p, i) => ConvertType(action.Params[i], p.ParameterType))
-                                .ToArray();
+            var convertedParams = BuildConvertedParams(mParams, action.Params);
 
             try
             {
@@ -173,8 +169,56 @@ public class DeviceJsonApi
         }
     }
 
+    /// <summary>
+    /// Builds the ordered, converted argument array to pass to <see cref="MethodInfo.Invoke(object, object[])"/>.
+    /// </summary>
+    /// <remarks>
+    /// Handles the common positional case (one supplied param per method parameter), as well as a method
+    /// with a single array-typed parameter (e.g. <c>void Foo(string[] items)</c>). For the latter, config
+    /// authors may either supply the params as a flat list matching the array's contents
+    /// (<c>"params": ["a", "b", "c"]</c>) or as a single nested array (<c>"params": [["a", "b", "c"]]</c>) -
+    /// both are converted into the single array argument correctly.
+    /// </remarks>
+    /// <param name="mParams">The target method's parameters.</param>
+    /// <param name="actionParams">The raw parameter values supplied in the action.</param>
+    /// <returns>The converted arguments, in order, ready to pass to Invoke.</returns>
+    private static object[] BuildConvertedParams(ParameterInfo[] mParams, object[] actionParams)
+    {
+        if (mParams.Length == 1 && mParams[0].ParameterType.IsArray && actionParams.Length != 1)
+        {
+            return new[] { ConvertType(actionParams, mParams[0].ParameterType) };
+        }
+
+        return mParams
+            .Select((p, i) => ConvertType(actionParams[i], p.ParameterType))
+            .ToArray();
+    }
+
     private static object ConvertType(object value, Type conversionType)
     {
+        if (conversionType.IsArray)
+        {
+            var elementType = conversionType.GetElementType();
+
+            // The supplied value is a collection of raw items (a JArray, or the whole flat params list) -
+            // convert each item to the array's element type.
+            if (value is IEnumerable enumerable && !(value is string))
+            {
+                var items = enumerable.Cast<object>()
+                    .Select(item => ConvertType(item, elementType))
+                    .ToArray();
+
+                var typedArray = Array.CreateInstance(elementType, items.Length);
+                Array.Copy(items, typedArray, items.Length);
+                return typedArray;
+            }
+
+            // A single scalar value was supplied for an array parameter - wrap it in a single-element array.
+            var singleArray = Array.CreateInstance(elementType, 1);
+            singleArray.SetValue(ConvertType(value, elementType), 0);
+            return singleArray;
+        }
+
         if (!conversionType.IsEnum)
         {
             return Convert.ChangeType(value, conversionType, System.Globalization.CultureInfo.InvariantCulture);

@@ -65,7 +65,7 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
 
     int VolumeHeldRepeatInterval = 200;
     ushort VolumeInterval = 655;
-    ushort _FakeVolumeLevel = 31768;
+    ushort _FakeVolumeLevel = 32768;
     bool _IsMuted;
     Timer _volumeUpTimer;
     Timer _volumeDownTimer;
@@ -106,6 +106,11 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
 
         VolumeLevelFeedback = new IntFeedback("volume", () => { return _FakeVolumeLevel; });
         MuteFeedback = new BoolFeedback("muteOn", () => _IsMuted);
+
+        // Seed the feedback's cached value from _FakeVolumeLevel immediately. IntFeedback.IntValue only
+        // reflects the current backing value after FireUpdate has run once, so without this the UI would
+        // report 0 until the volume was first incremented/decremented.
+        VolumeLevelFeedback.FireUpdate();
 
         WarmupTime = 10000;
         CooldownTime = 10000;
