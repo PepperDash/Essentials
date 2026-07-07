@@ -75,7 +75,13 @@ namespace PepperDash.Essentials.Core
 
         private CTimer _scenarioChangeDebounceTimer;
 
+        private CTimer _combinationOperationTimeoutTimer;
+
         private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
+
+        private const int DefaultCombinationOperationTimeoutSeconds = 300;
+
+        private int _combinationOperationTimeoutSeconds = DefaultCombinationOperationTimeoutSeconds;
 
         private Mutex _scenarioChange = new Mutex();
 
@@ -110,6 +116,12 @@ namespace PepperDash.Essentials.Core
             if (_propertiesConfig.ScenarioChangeDebounceTimeSeconds > 0)
             {
                 _scenarioChangeDebounceTimeSeconds = _propertiesConfig.ScenarioChangeDebounceTimeSeconds;
+            }
+
+            if (_propertiesConfig.CombinationOperationTimeoutSeconds.HasValue
+                && _propertiesConfig.CombinationOperationTimeoutSeconds.Value > 0)
+            {
+                _combinationOperationTimeoutSeconds = _propertiesConfig.CombinationOperationTimeoutSeconds.Value;
             }
 
             IsInAutoModeFeedback = new BoolFeedback(() => _isInAutoMode);
@@ -268,7 +280,7 @@ namespace PepperDash.Essentials.Core
                 return;
             }
 
-            SetCombinationOperationStatus(
+            var operationId = SetCombinationOperationStatus(
                 CombinationOperationState.InProgress,
                 newScenario != null ? newScenario.Key : null,
                 null,
@@ -294,21 +306,21 @@ namespace PepperDash.Essentials.Core
 
                 RoomCombinationScenarioChanged?.Invoke(this, new EventArgs());
 
-                SetCombinationOperationStatus(
+                TrySetCombinationOperationTerminalStatus(
+                    operationId,
                     CombinationOperationState.Completed,
                     _currentScenario != null ? _currentScenario.Key : null,
-                    null,
-                    false);
+                    null);
             }
             catch (Exception ex)
             {
                 this.LogException(ex, "Error changing room combination scenario");
 
-                SetCombinationOperationStatus(
+                TrySetCombinationOperationTerminalStatus(
+                    operationId,
                     CombinationOperationState.Failed,
                     newScenario != null ? newScenario.Key : null,
-                    "Combination operation failed",
-                    false);
+                    "Combination operation failed");
             }
         }
 
@@ -503,12 +515,14 @@ namespace PepperDash.Essentials.Core
 
         #endregion
 
-        private void SetCombinationOperationStatus(
+        private string SetCombinationOperationStatus(
             CombinationOperationState state,
             string scenarioKey,
             string message,
             bool resetStartedUtc)
         {
+            string operationId;
+
             lock (_combinationOperationLock)
             {
                 if (resetStartedUtc)
@@ -528,9 +542,91 @@ namespace PepperDash.Essentials.Core
                     _combinationOperation.State = state;
                     _combinationOperation.Message = message;
                 }
+
+                operationId = _combinationOperation.OperationId;
+            }
+
+            if (state == CombinationOperationState.InProgress)
+            {
+                StartCombinationOperationTimeout(operationId);
+            }
+            else if (state == CombinationOperationState.Completed
+                || state == CombinationOperationState.Failed
+                || state == CombinationOperationState.TimedOut
+                || state == CombinationOperationState.Idle)
+            {
+                StopCombinationOperationTimeout();
             }
 
             CombinationOperationStatusChanged?.Invoke(this, EventArgs.Empty);
+
+            return operationId;
+        }
+
+        private void TrySetCombinationOperationTerminalStatus(
+            string operationId,
+            CombinationOperationState state,
+            string scenarioKey,
+            string message)
+        {
+            var statusUpdated = false;
+
+            lock (_combinationOperationLock)
+            {
+                if (_combinationOperation == null
+                    || !string.Equals(_combinationOperation.OperationId, operationId, StringComparison.Ordinal)
+                    || _combinationOperation.State != CombinationOperationState.InProgress)
+                {
+                    return;
+                }
+
+                _combinationOperation.ScenarioKey = scenarioKey ?? _combinationOperation.ScenarioKey;
+                _combinationOperation.State = state;
+                _combinationOperation.Message = message;
+                statusUpdated = true;
+            }
+
+            if (!statusUpdated)
+            {
+                return;
+            }
+
+            StopCombinationOperationTimeout();
+            CombinationOperationStatusChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void StartCombinationOperationTimeout(string operationId)
+        {
+            StopCombinationOperationTimeout();
+
+            if (_combinationOperationTimeoutSeconds <= 0 || string.IsNullOrEmpty(operationId))
+            {
+                return;
+            }
+
+            _combinationOperationTimeoutTimer = new CTimer(
+                _ => HandleCombinationOperationTimeout(operationId),
+                _combinationOperationTimeoutSeconds * 1000);
+        }
+
+        private void StopCombinationOperationTimeout()
+        {
+            if (_combinationOperationTimeoutTimer == null)
+            {
+                return;
+            }
+
+            _combinationOperationTimeoutTimer.Dispose();
+            _combinationOperationTimeoutTimer = null;
+        }
+
+        private void HandleCombinationOperationTimeout(string operationId)
+        {
+            TrySetCombinationOperationTerminalStatus(
+                operationId,
+                CombinationOperationState.TimedOut,
+                null,
+                "Combination operation timed out");
         }
 
         private static CombinationOperationStatus CloneCombinationOperationStatus(CombinationOperationStatus status)
