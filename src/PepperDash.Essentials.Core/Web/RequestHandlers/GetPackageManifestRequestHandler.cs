@@ -77,9 +77,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
 			essentials.Version = Global.AssemblyVersion;
 
-			// PepperDash_Essentials_Core.dll - same repo/Directory.Build.props as PepperDashEssentials.dll,
-			// and unlike PluginLoader.EssentialsAssembly, this Assembly reference is never null at runtime.
-			var essentialsAssembly = typeof(GetPackageManifestRequestHandler).Assembly;
+			// The main program assembly (AssemblyName/PackageId "PepperDashEssentials") is what's
+			// actually published to NuGet, but this handler lives in PepperDash.Essentials.Core, which
+			// can't reference that project's types directly (Essentials -> Core, not the reverse).
+			// PluginLoader.EssentialsAssembly.Assembly is unreliable (often left null - see
+			// PluginLoader.SetEssentialsAssembly), so look it up directly from the loaded AppDomain,
+			// falling back to this handler's own (Core) assembly if it can't be found.
+			var essentialsAssembly = AppDomain.CurrentDomain.GetAssemblies()
+				.FirstOrDefault(a => string.Equals(a.GetName().Name, "PepperDashEssentials", StringComparison.OrdinalIgnoreCase))
+				?? typeof(GetPackageManifestRequestHandler).Assembly;
 
 			var repoUrl = TrimTrailingGit(GetAssemblyMetadataValue(essentialsAssembly, "RepositoryUrl"));
 			if (!string.IsNullOrEmpty(repoUrl))
@@ -103,7 +109,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 			else if (string.IsNullOrEmpty(essentials.PackageId))
 			{
-				essentials.PackageId = "PepperDash.Essentials";
+				essentials.PackageId = "PepperDashEssentials";
 			}
 
 			result.Essentials = essentials;
