@@ -17,7 +17,7 @@ namespace PepperDash.Essentials.Core
     /// combinations  based on partition states and predefined scenarios. It supports both automatic and manual modes 
     /// for managing room combinations. In automatic mode, the device determines the current room  combination scenario
     /// based on partition sensor states. In manual mode, scenarios can be set  explicitly by the user.</remarks>
-    public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombiner
+    public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerWithOperationStatus
     {
         private EssentialsRoomCombinerPropertiesConfig _propertiesConfig;
 
@@ -78,6 +78,13 @@ namespace PepperDash.Essentials.Core
         private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
 
         private Mutex _scenarioChange = new Mutex();
+
+        private readonly object _combinationOperationLock = new object();
+
+        private CombinationOperationStatus _combinationOperation = new CombinationOperationStatus
+        {
+            State = CombinationOperationState.Idle
+        };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EssentialsRoomCombiner"/> class, which manages room combination
@@ -256,13 +263,19 @@ namespace PepperDash.Essentials.Core
 
         private async Task ChangeScenario(IRoomCombinationScenario newScenario)
         {
-            
+            if (newScenario == _currentScenario)
+            {
+                return;
+            }
 
-                if (newScenario == _currentScenario)
-                {
-                    return;
-                }
+            SetCombinationOperationStatus(
+                CombinationOperationState.InProgress,
+                newScenario != null ? newScenario.Key : null,
+                null,
+                true);
 
+            try
+            {
                 // Deactivate the old scenario first
                 if (_currentScenario != null)
                 {
@@ -281,7 +294,22 @@ namespace PepperDash.Essentials.Core
 
                 RoomCombinationScenarioChanged?.Invoke(this, new EventArgs());
 
-            
+                SetCombinationOperationStatus(
+                    CombinationOperationState.Completed,
+                    _currentScenario != null ? _currentScenario.Key : null,
+                    null,
+                    false);
+            }
+            catch (Exception ex)
+            {
+                this.LogException(ex, "Error changing room combination scenario");
+
+                SetCombinationOperationStatus(
+                    CombinationOperationState.Failed,
+                    newScenario != null ? newScenario.Key : null,
+                    "Combination operation failed",
+                    false);
+            }
         }
 
         #region IEssentialsRoomCombiner Members
@@ -294,6 +322,11 @@ namespace PepperDash.Essentials.Core
         public event EventHandler<EventArgs> RoomCombinationScenarioChanged;
 
         /// <summary>
+        /// Occurs when the room combination operation status changes.
+        /// </summary>
+        public event EventHandler<EventArgs> CombinationOperationStatusChanged;
+
+        /// <summary>
         /// Gets the current room combination scenario.
         /// </summary>
         public IRoomCombinationScenario CurrentScenario
@@ -301,6 +334,20 @@ namespace PepperDash.Essentials.Core
             get
             {
                 return _currentScenario;
+            }
+        }
+
+        /// <summary>
+        /// Gets the current room combination operation status.
+        /// </summary>
+        public CombinationOperationStatus CombinationOperation
+        {
+            get
+            {
+                lock (_combinationOperationLock)
+                {
+                    return CloneCombinationOperationStatus(_combinationOperation);
+                }
             }
         }
 
@@ -455,6 +502,53 @@ namespace PepperDash.Essentials.Core
         }
 
         #endregion
+
+        private void SetCombinationOperationStatus(
+            CombinationOperationState state,
+            string scenarioKey,
+            string message,
+            bool resetStartedUtc)
+        {
+            lock (_combinationOperationLock)
+            {
+                if (resetStartedUtc)
+                {
+                    _combinationOperation = new CombinationOperationStatus
+                    {
+                        OperationId = Guid.NewGuid().ToString(),
+                        ScenarioKey = scenarioKey,
+                        StartedUtc = DateTime.UtcNow.ToString("o"),
+                        State = state,
+                        Message = message
+                    };
+                }
+                else
+                {
+                    _combinationOperation.ScenarioKey = scenarioKey ?? _combinationOperation.ScenarioKey;
+                    _combinationOperation.State = state;
+                    _combinationOperation.Message = message;
+                }
+            }
+
+            CombinationOperationStatusChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private static CombinationOperationStatus CloneCombinationOperationStatus(CombinationOperationStatus status)
+        {
+            if (status == null)
+            {
+                return null;
+            }
+
+            return new CombinationOperationStatus
+            {
+                OperationId = status.OperationId,
+                ScenarioKey = status.ScenarioKey,
+                StartedUtc = status.StartedUtc,
+                State = status.State,
+                Message = status.Message
+            };
+        }
     }
 
     /// <summary>
