@@ -5,6 +5,7 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -87,6 +88,12 @@ namespace PepperDash.Essentials.Core
 
         private readonly object _combinationOperationLock = new object();
 
+        private readonly List<IKeyed> _operationStatusProviderDevices = new List<IKeyed>();
+
+        private string _pendingCompletionOperationId;
+
+        private string _pendingCompletionScenarioKey;
+
         private CombinationOperationStatus _combinationOperation = new CombinationOperationStatus
         {
             State = CombinationOperationState.Idle
@@ -152,6 +159,8 @@ namespace PepperDash.Essentials.Core
             // connected and initialized
             DeviceManager.AllDevicesInitialized += (o, a) =>
             {
+                InitializeOperationStatusProviders();
+
                 if (IsInAutoMode)
                 {
                     DetermineRoomCombinationScenario();
@@ -306,11 +315,9 @@ namespace PepperDash.Essentials.Core
 
                 RoomCombinationScenarioChanged?.Invoke(this, new EventArgs());
 
-                TrySetCombinationOperationTerminalStatus(
+                TryCompleteCombinationOperationIfReady(
                     operationId,
-                    CombinationOperationState.Completed,
-                    _currentScenario != null ? _currentScenario.Key : null,
-                    null);
+                    _currentScenario != null ? _currentScenario.Key : null);
             }
             catch (Exception ex)
             {
@@ -543,6 +550,12 @@ namespace PepperDash.Essentials.Core
                     _combinationOperation.Message = message;
                 }
 
+                if (state == CombinationOperationState.InProgress)
+                {
+                    _pendingCompletionOperationId = null;
+                    _pendingCompletionScenarioKey = null;
+                }
+
                 operationId = _combinationOperation.OperationId;
             }
 
@@ -583,6 +596,8 @@ namespace PepperDash.Essentials.Core
                 _combinationOperation.ScenarioKey = scenarioKey ?? _combinationOperation.ScenarioKey;
                 _combinationOperation.State = state;
                 _combinationOperation.Message = message;
+                _pendingCompletionOperationId = null;
+                _pendingCompletionScenarioKey = null;
                 statusUpdated = true;
             }
 
@@ -627,6 +642,160 @@ namespace PepperDash.Essentials.Core
                 CombinationOperationState.TimedOut,
                 null,
                 "Combination operation timed out");
+        }
+
+        private void InitializeOperationStatusProviders()
+        {
+            _operationStatusProviderDevices.Clear();
+
+            foreach (var device in DeviceManager.AllDevices)
+            {
+                if (IsOperationStatusProviderDevice(device))
+                {
+                    _operationStatusProviderDevices.Add(device);
+                    SubscribeToOperationStatusProviderChanged(device);
+                }
+            }
+
+            this.LogDebug("Room combiner {combinerKey} found {providerCount} post-combination status provider(s)", Key, _operationStatusProviderDevices.Count);
+        }
+
+        private static bool IsOperationStatusProviderDevice(object device)
+        {
+            if (device == null)
+            {
+                return false;
+            }
+
+            var type = device.GetType();
+
+            var roomCombinerKeyProperty = type.GetProperty("RoomCombinerKey", BindingFlags.Instance | BindingFlags.Public);
+            var scenarioReconciledProperty = type.GetProperty("ScenarioReconciled", BindingFlags.Instance | BindingFlags.Public);
+            var scenarioReconciledScenarioKeyProperty = type.GetProperty("ScenarioReconciledScenarioKey", BindingFlags.Instance | BindingFlags.Public);
+
+            return roomCombinerKeyProperty != null
+                && roomCombinerKeyProperty.PropertyType == typeof(string)
+                && roomCombinerKeyProperty.CanRead
+                && scenarioReconciledProperty != null
+                && scenarioReconciledProperty.PropertyType == typeof(bool)
+                && scenarioReconciledProperty.CanRead
+                && scenarioReconciledScenarioKeyProperty != null
+                && scenarioReconciledScenarioKeyProperty.PropertyType == typeof(string)
+                && scenarioReconciledScenarioKeyProperty.CanRead;
+        }
+
+        private void SubscribeToOperationStatusProviderChanged(object device)
+        {
+            var eventInfo = device.GetType().GetEvent("ScenarioReconciledChanged", BindingFlags.Instance | BindingFlags.Public);
+            if (eventInfo == null)
+            {
+                return;
+            }
+
+            if (eventInfo.EventHandlerType != typeof(EventHandler<EventArgs>))
+            {
+                this.LogDebug("Room combiner {combinerKey} skipping provider event subscription for {providerType}: unsupported event type {eventType}", Key, device.GetType().Name, eventInfo.EventHandlerType);
+                return;
+            }
+
+            eventInfo.AddEventHandler(device, new EventHandler<EventArgs>(OperationStatusProvider_ScenarioReconciledChanged));
+        }
+
+        private void OperationStatusProvider_ScenarioReconciledChanged(object sender, EventArgs e)
+        {
+            TryCompletePendingCombinationOperation();
+        }
+
+        private void TryCompletePendingCombinationOperation()
+        {
+            string operationId;
+            string scenarioKey;
+
+            lock (_combinationOperationLock)
+            {
+                operationId = _pendingCompletionOperationId;
+                scenarioKey = _pendingCompletionScenarioKey;
+            }
+
+            if (string.IsNullOrEmpty(operationId))
+            {
+                return;
+            }
+
+            TryCompleteCombinationOperationIfReady(operationId, scenarioKey);
+        }
+
+        private void TryCompleteCombinationOperationIfReady(string operationId, string scenarioKey)
+        {
+            if (string.IsNullOrEmpty(operationId))
+            {
+                return;
+            }
+
+            if (!AreOperationStatusProvidersSatisfied(scenarioKey))
+            {
+                lock (_combinationOperationLock)
+                {
+                    if (_combinationOperation != null
+                        && string.Equals(_combinationOperation.OperationId, operationId, StringComparison.Ordinal)
+                        && _combinationOperation.State == CombinationOperationState.InProgress)
+                    {
+                        _pendingCompletionOperationId = operationId;
+                        _pendingCompletionScenarioKey = scenarioKey;
+                    }
+                }
+
+                return;
+            }
+
+            TrySetCombinationOperationTerminalStatus(
+                operationId,
+                CombinationOperationState.Completed,
+                scenarioKey,
+                null);
+        }
+
+        private bool AreOperationStatusProvidersSatisfied(string scenarioKey)
+        {
+            var matchingProviders = _operationStatusProviderDevices
+                .Where(d => string.Equals(GetStringPropertyValue(d, "RoomCombinerKey"), Key, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!matchingProviders.Any())
+            {
+                return true;
+            }
+
+            foreach (var provider in matchingProviders)
+            {
+                var providerScenarioReconciled = GetBoolPropertyValue(provider, "ScenarioReconciled");
+                var providerScenarioKey = GetStringPropertyValue(provider, "ScenarioReconciledScenarioKey");
+
+                if (!providerScenarioReconciled
+                    || !string.Equals(providerScenarioKey, scenarioKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static string GetStringPropertyValue(object target, string propertyName)
+        {
+            var propertyInfo = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            return propertyInfo != null ? propertyInfo.GetValue(target, null) as string : null;
+        }
+
+        private static bool GetBoolPropertyValue(object target, string propertyName)
+        {
+            var propertyInfo = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            if (propertyInfo == null || propertyInfo.PropertyType != typeof(bool))
+            {
+                return false;
+            }
+
+            return (bool)propertyInfo.GetValue(target, null);
         }
 
         private static CombinationOperationStatus CloneCombinationOperationStatus(CombinationOperationStatus status)
