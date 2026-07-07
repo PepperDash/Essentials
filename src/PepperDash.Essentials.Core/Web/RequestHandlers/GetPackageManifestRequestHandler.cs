@@ -93,7 +93,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				essentials.Name = name;
 			}
 
-			if (string.IsNullOrEmpty(essentials.PackageId))
+			// Prefer the PackageId embedded via Directory.Build.props' AssemblyMetadata item (the
+			// authoritative source, matching the actual published PackageId) over any config-supplied
+			// or hardcoded value.
+			var reflectedPackageId = GetAssemblyMetadataValue(essentialsAssembly, "PackageId");
+			if (!string.IsNullOrEmpty(reflectedPackageId))
+			{
+				essentials.PackageId = reflectedPackageId;
+			}
+			else if (string.IsNullOrEmpty(essentials.PackageId))
 			{
 				essentials.PackageId = "PepperDash.Essentials";
 			}
@@ -123,6 +131,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				var reflectedRepoUrl = TrimTrailingGit(GetAssemblyMetadataValue(loaded.Assembly, "RepositoryUrl"));
 				var reflectedName = GetAssemblyProduct(loaded.Assembly);
 
+				// Plugins built from a Directory.Build.props that embeds
+				// <AssemblyMetadata Include="PackageId" Value="$(PackageId)" /> carry their PackageId
+				// directly - this is authoritative and should be preferred over the title/name fallback chain.
+				var reflectedPackageId = GetAssemblyMetadataValue(loaded.Assembly, "PackageId");
+
 				var assemblyTitle = GetAssemblyTitle(loaded.Assembly);
 				var assemblyName = loaded.Assembly.GetName().Name;
 				var assemblyNameNoSeriesSuffix = StripTrailingSeriesSuffix(assemblyName);
@@ -130,7 +143,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				var match = configPackages.FirstOrDefault(p =>
 					!matchedConfigPackages.Contains(p) &&
 					!string.IsNullOrEmpty(p.PackageId) &&
-					(string.Equals(p.PackageId, assemblyTitle, StringComparison.OrdinalIgnoreCase) ||
+					(string.Equals(p.PackageId, reflectedPackageId, StringComparison.OrdinalIgnoreCase) ||
+					 string.Equals(p.PackageId, assemblyTitle, StringComparison.OrdinalIgnoreCase) ||
 					 string.Equals(p.PackageId, assemblyName, StringComparison.OrdinalIgnoreCase) ||
 					 string.Equals(p.PackageId, assemblyNameNoSeriesSuffix, StringComparison.OrdinalIgnoreCase)));
 
@@ -140,20 +154,22 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
 					mergedPackages.Add(new NugetVersion
 					{
-						PackageId = match.PackageId,
-						Version = reflectedVersion,
+						Name = !string.IsNullOrEmpty(match.Name) ? match.Name : reflectedName,
 						RepoUrl = !string.IsNullOrEmpty(match.RepoUrl) ? match.RepoUrl : reflectedRepoUrl,
-						Name = !string.IsNullOrEmpty(match.Name) ? match.Name : reflectedName
+						PackageId = !string.IsNullOrEmpty(reflectedPackageId) ? reflectedPackageId : match.PackageId,
+						Version = reflectedVersion
 					});
 				}
 				else
 				{
-					// Loaded but not present (or not matched) in config - emit without a packageId
+					// Loaded but not present (or not matched) in config - emit the reflected PackageId
+					// when the assembly carries one, otherwise leave it null as before.
 					mergedPackages.Add(new NugetVersion
 					{
-						Version = reflectedVersion,
+						Name = reflectedName,
 						RepoUrl = reflectedRepoUrl,
-						Name = reflectedName
+						PackageId = reflectedPackageId,
+						Version = reflectedVersion,						
 					});
 				}
 			}
