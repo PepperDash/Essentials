@@ -217,14 +217,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         new DirectoryContact()
                         {
                             ContactId = "nyc_2",
-                            Name = "Sumanth Rayancha",
+                            Name = "Priya Chandran",
                             Title = @"CTO",
                             ContactMethods = new List<ContactMethod>()
                             {
                                 new ContactMethod()
                                 {
                                     ContactMethodId = "cid_1",
-                                    Number = "srayancha.pepperdash.com",
+                                    Number = "pchandran.pepperdash.com",
                                     Device = eContactMethodDevice.Video,
                                     CallType = eContactMethodCallType.Video
                                 }
@@ -233,14 +233,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         new DirectoryContact()
                         {
                             ContactId = "nyc_3",
-                            Name = "Justin Gordon",
+                            Name = "Miles Anderson",
                             Title = @"Software Developer",
                             ContactMethods = new List<ContactMethod>()
                             {
                                 new ContactMethod()
                                 {
                                     ContactMethodId = "cid_1",
-                                    Number = "jgordon.pepperdash.com",
+                                    Number = "manderson.pepperdash.com",
                                     Device = eContactMethodDevice.Video,
                                     CallType = eContactMethodCallType.Video
                                 }
@@ -309,14 +309,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         new DirectoryContact()
                         {
                             ContactId = "sfo_1",
-                            Name = "David Huselid",
+                            Name = "Owen Bradshaw",
                             Title = @"Cive President, COO",
                             ContactMethods = new List<ContactMethod>()
                             {
                                 new ContactMethod()
                                 {
                                     ContactMethodId = "cid_1",
-                                    Number = "dhuselid.pepperdash.com",
+                                    Number = "obradshaw.pepperdash.com",
                                     Device = eContactMethodDevice.Video,
                                     CallType = eContactMethodCallType.Video
                                 }
@@ -347,14 +347,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         new DirectoryContact()
                         {
                             ContactId = "den_1",
-                            Name = "Heath Volmer",
+                            Name = "Derek Simmons",
                             Title = @"Software Developer",
                             ContactMethods = new List<ContactMethod>()
                             {
                                 new ContactMethod()
                                 {
                                     ContactMethodId = "cid_1",
-                                    Number = "hvolmer.pepperdash.com",
+                                    Number = "dsimmons.pepperdash.com",
                                     Device = eContactMethodDevice.Video,
                                     CallType = eContactMethodCallType.Video
                                 }
@@ -385,14 +385,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         new DirectoryContact()
                         {
                             ContactId = "atx_1",
-                            Name = "Vincent Longano",
+                            Name = "Marcus Webb",
                             Title = @"Product Development Manager",
                             ContactMethods = new List<ContactMethod>()
                             {
                                 new ContactMethod()
                                 {
                                     ContactMethodId = "cid_1",
-                                    Number = "vlongano.pepperdash.com",
+                                    Number = "mwebb.pepperdash.com",
                                     Device = eContactMethodDevice.Video,
                                     CallType = eContactMethodCallType.Video
                                 }
@@ -452,14 +452,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         new DirectoryContact()
                         {
                             ContactId = "cdn_1",
-                            Name = "Neil Dorin",
+                            Name = "Alex Turner",
                             Title = @"Software Developer /SC",
                             ContactMethods = new List<ContactMethod>()
                             {
                                 new ContactMethod()
                                 {
                                     ContactMethodId = "cid_1",
-                                    Number = "ndorin@pepperdash.com",
+                                    Number = "aturner@pepperdash.com",
                                     Device = eContactMethodDevice.Video,
                                     CallType = eContactMethodCallType.Video
                                 }

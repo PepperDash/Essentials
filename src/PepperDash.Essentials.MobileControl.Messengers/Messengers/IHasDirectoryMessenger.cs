@@ -78,6 +78,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 this.LogVerbose("Sending Directory. Directory Item Count: {directoryItemCount}", directory.CurrentDirectoryResults.Count);
                 Task.Run(() => PostStatusMessage(new IHasDirectoryStateMessage
                 {
+                    // DirectoryRoot is otherwise only sent once, in response to an explicit /fullStatus
+                    // request. Since the root directory can keep growing after that (e.g. contacts
+                    // trickling in from a paged/async phonebook sync), include it here too so it stays
+                    // current as new directory results arrive, not just on first subscribe.
+                    DirectoryRoot = _directory.DirectoryRoot,
                     CurrentDirectory = directory
                 }));
             }
@@ -93,6 +98,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 PostStatusMessage(new IHasDirectoryStateMessage
                 {
+                    DirectoryRoot = _directory.DirectoryRoot,
                     InitialPhonebookSyncComplete = true
                 });
             }
