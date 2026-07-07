@@ -43,7 +43,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <summary>
         /// Gets or sets the HdmiOut
         /// </summary>
-        public RoutingOutputPort HdmiOut { get; private set; }
+        public RoutingOutputPort HdmiOut1 { get; private set; }
+
+        public RoutingOutputPort HdmiOut2 { get; private set; }
 
         /// <summary>
         /// Gets or sets the CallFavorites
@@ -85,8 +87,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             InputPorts.Add(HdmiIn1);
             HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, 2, this);
             InputPorts.Add(HdmiIn2);
-            HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, null, this);
-            OutputPorts.Add(HdmiOut);
+            HdmiOut1 = new RoutingOutputPort(RoutingPortNames.HdmiOut1, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, null, this);
+            OutputPorts.Add(HdmiOut1);
+            HdmiOut2 = new RoutingOutputPort(RoutingPortNames.HdmiOut2, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, null, this);
+            OutputPorts.Add(HdmiOut2);
 
             CallHistory = new CodecCallHistory();
             for (int i = 0; i < 10; i++)
