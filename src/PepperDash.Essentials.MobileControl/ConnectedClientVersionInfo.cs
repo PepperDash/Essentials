@@ -43,5 +43,19 @@ namespace PepperDash.Essentials
         /// </summary>
         [JsonProperty("lastSeen")]
         public DateTime LastSeen { get; set; }
+
+        /// <summary>
+        /// Returns a copy of this instance, safe for callers outside the owning lock to hold/mutate
+        /// without affecting the internally tracked instance
+        /// </summary>
+        public ConnectedClientVersionInfo Clone() => new ConnectedClientVersionInfo
+        {
+            ClientId = ClientId,
+            RoomKey = RoomKey,
+            TouchpanelKey = TouchpanelKey,
+            AppVersion = AppVersion,
+            ExpectedAppVersion = ExpectedAppVersion,
+            LastSeen = LastSeen
+        };
     }
 }

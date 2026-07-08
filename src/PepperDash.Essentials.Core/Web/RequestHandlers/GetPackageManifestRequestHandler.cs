@@ -122,7 +122,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// </summary>
 		private static void PopulatePackages(VersionData result)
 		{
-			var configPackages = result.Packages ?? new System.Collections.Generic.List<NugetVersion>();
+			// Filter out null entries defensively - the packages list is deserialized from user-editable
+			// config JSON, so a malformed "packages": [null, ...] shouldn't throw and 500 the endpoint.
+			var configPackages = (result.Packages ?? new System.Collections.Generic.List<NugetVersion>())
+				.Where(p => p != null)
+				.ToList();
 			var matchedConfigPackages = new System.Collections.Generic.HashSet<NugetVersion>();
 			var mergedPackages = new System.Collections.Generic.List<NugetVersion>();
 

@@ -89,7 +89,7 @@ namespace PepperDash.Essentials
                 lock (_connectedClientVersionsLock)
                 {
                     return new ReadOnlyDictionary<string, ConnectedClientVersionInfo>(
-                        new Dictionary<string, ConnectedClientVersionInfo>(_connectedClientVersions)
+                        _connectedClientVersions.ToDictionary(kv => kv.Key, kv => kv.Value.Clone())
                     );
                 }
             }
@@ -1820,7 +1820,7 @@ namespace PepperDash.Essentials
 
                     CrestronConsole.ConsoleCommandResponse(
                         $"  Client: {v.ClientId}  Touchpanel: {v.TouchpanelKey}  Room: {v.RoomKey}\r\n" +
-                        $"    Reported: {v.AppVersion}  Expected: {v.ExpectedAppVersion ?? "(not configured)"}  Match: {(match ? "Yes" : "NO - MISMATCH")}\r\n" +
+                        $"    Reported: {v.AppVersion}  Expected: {(string.IsNullOrEmpty(v.ExpectedAppVersion) ? "(not configured)" : v.ExpectedAppVersion)}  Match: {(match ? "Yes" : "NO - MISMATCH")}\r\n" +
                         $"    Last Seen (UTC): {v.LastSeen:yyyy-MM-dd HH:mm:ss}\r\n"
                     );
                 }
