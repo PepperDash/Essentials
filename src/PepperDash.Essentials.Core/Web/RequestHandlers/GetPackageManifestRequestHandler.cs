@@ -46,8 +46,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				context.Response.Write(js, false);
 				context.Response.End();
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
+				PepperDash.Core.Debug.LogMessage(ex, "Exception handling GET /packageManifest request");
 				context.Response.StatusCode = 500;
 				context.Response.StatusDescription = "Internal Server Error";
 				context.Response.End();
