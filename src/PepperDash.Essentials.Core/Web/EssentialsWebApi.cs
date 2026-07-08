@@ -95,6 +95,11 @@ namespace PepperDash.Essentials.Core.Web
                     Name = "ReportVersions",
                     RouteHandler = new ReportVersionsRequestHandler()
                 },
+                new HttpCwsRoute("packageManifest")
+                {
+                    Name = "GetPackageManifest",
+                    RouteHandler = new GetPackageManifestRequestHandler()
+                },
                 new HttpCwsRoute("appdebug")
                 {
                     Name = "AppDebug",
