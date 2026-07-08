@@ -279,9 +279,15 @@ namespace PepperDash.Essentials.Core.Routing
             if (destination == null)
                 return;
 
-            var key = destination.Key;
+            // Keyed by destination AND input port, not just destination: a single sink can have
+            // several independently-routed input ports (e.g. a codec with multiple simultaneous
+            // USB camera inputs, all downstream of the same midpoint). Keying by destination alone
+            // meant updates for one port would cancel/replace the still-pending debounce timer for
+            // a sibling port on the same sink, so only the last-processed port's update ever
+            // actually ran - the others silently never got refreshed.
+            var key = destination.Key + ":" + (inputPort?.Key ?? string.Empty);
 
-            // Cancel existing timer for this sink
+            // Cancel existing timer for this specific sink/port combination
             if (updateTimers.TryGetValue(key, out var existingTimer))
             {
                 existingTimer.Stop();
