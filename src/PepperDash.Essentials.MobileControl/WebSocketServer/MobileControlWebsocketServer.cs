@@ -1273,9 +1273,13 @@ namespace PepperDash.Essentials.WebSocketServer
 
             Debug.LogMessage(LogEventLevel.Verbose, "Requesting Image: {0}", this, path);
 
-            var imageBasePath = Global.DirectorySeparator + "html" + Global.DirectorySeparator + "logo" + Global.DirectorySeparator;
+            // Served from the program's own slot-specific folder (e.g. /user/program2/logo/) via
+            // the Mobile Control direct server, rather than the processor's CWS /html/ webserver.
+            var imageBasePath = Global.FilePathPrefix + "logo" + Global.DirectorySeparator;
 
-            var image = path.Split('/').Last();
+            // Path.GetFileName strips any directory components (including URL-decoded traversal
+            // sequences like "..") so only a bare filename within imageBasePath can ever be read.
+            var image = Path.GetFileName(Uri.UnescapeDataString(path.Split('?')[0]));
 
             var filePath = imageBasePath + image;
 

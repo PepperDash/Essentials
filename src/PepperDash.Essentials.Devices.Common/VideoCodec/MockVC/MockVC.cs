@@ -14,6 +14,7 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
@@ -21,7 +22,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// <summary>
     /// Represents a MockVC
     /// </summary>
-    public class MockVC : VideoCodecBase, IHasCallHistory, IHasScheduleAwareness, IHasCallFavorites, IHasDirectory, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IRoutingSinkWithFeedback
+    public class MockVC : VideoCodecBase, IHasCallHistory, IHasScheduleAwareness, IHasCallFavorites, IHasDirectory,
+        IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IRoutingSinkWithFeedback, IHasParticipants
     {
         /// <summary>
         /// Gets or sets the PropertiesConfig
@@ -45,6 +47,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public RoutingOutputPort HdmiOut1 { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the HdmiOut2
+        /// </summary>
         public RoutingOutputPort HdmiOut2 { get; private set; }
 
         /// <summary>
@@ -52,8 +57,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public CodecCallFavorites CallFavorites { get; private set; }
 
+        private readonly CodecParticipants _participants;
+
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="MockVC"/> class.
         /// </summary>
         public MockVC(DeviceConfig config)
             : base(config)
@@ -70,6 +77,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             }
 
             DirectoryBrowseHistory = new List<CodecDirectory>();
+
+            _participants = new CodecParticipants();
+
+            // Populate a fake participants list whenever a call connects, and clear it once all
+            // calls have ended, so IHasParticipants consumers (e.g. the roster UI) have something
+            // to display without needing a real far-end connection.
+            CallStatusChange += (o, a) =>
+            {
+                if (a.CallItem.Status == eCodecCallStatus.Connected)
+                {
+                    PopulateFakeParticipants();
+                }
+                else if (a.CallItem.Status == eCodecCallStatus.Disconnected && ActiveCalls.Count == 0)
+                {
+                    Participants.CurrentParticipants = new List<Participant>();
+                }
+            };
 
             // Debug helpers
             MuteFeedback.OutputChange += (o, a) => Debug.LogMessage(LogEventLevel.Debug, this, "Mute={0}", _IsMuted);
@@ -209,6 +233,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         }
 
+        /// <inheritdoc />
         public override void Dial(string number, string password) 
         {
             Debug.LogMessage(LogEventLevel.Debug, this, "Dial: {0} with password: {1}", number, password);
@@ -652,6 +677,65 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
+        #region IHasParticipants Members
+
+        /// <summary>
+        /// Gets the collection of call participants
+        /// </summary>
+        public CodecParticipants Participants
+        {
+            get { return _participants; }
+        }
+
+        /// <summary>
+        /// Builds a fake set of participants and assigns it to <see cref="Participants"/>,
+        /// simulating a codec that has joined a call with other people already present.
+        /// </summary>
+        private void PopulateFakeParticipants()
+        {
+            Participants.CurrentParticipants = new List<Participant>
+            {
+                new Participant { UserId = 1, Name = "Myself", IsHost = true, IsMyself = true, CanMuteAudio = true, CanUnmuteVideo = true },
+                new Participant { UserId = 2, Name = "Priya Chandran", CanMuteAudio = true, CanUnmuteVideo = true },
+                new Participant { UserId = 3, Name = "Miles Anderson", CanMuteAudio = true, CanUnmuteVideo = true, AudioMuteFb = true },
+                new Participant { UserId = 4, Name = "Owen Bradshaw", CanMuteAudio = true, CanUnmuteVideo = true, HandIsRaisedFb = true },
+            };
+        }
+
+        /// <inheritdoc />
+        public void RemoveParticipant(int userId)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, this, "RemoveParticipant: {0}", userId);
+
+            var remaining = Participants.CurrentParticipants.Where(p => p.UserId != userId).ToList();
+
+            Participants.CurrentParticipants = remaining;
+        }
+
+        /// <inheritdoc />
+        public void SetParticipantAsHost(int userId)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, this, "SetParticipantAsHost: {0}", userId);
+
+            foreach (var p in Participants.CurrentParticipants)
+            {
+                p.IsHost = p.UserId == userId;
+            }
+
+            // Re-assign to trigger ParticipantsListHasChanged, since the mutations above happened
+            // on the existing list/items in place.
+            Participants.CurrentParticipants = Participants.CurrentParticipants;
+        }
+
+        /// <inheritdoc />
+        public void AdmitParticipantFromWaitingRoom(int userId)
+        {
+            // No waiting room is simulated for this mock codec.
+            Debug.LogMessage(LogEventLevel.Debug, this, "AdmitParticipantFromWaitingRoom: {0} (no-op, mock has no waiting room)", userId);
+        }
+
+        #endregion
+
         void SetupCameras()
         {
             SupportsCameraAutoMode = true;
@@ -884,20 +968,42 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #region IRoutingSinkWithFeedback Members
 
+        /// <summary>
+        /// Gets the currently routed input port for this sink
+        /// </summary>
         public RoutingInputPort CurrentInputPort { get; private set; }
 
+        /// <summary>
+        /// Event fired when the currently routed input changes
+        /// </summary>
         public event InputChangedEventHandler InputChanged;
 
         #endregion
 
         #region ICurrentSources Members
 
+        /// <summary>
+        /// Gets the currently routed source devices, keyed by signal type
+        /// </summary>
         public Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; private set; } = new Dictionary<eRoutingSignalType, IRoutingSource>();
 
+        /// <summary>
+        /// Gets the keys of the currently routed source devices, keyed by signal type
+        /// </summary>
         public Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; private set; } = new Dictionary<eRoutingSignalType, string>();
 
+        /// <summary>
+        /// Event fired when the currently routed source for a signal type changes
+        /// </summary>
         public event EventHandler<CurrentSourcesChangedEventArgs> CurrentSourcesChanged;
 
+        /// <summary>
+        /// Sets the currently routed source device for the given signal type, updating
+        /// <see cref="CurrentSources"/> and <see cref="CurrentSourceKeys"/> and firing
+        /// <see cref="CurrentSourcesChanged"/>
+        /// </summary>
+        /// <param name="signalType">The signal type being routed</param>
+        /// <param name="sourceDevice">The source device now routed to this signal type, or null if cleared</param>
         public void SetCurrentSource(eRoutingSignalType signalType, IRoutingSource sourceDevice)
         {
             CurrentSources.TryGetValue(signalType, out var previousSource);
