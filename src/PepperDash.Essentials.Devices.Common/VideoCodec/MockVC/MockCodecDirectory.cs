@@ -107,7 +107,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     {
                         new DirectoryContact()
                         {
-                            Name = "Corporate Bridge",
+                            Name = "Overflow",
                             ContactMethods = new List<ContactMethod>()
                             {
                                 new ContactMethod()
