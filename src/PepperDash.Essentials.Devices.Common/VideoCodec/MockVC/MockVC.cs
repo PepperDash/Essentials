@@ -42,6 +42,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// Gets or sets the HdmiIn2
         /// </summary>
         public RoutingInputPort HdmiIn2 { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the first USB camera input (usbIn1), matching the port key used by the
+        /// real Zoom Room plugin for simultaneous multi-camera routing.
+        /// </summary>
+        public RoutingInputPort UsbIn1 { get; private set; }
+        /// <summary>
+        /// Gets or sets the second USB camera input (usbIn2).
+        /// </summary>
+        public RoutingInputPort UsbIn2 { get; private set; }
+        /// <summary>
+        /// Gets or sets the third USB camera input (usbIn3).
+        /// </summary>
+        public RoutingInputPort UsbIn3 { get; private set; }
+        /// <summary>
+        /// Gets or sets the fourth USB camera input (usbIn4).
+        /// </summary>
+        public RoutingInputPort UsbIn4 { get; private set; }
+
         /// <summary>
         /// Gets or sets the HdmiOut
         /// </summary>
@@ -111,6 +130,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             InputPorts.Add(HdmiIn1);
             HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, 2, this);
             InputPorts.Add(HdmiIn2);
+            // USB camera inputs - each participant's camera routes to one of these independently
+            // (unlike HdmiIn1/2, which represent a single selectable content source). Port keys
+            // match the real Zoom Room plugin ("usbIn1".."usbIn4") so demo/example configs that
+            // reference them resolve to an actual port instead of silently failing to find one.
+            UsbIn1 = new RoutingInputPort("usbIn1", eRoutingSignalType.Video, eRoutingPortConnectionType.UsbC, 3, this);
+            InputPorts.Add(UsbIn1);
+            UsbIn2 = new RoutingInputPort("usbIn2", eRoutingSignalType.Video, eRoutingPortConnectionType.UsbC, 4, this);
+            InputPorts.Add(UsbIn2);
+            UsbIn3 = new RoutingInputPort("usbIn3", eRoutingSignalType.Video, eRoutingPortConnectionType.UsbC, 5, this);
+            InputPorts.Add(UsbIn3);
+            UsbIn4 = new RoutingInputPort("usbIn4", eRoutingSignalType.Video, eRoutingPortConnectionType.UsbC, 6, this);
+            InputPorts.Add(UsbIn4);
             HdmiOut1 = new RoutingOutputPort(RoutingPortNames.HdmiOut1, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, null, this);
             OutputPorts.Add(HdmiOut1);
             HdmiOut2 = new RoutingOutputPort(RoutingPortNames.HdmiOut2, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, null, this);
