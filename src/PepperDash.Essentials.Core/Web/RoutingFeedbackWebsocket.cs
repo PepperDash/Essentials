@@ -59,10 +59,10 @@ public class RoutingFeedbackWebsocket : IKeyed
             if (service == null) return "";
 
             var ip = CrestronEthernetHelper.GetEthernetParameter(
-                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
-            if (string.IsNullOrEmpty(ip))
+                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
+            if (string.IsNullOrEmpty(ip) || ip == "Invalid Value")
                 ip = CrestronEthernetHelper.GetEthernetParameter(
-                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
 
             return $"wss://{ip}:{_httpsServer.Port}{service.Path}";
         }
