@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
@@ -40,6 +41,25 @@ namespace PepperDash.Essentials.Touchpanel
         private readonly StringFeedback QrCodeUrlFeedback;
         private readonly StringFeedback McServerUrlFeedback;
         private readonly StringFeedback UserCodeFeedback;
+
+        private string _customLogoUrlLightBkgnd;
+        private string _customLogoUrlDarkBkgnd;
+
+        /// <summary>
+        /// Gets the CustomLogoUrlLightBkgndFeedback. Reports the absolute URL of the room's custom logo
+        /// meant to be displayed on a light background (as configured on the room device via
+        /// <see cref="IEssentialsRoom.LogoUrlLightBkgnd"/>, served from the program's own slot-specific
+        /// logo folder), or an empty string if none is configured.
+        /// </summary>
+        public StringFeedback CustomLogoUrlLightBkgndFeedback { get; private set; }
+
+        /// <summary>
+        /// Gets the CustomLogoUrlDarkBkgndFeedback. Reports the absolute URL of the room's custom logo
+        /// meant to be displayed on a dark background (as configured on the room device via
+        /// <see cref="IEssentialsRoom.LogoUrlDarkBkgnd"/>, served from the program's own slot-specific
+        /// logo folder), or an empty string if none is configured.
+        /// </summary>
+        public StringFeedback CustomLogoUrlDarkBkgndFeedback { get; private set; }
 
         private readonly BoolFeedback _appOpenFeedback;
 
@@ -135,6 +155,8 @@ namespace PepperDash.Essentials.Touchpanel
             QrCodeUrlFeedback = new StringFeedback($"{Key}-qrCodeUrl", () => _bridge?.QrCodeUrl);
             McServerUrlFeedback = new StringFeedback($"{Key}-mcServerUrl", () => _bridge?.McServerUrl);
             UserCodeFeedback = new StringFeedback($"{Key}-userCode", () => _bridge?.UserCode);
+            CustomLogoUrlLightBkgndFeedback = new StringFeedback($"{Key}-customLogoUrlLightBkgnd", () => _customLogoUrlLightBkgnd);
+            CustomLogoUrlDarkBkgndFeedback = new StringFeedback($"{Key}-customLogoUrlDarkBkgnd", () => _customLogoUrlDarkBkgnd);
 
             _appOpenFeedback = new BoolFeedback($"{Key}-appOpen", () =>
             {
@@ -185,7 +207,7 @@ namespace PepperDash.Essentials.Touchpanel
 
             Feedbacks = new FeedbackCollection<Feedback>
             {
-                AppUrlFeedback, QrCodeUrlFeedback, McServerUrlFeedback, UserCodeFeedback
+                AppUrlFeedback, QrCodeUrlFeedback, McServerUrlFeedback, UserCodeFeedback, CustomLogoUrlLightBkgndFeedback, CustomLogoUrlDarkBkgndFeedback
             };
 
             ZoomFeedbacks = new FeedbackCollection<Feedback> {
@@ -413,6 +435,8 @@ namespace PepperDash.Essentials.Touchpanel
             QrCodeUrlFeedback.LinkInputSig(Panel.StringInput[2]);
             McServerUrlFeedback.LinkInputSig(Panel.StringInput[3]);
             UserCodeFeedback.LinkInputSig(Panel.StringInput[4]);
+            CustomLogoUrlLightBkgndFeedback.LinkInputSig(Panel.StringInput[5]);
+            CustomLogoUrlDarkBkgndFeedback.LinkInputSig(Panel.StringInput[6]);
 
             Panel.IpInformationChange -= Panel_IpInformationChange;
             Panel.IpInformationChange += Panel_IpInformationChange;
@@ -438,6 +462,8 @@ namespace PepperDash.Essentials.Touchpanel
                 Panel.StringInput[2].StringValue = QrCodeUrlFeedback.StringValue;
                 Panel.StringInput[3].StringValue = McServerUrlFeedback.StringValue;
                 Panel.StringInput[4].StringValue = UserCodeFeedback.StringValue;
+                Panel.StringInput[5].StringValue = CustomLogoUrlLightBkgndFeedback.StringValue;
+                Panel.StringInput[6].StringValue = CustomLogoUrlDarkBkgndFeedback.StringValue;
 
                 if (Panel is TswXX70Base x70Panel)
                 {
@@ -568,10 +594,57 @@ namespace PepperDash.Essentials.Touchpanel
             {
                 this.LogInformation("AppURL changed: {appURL}", _bridge.AppUrl);
                 SetAppUrl(_bridge.AppUrl);
+                UpdateCustomLogoUrls();
                 UpdateFeedbacks(s, a);
             };
 
             SetAppUrl(_bridge.AppUrl);
+            UpdateCustomLogoUrls();
+        }
+
+        /// <summary>
+        /// Resolves the room's configured custom logos (light and dark background variants, if any) into
+        /// absolute URLs served from this processor's own slot-specific logo folder, and updates
+        /// CustomLogoUrlLightBkgndFeedback / CustomLogoUrlDarkBkgndFeedback accordingly.
+        /// </summary>
+        private void UpdateCustomLogoUrls()
+        {
+            var room = DeviceManager.AllDevices.OfType<IEssentialsRoom>()
+                .FirstOrDefault(r => r.Key == _config.DefaultRoomKey);
+
+            _customLogoUrlLightBkgnd = ResolveLogoUrl(room?.LogoUrlLightBkgnd);
+            _customLogoUrlDarkBkgnd = ResolveLogoUrl(room?.LogoUrlDarkBkgnd);
+
+            CustomLogoUrlLightBkgndFeedback.FireUpdate();
+            CustomLogoUrlDarkBkgndFeedback.FireUpdate();
+        }
+
+        /// <summary>
+        /// Resolves a room-configured logo file path into an absolute URL served from this processor's own
+        /// slot-specific logo folder (e.g. http://{ip}:{port}/mc/app/logo/{filename}). Returns an empty
+        /// string if <paramref name="customLogoPath"/> is null/empty, or the app URL can't be determined.
+        /// </summary>
+        private string ResolveLogoUrl(string customLogoPath)
+        {
+            if (string.IsNullOrEmpty(customLogoPath) || string.IsNullOrEmpty(_bridge?.AppUrl))
+            {
+                return string.Empty;
+            }
+
+            var originMatch = Regex.Match(_bridge.AppUrl, @"^(https?://[^/]+)");
+
+            if (!originMatch.Success)
+            {
+                this.LogWarning("Could not determine origin from AppUrl '{appUrl}', cannot build custom logo URL", _bridge.AppUrl);
+                return string.Empty;
+            }
+
+            // Path.GetFileName strips any directory components, matching the server's own image
+            // request handler, which only ever resolves a bare filename within its logo folder.
+            var filename = Path.GetFileName(customLogoPath);
+            var logoUrl = $"{originMatch.Groups[1].Value}/mc/app/logo/{filename}";
+
+            return GetUrlWithCorrectIp(logoUrl);
         }
 
         /// <summary>
