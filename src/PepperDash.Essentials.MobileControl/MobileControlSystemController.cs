@@ -58,31 +58,10 @@ namespace PepperDash.Essentials
         private readonly Dictionary<string, IMobileControlMessenger> _defaultMessengers =
             new Dictionary<string, IMobileControlMessenger>();
 
-        private readonly Dictionary<string, ConnectedClientVersionInfo> _connectedClientVersions =
-            new Dictionary<string, ConnectedClientVersionInfo>(StringComparer.InvariantCultureIgnoreCase);
-
-        private readonly object _connectedClientVersionsLock = new object();
-
         /// <summary>
         /// Get the custom messengers
         /// </summary>
         public ReadOnlyDictionary<string, IMobileControlMessenger> Messengers => new ReadOnlyDictionary<string, IMobileControlMessenger>(_messengers);
-
-        /// <summary>
-        /// Gets the most recently reported UI app version for each connected client, keyed by clientId
-        /// </summary>
-        public ReadOnlyDictionary<string, ConnectedClientVersionInfo> ConnectedClientVersions
-        {
-            get
-            {
-                lock (_connectedClientVersionsLock)
-                {
-                    return new ReadOnlyDictionary<string, ConnectedClientVersionInfo>(
-                        _connectedClientVersions.ToDictionary(kv => kv.Key, kv => kv.Value.Clone())
-                    );
-                }
-            }
-        }
 
         /// <summary>
         /// Get the default messengers
@@ -1028,27 +1007,13 @@ namespace PepperDash.Essentials
                 );
             }
 
-            var connectedClientVersions = ConnectedClientVersions;
+            var expectedAppVersion = ConfigReader.ConfigObject?.Versions?.TouchpanelWrapperApp?.Version;
+            var userAppPath = Global.FilePathPrefix + "mcUserApp" + Global.DirectorySeparator;
+            var versionCheck = TouchpanelWrapperAppVersionChecker.CheckDeployedVersion(userAppPath, expectedAppVersion);
 
-            if (connectedClientVersions.Count == 0)
-            {
-                CrestronConsole.ConsoleCommandResponse("\r\nUI Client App Versions: None reported yet\r\n");
-            }
-            else
-            {
-                CrestronConsole.ConsoleCommandResponse("\r\nUI Client App Versions:\r\n");
-                foreach (var kv in connectedClientVersions)
-                {
-                    var v = kv.Value;
-                    var match = string.IsNullOrEmpty(v.ExpectedAppVersion) || string.Equals(v.ExpectedAppVersion, v.AppVersion, StringComparison.OrdinalIgnoreCase);
-
-                    CrestronConsole.ConsoleCommandResponse(
-                        $"  Client: {v.ClientId}  Touchpanel: {v.TouchpanelKey}  Room: {v.RoomKey}\r\n" +
-                        $"    Reported: {v.AppVersion}  Expected: {(string.IsNullOrEmpty(v.ExpectedAppVersion) ? "(not configured)" : v.ExpectedAppVersion)}  Match: {(match ? "Yes" : "NO - MISMATCH")}\r\n" +
-                        $"    Last Seen (UTC): {v.LastSeen:yyyy-MM-dd HH:mm:ss}\r\n"
-                    );
-                }
-            }
+            CrestronConsole.ConsoleCommandResponse(
+                $"\r\nUI Wrapper App Deployed Version Check:\r\n    {versionCheck.Summary}\r\n"
+            );
         }
 
         /// <summary>
@@ -1445,8 +1410,6 @@ namespace PepperDash.Essentials
             var roomKey = content["roomKey"].Value<string>();
             var touchpanelKey = content.SelectToken("touchpanelKey");
 
-            TrackClientAppVersion(clientId, roomKey, touchpanelKey?.Value<string>(), content.SelectToken("appVersion")?.Value<string>());
-
             if (_roomCombiner == null)
             {
                 var message = new MobileControlMessage
@@ -1516,50 +1479,6 @@ namespace PepperDash.Essentials
             SendDeviceInterfaces(clientId);
 
             SendTouchpanelKey(clientId, touchpanelKey);
-        }
-
-        /// <summary>
-        /// Records the app version reported by a connecting UI client (e.g. the mobile control React app's
-        /// build-time APP_VERSION) and compares it against the configured versions.touchpanelWrapperApp version.
-        /// </summary>
-        private void TrackClientAppVersion(string clientId, string roomKey, string touchpanelKey, string appVersion)
-        {
-            if (string.IsNullOrEmpty(appVersion))
-            {
-                return;
-            }
-
-            var expectedVersion = ConfigReader.ConfigObject?.Versions?.TouchpanelWrapperApp?.Version;
-
-            var info = new ConnectedClientVersionInfo
-            {
-                ClientId = clientId,
-                RoomKey = roomKey,
-                TouchpanelKey = touchpanelKey,
-                AppVersion = appVersion,
-                ExpectedAppVersion = expectedVersion,
-                LastSeen = DateTime.UtcNow
-            };
-
-            lock (_connectedClientVersionsLock)
-            {
-                _connectedClientVersions[clientId] = info;
-            }
-
-            if (!string.IsNullOrEmpty(expectedVersion) && !string.Equals(expectedVersion, appVersion, StringComparison.OrdinalIgnoreCase))
-            {
-                this.LogWarning(
-                    "Client {clientId} (touchpanel {touchpanelKey}) reported UI app version {appVersion}, which does not match configured versions.touchpanelWrapperApp version {expectedVersion}",
-                    clientId, touchpanelKey, appVersion, expectedVersion
-                );
-            }
-            else
-            {
-                this.LogVerbose(
-                    "Client {clientId} (touchpanel {touchpanelKey}) reported UI app version {appVersion}",
-                    clientId, touchpanelKey, appVersion
-                );
-            }
         }
 
         private void SendTouchpanelKey(string clientId, JToken touchpanelKeyToken)
