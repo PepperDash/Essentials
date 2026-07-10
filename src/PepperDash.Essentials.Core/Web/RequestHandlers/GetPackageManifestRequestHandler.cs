@@ -186,8 +186,11 @@ public class GetPackageManifestRequestHandler : WebApiBaseRequestHandler
 			}
 		}
 
-		// Configured but not currently loaded - pass through unchanged
-		mergedPackages.AddRange(configPackages.Where(p => !matchedConfigPackages.Contains(p)));
+		// Configured but not currently loaded - pass through unchanged, but keep the same
+		// "never emit an entry with no version" guarantee as the loaded-reflection branch above -
+		// otherwise this branch reintroduces the schema issue that guard is meant to prevent.
+		mergedPackages.AddRange(configPackages.Where(p =>
+			!matchedConfigPackages.Contains(p) && !string.IsNullOrEmpty(p.Version)));
 
 		result.Packages = mergedPackages;
 	}
