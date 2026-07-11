@@ -1006,6 +1006,14 @@ namespace PepperDash.Essentials
                     "    Not Enabled in Config.\r\n"
                 );
             }
+
+            var expectedAppVersion = ConfigReader.ConfigObject?.Versions?.TouchpanelWrapperApp?.Version;
+            var userAppPath = Global.FilePathPrefix + "mcUserApp" + Global.DirectorySeparator;
+            var versionCheck = TouchpanelWrapperAppVersionChecker.CheckDeployedVersion(userAppPath, expectedAppVersion);
+
+            CrestronConsole.ConsoleCommandResponse(
+                $"\r\nUI Wrapper App Deployed Version Check:\r\n    {versionCheck.Summary}\r\n"
+            );
         }
 
         /// <summary>

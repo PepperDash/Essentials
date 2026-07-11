@@ -16,9 +16,15 @@ namespace PepperDash.Essentials.Core.Config;
 /// </summary>
 public class EssentialsConfig : BasicConfig
 {
+    /// <summary>
+    /// Gets or sets the System URL for the Essentials configuration
+    /// </summary>
     [JsonProperty("system_url")]
     public string SystemUrl { get; set; }
 
+    /// <summary>
+    /// Gets or sets the Template URL for the Essentials configuration
+    /// </summary>
     [JsonProperty("template_url")]
     public string TemplateUrl { get; set; }
 
@@ -74,14 +80,21 @@ public class EssentialsConfig : BasicConfig
         }
     }
 
+    /// <summary>
+    /// Gets or sets the list of rooms (device configurations)
+    /// </summary>
     [JsonProperty("rooms")]
     public List<DeviceConfig> Rooms { get; set; }
 
     /// <summary>
     /// Gets or sets the Versions
     /// </summary>
+    [JsonProperty("versions")]
     public VersionData Versions { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EssentialsConfig"/> class.
+    /// </summary>
     public EssentialsConfig()
         : base()
     {
@@ -98,13 +111,13 @@ public class VersionData
     /// Gets or sets the Essentials version
     /// </summary>
     [JsonProperty("essentials")]
-    public NugetVersion Essentials { get; set; }
+    public PackageVersion Essentials { get; set; }
 
     /// <summary>
     /// Gets or sets the list of UserInterfaces
     /// </summary>
     [JsonProperty("userInterfaces")]
-    public List<AppVersion> UserInterfaces { get; set; }
+    public List<PackageVersion> UserInterfaces { get; set; }
 
     /// <summary>
     /// Gets or sets the TouchpanelWrapperApp version
@@ -112,45 +125,29 @@ public class VersionData
     /// to run an HTML5 user interface.
     /// </summary>
     [JsonProperty("touchpanelWrapperApp")]
-    public AppVersion TouchpanelWrapperApp { get; set; }
+    public PackageVersion TouchpanelWrapperApp { get; set; }
 
     /// <summary>
     /// Gets or sets the list of Packages
     /// </summary>
     [JsonProperty("packages")]
-    public List<NugetVersion> Packages { get; set; }
+    public List<PackageVersion> Packages { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VersionData"/> class.
     /// </summary>
     public VersionData()
     {
-        UserInterfaces = new List<AppVersion>();
-        TouchpanelWrapperApp = new AppVersion();
-        Packages = new List<NugetVersion>();
+        UserInterfaces = new List<PackageVersion>();
+        TouchpanelWrapperApp = new PackageVersion();
+        Packages = new List<PackageVersion>();
     }
 }
 
-public class AppVersion
-{
-    /// <summary>
-    /// Gets or sets the Version
-    /// </summary>
-    [JsonProperty("version")]
-    public string Version { get; set; }
-
-    /// <summary>
-    /// Gets or sets the RepoUrl
-    /// </summary>
-    [JsonProperty("repoUrl")]
-    public string RepoUrl { get; set; }
-}
-
-
 /// <summary>
-/// Represents a NugetVersion
+/// Represents a Package Version
 /// </summary>
-public class NugetVersion
+public class PackageVersion
 {
     /// <summary>
     /// Gets or sets the Version
@@ -161,14 +158,20 @@ public class NugetVersion
     /// <summary>
     /// Gets or sets the PackageId
     /// </summary>
-    [JsonProperty("packageId")]
+    [JsonProperty("packageId", NullValueHandling = NullValueHandling.Ignore)]
     public string PackageId { get; set; }
 
     /// <summary>
     /// Gets or sets the RepoUrl
     /// </summary>
-    [JsonProperty("repoUrl")]
+    [JsonProperty("repoUrl", NullValueHandling = NullValueHandling.Ignore)]
     public string RepoUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the human-readable name
+    /// </summary>
+    [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+    public string Name { get; set; }
 }
 
 /// <summary>
@@ -176,6 +179,9 @@ public class NugetVersion
 /// </summary>
 public class SystemTemplateConfigs
 {
+    /// <summary>
+    /// Gets or sets the System configuration
+    /// </summary>
     public EssentialsConfig System { get; set; }
 
     /// <summary>
