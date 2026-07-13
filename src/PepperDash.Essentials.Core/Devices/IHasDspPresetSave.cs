@@ -6,9 +6,9 @@ namespace PepperDash.Essentials.Core
     public interface IHasDspPresetSave : IDspPresets
     {
         /// <summary>
-        /// Saves the DSP preset by key
+        /// Saves the preset by key
         /// </summary>
-        /// <param name="presetKey"></param>
-        void SavePresetByKey(string presetKey); // mirrors RecallPreset(string key)
+        /// <param name="key">key of preset to save</param>
+        void SavePreset(string key);
     }
 }
