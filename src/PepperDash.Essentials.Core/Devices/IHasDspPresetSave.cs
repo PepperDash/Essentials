@@ -3,7 +3,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Defines the contract for IHasDspPresetSave
     /// </summary>
-    public interface IHasDspPresetSave : IDspPresets // recall + save
+    public interface IHasDspPresetSave : IDspPresets
     {
         /// <summary>
         /// Saves the DSP preset by key
