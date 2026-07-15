@@ -180,7 +180,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 Devices = devices,
                 TieLines = tielines,
                 CurrentRoutes = currentRoutes,
-                SinkCurrentSources = BuildSinkCurrentSources(tileChildren)
+                SinkCurrentSources = BuildSinkCurrentSources(tileChildren),
+                MultiviewLayouts = RoutingGraphHelpers.BuildMultiviewLayoutSnapshot()
             };
 
             var jsonResponse = JsonConvert.SerializeObject(response, Formatting.Indented);
@@ -270,6 +271,16 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// </summary>
         [JsonProperty("sinkCurrentSources")]
         public List<SinkCurrentSourceInfo> SinkCurrentSources { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current multiview canvas/tile layout for every device implementing
+        /// <see cref="IRoutingSinkWithLayoutState"/>, keyed by device key. Devices with no currently
+        /// active layout are omitted. Lets a client render an initial visual mock-up of each
+        /// multiview decoder's monitor output without waiting for a routing feedback WebSocket
+        /// connection - see <see cref="RoutingGraphHelpers.BuildMultiviewLayoutSnapshot"/>.
+        /// </summary>
+        [JsonProperty("multiviewLayouts")]
+        public Dictionary<string, MultiviewLayoutState> MultiviewLayouts { get; set; }
     }
 
     /// <summary>

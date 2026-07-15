@@ -224,7 +224,8 @@ public class RoutingFeedbackWebsocket : IKeyed
         {
             Type = "snapshot",
             MidpointRoutes = midpointRoutes,
-            SinkRoutes = sinkRoutes
+            SinkRoutes = sinkRoutes,
+            Layouts = RoutingGraphHelpers.BuildMultiviewLayoutSnapshot()
         };
 
         return JsonConvert.SerializeObject(snapshot, JsonSettings);
@@ -245,6 +246,12 @@ public class RoutingFeedbackWebsocket : IKeyed
         {
             device.InputChanged += HandleSinkInputChanged;
         }
+
+        var layoutDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithLayoutState>();
+        foreach (var device in layoutDevices)
+        {
+            device.LayoutChanged += HandleLayoutChanged;
+        }
     }
 
     private void UnsubscribeFromRoutingEvents()
@@ -259,6 +266,12 @@ public class RoutingFeedbackWebsocket : IKeyed
         foreach (var device in sinkDevices)
         {
             device.InputChanged -= HandleSinkInputChanged;
+        }
+
+        var layoutDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithLayoutState>();
+        foreach (var device in layoutDevices)
+        {
+            device.LayoutChanged -= HandleLayoutChanged;
         }
     }
 
@@ -281,6 +294,24 @@ public class RoutingFeedbackWebsocket : IKeyed
                 Type = "midpointRouteChanged",
                 DeviceKey = midpoint.Key,
                 Routes = routes
+            };
+
+            Broadcast(JsonConvert.SerializeObject(msg, JsonSettings));
+        });
+    }
+
+    private void HandleLayoutChanged(object sender, MultiviewLayoutStateEventArgs e)
+    {
+        if (sender is not IKeyed device)
+            return;
+
+        DebounceBroadcast($"layout-{device.Key}", () =>
+        {
+            var msg = new LayoutChangedDto
+            {
+                Type = "layoutChanged",
+                DeviceKey = device.Key,
+                Layout = e.CurrentLayout
             };
 
             Broadcast(JsonConvert.SerializeObject(msg, JsonSettings));
@@ -392,6 +423,14 @@ public class RoutingFeedbackWebsocket : IKeyed
         public string Type { get; set; }
         public Dictionary<string, List<MidpointRouteDto>> MidpointRoutes { get; set; }
         public Dictionary<string, List<SinkRouteDto>> SinkRoutes { get; set; }
+        public Dictionary<string, MultiviewLayoutState> Layouts { get; set; }
+    }
+
+    private class LayoutChangedDto
+    {
+        public string Type { get; set; }
+        public string DeviceKey { get; set; }
+        public MultiviewLayoutState Layout { get; set; }
     }
 
     private class MidpointRouteChangedDto

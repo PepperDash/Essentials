@@ -86,4 +86,27 @@ public static class RoutingGraphHelpers
 
         return device.CurrentSourceKeys.TryGetValue(eRoutingSignalType.Audio, out var audioKey) ? audioKey : null;
     }
+
+    /// <summary>
+    /// Builds a snapshot of the current <see cref="MultiviewLayoutState"/> for every device in
+    /// <see cref="DeviceManager"/> that implements <see cref="IRoutingSinkWithLayoutState"/>, keyed
+    /// by device key. Devices with no currently active layout (<c>CurrentLayout == null</c>) are
+    /// omitted. Shared by <see cref="RequestHandlers.GetRoutingDevicesAndTieLinesHandler"/> (initial
+    /// HTTP snapshot) and <see cref="RoutingFeedbackWebsocket"/> (WebSocket snapshot on connect).
+    /// </summary>
+    public static Dictionary<string, MultiviewLayoutState> BuildMultiviewLayoutSnapshot()
+    {
+        var result = new Dictionary<string, MultiviewLayoutState>();
+
+        foreach (var device in DeviceManager.AllDevices.OfType<IRoutingSinkWithLayoutState>())
+        {
+            var layout = device.CurrentLayout;
+            if (layout == null)
+                continue;
+
+            result[device.Key] = layout;
+        }
+
+        return result;
+    }
 }
