@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
             {
                 if (IsInAutoMode)
                 {
-                    return _partitionSensor.PartitionPresentFeedback.BoolValue;
+                    return _partitionSensor?.PartitionPresentFeedback?.BoolValue ?? _partitionPresent;
                 }
 
                 return _partitionPresent;
