@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
@@ -22,9 +23,13 @@ namespace PepperDash.Essentials.Core.Routing
         private Dictionary<string, HashSet<RoutingInputPort>> midpointToSinkInputsMap;
 
         /// <summary>
-        /// Debounce timers for each sink device to prevent rapid successive updates
+        /// Debounce timers for each sink device to prevent rapid successive updates. Must be a
+        /// ConcurrentDictionary - it's mutated both from whatever thread calls UpdateDestination and
+        /// from each Timer's Elapsed callback (which fires on a threadpool timer thread), so a plain
+        /// Dictionary here would have its internal state corrupted by the concurrent Insert/Remove
+        /// calls, surfacing as an IndexOutOfRangeException from deep inside Dictionary internals.
         /// </summary>
-        private readonly Dictionary<string, Timer> updateTimers = new Dictionary<string, Timer>();
+        private readonly ConcurrentDictionary<string, Timer> updateTimers = new ConcurrentDictionary<string, Timer>();
 
         /// <summary>
         /// Debounce delay in milliseconds
@@ -314,10 +319,9 @@ namespace PepperDash.Essentials.Core.Routing
                 }
                 finally
                 {
-                    if (updateTimers.ContainsKey(key))
+                    if (updateTimers.TryRemove(key, out var timerToDispose))
                     {
-                        updateTimers[key]?.Dispose();
-                        updateTimers.Remove(key);
+                        timerToDispose?.Dispose();
                     }
                 }
             };
