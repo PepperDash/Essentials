@@ -187,11 +187,12 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 _portForwardTimeoutTimer?.Dispose();
                 _portForwardTimeoutTimer = new CTimer(_ =>
                 {
-                    if (Debug.WebsocketSink.HasActiveConnections)
-                    {
-                        Debug.LogMessage(LogEventLevel.Debug, "Debug websocket has active connections; keeping port forward");
-                        return;
-                    }
+					if (Debug.WebsocketSink.HasActiveConnections)
+					{
+						Debug.LogMessage(LogEventLevel.Debug, "Debug websocket has active connections; keeping port forward");
+						StartPortForwardTimeout(port, csIp);
+						return;
+					}
 
                     Debug.LogMessage(LogEventLevel.Information, "No debug websocket connection within 30 seconds; removing port forward for port {0}", port);
 
