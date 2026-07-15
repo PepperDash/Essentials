@@ -1305,7 +1305,16 @@ namespace PepperDash.Essentials.WebSocketServer
                 }
                 byte[] contents = File.ReadAllBytes(filePath);
                 res.ContentLength64 = contents.LongLength;
-                res.Close(contents, true);
+                try
+                {
+                    res.Close(contents, true);
+                }
+                catch (IOException ex)
+                {
+                    // Client disconnected (e.g. panel refreshed/navigated away) before the response could be
+                    // fully written. This is a benign, expected condition, not an application error.
+                    this.LogVerbose("Client disconnected before image response could be sent: {message}", ex.Message);
+                }
             }
             else
             {
@@ -1427,7 +1436,17 @@ namespace PepperDash.Essentials.WebSocketServer
             }
 
             res.ContentLength64 = contents.LongLength;
-            res.Close(contents, true);
+            try
+            {
+                res.Close(contents, true);
+            }
+            catch (IOException ex)
+            {
+                // Client disconnected (e.g. panel refreshed/navigated away, or made a duplicate request)
+                // before the response could be fully written. This is a benign, expected condition
+                // (e.g. a "Broken pipe" IOException), not an application error worth logging at Error level.
+                this.LogVerbose("Client disconnected before user app response could be sent: {message}", ex.Message);
+            }
         }
 
         /// <summary>
