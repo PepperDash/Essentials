@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core
     {
         /// <summary>
         /// Gets or sets a value indicating whether the system operates in automatic mode.
-        /// <remarks>Some systems don't have partitions sensors, and show shouldn't allow auto mode to be turned on. When this is true in the configuration, 
+        /// <remarks>Some systems don't have partitions sensors, and shouldn't allow auto mode to be turned on. When this is true in the configuration, 
         /// auto mode won't be allowed to be turned on.</remarks>
         /// </summary>
         [JsonProperty("disableAutoMode")]
