@@ -1,13 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
- /// <summary>
- /// Represents a GetFeedbacksForDeviceRequestHandler
- /// </summary>
+	/// <summary>
+	/// Represents a GetFeedbacksForDeviceRequestHandler
+	/// </summary>
 	public class GetFeedbacksForDeviceRequestHandler : WebApiBaseRequestHandler
 	{
 		/// <summary>
@@ -76,7 +77,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 					Value = feedback.IntValue
 				};
 
-			var stringFeedback = 
+			var stringFeedback =
 				from feedback in device.Feedbacks.OfType<StringFeedback>()
 				where !string.IsNullOrEmpty(feedback.Key)
 				select new

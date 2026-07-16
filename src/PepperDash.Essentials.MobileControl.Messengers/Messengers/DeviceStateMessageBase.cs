@@ -12,7 +12,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// The interfaces implmented by the device sending the messsage
     /// </summary>
-    [JsonProperty("interfaces")]
+    [JsonProperty("interfaces", NullValueHandling = NullValueHandling.Ignore)]
+    [Obsolete("Interfaces are no longer supported and will be removed in a future release. Interfaces for all devices are now retrieved via the /joinroom endpoint in the MobileControlWebsocketServer")]
     public List<string> Interfaces { get; private set; }
 
     /// <summary>
