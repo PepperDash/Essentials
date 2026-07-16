@@ -39,6 +39,8 @@ namespace PepperDash.Essentials.Core
 
         ICec Port;
 
+        bool _cecSubscribed;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -54,7 +56,7 @@ namespace PepperDash.Essentials.Core
             {
                 Port = postActivationFunc(config);
 
-                Port.StreamCec.CecChange += StreamCec_CecChange;
+                TryEnsureCecSubscription();
             });
         }
 
@@ -68,7 +70,29 @@ namespace PepperDash.Essentials.Core
         {
             Port = port;
 
+            TryEnsureCecSubscription();
+        }
+
+        /// <summary>
+        /// Subscribes to the CEC change event once <see cref="ICec.StreamCec"/> is available.
+        /// Safe to call repeatedly; the subscription is only wired a single time. This allows the
+        /// receive path to self-heal if StreamCec was null at construction (e.g. the underlying
+        /// device had not yet come online).
+        /// </summary>
+        void TryEnsureCecSubscription()
+        {
+            if (_cecSubscribed)
+                return;
+
+            if (Port?.StreamCec == null)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, this, "StreamCec is not available; CEC feedback is deferred until the device is ready");
+                return;
+            }
+
             Port.StreamCec.CecChange += new CecChangeEventHandler(StreamCec_CecChange);
+            _cecSubscribed = true;
+            Debug.LogMessage(LogEventLevel.Information, this, "Subscribed to CEC feedback");
         }
 
         void StreamCec_CecChange(Cec cecDevice, CecEventArgs args)
@@ -104,8 +128,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void SendText(string text)
         {
-            if (Port == null)
+            if (Port?.StreamCec == null)
                 return;
+            TryEnsureCecSubscription();
             this.PrintSentText(text);
             Port.StreamCec.Send.StringValue = text;
         }
@@ -115,8 +140,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void SendBytes(byte[] bytes)
         {
-            if (Port == null)
+            if (Port?.StreamCec == null)
                 return;
+            TryEnsureCecSubscription();
             var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
             this.PrintSentBytes(bytes);
             Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
