@@ -75,9 +75,9 @@ namespace PepperDash.Essentials.Core
 
         /// <summary>
         /// Subscribes to the CEC change event once <see cref="ICec.StreamCec"/> is available.
-        /// Safe to call repeatedly; the subscription is only wired a single time. This allows the
-        /// receive path to self-heal if StreamCec was null at construction (e.g. the underlying
-        /// device had not yet come online).
+        /// Safe to call repeatedly; the subscription is only wired a single time.
+        /// If StreamCec is null during construction, this is retried when send methods invoke
+        /// this method later.
         /// </summary>
         void TryEnsureCecSubscription()
         {
