@@ -21,7 +21,11 @@ namespace PepperDash.Core
 
       var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-      CrestronConsole.PrintLine($"[{timestamp}][{app}][{comms.Key}] Sending {bytes.Length} bytes: '{ComTextHelper.GetEscapedText(bytes)}'");
+      Debug.LogMessage(
+          level: Serilog.Events.LogEventLevel.Fatal,
+          message: $"Sending {bytes.Length} bytes: '{ComTextHelper.GetEscapedText(bytes)}'",
+          device: comms
+      );
     }
 
     /// <summary>
@@ -35,7 +39,11 @@ namespace PepperDash.Core
 
       var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-      CrestronConsole.PrintLine($"[{timestamp}][{app}][{comms.Key}] Received {bytes.Length} bytes: '{ComTextHelper.GetEscapedText(bytes)}'");
+      Debug.LogMessage(
+          level: Serilog.Events.LogEventLevel.Fatal,
+          message: $"Received {bytes.Length} bytes: '{ComTextHelper.GetEscapedText(bytes)}'",
+          device: comms
+      );
     }
 
     /// <summary>
@@ -49,7 +57,11 @@ namespace PepperDash.Core
 
       var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-      CrestronConsole.PrintLine($"[{timestamp}][{app}][{comms.Key}] Sending Text: '{ComTextHelper.GetDebugText(text)}'");
+      Debug.LogMessage(
+          level: Serilog.Events.LogEventLevel.Fatal,
+          message: $"Sending Text: '{ComTextHelper.GetDebugText(text)}'",
+          device: comms
+      );
     }
 
     /// <summary>
@@ -63,7 +75,11 @@ namespace PepperDash.Core
 
       var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-      CrestronConsole.PrintLine($"[{timestamp}][{app}][{comms.Key}] Received Text: '{ComTextHelper.GetDebugText(text)}'");
+      Debug.LogMessage(
+          level: Serilog.Events.LogEventLevel.Fatal,
+          message: $"Received Text: '{ComTextHelper.GetDebugText(text)}'",
+          device: comms
+      );
     }
   }
 }
