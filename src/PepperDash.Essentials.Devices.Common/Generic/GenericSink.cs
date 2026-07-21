@@ -33,8 +33,10 @@ public class GenericSink : EssentialsDevice, IRoutingSinkWithFeedback
         InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
         var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
-
+        var audioInputPort = new RoutingInputPort(RoutingPortNames.AnyAudioIn, eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, null, this);
+        
         InputPorts.Add(inputPort);
+        InputPorts.Add(audioInputPort);
 
         CurrentSources = new Dictionary<eRoutingSignalType, IRoutingSource>
             {
