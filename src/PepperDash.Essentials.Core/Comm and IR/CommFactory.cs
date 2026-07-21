@@ -68,6 +68,7 @@ namespace PepperDash.Essentials.Core;
                     {
                         var ssh = new GenericSshClient(deviceConfig.Key + "-ssh", c.Address, c.Port, c.Username, c.Password);
                         ssh.AutoReconnect = c.AutoReconnect;
+                        ssh.DisableEcho = c.DisableSshEcho;
                         if(ssh.AutoReconnect)
                             ssh.AutoReconnectIntervalMs = c.AutoReconnectIntervalMs;
                         comm = ssh;

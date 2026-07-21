@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Timers;
 using Crestron.SimplSharp;
@@ -138,6 +139,11 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
     private bool DisconnectLogged = false;
 
     /// <summary>
+    /// When true, turns off echo for the SSH session
+    /// </summary>
+    public bool DisableEcho { get; set; }
+
+    /// <summary>
     /// Typical constructor.
     /// </summary>
     public GenericSshClient(string key, string hostname, int port, string username, string password) :
@@ -250,7 +256,15 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
                 try
                 {
                     Client.Connect();
-                    TheStream = Client.CreateShellStream("PDTShell", 0, 0, 0, 0, 65534);
+
+                    var modes = new Dictionary<TerminalModes, uint>();
+
+                    if (DisableEcho)
+                    {
+                        modes.Add(TerminalModes.ECHO, 0);
+                    }
+
+                    TheStream = Client.CreateShellStream("PDTShell", 0, 0, 0, 0, 65534, modes);
                     if (TheStream.DataAvailable)
                     {
                         // empty the buffer if there is data
