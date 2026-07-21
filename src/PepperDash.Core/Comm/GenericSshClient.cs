@@ -306,6 +306,27 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
                         ReconnectTimer.Start();
                     }
                 }
+                catch (System.Net.Sockets.SocketException e)
+                {
+                    // SSH.NET only wraps socket failures in SshConnectionException once the SSH
+                    // protocol handshake begins - a failure before that (e.g. DNS resolution failure,
+                    // "Name or service not known", or connection refused) surfaces as a raw
+                    // SocketException here instead. This is an expected/routine "device offline"
+                    // condition (same as the SshConnectionException case above), so log it at Warning
+                    // instead of falling through to the generic handler's LogException/Error-level
+                    // stack trace dump.
+                    this.LogWarning("Connection failure: Cannot reach {host} on {port} ({message})", Hostname, Port, e.Message);
+
+                    DisconnectLogged = true;
+                    KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
+                    if (AutoReconnect)
+                    {
+                        this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
+                        ReconnectTimer.Stop();
+                        ReconnectTimer.Interval = AutoReconnectIntervalMs;
+                        ReconnectTimer.Start();
+                    }
+                }
                 catch (Exception e)
                 {
                     this.LogException(e, "Unhandled exception on connect");
