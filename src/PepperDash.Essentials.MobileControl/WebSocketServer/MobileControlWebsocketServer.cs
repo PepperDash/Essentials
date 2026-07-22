@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Authentication;
@@ -428,6 +429,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 Directory.CreateDirectory(userAppPath);
             }
 
+            DeployMcUserAppZipIfPresent();
+
             if (!Directory.Exists($"{userAppPath}{localConfigFolderName}"))
             {
                 Directory.CreateDirectory($"{userAppPath}{localConfigFolderName}");
@@ -478,6 +481,111 @@ namespace PepperDash.Essentials.WebSocketServer
                 var contents = JsonConvert.SerializeObject(config, Formatting.Indented);
 
                 sw.Write(contents);
+            }
+        }
+
+        /// <summary>
+        /// Checks the mcUserApp folder for a deployed zip bundle (e.g. dropped there directly by an
+        /// SFTP deploy script or manual upload) and, if found, wipes the folder's existing contents
+        /// (except the zip itself) and extracts the zip in its place. This allows a new touchpanel
+        /// wrapper app build to be deployed just by copying a zip file into the already-existing
+        /// mcUserApp folder, without needing to separately clear out the previous build first.
+        /// </summary>
+        private void DeployMcUserAppZipIfPresent()
+        {
+            string[] zipFiles;
+
+            try
+            {
+                zipFiles = Directory.GetFiles(userAppPath, "*.zip", SearchOption.TopDirectoryOnly);
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Error scanning {userAppPath} for a deployed mcUserApp zip file: {message}", userAppPath, ex.Message);
+                this.LogDebug(ex, "Stack Trace");
+                return;
+            }
+
+            if (zipFiles.Length == 0)
+            {
+                return;
+            }
+
+            if (zipFiles.Length > 1)
+            {
+                this.LogWarning("Multiple zip files found in {userAppPath}. Using the first one found: {zipFile}", userAppPath, zipFiles[0]);
+            }
+
+            var zipFilePath = zipFiles[0];
+
+            try
+            {
+                this.LogInformation("Found mcUserApp deployment zip file {zipFile}. Clearing existing app contents and unzipping...", zipFilePath);
+
+                // Remove everything currently in the folder except the zip file itself, so the new
+                // build doesn't end up mixed in with stale files from a previous deployment.
+                foreach (var entryPath in Directory.GetFileSystemEntries(userAppPath))
+                {
+                    if (string.Equals(entryPath, zipFilePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (Directory.Exists(entryPath))
+                    {
+                        Directory.Delete(entryPath, recursive: true);
+                    }
+                    else
+                    {
+                        File.Delete(entryPath);
+                    }
+                }
+
+                var appRoot = Path.GetFullPath(userAppPath);
+                if (!appRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) &&
+                    !appRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+                {
+                    appRoot += Path.DirectorySeparatorChar;
+                }
+
+                using (var archive = ZipFile.OpenRead(zipFilePath))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+                        var destinationPath = Path.Combine(userAppPath, entry.FullName);
+                        var fullDest = Path.GetFullPath(destinationPath);
+
+                        // Guard against "zip slip" - a malicious/corrupt archive entry trying to
+                        // extract outside of the mcUserApp folder via ../ path segments.
+                        if (!fullDest.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new InvalidOperationException($"Entry '{entry.FullName}' is trying to extract outside of the target directory.");
+                        }
+
+                        if (string.IsNullOrEmpty(entry.Name))
+                        {
+                            Directory.CreateDirectory(destinationPath);
+                            continue;
+                        }
+
+                        var parentDir = Path.GetDirectoryName(destinationPath);
+                        if (!string.IsNullOrEmpty(parentDir))
+                        {
+                            Directory.CreateDirectory(parentDir);
+                        }
+
+                        entry.ExtractToFile(destinationPath, overwrite: true);
+                    }
+                }
+
+                File.Delete(zipFilePath);
+
+                this.LogInformation("Successfully deployed mcUserApp from {zipFile}", Path.GetFileName(zipFilePath));
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Error deploying mcUserApp zip file {zipFile}: {message}", zipFilePath, ex.Message);
+                this.LogDebug(ex, "Stack Trace");
             }
         }
 
