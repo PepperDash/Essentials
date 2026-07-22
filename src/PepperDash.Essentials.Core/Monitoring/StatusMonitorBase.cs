@@ -87,6 +87,14 @@ namespace PepperDash.Essentials.Core
 		long ErrorTime;
 	Timer WarningTimer;
 	Timer ErrorTimer;
+
+		// Guards WarningTimer/ErrorTimer against concurrent access - StartErrorTimers/StopErrorTimers/
+		// ResetErrorTimers can each be invoked from different threads (e.g. a socket data-received
+		// callback vs. a connection-status-changed callback), and without this lock a null-check followed
+		// by a dereference (e.g. in ResetErrorTimers) can race with StopErrorTimers nulling the field in
+		// between, throwing an unhandled NullReferenceException on a background thread that crashes the
+		// whole program.
+		private readonly object _timerLock = new object();
 		/// Constructor
 		/// </summary>
 		/// <param name="parent">parent device</param>
@@ -154,6 +162,8 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		protected void StartErrorTimers()
 		{
+		lock (_timerLock)
+		{
 		if (WarningTimer == null)
 		{
 			WarningTimer = new Timer(WarningTime) { AutoReset = false };
@@ -167,16 +177,20 @@ namespace PepperDash.Essentials.Core
 			ErrorTimer.Start();
 		}
 		}
+		}
 
 		/// <summary>
 		/// Stops the error timers
 		/// </summary>
 		protected void StopErrorTimers()
 		{
-			if (WarningTimer != null) WarningTimer.Stop();
-			if (ErrorTimer != null) ErrorTimer.Stop();
-			WarningTimer = null;
-			ErrorTimer = null;
+			lock (_timerLock)
+			{
+				if (WarningTimer != null) WarningTimer.Stop();
+				if (ErrorTimer != null) ErrorTimer.Stop();
+				WarningTimer = null;
+				ErrorTimer = null;
+			}
 		}
 
 		/// <summary>
@@ -184,6 +198,8 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		protected void ResetErrorTimers()
 		{
+			lock (_timerLock)
+			{
 			if (WarningTimer != null)
 		{
 			WarningTimer.Stop();
@@ -196,6 +212,7 @@ namespace PepperDash.Essentials.Core
 			ErrorTimer.Interval = ErrorTime;
 			ErrorTimer.Start();
 		}
+			}
 		}
 	}
 }
