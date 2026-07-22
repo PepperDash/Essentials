@@ -554,15 +554,15 @@ namespace PepperDash.Essentials.Touchpanel
                 return false;
             }) ? csIpAddress.ToString() : processorIp;
 
-            var match = Regex.Match(url, @"^http://([^:/]+):\d+/mc/app\?token=.+$");
+            var match = Regex.Match(url, @"^(https?)://([^:/]+):\d+/mc/app\?token=.+$");
             if (match.Success)
             {
-                string ipa = match.Groups[1].Value;
+                string ipa = match.Groups[2].Value;
                 // ip will be "192.168.1.100"
             }
 
-            // replace ipa with ip but leave the rest of the string intact
-            var updatedUrl = Regex.Replace(url, @"^http://[^:/]+", $"http://{ip}");
+            // replace the host but preserve whatever scheme (http/https) is already present in the URL
+            var updatedUrl = Regex.Replace(url, @"^(https?)://[^:/]+", $"$1://{ip}");
 
             this.LogVerbose("Updated URL: {updatedUrl}", updatedUrl);
 
