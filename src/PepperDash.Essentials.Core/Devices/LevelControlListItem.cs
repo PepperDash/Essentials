@@ -20,7 +20,7 @@ public class LevelControlListItem : AudioControlListItemBase
         get
         {
             if (_levelControl == null)
-                _levelControl = DeviceManager.GetDeviceForKey(ParentDeviceKey) as IBasicVolumeWithFeedback;
+                _levelControl = DeviceManager.GetDeviceForKey(DeviceKey) as IBasicVolumeWithFeedback;
             return _levelControl;
         }
     }
