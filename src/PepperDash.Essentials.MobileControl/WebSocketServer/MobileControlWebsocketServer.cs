@@ -128,13 +128,24 @@ namespace PepperDash.Essentials.WebSocketServer
         public int Port { get; private set; }
 
         /// <summary>
+        /// Gets the HTTP scheme to use for generated URLs, based on whether the direct server is configured as secure
+        /// </summary>
+        private string HttpScheme => _parent.Config.DirectServer.Secure ? "https" : "http";
+
+        /// <summary>
+        /// Gets the WebSocket scheme to use for generated URLs, based on whether the direct server is configured as secure
+        /// </summary>
+        private string WsScheme => _parent.Config.DirectServer.Secure ? "wss" : "ws";
+
+        /// <summary>
         /// Gets the user app URL prefix
         /// </summary>
         public string UserAppUrlPrefix
         {
             get
             {
-                return string.Format("http://{0}:{1}{2}?token=",
+                return string.Format("{0}://{1}:{2}{3}?token=",
+                    HttpScheme,
                     CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0),
                     Port,
                     _userAppBaseHref);
@@ -273,7 +284,7 @@ namespace PepperDash.Essentials.WebSocketServer
             {
                 base.Initialize();
 
-                _server = new HttpServer(Port, false);
+                _server = new HttpServer(Port, _parent.Config.DirectServer.Secure);
 
                 _server.OnGet += Server_OnGet;
 
@@ -291,7 +302,7 @@ namespace PepperDash.Essentials.WebSocketServer
                     {
                         ClientCertificateRequired = false,
                         CheckCertificateRevocation = false,
-                        EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11
+                        EnabledSslProtocols = SslProtocols.Tls12
                     };
                 }
 
@@ -403,11 +414,11 @@ namespace PepperDash.Essentials.WebSocketServer
                     ip = csIpAddress.ToString();
                 }
 
-                var appUrl = $"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
+                var appUrl = $"{HttpScheme}://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
 
                 this.LogVerbose("Sending URL {appUrl} to touchpanel {touchpanelKey}", appUrl, touchpanel.Touchpanel.Key);
 
-                touchpanel.Touchpanel.SetAppUrl($"http://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}");
+                touchpanel.Touchpanel.SetAppUrl(appUrl);
             }
         }
 
@@ -487,7 +498,7 @@ namespace PepperDash.Essentials.WebSocketServer
             {
                 var config = new MobileControlApplicationConfig
                 {
-                    ApiPath = string.Format("http://{0}:{1}/mc/api", processorIp, _parent.Config.DirectServer.Port),
+                    ApiPath = string.Format("{0}://{1}:{2}/mc/api", HttpScheme, processorIp, _parent.Config.DirectServer.Port),
                     GatewayAppPath = "",
                     LogoPath = _parent.Config.ApplicationConfig?.LogoPath ?? "logo/logo.png",
                     EnableDev = _parent.Config.ApplicationConfig?.EnableDev ?? false,
@@ -1098,7 +1109,7 @@ namespace PepperDash.Essentials.WebSocketServer
                     res.StatusCode = 200;
                     res.Close();
 
-                    var logRequest = new HttpRequestMessage(HttpMethod.Post, $"http://{_parent.Config.DirectServer.Logging.Host}:{_parent.Config.DirectServer.Logging.Port}/logs")
+                    var logRequest = new HttpRequestMessage(HttpMethod.Post, $"{HttpScheme}://{_parent.Config.DirectServer.Logging.Host}:{_parent.Config.DirectServer.Logging.Port}/logs")
                     {
                         Content = new StringContent(body, Encoding.UTF8, "application/json"),
                     };
@@ -1213,8 +1224,7 @@ namespace PepperDash.Essentials.WebSocketServer
             this.LogVerbose("Assigning ClientId: {clientId} for token: {token} at {timestamp}", clientId, token, now);
 
             // Construct WebSocket URL with clientId query parameter
-            var wsProtocol = "ws";
-            var wsUrl = $"{wsProtocol}://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{Port}{_wsPath}{token}?clientId={clientId}";
+            var wsUrl = $"{WsScheme}://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{Port}{_wsPath}{token}?clientId={clientId}";
 
             // Construct the response object
             JoinResponse jRes = new JoinResponse
@@ -1226,7 +1236,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 Config = _parent.GetConfigWithPluginVersion(),
                 CodeExpires = new DateTime().AddYears(1),
                 UserCode = bridge.UserCode,
-                UserAppUrl = string.Format("http://{0}:{1}/mc/app",
+                UserAppUrl = string.Format("{0}://{1}:{2}/mc/app",
+                HttpScheme,
                 CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0),
                 Port),
                 WebSocketUrl = wsUrl,
