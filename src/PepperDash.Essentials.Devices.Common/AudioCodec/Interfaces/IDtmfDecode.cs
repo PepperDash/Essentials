@@ -1,3 +1,4 @@
+using System;
 namespace PepperDash.Essentials.Devices.Common.AudioCodec;
 
 /// <summary>
