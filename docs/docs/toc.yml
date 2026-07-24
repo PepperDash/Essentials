@@ -38,6 +38,8 @@
       href: technical-docs/Plugins.md
     - name: Communication Basics
       href: technical-docs/Communication-Basics.md
+    - name: Mobile Control
+      href: technical-docs/Mobile-Control.md
     - name: Debugging
       href: technical-docs/Debugging.md
     - name: Feedback Classes
