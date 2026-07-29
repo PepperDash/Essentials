@@ -740,7 +740,7 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public MobileControlTouchpanelControllerFactory()
         {
-            TypeNames = new List<string>() { "mccrestronapp", "mctsw550", "mctsw750", "mctsw1050", "mctsw560", "mctsw760", "mctsw1060", "mctsw570", "mctsw770", "mcts770", "mctsw1070", "mcts1070", "mcxpanel", "mcdge1000" };
+            TypeNames = new List<string>() { "mccrestronapp", "mctsw550", "mctsw750", "mctsw1050", "mctsw560", "mctsw760", "mctsw1060", "mctsw570", "mctsw770", "mcts770", "mctsw1070", "mcts1070", "mctsw1080", "mcts1080", "mcxpanel", "mcdge1000" };
             MinimumEssentialsFrameworkVersion = "2.0.0";
 
             factories = new Dictionary<string, Func<uint, CrestronControlSystem, string, BasicTriListWithSmartObject>>
@@ -765,6 +765,8 @@ namespace PepperDash.Essentials.Touchpanel
                 {"ts770", (id, controlSystem, projectName) => new Ts770(id, controlSystem)},
                 {"tsw1070", (id, controlSystem, projectName) => new Tsw1070(id, controlSystem)},
                 {"ts1070", (id, controlSystem, projectName) => new Ts1070(id, controlSystem)},
+                {"tsw1080", (id, controlSystem, projectName) => new Tsw1080(id, controlSystem)},
+                {"ts1080", (id, controlSystem, projectName) => new Ts1080(id, controlSystem)},
                 {"dge1000", (id, controlSystem, projectName) => new Dge1000(id, controlSystem)}
             };
         }
