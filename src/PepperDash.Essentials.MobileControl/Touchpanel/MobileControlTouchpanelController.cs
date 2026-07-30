@@ -35,6 +35,18 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
+        private sealed class NullCommunicationMonitor : StatusMonitorBase
+        {
+            public NullCommunicationMonitor(IKeyed parent) : base(parent, 120000, 300000)
+            {
+                Status = MonitorStatus.InError;
+                Message = "Panel is not initialized";
+            }
+
+            public override void Start() { }
+            public override void Stop() { }
+        }
+
         private string _appUrl;
 
         /// <summary>
