@@ -135,18 +135,22 @@ namespace PepperDash.Essentials.Core.Config
                     {
                         var parsedConfig = JObject.Parse(fs.ReadToEnd());
 
-                        // Check if it's a v2 config (check for "version" node)
-                        // this means it's already merged by the Portal API
-                        // from the v2 config tool
-                        var isV2Config = parsedConfig["versions"] != null;
-                        
-                        if (isV2Config)
+                        // A config is v1 if it has separate "system" and "template" nodes that
+                        // need to be merged. A v2 config is already merged by the Portal API and
+                        // will not have "system"/"template" nodes. This is independent of whether
+                        // a "versions" node is present, which only carries version metadata and
+                        // can appear on either a v1 or v2 config.
+                        var isV1Config = parsedConfig["system"] != null && parsedConfig["template"] != null;
+
+                        if (!isV1Config)
                         {
                             Debug.LogMessage(LogEventLevel.Information, "Config file is a v2 format, no merge necessary.");
                             ConfigObject = parsedConfig.ToObject<EssentialsConfig>();
                             Debug.LogMessage(LogEventLevel.Information, "Successfully Loaded v2 Config");
                             return true;
                         }
+
+                        Debug.LogMessage(LogEventLevel.Information, "Config file is a v1 format, merging system and template.");
 
                         // Extract SystemUrl and TemplateUrl into final config output
                         ConfigObject = PortalConfigReader.MergeConfigs(parsedConfig).ToObject<EssentialsConfig>();
@@ -159,6 +163,13 @@ namespace PepperDash.Essentials.Core.Config
                         if (parsedConfig["template_url"] != null)
                         {
                             ConfigObject.TemplateUrl = parsedConfig["template_url"].Value<string>();
+                        }
+
+                        // MergeConfigs does not carry the "versions" node forward, so it must be
+                        // applied separately to ensure it's preserved in the merged config.
+                        if (parsedConfig["versions"] != null)
+                        {
+                            ConfigObject.Versions = parsedConfig["versions"].ToObject<VersionData>();
                         }
                     }
 

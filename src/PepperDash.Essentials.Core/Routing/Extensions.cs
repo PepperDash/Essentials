@@ -348,9 +348,9 @@ namespace PepperDash.Essentials.Core
                 var sources = DeviceManager.AllDevices.OfType<IRoutingOutputs>()
                     .Where(d => !(d is IRoutingInputsOutputs)).ToList();
 
-                foreach (var sink in sinks.Where(d => !(d is IRoutingInputsOutputs)))
+                foreach (var sink in sinks)
                 {
-                    foreach (var source in sources.Where(d => !(d is IRoutingInputsOutputs)))
+                    foreach (var source in sources)
                     {
                         foreach (var inputPort in sink.InputPorts)
                         {

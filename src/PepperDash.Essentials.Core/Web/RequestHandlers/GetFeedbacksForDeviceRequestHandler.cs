@@ -52,20 +52,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var device = DeviceManager.GetDeviceForKey(deviceObj.ToString()) as IHasFeedback;
 			if (device == null)
 			{
-				context.Response.StatusCode = 200;
-				context.Response.StatusDescription = "OK";
-				context.Response.ContentType = "application/json";
-				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-				var resp = new
-				{
-					BoolValues = Array.Empty<object>(),
-					IntValues = Array.Empty<object>(),
-					SerialValues = Array.Empty<object>()
-				};
-				var respJs = JsonConvert.SerializeObject(resp, Formatting.Indented);
-
-				context.Response.Write(respJs, false);
-
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
 				context.Response.End();
 
 				return;

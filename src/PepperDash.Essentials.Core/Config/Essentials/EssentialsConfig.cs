@@ -105,6 +105,7 @@ namespace PepperDash.Essentials.Core.Config
         /// <summary>
         /// Gets or sets the Versions
         /// </summary>
+        [JsonProperty("versions")]
         public VersionData Versions { get; set; }
 
         /// <summary>
@@ -135,11 +136,24 @@ namespace PepperDash.Essentials.Core.Config
         public List<NugetVersion> Packages { get; set; }
 
         /// <summary>
+        /// Gets or sets the touchpanel wrapper app version
+        /// </summary>
+        [JsonProperty("touchpanelWrapperApp")]
+        public NugetVersion TouchpanelWrapperApp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of user interface packages
+        /// </summary>
+        [JsonProperty("userInterfaces")]
+        public List<NugetVersion> UserInterfaces { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="VersionData"/> class.
         /// </summary>
         public VersionData()
         {
             Packages = new List<NugetVersion>();
+            UserInterfaces = new List<NugetVersion>();
         }
     }
 
@@ -157,8 +171,20 @@ namespace PepperDash.Essentials.Core.Config
         /// <summary>
         /// Gets or sets the PackageId
         /// </summary>
-        [JsonProperty("packageId")]
+        [JsonProperty("packageId", NullValueHandling = NullValueHandling.Ignore)]
         public string PackageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RepoUrl
+        /// </summary>
+        [JsonProperty("repoUrl", NullValueHandling = NullValueHandling.Ignore)]
+        public string RepoUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the human-readable name
+        /// </summary>
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -40,9 +41,10 @@ namespace PepperDash.Essentials
         public bool EnableApiServer { get; set; } = true;
 
         /// <summary>
-        /// Enable subscriptions for Messengers
+        /// Enables subscriptions for messengers
         /// </summary>
         [JsonProperty("enableMessengerSubscriptions")]
+        [Obsolete("This property is obsolete and will be removed in a future version. All messengers are now subscription based.")]
         public bool EnableMessengerSubscriptions { get; set; }
     }
 
