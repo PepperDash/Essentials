@@ -258,7 +258,7 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 	/// <summary>
 	/// Returns true when any call is not in state Unknown, Disconnecting, Disconnected
 	/// </summary>
-	public bool IsInCall
+	public virtual bool IsInCall
 	{
 		get
 		{
