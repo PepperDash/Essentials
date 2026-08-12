@@ -30,24 +30,33 @@ namespace PepperDash.Essentials.Core.Touchpanels
         {
             if (processor.MPC4x102TouchscreenSlot != null)
             {
+                Debug.LogMessage(LogEventLevel.Information, this, "Using MPC4x102TouchscreenSlot");
                 _touchpanel = processor.MPC4x102TouchscreenSlot;
             }
             else if (processor.MPC4x201TouchscreenSlot != null)
             {
+                Debug.LogMessage(LogEventLevel.Information, this, "Using MPC4x201TouchscreenSlot");
                 _touchpanel = processor.MPC4x201TouchscreenSlot;
             }
             else if (processor.MPC4x301TouchscreenSlot != null)
             {
+                Debug.LogMessage(LogEventLevel.Information, this, "Using MPC4x301TouchscreenSlot");
                 _touchpanel = processor.MPC4x301TouchscreenSlot;
             }
             else if (processor.MPC4x302TouchscreenSlot != null)
             {
+                Debug.LogMessage(LogEventLevel.Information, this, "Using MPC4x302TouchscreenSlot");
                 _touchpanel = processor.MPC4x302TouchscreenSlot;
+            }
+            else
+            {
+                Debug.LogMessage(LogEventLevel.Information, this, "Using ControllerTouchScreenSlotDevice");
+                _touchpanel = processor.ControllerTouchScreenSlotDevice as MPC3Basic;
             }
 
             if (_touchpanel == null)
             {
-                Debug.LogMessage(LogEventLevel.Error, this, "Failed to construct MPC4 Touchpanel Controller with key {0}, check configuration, processor is type: {1}", key, processor.ControllerTouchScreenSlotDevice?.GetType().FullName ?? "null");
+                Debug.LogMessage(LogEventLevel.Error, this, "Failed to construct MPC4 Touchpanel Controller with key {0}, check configuration, processor is type: {1}", key, processor.TouchscreenType);
                 return;
             }
 
