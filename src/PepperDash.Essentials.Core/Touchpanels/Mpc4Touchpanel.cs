@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
     /// </summary>
     public class Mpc4TouchpanelController : Device
     {
-        readonly MPC4x3XXBase _touchpanel;
+        readonly MPC3Basic _touchpanel;
 
         readonly Dictionary<string, KeypadButton> _buttons;
 
@@ -28,10 +28,32 @@ namespace PepperDash.Essentials.Core.Touchpanels
         public Mpc4TouchpanelController(string key, string name, CrestronControlSystem processor, Dictionary<string, KeypadButton> buttons)
             : base(key, name)
         {
-            _touchpanel = processor.ControllerTouchScreenSlotDevice as MPC4x3XXBase;
+            switch (processor.TouchscreenType)
+            {
+                case eTouchscreenType.MPC4x102:
+                    _touchpanel = processor.MPC4x102TouchscreenSlot;
+                    break;
+
+                case eTouchscreenType.MPC4x201:
+                    _touchpanel = processor.MPC4x201TouchscreenSlot;
+                    break;
+
+                case eTouchscreenType.MPC4x301:
+                    _touchpanel = processor.MPC4x301TouchscreenSlot;
+                    break;
+
+                case eTouchscreenType.MPC4x302:
+                    _touchpanel = processor.MPC4x302TouchscreenSlot;
+                    break;
+
+                default:
+                    Debug.LogMessage(LogEventLevel.Error, this, "Unsupported touchpanel type '{0}' for MPC4 Touch Controller", processor.TouchscreenType);
+                    break;
+            }
+
             if (_touchpanel == null)
             {
-                Debug.LogMessage(LogEventLevel.Debug, this, "Failed to construct MPC4 Touchpanel Controller with key {0}, check configuration, processor is type: {1}", key, processor.GetType().FullName);
+                Debug.LogMessage(LogEventLevel.Error, this, "Failed to construct MPC4 Touchpanel Controller with key {0}, check configuration, processor is type: {1}", key, processor.ControllerTouchScreenSlotDevice?.GetType().FullName ?? "null");
                 return;
             }
 
