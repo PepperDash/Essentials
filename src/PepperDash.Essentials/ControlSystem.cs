@@ -436,6 +436,25 @@ namespace PepperDash.Essentials
                                 "WARNING: Config file defines processor type as '{deviceType:l}' but actual processor is '{processorType:l}'!  Some ports may not be available",
                                 devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
 
+                        // Check if the processor is an MPC4 model
+                        if (prompt.IndexOf("mpc4", StringComparison.OrdinalIgnoreCase) > -1)
+                        {
+                            Debug.LogMessage(LogEventLevel.Information, "MPC4 processor type detected. Adding Mpc4TouchpanelController.");
+
+                            var butToken = devConf.Properties["buttons"];
+                            if (butToken == null)
+                            {
+                                Debug.LogMessage(LogEventLevel.Warning,
+                                    "Error: Unable to deserialize buttons collection for device: {deviceKey}", devConf.Key);
+                                continue;
+                            }
+
+                            var buttons = Newtonsoft.Json.JsonConvert.DeserializeObject<System.Collections.Generic.Dictionary<string, Core.Touchpanels.KeypadButton>>(butToken.ToString());
+                            var tpController = new Core.Touchpanels.Mpc4TouchpanelController(
+                                    string.Format("{0}-keypadButtons", devConf.Key), devConf.Name, Global.ControlSystem, buttons);
+
+                            DeviceManager.AddDevice(tpController);
+                        }
 
                         continue;
                     }
