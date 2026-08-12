@@ -2,6 +2,7 @@
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 using PepperDash.Essentials.Devices.Common.Codec;
 
@@ -103,18 +104,25 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <returns></returns>
         private void SendAtcFullMessageObject(string id = null)
         {
-            var info = Codec.CodecInfo;
-
-            PostStatusMessage(JToken.FromObject(new
+            try
             {
-                isInCall = Codec.IsInCall,
-                calls = Codec.ActiveCalls,
-                info = new
+                var info = Codec.CodecInfo;
+
+                PostStatusMessage(JToken.FromObject(new
                 {
-                    phoneNumber = info.PhoneNumber
-                }
-            }), id
-            );
+                    isInCall = Codec.IsInCall,
+                    calls = Codec.ActiveCalls,
+                    info = new
+                    {
+                        phoneNumber = info?.PhoneNumber
+                    }
+                }), id
+                );
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex, "Error sending dialer call status full message");
+            }
         }
     }
 }
