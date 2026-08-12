@@ -28,7 +28,22 @@ namespace PepperDash.Essentials.Core.Touchpanels
         public Mpc4TouchpanelController(string key, string name, CrestronControlSystem processor, Dictionary<string, KeypadButton> buttons)
             : base(key, name)
         {
-            _touchpanel = processor.ControllerTouchScreenSlotDevice as MPC3Basic;
+            if (processor.MPC4x102TouchscreenSlot != null)
+            {
+                _touchpanel = processor.MPC4x102TouchscreenSlot;
+            }
+            else if (processor.MPC4x201TouchscreenSlot != null)
+            {
+                _touchpanel = processor.MPC4x201TouchscreenSlot;
+            }
+            else if (processor.MPC4x301TouchscreenSlot != null)
+            {
+                _touchpanel = processor.MPC4x301TouchscreenSlot;
+            }
+            else if (processor.MPC4x302TouchscreenSlot != null)
+            {
+                _touchpanel = processor.MPC4x302TouchscreenSlot;
+            }
 
             if (_touchpanel == null)
             {
