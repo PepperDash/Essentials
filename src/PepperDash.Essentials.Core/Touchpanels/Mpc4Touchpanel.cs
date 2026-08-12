@@ -28,28 +28,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
         public Mpc4TouchpanelController(string key, string name, CrestronControlSystem processor, Dictionary<string, KeypadButton> buttons)
             : base(key, name)
         {
-            switch (processor.TouchscreenType)
-            {
-                case eTouchscreenType.MPC4x102:
-                    _touchpanel = processor.MPC4x102TouchscreenSlot;
-                    break;
-
-                case eTouchscreenType.MPC4x201:
-                    _touchpanel = processor.MPC4x201TouchscreenSlot;
-                    break;
-
-                case eTouchscreenType.MPC4x301:
-                    _touchpanel = processor.MPC4x301TouchscreenSlot;
-                    break;
-
-                case eTouchscreenType.MPC4x302:
-                    _touchpanel = processor.MPC4x302TouchscreenSlot;
-                    break;
-
-                default:
-                    Debug.LogMessage(LogEventLevel.Error, this, "Unsupported touchpanel type '{0}' for MPC4 Touch Controller", processor.TouchscreenType);
-                    break;
-            }
+            _touchpanel = processor.ControllerTouchScreenSlotDevice as MPC3Basic;
 
             if (_touchpanel == null)
             {
