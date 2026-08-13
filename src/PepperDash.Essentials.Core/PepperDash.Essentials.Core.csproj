@@ -29,12 +29,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Crestron\CrestronGenericBaseDevice.cs.orig" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Display\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />
   </ItemGroup>
 </Project>

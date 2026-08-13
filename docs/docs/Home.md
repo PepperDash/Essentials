@@ -19,12 +19,13 @@ Or use the links to the right to navigate our documentation.
 
 ## Benefits
 
-- Runs on Crestron 3-Series, **4-Series** and VC-4 Control System platforms
+- Runs on Crestron **4-Series** and VC-4 Control System platforms
 - Reduced hardware overhead compared to S+ and Simpl solutions
 - Quick development cycle
 - Shared resources made easily available
 - More flexibility with less code
 - Configurable using simple JSON files
+- Built in websocket communication API for HTML5 frontend applications.
 - Is awesome
 
 ---

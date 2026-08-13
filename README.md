@@ -52,7 +52,7 @@ Utilization of Essentials Framework falls into the following categories:
 
 ## Documentation
 
-For detailed documentation, see the [Wiki](https://github.com/PepperDash/EssentialsFramework/wiki).
+For detailed documentation, see the [DocFx Site](https://pepperdash.github.io/Essentials/).
 
 ## Support
 
