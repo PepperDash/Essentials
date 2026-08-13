@@ -414,7 +414,7 @@ namespace PepperDash.Essentials.WebSocketServer
                     ip = csIpAddress.ToString();
                 }
 
-                var appUrl = $"{HttpScheme}://{ip}:{_parent.Config.DirectServer.Port}/mc/app?token={touchpanel.Key}";
+                var appUrl = $"{HttpScheme}://{ip}:{Port}/mc/app?token={touchpanel.Key}";
 
                 this.LogVerbose("Sending URL {appUrl} to touchpanel {touchpanelKey}", appUrl, touchpanel.Touchpanel.Key);
 
@@ -498,7 +498,7 @@ namespace PepperDash.Essentials.WebSocketServer
             {
                 var config = new MobileControlApplicationConfig
                 {
-                    ApiPath = string.Format("{0}://{1}:{2}/mc/api", HttpScheme, processorIp, _parent.Config.DirectServer.Port),
+                    ApiPath = string.Format("{0}://{1}:{2}/mc/api", HttpScheme, processorIp, Port),
                     GatewayAppPath = "",
                     LogoPath = _parent.Config.ApplicationConfig?.LogoPath ?? "logo/logo.png",
                     EnableDev = _parent.Config.ApplicationConfig?.EnableDev ?? false,
@@ -1109,7 +1109,8 @@ namespace PepperDash.Essentials.WebSocketServer
                     res.StatusCode = 200;
                     res.Close();
 
-                    var logRequest = new HttpRequestMessage(HttpMethod.Post, $"{HttpScheme}://{_parent.Config.DirectServer.Logging.Host}:{_parent.Config.DirectServer.Logging.Port}/logs")
+                    // remote log collector has no dedicated secure flag; keep it on http regardless of DirectServer.Secure
+                    var logRequest = new HttpRequestMessage(HttpMethod.Post, $"http://{_parent.Config.DirectServer.Logging.Host}:{_parent.Config.DirectServer.Logging.Port}/logs")
                     {
                         Content = new StringContent(body, Encoding.UTF8, "application/json"),
                     };

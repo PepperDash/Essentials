@@ -554,13 +554,6 @@ namespace PepperDash.Essentials.Touchpanel
                 return false;
             }) ? csIpAddress.ToString() : processorIp;
 
-            var match = Regex.Match(url, @"^(https?)://([^:/]+):\d+/mc/app\?token=.+$");
-            if (match.Success)
-            {
-                string ipa = match.Groups[2].Value;
-                // ip will be "192.168.1.100"
-            }
-
             // replace the host but preserve whatever scheme (http/https) is already present in the URL
             var updatedUrl = Regex.Replace(url, @"^(https?)://[^:/]+", $"$1://{ip}");
 
