@@ -25,10 +25,27 @@ namespace PepperDash.Essentials.Touchpanel
     /// Mobile Control touchpanel controller that provides app control, Zoom integration, 
     /// and mobile control functionality for Crestron touchpanels.
     /// </summary>
-    public class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlCrestronTouchpanelController, ITheme
+    public class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlCrestronTouchpanelController, ITheme, ICommunicationMonitor
     {
         private readonly MobileControlTouchpanelProperties localConfig;
         private IMobileControlRoomMessenger _bridge;
+
+        /// <summary>
+        /// Gets the CommunicationMonitor tracking the panel's online/offline state
+        /// </summary>
+        public StatusMonitorBase CommunicationMonitor { get; private set; }
+
+        private sealed class NullCommunicationMonitor : StatusMonitorBase
+        {
+            public NullCommunicationMonitor(IKeyed parent) : base(parent, 120000, 300000)
+            {
+                Status = MonitorStatus.InError;
+                Message = "Panel is not initialized";
+            }
+
+            public override void Start() { }
+            public override void Stop() { }
+        }
 
         private string _appUrl;
 
@@ -127,6 +144,11 @@ namespace PepperDash.Essentials.Touchpanel
         public MobileControlTouchpanelController(string key, string name, BasicTriListWithSmartObject panel, MobileControlTouchpanelProperties config) : base(key, name, panel, config)
         {
             localConfig = config;
+
+            if (panel != null)
+            {
+                CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, panel, 120000, 300000);
+            }
 
             AddPostActivationAction(SubscribeForMobileControlUpdates);
 
@@ -366,6 +388,8 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public override bool CustomActivate()
         {
+            CommunicationMonitor?.Start();
+
             var appMessenger = new ITswAppControlMessenger($"appControlMessenger-{Key}", $"/device/{Key}", this);
 
             var zoomMessenger = new ITswZoomControlMessenger($"zoomControlMessenger-{Key}", $"/device/{Key}", this);
@@ -391,6 +415,17 @@ namespace PepperDash.Essentials.Touchpanel
             mc.AddDeviceMessenger(themeMessenger);
 
             return base.CustomActivate();
+        }
+
+        /// <summary>
+        /// Stops the CommunicationMonitor on deactivation.
+        /// </summary>
+        /// <returns>True if deactivation was successful; otherwise, false.</returns>
+        public override bool Deactivate()
+        {
+            CommunicationMonitor?.Stop();
+
+            return base.Deactivate();
         }
 
         /// <summary>
