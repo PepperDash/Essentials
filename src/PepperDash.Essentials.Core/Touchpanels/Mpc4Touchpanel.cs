@@ -33,8 +33,10 @@ namespace PepperDash.Essentials.Core.Touchpanels
             _buttons = buttons ?? new Dictionary<string, KeypadButton>();
         }
 
-        public override void Initialize()
+        public override bool CustomActivate()
         {
+            Debug.LogInformation(this, "Activating MPC4 Touchpanel Controller with key {0}", Key);
+
             if (_processor.MPC4x102TouchscreenSlot != null)
             {
                 Debug.LogMessage(LogEventLevel.Information, this, "Using MPC4x102TouchscreenSlot");
@@ -58,7 +60,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
             else
             {
                 Debug.LogMessage(LogEventLevel.Error, this, "Failed to find MPC4 Touchpanel Controller with key {0}, check configuration", Key);
-                return;
+                return false;
             }
 
             if (_touchpanel.Registerable)
@@ -81,6 +83,8 @@ namespace PepperDash.Essentials.Core.Touchpanels
             }
 
             ListButtons();
+
+            return _touchpanel.Registered;
         }
 
         /// <summary>
