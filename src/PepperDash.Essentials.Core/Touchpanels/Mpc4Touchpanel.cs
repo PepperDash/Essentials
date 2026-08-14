@@ -1,10 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 using Crestron.SimplSharpPro;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using Serilog.Events;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace PepperDash.Essentials.Core.Touchpanels
 {
@@ -14,7 +14,8 @@ namespace PepperDash.Essentials.Core.Touchpanels
     /// </summary>
     public class Mpc4TouchpanelController : Device
     {
-        readonly MPC3Basic _touchpanel;
+        private readonly CrestronControlSystem _processor;
+        private MPC3Basic _touchpanel;
 
         readonly Dictionary<string, KeypadButton> _buttons;
 
@@ -28,34 +29,35 @@ namespace PepperDash.Essentials.Core.Touchpanels
         public Mpc4TouchpanelController(string key, string name, CrestronControlSystem processor, Dictionary<string, KeypadButton> buttons)
             : base(key, name)
         {
-            if (processor.MPC4x102TouchscreenSlot != null)
+            _processor = processor;
+            _buttons = buttons ?? new Dictionary<string, KeypadButton>();
+        }
+
+        public override void Initialize()
+        {
+            if (_processor.MPC4x102TouchscreenSlot != null)
             {
                 Debug.LogMessage(LogEventLevel.Information, this, "Using MPC4x102TouchscreenSlot");
-                _touchpanel = processor.MPC4x102TouchscreenSlot;
+                _touchpanel = _processor.MPC4x102TouchscreenSlot;
             }
-            else if (processor.MPC4x201TouchscreenSlot != null)
+            else if (_processor.MPC4x201TouchscreenSlot != null)
             {
                 Debug.LogMessage(LogEventLevel.Information, this, "Using MPC4x201TouchscreenSlot");
-                _touchpanel = processor.MPC4x201TouchscreenSlot;
+                _touchpanel = _processor.MPC4x201TouchscreenSlot;
             }
-            else if (processor.MPC4x301TouchscreenSlot != null)
+            else if (_processor.MPC4x301TouchscreenSlot != null)
             {
                 Debug.LogMessage(LogEventLevel.Information, this, "Using MPC4x301TouchscreenSlot");
-                _touchpanel = processor.MPC4x301TouchscreenSlot;
+                _touchpanel = _processor.MPC4x301TouchscreenSlot;
             }
-            else if (processor.MPC4x302TouchscreenSlot != null)
+            else if (_processor.MPC4x302TouchscreenSlot != null)
             {
                 Debug.LogMessage(LogEventLevel.Information, this, "Using MPC4x302TouchscreenSlot");
-                _touchpanel = processor.MPC4x302TouchscreenSlot;
-            }
-            else if (processor.ControllerTouchScreenSlotDevice != null && processor.ControllerTouchScreenSlotDevice is MPC3Basic mpc)
-            {
-                Debug.LogMessage(LogEventLevel.Information, this, "Using ControllerTouchScreenSlotDevice:{0}", processor.ControllerTouchScreenSlotDevice.GetType().Name);
-                _touchpanel = mpc;
+                _touchpanel = _processor.MPC4x302TouchscreenSlot;
             }
             else
             {
-                Debug.LogMessage(LogEventLevel.Error, this, "Failed to find MPC4 Touchpanel Controller with key {0}, check configuration, processor is type: {1}", key, processor.ControllerTouchScreenSlotDevice?.GetType().Name ?? "unknown");
+                Debug.LogMessage(LogEventLevel.Error, this, "Failed to find MPC4 Touchpanel Controller with key {0}, check configuration", Key);
                 return;
             }
 
@@ -69,27 +71,16 @@ namespace PepperDash.Essentials.Core.Touchpanels
             _touchpanel.ButtonStateChange += Touchpanel_ButtonStateChange;
             _touchpanel.PanelStateChange += Touchpanel_PanelStateChange;
 
-            _buttons = buttons;
-            if (_buttons == null)
+            foreach (var button in _buttons)
             {
-                Debug.LogMessage(LogEventLevel.Debug, this,
-                    "Button properties are null, failed to setup MPC4 Touch Controller, check configuration");
-                return;
+                var buttonKey = button.Key.ToLower();
+                var buttonConfig = button.Value;
+
+                InitializeButton(buttonKey, buttonConfig);
+                InitializeButtonFeedback(buttonKey, buttonConfig);
             }
 
-            AddPostActivationAction(() =>
-            {
-                foreach (var button in _buttons)
-                {
-                    var buttonKey = button.Key.ToLower();
-                    var buttonConfig = button.Value;
-
-                    InitializeButton(buttonKey, buttonConfig);
-                    InitializeButtonFeedback(buttonKey, buttonConfig);
-                }
-
-                ListButtons();
-            });
+            ListButtons();
         }
 
         /// <summary>
