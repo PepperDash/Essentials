@@ -65,7 +65,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
             if (_touchpanel.Registerable)
             {
-                var registrationResponse = _touchpanel.Register();
+                var registrationResponse = _touchpanel.RegisterWithLogging(Key);
                 Debug.LogMessage(LogEventLevel.Information, this, "touchpanel registration response: {0}", registrationResponse);
             }
 
