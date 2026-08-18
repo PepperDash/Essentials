@@ -155,21 +155,39 @@ namespace PepperDash.Core
                 certGenerator.AddExtension(X509Extensions.ExtendedKeyUsage, false,
                     new ExtendedKeyUsage(new[] { KeyPurposeID.id_kp_serverAuth, KeyPurposeID.id_kp_clientAuth }));
 
-                // Subject Alternative Names: DNS + IP
+
+
+
+                // Subject Alternative Names: DNS + IP(s), including the CS LAN IP if the processor has one
+                var generalNames = new System.Collections.Generic.List<GeneralName> { new GeneralName(GeneralName.DnsName, fqdn) };
+
                 System.Net.IPAddress parsedIp;
                 if (System.Net.IPAddress.TryParse(ipAddress, out parsedIp))
                 {
-                    certGenerator.AddExtension(X509Extensions.SubjectAlternativeName, false,
-                        new GeneralNames(new GeneralName[] {
-                            new GeneralName(GeneralName.DnsName, fqdn),
-                            new GeneralName(GeneralName.IPAddress, ipAddress)
-                        }));
+                    generalNames.Add(new GeneralName(GeneralName.IPAddress, ipAddress));
                 }
-                else
+
+                try
                 {
-                    certGenerator.AddExtension(X509Extensions.SubjectAlternativeName, false,
-                        new GeneralNames(new GeneralName(GeneralName.DnsName, fqdn)));
+                    var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
+                    if (!csAdapterId.Equals(EthernetAdapterType.EthernetUnknownAdapter))
+                    {
+                        var csIpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+
+                        System.Net.IPAddress parsedCsIp;
+                        if (csIpAddress != ipAddress && System.Net.IPAddress.TryParse(csIpAddress, out parsedCsIp))
+                        {
+                            generalNames.Add(new GeneralName(GeneralName.IPAddress, csIpAddress));
+                        }
+                    }
                 }
+                catch (Exception ex)
+                {
+                    CrestronConsole.PrintLine(string.Format("CreateCert: No CS LAN adapter available: {0}", ex.Message));
+                }
+
+                certGenerator.AddExtension(X509Extensions.SubjectAlternativeName, false,
+                    new GeneralNames(generalNames.ToArray()));
 
                 // Sign with SHA256withRSA
                 var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", keyPair.Private, random);
