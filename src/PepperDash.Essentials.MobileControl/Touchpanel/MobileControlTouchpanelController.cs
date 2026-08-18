@@ -498,11 +498,11 @@ namespace PepperDash.Essentials.Touchpanel
         {
             var appUrl = GetUrlWithCorrectIp(_appUrl);
 
-            this.LogInformation("Sending {appUrl} on join 1", AppUrlFeedback.StringValue);
+            this.LogInformation("Sending {appUrl} on join 1", appUrl);
 
             if (Panel.StringInput[1].StringValue == appUrl)
             {
-                this.LogInformation("App URL already set to {appUrl}, no update needed", AppUrlFeedback.StringValue);
+                this.LogInformation("App URL already set to {appUrl}, no update needed", appUrl);
                 return;
             }
 
