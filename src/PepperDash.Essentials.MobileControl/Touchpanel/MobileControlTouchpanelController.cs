@@ -611,7 +611,7 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public void SetAppUrl(string url)
         {
-            _appUrl = GetUrlWithCorrectIp(url);
+            _appUrl = url;
 
             AppUrlFeedback.FireUpdate();
         }
