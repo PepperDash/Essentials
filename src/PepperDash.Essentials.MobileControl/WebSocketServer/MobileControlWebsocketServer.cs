@@ -1162,6 +1162,11 @@ namespace PepperDash.Essentials.WebSocketServer
             var qp = req.QueryString;
             var token = qp["token"];
 
+            // Each join mints a single-use clientId; the panel webview must never replay a cached
+            // response, or it reconnects forever with an already-consumed id (1008 loop).
+            res.Headers.Add("Cache-Control", "no-store");
+            res.Headers.Add("Pragma", "no-cache");
+
             this.LogVerbose("Join Room Request with token: {token}", token);
 
             byte[] body;
@@ -1263,6 +1268,8 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             res.StatusCode = 200;
             res.ContentType = "application/json";
+            res.Headers.Add("Cache-Control", "no-store");
+            res.Headers.Add("Pragma", "no-cache");
             var version = new Version() { ServerVersion = _parent.GetConfigWithPluginVersion().RuntimeInfo.PluginVersion };
             var message = JsonConvert.SerializeObject(version);
             this.LogVerbose("{message}", message);
