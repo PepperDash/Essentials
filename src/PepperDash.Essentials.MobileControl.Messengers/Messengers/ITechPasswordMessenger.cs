@@ -11,6 +11,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly ITechPassword _room;
 
+        // Captures the id of the client whose /validateTechPassword request is in flight, so the
+        // TechPasswordValidateResult handler below can reply to only that client instead of
+        // broadcasting to every connected panel. Relies on ValidateTechPassword firing the event
+        // synchronously (true for all known ITechPassword implementations); if a future
+        // implementation validates asynchronously, _pendingClientId will already be null when the
+        // handler runs and this degrades to the previous broadcast behavior.
+        private readonly object _pendingLock = new object();
+        private string _pendingClientId;
+
         public ITechPasswordMessenger(string key, string messagePath, ITechPassword room)
             : base(key, messagePath, room as IKeyName)
         {
@@ -28,7 +37,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 var password = content.Value<string>("password");
 
-                _room.ValidateTechPassword(password);
+                lock (_pendingLock)
+                {
+                    _pendingClientId = id;
+                    _room.ValidateTechPassword(password);
+                    _pendingClientId = null;
+                }
             });
 
             AddAction("/setTechPassword", (id, content) =>
@@ -45,12 +59,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             _room.TechPasswordValidateResult += (sender, args) =>
             {
+                string clientId;
+                lock (_pendingLock)
+                {
+                    clientId = _pendingClientId;
+                }
+
                 var evt = new ITechPasswordEventMessage
                 {
                     IsValid = args.IsValid
                 };
 
-                PostEventMessage(evt, "passwordValidationResult");
+                PostEventMessage(evt, "passwordValidationResult", clientId);
             };
         }
 
