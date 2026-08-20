@@ -228,14 +228,13 @@ namespace PepperDash.Core
                 return;
             }
 
-            ConnectEnabled = true;
-
             if (_isProgramStopping)
             {
                 this.LogDebug("Skipping connect because program is stopping");
-                ConnectEnabled = false;
                 return;
             }
+
+            ConnectEnabled = true;
 
             try
             {
@@ -517,7 +516,7 @@ namespace PepperDash.Core
                 this.LogError("ObjectDisposedException sending '{message}'. Restarting connection...", text.Trim());
 
                 KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                if (ConnectEnabled && !_isProgramStopping)
+                if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                 {
                     StartReconnectTimer();
                 }
@@ -553,7 +552,7 @@ namespace PepperDash.Core
                 this.LogException(ex, "ObjectDisposedException sending {message}", ComTextHelper.GetEscapedText(bytes));
 
                 KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                if (ConnectEnabled && !_isProgramStopping)
+                if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                 {
                     StartReconnectTimer();
                 }
