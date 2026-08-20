@@ -287,13 +287,7 @@ namespace PepperDash.Core
                     }
                     catch (SshConnectionException e)
                     {
-                        var ie = e.InnerException; // The details are inside!!
-
-                        if (ie is SocketException)
-                        {
-                            this.LogError("CONNECTION failure: Cannot reach host");
-                            this.LogVerbose(ie, "Exception details: ");
-                        }
+                        var ie = e.InnerException; // The details are inside, when present - remote can close the connection with no inner exception at all
 
                         if (ie is System.Net.Sockets.SocketException socketException)
                         {
@@ -301,15 +295,15 @@ namespace PepperDash.Core
                                 Hostname, Port);
                             this.LogVerbose(socketException, "SocketException details: ");
                         }
-                        if (ie is SshAuthenticationException)
+                        else if (ie is SshAuthenticationException)
                         {
                             this.LogError("Authentication failure for username {userName}", Username);
                             this.LogVerbose(ie, "AuthenticationException details: ");
                         }
                         else
                         {
-                            this.LogError("Error on connect: {error}", ie.Message);
-                            this.LogVerbose(ie, "Exception details: ");
+                            this.LogError("Error on connect: {error}", ie?.Message ?? e.Message);
+                            this.LogVerbose(ie ?? e, "Exception details: ");
                         }
 
                         disconnectLogged = true;
