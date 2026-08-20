@@ -303,7 +303,7 @@ namespace PepperDash.Core
                         else
                         {
                             this.LogError("Error on connect: {error}", ie?.Message ?? e.Message);
-                            this.LogVerbose(ie ?? (Exception)e, "Exception details: ");
+                            this.LogVerbose(ie ?? e, "Exception details: ");
                         }
 
                         disconnectLogged = true;
