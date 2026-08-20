@@ -151,6 +151,8 @@ namespace PepperDash.Core
         // Thread-safety lock for state changes
         private readonly object _stateLock = new object();
 
+        private volatile bool _isProgramStopping;
+
         private bool disconnectLogged = false;
 
         /// <summary>
@@ -207,11 +209,9 @@ namespace PepperDash.Core
         {
             if (programEventType == eProgramStatusEventType.Stopping)
             {
-                if (client != null)
-                {
-                    this.LogDebug("Program stopping. Closing connection");
-                    Disconnect();
-                }
+                _isProgramStopping = true;
+                this.LogDebug("Program stopping. Closing connection");
+                Disconnect();
             }
         }
 
@@ -225,6 +225,12 @@ namespace PepperDash.Core
                 || Username == null || Password == null)
             {
                 this.LogError("Connect failed.  Check hostname, port, username and password are set or not null");
+                return;
+            }
+
+            if (_isProgramStopping)
+            {
+                this.LogDebug("Skipping connect because program is stopping");
                 return;
             }
 
@@ -308,7 +314,7 @@ namespace PepperDash.Core
 
                         disconnectLogged = true;
                         KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                        if (AutoReconnect)
+                        if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                         {
                             this.LogDebug("Checking autoreconnect: {autoReconnect}, {autoReconnectInterval}ms", AutoReconnect, AutoReconnectIntervalMs);
                             StartReconnectTimer();
@@ -320,7 +326,7 @@ namespace PepperDash.Core
 
                         disconnectLogged = true;
                         KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                        if (AutoReconnect)
+                        if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                         {
                             this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
                             StartReconnectTimer();
@@ -332,7 +338,7 @@ namespace PepperDash.Core
                         this.LogVerbose(e, "Exception details: ");
                         disconnectLogged = true;
                         KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                        if (AutoReconnect)
+                        if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                         {
                             this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
                             StartReconnectTimer();
@@ -467,7 +473,7 @@ namespace PepperDash.Core
                 {
                     connectLock.Release();
                 }
-                if (AutoReconnect && ConnectEnabled)
+                if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                 {
                     this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
                     StartReconnectTimer();
@@ -510,7 +516,10 @@ namespace PepperDash.Core
                 this.LogError("ObjectDisposedException sending '{message}'. Restarting connection...", text.Trim());
 
                 KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                StartReconnectTimer();
+                if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
+                {
+                    StartReconnectTimer();
+                }
             }
             catch (Exception ex)
             {
@@ -543,7 +552,10 @@ namespace PepperDash.Core
                 this.LogException(ex, "ObjectDisposedException sending {message}", ComTextHelper.GetEscapedText(bytes));
 
                 KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                StartReconnectTimer();
+                if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
+                {
+                    StartReconnectTimer();
+                }
             }
             catch (Exception ex)
             {
