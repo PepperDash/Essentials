@@ -216,7 +216,7 @@ public class DeviceFactory
         }
         catch (Exception ex)
         {
-            Debug.LogError(ex, "Exception occurred while creating device {0}: {1}", null, dc.Key, ex.Message);
+            Debug.LogError(ex, "Exception occurred while creating device {deviceKey}: {message}", dc.Key, ex.Message);
             return null;
         }
     }
