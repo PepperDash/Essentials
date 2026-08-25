@@ -356,11 +356,10 @@ namespace PepperDash.Essentials.WebSocketServer
             foreach (var client in touchpanelsToAdd)
             {
                 var bridge = _parent.GetRoomBridge(client.DefaultRoomKey);
-
                 if (bridge == null)
                 {
                     this.LogWarning("Unable to find room with key: {defaultRoomKey}", client.DefaultRoomKey);
-                    return;
+                    continue;
                 }
 
                 var (key, path) = GenerateClientToken(bridge, client.Key);

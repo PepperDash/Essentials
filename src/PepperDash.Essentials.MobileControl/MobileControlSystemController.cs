@@ -512,6 +512,12 @@ namespace PepperDash.Essentials
             {
                 simplMessenger.ConfigurationIsReady += Bridge_ConfigurationIsReady;
             }
+
+            if (messenger is MobileControlBridgeBase roomBridge)
+            {
+                _roomBridges.Add(roomBridge);
+            }
+
             this.LogVerbose(
                 "Adding default messenger with key {messengerKey} for path {messengerPath}",
                 messenger.Key,
