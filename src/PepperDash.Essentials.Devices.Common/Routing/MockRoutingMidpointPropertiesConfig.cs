@@ -50,4 +50,12 @@ public class MockRoutingMidpointPortConfig
     [JsonProperty("portType")]
     [JsonConverter(typeof(StringEnumConverter))]
     public eRoutingPortConnectionType PortType { get; set; } = eRoutingPortConnectionType.Hdmi;
+
+    /// <summary>
+    /// Optional friendly display name for this port (e.g. "Rm A Codec"), surfaced via
+    /// <see cref="IHasNamedRoutingSlots"/> for named-routing-slot UI. Defaults to <see cref="Name"/> if
+    /// not specified.
+    /// </summary>
+    [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
+    public string Label { get; set; }
 }
