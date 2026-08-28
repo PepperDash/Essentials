@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pepperdash.com/schemas/Essentials/MobileControlConfig.schema.json",
+  "title": "appServer",
+  "description": "Device config entry for a device of type \"appServer\" (also \"mobilecontrol\", \"webserver\") - the Mobile Control app server / websocket gateway - backed by MobileControlConfig (MobileControlConfig.cs).",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Unique identifier for this device within the configuration file."
+    },
+    "name": {
+      "type": "string",
+      "description": "Friendly display name for this device."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["appServer", "appserver", "mobilecontrol", "webserver"],
+      "description": "Discriminator identifying the plugin factory that instantiates this device. Accepted aliases are equivalent."
+    },
+    "properties": {
+      "$ref": "#/$defs/properties",
+      "description": "Properties object for a device of type \"appServer\", backed by MobileControlConfig (MobileControlConfig.cs)."
+    }
+  },
+  "required": ["key", "name", "type", "properties"],
+  "$defs": {
+    "properties": {
+      "type": "object",
+      "properties": {
+        "serverUrl": {
+          "type": "string",
+          "description": "URL of the Mobile Control cloud server, if using cloud-hosted mode."
+        },
+        "clientAppUrl": {
+          "type": "string",
+          "description": "URL override for the client app, if not using the default."
+        },
+        "directServer": { "$ref": "#/$defs/directServer" },
+        "applicationConfig": { "$ref": "#/$defs/applicationConfig" },
+        "enableApiServer": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enables the REST API server."
+        }
+      }
+    },
+    "directServer": {
+      "type": "object",
+      "description": "Configuration for the local (on-processor) direct websocket/HTTP server (MobileControlDirectServerPropertiesConfig).",
+      "properties": {
+        "enableDirectServer": {
+          "type": "boolean",
+          "description": "Enables the local direct server (bypassing the cloud)."
+        },
+        "port": {
+          "type": "integer",
+          "description": "TCP port the direct server listens on."
+        },
+        "logging": { "$ref": "#/$defs/loggingConfig" },
+        "automaticallyForwardPortToCSLAN": {
+          "type": ["boolean", "null"],
+          "description": "Automatically forward the direct server's port to the Crestron CS LAN interface."
+        },
+        "csLanUiDeviceKeys": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Device keys that should receive the CS LAN IP address instead of the LAN IP address."
+        },
+        "Secure": {
+          "type": "boolean",
+          "description": "Indicates whether the direct server connection is secure (HTTPS)."
+        }
+      }
+    },
+    "loggingConfig": {
+      "type": "object",
+      "description": "Remote logging configuration for the direct server (MobileControlLoggingConfig).",
+      "properties": {
+        "enableRemoteLogging": { "type": "boolean" },
+        "host": { "type": "string" },
+        "port": { "type": "integer" }
+      }
+    },
+    "applicationConfig": {
+      "type": "object",
+      "description": "Client application configuration for Mobile Control (MobileControlApplicationConfig).",
+      "properties": {
+        "apiPath": { "type": "string" },
+        "gatewayAppPath": { "type": "string" },
+        "enableDev": { "type": ["boolean", "null"] },
+        "logoPath": { "type": "string" },
+        "iconSet": {
+          "type": "string",
+          "pattern": "^(?:[gG][oO][oO][gG][lL][eE]|[hH][aA][bB][aA][nN][eE][rR][oO]|[nN][eE][oO])$",
+          "description": "Icon set used by the client app. Case-insensitive."
+        },
+        "loginMode": { "type": "string" },
+        "modes": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/mcMode" }
+        },
+        "enableRemoteLogging": {
+          "type": "boolean",
+          "description": "Note: serialized as \"enableRemoteLogging\" but backed by the ApplicationConfig.Logging property (distinct from directServer.logging)."
+        },
+        "partnerMetadata": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/partnerMetadata" }
+        }
+      }
+    },
+    "mcMode": {
+      "type": "object",
+      "properties": {
+        "listPageText": { "type": "string" },
+        "loginHelpText": { "type": "string" },
+        "passcodePageText": { "type": "string" }
+      }
+    },
+    "partnerMetadata": {
+      "type": "object",
+      "properties": {
+        "role": { "type": "string" },
+        "description": { "type": "string" },
+        "logoPath": { "type": "string" }
+      }
+    }
+  }
+}

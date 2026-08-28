@@ -1,0 +1,519 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pepperdash.com/schemas/Essentials/EssentialsConfig.schema.json",
+  "title": "EssentialsConfig",
+  "description": "Root Essentials configuration file, backed by EssentialsConfig (EssentialsConfig.cs), which extends BasicConfig (BasicConfig.cs).",
+  "type": "object",
+  "properties": {
+    "info": {
+      "$ref": "#/$defs/infoConfig"
+    },
+    "devices": {
+      "type": "array",
+      "description": "The list of devices (including plugin devices and rooms) to instantiate. Each plugin publishes its own schema for the shape of its \"properties\" object.",
+      "items": {
+        "$ref": "#/$defs/deviceConfigEntry"
+      }
+    },
+    "sourceLists": {
+      "type": "object",
+      "description": "Named lists of source list items, keyed by list name then item key.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/sourceListItem"
+        }
+      }
+    },
+    "destinationLists": {
+      "type": "object",
+      "description": "Named lists of destination list items, keyed by list name then item key.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/destinationListItem"
+        }
+      }
+    },
+    "audioControlPointLists": {
+      "type": "object",
+      "description": "Named audio control point lists, keyed by list name.",
+      "additionalProperties": {
+        "$ref": "#/$defs/audioControlPointListItem"
+      }
+    },
+    "cameraLists": {
+      "type": "object",
+      "description": "Named lists of camera list items, keyed by list name then item key.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/cameraListItem"
+        }
+      }
+    },
+    "tieLines": {
+      "type": "array",
+      "description": "Static tie lines between routing ports.",
+      "items": {
+        "$ref": "#/$defs/tieLineConfig"
+      }
+    },
+    "joinMaps": {
+      "type": "object",
+      "description": "Join map override data, keyed by device/room key. Structure is join-map-specific and not further constrained here.",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "system_url": {
+      "type": "string",
+      "description": "The System URL used to derive systemUuid."
+    },
+    "template_url": {
+      "type": "string",
+      "description": "The Template URL used to derive templateUuid."
+    },
+    "systemUuid": {
+      "type": "string",
+      "readOnly": true,
+      "description": "Computed from system_url. Not intended to be authored directly."
+    },
+    "templateUuid": {
+      "type": "string",
+      "readOnly": true,
+      "description": "Computed from template_url. Not intended to be authored directly."
+    },
+    "rooms": {
+      "type": "array",
+      "description": "The list of room devices for this system, using the same device-entry shape as \"devices\".",
+      "items": {
+        "$ref": "#/$defs/deviceConfigEntry"
+      }
+    },
+    "versions": {
+      "$ref": "#/$defs/versionData"
+    }
+  },
+  "required": [
+    "info",
+    "devices"
+  ],
+  "$defs": {
+    "deviceConfigEntry": {
+      "type": "object",
+      "description": "Generic device config entry (DeviceConfig.cs). Each plugin defines its own schema for the shape of \"properties\" for a given \"type\".",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Unique identifier for this device within the configuration file."
+        },
+        "name": {
+          "type": "string",
+          "description": "Friendly display name for this device."
+        },
+        "type": {
+          "type": "string",
+          "description": "Discriminator identifying the plugin factory that instantiates this device."
+        },
+        "properties": {
+          "type": "object",
+          "description": "Type-specific properties object; see the owning plugin's schema for its shape."
+        }
+      },
+      "required": [
+        "key",
+        "name",
+        "type"
+      ]
+    },
+    "infoConfig": {
+      "type": "object",
+      "description": "The info section of a config file (InfoConfig.cs).",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "runtimeInfo": {
+          "$ref": "#/$defs/runtimeInfo"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string",
+          "readOnly": true,
+          "description": "Populated from the processor at runtime."
+        },
+        "appNumber": {
+          "type": "integer",
+          "readOnly": true,
+          "description": "Populated from the processor at runtime."
+        }
+      }
+    },
+    "runtimeInfo": {
+      "type": "object",
+      "description": "Runtime information about the program/processor (InfoConfig.cs). Populated at runtime; not intended to be authored.",
+      "readOnly": true,
+      "properties": {
+        "appName": {
+          "type": "string"
+        },
+        "assemblyVersion": {
+          "type": "string"
+        },
+        "osVersion": {
+          "type": "string"
+        },
+        "ipInfo": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "versionData": {
+      "type": "object",
+      "description": "Version data for Essentials and its packages (VersionData in EssentialsConfig.cs).",
+      "properties": {
+        "essentials": {
+          "$ref": "#/$defs/packageVersion"
+        },
+        "userInterfaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/packageVersion"
+          }
+        },
+        "touchpanelWrapperApp": {
+          "$ref": "#/$defs/packageVersion"
+        },
+        "packages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/packageVersion"
+          }
+        }
+      }
+    },
+    "packageVersion": {
+      "type": "object",
+      "description": "A named package/version pair (PackageVersion in EssentialsConfig.cs).",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "packageId": {
+          "type": "string"
+        },
+        "repoUrl": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version"
+      ]
+    },
+    "sourceListItem": {
+      "type": "object",
+      "description": "An item in a source list (SourceListItem.cs).",
+      "properties": {
+        "sourceKey": {
+          "type": "string",
+          "description": "Key of the source device in the DeviceManager."
+        },
+        "preferredName": {
+          "type": "string",
+          "readOnly": true,
+          "description": "Computed from name or the source device's name."
+        },
+        "name": {
+          "type": "string",
+          "description": "A name that will override the source's name on the UI."
+        },
+        "icon": {
+          "type": "string"
+        },
+        "altIcon": {
+          "type": "string"
+        },
+        "includeInSourceList": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "integer"
+        },
+        "volumeControlKey": {
+          "type": "string",
+          "description": "The key of the device for volume control."
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^(?:[rR][oO][uU][tT][eE]|[oO][fF][fF]|[oO][tT][hH][eE][rR])(?:\\s*,\\s*(?:[rR][oO][uU][tT][eE]|[oO][fF][fF]|[oO][tT][hH][eE][rR]))*$",
+          "description": "Case-insensitive."
+        },
+        "routeList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceRouteListItem"
+          }
+        },
+        "disableCodecSharing": {
+          "type": "boolean",
+          "description": "Disable sharing this source to far-end call participants via codec content."
+        }
+      }
+    },
+    "sourceRouteListItem": {
+      "type": "object",
+      "description": "A route to execute for a source list item (SourceRouteListItem in SourceListItem.cs).",
+      "properties": {
+        "sourceKey": {
+          "type": "string"
+        },
+        "sourcePortKey": {
+          "type": "string"
+        },
+        "destinationKey": {
+          "type": "string"
+        },
+        "destinationPortKey": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "Signal type being routed. Flags enum; combinations may be comma-separated. Case-insensitive.",
+          "pattern": "^(?:[aA][uU][dD][iI][oO]|[vV][iI][dD][eE][oO]|[aA][uU][dD][iI][oO][vV][iI][dD][eE][oO]|[uU][sS][bB])(?:\\s*,\\s*(?:[aA][uU][dD][iI][oO]|[vV][iI][dD][eE][oO]|[aA][uU][dD][iI][oO][vV][iI][dD][eE][oO]|[uU][sS][bB]))*$"
+        },
+        "destinationListItemKey": {
+          "type": "string",
+          "description": "If set together with sourceListItemKey, the direct route method is used."
+        },
+        "sourceListItemKey": {
+          "type": "string",
+          "description": "If set together with destinationListItemKey, the direct route method is used."
+        }
+      }
+    },
+    "destinationListItem": {
+      "type": "object",
+      "description": "A destination item in a routing system (DestinationListItem.cs).",
+      "properties": {
+        "sinkKey": {
+          "type": "string",
+          "description": "Key of the sink device that this destination represents."
+        },
+        "preferredName": {
+          "type": "string",
+          "readOnly": true,
+          "description": "Computed from name or the sink device's name."
+        },
+        "name": {
+          "type": "string"
+        },
+        "includeInDestinationList": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "integer"
+        },
+        "surfaceLocation": {
+          "type": "integer"
+        },
+        "verticalLocation": {
+          "type": "integer"
+        },
+        "horizontalLocation": {
+          "type": "integer"
+        },
+        "sinkType": {
+          "type": "string",
+          "description": "Signal type this destination can receive. Flags enum; combinations may be comma-separated. Case-insensitive.",
+          "pattern": "^(?:[aA][uU][dD][iI][oO]|[vV][iI][dD][eE][oO]|[aA][uU][dD][iI][oO][vV][iI][dD][eE][oO]|[uU][sS][bB])(?:\\s*,\\s*(?:[aA][uU][dD][iI][oO]|[vV][iI][dD][eE][oO]|[aA][uU][dD][iI][oO][vV][iI][dD][eE][oO]|[uU][sS][bB]))*$"
+        },
+        "isCodecContentDestination": {
+          "type": "boolean"
+        },
+        "isProgramAudioDestination": {
+          "type": "boolean"
+        },
+        "supportsUsb": {
+          "type": "boolean"
+        },
+        "destinationPortKey": {
+          "type": "string"
+        }
+      }
+    },
+    "cameraListItem": {
+      "type": "object",
+      "description": "An item in a camera list (CameraListItem.cs).",
+      "properties": {
+        "deviceKey": {
+          "type": "string",
+          "description": "Key of the camera device in the DeviceManager."
+        },
+        "preferredName": {
+          "type": "string",
+          "readOnly": true,
+          "description": "Computed from name or the camera device's name."
+        },
+        "name": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "altIcon": {
+          "type": "string"
+        },
+        "includeInUserList": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "integer"
+        }
+      }
+    },
+    "audioControlPointListItem": {
+      "type": "object",
+      "description": "A named audio control point list containing level controls and presets (AudioControlPointListItem.cs).",
+      "properties": {
+        "levelControls": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/levelControlListItem"
+          }
+        },
+        "presets": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/presetListItem"
+          }
+        }
+      }
+    },
+    "audioControlListItemBase": {
+      "type": "object",
+      "description": "Common fields shared by level control and preset list items (AudioControlListItemBase.cs).",
+      "properties": {
+        "parentDeviceKey": {
+          "type": "string",
+          "description": "Key of the parent device in the DeviceManager."
+        },
+        "itemKey": {
+          "type": "string",
+          "description": "Optional key of the item within the parent device."
+        },
+        "name": {
+          "type": "string"
+        },
+        "includeInUserList": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "integer"
+        }
+      }
+    },
+    "levelControlListItem": {
+      "description": "A level/mute control item in an audio control point list (LevelControlListItem.cs).",
+      "allOf": [
+        {
+          "$ref": "#/$defs/audioControlListItemBase"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "preferredName": {
+              "type": "string",
+              "readOnly": true,
+              "description": "Computed from name or the underlying device's name."
+            },
+            "deviceKey": {
+              "type": "string",
+              "readOnly": true,
+              "description": "Computed from parentDeviceKey/itemKey; not intended to be authored."
+            },
+            "type": {
+              "type": "string",
+              "description": "Flags enum indicating whether this item is a level control, mute control, or both. Case-insensitive.",
+              "pattern": "^(?:[lL][eE][vV][eE][lL]|[mM][uU][tT][eE]|[lL][eE][vV][eE][lL][aA][nN][dD][mM][uU][tT][eE])(?:\\s*,\\s*(?:[lL][eE][vV][eE][lL]|[mM][uU][tT][eE]|[lL][eE][vV][eE][lL][aA][nN][dD][mM][uU][tT][eE]))*$"
+            },
+            "isMic": {
+              "type": "boolean",
+              "description": "Indicates if this item represents a microphone."
+            }
+          }
+        }
+      ]
+    },
+    "presetListItem": {
+      "description": "A preset item in an audio control point list (PresetListItem.cs).",
+      "allOf": [
+        {
+          "$ref": "#/$defs/audioControlListItemBase"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "preferredName": {
+              "type": "string",
+              "readOnly": true,
+              "description": "Computed from name or the underlying preset's name."
+            }
+          }
+        }
+      ]
+    },
+    "tieLineConfig": {
+      "type": "object",
+      "description": "A static tie line between two routing ports (TieLineConfig.cs).",
+      "properties": {
+        "SourceKey": {
+          "type": "string"
+        },
+        "SourceCard": {
+          "type": "string",
+          "description": "Key of the source card, if applicable (e.g. in a modular chassis)."
+        },
+        "SourcePort": {
+          "type": "string"
+        },
+        "DestinationKey": {
+          "type": "string"
+        },
+        "DestinationCard": {
+          "type": "string"
+        },
+        "DestinationPort": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "Optional override for the signal type of the tie line. Flags enum; combinations may be comma-separated. Case-insensitive.",
+          "pattern": "^(?:[aA][uU][dD][iI][oO]|[vV][iI][dD][eE][oO]|[aA][uU][dD][iI][oO][vV][iI][dD][eE][oO]|[uU][sS][bB])(?:\\s*,\\s*(?:[aA][uU][dD][iI][oO]|[vV][iI][dD][eE][oO]|[aA][uU][dD][iI][oO][vV][iI][dD][eE][oO]|[uU][sS][bB]))*$"
+        }
+      },
+      "required": [
+        "SourceKey",
+        "SourcePort",
+        "DestinationKey",
+        "DestinationPort"
+      ]
+    }
+  }
+}
