@@ -26,6 +26,27 @@ namespace PepperDash.Core
         private static readonly string WebSocketLevelStoreKey = "WebsocketDebugLevel";
         private static readonly string ErrorLogLevelStoreKey = "ErrorLogDebugLevel";
         private static readonly string FileLevelStoreKey = "FileDebugLevel";
+        private static readonly string FileSizeLimitStoreKey = "FileLogSizeLimitBytes";
+        private static readonly string FileRetainedCountStoreKey = "FileLogRetainedCount";
+
+        // Conservative defaults so the daily rolling log set cannot exhaust
+        // constrained storage (e.g. RMC4 with \user on a small removable drive).
+        private const long DefaultApplianceFileSizeLimitBytes = 4L * 1024 * 1024;
+        private const long DefaultServerFileSizeLimitBytes = 16L * 1024 * 1024;
+        private const int DefaultApplianceRetainedFileCount = 7;
+        private const int DefaultServerRetainedFileCount = 14;
+
+        /// <summary>
+        /// Per-file size (bytes) that triggers a roll of the debug log file. Read at
+        /// startup from CrestronDataStore; override with the applogfilecap console command.
+        /// </summary>
+        public static long LogFileSizeLimitBytes { get; private set; }
+
+        /// <summary>
+        /// Number of rolled debug log files retained on disk. Combined with
+        /// LogFileSizeLimitBytes this bounds total debug-log disk usage.
+        /// </summary>
+        public static int LogRetainedFileCountLimit { get; private set; }
 
         private static readonly Dictionary<uint, LogEventLevel> _logLevels = new Dictionary<uint, LogEventLevel>()
         {
@@ -157,6 +178,12 @@ namespace PepperDash.Core
                 ? "{@t:fff}ms [{@l:u4}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}"
                 : "[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}";
 
+            var isAppliance = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance;
+            LogFileSizeLimitBytes = GetStoredIntValue(FileSizeLimitStoreKey,
+                (int)(isAppliance ? DefaultApplianceFileSizeLimitBytes : DefaultServerFileSizeLimitBytes));
+            LogRetainedFileCountLimit = GetStoredIntValue(FileRetainedCountStoreKey,
+                isAppliance ? DefaultApplianceRetainedFileCount : DefaultServerRetainedFileCount);
+
             _defaultLoggerConfiguration = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
@@ -166,8 +193,10 @@ namespace PepperDash.Core
                 .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: _errorLogLevelSwitch)
                 .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,
                     rollingInterval: RollingInterval.Day,
+                    fileSizeLimitBytes: LogFileSizeLimitBytes,
+                    rollOnFileSizeLimit: true,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
-                    retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 7 : 14,
+                    retainedFileCountLimit: LogRetainedFileCountLimit,
                     levelSwitch: _fileLogLevelSwitch
                 );
 
@@ -223,6 +252,9 @@ namespace PepperDash.Core
                     ConsoleAccessLevelEnum.AccessOperator);
                 CrestronConsole.AddNewConsoleCommand(SetDebugFilterFromConsole, "appdebugfilter",
                     "appdebugfilter [params]", ConsoleAccessLevelEnum.AccessOperator);
+                CrestronConsole.AddNewConsoleCommand(SetLogFileCapFromConsole, "applogfilecap",
+                    "applogfilecap:P [sizeBytes] [retainedCount]: Caps rolling debug log size/count (next restart)",
+                    ConsoleAccessLevelEnum.AccessOperator);
             }
 
             CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
@@ -295,6 +327,75 @@ namespace PepperDash.Core
                 CrestronConsole.PrintLine($"Exception retrieving log level for {levelStoreKey}: {ex.Message}");
                 return LogEventLevel.Information;
             }
+        }
+
+        private static int GetStoredIntValue(string storeKey, int defaultValue)
+        {
+            try
+            {
+                var result = CrestronDataStoreStatic.GetLocalIntValue(storeKey, out int value);
+
+                if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+                {
+                    CrestronDataStoreStatic.SetLocalIntValue(storeKey, defaultValue);
+                    return defaultValue;
+                }
+
+                return value <= 0 ? defaultValue : value;
+            }
+            catch (Exception ex)
+            {
+                CrestronConsole.PrintLine($"Exception retrieving stored value for {storeKey}: {ex.Message}");
+                return defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Console handler to cap the rolling debug log file size and retained count.
+        /// Values persist in CrestronDataStore and take effect on the next program restart.
+        /// </summary>
+        public static void SetLogFileCapFromConsole(string command)
+        {
+            var trimmed = command?.Trim() ?? string.Empty;
+
+            if (trimmed == "?" || string.IsNullOrEmpty(trimmed))
+            {
+                CrestronConsole.ConsoleCommandResponse(
+                    "Caps the rolling debug log file (takes effect on next program restart):\r\n" +
+                    "Usage: applogfilecap:P [sizeBytes] [retainedCount]\r\n" +
+                    "  sizeBytes: per-file size that triggers a roll (min 65536)\r\n" +
+                    "  retainedCount: number of rolled files to keep (min 1)\r\n" +
+                    $"Current: sizeBytes = {LogFileSizeLimitBytes}, retainedCount = {LogRetainedFileCountLimit}\r\n" +
+                    $"Approx on-disk ceiling = {LogFileSizeLimitBytes * LogRetainedFileCountLimit} bytes\r\n");
+                return;
+            }
+
+            var tokens = trimmed.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (!long.TryParse(tokens[0], out var sizeBytes) || sizeBytes < 65536)
+            {
+                CrestronConsole.ConsoleCommandResponse("Invalid sizeBytes. Must be an integer >= 65536.\r\n");
+                return;
+            }
+
+            sizeBytes = Math.Min(sizeBytes, int.MaxValue);
+
+            var retained = LogRetainedFileCountLimit;
+            if (tokens.Length > 1 && (!int.TryParse(tokens[1], out retained) || retained < 1))
+            {
+                CrestronConsole.ConsoleCommandResponse("Invalid retainedCount. Must be an integer >= 1.\r\n");
+                return;
+            }
+
+            var sizeErr = CrestronDataStoreStatic.SetLocalIntValue(FileSizeLimitStoreKey, (int)sizeBytes);
+            var countErr = CrestronDataStoreStatic.SetLocalIntValue(FileRetainedCountStoreKey, retained);
+
+            LogFileSizeLimitBytes = sizeBytes;
+            LogRetainedFileCountLimit = retained;
+
+            CrestronConsole.ConsoleCommandResponse(
+                $"File log cap stored: sizeBytes = {sizeBytes}, retainedCount = {retained} (store result: {sizeErr}/{countErr}).\r\n" +
+                "Takes effect on next program restart.\r\n");
         }
 
         private static void GetVersion()
