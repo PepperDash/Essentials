@@ -36,6 +36,10 @@ namespace PepperDash.Core
         private const int DefaultApplianceRetainedFileCount = 7;
         private const int DefaultServerRetainedFileCount = 14;
 
+        // Enforced floors so a stale/corrupt stored value can't cause pathological rolling.
+        private const int MinFileSizeLimitBytes = 65536;
+        private const int MinRetainedFileCount = 1;
+
         /// <summary>
         /// Per-file size (bytes) that triggers a roll of the debug log file. Read at
         /// startup from CrestronDataStore; override with the applogfilecap console command.
@@ -179,10 +183,10 @@ namespace PepperDash.Core
                 : "[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}";
 
             var isAppliance = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance;
-            LogFileSizeLimitBytes = GetStoredIntValue(FileSizeLimitStoreKey,
-                (int)(isAppliance ? DefaultApplianceFileSizeLimitBytes : DefaultServerFileSizeLimitBytes));
-            LogRetainedFileCountLimit = GetStoredIntValue(FileRetainedCountStoreKey,
-                isAppliance ? DefaultApplianceRetainedFileCount : DefaultServerRetainedFileCount);
+            LogFileSizeLimitBytes = Math.Max(MinFileSizeLimitBytes, GetStoredIntValue(FileSizeLimitStoreKey,
+                (int)(isAppliance ? DefaultApplianceFileSizeLimitBytes : DefaultServerFileSizeLimitBytes)));
+            LogRetainedFileCountLimit = Math.Max(MinRetainedFileCount, GetStoredIntValue(FileRetainedCountStoreKey,
+                isAppliance ? DefaultApplianceRetainedFileCount : DefaultServerRetainedFileCount));
 
             _defaultLoggerConfiguration = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
@@ -372,7 +376,13 @@ namespace PepperDash.Core
 
             var tokens = trimmed.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
-            if (!long.TryParse(tokens[0], out var sizeBytes) || sizeBytes < 65536)
+            if (tokens.Length > 2)
+            {
+                CrestronConsole.ConsoleCommandResponse("Too many arguments. Usage: applogfilecap [sizeBytes] [retainedCount].\r\n");
+                return;
+            }
+
+            if (!long.TryParse(tokens[0], out var sizeBytes) || sizeBytes < MinFileSizeLimitBytes)
             {
                 CrestronConsole.ConsoleCommandResponse("Invalid sizeBytes. Must be an integer >= 65536.\r\n");
                 return;
@@ -381,7 +391,7 @@ namespace PepperDash.Core
             sizeBytes = Math.Min(sizeBytes, int.MaxValue);
 
             var retained = LogRetainedFileCountLimit;
-            if (tokens.Length > 1 && (!int.TryParse(tokens[1], out retained) || retained < 1))
+            if (tokens.Length > 1 && (!int.TryParse(tokens[1], out retained) || retained < MinRetainedFileCount))
             {
                 CrestronConsole.ConsoleCommandResponse("Invalid retainedCount. Must be an integer >= 1.\r\n");
                 return;
