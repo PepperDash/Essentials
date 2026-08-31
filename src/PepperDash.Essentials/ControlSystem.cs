@@ -556,8 +556,10 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
 
                 if (newDev != null)
                     DeviceManager.AddDevice(newDev);
+                else if (Core.DeviceFactory.HasFactoryForType(devConf.Type))
+                    Debug.LogMessage(LogEventLevel.Error, "ERROR: Device type '{deviceType:l}' is registered but failed to build device '{deviceKey:l}' (factory returned null; see any exception logged above for the cause).", devConf.Type, devConf.Key);
                 else
-                    Debug.LogMessage(LogEventLevel.Information, "ERROR: Cannot load unknown device type '{deviceType:l}', key '{deviceKey:l}'.", devConf.Type, devConf.Key);
+                    Debug.LogMessage(LogEventLevel.Warning, "ERROR: Cannot load unknown device type '{deviceType:l}', key '{deviceKey:l}'.", devConf.Type, devConf.Key);
             }
             catch (Exception e)
             {
@@ -904,7 +906,10 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
 
                 if (room == null)
                 {
-                    Debug.LogWarning("ERROR: Cannot load unknown room type '{roomType:l}', key '{roomKey:l}'.", roomConfig.Type, roomConfig.Key);
+                    if (Core.DeviceFactory.HasFactoryForType(roomConfig.Type))
+                        Debug.LogError("ERROR: Room type '{roomType:l}' is registered but failed to build room '{roomKey:l}' (factory returned null; see any exception logged above for the cause).", roomConfig.Type, roomConfig.Key);
+                    else
+                        Debug.LogWarning("ERROR: Cannot load unknown room type '{roomType:l}', key '{roomKey:l}'.", roomConfig.Type, roomConfig.Key);
                     continue;
                 }
 

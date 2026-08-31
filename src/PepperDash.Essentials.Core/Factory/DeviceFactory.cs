@@ -267,4 +267,17 @@ public class DeviceFactory
             ? FactoryMethods
             : FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value);
     }
+
+    /// <summary>
+    /// Indicates whether a factory is registered for the specified device type name.
+    /// </summary>
+    /// <remarks>Lets callers of <see cref="GetDevice"/> distinguish a genuinely unknown device type from a
+    /// known type whose factory failed to build the device (both currently return <see langword="null"/> from
+    /// <see cref="GetDevice"/>), so the two can be logged with accurate, distinct messages.</remarks>
+    /// <param name="typeName">The device type name to check. Matching is case-insensitive.</param>
+    /// <returns><see langword="true"/> if a factory is registered for <paramref name="typeName"/>; otherwise <see langword="false"/>.</returns>
+    public static bool HasFactoryForType(string typeName)
+    {
+        return !string.IsNullOrEmpty(typeName) && FactoryMethods.ContainsKey(typeName);
+    }
 }
