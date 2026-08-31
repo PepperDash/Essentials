@@ -38,6 +38,8 @@ namespace PepperDash.Essentials.Core
 
 		ComPort Port;
 		ComPort.ComPortSpec Spec;
+		private readonly object _deactivateLock = new object();
+		private bool _isDeactivated;
 
 		/// <summary>
 		/// Constructor
@@ -59,6 +61,8 @@ namespace PepperDash.Essentials.Core
 
 				RegisterAndConfigureComPort();
 			});
+
+			CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
 		}
 
 		/// <summary>
@@ -81,6 +85,7 @@ namespace PepperDash.Essentials.Core
 			//IsConnected = new BoolFeedback(CommonBoolCue.IsConnected, () => true);
 
 			RegisterAndConfigureComPort();
+			CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
 		}
 
 		private void RegisterAndConfigureComPort()
@@ -114,14 +119,6 @@ namespace PepperDash.Essentials.Core
 			Port.SerialDataReceived += Port_SerialDataReceived;
 		}
 
-		/// <summary>
-		/// Destructor
-		/// </summary>
-		~ComPortController()
-		{
-			Port.SerialDataReceived -= Port_SerialDataReceived;
-		}
-
 		void Port_SerialDataReceived(ComPort ReceivingComPort, ComPortSerialDataEventArgs args)
 		{
 			OnDataReceived(args.SerialData);
@@ -150,12 +147,34 @@ namespace PepperDash.Essentials.Core
 			if (!eventSubscribed) Debug.LogMessage(LogEventLevel.Warning, this, "Received data but no handler is registered");
 		}
 
+		void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+		{
+			if (programEventType == eProgramStatusEventType.Stopping)
+			{
+				Deactivate();
+			}
+		}
+
 		/// <summary>
 		/// Deactivate method
 		/// </summary>
 		/// <inheritdoc />
 		public override bool Deactivate()
 		{
+			lock (_deactivateLock)
+			{
+				if (_isDeactivated)
+					return true;
+
+				_isDeactivated = true;
+			}
+
+			CrestronEnvironment.ProgramStatusEventHandler -= CrestronEnvironment_ProgramStatusEventHandler;
+
+			if (Port == null)
+				return true;
+
+			Port.SerialDataReceived -= Port_SerialDataReceived;
 			return Port.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
 		}
 
