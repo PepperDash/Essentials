@@ -59,18 +59,44 @@ public class RoutingFeedbackWebsocket : IKeyed
     {
         get
         {
-            if (_httpsServer == null || !_httpsServer.IsListening) return "";
-            var service = _httpsServer.WebSocketServices[_path];
-            if (service == null) return "";
+            var host = ProcessorEthernetInfo.GetLanIpAddress() ?? ProcessorEthernetInfo.GetCsLanIpAddress();
 
-            var ip = CrestronEthernetHelper.GetEthernetParameter(
-                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
-            if (string.IsNullOrEmpty(ip) || ip == "Invalid Value")
-                ip = CrestronEthernetHelper.GetEthernetParameter(
-                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
-
-            return $"wss://{ip}:{_httpsServer.Port}{service.Path}";
+            return GetUrlForHost(host);
         }
+    }
+
+    /// <summary>
+    /// Gets the WebSocket path clients connect to, e.g. <c>/routing/join</c>. Exposed so a client that
+    /// already knows the processor's address — a browser on a page the processor served, for instance —
+    /// can build the URL itself from its own location.
+    /// </summary>
+    public string ServicePath
+    {
+        get
+        {
+            var service = _httpsServer?.WebSocketServices[_path];
+
+            return service?.Path ?? _path.TrimEnd('/');
+        }
+    }
+
+    /// <summary>
+    /// Builds the WebSocket URL for this server using the supplied host, which lets callers hand back
+    /// the address the client actually used to reach the processor.
+    /// </summary>
+    /// <param name="host">Host name or IP address, without scheme or port. IPv6 literals must already be bracketed.</param>
+    /// <returns>The <c>wss://</c> URL, or an empty string when the server is not listening or <paramref name="host"/> is unusable.</returns>
+    public string GetUrlForHost(string host)
+    {
+        if (_httpsServer == null || !_httpsServer.IsListening) return "";
+
+        var service = _httpsServer.WebSocketServices[_path];
+        if (service == null) return "";
+
+        host = ProcessorEthernetInfo.NullIfInvalid(host);
+        if (host == null) return "";
+
+        return $"wss://{host}:{_httpsServer.Port}{service.Path}";
     }
 
     /// <summary>

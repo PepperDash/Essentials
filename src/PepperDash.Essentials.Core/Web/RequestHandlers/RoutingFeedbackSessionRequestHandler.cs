@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
@@ -35,9 +36,6 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
     {
         try
         {
-            var ip = CrestronEthernetHelper.GetEthernetParameter(
-                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
-
             var port = 0;
 
             if (!_instance.IsRunning)
@@ -51,16 +49,17 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
                 port = _instance.Port;
             }
 
-            // Always ensure port forwarding is active — it may have been removed by timeout
-            string csIp = null;
-            try
-            {
-                var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
-                    EthernetAdapterType.EthernetCSAdapter);
-                csIp = CrestronEthernetHelper.GetEthernetParameter(
-                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+            // Returns null on processors with no control subnet, rather than "Invalid Value"
+            var csIp = ProcessorEthernetInfo.GetCsLanIpAddress();
 
-                if (port > 0)
+            if (csIp == null)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, "This processor does not have a CS LAN adapter; skipping port forwarding");
+            }
+            else if (port > 0)
+            {
+                // Always ensure port forwarding is active — it may have been removed by timeout
+                try
                 {
                     var result = CrestronEthernetHelper.AddPortForwarding(
                         (ushort)port, (ushort)port, csIp,
@@ -76,14 +75,10 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
                         StartPortForwardTimeout(port, csIp);
                     }
                 }
-            }
-            catch (ArgumentException)
-            {
-                Debug.LogMessage(LogEventLevel.Debug, "This processor does not have a CS LAN adapter; skipping port forwarding");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogMessage(LogEventLevel.Warning, "Error automatically forwarding routing feedback websocket port to CS LAN: {0}", ex.Message);
+                catch (Exception ex)
+                {
+                    Debug.LogMessage(LogEventLevel.Warning, "Error automatically forwarding routing feedback websocket port to CS LAN: {0}", ex.Message);
+                }
             }
 
             if (!_instance.IsRunning)
@@ -97,17 +92,51 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
                 return;
             }
 
-            var url = _instance.Url;
+            // The client can be on either side of the processor, so return every network the websocket is
+            // reachable on and let it choose with ?network=lan|cslan|current. Without an explicit choice
+            // we default to the side the browser is already on.
+            var requestHost = SessionUrlHelper.GetRequestHost(context);
 
+            var networks = SessionUrlHelper.BuildEndpointOptions(
+                requestHost,
+                ProcessorEthernetInfo.GetLanIpAddress(),
+                csIp,
+                _instance.GetUrlForHost);
+
+            if (networks.Count == 0)
+            {
+                Debug.LogMessage(LogEventLevel.Error, "Unable to determine a reachable address for the routing feedback websocket");
+
+                context.Response.StatusCode = 500;
+                context.Response.StatusDescription = "Internal Server Error";
+                context.Response.Write(
+                    JsonConvert.SerializeObject(new { error = "Unable to determine a reachable address for the routing feedback websocket. Check logs for details." }),
+                    false);
+                context.Response.End();
+                return;
+            }
+
+            var selected = SessionUrlHelper.SelectEndpoint(
+                networks, SessionUrlHelper.GetRequestedNetwork(context), requestHost);
+
+            var fallback = networks.FirstOrDefault(n => n != selected);
+
+            // port and path let a client that already knows the processor's address build the URL itself
+            // — the debug app was served from the processor, so window.location.hostname is by definition
+            // an address that reaches it.
             var data = new
             {
-                url,
-                fallbackUrl = csIp != null ? url.Replace(csIp, ip) : null
+                url = selected.Url,
+                fallbackUrl = fallback?.Url,
+                selectedNetwork = selected.Id,
+                networks,
+                port = _instance.Port,
+                path = _instance.ServicePath
             };
 
-            Debug.LogMessage(LogEventLevel.Information, "Routing Feedback Session URL: {0}", url);
-            if (data.fallbackUrl != null)
-                Debug.LogMessage(LogEventLevel.Information, "Routing Feedback Fallback URL: {0}", data.fallbackUrl);
+            Debug.LogMessage(LogEventLevel.Information, "Routing Feedback Session URL ({0}): {1}", selected.Id, selected.Url);
+            if (fallback != null)
+                Debug.LogMessage(LogEventLevel.Information, "Routing Feedback Fallback URL: {0}", fallback.Url);
 
             var res = JsonConvert.SerializeObject(data);
 
@@ -138,34 +167,30 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
 
         _instance.StopServer();
 
-        // Remove port forwarding if CS LAN exists
-        try
-        {
-            var csAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(
-                EthernetAdapterType.EthernetCSAdapter);
-            var csIp = CrestronEthernetHelper.GetEthernetParameter(
-                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, csAdapterId);
+        // Remove port forwarding if CS LAN exists — null when this processor has no control subnet
+        var csIp = ProcessorEthernetInfo.GetCsLanIpAddress();
 
-            var result = CrestronEthernetHelper.RemovePortForwarding(
-                (ushort)port, (ushort)port, csIp,
-                CrestronEthernetHelper.ePortMapTransport.TCP);
+        if (csIp != null)
+        {
+            try
+            {
+                var result = CrestronEthernetHelper.RemovePortForwarding(
+                    (ushort)port, (ushort)port, csIp,
+                    CrestronEthernetHelper.ePortMapTransport.TCP);
 
-            if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
-            {
-                Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for routing port {0}: {1}", port, result);
+                if (result != CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                {
+                    Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for routing port {0}: {1}", port, result);
+                }
+                else
+                {
+                    Debug.LogMessage(LogEventLevel.Information, "Port forwarding for routing port {0} removed", port);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Port forwarding for routing port {0} removed", port);
+                Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for routing: {0}", ex.Message);
             }
-        }
-        catch (ArgumentException)
-        {
-            // No CS LAN adapter
-        }
-        catch (Exception ex)
-        {
-            Debug.LogMessage(LogEventLevel.Warning, "Error removing port forwarding for routing: {0}", ex.Message);
         }
 
         context.Response.StatusCode = 200;
