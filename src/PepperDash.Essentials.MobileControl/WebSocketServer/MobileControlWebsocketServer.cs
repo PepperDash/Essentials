@@ -612,7 +612,8 @@ namespace PepperDash.Essentials.WebSocketServer
                         }
                     },
                     Logging = _parent.Config.ApplicationConfig?.Logging ?? false,
-                    PartnerMetadata = _parent.Config.ApplicationConfig?.PartnerMetadata ?? new List<MobileControlPartnerMetadata>()
+                    PartnerMetadata = _parent.Config.ApplicationConfig?.PartnerMetadata ?? new List<MobileControlPartnerMetadata>(),
+                    LockoutMessagesByTouchpanel = _parent.Config.ApplicationConfig?.LockoutMessagesByTouchpanel ?? new Dictionary<string, MobileControlLockoutMessageOverride>()
                 };
 
                 return config;
