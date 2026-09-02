@@ -257,7 +257,7 @@ namespace PepperDash.Core
                 CrestronConsole.AddNewConsoleCommand(SetDebugFilterFromConsole, "appdebugfilter",
                     "appdebugfilter [params]", ConsoleAccessLevelEnum.AccessOperator);
                 CrestronConsole.AddNewConsoleCommand(SetLogFileCapFromConsole, "applogfilecap",
-                    "applogfilecap:P [sizeBytes] [retainedCount]: Caps rolling debug log size/count (next restart)",
+                    "applogfilecap:P [sizeBytes] [retainedCount]: Cap rolling log size/count",
                     ConsoleAccessLevelEnum.AccessOperator);
             }
 
