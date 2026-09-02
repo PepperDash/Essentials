@@ -135,6 +135,13 @@ namespace PepperDash.Essentials.Core
 
         [JsonProperty("message", NullValueHandling = NullValueHandling.Ignore)]
         public string Message { get; set; }
+
+        /// <summary>
+        /// Room keys whose UI assignment changes in this operation. Null/empty means clients should
+        /// treat all rooms as affected (backward compatible with clients that ignore this field).
+        /// </summary>
+        [JsonProperty("affectedRoomKeys", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> AffectedRoomKeys { get; set; }
     }
 
     /// <summary>

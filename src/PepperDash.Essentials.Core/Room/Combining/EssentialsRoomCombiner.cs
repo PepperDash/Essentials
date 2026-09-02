@@ -289,11 +289,14 @@ namespace PepperDash.Essentials.Core
                 return;
             }
 
+            var affectedRoomKeys = ComputeAffectedRoomKeys(_currentScenario, newScenario);
+
             var operationId = SetCombinationOperationStatus(
                 CombinationOperationState.InProgress,
                 newScenario != null ? newScenario.Key : null,
                 null,
-                true);
+                true,
+                affectedRoomKeys);
 
             try
             {
@@ -526,7 +529,8 @@ namespace PepperDash.Essentials.Core
             CombinationOperationState state,
             string scenarioKey,
             string message,
-            bool resetStartedUtc)
+            bool resetStartedUtc,
+            List<string> affectedRoomKeys = null)
         {
             string operationId;
 
@@ -540,7 +544,8 @@ namespace PepperDash.Essentials.Core
                         ScenarioKey = scenarioKey,
                         StartedUtc = DateTime.UtcNow.ToString("o"),
                         State = state,
-                        Message = message
+                        Message = message,
+                        AffectedRoomKeys = affectedRoomKeys
                     };
                 }
                 else
@@ -811,8 +816,79 @@ namespace PepperDash.Essentials.Core
                 ScenarioKey = status.ScenarioKey,
                 StartedUtc = status.StartedUtc,
                 State = status.State,
-                Message = status.Message
+                Message = status.Message,
+                AffectedRoomKeys = status.AffectedRoomKeys != null
+                    ? new List<string>(status.AffectedRoomKeys)
+                    : null
             };
+        }
+
+        /// <summary>
+        /// Computes the set of room keys whose UI assignment changes between two scenarios by diffing
+        /// their uiMaps. A room locked into a combination is also affected when that combination's
+        /// composition changes (e.g. AB -> ABC), even if its own uiMap value stays "lockout". Returns
+        /// empty at startup (no previous scenario) so no overlay appears at boot.
+        /// </summary>
+        private static List<string> ComputeAffectedRoomKeys(
+            IRoomCombinationScenario fromScenario,
+            IRoomCombinationScenario toScenario)
+        {
+            if (fromScenario == null || toScenario == null)
+            {
+                return new List<string>();
+            }
+
+            var fromMap = fromScenario.UiMap ?? new Dictionary<string, string>();
+            var toMap = toScenario.UiMap ?? new Dictionary<string, string>();
+
+            // The combined room is what the primary panel resolves to (e.g. roomAB vs roomABC). If that
+            // changes, every room locked into that combination is involved in the new scenario.
+            var combinedRoomChanged = !string.Equals(
+                GetCombinedRoom(fromMap), GetCombinedRoom(toMap), StringComparison.OrdinalIgnoreCase);
+
+            var roomKeys = new HashSet<string>(fromMap.Keys, StringComparer.OrdinalIgnoreCase);
+            roomKeys.UnionWith(toMap.Keys);
+            roomKeys.Remove("primary");
+
+            var affected = new List<string>();
+            foreach (var roomKey in roomKeys)
+            {
+                fromMap.TryGetValue(roomKey, out var fromValue);
+                toMap.TryGetValue(roomKey, out var toValue);
+
+                if (!string.Equals(fromValue, toValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    affected.Add(roomKey);
+                }
+                else if (combinedRoomChanged
+                    && string.Equals(fromValue, "lockout", StringComparison.OrdinalIgnoreCase))
+                {
+                    affected.Add(roomKey);
+                }
+            }
+
+            return affected;
+        }
+
+        /// <summary>
+        /// Returns the combined room a scenario's primary panel resolves to (uiMap[uiMap["primary"]]),
+        /// or null when there is no primary (e.g. the divided scenario).
+        /// </summary>
+        private static string GetCombinedRoom(Dictionary<string, string> uiMap)
+        {
+            if (uiMap == null)
+            {
+                return null;
+            }
+
+            uiMap.TryGetValue("primary", out var primary);
+            if (string.IsNullOrEmpty(primary))
+            {
+                return null;
+            }
+
+            uiMap.TryGetValue(primary, out var combinedRoom);
+            return combinedRoom;
         }
     }
 
