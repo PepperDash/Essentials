@@ -21,6 +21,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private readonly IEssentialsRoomCombiner _roomCombiner;
 
+        private readonly IEssentialsRoomCombinerWithOperationStatus _roomCombinerWithOperationStatus;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IEssentialsRoomCombinerMessenger"/> class,  which facilitates
         /// messaging for an <see cref="IEssentialsRoomCombiner"/> instance.
@@ -35,6 +37,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             : base(key, messagePath, roomCombiner as IKeyName)
         {
             _roomCombiner = roomCombiner;
+            _roomCombinerWithOperationStatus = roomCombiner as IEssentialsRoomCombinerWithOperationStatus;
         }
 
         /// <summary>
@@ -98,6 +101,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 SendFullStatus();
             };
 
+            if (_roomCombinerWithOperationStatus != null)
+            {
+                _roomCombinerWithOperationStatus.CombinationOperationStatusChanged += (sender, args) =>
+                {
+                    var message = new
+                    {
+                        combinationOperation = _roomCombinerWithOperationStatus.CombinationOperation
+                    };
+
+                    PostStatusMessage(JToken.FromObject(message));
+                };
+            }
+
             _roomCombiner.IsInAutoModeFeedback.OutputChange += (sender, args) =>
             {
                 var message = new
@@ -138,6 +154,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     DisableAutoMode = _roomCombiner.DisableAutoMode,
                     IsInAutoMode = _roomCombiner.IsInAutoMode,
                     CurrentScenario = _roomCombiner.CurrentScenario,
+                    CombinationOperation = _roomCombinerWithOperationStatus != null ? _roomCombinerWithOperationStatus.CombinationOperation : null,
                     Rooms = rooms,
                     RoomCombinationScenarios = _roomCombiner.RoomCombinationScenarios,
                     Partitions = _roomCombiner.Partitions
@@ -193,6 +210,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         [JsonProperty("currentScenario", NullValueHandling = NullValueHandling.Ignore)]
         public IRoomCombinationScenario CurrentScenario { get; set; }
+
+        /// <summary>
+        /// Gets or sets the room combination operation status.
+        /// </summary>
+        [JsonProperty("combinationOperation", NullValueHandling = NullValueHandling.Ignore)]
+        public CombinationOperationStatus CombinationOperation { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of rooms associated with the entity.

@@ -24,7 +24,7 @@ public class EssentialsPartitionController : IPartitionController
         {
             if (IsInAutoMode)
             {
-                return _partitionSensor.PartitionPresentFeedback.BoolValue;
+                return _partitionSensor?.PartitionPresentFeedback?.BoolValue ?? _partitionPresent;
             }
 
             return _partitionPresent;
