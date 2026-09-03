@@ -29,36 +29,83 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
+            foreach (var input in _device.InputSlots.Values)
+            {
+                if (input is not IRoutingInputSlotInfo status) continue;
+
+                status.VideoSyncChanged += (sender, args) => SendFullStatus();
+
+                if (status.IsOnline != null)
+                    status.IsOnline.OutputChange += (sender, args) => SendFullStatus();
+            }
+
             foreach (var output in _device.OutputSlots.Values)
             {
                 output.OutputSlotChanged += (sender, args) => SendFullStatus();
+
+                if (output is IRoutingOutputSlotStatus outputStatus && outputStatus.IsOnline != null)
+                    outputStatus.IsOnline.OutputChange += (sender, args) => SendFullStatus();
             }
         }
 
-        private static RoutingSlotMessage BuildSlotMessage(IRoutingSlotInfo slot) => new RoutingSlotMessage
+        private static RoutingSlotMessage BuildInputMessage(IRoutingSlotInfo slot)
         {
-            Key = slot.Key,
-            Name = slot.Name,
-            SlotNumber = slot.SlotNumber,
-            SupportedSignalTypes = slot.SupportedSignalTypes.ToString()
-        };
+            var message = new RoutingSlotMessage
+            {
+                Key = slot.Key,
+                Name = slot.Name,
+                SlotNumber = slot.SlotNumber,
+                SupportedSignalTypes = slot.SupportedSignalTypes.ToString()
+            };
+
+            if (slot is IRoutingInputSlotInfo status)
+            {
+                message.TxDeviceKey = status.TxDeviceKey;
+                message.IsOnline = status.IsOnline?.BoolValue;
+                message.VideoSyncDetected = status.VideoSyncDetected;
+            }
+
+            return message;
+        }
+
+        private static RoutingSlotMessage BuildOutputMessage(
+            IRoutingOutputSlotInfo slot,
+            IReadOnlyDictionary<string, RoutingSlotMessage> inputs)
+        {
+            var message = new RoutingSlotMessage
+            {
+                Key = slot.Key,
+                Name = slot.Name,
+                SlotNumber = slot.SlotNumber,
+                SupportedSignalTypes = slot.SupportedSignalTypes.ToString(),
+                CurrentRouteInputKeys = slot.CurrentRouteInputKeys
+                    .ToDictionary(r => r.Key.ToString(), r => r.Value),
+                CurrentRoutes = slot.CurrentRouteInputKeys.ToDictionary(
+                    r => r.Key.ToString(),
+                    r => inputs.TryGetValue(r.Value, out var input)
+                        ? input
+                        : new RoutingSlotMessage { Key = r.Value })
+            };
+
+            if (slot is IRoutingOutputSlotStatus status)
+            {
+                message.RxDeviceKey = status.RxDeviceKey;
+                message.IsOnline = status.IsOnline?.BoolValue;
+            }
+
+            return message;
+        }
 
         private void SendFullStatus(string id = null)
         {
-            var inputSlots = _device.InputSlots.ToDictionary(kvp => kvp.Key, kvp => BuildSlotMessage(kvp.Value));
+            var inputs = _device.InputSlots.ToDictionary(kvp => kvp.Key, kvp => BuildInputMessage(kvp.Value));
 
-            var outputSlots = _device.OutputSlots.ToDictionary(kvp => kvp.Key, kvp =>
-            {
-                var message = BuildSlotMessage(kvp.Value);
-                message.CurrentRouteInputKeys = kvp.Value.CurrentRouteInputKeys
-                    .ToDictionary(r => r.Key.ToString(), r => r.Value);
-                return message;
-            });
+            var outputs = _device.OutputSlots.ToDictionary(kvp => kvp.Key, kvp => BuildOutputMessage(kvp.Value, inputs));
 
             var content = JToken.FromObject(new
             {
-                inputSlots,
-                outputSlots
+                inputs,
+                outputs
             });
 
             PostStatusMessage(content, MessagePath, id);
@@ -79,7 +126,22 @@ namespace PepperDash.Essentials.AppServer.Messengers
         [JsonProperty("supportedSignalTypes")]
         public string SupportedSignalTypes { get; set; }
 
+        [JsonProperty("txDeviceKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string TxDeviceKey { get; set; }
+
+        [JsonProperty("rxDeviceKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string RxDeviceKey { get; set; }
+
+        [JsonProperty("isOnline", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsOnline { get; set; }
+
+        [JsonProperty("videoSyncDetected", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? VideoSyncDetected { get; set; }
+
         [JsonProperty("currentRouteInputKeys", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, string> CurrentRouteInputKeys { get; set; }
+
+        [JsonProperty("currentRoutes", NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, RoutingSlotMessage> CurrentRoutes { get; set; }
     }
 }

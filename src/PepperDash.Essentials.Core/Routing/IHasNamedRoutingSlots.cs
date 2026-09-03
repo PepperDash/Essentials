@@ -32,6 +32,41 @@ public interface IRoutingOutputSlotInfo : IRoutingSlotInfo
 }
 
 /// <summary>
+/// Optional per-endpoint status for a named input slot, surfaced to mobile control (online state,
+/// video sync detection, and the backing transmitter device key). A slot may implement this in
+/// addition to <see cref="IRoutingSlotInfo"/>; the mobile-control matrix messenger emits these
+/// fields when present so the UI can show source availability/sync. Endpoint status is a
+/// plugin/device concern, so it is kept off the bare <see cref="IRoutingSlotInfo"/> contract.
+/// </summary>
+public interface IRoutingInputSlotInfo : IRoutingSlotInfo
+{
+    /// <summary>Key of the transmitter device feeding this input slot, empty if none/unknown.</summary>
+    string TxDeviceKey { get; }
+
+    /// <summary>Online feedback for the backing endpoint.</summary>
+    BoolFeedback IsOnline { get; }
+
+    /// <summary>Whether the input endpoint currently detects a video sync/signal.</summary>
+    bool VideoSyncDetected { get; }
+
+    /// <summary>Raised when <see cref="VideoSyncDetected"/> changes.</summary>
+    event EventHandler VideoSyncChanged;
+}
+
+/// <summary>
+/// Optional per-endpoint status for a named output slot, surfaced to mobile control (online state
+/// and the backing receiver device key).
+/// </summary>
+public interface IRoutingOutputSlotStatus : IRoutingOutputSlotInfo
+{
+    /// <summary>Key of the receiver device fed by this output slot, empty if none/unknown.</summary>
+    string RxDeviceKey { get; }
+
+    /// <summary>Online feedback for the backing endpoint.</summary>
+    BoolFeedback IsOnline { get; }
+}
+
+/// <summary>
 /// Optional extension to <see cref="IRoutingMidpointWithFeedback"/> for matrix-style routing
 /// devices that track named input/output slots (with per-signal-type routing feedback) internally,
 /// e.g. plugin-local slot abstractions that replaced the removed core <c>IRoutingInputSlot</c>/
