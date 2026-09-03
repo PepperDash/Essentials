@@ -102,10 +102,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             var outputs = _device.OutputSlots.ToDictionary(kvp => kvp.Key, kvp => BuildOutputMessage(kvp.Value, inputs));
 
+            // Emit under both the legacy inputSlots/outputSlots keys (consumed by the deployed
+            // touchpanel app) and inputs/outputs (newer react-core), same enriched slot data.
             var content = JToken.FromObject(new
             {
                 inputs,
-                outputs
+                outputs,
+                inputSlots = inputs,
+                outputSlots = outputs
             });
 
             PostStatusMessage(content, MessagePath, id);
