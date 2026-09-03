@@ -18,6 +18,7 @@
     [
       "@semantic-release/exec",
       {
+        "verifyConditionsCmd": "git fetch origin '+refs/notes/*:refs/notes/*'",
         "verifyReleaseCmd": "echo \"newVersion=true\" >> $GITHUB_OUTPUT",
         "publishCmd": "echo \"version=${nextRelease.version}\" >> $GITHUB_OUTPUT && echo \"tag=${nextRelease.gitTag}\" >> $GITHUB_OUTPUT && echo \"type=${nextRelease.type}\" >> $GITHUB_OUTPUT && echo \"channel=${nextRelease.channel}\" >> $GITHUB_OUTPUT"
       }
