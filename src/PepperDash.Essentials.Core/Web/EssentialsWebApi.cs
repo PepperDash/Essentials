@@ -200,6 +200,11 @@ public class EssentialsWebApi : EssentialsDevice
                 Name = "Routing Feedback WebSocket Session",
                 RouteHandler = new RoutingFeedbackSessionRequestHandler()
             },
+            new HttpCwsRoute("routingCommand")
+            {
+                Name = "Execute Routing Command",
+                RouteHandler = new RoutingCommandRequestHandler()
+            },
             new HttpCwsRoute("initializationExceptions")
             {
                 Name = "Get Initialization Exceptions",

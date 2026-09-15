@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Routing;
@@ -147,9 +146,7 @@ public static class Extensions
     /// </summary>        
     public static void ReleaseAndMakeRoute(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, string destinationPortKey = "", string sourcePortKey = "")
     {
-        // Remove this line before committing!!!!!
-        var frame = new StackFrame(1, true);
-        Debug.LogMessage(LogEventLevel.Information, "ReleaseAndMakeRoute Called from {method} with params {destinationKey}:{sourceKey}:{signalType}:{destinationPortKey}:{sourcePortKey}", frame.GetMethod().Name, destination.Key, source.Key, signalType.ToString(), destinationPortKey, sourcePortKey);
+        Debug.LogMessage(LogEventLevel.Debug, "ReleaseAndMakeRoute with params {destinationKey}:{sourceKey}:{signalType}:{destinationPortKey}:{sourcePortKey}", null, destination.Key, source.Key, signalType.ToString(), destinationPortKey, sourcePortKey);
 
         var inputPort = string.IsNullOrEmpty(destinationPortKey) ? null : destination.InputPorts.FirstOrDefault(p => p.Key == destinationPortKey);
         var outputPort = string.IsNullOrEmpty(sourcePortKey) ? null : source.OutputPorts.FirstOrDefault(p => p.Key == sourcePortKey);

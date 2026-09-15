@@ -9,6 +9,7 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 using WebSocketSharp;
 using WebSocketSharp.Server;
@@ -245,6 +246,7 @@ public class RoutingFeedbackWebsocket : IKeyed
         foreach (var device in sinkDevices)
         {
             device.InputChanged += HandleSinkInputChanged;
+            device.CurrentSourcesChanged += HandleSinkCurrentSourcesChanged;
         }
 
         var layoutDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithLayoutState>();
@@ -266,6 +268,7 @@ public class RoutingFeedbackWebsocket : IKeyed
         foreach (var device in sinkDevices)
         {
             device.InputChanged -= HandleSinkInputChanged;
+            device.CurrentSourcesChanged -= HandleSinkCurrentSourcesChanged;
         }
 
         var layoutDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithLayoutState>();
@@ -319,6 +322,31 @@ public class RoutingFeedbackWebsocket : IKeyed
     }
 
     private void HandleSinkInputChanged(IRoutingSinkWithFeedback sender, RoutingInputPort currentInputPort)
+    {
+        EmitSinkInputChanged(sender, currentInputPort);
+    }
+
+    /// <summary>
+    /// Mirrors a sink's current-source bookkeeping out to clients.
+    /// </summary>
+    /// <remarks>
+    /// Clearing a route calls <c>SetCurrentSource(..., null)</c> but never <c>ExecuteSwitch</c> on the
+    /// destination itself (<c>RouteDescriptor.ReleaseRoutes</c> only tears down midpoints), so
+    /// <c>InputChanged</c> never fires and a cleared sink's edge would stay drawn until the client
+    /// reloaded. Subscribing here also gives live feedback for routes made through device-specific
+    /// bulk APIs, which set the current source without switching an input port.
+    ///
+    /// Both this and <c>InputChanged</c> share the per-sink debounce key, so a normal route that
+    /// raises both events still broadcasts once, and the broadcast reads the sink's state at fire
+    /// time rather than whatever it was when the first event arrived.
+    /// </remarks>
+    private void HandleSinkCurrentSourcesChanged(object sender, CurrentSourcesChangedEventArgs e)
+    {
+        if (sender is IRoutingSinkWithFeedback sink)
+            EmitSinkInputChanged(sink, sink.CurrentInputPort);
+    }
+
+    private void EmitSinkInputChanged(IRoutingSinkWithFeedback sender, RoutingInputPort currentInputPort)
     {
         // Tile-sink children are reported under their IRoutingSinkWithLayouts parent's key, with a
         // qualified port key, so clients see this as an input change on the parent's node rather than
