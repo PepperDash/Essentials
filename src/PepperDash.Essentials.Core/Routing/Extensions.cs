@@ -409,20 +409,27 @@ public static class Extensions
 
             Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
 
-            audioOrSingleRoute.ExecuteRoutes();
+            // Either half may legitimately be null: GetRouteToSource splits an AudioVideo request
+            // into independent audio and video searches and returns whichever succeeded, so a
+            // video-only source asked for AudioVideo yields (null, videoRoute). Without the
+            // null-conditional here that threw, and the catch below swallowed it - so the video
+            // half never executed and the route silently did nothing.
+            audioOrSingleRoute?.ExecuteRoutes();
             videoRoute?.ExecuteRoutes();
 
-            // Update ICurrentSources on the destination if it implements the interface
+            // Update ICurrentSources on the destination if it implements the interface.
+            // Only record the halves that actually routed - claiming an audio source that has no
+            // audio path would misreport what the destination is receiving.
             if (request.Destination is ICurrentSources currentSourcesDevice && request.Source is IRoutingSource routingSource)
             {
-                if (request.SignalType.HasFlag(eRoutingSignalType.Audio) || request.SignalType.HasFlag(eRoutingSignalType.AudioVideo))
+                if (audioOrSingleRoute != null)
                 {
-                    currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Audio, routingSource);
+                    currentSourcesDevice.SetCurrentSource(audioOrSingleRoute.SignalType, routingSource);
                 }
 
-                if (request.SignalType.HasFlag(eRoutingSignalType.Video) || request.SignalType.HasFlag(eRoutingSignalType.AudioVideo))
+                if (videoRoute != null)
                 {
-                    currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Video, routingSource);
+                    currentSourcesDevice.SetCurrentSource(videoRoute.SignalType, routingSource);
                 }
             }
         }
