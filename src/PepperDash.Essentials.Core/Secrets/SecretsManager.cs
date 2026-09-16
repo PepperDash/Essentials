@@ -7,8 +7,14 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core;
 
+/// <summary>
+/// Manages secret providers and their associated secrets. Provides methods to initialize, add, retrieve, and manage secret providers.
+/// </summary>
 public static class SecretsManager
 {
+    /// <summary>
+    /// The collection of secret providers, keyed by their unique identifier.
+    /// </summary>
     public static Dictionary<string, ISecretProvider> Secrets { get; private set; }
 
     /// <summary>
@@ -71,6 +77,10 @@ public static class SecretsManager
         return secret;
     }
 
+    /// <summary>
+    /// Gets information about a specific secrets provider.
+    /// </summary>
+    /// <param name="cmd"></param>
     public static void GetProviderInfo(string cmd)
     {
         string response;
