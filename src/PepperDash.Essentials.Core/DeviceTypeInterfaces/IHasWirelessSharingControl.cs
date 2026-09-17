@@ -5,12 +5,15 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
 /// system, rather than only by whoever is sharing.
 /// </summary>
 /// <remarks>
-/// Extends <see cref="IHasWirelessSharing"/> rather than adding to it, so that endpoints which can
-/// only report sharing state continue to compile. The case this exists for is a room shutting
-/// down: a shared laptop outlives the session that shared it, and nothing about powering a room
-/// off disconnects it, so the next person in finds the last person's desktop still on the display.
+/// <para>Deliberately independent of <see cref="IHasWirelessSharing"/>. Ending a session and
+/// reporting whether one is active are different capabilities, and a real endpoint may have
+/// either without the other — some accept a reset command while exposing no session state at all.
+/// An endpoint that does both implements both.</para>
+/// <para>The case this exists for is a room shutting down: a shared laptop outlives the session
+/// that shared it, and nothing about powering a room off disconnects it, so the next person in
+/// finds the previous one's desktop still on the display.</para>
 /// </remarks>
-public interface IHasWirelessSharingControl : IHasWirelessSharing
+public interface IHasWirelessSharingControl
 {
     /// <summary>
     /// Disconnects whoever is currently sharing.
