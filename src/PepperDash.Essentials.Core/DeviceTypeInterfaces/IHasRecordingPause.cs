@@ -5,11 +5,16 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
 /// recording.
 /// </summary>
 /// <remarks>
-/// Separate from <see cref="IHasRecordingControl"/> because not every recorder can do this, and
-/// some expose the methods while throwing when they are called. Declaring the capability is how a
-/// consumer knows the difference in advance, rather than at the moment someone presses the button.
+/// <para>Independent of <see cref="IHasRecordingControl"/>, not derived from it. Pausing and
+/// starting are separate capabilities and real devices have them separately: one recorder in hand
+/// can pause a recording another device started, but its own start command force-begins the next
+/// booking, which is never what a user pressing Record means. Deriving would have obliged it to
+/// offer a start it should not.</para>
+/// <para>The same split guards the other direction: a recorder may expose pause methods and throw
+/// when they are called. Declaring the capability is how a consumer knows in advance rather than
+/// at the moment someone presses the button.</para>
 /// </remarks>
-public interface IHasRecordingPause : IHasRecordingControl
+public interface IHasRecordingPause
 {
     /// <summary>
     /// Suspends capture, leaving the recording open.

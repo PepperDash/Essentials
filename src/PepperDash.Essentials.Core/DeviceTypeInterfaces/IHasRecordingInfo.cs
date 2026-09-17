@@ -7,11 +7,12 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces;
 /// it is set to run.
 /// </summary>
 /// <remarks>
-/// Separate from <see cref="IHasRecordingControl"/> because a recorder may be able to start and
-/// stop while knowing nothing about what it is capturing — a second recorder kept as a backup, for
-/// instance, which records to its own storage and has no name for the result.
+/// Independent of <see cref="IHasRecordingControl"/>, not derived from it, because the two occur
+/// separately in both directions: a recorder kept as a backup can start and stop while knowing
+/// nothing about what it is capturing, and a device may describe a recording it is not the one
+/// controlling.
 /// </remarks>
-public interface IHasRecordingInfo : IHasRecordingControl
+public interface IHasRecordingInfo
 {
     /// <summary>
     /// What the current recording is called, or empty when nothing is recording.
