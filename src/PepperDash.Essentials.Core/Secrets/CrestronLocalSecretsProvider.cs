@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronDataStore;
 using PepperDash.Core;
@@ -8,11 +8,17 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core;
 
-public class CrestronLocalSecretsProvider : ISecretProvider
+/// <summary>
+/// Stores secrets in the Crestron Data Store's local (per-program-slot) space.
+/// </summary>
+public class CrestronLocalSecretsProvider : ISecretProvider, IEnumerableSecretProvider
 {
     public string Key { get; set; }
     //Added for reference
     public string Description { get; private set; }
+
+    /// <inheritdoc />
+    public SecretStoreScope Scope => SecretStoreScope.Local;
 
 
     public CrestronLocalSecretsProvider(string key)
@@ -38,6 +44,10 @@ public class CrestronLocalSecretsProvider : ISecretProvider
     /// </summary>
     /// <param name="key">Secret Key</param>
     /// <param name="value">Secret Value</param>
+    /// <remarks>
+    /// The secret value must never be logged. Anything written here reaches the processor's error
+    /// log, which is routinely copied into tickets and support threads.
+    /// </remarks>
     public bool SetSecret(string key, object value)
     {
         var secret = value as string;
@@ -48,23 +58,24 @@ public class CrestronLocalSecretsProvider : ISecretProvider
             returnCode = CrestronDataStoreStatic.clearLocal(key);
             if (returnCode == CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
             {
-                Debug.LogMessage(LogEventLevel.Information, this, "Successfully removed secret \"{0}\"", secret);
+                Debug.LogMessage(LogEventLevel.Information, this, "Removed secret {0}:{1}", Key, key);
                 return true;
             }
         }
 
-        else  
+        else
         {
             returnCode = CrestronDataStoreStatic.SetLocalStringValue(key, secret);
             if (returnCode == CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
             {
-                Debug.LogMessage(LogEventLevel.Information, this, "Successfully set secret \"{0}\"", secret);
+                // Length only - useful for diagnosing a truncated or empty write, and not the value.
+                Debug.LogMessage(LogEventLevel.Information, this, "Set secret {0}:{1} ({2} characters)", Key, key, secret.Length);
                 return true;
             }
         }
 
         Debug.LogMessage(LogEventLevel.Information, this, "Unable to set secret for {0}:{1} - {2}", Key, key, returnCode.ToString());
-        return false; 
+        return false;
     }
 
     /// <summary>
@@ -98,5 +109,54 @@ public class CrestronLocalSecretsProvider : ISecretProvider
     {
         string mySecret;
         return CrestronDataStoreStatic.GetLocalStringValue(key, out mySecret) == CrestronDataStore.CDS_ERROR.CDS_SUCCESS;
+    }
+
+    /// <inheritdoc />
+    public SecretStoreEnumeration EnumerateKeys()
+        => CrestronDataStoreEnumerator.Enumerate(SecretStoreScope.Local);
+
+    /// <inheritdoc />
+    public SecretStoreResult WriteSecret(string key, string value)
+    {
+        var guard = SecretProviderGuards.ValidateWrite(key, value);
+        if (guard != null)
+            return guard;
+
+        var returnCode = CrestronDataStoreStatic.SetLocalStringValue(key, value);
+        if (returnCode == CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+        {
+            Debug.LogMessage(LogEventLevel.Information, this, "Set secret {0}:{1} ({2} characters)", Key, key, value.Length);
+            return SecretStoreResult.Ok();
+        }
+
+        return SecretProviderGuards.FromCdsError(returnCode, Key, key);
+    }
+
+    /// <inheritdoc />
+    public SecretStoreResult DeleteSecret(string key)
+    {
+        // Present-only: the key came from the store, so its length and character set are already
+        // settled. Rejecting it here would make an existing record impossible to remove.
+        var guard = SecretProviderGuards.ValidateKeyPresent(key);
+        if (guard != null)
+            return guard;
+
+        var returnCode = CrestronDataStoreStatic.clearLocal(key);
+        if (returnCode == CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+        {
+            Debug.LogMessage(LogEventLevel.Information, this, "Removed secret {0}:{1}", Key, key);
+            return SecretStoreResult.Ok();
+        }
+
+        return SecretProviderGuards.FromCdsError(returnCode, Key, key);
+    }
+
+    /// <inheritdoc />
+    public int GetSecretLength(string key)
+    {
+        string value;
+        return CrestronDataStoreStatic.GetLocalStringValue(key, out value) == CrestronDataStore.CDS_ERROR.CDS_SUCCESS
+            ? value?.Length ?? 0
+            : -1;
     }
 }

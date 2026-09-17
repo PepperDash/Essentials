@@ -205,6 +205,32 @@ public class EssentialsWebApi : EssentialsDevice
                 Name = "Execute Routing Command",
                 RouteHandler = new RoutingCommandRequestHandler()
             },
+            // Specific paths before the general one, so "secrets" cannot shadow its children.
+            new HttpCwsRoute("secrets/providers")
+            {
+                Name = "Get Secret Providers",
+                RouteHandler = new SecretsProvidersRequestHandler()
+            },
+            new HttpCwsRoute("secrets/command")
+            {
+                Name = "Execute Secrets Command",
+                RouteHandler = new SecretsCommandRequestHandler()
+            },
+            new HttpCwsRoute("secrets/bulk")
+            {
+                Name = "Apply Secrets In Bulk",
+                RouteHandler = new SecretsBulkRequestHandler()
+            },
+            new HttpCwsRoute("secrets/template")
+            {
+                Name = "Get Secrets Template",
+                RouteHandler = new SecretsTemplateRequestHandler()
+            },
+            new HttpCwsRoute("secrets")
+            {
+                Name = "List Secrets",
+                RouteHandler = new SecretsListRequestHandler()
+            },
             new HttpCwsRoute("initializationExceptions")
             {
                 Name = "Get Initialization Exceptions",

@@ -643,8 +643,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 {
                     Debug.LogMessage(LogEventLevel.Information, "Secret successfully retrieved", this);
 
-                    Debug.LogMessage(LogEventLevel.Debug, "Secret: {0}", this, secret.Value.ToString());
-
+                    // The secret document holds the server grant code and every paired touchpanel
+                    // token, so it must never be logged. The line above already records success.
 
                     // populate the local secrets object
                     _secret = JsonConvert.DeserializeObject<ServerTokenSecrets>(secret.Value.ToString());
