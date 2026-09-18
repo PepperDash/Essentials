@@ -293,12 +293,20 @@ namespace PepperDash.Essentials.WebSocketServer
                 if (_parent.Config.DirectServer.Secure)
                 {
                     this.LogInformation("Adding SSL Configuration to server");
-                    _server.SslConfiguration = new ServerSslConfiguration(new X509Certificate2($"\\user\\{certificateName}.pfx", certificatePassword))
-                    {
-                        ClientCertificateRequired = false,
-                        CheckCertificateRevocation = false,
-                        EnabledSslProtocols = SslProtocols.Tls12
-                    };
+
+                    // Configure in place rather than assigning a new ServerSslConfiguration:
+                    // HttpServer.SslConfiguration is read-only in the websocket-sharp version
+                    // this branch builds against. Reading it is only valid because the server
+                    // above was constructed secure - it throws otherwise.
+                    // Forward slashes: 4-Series is Linux, and the certificate is handed to
+                    // OpenSSL, which does not translate a Windows-style path. The backslash
+                    // form fails with "error:10000080:BIO routines::no such file" and takes
+                    // the whole direct server down with it.
+                    _server.SslConfiguration.ServerCertificate =
+                        new X509Certificate2($"/user/{certificateName}.pfx", certificatePassword);
+                    _server.SslConfiguration.ClientCertificateRequired = false;
+                    _server.SslConfiguration.CheckCertificateRevocation = false;
+                    _server.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
                 }
 
                 _server.Log.Output = (data, message) => Utilities.ConvertWebsocketLog(data, message, this);
