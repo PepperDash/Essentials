@@ -1037,6 +1037,18 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
         /// <summary>
+        /// Adds headers to a response telling the client not to cache it. Some panel browsers hold on to
+        /// a cached copy of the app and never re-request it, which leaves them running a stale build.
+        /// </summary>
+        /// <param name="res">The response to add the headers to</param>
+        private static void AddNoCacheHeaders(HttpListenerResponse res)
+        {
+            res.AddHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            res.AddHeader("Pragma", "no-cache");
+            res.AddHeader("Expires", "0");
+        }
+
+        /// <summary>
         /// Handler for GET requests to server
         /// </summary>
         /// <param name="sender"></param>
@@ -1050,6 +1062,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 res.ContentEncoding = Encoding.UTF8;
 
                 res.AddHeader("Access-Control-Allow-Origin", "*");
+
+                AddNoCacheHeaders(res);
 
                 var path = req.RawUrl;
 
@@ -1097,6 +1111,8 @@ namespace PepperDash.Essentials.WebSocketServer
 
                 res.AddHeader("Access-Control-Allow-Origin", "*");
 
+                AddNoCacheHeaders(res);
+
                 var path = req.RawUrl;
                 var ip = req.RemoteEndPoint.Address.ToString();
 
@@ -1142,6 +1158,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 res.AddHeader("Access-Control-Allow-Origin", "*");
                 res.AddHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
                 res.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, remember-me");
+
+                AddNoCacheHeaders(res);
 
                 res.StatusCode = 200;
                 res.Close();
