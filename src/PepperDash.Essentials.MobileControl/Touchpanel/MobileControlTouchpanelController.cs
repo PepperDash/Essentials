@@ -30,6 +30,8 @@ namespace PepperDash.Essentials.Touchpanel
         private readonly MobileControlTouchpanelProperties localConfig;
         private IMobileControlRoomMessenger _bridge;
 
+        private const string CacheBusterParamName = "cb";
+
         private string _appUrl;
 
         /// <summary>
@@ -461,19 +463,17 @@ namespace PepperDash.Essentials.Touchpanel
 
         private void SendUrlToPanel()
         {
-            var appUrl = GetUrlWithCorrectIp(_appUrl);
+            // Mint a fresh cache buster on every send. Some panels hold on to a cached copy of the app
+            // and won't re-download it unless the URL they're handed is different from the last one.
+            var appUrl = GetUrlWithCacheBuster(GetUrlWithCorrectIp(_appUrl));
 
-            this.LogInformation("Sending {appUrl} on join 1", AppUrlFeedback.StringValue);
+            this.LogInformation("Sending {appUrl} on join 1", appUrl);
 
-            if (Panel.StringInput[1].StringValue == appUrl)
-            {
-                this.LogInformation("App URL already set to {appUrl}, no update needed", AppUrlFeedback.StringValue);
-                return;
-            }
+            _appUrl = appUrl;
 
             Panel.StringInput[1].StringValue = appUrl;
 
-            SetAppUrl(appUrl);
+            AppUrlFeedback.FireUpdate();
         }
 
         private void Panel_IpInformationChange(GenericBase sender, ConnectedIpEventArgs args)
@@ -534,6 +534,32 @@ namespace PepperDash.Essentials.Touchpanel
             return updatedUrl;
         }
 
+        /// <summary>
+        /// Appends a unique cache busting query parameter to the URL so the panel's browser treats it as
+        /// a new address and re-downloads the app instead of serving whatever it has cached.
+        /// </summary>
+        /// <param name="url">The URL to add the cache buster to</param>
+        /// <returns>The URL with a freshly generated cache busting parameter</returns>
+        private string GetUrlWithCacheBuster(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return url;
+            }
+
+            // drop any cache buster left over from a previous send so they don't accumulate.
+            // the leading '?' or '&' is kept so the rest of the query string stays intact
+            var cleanUrl = Regex.Replace(url, $@"([?&]){CacheBusterParamName}=[^&]*&?", "$1").TrimEnd('?', '&');
+
+            var separator = cleanUrl.Contains("?") ? "&" : "?";
+
+            var bustedUrl = $"{cleanUrl}{separator}{CacheBusterParamName}={Guid.NewGuid():N}";
+
+            this.LogVerbose("URL with cache buster: {bustedUrl}", bustedUrl);
+
+            return bustedUrl;
+        }
+
         private void SubscribeForMobileControlUpdates()
         {
             foreach (var dev in DeviceManager.AllDevices)
@@ -583,7 +609,7 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public void SetAppUrl(string url)
         {
-            _appUrl = GetUrlWithCorrectIp(url);
+            _appUrl = GetUrlWithCacheBuster(GetUrlWithCorrectIp(url));
 
             AppUrlFeedback.FireUpdate();
         }
