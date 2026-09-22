@@ -200,6 +200,37 @@ public class EssentialsWebApi : EssentialsDevice
                 Name = "Routing Feedback WebSocket Session",
                 RouteHandler = new RoutingFeedbackSessionRequestHandler()
             },
+            new HttpCwsRoute("routingCommand")
+            {
+                Name = "Execute Routing Command",
+                RouteHandler = new RoutingCommandRequestHandler()
+            },
+            // Specific paths before the general one, so "secrets" cannot shadow its children.
+            new HttpCwsRoute("secrets/providers")
+            {
+                Name = "Get Secret Providers",
+                RouteHandler = new SecretsProvidersRequestHandler()
+            },
+            new HttpCwsRoute("secrets/command")
+            {
+                Name = "Execute Secrets Command",
+                RouteHandler = new SecretsCommandRequestHandler()
+            },
+            new HttpCwsRoute("secrets/bulk")
+            {
+                Name = "Apply Secrets In Bulk",
+                RouteHandler = new SecretsBulkRequestHandler()
+            },
+            new HttpCwsRoute("secrets/template")
+            {
+                Name = "Get Secrets Template",
+                RouteHandler = new SecretsTemplateRequestHandler()
+            },
+            new HttpCwsRoute("secrets")
+            {
+                Name = "List Secrets",
+                RouteHandler = new SecretsListRequestHandler()
+            },
             new HttpCwsRoute("initializationExceptions")
             {
                 Name = "Get Initialization Exceptions",
@@ -241,6 +272,9 @@ public class EssentialsWebApi : EssentialsDevice
             Name = "GetPaths",
             RouteHandler = new GetRoutesHandler(_server.GetRouteCollection(), BasePath)
         });
+
+        CrestronConsole.AddNewConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(GetDebugAppUrl()),
+            "debugappurl", "Prints the URL for the Developer Tools Web App", ConsoleAccessLevelEnum.AccessOperator);
 
         // If running on an appliance
         if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
@@ -310,20 +344,30 @@ public class EssentialsWebApi : EssentialsDevice
             Debug.LogMessage(LogEventLevel.Information, this, "{routeName:l}: {routePath:l}/{routeUrl:l}", route.Name, path, route.Url);
         }
 
-        var debugPath = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
-            ? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws/debug"
-            : $"https://{currentIp}/cws/debug";
-        Debug.LogMessage(LogEventLevel.Information, this, "Debug App: {debugPath:l}", debugPath);
+        var debugAppUrl = GetDebugAppUrl();
+        Debug.LogMessage(LogEventLevel.Information, this, "Debug App: {debugPath:l}", debugAppUrl);
 
         Debug.LogInformation(this, "Web API initialized and ready to accept requests");
 
         Debug.LogMessage(LogEventLevel.Information, this, new string('-', 50));
 
-        var debugAppUrl = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
-? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws/debug"
-: $"https://{currentIp}/cws/debug";
-
         Debug.LogMessage(LogEventLevel.Information, this, "Developer Tools Web App available at: {debugAppUrl:l}", debugAppUrl);
+    }
+
+    /// <summary>
+    /// Builds the URL for the Developer Tools Web App based on the current platform and network settings
+    /// </summary>
+    private string GetDebugAppUrl()
+    {
+        var currentIp = CrestronEthernetHelper.GetEthernetParameter(
+            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
+
+        var hostname = CrestronEthernetHelper.GetEthernetParameter(
+            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
+
+        return CrestronEnvironment.DevicePlatform == eDevicePlatform.Server
+            ? $"https://{hostname}/VirtualControl/Rooms/{InitialParametersClass.RoomId}/cws/debug"
+            : $"https://{currentIp}/cws/debug";
     }
 }
 
