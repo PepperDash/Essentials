@@ -42,5 +42,10 @@ public class PresetListItem : AudioControlListItemBase
 
             else return Preset.Name;
         }
+        // Computed, but not get-only: with [JsonExtensionData] on this type, Newtonsoft treats an
+        // unwritable member as unmatched and diverts the incoming value into CustomProperties,
+        // which then re-serializes as a duplicate JSON key. The no-op setter keeps this a known
+        // member so the config value is read and discarded, as it was before.
+        private set { }
     }
 }
