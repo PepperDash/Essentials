@@ -463,9 +463,15 @@ namespace PepperDash.Essentials.Touchpanel
 
         private void SendUrlToPanel()
         {
-            // Mint a fresh cache buster on every send. Some panels hold on to a cached copy of the app
-            // and won't re-download it unless the URL they're handed is different from the last one.
+            // With ForceAppRefresh the URL carries a fresh cache buster each call, so it always differs and the
+            // panel reloads; without it the URL is stable and this skips redundant reloads.
             var appUrl = GetUrlWithCacheBuster(GetUrlWithCorrectIp(_appUrl));
+
+            if (Panel.StringInput[1].StringValue == appUrl)
+            {
+                this.LogVerbose("App URL unchanged, no update needed");
+                return;
+            }
 
             this.LogInformation("Sending {appUrl} on join 1", appUrl);
 
@@ -543,6 +549,13 @@ namespace PepperDash.Essentials.Touchpanel
         private string GetUrlWithCacheBuster(string url)
         {
             if (string.IsNullOrEmpty(url))
+            {
+                return url;
+            }
+
+            // Only force a re-download on panels that aggressively cache the app (DGE / CH5). For everyone else
+            // (e.g. Cisco Navigator) skip the buster so their browser reuses the cached bundle across reloads.
+            if (!localConfig.ForceAppRefresh)
             {
                 return url;
             }

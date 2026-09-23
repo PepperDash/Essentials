@@ -1413,6 +1413,17 @@ namespace PepperDash.Essentials.WebSocketServer
             }
 
             res.ContentLength64 = contents.LongLength;
+            // Content-hashed build assets (Vite emits them under /assets/ with a hash in the name) are safe to
+            // cache long-term: a new build changes the filename, so a stale copy can't be served. Overriding the
+            // blanket no-cache headers here keeps real-browser panels (e.g. Cisco Navigator) from re-downloading
+            // the whole bundle on every reload, while index.html and API responses stay no-cache.
+            if (path.Contains("/assets/"))
+            {
+                res.Headers.Remove("Pragma");
+                res.Headers.Remove("Expires");
+                res.Headers.Set("Cache-Control", "public, max-age=31536000, immutable");
+            }
+
             res.Close(contents, true);
         }
 

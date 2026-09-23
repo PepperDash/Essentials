@@ -17,6 +17,15 @@ namespace PepperDash.Essentials.Touchpanel
 
 
         /// <summary>
+        /// When true, appends a unique cache-buster to the app URL on every send so the panel is forced to
+        /// re-download the app. Only needed for panels whose browser aggressively caches the app (e.g. DGE / CH5);
+        /// leave false for normal browser panels (e.g. Cisco Navigator) so they can reuse the cached bundle.
+        /// </summary>
+        [JsonProperty("forceAppRefresh")]
+        public bool ForceAppRefresh { get; set; } = false;
+
+
+        /// <summary>
         /// Gets or sets the ZoomRoomController
         /// </summary>
         [JsonProperty("zoomRoomController")]
