@@ -92,19 +92,48 @@ namespace PepperDash.Essentials.Core
             {
                 Debug.LogVerbose("ExecuteRoutes: {0}", route.ToString());
 
+                var inputSelector = route.InputPort?.Selector ?? route.InputPort?.Key;
+
                 if (route.SwitchingDevice is IRoutingSinkWithSwitching sink)
                 {
-                    sink.ExecuteSwitch(route.InputPort.Selector);
+                    try
+                    {
+                        sink.ExecuteSwitch(inputSelector);
+                    }
+                    catch (Exception)
+                    {
+                        // Some devices expose null/unsupported selectors but can switch by port key.
+                        if (route.InputPort?.Key != null && !Equals(inputSelector, route.InputPort.Key))
+                        {
+                            sink.ExecuteSwitch(route.InputPort.Key);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+
                     continue;
                 }
 
                 if (route.SwitchingDevice is IRouting switchingDevice)
                 {
-                    switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
+                    // Some sink-style routing devices can produce route descriptors without an explicit output port.
+                    if (route.OutputPort == null)
+                    {
+                        switchingDevice.ExecuteSwitch(inputSelector, null, SignalType);
+                        continue;
+                    }
 
-                    route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
+                    var outputSelector = route.OutputPort.Selector ?? route.OutputPort.Key;
+                    switchingDevice.ExecuteSwitch(inputSelector, outputSelector, SignalType);
 
-                    Debug.LogVerbose("Output port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+                    route.OutputPort.InUseTracker?.AddUser(Destination, "destination-" + SignalType);
+
+                    if (route.OutputPort.InUseTracker != null)
+                    {
+                        Debug.LogVerbose("Output port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+                    }
                 }
             }
         }
@@ -125,7 +154,7 @@ namespace PepperDash.Essentials.Core
                     {
                         try
                         {
-                            switchingDevice.ExecuteSwitch(null, route.OutputPort.Selector, SignalType);
+                            switchingDevice.ExecuteSwitch(null, route.OutputPort?.Selector, SignalType);
                         }
                         catch (Exception e)
                         {
