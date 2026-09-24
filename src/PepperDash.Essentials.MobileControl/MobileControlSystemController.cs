@@ -1217,7 +1217,59 @@ namespace PepperDash.Essentials
             EventArgs eventArgs
         )
         {
-            SendMessageObject(new MobileControlMessage { Type = "/system/roomCombinationChanged" });
+            // Only notify clients whose room actually participates in the combiner. Broadcasting to
+            // every client reloads panels that aren't part of the combine (e.g. a control-room DGE),
+            // stranding them on a disconnected app shell.
+            var memberRoomKeys = _roomCombiner?.Rooms?
+                .Select(r => r.Key)
+                .Where(k => !string.IsNullOrEmpty(k))
+                .ToList();
+
+            if (memberRoomKeys == null || memberRoomKeys.Count == 0)
+            {
+                // Membership unknown - fall back to previous broadcast behavior.
+                SendMessageObject(new MobileControlMessage { Type = "/system/roomCombinationChanged" });
+                return;
+            }
+
+            // API server path has no per-client room mapping here, so keep broadcasting to it.
+            if (Config.EnableApiServer)
+            {
+                _transmitToServerQueue.Enqueue(
+                    new TransmitMessage(
+                        new MobileControlMessage { Type = "/system/roomCombinationChanged" },
+                        _wsClient2
+                    )
+                );
+            }
+
+            if (
+                Config.DirectServer != null
+                && Config.DirectServer.EnableDirectServer
+                && _directServer != null
+            )
+            {
+                foreach (var client in _directServer.UiClients)
+                {
+                    var roomKey = client.Value?.RoomKey;
+
+                    if (string.IsNullOrEmpty(roomKey) || !memberRoomKeys.Contains(roomKey))
+                    {
+                        continue;
+                    }
+
+                    _transmitToClientsQueue.Enqueue(
+                        new MessageToClients(
+                            new MobileControlMessage
+                            {
+                                Type = "/system/roomCombinationChanged",
+                                ClientId = client.Key
+                            },
+                            _directServer
+                        )
+                    );
+                }
+            }
         }
 
         /// <summary>
