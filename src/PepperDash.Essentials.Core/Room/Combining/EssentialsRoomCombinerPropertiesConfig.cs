@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core
     {
         /// <summary>
         /// Gets or sets a value indicating whether the system operates in automatic mode.
-        /// <remarks>Some systems don't have partitions sensors, and show shouldn't allow auto mode to be turned on. When this is true in the configuration, 
+        /// <remarks>Some systems don't have partitions sensors, and shouldn't allow auto mode to be turned on. When this is true in the configuration, 
         /// auto mode won't be allowed to be turned on.</remarks>
         /// </summary>
         [JsonProperty("disableAutoMode")]
@@ -54,6 +54,13 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("scenarioChangeDebounceTimeSeconds")]
         public int ScenarioChangeDebounceTimeSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timeout, in seconds, for room combination operations.
+        /// When null or less than or equal to zero, the default timeout is used.
+        /// </summary>
+        [JsonProperty("combinationOperationTimeoutSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        public int? CombinationOperationTimeoutSeconds { get; set; }
     }
 
     /// <summary>

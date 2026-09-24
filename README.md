@@ -54,6 +54,38 @@ Utilization of Essentials Framework falls into the following categories:
 
 For detailed documentation, see the [Wiki](https://github.com/PepperDash/EssentialsFramework/wiki).
 
+## Room Combiner Operation Lifecycle
+
+Essentials room combiner now exposes an operation lifecycle that clients can use to show progress and terminal status during scenario changes.
+
+Lifecycle states:
+- Idle
+- InProgress
+- Completed
+- Failed
+- TimedOut
+
+The lifecycle is exposed on room combiners that implement the operation-status extension and is included in app server combiner messages under the combinationOperation payload.
+
+Configuration:
+- combinationOperationTimeoutSeconds (optional): timeout in seconds for an in-progress operation.
+- Default when omitted: 300 seconds.
+- Values less than or equal to 0 are treated as invalid and fall back to the default.
+
+Example room combiner properties:
+
+```json
+{
+	"defaultToManualMode": false,
+	"defaultScenarioKey": "divided",
+	"combinationOperationTimeoutSeconds": 30,
+	"roomKeys": ["roomA", "roomB"]
+}
+```
+
+Operational note:
+- When an operation reaches a terminal state (Completed, Failed, TimedOut), the operation timeout timer is stopped.
+
 ## Support
 
 * Check out our [Discord Server](https://discord.gg/rWyeRH3K)
