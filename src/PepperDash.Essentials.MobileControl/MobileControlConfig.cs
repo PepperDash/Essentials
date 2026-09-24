@@ -212,6 +212,12 @@ namespace PepperDash.Essentials
         /// </summary>
         [JsonProperty("partnerMetadata", NullValueHandling = NullValueHandling.Ignore)]
         public List<MobileControlPartnerMetadata> PartnerMetadata { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lockout message overrides, keyed by touchpanel key
+        /// </summary>
+        [JsonProperty("lockoutMessagesByTouchpanel", NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, MobileControlLockoutMessageOverride> LockoutMessagesByTouchpanel { get; set; }
     }
 
     /// <summary>
@@ -236,6 +242,24 @@ namespace PepperDash.Essentials
         /// </summary>
         [JsonProperty("logoPath")]
         public string LogoPath { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a lockout message override for a single touchpanel key
+    /// </summary>
+    public class MobileControlLockoutMessageOverride
+    {
+        /// <summary>
+        /// Gets or sets the Title
+        /// </summary>
+        [JsonProperty("title", NullValueHandling = NullValueHandling.Ignore)]
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Message
+        /// </summary>
+        [JsonProperty("message", NullValueHandling = NullValueHandling.Ignore)]
+        public string Message { get; set; }
     }
 
     /// <summary>

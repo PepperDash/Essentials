@@ -86,6 +86,63 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
+    /// Optional extension for room combiners that provide operation lifecycle status.
+    /// </summary>
+    public interface IEssentialsRoomCombinerWithOperationStatus : IEssentialsRoomCombiner
+    {
+        /// <summary>
+        /// Indicates that the room combination operation status has changed.
+        /// </summary>
+        event EventHandler<EventArgs> CombinationOperationStatusChanged;
+
+        /// <summary>
+        /// Gets the current room combination operation status.
+        /// </summary>
+        [JsonProperty("combinationOperation")]
+        CombinationOperationStatus CombinationOperation { get; }
+    }
+
+    /// <summary>
+    /// Defines lifecycle states for a room combination operation.
+    /// </summary>
+    public enum CombinationOperationState
+    {
+        Idle,
+        InProgress,
+        Completed,
+        Failed,
+        TimedOut
+    }
+
+    /// <summary>
+    /// Represents room combination operation status details.
+    /// </summary>
+    public class CombinationOperationStatus
+    {
+        [JsonProperty("operationId", NullValueHandling = NullValueHandling.Ignore)]
+        public string OperationId { get; set; }
+
+        [JsonProperty("scenarioKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string ScenarioKey { get; set; }
+
+        [JsonProperty("startedUtc", NullValueHandling = NullValueHandling.Ignore)]
+        public string StartedUtc { get; set; }
+
+        [JsonProperty("state")]
+        public CombinationOperationState State { get; set; }
+
+        [JsonProperty("message", NullValueHandling = NullValueHandling.Ignore)]
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Room keys whose UI assignment changes in this operation. Null/empty means clients should
+        /// treat all rooms as affected (backward compatible with clients that ignore this field).
+        /// </summary>
+        [JsonProperty("affectedRoomKeys", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> AffectedRoomKeys { get; set; }
+    }
+
+    /// <summary>
     /// Represents a scenario for combining rooms, including activation, deactivation, and associated state.
     /// </summary>
     /// <remarks>This interface defines the behavior for managing room combination scenarios, including
