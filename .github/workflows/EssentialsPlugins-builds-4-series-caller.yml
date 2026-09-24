@@ -6,9 +6,96 @@ on:
       - '**'
 
 jobs:
-  getVersion:
-    uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-getversion.yml@main
+  runTests:
+    uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-run-tests.yml@main
     secrets: inherit
+  getVersion:
+    runs-on: ubuntu-latest
+    needs: runTests
+    outputs:
+      newVersion: ${{ steps.get_version.outputs.newVersion }}
+      tag: ${{ steps.get_version.outputs.tag }}
+      version: ${{ steps.get_version.outputs.version }}
+      channel: ${{ steps.get_version.outputs.channel }}
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '22'
+    - name: Get branch name
+      id: get_branch
+      run: |
+        branch=${GITHUB_REF#refs/heads/}
+        echo "branch=$branch" >> $GITHUB_OUTPUT
+        echo "prerelease=${branch//\//-}" >> $GITHUB_OUTPUT
+      env:
+        GITHUB_REF: ${{ github.ref }}
+    # Only replace placeholders for feature branches — not for the pre-configured
+    # 'main', 'release', or 'development' branches. Running the replacement on
+    # those branches duplicates their branch entries in .releaserc.json, which
+    # prevents semantic-release from recognising existing prerelease tags (e.g.
+    # v3.0.0-rc.1) and causes it to always recompute the same version number.
+    - name: Replace branch name in .releaserc.json
+      if: |
+        steps.get_branch.outputs.branch != 'main' &&
+        steps.get_branch.outputs.branch != 'release' &&
+        steps.get_branch.outputs.branch != 'development'
+      uses: jacobtomlinson/gha-find-replace@v3
+      with:
+        find: 'replace-me-feature-branch'
+        replace: '${{ steps.get_branch.outputs.branch }}'
+        include: '.releaserc.json'
+    - name: Replace prerelease name in .releaserc.json
+      if: |
+        steps.get_branch.outputs.branch != 'main' &&
+        steps.get_branch.outputs.branch != 'release' &&
+        steps.get_branch.outputs.branch != 'development'
+      uses: jacobtomlinson/gha-find-replace@v3
+      with:
+        find: 'replace-me-prerelease'
+        replace: '${{ steps.get_branch.outputs.prerelease }}'
+        include: '.releaserc.json'
+    - name: Get version number
+      id: get_version
+      run: npx --package=semantic-release --package=@semantic-release/commit-analyzer --package=@semantic-release/release-notes-generator --package=@semantic-release/changelog --package=@semantic-release/exec --package=conventional-changelog-conventionalcommits -- semantic-release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Print summary if no new version
+      if: steps.get_version.outputs.newVersion != 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "# Summary" >> $GITHUB_STEP_SUMMARY
+        echo "No new version generated" >> $GITHUB_STEP_SUMMARY
+    - name: Upload release notes
+      if: steps.get_version.outputs.newVersion == 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: change-log
+        path: CHANGELOG.md
+    - name: Upload Release
+      id: create_release
+      if: steps.get_version.outputs.newVersion == 'true'
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        prerelease: ${{ steps.get_version.outputs.channel != '' }}
+        tag: ${{ steps.get_version.outputs.tag }}
+        commit: ${{ github.sha }}
+        bodyFile: ./CHANGELOG.md
+    - name: Print results
+      if: steps.get_version.outputs.newVersion == 'true'
+      run: |
+        echo "# Summary" >> $GITHUB_STEP_SUMMARY
+        echo "Version: ${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "Tag: ${{ steps.get_version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "New Version: ${{ steps.get_version.outputs.newVersion }}" >> $GITHUB_STEP_SUMMARY
+        echo "Channel: ${{ steps.get_version.outputs.channel }}" >> $GITHUB_STEP_SUMMARY
+        echo "Type: ${{ steps.get_version.outputs.type }}" >> $GITHUB_STEP_SUMMARY
   build-4Series:
     uses: PepperDash/workflow-templates/.github/workflows/essentialsplugins-4Series-builds.yml@main
     secrets: inherit
