@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Core.Routing;
@@ -147,9 +146,7 @@ public static class Extensions
     /// </summary>        
     public static void ReleaseAndMakeRoute(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType, string destinationPortKey = "", string sourcePortKey = "")
     {
-        // Remove this line before committing!!!!!
-        var frame = new StackFrame(1, true);
-        Debug.LogMessage(LogEventLevel.Information, "ReleaseAndMakeRoute Called from {method} with params {destinationKey}:{sourceKey}:{signalType}:{destinationPortKey}:{sourcePortKey}", frame.GetMethod().Name, destination.Key, source.Key, signalType.ToString(), destinationPortKey, sourcePortKey);
+        Debug.LogMessage(LogEventLevel.Debug, "ReleaseAndMakeRoute with params {destinationKey}:{sourceKey}:{signalType}:{destinationPortKey}:{sourcePortKey}", null, destination.Key, source.Key, signalType.ToString(), destinationPortKey, sourcePortKey);
 
         var inputPort = string.IsNullOrEmpty(destinationPortKey) ? null : destination.InputPorts.FirstOrDefault(p => p.Key == destinationPortKey);
         var outputPort = string.IsNullOrEmpty(sourcePortKey) ? null : source.OutputPorts.FirstOrDefault(p => p.Key == sourcePortKey);
@@ -412,20 +409,27 @@ public static class Extensions
 
             Debug.LogMessage(LogEventLevel.Verbose, "Executing full route", request.Destination);
 
-            audioOrSingleRoute.ExecuteRoutes();
+            // Either half may legitimately be null: GetRouteToSource splits an AudioVideo request
+            // into independent audio and video searches and returns whichever succeeded, so a
+            // video-only source asked for AudioVideo yields (null, videoRoute). Without the
+            // null-conditional here that threw, and the catch below swallowed it - so the video
+            // half never executed and the route silently did nothing.
+            audioOrSingleRoute?.ExecuteRoutes();
             videoRoute?.ExecuteRoutes();
 
-            // Update ICurrentSources on the destination if it implements the interface
+            // Update ICurrentSources on the destination if it implements the interface.
+            // Only record the halves that actually routed - claiming an audio source that has no
+            // audio path would misreport what the destination is receiving.
             if (request.Destination is ICurrentSources currentSourcesDevice && request.Source is IRoutingSource routingSource)
             {
-                if (request.SignalType.HasFlag(eRoutingSignalType.Audio) || request.SignalType.HasFlag(eRoutingSignalType.AudioVideo))
+                if (audioOrSingleRoute != null)
                 {
-                    currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Audio, routingSource);
+                    currentSourcesDevice.SetCurrentSource(audioOrSingleRoute.SignalType, routingSource);
                 }
 
-                if (request.SignalType.HasFlag(eRoutingSignalType.Video) || request.SignalType.HasFlag(eRoutingSignalType.AudioVideo))
+                if (videoRoute != null)
                 {
-                    currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Video, routingSource);
+                    currentSourcesDevice.SetCurrentSource(videoRoute.SignalType, routingSource);
                 }
             }
         }

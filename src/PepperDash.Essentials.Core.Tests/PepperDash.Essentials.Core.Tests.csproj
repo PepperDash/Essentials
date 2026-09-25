@@ -25,4 +25,18 @@
     <!-- Reference Core.Tests to share the Fakes folder -->
     <ProjectReference Include="..\PepperDash.Core.Tests\PepperDash.Core.Tests.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <!--
+    SecretsIndex.cs has no Crestron references by design, so it can be compiled directly into this
+    project and covered off-target. The chunking and checksum logic it holds is the part of the
+    secrets index most worth testing, and everything else in that subsystem needs a processor.
+  -->
+  <ItemGroup>
+    <Compile Include="..\PepperDash.Essentials.Core\Secrets\SecretsIndex.cs"
+             Link="Secrets\SecretsIndex.cs" />
+  </ItemGroup>
 </Project>

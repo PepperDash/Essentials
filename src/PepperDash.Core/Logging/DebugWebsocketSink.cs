@@ -52,22 +52,54 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
     /// <summary>
     /// Gets the WebSocket URL for the current server instance.
     /// </summary>
-    /// <remarks>The URL is dynamically constructed based on the server's current IP address, port,
-    /// and WebSocket path.</remarks>
+    /// <remarks>
+    /// The URL is dynamically constructed from the processor's LAN IP address, the port and the
+    /// WebSocket path. The control subnet address is only used when there is no usable LAN address,
+    /// since the debug app is normally reached over the LAN. Returns an empty string when the server
+    /// is not listening or no usable address can be read.
+    /// </remarks>
     public string Url
     {
         get
         {
-            if (_httpsServer == null || !_httpsServer.IsListening) return "";
-            var service = _httpsServer.WebSocketServices[_path];
-            if (service == null) return "";
+            var host = ProcessorEthernetInfo.GetLanIpAddress() ?? ProcessorEthernetInfo.GetCsLanIpAddress();
 
-            // Use CSLAN IP if available, otherwise fallback to primary IP. This ensures we provide a reachable URL in dual-stack environments.
-            if (!string.IsNullOrEmpty(CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1)))
-                return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1)}:{_httpsServer.Port}{service.Path}";
-            else
-                return $"wss://{CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0)}:{_httpsServer.Port}{service.Path}";
+            return GetUrlForHost(host);
         }
+    }
+
+    /// <summary>
+    /// Gets the WebSocket path clients connect to, e.g. <c>/debug/join</c>. Exposed so a client that
+    /// already knows the processor's address — a browser on a page the processor served, for instance —
+    /// can build the URL itself from its own location.
+    /// </summary>
+    public string ServicePath
+    {
+        get
+        {
+            var service = _httpsServer?.WebSocketServices[_path];
+
+            return service?.Path ?? _path.TrimEnd('/');
+        }
+    }
+
+    /// <summary>
+    /// Builds the WebSocket URL for this server using the supplied host, which lets callers hand back
+    /// the address the client actually used to reach the processor.
+    /// </summary>
+    /// <param name="host">Host name or IP address, without scheme or port. IPv6 literals must already be bracketed.</param>
+    /// <returns>The <c>wss://</c> URL, or an empty string when the server is not listening or <paramref name="host"/> is unusable.</returns>
+    public string GetUrlForHost(string host)
+    {
+        if (_httpsServer == null || !_httpsServer.IsListening) return "";
+
+        var service = _httpsServer.WebSocketServices[_path];
+        if (service == null) return "";
+
+        host = ProcessorEthernetInfo.NullIfInvalid(host);
+        if (host == null) return "";
+
+        return $"wss://{host}:{_httpsServer.Port}{service.Path}";
     }
 
     /// <summary>
@@ -131,14 +163,29 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
         // CrestronConsole.PrintLine only, to avoid a NullReferenceException that would poison the Debug type.
         try
         {
-            var ipAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
-            var hostName = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
-            var domainName = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, 0);
+            // GetEthernetParameter returns the literal string "Invalid Value" rather than throwing when a
+            // parameter cannot be read, so every value has to be validated before it goes into the cert.
+            var ipAddress = ProcessorEthernetInfo.GetLanIpAddress();
+            var csIpAddress = ProcessorEthernetInfo.GetCsLanIpAddress();
+            var hostName = ProcessorEthernetInfo.GetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
+            var domainName = ProcessorEthernetInfo.GetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, 0);
 
-            CrestronConsole.PrintLine(string.Format("CreateCert: DomainName: {0} | HostName: {1} | {1}.{0}@{2}", domainName, hostName, ipAddress));
+            CrestronConsole.PrintLine(string.Format("CreateCert: DomainName: {0} | HostName: {1} | IP: {2} | CS IP: {3}",
+                domainName ?? "<none>", hostName ?? "<none>", ipAddress ?? "<none>", csIpAddress ?? "<none>"));
 
-            var subjectName = string.Format("CN={0}.{1}", hostName, domainName);
-            var fqdn = string.Format("{0}.{1}", hostName, domainName);
+            // Fall back to the IP address when there is no usable host name, so the subject is never
+            // built out of unreadable parameters.
+            var fqdn = hostName == null
+                ? ipAddress
+                : domainName == null ? hostName : string.Format("{0}.{1}", hostName, domainName);
+
+            if (string.IsNullOrEmpty(fqdn))
+            {
+                CrestronConsole.PrintLine("CreateCert: No usable host name or IP address; aborting certificate creation");
+                return;
+            }
+
+            var subjectName = string.Format("CN={0}", fqdn);
 
             using var rsa = RSA.Create(2048);
 
@@ -162,11 +209,15 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
                     },
                     false));
 
-            // Subject Alternative Names: DNS + IP
+            // Subject Alternative Names: DNS + every address the browser could reach the processor on
             var sanBuilder = new SubjectAlternativeNameBuilder();
             sanBuilder.AddDnsName(fqdn);
+            if (hostName != null && hostName != fqdn)
+                sanBuilder.AddDnsName(hostName);
             if (System.Net.IPAddress.TryParse(ipAddress, out var ip))
                 sanBuilder.AddIpAddress(ip);
+            if (System.Net.IPAddress.TryParse(csIpAddress, out var csIp))
+                sanBuilder.AddIpAddress(csIp);
             request.CertificateExtensions.Add(sanBuilder.Build());
 
             var notBefore = DateTimeOffset.UtcNow;

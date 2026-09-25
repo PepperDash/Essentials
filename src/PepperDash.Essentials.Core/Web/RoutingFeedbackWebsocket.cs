@@ -9,6 +9,7 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 using WebSocketSharp;
 using WebSocketSharp.Server;
@@ -59,18 +60,44 @@ public class RoutingFeedbackWebsocket : IKeyed
     {
         get
         {
-            if (_httpsServer == null || !_httpsServer.IsListening) return "";
-            var service = _httpsServer.WebSocketServices[_path];
-            if (service == null) return "";
+            var host = ProcessorEthernetInfo.GetLanIpAddress() ?? ProcessorEthernetInfo.GetCsLanIpAddress();
 
-            var ip = CrestronEthernetHelper.GetEthernetParameter(
-                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
-            if (string.IsNullOrEmpty(ip) || ip == "Invalid Value")
-                ip = CrestronEthernetHelper.GetEthernetParameter(
-                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
-
-            return $"wss://{ip}:{_httpsServer.Port}{service.Path}";
+            return GetUrlForHost(host);
         }
+    }
+
+    /// <summary>
+    /// Gets the WebSocket path clients connect to, e.g. <c>/routing/join</c>. Exposed so a client that
+    /// already knows the processor's address — a browser on a page the processor served, for instance —
+    /// can build the URL itself from its own location.
+    /// </summary>
+    public string ServicePath
+    {
+        get
+        {
+            var service = _httpsServer?.WebSocketServices[_path];
+
+            return service?.Path ?? _path.TrimEnd('/');
+        }
+    }
+
+    /// <summary>
+    /// Builds the WebSocket URL for this server using the supplied host, which lets callers hand back
+    /// the address the client actually used to reach the processor.
+    /// </summary>
+    /// <param name="host">Host name or IP address, without scheme or port. IPv6 literals must already be bracketed.</param>
+    /// <returns>The <c>wss://</c> URL, or an empty string when the server is not listening or <paramref name="host"/> is unusable.</returns>
+    public string GetUrlForHost(string host)
+    {
+        if (_httpsServer == null || !_httpsServer.IsListening) return "";
+
+        var service = _httpsServer.WebSocketServices[_path];
+        if (service == null) return "";
+
+        host = ProcessorEthernetInfo.NullIfInvalid(host);
+        if (host == null) return "";
+
+        return $"wss://{host}:{_httpsServer.Port}{service.Path}";
     }
 
     /// <summary>
@@ -245,6 +272,7 @@ public class RoutingFeedbackWebsocket : IKeyed
         foreach (var device in sinkDevices)
         {
             device.InputChanged += HandleSinkInputChanged;
+            device.CurrentSourcesChanged += HandleSinkCurrentSourcesChanged;
         }
 
         var layoutDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithLayoutState>();
@@ -266,6 +294,7 @@ public class RoutingFeedbackWebsocket : IKeyed
         foreach (var device in sinkDevices)
         {
             device.InputChanged -= HandleSinkInputChanged;
+            device.CurrentSourcesChanged -= HandleSinkCurrentSourcesChanged;
         }
 
         var layoutDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithLayoutState>();
@@ -319,6 +348,31 @@ public class RoutingFeedbackWebsocket : IKeyed
     }
 
     private void HandleSinkInputChanged(IRoutingSinkWithFeedback sender, RoutingInputPort currentInputPort)
+    {
+        EmitSinkInputChanged(sender, currentInputPort);
+    }
+
+    /// <summary>
+    /// Mirrors a sink's current-source bookkeeping out to clients.
+    /// </summary>
+    /// <remarks>
+    /// Clearing a route calls <c>SetCurrentSource(..., null)</c> but never <c>ExecuteSwitch</c> on the
+    /// destination itself (<c>RouteDescriptor.ReleaseRoutes</c> only tears down midpoints), so
+    /// <c>InputChanged</c> never fires and a cleared sink's edge would stay drawn until the client
+    /// reloaded. Subscribing here also gives live feedback for routes made through device-specific
+    /// bulk APIs, which set the current source without switching an input port.
+    ///
+    /// Both this and <c>InputChanged</c> share the per-sink debounce key, so a normal route that
+    /// raises both events still broadcasts once, and the broadcast reads the sink's state at fire
+    /// time rather than whatever it was when the first event arrived.
+    /// </remarks>
+    private void HandleSinkCurrentSourcesChanged(object sender, CurrentSourcesChangedEventArgs e)
+    {
+        if (sender is IRoutingSinkWithFeedback sink)
+            EmitSinkInputChanged(sink, sink.CurrentInputPort);
+    }
+
+    private void EmitSinkInputChanged(IRoutingSinkWithFeedback sender, RoutingInputPort currentInputPort)
     {
         // Tile-sink children are reported under their IRoutingSinkWithLayouts parent's key, with a
         // qualified port key, so clients see this as an input change on the parent's node rather than

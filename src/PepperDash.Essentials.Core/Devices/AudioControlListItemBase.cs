@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,4 +42,17 @@ public abstract class AudioControlListItemBase
     /// </summary>
     [JsonProperty("order")]
     public int Order { get; set; }
+
+    /// <summary>
+    /// Captures any properties present in the config JSON that this class does not define, so
+    /// project-specific values survive deserialization instead of being discarded.
+    /// </summary>
+    /// <remarks>
+    /// Newtonsoft writes these back out as top-level properties rather than nesting them under a
+    /// "customProperties" object, so they round-trip through config and reach consuming clients
+    /// alongside the framework's own properties. Null when the JSON contains no unrecognized
+    /// properties.
+    /// </remarks>
+    [JsonExtensionData]
+    public Dictionary<string, JToken> CustomProperties { get; set; }
 }

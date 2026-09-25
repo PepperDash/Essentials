@@ -356,11 +356,10 @@ namespace PepperDash.Essentials.WebSocketServer
             foreach (var client in touchpanelsToAdd)
             {
                 var bridge = _parent.GetRoomBridge(client.DefaultRoomKey);
-
                 if (bridge == null)
                 {
                     this.LogWarning("Unable to find room with key: {defaultRoomKey}", client.DefaultRoomKey);
-                    return;
+                    continue;
                 }
 
                 var (key, path) = GenerateClientToken(bridge, client.Key);
@@ -613,7 +612,8 @@ namespace PepperDash.Essentials.WebSocketServer
                         }
                     },
                     Logging = _parent.Config.ApplicationConfig?.Logging ?? false,
-                    PartnerMetadata = _parent.Config.ApplicationConfig?.PartnerMetadata ?? new List<MobileControlPartnerMetadata>()
+                    PartnerMetadata = _parent.Config.ApplicationConfig?.PartnerMetadata ?? new List<MobileControlPartnerMetadata>(),
+                    LockoutMessagesByTouchpanel = _parent.Config.ApplicationConfig?.LockoutMessagesByTouchpanel ?? new Dictionary<string, MobileControlLockoutMessageOverride>()
                 };
 
                 return config;
@@ -644,8 +644,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 {
                     Debug.LogMessage(LogEventLevel.Information, "Secret successfully retrieved", this);
 
-                    Debug.LogMessage(LogEventLevel.Debug, "Secret: {0}", this, secret.Value.ToString());
-
+                    // The secret document holds the server grant code and every paired touchpanel
+                    // token, so it must never be logged. The line above already records success.
 
                     // populate the local secrets object
                     _secret = JsonConvert.DeserializeObject<ServerTokenSecrets>(secret.Value.ToString());
@@ -1134,6 +1134,18 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
         /// <summary>
+        /// Adds headers to a response telling the client not to cache it. Some panel browsers hold on to
+        /// a cached copy of the app and never re-request it, which leaves them running a stale build.
+        /// </summary>
+        /// <param name="res">The response to add the headers to</param>
+        private static void AddNoCacheHeaders(HttpListenerResponse res)
+        {
+            res.AddHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            res.AddHeader("Pragma", "no-cache");
+            res.AddHeader("Expires", "0");
+        }
+
+        /// <summary>
         /// Handler for GET requests to server
         /// </summary>
         /// <param name="sender"></param>
@@ -1147,6 +1159,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 res.ContentEncoding = Encoding.UTF8;
 
                 res.AddHeader("Access-Control-Allow-Origin", "*");
+
+                AddNoCacheHeaders(res);
 
                 var path = req.RawUrl;
 
@@ -1194,6 +1208,8 @@ namespace PepperDash.Essentials.WebSocketServer
 
                 res.AddHeader("Access-Control-Allow-Origin", "*");
 
+                AddNoCacheHeaders(res);
+
                 var path = req.RawUrl;
                 var ip = req.RemoteEndPoint.Address.ToString();
 
@@ -1238,6 +1254,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 res.AddHeader("Access-Control-Allow-Origin", "*");
                 res.AddHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
                 res.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, remember-me");
+
+                AddNoCacheHeaders(res);
 
                 res.StatusCode = 200;
                 res.Close();

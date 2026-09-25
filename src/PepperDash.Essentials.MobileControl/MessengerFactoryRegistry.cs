@@ -374,6 +374,14 @@ namespace PepperDash.Essentials
                     (d, mp, _) => new IRoutingMidpointWithFeedbackMessenger(
                         $"{d.Key}-matrixRouting", mp, (IRoutingMidpointWithFeedback)d)
                 ),
+                // Devices that also expose named slots (plugin-local IDmInputSlot/INvxInputSlot-
+                // style abstractions) get a second, richer message with names + per-signal-type
+                // route feedback the bare messenger above cannot provide.
+                new MessengerFactoryEntry(
+                    typeof(IHasNamedRoutingSlots),
+                    (d, mp, _) => new IHasNamedRoutingSlotsMessenger(
+                        $"{d.Key}-namedRoutingSlots", mp, (IHasNamedRoutingSlots)d)
+                ),
 
                 // ── Environmental sensors ─────────────────────────────────────────────────
                 // Preserving original key format (no controller key suffix)

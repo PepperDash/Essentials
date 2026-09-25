@@ -1,6 +1,8 @@
 ﻿
 
+using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 
@@ -46,6 +48,11 @@ public class DestinationListItem
 
             return SinkDevice == null ? "---" : SinkDevice.Name;
         }
+        // Computed, but not get-only: with [JsonExtensionData] on this type, Newtonsoft treats an
+        // unwritable member as unmatched and diverts the incoming value into CustomProperties,
+        // which then re-serializes as a duplicate JSON key. The no-op setter keeps this a known
+        // member so the config value is read and discarded, as it was before.
+        private set { }
     }
 
     /// <summary>
@@ -122,4 +129,16 @@ public class DestinationListItem
     [JsonProperty("destinationPortKey")]
     public string DestinationPortKey { get; set; }
 
+    /// <summary>
+    /// Captures any properties present in the config JSON that this class does not define, so
+    /// project-specific values survive deserialization instead of being discarded.
+    /// </summary>
+    /// <remarks>
+    /// Newtonsoft writes these back out as top-level properties rather than nesting them under a
+    /// "customProperties" object, so they round-trip through config and reach consuming clients
+    /// alongside the framework's own properties. Null when the JSON contains no unrecognized
+    /// properties.
+    /// </remarks>
+    [JsonExtensionData]
+    public Dictionary<string, JToken> CustomProperties { get; set; }
 }

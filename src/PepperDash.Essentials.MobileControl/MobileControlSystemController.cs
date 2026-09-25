@@ -286,7 +286,10 @@ namespace PepperDash.Essentials
                 if (!entry.Matches(device))
                     continue;
 
-                var messenger = entry.Factory(device, $"/device/{device.Key}", Key);
+                // Room-scoped messengers must share the room bridge's "/room/{key}" path so client requests route correctly
+                var basePath = device is IEssentialsRoom ? $"/room/{device.Key}" : $"/device/{device.Key}";
+
+                var messenger = entry.Factory(device, basePath, Key);
 
                 if (messenger == null)
                     continue;
@@ -512,6 +515,12 @@ namespace PepperDash.Essentials
             {
                 simplMessenger.ConfigurationIsReady += Bridge_ConfigurationIsReady;
             }
+
+            if (messenger is MobileControlBridgeBase roomBridge)
+            {
+                _roomBridges.Add(roomBridge);
+            }
+
             this.LogVerbose(
                 "Adding default messenger with key {messengerKey} for path {messengerPath}",
                 messenger.Key,

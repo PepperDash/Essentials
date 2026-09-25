@@ -7,9 +7,33 @@ using Serilog.Events;
 
 namespace PepperDash.Essentials.Core;
 
+/// <summary>
+/// Manages secret providers and their associated secrets. Provides methods to initialize, add, retrieve, and manage secret providers.
+/// </summary>
 public static class SecretsManager
 {
-    public static Dictionary<string, ISecretProvider> Secrets { get; private set; }
+    private static readonly object SecretsLock = new object();
+    private static readonly Dictionary<string, ISecretProvider> _secrets =
+        new Dictionary<string, ISecretProvider>();
+
+    /// <summary>
+    /// The collection of secret providers, keyed by their unique identifier.
+    /// </summary>
+    /// <remarks>
+    /// Returns a snapshot. The backing dictionary is mutated from both the console thread and CWS
+    /// request threads, so handing out the live instance would let a caller enumerate it while it
+    /// is being written.
+    /// </remarks>
+    public static Dictionary<string, ISecretProvider> Secrets
+    {
+        get
+        {
+            lock (SecretsLock)
+            {
+                return new Dictionary<string, ISecretProvider>(_secrets);
+            }
+        }
+    }
 
     /// <summary>
     /// Initialize the SecretsManager
@@ -48,10 +72,7 @@ public static class SecretsManager
         }
     }
 
-    static SecretsManager()
-    {
-        Secrets = new Dictionary<string, ISecretProvider>();
-    }
+
 
     /// <summary>
     /// Get Secret Provider from dictionary by key
@@ -62,7 +83,10 @@ public static class SecretsManager
     {
         ISecretProvider secret;
 
-        Secrets.TryGetValue(key, out secret);
+        lock (SecretsLock)
+        {
+            _secrets.TryGetValue(key, out secret);
+        }
 
         if (secret == null)
         {
@@ -71,6 +95,10 @@ public static class SecretsManager
         return secret;
     }
 
+    /// <summary>
+    /// Gets information about a specific secrets provider.
+    /// </summary>
+    /// <param name="cmd"></param>
     public static void GetProviderInfo(string cmd)
     {
         string response;
@@ -151,11 +179,14 @@ public static class SecretsManager
     /// <param name="provider">New Provider Entry</param>
     public static void AddSecretProvider(string key, ISecretProvider provider)
     {
-        if (!Secrets.ContainsKey(key))
+        lock (SecretsLock)
         {
-            Secrets.Add(key, provider);
-            Debug.LogMessage(LogEventLevel.Debug, "Secrets provider '{0}' added to SecretsManager", key);
-            return;
+            if (!_secrets.ContainsKey(key))
+            {
+                _secrets.Add(key, provider);
+                Debug.LogMessage(LogEventLevel.Debug, "Secrets provider '{0}' added to SecretsManager", key);
+                return;
+            }
         }
         Debug.LogMessage(LogEventLevel.Information, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key );
     }
@@ -168,15 +199,23 @@ public static class SecretsManager
     /// <param name="overwrite">true to overwrite any existing providers in the dictionary</param>
     public static void AddSecretProvider(string key, ISecretProvider provider, bool overwrite)
     {
-        if (!Secrets.ContainsKey(key))
+        lock (SecretsLock)
         {
-            Secrets.Add(key, provider);
-            Debug.LogMessage(LogEventLevel.Debug, "Secrets provider '{0}' added to SecretsManager", key);
-            return;
+            if (!_secrets.ContainsKey(key))
+            {
+                _secrets.Add(key, provider);
+                Debug.LogMessage(LogEventLevel.Debug, "Secrets provider '{0}' added to SecretsManager", key);
+                return;
+            }
         }
         if (overwrite)
         {
-            Secrets.Add(key, provider);
+            // Indexer, not Add: Add on an existing key throws, so this branch never overwrote
+            // anything - it threw ArgumentException instead.
+            lock (SecretsLock)
+            {
+                _secrets[key] = provider;
+            }
             Debug.LogMessage(LogEventLevel.Debug, "Provider with the key '{0}' already exists in secrets.  Overwriting with new secrets provider.", key);
             return;
         }
@@ -188,7 +227,7 @@ public static class SecretsManager
         string response;
         var args = cmd.Split(' ');
 
-        if (args.Length == 0)
+        if (cmd.Length == 0)
         {
             //some Instructional Text
             response = "Adds secrets to secret provider. Format 'setsecret <provider> <secretKey> <secret>'";
@@ -233,7 +272,7 @@ public static class SecretsManager
         string response;
         var args = cmd.Split(' ');
 
-        if (args.Length == 0)
+        if (cmd.Length == 0)
         {
             //some Instructional Text
             response = "Updates secrets in secret provider. Format 'updatesecret <provider> <secretKey> <secret>'";
@@ -286,7 +325,8 @@ public static class SecretsManager
         if (!secretPresent)
             return
                 String.Format(
-                    "Unable to update secret for {0}:{1} - Please use the 'SetSecret' command to modify it");
+                    "Unable to update secret for {0}:{1} - Please use the 'SetSecret' command to modify it",
+                    provider.Key, key);
         var response = provider.SetSecret(key, secret)
             ? String.Format(
                 "Secret successfully set for {0}:{1}",
@@ -306,7 +346,8 @@ public static class SecretsManager
         if (secretPresent)
             return
                 String.Format(
-                    "Unable to set secret for {0}:{1} - Please use the 'UpdateSecret' command to modify it");
+                    "Unable to set secret for {0}:{1} - Please use the 'UpdateSecret' command to modify it",
+                    provider.Key, key);
         var response = provider.SetSecret(key, secret)
             ? String.Format(
                 "Secret successfully set for {0}:{1}",
@@ -323,7 +364,7 @@ public static class SecretsManager
         string response;
         var args = cmd.Split(' ');
 
-        if (args.Length == 0)
+        if (cmd.Length == 0)
         {
             //some Instructional Text
             response = "Deletes secrets in secret provider. Format 'deletesecret <provider> <secretKey>'";
@@ -362,9 +403,36 @@ public static class SecretsManager
 
         var key = args[1];
 
+        // A blank key is not a harmless no-op: it reaches clearLocal("")/clearGlobal(""), which
+        // deletes EVERY record belonging to this application - including Mobile Control's pairing
+        // tokens. "deletesecret default " with a trailing space lands here.
+        if (String.IsNullOrWhiteSpace(key))
+        {
+            CrestronConsole.ConsoleCommandResponse("A secret key is required");
+            return;
+        }
 
-        provider.SetSecret(key, "");
-        response = provider.SetSecret(key, "")
+        // Prefer the guarded delete where the provider supports it; it reports why the store
+        // refused rather than collapsing every failure into a bare false.
+        bool deleted;
+        if (provider is IEnumerableSecretProvider enumerable)
+        {
+            var result = enumerable.DeleteSecret(key);
+            deleted = result.Success;
+            if (!deleted && !String.IsNullOrEmpty(result.Message))
+            {
+                CrestronConsole.ConsoleCommandResponse(result.Message);
+                return;
+            }
+        }
+        else
+        {
+            // Called once. Calling it twice - as this did - means the tested call runs against an
+            // already-deleted record and reports failure for a delete that worked.
+            deleted = provider.SetSecret(key, "");
+        }
+
+        response = deleted
             ? String.Format(
                 "Secret successfully deleted for {0}:{1}",
                 provider.Key, key)
