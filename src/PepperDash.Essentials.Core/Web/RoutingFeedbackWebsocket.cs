@@ -39,6 +39,11 @@ public class RoutingFeedbackWebsocket : IKeyed
     // own separate nodes - see RoutingGraphHelpers. Rebuilt whenever the server (re)starts.
     private Dictionary<string, RoutingGraphHelpers.TileChildInfo> _tileChildren = new Dictionary<string, RoutingGraphHelpers.TileChildInfo>();
 
+    // The input port last reported to clients for each sink, keyed by the sink's own device key. A
+    // sink whose route is cleared can report a null CurrentInputPort, and one that switches inputs
+    // only reports the new port, so this is what lets us tell clients which port to clear.
+    private readonly Dictionary<string, RoutingInputPort> _reportedSinkPorts = new Dictionary<string, RoutingInputPort>();
+
     private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
     {
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -269,6 +274,17 @@ public class RoutingFeedbackWebsocket : IKeyed
         }
 
         var sinkDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithFeedback>();
+        lock (_reportedSinkPorts)
+        {
+            // Seed from current state, which is what the connect snapshot reports
+            _reportedSinkPorts.Clear();
+            foreach (var device in sinkDevices)
+            {
+                if (device.CurrentInputPort != null)
+                    _reportedSinkPorts[device.Key] = device.CurrentInputPort;
+            }
+        }
+
         foreach (var device in sinkDevices)
         {
             device.InputChanged += HandleSinkInputChanged;
@@ -374,19 +390,6 @@ public class RoutingFeedbackWebsocket : IKeyed
 
     private void EmitSinkInputChanged(IRoutingSinkWithFeedback sender, RoutingInputPort currentInputPort)
     {
-        // Tile-sink children are reported under their IRoutingSinkWithLayouts parent's key, with a
-        // qualified port key, so clients see this as an input change on the parent's node rather than
-        // on a device that isn't otherwise represented in the graph.
-        var deviceKey = sender.Key;
-        var inputPortKey = currentInputPort?.Key ?? "";
-
-        if (_tileChildren.TryGetValue(deviceKey, out var tileInfo))
-        {
-            deviceKey = tileInfo.Parent.Key;
-            if (!string.IsNullOrEmpty(inputPortKey))
-                inputPortKey = RoutingGraphHelpers.QualifyTilePortKey(tileInfo.TileNumber, inputPortKey);
-        }
-
         DebounceBroadcast($"sink-{sender.Key}", () =>
         {
             // Read the source directly from the sink's own current-source bookkeeping (see
@@ -394,17 +397,51 @@ public class RoutingFeedbackWebsocket : IKeyed
             // device-specific bulk API (e.g. ApplyDynamicLayout) never creates a tie line at all.
             var sourceDeviceKey = currentInputPort != null ? (RoutingGraphHelpers.GetCurrentSourceKey(sender) ?? "") : "";
 
-            var msg = new SinkInputChangedDto
+            RoutingInputPort previousPort;
+            lock (_reportedSinkPorts)
             {
-                Type = "sinkInputChanged",
-                DeviceKey = deviceKey,
-                InputPortKey = inputPortKey,
-                SourceDeviceKey = sourceDeviceKey,
-                SignalType = currentInputPort?.Type.ToString() ?? ""
-            };
+                _reportedSinkPorts.TryGetValue(sender.Key, out previousPort);
+                if (currentInputPort != null)
+                    _reportedSinkPorts[sender.Key] = currentInputPort;
+                else
+                    _reportedSinkPorts.Remove(sender.Key);
+            }
 
-            Broadcast(JsonConvert.SerializeObject(msg, JsonSettings));
+            // Clear the port the client last saw when the sink has moved off it - either to another
+            // input or, when a route is cleared, to no input at all. Both messages go out from this one
+            // debounced action, since a second DebounceBroadcast on the same key would cancel the first.
+            if (previousPort != null && previousPort.Key != currentInputPort?.Key)
+                BroadcastSinkInputChanged(sender, previousPort, "");
+
+            if (currentInputPort != null)
+                BroadcastSinkInputChanged(sender, currentInputPort, sourceDeviceKey);
         });
+    }
+
+    private void BroadcastSinkInputChanged(IRoutingSinkWithFeedback sender, RoutingInputPort port, string sourceDeviceKey)
+    {
+        // Tile-sink children are reported under their IRoutingSinkWithLayouts parent's key, with a
+        // qualified port key, so clients see this as an input change on the parent's node rather than
+        // on a device that isn't otherwise represented in the graph.
+        var deviceKey = sender.Key;
+        var inputPortKey = port.Key;
+
+        if (_tileChildren.TryGetValue(deviceKey, out var tileInfo))
+        {
+            deviceKey = tileInfo.Parent.Key;
+            inputPortKey = RoutingGraphHelpers.QualifyTilePortKey(tileInfo.TileNumber, inputPortKey);
+        }
+
+        var msg = new SinkInputChangedDto
+        {
+            Type = "sinkInputChanged",
+            DeviceKey = deviceKey,
+            InputPortKey = inputPortKey,
+            SourceDeviceKey = sourceDeviceKey,
+            SignalType = port.Type.ToString()
+        };
+
+        Broadcast(JsonConvert.SerializeObject(msg, JsonSettings));
     }
 
     private void DebounceBroadcast(string key, Action action)
