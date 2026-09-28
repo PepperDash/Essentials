@@ -6,6 +6,7 @@ using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Routing;
@@ -39,6 +40,7 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
     public event RouteChangedEventHandler RouteChanged;
 
     private readonly Dictionary<string, MockRoutingOutputSlotInfo> _outputSlotsByKey = new Dictionary<string, MockRoutingOutputSlotInfo>();
+    private readonly List<MockRoutingInputSlotInfo> _syncAwareInputSlots = new List<MockRoutingInputSlotInfo>();
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, IRoutingSlotInfo> InputSlots { get; private set; }
@@ -91,8 +93,23 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
                 InputPorts.Add(port);
 
                 slotNumber++;
-                inputSlots[portConfig.Name] = new MockRoutingSlotInfo(
-                    portConfig.Name, portConfig.Label ?? portConfig.Name, slotNumber, portConfig.SignalType);
+
+                // Video sync is a video concept - an audio-only input (e.g. a mic) gets the bare
+                // slot info, with no IRoutingInputSlotInfo/sync status at all, rather than a
+                // meaningless always-true dot.
+                if (portConfig.SignalType.HasFlag(eRoutingSignalType.Video))
+                {
+                    var syncSlot = new MockRoutingInputSlotInfo(
+                        portConfig.Name, portConfig.Label ?? portConfig.Name, slotNumber, portConfig.SignalType,
+                        portConfig.TxDeviceKey, portConfig.StartsWithSync);
+                    inputSlots[portConfig.Name] = syncSlot;
+                    _syncAwareInputSlots.Add(syncSlot);
+                }
+                else
+                {
+                    inputSlots[portConfig.Name] = new MockRoutingSlotInfo(
+                        portConfig.Name, portConfig.Label ?? portConfig.Name, slotNumber, portConfig.SignalType);
+                }
             }
 
             slotNumber = 0;
@@ -124,6 +141,31 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
         {
             this.LogException(ex, "Error building ports for mock midpoint {0}", Key);
         }
+    }
+
+    /// <summary>
+    /// Links each input slot's <see cref="MockRoutingInputSlotInfo.TxDeviceKey"/> (when configured) to
+    /// that device's real video sync, once every device exists - a plain constructor-time lookup
+    /// can't do this since the device it names may not have been built yet.
+    /// </summary>
+    protected override bool CustomActivate()
+    {
+        foreach (var slot in _syncAwareInputSlots)
+        {
+            if (string.IsNullOrEmpty(slot.TxDeviceKey)) continue;
+
+            if (!(DeviceManager.GetDeviceForKey(slot.TxDeviceKey) is IVideoSync txDevice))
+            {
+                this.LogWarning("Tx device '{txDeviceKey}' for input slot '{slot}' not found or does not implement IVideoSync",
+                    slot.TxDeviceKey, slot.Key);
+                continue;
+            }
+
+            slot.SetVideoSyncDetected(txDevice.VideoSyncDetected);
+            txDevice.VideoSyncChanged += (sender, args) => slot.SetVideoSyncDetected(txDevice.VideoSyncDetected);
+        }
+
+        return base.CustomActivate();
     }
 
     /// <inheritdoc />
@@ -252,6 +294,58 @@ class MockRoutingSlotInfo : IRoutingSlotInfo
         Name = name;
         SlotNumber = slotNumber;
         SupportedSignalTypes = supportedSignalTypes;
+    }
+}
+
+/// <summary>
+/// Named input routing slot info for a <see cref="MockRoutingMidpoint"/> input port that supports
+/// video, adding the <see cref="IRoutingInputSlotInfo"/> status (video sync, online state,
+/// transmitter device key) the mobile-control named-routing-slots messenger surfaces when present.
+/// </summary>
+class MockRoutingInputSlotInfo : MockRoutingSlotInfo, IRoutingInputSlotInfo
+{
+    private bool _videoSyncDetected;
+
+    /// <inheritdoc />
+    public string TxDeviceKey { get; }
+
+    /// <inheritdoc />
+    public BoolFeedback IsOnline { get; }
+
+    /// <inheritdoc />
+    public bool VideoSyncDetected => _videoSyncDetected;
+
+    /// <inheritdoc />
+    public event EventHandler VideoSyncChanged;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MockRoutingInputSlotInfo"/> class.
+    /// </summary>
+    public MockRoutingInputSlotInfo(string key, string name, int slotNumber, eRoutingSignalType supportedSignalTypes,
+        string txDeviceKey, bool startsWithSync)
+        : base(key, name, slotNumber, supportedSignalTypes)
+    {
+        TxDeviceKey = txDeviceKey ?? string.Empty;
+        _videoSyncDetected = startsWithSync;
+
+        // No real endpoint behind a mock port, so this is always online - only VideoSyncDetected
+        // (fixed config value, or live-linked via TxDeviceKey - see MockRoutingMidpoint.CustomActivate)
+        // varies.
+        IsOnline = new BoolFeedback(() => true);
+        IsOnline.FireUpdate();
+    }
+
+    /// <summary>
+    /// Sets <see cref="VideoSyncDetected"/> and raises <see cref="VideoSyncChanged"/> if it changed -
+    /// called from config-seeded startup and, when <see cref="TxDeviceKey"/> names a device
+    /// implementing <c>IVideoSync</c>, to mirror that device's real sync state live.
+    /// </summary>
+    public void SetVideoSyncDetected(bool detected)
+    {
+        if (_videoSyncDetected == detected) return;
+
+        _videoSyncDetected = detected;
+        VideoSyncChanged?.Invoke(this, EventArgs.Empty);
     }
 }
 
