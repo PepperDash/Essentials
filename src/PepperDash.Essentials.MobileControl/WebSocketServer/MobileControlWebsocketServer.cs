@@ -1218,7 +1218,7 @@ namespace PepperDash.Essentials.WebSocketServer
                     res.StatusCode = 200;
                     res.Close();
 
-                    var logRequest = new HttpRequestMessage(HttpMethod.Post, $"{HttpScheme}://{_parent.Config.DirectServer.Logging.Host}:{_parent.Config.DirectServer.Logging.Port}/logs")
+                    var logRequest = new HttpRequestMessage(HttpMethod.Post, $"http://{_parent.Config.DirectServer.Logging.Host}:{_parent.Config.DirectServer.Logging.Port}/logs")
                     {
                         Content = new StringContent(body, Encoding.UTF8, "application/json"),
                     };
