@@ -303,7 +303,7 @@ namespace PepperDash.Essentials.WebSocketServer
                     // form fails with "error:10000080:BIO routines::no such file" and takes
                     // the whole direct server down with it.
                     _server.SslConfiguration.ServerCertificate =
-                        new X509Certificate2($"/user/{certificateName}.pfx", certificatePassword);
+                        new X509Certificate2($"/user/{certificateName}.pfx", certificatePassword, X509KeyStorageFlags.EphemeralKeySet);
                     _server.SslConfiguration.ClientCertificateRequired = false;
                     _server.SslConfiguration.CheckCertificateRevocation = false;
                     _server.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
