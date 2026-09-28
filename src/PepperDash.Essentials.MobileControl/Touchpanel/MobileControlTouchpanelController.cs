@@ -664,7 +664,7 @@ namespace PepperDash.Essentials.Touchpanel
 
             if(localConfig.DevelopmentServerAddress != null)
             {
-                url = Regex.Replace(url, @"^http://[^/]+", $"http://{localConfig.DevelopmentServerAddress}");
+                url = Regex.Replace(url, @"^(https?)://[^/]+", $"$1://{localConfig.DevelopmentServerAddress}");
                 this.LogInformation("Using development server IP, updated URL: {url}", url);
             }
             else
