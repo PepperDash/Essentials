@@ -139,24 +139,9 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
                 return;
             }
 
-            // Remove any existing route to this output before making or clearing the new one.
-            var existingRoute = CurrentRoutes.FirstOrDefault(r => r.OutputPort?.Key == outputPort.Key);
-            if (existingRoute != null)
-            {
-                CurrentRoutes.Remove(existingRoute);
-            }
-
             if (inputSelector == null)
             {
-                this.LogInformation("Clearing route to output {output} on {key}", outputPort.Key, Key);
-
-                if (_outputSlotsByKey.TryGetValue(outputPort.Key, out var clearedSlot))
-                {
-                    clearedSlot.ClearRoute(signalType);
-                }
-
-                var clearedDescriptor = new RouteSwitchDescriptor(outputPort, null);
-                RouteChanged?.Invoke(this, clearedDescriptor);
+                ClearRouteOnOutput(outputPort, signalType);
                 return;
             }
 
@@ -168,9 +153,6 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
                 return;
             }
 
-            var descriptor = new RouteSwitchDescriptor(outputPort, inputPort);
-            CurrentRoutes.Add(descriptor);
-
             if (_outputSlotsByKey.TryGetValue(outputPort.Key, out var routedSlot))
             {
                 routedSlot.SetRoute(signalType, inputPort.Key);
@@ -179,7 +161,9 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
             this.LogInformation("Executed switch: {input} -> {output} ({signalType}) on {key}",
                 inputPort.Key, outputPort.Key, signalType, Key);
 
-            RouteChanged?.Invoke(this, descriptor);
+            RefreshCurrentRoutes();
+
+            RouteChanged?.Invoke(this, new RouteSwitchDescriptor(outputPort, inputPort));
         }
         catch (Exception ex)
         {
@@ -190,7 +174,55 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
     /// <inheritdoc />
     public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
     {
-        ExecuteSwitch(null, outputSelector, signalType);
+        var outputPort = OutputPorts.FirstOrDefault(p => Equals(p.Selector, outputSelector));
+
+        if (outputPort == null)
+        {
+            this.LogWarning("Unable to find output port for selector {selector} on {key}", outputSelector, Key);
+            return;
+        }
+
+        ClearRouteOnOutput(outputPort, signalType);
+    }
+
+    private void ClearRouteOnOutput(RoutingOutputPort outputPort, eRoutingSignalType signalType)
+    {
+        this.LogInformation("Clearing route to output {output} on {key} ({signalType})", outputPort.Key, Key, signalType);
+
+        if (_outputSlotsByKey.TryGetValue(outputPort.Key, out var clearedSlot))
+        {
+            clearedSlot.ClearRoute(signalType);
+        }
+
+        RefreshCurrentRoutes();
+
+        RouteChanged?.Invoke(this, new RouteSwitchDescriptor(outputPort, null));
+    }
+
+    /// <summary>
+    /// Rebuilds the flat <see cref="CurrentRoutes"/> list (required by <see cref="IRoutingMidpointWithFeedback"/>,
+    /// consumed by clients that only understand the bare contract) from the per-signal-type routes each
+    /// output slot actually tracks - one descriptor per (output, signal type) currently routed, so an
+    /// output with independent audio/video sources yields two descriptors rather than one overwriting
+    /// the other.
+    /// </summary>
+    private void RefreshCurrentRoutes()
+    {
+        CurrentRoutes.Clear();
+
+        foreach (var outputPort in OutputPorts)
+        {
+            if (!_outputSlotsByKey.TryGetValue(outputPort.Key, out var slot)) continue;
+
+            foreach (var route in slot.CurrentRouteInputKeys)
+            {
+                var inputPort = InputPorts.FirstOrDefault(p => p.Key == route.Value);
+                if (inputPort != null)
+                {
+                    CurrentRoutes.Add(new RouteSwitchDescriptor(outputPort, inputPort));
+                }
+            }
+        }
     }
 }
 
@@ -249,18 +281,55 @@ class MockRoutingOutputSlotInfo : MockRoutingSlotInfo, IRoutingOutputSlotInfo
     /// <summary>
     /// Records the input key routed to this output for the given signal type and raises <see cref="OutputSlotChanged"/>.
     /// </summary>
+    /// <remarks>
+    /// Decomposes a combined signal type (e.g. <see cref="eRoutingSignalType.AudioVideo"/>) into
+    /// separate Audio/Video entries - the same way <c>DisplayBase.SetCurrentSource</c> does - rather
+    /// than keying the dictionary by the combined value itself. Without this, routing "Audio &amp;
+    /// Video" (the common case) would record a single entry under the key <c>AudioVideo</c> that an
+    /// output slot's independent Audio/Video crosspoint feedback would never match, since a later
+    /// audio-only or video-only switch looks up <c>Audio</c>/<c>Video</c> individually.
+    /// </remarks>
     public void SetRoute(eRoutingSignalType signalType, string inputKey)
     {
-        _currentRouteInputKeys[signalType] = inputKey;
-        OutputSlotChanged?.Invoke(this, EventArgs.Empty);
+        var changed = false;
+
+        if (signalType.HasFlag(eRoutingSignalType.Audio))
+        {
+            _currentRouteInputKeys[eRoutingSignalType.Audio] = inputKey;
+            changed = true;
+        }
+
+        if (signalType.HasFlag(eRoutingSignalType.Video))
+        {
+            _currentRouteInputKeys[eRoutingSignalType.Video] = inputKey;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            OutputSlotChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     /// <summary>
-    /// Clears the routed input key for the given signal type and raises <see cref="OutputSlotChanged"/> if it changed.
+    /// Clears the routed input key for the given signal type (decomposed the same way as
+    /// <see cref="SetRoute"/>) and raises <see cref="OutputSlotChanged"/> if anything changed.
     /// </summary>
     public void ClearRoute(eRoutingSignalType signalType)
     {
-        if (_currentRouteInputKeys.Remove(signalType))
+        var changed = false;
+
+        if (signalType.HasFlag(eRoutingSignalType.Audio))
+        {
+            changed |= _currentRouteInputKeys.Remove(eRoutingSignalType.Audio);
+        }
+
+        if (signalType.HasFlag(eRoutingSignalType.Video))
+        {
+            changed |= _currentRouteInputKeys.Remove(eRoutingSignalType.Video);
+        }
+
+        if (changed)
         {
             OutputSlotChanged?.Invoke(this, EventArgs.Empty);
         }
