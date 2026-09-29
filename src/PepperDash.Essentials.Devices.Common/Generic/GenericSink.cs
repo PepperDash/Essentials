@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
@@ -32,8 +33,9 @@ public class GenericSink : EssentialsDevice, IRoutingSinkWithFeedback
     {
         InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-        var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
-        var audioInputPort = new RoutingInputPort(RoutingPortNames.AnyAudioIn, eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, null, this);
+        // Each port's selector is its own key, so ExecuteSwitch can tell which one was switched to.
+        var inputPort = new RoutingInputPort(RoutingPortNames.AnyVideoIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, RoutingPortNames.AnyVideoIn, this);
+        var audioInputPort = new RoutingInputPort(RoutingPortNames.AnyAudioIn, eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, RoutingPortNames.AnyAudioIn, this);
         
         InputPorts.Add(inputPort);
         InputPorts.Add(audioInputPort);
@@ -111,10 +113,12 @@ public class GenericSink : EssentialsDevice, IRoutingSinkWithFeedback
 
     private SourceListItem _currentSource;
 
+    private RoutingInputPort _currentInputPort;
+
     /// <summary>
-    /// Gets the current input port
+    /// Gets the input port last switched to, or the first input port before any switch
     /// </summary>
-    public RoutingInputPort CurrentInputPort => InputPorts[0];
+    public RoutingInputPort CurrentInputPort => _currentInputPort ?? InputPorts[0];
 
     /// <inheritdoc />
     public event InputChangedEventHandler InputChanged;
@@ -123,6 +127,20 @@ public class GenericSink : EssentialsDevice, IRoutingSinkWithFeedback
     public void ExecuteSwitch(object inputSelector)
     {
         this.LogDebug("GenericSink Executing Switch to: {inputSelector}", inputSelector);
+
+        var port = InputPorts.FirstOrDefault(p => Equals(p.Selector, inputSelector));
+
+        if (port == null)
+        {
+            this.LogWarning("GenericSink has no input port with selector {inputSelector}", inputSelector);
+            return;
+        }
+
+        if (_currentInputPort == port) return;
+
+        _currentInputPort = port;
+
+        InputChanged?.Invoke(this, _currentInputPort);
     }
 }
 
