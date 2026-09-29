@@ -491,7 +491,7 @@ namespace PepperDash.Essentials.Touchpanel
         {
             // Mint a fresh cache buster on every send. Some panels hold on to a cached copy of the app
             // and won't re-download it unless the URL they're handed is different from the last one.
-            var appUrl = GetUrlWithCacheBuster(GetUrlWithCorrectIp(_appUrl));
+            var appUrl = GetUrlWithCacheBuster(ResolveAppUrlHost(_appUrl));
 
             this.LogInformation("Sending {appUrl} on join 1", appUrl);
 
@@ -688,19 +688,31 @@ namespace PepperDash.Essentials.Touchpanel
                 return;
             }
 
-            if(localConfig.DevelopmentServerAddress != null)
-            {
-                url = Regex.Replace(url, @"^(https?)://[^/]+", $"$1://{localConfig.DevelopmentServerAddress}");
-                this.LogInformation("Using development server IP, updated URL: {url}", url);
-            }
-            else
-            {
-                url = GetUrlWithCorrectIp(url);
-            }
-
-            _appUrl = GetUrlWithCacheBuster(url);
+            _appUrl = GetUrlWithCacheBuster(ResolveAppUrlHost(url));
 
             AppUrlFeedback.FireUpdate();
+        }
+
+        /// <summary>
+        /// Points the URL at the configured development server if there is one, otherwise at the
+        /// processor IP the panel can reach.
+        /// </summary>
+        private string ResolveAppUrlHost(string url)
+        {
+            if (localConfig.DevelopmentServerAddress == null)
+            {
+                return GetUrlWithCorrectIp(url);
+            }
+
+            var devServerAddress = localConfig.DevelopmentServerAddress.TrimEnd('/');
+            url = Regex.Replace(url, @"^(https?)://[^/]+", $"$1://{devServerAddress}");
+            // Dev servers (e.g. Vite with base "/mc/app/") only match the app path with its
+            // trailing slash; the processor's own server accepts "/mc/app?token=..." without it.
+            url = Regex.Replace(url, @"/mc/app(?=\?|$)", "/mc/app/");
+
+            this.LogInformation("Using development server address, updated URL: {url}", url);
+
+            return url;
         }
 
         private void UpdateFeedbacks(object sender, EventArgs args)
