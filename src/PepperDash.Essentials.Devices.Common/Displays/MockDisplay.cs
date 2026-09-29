@@ -15,8 +15,12 @@ namespace PepperDash.Essentials.Devices.Common.Displays;
 /// <summary>
 /// Represents a mock display device for testing and simulation purposes.
 /// </summary>
-public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string>, IHasPowerControlWithFeedback
+public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced, IHasInputs<string>, IHasPowerControlWithFeedback, ICommunicationMonitor
 {
+    /// <inheritdoc />
+    /// <remarks>Always online: there's no real connection behind this mock to lose.</remarks>
+    public StatusMonitorBase CommunicationMonitor { get; }
+
     /// <inheritdoc />
     public ISelectableItems<string> Inputs { get; private set; }
 
@@ -77,6 +81,8 @@ public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeA
     public MockDisplay(string key, string name)
         : base(key, name)
     {
+        CommunicationMonitor = new MockCommunicationMonitor(this);
+
         Inputs = new MockDisplayInputs
         {
             Items = new Dictionary<string, ISelectableItem>

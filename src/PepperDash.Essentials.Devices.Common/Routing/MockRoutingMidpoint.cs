@@ -20,8 +20,12 @@ namespace PepperDash.Essentials.Devices.Common.Routing;
 /// <see cref="IRoutingMidpointWithFeedback"/> device cannot support.
 /// </summary>
 [Description("A mock routing midpoint (e.g. matrix switcher) device for testing routing logic without real hardware")]
-public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
+public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots, ICommunicationMonitor
 {
+    /// <inheritdoc />
+    /// <remarks>Always online: there's no real connection behind this mock to lose.</remarks>
+    public StatusMonitorBase CommunicationMonitor { get; }
+
     /// <summary>
     /// The configuration properties for this device.
     /// </summary>
@@ -55,6 +59,8 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
     public MockRoutingMidpoint(DeviceConfig config)
         : base(config.Key, config.Name)
     {
+        CommunicationMonitor = new MockCommunicationMonitor(this);
+
         PropertiesConfig = config.Properties != null
             ? JsonConvert.DeserializeObject<MockRoutingMidpointPropertiesConfig>(config.Properties.ToString())
             : null;

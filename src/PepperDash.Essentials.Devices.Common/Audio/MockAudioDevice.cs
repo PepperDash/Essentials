@@ -14,8 +14,12 @@ namespace PepperDash.Essentials.Devices.Common;
 /// with ramping volume up/down while pressed and mute on/off/toggle, all backed by fake in-memory
 /// state rather than any real hardware communication.
 /// </summary>
-public class MockAudioDevice : EssentialsDevice, IBasicVolumeWithFeedback
+public class MockAudioDevice : EssentialsDevice, IBasicVolumeWithFeedback, ICommunicationMonitor
 {
+    /// <inheritdoc />
+    /// <remarks>Always online: there's no real connection behind this mock to lose.</remarks>
+    public StatusMonitorBase CommunicationMonitor { get; }
+
     private const int VolumeHeldRepeatIntervalMs = 100;
     private const ushort VolumeStep = 655;
 
@@ -38,6 +42,8 @@ public class MockAudioDevice : EssentialsDevice, IBasicVolumeWithFeedback
     public MockAudioDevice(string key, string name)
         : base(key, name)
     {
+        CommunicationMonitor = new MockCommunicationMonitor(this);
+
         VolumeLevelFeedback = new IntFeedback("volume", () => _volumeLevel);
         MuteFeedback = new BoolFeedback("muteOn", () => _isMuted);
 

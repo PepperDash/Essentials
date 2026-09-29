@@ -53,8 +53,12 @@ public class MockLightingSceneConfig
 /// <see cref="LightingBase.CurrentLightingScene"/> and fires feedback, exactly like a real DSP
 /// or lighting processor would once the scene recall is acknowledged.
 /// </summary>
-public class MockLightingDevice : LightingBase
+public class MockLightingDevice : LightingBase, ICommunicationMonitor
 {
+    /// <inheritdoc />
+    /// <remarks>Always online: there's no real connection behind this mock to lose.</remarks>
+    public StatusMonitorBase CommunicationMonitor { get; }
+
     private static readonly List<MockLightingSceneConfig> DefaultScenes = new List<MockLightingSceneConfig>
     {
         new MockLightingSceneConfig { Id = "on", Name = "On" },
@@ -71,6 +75,8 @@ public class MockLightingDevice : LightingBase
     public MockLightingDevice(string key, string name, MockLightingConfig config)
         : base(key, name)
     {
+        CommunicationMonitor = new MockCommunicationMonitor(this);
+
         var scenesConfig = config?.Scenes != null && config.Scenes.Count > 0
             ? config.Scenes
             : DefaultScenes;
