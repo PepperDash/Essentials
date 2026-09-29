@@ -91,6 +91,7 @@ public class MockLightingDevice : LightingBase, ICommunicationMonitor
 
         CurrentLightingSceneFeedback = new IntFeedback("currentLightingScene",
             () => LightingScenes.IndexOf(CurrentLightingScene));
+        CurrentLightingSceneFeedback.FireUpdate();
 
         OnLightingSceneChange();
     }
