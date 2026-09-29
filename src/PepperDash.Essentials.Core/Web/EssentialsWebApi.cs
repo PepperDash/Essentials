@@ -170,6 +170,11 @@ namespace PepperDash.Essentials.Core.Web
                     Name = "DebugSession",
                     RouteHandler = new DebugSessionRequestHandler()
                 },
+                new HttpCwsRoute("consoleSession")
+                {
+                    Name = "ConsoleSession",
+                    RouteHandler = new ConsoleSessionRequestHandler()
+                },
                 new HttpCwsRoute("doNotLoadConfigOnNextBoot")
                 {
                     Name = "DoNotLoadConfigOnNextBoot",

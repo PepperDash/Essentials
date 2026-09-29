@@ -237,6 +237,14 @@ namespace PepperDash.Core
             Start(port, CertPath, _certificatePassword);
         }
 
+        /// <summary>
+        /// Loads this sink's self-signed server certificate, creating it if needed, for reuse by other local WSS servers
+        /// </summary>
+        public static X509Certificate2 LoadServerCertificate()
+        {
+            return LoadOrRecreateCert(CertPath, _certificatePassword);
+        }
+
         private static X509Certificate2 LoadOrRecreateCert(string certPath, string certPassword)
         {
             if (!File.Exists(certPath))
