@@ -19,12 +19,28 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         private const long ButtonHeartbeatInterval = 1000;
 
-        private static readonly Dictionary<string, Timer> _pushedActions = new Dictionary<string, Timer>();
+        /// <summary>
+        /// One active hold. Its <see cref="Gate"/> orders that hold's start, heartbeats and stop, and is
+        /// the only lock held while device code runs, so a slow device never delays another hold.
+        /// </summary>
+        private sealed class Hold
+        {
+            public readonly object Gate = new object();
 
-        // Messages are handled concurrently, and heartbeat timers expire on their own threads. Every
-        // start, reset and stop runs under this lock, including the action itself, so a hold's action
-        // is started and stopped exactly once and in order.
-        private static readonly object _pushedActionsLock = new object();
+            /// <summary>
+            /// Replaced on every heartbeat, so an expiry already queued for an earlier timer no longer
+            /// matches and can't end a hold that was just extended.
+            /// </summary>
+            public Timer Timer;
+
+            public bool Ended;
+        }
+
+        // Guards only membership of _holds, never device code. Lock order: _holdsLock may be taken while
+        // holding a Gate, but a Gate is only taken under _holdsLock when it belongs to a new, unpublished hold.
+        private static readonly object _holdsLock = new object();
+
+        private static readonly Dictionary<string, Hold> _holds = new Dictionary<string, Hold>();
 
         private static readonly Dictionary<string, Action<string, Action<bool>>> _pushedActionHandlers;
 
@@ -42,42 +58,43 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             Debug.LogDebug("Attempting to add timer for {key}", key);
 
-            lock (_pushedActionsLock)
+            var hold = new Hold();
+
+            lock (_holdsLock)
             {
-                if (_pushedActions.ContainsKey(key))
+                if (_holds.ContainsKey(key))
                 {
                     Debug.LogDebug("Timer for {key} already exists", key);
                     return;
                 }
 
+                // Take the new hold's gate before publishing it, so a release or heartbeat for this key
+                // waits until the start has run.
+                System.Threading.Monitor.Enter(hold.Gate);
+                _holds.Add(key, hold);
+            }
+
+            try
+            {
                 Debug.LogDebug("Adding timer for {key} with due time {dueTime}", key, ButtonHeartbeatInterval);
 
-                var cancelTimer = new Timer(ButtonHeartbeatInterval) { AutoReset = false };
-                cancelTimer.Elapsed += (s, e) => ExpireTimer(key, cancelTimer, action);
-
-                _pushedActions.Add(key, cancelTimer);
-
-                action(true);
-
-                cancelTimer.Start();
-            }
-        }
-
-        private static void ExpireTimer(string key, Timer cancelTimer, Action<bool> action)
-        {
-            lock (_pushedActionsLock)
-            {
-                // "released" may have ended this hold already, or a new hold may have replaced it.
-                if (!_pushedActions.TryGetValue(key, out var current) || current != cancelTimer)
+                try
                 {
-                    return;
+                    action(true);
+                }
+                catch
+                {
+                    // Without this, the key would stay held and every later press would be ignored.
+                    hold.Ended = true;
+                    RemoveHold(key, hold);
+                    throw;
                 }
 
-                Debug.LogDebug("Timer expired for {key}", key);
-
-                _pushedActions.Remove(key);
-                cancelTimer.Dispose();
-                action(false);
+                StartNewTimer(key, hold, action);
+            }
+            finally
+            {
+                System.Threading.Monitor.Exit(hold.Gate);
             }
         }
 
@@ -85,19 +102,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             Debug.LogDebug("Attempting to reset timer for {key}", key);
 
-            lock (_pushedActionsLock)
+            var hold = GetHold(key);
+
+            if (hold == null)
             {
-                if (!_pushedActions.TryGetValue(key, out Timer cancelTimer))
+                Debug.LogDebug("Timer for {key} not found", key);
+                return;
+            }
+
+            lock (hold.Gate)
+            {
+                if (hold.Ended)
                 {
-                    Debug.LogDebug("Timer for {key} not found", key);
                     return;
                 }
 
                 Debug.LogDebug("Resetting timer for {key} with due time {dueTime}", key, ButtonHeartbeatInterval);
 
-                cancelTimer.Stop();
-                cancelTimer.Interval = ButtonHeartbeatInterval;
-                cancelTimer.Start();
+                StartNewTimer(key, hold, action);
             }
         }
 
@@ -105,20 +127,90 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             Debug.LogDebug("Attempting to stop timer for {key}", key);
 
-            lock (_pushedActionsLock)
+            var hold = GetHold(key);
+
+            if (hold == null)
             {
-                if (!_pushedActions.TryGetValue(key, out Timer cancelTimer))
+                Debug.LogDebug("Timer for {key} not found", key);
+                return;
+            }
+
+            lock (hold.Gate)
+            {
+                if (hold.Ended)
                 {
-                    Debug.LogDebug("Timer for {key} not found", key);
                     return;
                 }
 
                 Debug.LogDebug("Stopping timer for {key}", key);
 
-                _pushedActions.Remove(key);
-                cancelTimer.Stop();
-                cancelTimer.Dispose();
-                action(false);
+                // Removed only now, once this hold's start has finished, so a new press for the key
+                // can't start before this one has stopped.
+                RemoveHold(key, hold);
+                EndHold(hold, action);
+            }
+        }
+
+        private static void ExpireTimer(string key, Hold hold, Timer timer, Action<bool> action)
+        {
+            lock (hold.Gate)
+            {
+                // A release ended the hold, or a heartbeat replaced this timer: this expiry is stale.
+                if (hold.Ended || hold.Timer != timer)
+                {
+                    return;
+                }
+
+                Debug.LogDebug("Timer expired for {key}", key);
+
+                RemoveHold(key, hold);
+                EndHold(hold, action);
+            }
+        }
+
+        // Caller holds hold.Gate.
+        private static void StartNewTimer(string key, Hold hold, Action<bool> action)
+        {
+            var previous = hold.Timer;
+
+            var timer = new Timer(ButtonHeartbeatInterval) { AutoReset = false };
+            timer.Elapsed += (s, e) => ExpireTimer(key, hold, timer, action);
+
+            hold.Timer = timer;
+
+            previous?.Stop();
+            previous?.Dispose();
+
+            timer.Start();
+        }
+
+        // Caller holds hold.Gate.
+        private static void EndHold(Hold hold, Action<bool> action)
+        {
+            hold.Ended = true;
+
+            hold.Timer?.Stop();
+            hold.Timer?.Dispose();
+
+            action(false);
+        }
+
+        private static Hold GetHold(string key)
+        {
+            lock (_holdsLock)
+            {
+                return _holds.TryGetValue(key, out var hold) ? hold : null;
+            }
+        }
+
+        private static void RemoveHold(string key, Hold hold)
+        {
+            lock (_holdsLock)
+            {
+                if (_holds.TryGetValue(key, out var current) && current == hold)
+                {
+                    _holds.Remove(key);
+                }
             }
         }
 
