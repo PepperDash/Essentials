@@ -189,7 +189,7 @@ namespace PepperDash.Essentials.RoomBridges
                         basicVolumeWithFeedback.MuteOff();
                 });
 
-                AddAction("/volumes/master/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
+                AddAction("/volumes/master/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/volumes/master/volumeUp", content, (b) =>
                 {
                     if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
                     {
@@ -198,7 +198,7 @@ namespace PepperDash.Essentials.RoomBridges
                 }
                 ));
 
-                AddAction("/volumes/master/volumeDown", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
+                AddAction("/volumes/master/volumeDown", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/volumes/master/volumeDown", content, (b) =>
                 {
                     if (volumeRoom.CurrentVolumeControls is IBasicVolumeWithFeedback basicVolumeWithFeedback)
                     {

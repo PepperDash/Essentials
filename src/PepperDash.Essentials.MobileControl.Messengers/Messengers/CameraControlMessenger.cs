@@ -68,7 +68,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             if (Camera is IHasCameraPtzControl ptzCamera)
             {
                 //  Need to evaluate how to pass through these P&H actions.  Need a method that takes a bool maybe?
-                AddAction("/cameraUp", (id, content) => HandleCameraPressAndHold(content, (b) =>
+                AddAction("/cameraUp", (id, content) => HandleCameraPressAndHold("/cameraUp", content, (b) =>
                 {
                     if (b)
                     {
@@ -78,7 +78,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                     ptzCamera.TiltStop();
                 }));
-                AddAction("/cameraDown", (id, content) => HandleCameraPressAndHold(content, (b) =>
+                AddAction("/cameraDown", (id, content) => HandleCameraPressAndHold("/cameraDown", content, (b) =>
                 {
                     if (b)
                     {
@@ -88,7 +88,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                     ptzCamera.TiltStop();
                 }));
-                AddAction("/cameraLeft", (id, content) => HandleCameraPressAndHold(content, (b) =>
+                AddAction("/cameraLeft", (id, content) => HandleCameraPressAndHold("/cameraLeft", content, (b) =>
                 {
                     if (b)
                     {
@@ -98,7 +98,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                     ptzCamera.PanStop();
                 }));
-                AddAction("/cameraRight", (id, content) => HandleCameraPressAndHold(content, (b) =>
+                AddAction("/cameraRight", (id, content) => HandleCameraPressAndHold("/cameraRight", content, (b) =>
                 {
                     if (b)
                     {
@@ -108,7 +108,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                     ptzCamera.PanStop();
                 }));
-                AddAction("/cameraZoomIn", (id, content) => HandleCameraPressAndHold(content, (b) =>
+                AddAction("/cameraZoomIn", (id, content) => HandleCameraPressAndHold("/cameraZoomIn", content, (b) =>
                 {
                     if (b)
                     {
@@ -118,7 +118,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
                     ptzCamera.ZoomStop();
                 }));
-                AddAction("/cameraZoomOut", (id, content) => HandleCameraPressAndHold(content, (b) =>
+                AddAction("/cameraZoomOut", (id, content) => HandleCameraPressAndHold("/cameraZoomOut", content, (b) =>
                 {
                     if (b)
                     {
@@ -163,7 +163,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             }
         }
 
-        private void HandleCameraPressAndHold(JToken content, Action<bool> cameraAction)
+        private void HandleCameraPressAndHold(string actionPath, JToken content, Action<bool> cameraAction)
         {
             var state = content.ToObject<MobileControlSimpleContent<string>>();
 
@@ -173,7 +173,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 return;
             }
 
-            timerHandler(Camera.Key, cameraAction);
+            // Keyed per action, so holds on different axes (e.g. pan and tilt for a diagonal move) are independent.
+            timerHandler($"{Camera.Key}{actionPath}", cameraAction);
 
         }
 

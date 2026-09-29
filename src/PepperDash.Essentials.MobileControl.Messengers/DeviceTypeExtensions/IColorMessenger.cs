@@ -27,10 +27,10 @@ namespace PepperDash.Essentials.Room.MobileControl
         {
             base.RegisterActions();
 
-            AddAction("/red", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => colorDevice?.Red(b)));
-            AddAction("/green", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => colorDevice?.Green(b)));
-            AddAction("/yellow", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => colorDevice?.Yellow(b)));
-            AddAction("/blue", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => colorDevice?.Blue(b)));
+            AddAction("/red", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/red", content, (b) => colorDevice?.Red(b)));
+            AddAction("/green", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/green", content, (b) => colorDevice?.Green(b)));
+            AddAction("/yellow", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/yellow", content, (b) => colorDevice?.Yellow(b)));
+            AddAction("/blue", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/blue", content, (b) => colorDevice?.Blue(b)));
         }
     }
 }

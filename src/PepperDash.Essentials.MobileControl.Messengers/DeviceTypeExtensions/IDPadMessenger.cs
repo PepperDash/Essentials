@@ -27,13 +27,13 @@ namespace PepperDash.Essentials.Room.MobileControl
         {
             base.RegisterActions();
 
-            AddAction("/up", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => dpadDevice?.Up(b)));
-            AddAction("/down", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => dpadDevice?.Down(b)));
-            AddAction("/left", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => dpadDevice?.Left(b)));
-            AddAction("/right", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => dpadDevice?.Right(b)));
-            AddAction("/select", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => dpadDevice?.Select(b)));
-            AddAction("/menu", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => dpadDevice?.Menu(b)));
-            AddAction("/exit", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => dpadDevice?.Exit(b)));
+            AddAction("/up", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/up", content, (b) => dpadDevice?.Up(b)));
+            AddAction("/down", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/down", content, (b) => dpadDevice?.Down(b)));
+            AddAction("/left", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/left", content, (b) => dpadDevice?.Left(b)));
+            AddAction("/right", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/right", content, (b) => dpadDevice?.Right(b)));
+            AddAction("/select", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/select", content, (b) => dpadDevice?.Select(b)));
+            AddAction("/menu", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/menu", content, (b) => dpadDevice?.Menu(b)));
+            AddAction("/exit", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/exit", content, (b) => dpadDevice?.Exit(b)));
         }
     }
 }
