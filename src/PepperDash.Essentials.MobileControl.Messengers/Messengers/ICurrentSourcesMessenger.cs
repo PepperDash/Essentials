@@ -40,21 +40,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
       sourceDevice.CurrentSourcesChanged += (sender, e) =>
       {
-        // need to copy the dictionaries to avoid enumeration issues
-        var currentSourceKeys = sourceDevice.CurrentSourceKeys.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        
         PostStatusMessage(JToken.FromObject(new
         {
-          currentSourceKeys,
+          currentSourceKeys = CopyCurrentSourceKeys(),
         }));
       };
     }
+
+    // Copies to avoid enumeration issues, and sends a cleared source as "" rather than null:
+    // clients merge status updates into existing state and skip nulls, so a null would leave the
+    // previous source showing.
+    private Dictionary<eRoutingSignalType, string> CopyCurrentSourceKeys() =>
+      sourceDevice.CurrentSourceKeys.ToDictionary(kvp => kvp.Key, kvp => kvp.Value ?? string.Empty);
 
     private void SendCurrentSourceStatus(string id)
     {
       var message = new CurrentSourcesStateMessage
       {
-        CurrentSourceKeys = sourceDevice.CurrentSourceKeys,
+        CurrentSourceKeys = CopyCurrentSourceKeys(),
       };
 
       PostStatusMessage(message, id);
