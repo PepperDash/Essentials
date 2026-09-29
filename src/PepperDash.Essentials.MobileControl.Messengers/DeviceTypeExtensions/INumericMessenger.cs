@@ -28,18 +28,18 @@ namespace PepperDash.Essentials.Room.MobileControl
         {
             base.RegisterActions();
 
-            AddAction("/num0", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit0(b)));
-            AddAction("/num1", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit1(b)));
-            AddAction("/num2", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit2(b)));
-            AddAction("/num3", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit3(b)));
-            AddAction("/num4", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit4(b)));
-            AddAction("/num5", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit5(b)));
-            AddAction("/num6", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit6(b)));
-            AddAction("/num7", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit7(b)));
-            AddAction("/num8", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit8(b)));
-            AddAction("/num9", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.Digit9(b)));
-            AddAction("/numDash", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.KeypadAccessoryButton1(b)));
-            AddAction("/numEnter", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => keypadDevice?.KeypadAccessoryButton2(b)));
+            AddAction("/num0", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num0", content, (b) => keypadDevice?.Digit0(b)));
+            AddAction("/num1", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num1", content, (b) => keypadDevice?.Digit1(b)));
+            AddAction("/num2", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num2", content, (b) => keypadDevice?.Digit2(b)));
+            AddAction("/num3", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num3", content, (b) => keypadDevice?.Digit3(b)));
+            AddAction("/num4", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num4", content, (b) => keypadDevice?.Digit4(b)));
+            AddAction("/num5", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num5", content, (b) => keypadDevice?.Digit5(b)));
+            AddAction("/num6", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num6", content, (b) => keypadDevice?.Digit6(b)));
+            AddAction("/num7", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num7", content, (b) => keypadDevice?.Digit7(b)));
+            AddAction("/num8", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num8", content, (b) => keypadDevice?.Digit8(b)));
+            AddAction("/num9", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/num9", content, (b) => keypadDevice?.Digit9(b)));
+            AddAction("/numDash", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/numDash", content, (b) => keypadDevice?.KeypadAccessoryButton1(b)));
+            AddAction("/numEnter", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/numEnter", content, (b) => keypadDevice?.KeypadAccessoryButton2(b)));
             // Deal with the Accessory functions on the numpad later
         }
     }

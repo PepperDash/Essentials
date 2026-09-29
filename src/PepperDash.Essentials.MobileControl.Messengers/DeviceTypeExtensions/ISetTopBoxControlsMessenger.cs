@@ -29,8 +29,8 @@ namespace PepperDash.Essentials.Room.MobileControl
         {
             base.RegisterActions();
             AddAction("/fullStatus", (id, content) => SendISetTopBoxControlsFullMessageObject());
-            AddAction("/dvrList", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => stbDevice?.DvrList(b)));
-            AddAction("/replay", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => stbDevice?.Replay(b)));
+            AddAction("/dvrList", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/dvrList", content, (b) => stbDevice?.DvrList(b)));
+            AddAction("/replay", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/replay", content, (b) => stbDevice?.Replay(b)));
         }
         /// <summary>
         /// Helper method to build call status for vtc

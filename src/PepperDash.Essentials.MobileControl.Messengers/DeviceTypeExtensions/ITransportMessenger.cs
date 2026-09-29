@@ -28,14 +28,14 @@ namespace PepperDash.Essentials.Room.MobileControl
         {
             base.RegisterActions();
 
-            AddAction("/play", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => transportDevice?.Play(b)));
-            AddAction("/pause", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => transportDevice?.Pause(b)));
-            AddAction("/stop", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => transportDevice?.Stop(b)));
-            AddAction("/prevTrack", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => transportDevice?.ChapPlus(b)));
-            AddAction("/nextTrack", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => transportDevice?.ChapMinus(b)));
-            AddAction("/rewind", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => transportDevice?.Rewind(b)));
-            AddAction("/ffwd", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => transportDevice?.FFwd(b)));
-            AddAction("/record", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) => transportDevice?.Record(b)));
+            AddAction("/play", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/play", content, (b) => transportDevice?.Play(b)));
+            AddAction("/pause", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/pause", content, (b) => transportDevice?.Pause(b)));
+            AddAction("/stop", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/stop", content, (b) => transportDevice?.Stop(b)));
+            AddAction("/prevTrack", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/prevTrack", content, (b) => transportDevice?.ChapPlus(b)));
+            AddAction("/nextTrack", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/nextTrack", content, (b) => transportDevice?.ChapMinus(b)));
+            AddAction("/rewind", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/rewind", content, (b) => transportDevice?.Rewind(b)));
+            AddAction("/ffwd", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/ffwd", content, (b) => transportDevice?.FFwd(b)));
+            AddAction("/record", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/record", content, (b) => transportDevice?.Record(b)));
         }
 
     }

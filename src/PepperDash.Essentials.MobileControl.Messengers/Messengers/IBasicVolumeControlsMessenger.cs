@@ -67,7 +67,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <inheritdoc />
         protected override void RegisterActions()
         {
-            AddAction("/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
+            AddAction("/volumeUp", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/volumeUp", content, (b) =>
                         {
                             Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Calling {localDevice} volume up with {value}", DeviceKey, b);
                             try
@@ -85,7 +85,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                             device.MuteToggle();
                         });
 
-            AddAction("/volumeDown", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, content, (b) =>
+            AddAction("/volumeDown", (id, content) => PressAndHoldHandler.HandlePressAndHold(DeviceKey, "/volumeDown", content, (b) =>
             {
                 Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Calling {localDevice} volume down with {value}", DeviceKey, b);
 
