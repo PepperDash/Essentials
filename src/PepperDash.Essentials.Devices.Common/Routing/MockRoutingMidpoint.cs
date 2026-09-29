@@ -6,6 +6,7 @@ using PepperDash.Core;
 using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Devices.Common.Routing;
@@ -19,8 +20,12 @@ namespace PepperDash.Essentials.Devices.Common.Routing;
 /// <see cref="IRoutingMidpointWithFeedback"/> device cannot support.
 /// </summary>
 [Description("A mock routing midpoint (e.g. matrix switcher) device for testing routing logic without real hardware")]
-public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
+public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots, ICommunicationMonitor
 {
+    /// <inheritdoc />
+    /// <remarks>Always online: there's no real connection behind this mock to lose.</remarks>
+    public StatusMonitorBase CommunicationMonitor { get; }
+
     /// <summary>
     /// The configuration properties for this device.
     /// </summary>
@@ -39,6 +44,7 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
     public event RouteChangedEventHandler RouteChanged;
 
     private readonly Dictionary<string, MockRoutingOutputSlotInfo> _outputSlotsByKey = new Dictionary<string, MockRoutingOutputSlotInfo>();
+    private readonly List<MockRoutingInputSlotInfo> _syncAwareInputSlots = new List<MockRoutingInputSlotInfo>();
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, IRoutingSlotInfo> InputSlots { get; private set; }
@@ -53,6 +59,8 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
     public MockRoutingMidpoint(DeviceConfig config)
         : base(config.Key, config.Name)
     {
+        CommunicationMonitor = new MockCommunicationMonitor(this);
+
         PropertiesConfig = config.Properties != null
             ? JsonConvert.DeserializeObject<MockRoutingMidpointPropertiesConfig>(config.Properties.ToString())
             : null;
@@ -91,8 +99,23 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
                 InputPorts.Add(port);
 
                 slotNumber++;
-                inputSlots[portConfig.Name] = new MockRoutingSlotInfo(
-                    portConfig.Name, portConfig.Label ?? portConfig.Name, slotNumber, portConfig.SignalType);
+
+                // Video sync is a video concept - an audio-only input (e.g. a mic) gets the bare
+                // slot info, with no IRoutingInputSlotInfo/sync status at all, rather than a
+                // meaningless always-true dot.
+                if (portConfig.SignalType.HasFlag(eRoutingSignalType.Video))
+                {
+                    var syncSlot = new MockRoutingInputSlotInfo(
+                        portConfig.Name, portConfig.Label ?? portConfig.Name, slotNumber, portConfig.SignalType,
+                        portConfig.TxDeviceKey, portConfig.StartsWithSync);
+                    inputSlots[portConfig.Name] = syncSlot;
+                    _syncAwareInputSlots.Add(syncSlot);
+                }
+                else
+                {
+                    inputSlots[portConfig.Name] = new MockRoutingSlotInfo(
+                        portConfig.Name, portConfig.Label ?? portConfig.Name, slotNumber, portConfig.SignalType);
+                }
             }
 
             slotNumber = 0;
@@ -126,6 +149,31 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
         }
     }
 
+    /// <summary>
+    /// Links each input slot's <see cref="MockRoutingInputSlotInfo.TxDeviceKey"/> (when configured) to
+    /// that device's real video sync, once every device exists - a plain constructor-time lookup
+    /// can't do this since the device it names may not have been built yet.
+    /// </summary>
+    protected override bool CustomActivate()
+    {
+        foreach (var slot in _syncAwareInputSlots)
+        {
+            if (string.IsNullOrEmpty(slot.TxDeviceKey)) continue;
+
+            if (!(DeviceManager.GetDeviceForKey(slot.TxDeviceKey) is IVideoSync txDevice))
+            {
+                this.LogWarning("Tx device '{txDeviceKey}' for input slot '{slot}' not found or does not implement IVideoSync",
+                    slot.TxDeviceKey, slot.Key);
+                continue;
+            }
+
+            slot.SetVideoSyncDetected(txDevice.VideoSyncDetected);
+            txDevice.VideoSyncChanged += (sender, args) => slot.SetVideoSyncDetected(txDevice.VideoSyncDetected);
+        }
+
+        return base.CustomActivate();
+    }
+
     /// <inheritdoc />
     public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
     {
@@ -139,24 +187,9 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
                 return;
             }
 
-            // Remove any existing route to this output before making or clearing the new one.
-            var existingRoute = CurrentRoutes.FirstOrDefault(r => r.OutputPort?.Key == outputPort.Key);
-            if (existingRoute != null)
-            {
-                CurrentRoutes.Remove(existingRoute);
-            }
-
             if (inputSelector == null)
             {
-                this.LogInformation("Clearing route to output {output} on {key}", outputPort.Key, Key);
-
-                if (_outputSlotsByKey.TryGetValue(outputPort.Key, out var clearedSlot))
-                {
-                    clearedSlot.ClearRoute(signalType);
-                }
-
-                var clearedDescriptor = new RouteSwitchDescriptor(outputPort, null);
-                RouteChanged?.Invoke(this, clearedDescriptor);
+                ClearRouteOnOutput(outputPort, signalType);
                 return;
             }
 
@@ -168,9 +201,6 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
                 return;
             }
 
-            var descriptor = new RouteSwitchDescriptor(outputPort, inputPort);
-            CurrentRoutes.Add(descriptor);
-
             if (_outputSlotsByKey.TryGetValue(outputPort.Key, out var routedSlot))
             {
                 routedSlot.SetRoute(signalType, inputPort.Key);
@@ -179,7 +209,9 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
             this.LogInformation("Executed switch: {input} -> {output} ({signalType}) on {key}",
                 inputPort.Key, outputPort.Key, signalType, Key);
 
-            RouteChanged?.Invoke(this, descriptor);
+            RefreshCurrentRoutes();
+
+            RouteChanged?.Invoke(this, new RouteSwitchDescriptor(outputPort, inputPort));
         }
         catch (Exception ex)
         {
@@ -190,7 +222,57 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots
     /// <inheritdoc />
     public void ClearRoute(object outputSelector, eRoutingSignalType signalType)
     {
-        ExecuteSwitch(null, outputSelector, signalType);
+        var outputPort = OutputPorts.FirstOrDefault(p => Equals(p.Selector, outputSelector));
+
+        if (outputPort == null)
+        {
+            this.LogWarning("Unable to find output port for selector {selector} on {key}", outputSelector, Key);
+            return;
+        }
+
+        ClearRouteOnOutput(outputPort, signalType);
+    }
+
+    private void ClearRouteOnOutput(RoutingOutputPort outputPort, eRoutingSignalType signalType)
+    {
+        this.LogInformation("Clearing route to output {output} on {key} ({signalType})", outputPort.Key, Key, signalType);
+
+        if (_outputSlotsByKey.TryGetValue(outputPort.Key, out var clearedSlot))
+        {
+            clearedSlot.ClearRoute(signalType);
+        }
+
+        RefreshCurrentRoutes();
+
+        RouteChanged?.Invoke(this, new RouteSwitchDescriptor(outputPort, null));
+    }
+
+    /// <summary>
+    /// Rebuilds the flat <see cref="CurrentRoutes"/> list (required by <see cref="IRoutingMidpointWithFeedback"/>,
+    /// consumed by clients that only understand the bare contract) from the per-signal-type routes each
+    /// output slot actually tracks - one descriptor per (output, signal type) currently routed, so an
+    /// output with independent audio/video sources yields two descriptors rather than one overwriting
+    /// the other.
+    /// </summary>
+    private void RefreshCurrentRoutes()
+    {
+        CurrentRoutes.Clear();
+
+        foreach (var outputPort in OutputPorts)
+        {
+            if (!_outputSlotsByKey.TryGetValue(outputPort.Key, out var slot)) continue;
+
+            foreach (var route in slot.CurrentRouteInputKeys)
+            {
+                var inputPort = InputPorts.FirstOrDefault(p => p.Key == route.Value);
+                if (inputPort != null)
+                {
+                    // Keep which signal this entry carries: an AudioVideo input can be routed for audio
+                    // only, so the input port's own type isn't enough to tell consumers what's routed.
+                    CurrentRoutes.Add(new RouteSwitchDescriptor(outputPort, inputPort) { SignalType = route.Key });
+                }
+            }
+        }
     }
 }
 
@@ -224,6 +306,58 @@ class MockRoutingSlotInfo : IRoutingSlotInfo
 }
 
 /// <summary>
+/// Named input routing slot info for a <see cref="MockRoutingMidpoint"/> input port that supports
+/// video, adding the <see cref="IRoutingInputSlotInfo"/> status (video sync, online state,
+/// transmitter device key) the mobile-control named-routing-slots messenger surfaces when present.
+/// </summary>
+class MockRoutingInputSlotInfo : MockRoutingSlotInfo, IRoutingInputSlotInfo
+{
+    private bool _videoSyncDetected;
+
+    /// <inheritdoc />
+    public string TxDeviceKey { get; }
+
+    /// <inheritdoc />
+    public BoolFeedback IsOnline { get; }
+
+    /// <inheritdoc />
+    public bool VideoSyncDetected => _videoSyncDetected;
+
+    /// <inheritdoc />
+    public event EventHandler VideoSyncChanged;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MockRoutingInputSlotInfo"/> class.
+    /// </summary>
+    public MockRoutingInputSlotInfo(string key, string name, int slotNumber, eRoutingSignalType supportedSignalTypes,
+        string txDeviceKey, bool startsWithSync)
+        : base(key, name, slotNumber, supportedSignalTypes)
+    {
+        TxDeviceKey = txDeviceKey ?? string.Empty;
+        _videoSyncDetected = startsWithSync;
+
+        // No real endpoint behind a mock port, so this is always online - only VideoSyncDetected
+        // (fixed config value, or live-linked via TxDeviceKey - see MockRoutingMidpoint.CustomActivate)
+        // varies.
+        IsOnline = new BoolFeedback(() => true);
+        IsOnline.FireUpdate();
+    }
+
+    /// <summary>
+    /// Sets <see cref="VideoSyncDetected"/> and raises <see cref="VideoSyncChanged"/> if it changed -
+    /// called from config-seeded startup and, when <see cref="TxDeviceKey"/> names a device
+    /// implementing <c>IVideoSync</c>, to mirror that device's real sync state live.
+    /// </summary>
+    public void SetVideoSyncDetected(bool detected)
+    {
+        if (_videoSyncDetected == detected) return;
+
+        _videoSyncDetected = detected;
+        VideoSyncChanged?.Invoke(this, EventArgs.Empty);
+    }
+}
+
+/// <summary>
 /// Named output routing slot info for a <see cref="MockRoutingMidpoint"/> output port, tracking the
 /// currently routed input key per signal type since the mock's flat <see cref="MockRoutingMidpoint.CurrentRoutes"/>
 /// list does not carry signal type.
@@ -238,6 +372,12 @@ class MockRoutingOutputSlotInfo : MockRoutingSlotInfo, IRoutingOutputSlotInfo
     /// <inheritdoc />
     public event EventHandler OutputSlotChanged;
 
+    // The single-flag signal types (Audio, Video, Usb, ...) a combined value such as AudioVideo breaks into.
+    private static readonly eRoutingSignalType[] AtomicSignalTypes = Enum.GetValues(typeof(eRoutingSignalType))
+        .Cast<eRoutingSignalType>()
+        .Where(t => t != 0 && ((int)t & ((int)t - 1)) == 0)
+        .ToArray();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MockRoutingOutputSlotInfo"/> class.
     /// </summary>
@@ -249,18 +389,44 @@ class MockRoutingOutputSlotInfo : MockRoutingSlotInfo, IRoutingOutputSlotInfo
     /// <summary>
     /// Records the input key routed to this output for the given signal type and raises <see cref="OutputSlotChanged"/>.
     /// </summary>
+    /// <remarks>
+    /// Decomposes a combined signal type (e.g. <see cref="eRoutingSignalType.AudioVideo"/>) into
+    /// separate Audio/Video entries - the same way <c>DisplayBase.SetCurrentSource</c> does - rather
+    /// than keying the dictionary by the combined value itself. Without this, routing "Audio &amp;
+    /// Video" (the common case) would record a single entry under the key <c>AudioVideo</c> that an
+    /// output slot's independent Audio/Video crosspoint feedback would never match, since a later
+    /// audio-only or video-only switch looks up <c>Audio</c>/<c>Video</c> individually.
+    /// </remarks>
     public void SetRoute(eRoutingSignalType signalType, string inputKey)
     {
-        _currentRouteInputKeys[signalType] = inputKey;
-        OutputSlotChanged?.Invoke(this, EventArgs.Empty);
+        var changed = false;
+
+        foreach (var type in AtomicSignalTypes.Where(t => signalType.HasFlag(t)))
+        {
+            _currentRouteInputKeys[type] = inputKey;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            OutputSlotChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     /// <summary>
-    /// Clears the routed input key for the given signal type and raises <see cref="OutputSlotChanged"/> if it changed.
+    /// Clears the routed input key for the given signal type (decomposed the same way as
+    /// <see cref="SetRoute"/>) and raises <see cref="OutputSlotChanged"/> if anything changed.
     /// </summary>
     public void ClearRoute(eRoutingSignalType signalType)
     {
-        if (_currentRouteInputKeys.Remove(signalType))
+        var changed = false;
+
+        foreach (var type in AtomicSignalTypes.Where(t => signalType.HasFlag(t)))
+        {
+            changed |= _currentRouteInputKeys.Remove(type);
+        }
+
+        if (changed)
         {
             OutputSlotChanged?.Invoke(this, EventArgs.Empty);
         }

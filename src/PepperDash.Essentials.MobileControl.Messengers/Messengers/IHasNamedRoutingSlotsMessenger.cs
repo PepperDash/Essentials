@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -68,23 +69,39 @@ namespace PepperDash.Essentials.AppServer.Messengers
             return message;
         }
 
+        // The single-flag signal types (Audio, Video, Usb, ...) a slot's supported types break into.
+        private static readonly eRoutingSignalType[] AtomicSignalTypes = Enum.GetValues(typeof(eRoutingSignalType))
+            .Cast<eRoutingSignalType>()
+            .Where(t => t != 0 && ((int)t & ((int)t - 1)) == 0)
+            .ToArray();
+
         private static RoutingSlotMessage BuildOutputMessage(
             IRoutingOutputSlotInfo slot,
             IReadOnlyDictionary<string, RoutingSlotMessage> inputs)
         {
+            // Every supported signal type gets an entry, with "" for "nothing routed": clients merge
+            // status updates into existing state, so an omitted or null entry would leave a cleared
+            // route showing its previous input.
+            var routeInputKeys = AtomicSignalTypes
+                .Where(t => slot.SupportedSignalTypes.HasFlag(t))
+                .ToDictionary(
+                    t => t.ToString(),
+                    t => slot.CurrentRouteInputKeys.TryGetValue(t, out var inputKey) && inputKey != null ? inputKey : string.Empty);
+
             var message = new RoutingSlotMessage
             {
                 Key = slot.Key,
                 Name = slot.Name,
                 SlotNumber = slot.SlotNumber,
                 SupportedSignalTypes = slot.SupportedSignalTypes.ToString(),
-                CurrentRouteInputKeys = slot.CurrentRouteInputKeys
-                    .ToDictionary(r => r.Key.ToString(), r => r.Value),
-                CurrentRoutes = slot.CurrentRouteInputKeys.ToDictionary(
-                    r => r.Key.ToString(),
-                    r => inputs.TryGetValue(r.Value, out var input)
-                        ? input
-                        : new RoutingSlotMessage { Key = r.Value })
+                CurrentRouteInputKeys = routeInputKeys,
+                CurrentRoutes = routeInputKeys.ToDictionary(
+                    r => r.Key,
+                    r => r.Value == string.Empty
+                        ? new RoutingSlotMessage { Key = string.Empty, Name = string.Empty }
+                        : inputs.TryGetValue(r.Value, out var input)
+                            ? input
+                            : new RoutingSlotMessage { Key = r.Value })
             };
 
             if (slot is IRoutingOutputSlotStatus status)

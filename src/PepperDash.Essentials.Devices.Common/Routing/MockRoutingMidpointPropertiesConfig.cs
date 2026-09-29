@@ -58,4 +58,25 @@ public class MockRoutingMidpointPortConfig
     /// </summary>
     [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
     public string Label { get; set; }
+
+    /// <summary>
+    /// For an input port that supports video only: whether it reports video sync detected on
+    /// startup, via <see cref="IRoutingInputSlotInfo.VideoSyncDetected"/>. Defaults to true - a
+    /// source you have to explicitly break is a better mock default than one that starts broken.
+    /// Ignored for output ports and for audio-only input ports (no video to sync), and overridden by
+    /// <see cref="TxDeviceKey"/> when that names a device implementing <c>IVideoSync</c>.
+    /// </summary>
+    [JsonProperty("startsWithSync")]
+    public bool StartsWithSync { get; set; } = true;
+
+    /// <summary>
+    /// For an input port that supports video only: optional key of the device feeding it, surfaced
+    /// via <see cref="IRoutingInputSlotInfo.TxDeviceKey"/>. When that device implements
+    /// <c>PepperDash.Essentials.Core.Routing.IVideoSync</c>, the slot mirrors its real
+    /// <c>VideoSyncDetected</c>/<c>VideoSyncChanged</c> live instead of using the fixed
+    /// <see cref="StartsWithSync"/> value - otherwise it's purely informational. Ignored for output
+    /// ports and for audio-only input ports.
+    /// </summary>
+    [JsonProperty("txDeviceKey", NullValueHandling = NullValueHandling.Ignore)]
+    public string TxDeviceKey { get; set; }
 }

@@ -20,6 +20,12 @@
         public RoutingInputPort InputPort { get; set; }
 
         /// <summary>
+        /// The signal type this switch carries, for devices that route signal types independently.
+        /// Null means the switch carries whatever the input port supports.
+        /// </summary>
+        public eRoutingSignalType? SignalType { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RouteSwitchDescriptor"/> class for sink devices (no output port).
         /// </summary>
         /// <param name="inputPort">The input port being switched to.</param>

@@ -100,7 +100,14 @@ namespace PepperDash.Essentials.Core
 
                 if (route.SwitchingDevice is IRoutingMidpointWithFeedback switchingDevice)
                 {
-                    switchingDevice.ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
+                    // OutputPort is null when the route terminates on this midpoint and it has no single
+                    // output for the signal type; the device decides what a null output selector means.
+                    switchingDevice.ExecuteSwitch(route.InputPort?.Selector, route.OutputPort?.Selector, SignalType);
+
+                    if (route.OutputPort?.InUseTracker == null)
+                    {
+                        continue;
+                    }
 
                     route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
 
@@ -121,6 +128,13 @@ namespace PepperDash.Essentials.Core
             {
                 if (route.SwitchingDevice is IRoutingMidpointWithFeedback switchingDevice)
                 {
+                    // With no output port (a terminal midpoint with no single output), there is nothing to
+                    // clear: a null input and null output selector would carry no meaning for the device.
+                    if (route.OutputPort == null)
+                    {
+                        continue;
+                    }
+
                     if (clearRoute)
                     {
                         try
@@ -132,11 +146,6 @@ namespace PepperDash.Essentials.Core
                             Debug.LogError("Error executing switch: {exception}", e.Message);
                             Debug.LogDebug(e, "Stack Trace: ");
                         }
-                    }
-
-                    if (route.OutputPort == null)
-                    {
-                        continue;
                     }
 
                     if (route.OutputPort.InUseTracker != null)

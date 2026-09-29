@@ -710,13 +710,30 @@ public static class Extensions
             // it's a sink device
             routeTable.Routes.Add(new RouteSwitchDescriptor(goodInputPort));
         }
-        else if (destination is IRoutingMidpointWithFeedback)
+        else if (destination is IRoutingMidpointWithFeedback midpoint)
         {
-            routeTable.Routes.Add(new RouteSwitchDescriptor(outputPortToUse, goodInputPort));
+            // outputPortToUse is only null when the midpoint is the route's terminal destination, so no
+            // downstream device asked for a particular output. Keep the hop so the midpoint still selects
+            // its input, and use its output only when that choice is unambiguous.
+            var outputPort = outputPortToUse ?? GetOnlyOutputPortForSignalType(midpoint, signalType);
+
+            if (outputPort == null)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, "Route terminates on midpoint {midpointKey} with no single output for {signalType}; switching input {inputPortKey} with no output selector", destination, destination.Key, signalType, goodInputPort.Key);
+            }
+
+            routeTable.Routes.Add(new RouteSwitchDescriptor(outputPort, goodInputPort));
         }
         else // device is merely IRoutingInputOutputs
             Debug.LogMessage(LogEventLevel.Verbose, "No routing. Passthrough device", destination);
 
         return true;
+    }
+
+    private static RoutingOutputPort GetOnlyOutputPortForSignalType(IRoutingOutputs device, eRoutingSignalType signalType)
+    {
+        var candidates = device.OutputPorts?.Where(p => p.Type.HasFlag(signalType)).Take(2).ToList();
+
+        return candidates?.Count == 1 ? candidates[0] : null;
     }
 }
