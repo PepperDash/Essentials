@@ -267,7 +267,9 @@ public class MockRoutingMidpoint : EssentialsDevice, IHasNamedRoutingSlots, ICom
                 var inputPort = InputPorts.FirstOrDefault(p => p.Key == route.Value);
                 if (inputPort != null)
                 {
-                    CurrentRoutes.Add(new RouteSwitchDescriptor(outputPort, inputPort));
+                    // Keep which signal this entry carries: an AudioVideo input can be routed for audio
+                    // only, so the input port's own type isn't enough to tell consumers what's routed.
+                    CurrentRoutes.Add(new RouteSwitchDescriptor(outputPort, inputPort) { SignalType = route.Key });
                 }
             }
         }
@@ -370,6 +372,12 @@ class MockRoutingOutputSlotInfo : MockRoutingSlotInfo, IRoutingOutputSlotInfo
     /// <inheritdoc />
     public event EventHandler OutputSlotChanged;
 
+    // The single-flag signal types (Audio, Video, Usb, ...) a combined value such as AudioVideo breaks into.
+    private static readonly eRoutingSignalType[] AtomicSignalTypes = Enum.GetValues(typeof(eRoutingSignalType))
+        .Cast<eRoutingSignalType>()
+        .Where(t => t != 0 && ((int)t & ((int)t - 1)) == 0)
+        .ToArray();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MockRoutingOutputSlotInfo"/> class.
     /// </summary>
@@ -393,15 +401,9 @@ class MockRoutingOutputSlotInfo : MockRoutingSlotInfo, IRoutingOutputSlotInfo
     {
         var changed = false;
 
-        if (signalType.HasFlag(eRoutingSignalType.Audio))
+        foreach (var type in AtomicSignalTypes.Where(t => signalType.HasFlag(t)))
         {
-            _currentRouteInputKeys[eRoutingSignalType.Audio] = inputKey;
-            changed = true;
-        }
-
-        if (signalType.HasFlag(eRoutingSignalType.Video))
-        {
-            _currentRouteInputKeys[eRoutingSignalType.Video] = inputKey;
+            _currentRouteInputKeys[type] = inputKey;
             changed = true;
         }
 
@@ -419,14 +421,9 @@ class MockRoutingOutputSlotInfo : MockRoutingSlotInfo, IRoutingOutputSlotInfo
     {
         var changed = false;
 
-        if (signalType.HasFlag(eRoutingSignalType.Audio))
+        foreach (var type in AtomicSignalTypes.Where(t => signalType.HasFlag(t)))
         {
-            changed |= _currentRouteInputKeys.Remove(eRoutingSignalType.Audio);
-        }
-
-        if (signalType.HasFlag(eRoutingSignalType.Video))
-        {
-            changed |= _currentRouteInputKeys.Remove(eRoutingSignalType.Video);
+            changed |= _currentRouteInputKeys.Remove(type);
         }
 
         if (changed)

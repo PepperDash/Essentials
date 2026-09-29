@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -68,6 +69,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
             return message;
         }
 
+        // The single-flag signal types (Audio, Video, Usb, ...) a slot's supported types break into.
+        private static readonly eRoutingSignalType[] AtomicSignalTypes = Enum.GetValues(typeof(eRoutingSignalType))
+            .Cast<eRoutingSignalType>()
+            .Where(t => t != 0 && ((int)t & ((int)t - 1)) == 0)
+            .ToArray();
+
         private static RoutingSlotMessage BuildOutputMessage(
             IRoutingOutputSlotInfo slot,
             IReadOnlyDictionary<string, RoutingSlotMessage> inputs)
@@ -75,7 +82,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             // Every supported signal type gets an entry, with "" for "nothing routed": clients merge
             // status updates into existing state, so an omitted or null entry would leave a cleared
             // route showing its previous input.
-            var routeInputKeys = new[] { eRoutingSignalType.Audio, eRoutingSignalType.Video }
+            var routeInputKeys = AtomicSignalTypes
                 .Where(t => slot.SupportedSignalTypes.HasFlag(t))
                 .ToDictionary(
                     t => t.ToString(),

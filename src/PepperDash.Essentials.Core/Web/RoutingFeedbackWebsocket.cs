@@ -209,7 +209,7 @@ public class RoutingFeedbackWebsocket : IKeyed
                 {
                     InputPortKey = r.InputPort.Key,
                     OutputPortKey = r.OutputPort?.Key,
-                    SignalType = r.InputPort.Type.ToString()
+                    SignalType = (r.SignalType ?? r.InputPort.Type).ToString()
                 })
                 .ToList();
         }
@@ -330,7 +330,7 @@ public class RoutingFeedbackWebsocket : IKeyed
                 {
                     InputPortKey = r.InputPort.Key,
                     OutputPortKey = r.OutputPort?.Key,
-                    SignalType = r.InputPort.Type.ToString()
+                    SignalType = (r.SignalType ?? r.InputPort.Type).ToString()
                 })
                 .ToList() ?? new List<MidpointRouteDto>();
 
