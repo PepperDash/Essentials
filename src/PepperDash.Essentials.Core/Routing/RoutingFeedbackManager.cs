@@ -44,7 +44,10 @@ namespace PepperDash.Essentials.Core.Routing
         public RoutingFeedbackManager(string key, string name)
             : base(key, name)
         {
-            AddPreActivationAction(BuildMidpointSinkMap);
+            // The midpoint-to-sink map is NOT built here: devices activate before tie lines are
+            // loaded (ControlSystem.Load), so at pre-activation TieLineCollection is still empty and
+            // the map would be empty too - silently dropping every midpoint RouteChanged.
+            // ControlSystem.LoadTieLines calls BuildMidpointSinkMap once tie lines exist.
             AddPreActivationAction(SubscribeForMidpointFeedback);
             AddPreActivationAction(SubscribeForSinkFeedback);
         }
@@ -54,8 +57,9 @@ namespace PepperDash.Essentials.Core.Routing
         /// for performance optimization in HandleMidpointUpdate.
         /// The map is derived from the static tie-line topology (every sink input port is traced
         /// upstream), so it does not depend on a sink having already reported its current input.
+        /// Must be called after tie lines are loaded, and again if they change.
         /// </summary>
-        private void BuildMidpointSinkMap()
+        public void BuildMidpointSinkMap()
         {
             midpointToSinkInputsMap = new Dictionary<string, HashSet<RoutingInputPort>>();
 
@@ -386,153 +390,109 @@ namespace PepperDash.Essentials.Core.Routing
                 return;
             }
 
-            // Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, "Getting source for first TieLine {tieLine}", this, firstTieLine);
-
-            TieLine sourceTieLine;
+            // Trace each signal type independently through the midpoints' *current* crosspoints.
+            // Audio and video can come from different sources (e.g. breakaway on a matrix), and a
+            // purely topological search (GetRouteToSource) only proves a source *could* be routed
+            // here, not that it currently is - so it can't be used to report feedback.
             try
             {
-                sourceTieLine = GetRootTieLine(firstTieLine);
+                while (RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPort.Key) != null) { }
 
-                if (sourceTieLine == null)
+                foreach (var signalType in new[] { eRoutingSignalType.Audio, eRoutingSignalType.Video })
                 {
+                    if (!firstTieLine.Type.HasFlag(signalType))
+                        continue;
+
+                    if (!TryGetActiveSourcePort(firstTieLine, signalType, new HashSet<string>(), out var sourcePort))
+                    {
+                        Debug.LogMessage(
+                            Serilog.Events.LogEventLevel.Debug,
+                            "Route to {destination}:{inputPort} ({signalType}) passes through a midpoint without route feedback. Leaving current source unchanged",
+                            this,
+                            destination.Key,
+                            inputPort.Key,
+                            signalType
+                        );
+                        continue;
+                    }
+
+                    var source = sourcePort?.ParentDevice as IRoutingOutputs;
+
                     Debug.LogMessage(
                         Serilog.Events.LogEventLevel.Debug,
-                        "No route found to source for inputPort {inputPort}. Clearing current source",
+                        "Setting {destination} current {signalType} source to {source}",
                         this,
-                        inputPort
+                        destination.Key,
+                        signalType,
+                        source?.Key ?? "none"
                     );
 
+                    destination.SetCurrentSource(signalType, source as IRoutingSource);
 
-                    // determine all the tie lines between the source and destination to determine the signal type
-                    // the type is the union of all the tie lines between the source and destination
+                    if (source == null)
+                        continue;
 
-                    // For now we assume the type matches the tie line connected to the destination
-                    destination.SetCurrentSource(firstTieLine.Type, null);
+                    var (route, _) = destination.GetRouteToSource(source, signalType, inputPort, sourcePort);
 
-                    // remove existing descriptor if any
-                    RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPort.Key);
-                    
-                    return;
+                    RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(route);
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogMessage(ex, "Error getting sourceTieLine: {Exception}", this, ex);
-                return;
+                Debug.LogMessage(ex, "Error updating current sources for {destination}: {Exception}", this, destination.Key, ex);
             }
-
-
-            // Get the routes from the destination to the source using the existing GetRouteToSource method
-            var routes = destination.GetRouteToSource(
-                sourceTieLine.SourcePort.ParentDevice as IRoutingOutputs,
-                sourceTieLine.Type,
-                inputPort,
-                sourceTieLine.SourcePort
-            );
-
-            // remove existing descriptor if any
-            RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPort.Key);
-
-            // Add the new route descriptors to the collection
-            RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(routes.Item1);
-
-            if(routes.Item2 != null)
-            {
-                RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(routes.Item2);
-            }
-
         }
 
         /// <summary>
-        /// Traces a route back from a given tie line to find the root source tie line.
-        /// Leverages the existing Extensions.GetRouteToSource method with loop protection.
+        /// Walks upstream from a tie line, following each midpoint's reported <see cref="IRoutingMidpointWithFeedback.CurrentRoutes"/>
+        /// for the given signal type, to find the source output port currently feeding it.
         /// </summary>
-        /// <param name="tieLine">The starting tie line (typically connected to a sink or midpoint).</param>
-        /// <returns>The <see cref="TieLine"/> connected to the original source device, or null if the source cannot be determined.</returns>
-        private TieLine GetRootTieLine(TieLine tieLine)
+        /// <param name="tieLine">The tie line to start from (typically connected to a sink).</param>
+        /// <param name="signalType">A single signal type flag (Audio or Video).</param>
+        /// <param name="visited">Midpoint keys already walked, for loop protection.</param>
+        /// <param name="sourcePort">The source's output port, or null if nothing is currently routed.</param>
+        /// <returns>False if the path passes through a midpoint that can't report its routes, so the source is unknown.</returns>
+        private bool TryGetActiveSourcePort(
+            TieLine tieLine,
+            eRoutingSignalType signalType,
+            HashSet<string> visited,
+            out RoutingOutputPort sourcePort
+        )
         {
-            try
+            sourcePort = null;
+
+            var upstreamDevice = tieLine.SourcePort.ParentDevice;
+
+            if (!(upstreamDevice is IRoutingMidpoint))
             {
-                if (!(tieLine.DestinationPort.ParentDevice is IRoutingInputs sink))
-                {
-                    Debug.LogMessage(
-                        Serilog.Events.LogEventLevel.Debug,
-                        "TieLine destination {device} is not IRoutingInputs",
-                        this,
-                        tieLine.DestinationPort.ParentDevice.Key
-                    );
-                    return null;
-                }
-
-                // Get all potential sources (devices that only have outputs, not inputs+outputs)
-                var sources = DeviceManager.AllDevices
-                            .OfType<IRoutingOutputs>()
-                            .Where(s => !(s is IRoutingMidpoint));
-
-                // Try each signal type that this TieLine supports
-                var signalTypes = new[]
-                {
-                    eRoutingSignalType.Audio,
-                    eRoutingSignalType.Video,
-                    eRoutingSignalType.AudioVideo,
-                };
-
-                foreach (var signalType in signalTypes)
-                {
-                    if (!tieLine.Type.HasFlag(signalType))
-                        continue;
-
-                    foreach (var source in sources)
-                    {
-                        // Use the optimized route discovery with loop protection
-                        var (route, _) = sink.GetRouteToSource(
-                            source,
-                            signalType,
-                            tieLine.DestinationPort,
-                            null
-                        );
-
-                        if (route != null && route.Routes != null && route.Routes.Count > 0)
-                        {
-                            // Found a valid route - return the source TieLine
-                            var sourceTieLine = TieLineCollection.Default.FirstOrDefault(tl =>
-                                tl.SourcePort.ParentDevice.Key == source.Key &&
-                                tl.Type.HasFlag(signalType));
-
-                            if (sourceTieLine != null)
-                            {
-                                Debug.LogMessage(
-                                    Serilog.Events.LogEventLevel.Debug,
-                                    "Found route from {source} to {sink} with {count} hops",
-                                    this,
-                                    source.Key,
-                                    sink.Key,
-                                    route.Routes.Count
-                                );
-                                return sourceTieLine;
-                            }
-                        }
-                    }
-                }
-
-                Debug.LogMessage(
-                    Serilog.Events.LogEventLevel.Debug,
-                    "No route found to any source from {sink}",
-                    this,
-                    sink.Key
-                );
-                return null;
+                sourcePort = tieLine.SourcePort;
+                return true;
             }
-            catch (Exception ex)
-            {
-                Debug.LogMessage(
-                    ex,
-                    "Error getting root tieLine: {Exception}",
-                    this,
-                    ex
-                );
-                return null;
-            }
+
+            if (!(upstreamDevice is IRoutingMidpointWithFeedback midpoint))
+                return false;
+
+            if (!visited.Add(midpoint.Key))
+                return true;
+
+            var currentRoute = midpoint.CurrentRoutes?.ToList().FirstOrDefault(r =>
+                r.OutputPort != null
+                && r.InputPort != null
+                && r.OutputPort.Key == tieLine.SourcePort.Key
+                && (r.SignalType ?? r.InputPort.Type).HasFlag(signalType));
+
+            if (currentRoute == null)
+                return true;
+
+            var upstreamTieLine = TieLineCollection.Default.FirstOrDefault(tl =>
+                tl.DestinationPort.Key == currentRoute.InputPort.Key
+                && tl.DestinationPort.ParentDevice.Key == midpoint.Key
+                && tl.Type.HasFlag(signalType));
+
+            if (upstreamTieLine == null)
+                return true;
+
+            return TryGetActiveSourcePort(upstreamTieLine, signalType, visited, out sourcePort);
         }
     }
 }
