@@ -460,26 +460,30 @@ public static class Extensions
 
             RouteRequests.Remove(destination.Key);
 
-            var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPortKey);
-            if (current != null)
+            // An AudioVideo route is stored as separate Audio and Video descriptors. Release all of
+            // them: releasing only the first orphans the other, so later releases act on a stale
+            // route and its output ports never drop out of use.
+            var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptors(destination, inputPortKey);
+            var releasedSignalTypes = default(eRoutingSignalType);
+
+            foreach (var descriptor in current)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {0}", destination, current.Source.Key);
-                current.ReleaseRoutes(clearRoute);
+                Debug.LogMessage(LogEventLevel.Information, "Releasing current route: {source} ({signalType})", destination, descriptor.Source.Key, descriptor.SignalType);
+                descriptor.ReleaseRoutes(clearRoute);
+                releasedSignalTypes |= descriptor.SignalType;
             }
 
             // Clear ICurrentSources on the destination if clearing the route
             if (clearRoute && destination is ICurrentSources currentSourcesDevice)
             {
-                if (current != null)
+                if (current.Count > 0)
                 {
-                    var signalType = current.SignalType;
-
-                    if (signalType.HasFlag(eRoutingSignalType.Audio) || signalType.HasFlag(eRoutingSignalType.AudioVideo))
+                    if (releasedSignalTypes.HasFlag(eRoutingSignalType.Audio))
                     {
                         currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Audio, null);
                     }
 
-                    if (signalType.HasFlag(eRoutingSignalType.Video) || signalType.HasFlag(eRoutingSignalType.AudioVideo))
+                    if (releasedSignalTypes.HasFlag(eRoutingSignalType.Video))
                     {
                         currentSourcesDevice.SetCurrentSource(eRoutingSignalType.Video, null);
                     }

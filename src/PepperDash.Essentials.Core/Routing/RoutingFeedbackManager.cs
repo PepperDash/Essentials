@@ -396,7 +396,7 @@ namespace PepperDash.Essentials.Core.Routing
             // here, not that it currently is - so it can't be used to report feedback.
             try
             {
-                while (RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination, inputPort.Key) != null) { }
+                RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptors(destination, inputPort.Key);
 
                 foreach (var signalType in new[] { eRoutingSignalType.Audio, eRoutingSignalType.Video })
                 {
