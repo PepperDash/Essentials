@@ -612,6 +612,12 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
         Extensions.MapDestinationsToSources();
 
         Debug.LogMessage(LogEventLevel.Information, "All Routes Mapped.");
+
+        // Needs the tie lines above - it can't be built at activation, which runs before this.
+        foreach (var routingFeedbackManager in DeviceManager.AllDevices.OfType<RoutingFeedbackManager>())
+        {
+            routingFeedbackManager.BuildMidpointSinkMap();
+        }
     }
 
 
