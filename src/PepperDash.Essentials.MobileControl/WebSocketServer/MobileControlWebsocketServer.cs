@@ -273,6 +273,225 @@ namespace PepperDash.Essentials.WebSocketServer
             CrestronConsole.AddNewConsoleCommand(RemoveAllTokens, "MobileRemoveAllClients", "Removes all clients", ConsoleAccessLevelEnum.AccessOperator);
         }
 
+        private struct AllowedNetwork
+        {
+            public byte[] Address;
+            public int PrefixLength;
+        }
+
+        // null = no filtering configured
+        private List<AllowedNetwork> _allowedNetworks;
+
+        // Last time a rate-limited message was logged, keyed by message kind + source address
+        private readonly ConcurrentDictionary<string, DateTime> _lastLogged = new ConcurrentDictionary<string, DateTime>();
+
+        private static readonly TimeSpan _logInterval = TimeSpan.FromSeconds(60);
+
+        private const int MaxLoggedPathLength = 200;
+
+        private const int MaxRateLimitEntries = 512;
+
+        /// <summary>
+        /// Parses allowedClientNetworks. Invalid entries are logged and skipped.
+        /// </summary>
+        private void LoadAllowedNetworks()
+        {
+            var configured = _parent.Config.DirectServer.AllowedClientNetworks;
+
+            if (configured == null || configured.Count == 0)
+            {
+                _allowedNetworks = null;
+                return;
+            }
+
+            var parsed = new List<AllowedNetwork>();
+
+            foreach (var entry in configured)
+            {
+                if (TryParseCidr(entry, out var network))
+                {
+                    parsed.Add(network);
+                    continue;
+                }
+
+                this.LogWarning("Ignoring invalid allowedClientNetworks entry '{entry}'. Expected CIDR notation like 192.168.10.0/24", entry);
+            }
+
+            _allowedNetworks = parsed;
+
+            this.LogInformation("Restricting HTTP clients to the Control Subnet, loopback and {count} configured network(s)", parsed.Count);
+        }
+
+        private static bool TryParseCidr(string value, out AllowedNetwork network)
+        {
+            network = default(AllowedNetwork);
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            var parts = value.Trim().Split('/');
+
+            if (parts.Length > 2 || !System.Net.IPAddress.TryParse(parts[0], out var address))
+            {
+                return false;
+            }
+
+            var bytes = address.GetAddressBytes();
+            var prefix = bytes.Length * 8;
+
+            if (parts.Length == 2 && (!int.TryParse(parts[1], out prefix) || prefix < 0 || prefix > bytes.Length * 8))
+            {
+                return false;
+            }
+
+            network = new AllowedNetwork { Address = bytes, PrefixLength = prefix };
+            return true;
+        }
+
+        /// <summary>
+        /// True for ::ffff:a.b.c.d, the form an IPv4 client takes on a dual-stack listener.
+        /// </summary>
+        private static bool IsIPv4MappedBytes(byte[] bytes)
+        {
+            for (var i = 0; i < 10; i++)
+            {
+                if (bytes[i] != 0)
+                {
+                    return false;
+                }
+            }
+
+            return bytes[10] == 0xFF && bytes[11] == 0xFF;
+        }
+
+        private static bool IsInNetwork(byte[] remote, AllowedNetwork network)
+        {
+            if (remote.Length != network.Address.Length)
+            {
+                return false;
+            }
+
+            var fullBytes = network.PrefixLength / 8;
+            var remainingBits = network.PrefixLength % 8;
+
+            for (var i = 0; i < fullBytes; i++)
+            {
+                if (remote[i] != network.Address[i])
+                {
+                    return false;
+                }
+            }
+
+            if (remainingBits == 0)
+            {
+                return true;
+            }
+
+            var mask = (byte)(0xFF << (8 - remainingBits));
+            return (remote[fullBytes] & mask) == (network.Address[fullBytes] & mask);
+        }
+
+        /// <summary>
+        /// True if a request from this address should be served.
+        /// </summary>
+        private bool IsClientAllowed(System.Net.IPAddress remote)
+        {
+            if (_allowedNetworks == null)
+            {
+                return true;
+            }
+
+            if (remote == null)
+            {
+                return false;
+            }
+
+            if (System.Net.IPAddress.IsLoopback(remote))
+            {
+                return true;
+            }
+
+            var bytes = remote.GetAddressBytes();
+
+            // An IPv4 address can arrive as an IPv4-mapped IPv6 address (::ffff:a.b.c.d)
+            if (bytes.Length == 16 && IsIPv4MappedBytes(bytes))
+            {
+                var v4 = new byte[4];
+                Array.Copy(bytes, 12, v4, 0, 4);
+                bytes = v4;
+                remote = new System.Net.IPAddress(v4);
+            }
+
+            if (csIpAddress != null && csSubnetMask != null && remote.IsInSameSubnet(csIpAddress, csSubnetMask))
+            {
+                return true;
+            }
+
+            foreach (var network in _allowedNetworks)
+            {
+                if (IsInNetwork(bytes, network))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Refuses the request with a 403 if the client is not allowed. Returns true if it was refused.
+        /// </summary>
+        private bool RejectIfNotAllowed(HttpListenerRequest req, HttpListenerResponse res)
+        {
+            var remote = req.RemoteEndPoint?.Address;
+
+            if (IsClientAllowed(remote))
+            {
+                return false;
+            }
+
+            LogRateLimited("rejected", remote, () =>
+                this.LogWarning("Refused HTTP request from {host}: not in the Control Subnet or allowedClientNetworks", remote));
+
+            res.StatusCode = 403;
+            res.Close();
+            return true;
+        }
+
+        /// <summary>
+        /// Runs the log action at most once per interval for each (kind, address) pair, so that a scan
+        /// producing hundreds of requests cannot flood the log.
+        /// </summary>
+        private void LogRateLimited(string kind, System.Net.IPAddress remote, Action log)
+        {
+            var key = kind + "|" + (remote?.ToString() ?? "unknown");
+            var now = DateTime.UtcNow;
+
+            if (_lastLogged.Count > MaxRateLimitEntries)
+            {
+                _lastLogged.Clear();
+            }
+
+            if (_lastLogged.TryGetValue(key, out var last) && now - last < _logInterval)
+            {
+                return;
+            }
+
+            _lastLogged[key] = now;
+            log();
+        }
+
+        private static string TruncateForLog(string value)
+        {
+            if (value == null || value.Length <= MaxLoggedPathLength)
+            {
+                return value;
+            }
+
+            return value.Substring(0, MaxLoggedPathLength) + "...(" + value.Length + " chars)";
+        }
 
         /// <summary>
         /// Initialize method
@@ -283,6 +502,8 @@ namespace PepperDash.Essentials.WebSocketServer
             try
             {
                 base.Initialize();
+
+                LoadAllowedNetworks();
 
                 _server = new HttpServer(Port, _parent.Config.DirectServer.Secure);
 
@@ -1059,6 +1280,12 @@ namespace PepperDash.Essentials.WebSocketServer
             {
                 var req = e.Request;
                 var res = e.Response;
+
+                if (RejectIfNotAllowed(req, res))
+                {
+                    return;
+                }
+
                 res.ContentEncoding = Encoding.UTF8;
 
                 res.AddHeader("Access-Control-Allow-Origin", "*");
@@ -1066,8 +1293,11 @@ namespace PepperDash.Essentials.WebSocketServer
                 AddNoCacheHeaders(res);
 
                 var path = req.RawUrl;
+                var remote = req.RemoteEndPoint?.Address;
 
-                this.LogVerbose("GET Request received at path: {path}", path);
+                // Source address included so a scan can be attributed to a host. Path is truncated
+                // because a hostile request can carry an arbitrarily long one.
+                this.LogVerbose("GET Request received at path: {path} from host {host}", TruncateForLog(path), remote);
 
                 // Call for user app to join the room with a token
                 if (path.StartsWith("/mc/api/ui/joinroom"))
@@ -1091,6 +1321,9 @@ namespace PepperDash.Essentials.WebSocketServer
                 else
                 {
                     // All other paths
+                    LogRateLimited("unrecognised", remote, () =>
+                        this.LogInformation("Unrecognised request path from {host}: {path}", remote, TruncateForLog(path)));
+
                     res.StatusCode = 404;
                     res.Close();
                 }
@@ -1109,6 +1342,11 @@ namespace PepperDash.Essentials.WebSocketServer
                 var req = e.Request;
                 var res = e.Response;
 
+                if (RejectIfNotAllowed(req, res))
+                {
+                    return;
+                }
+
                 res.AddHeader("Access-Control-Allow-Origin", "*");
 
                 AddNoCacheHeaders(res);
@@ -1116,7 +1354,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 var path = req.RawUrl;
                 var ip = req.RemoteEndPoint.Address.ToString();
 
-                this.LogVerbose("POST Request received at path: {path} from host {host}", path, ip);
+                this.LogVerbose("POST Request received at path: {path} from host {host}", TruncateForLog(path), ip);
 
                 var body = new StreamReader(req.InputStream).ReadToEnd();
 
@@ -1154,6 +1392,11 @@ namespace PepperDash.Essentials.WebSocketServer
             try
             {
                 var res = e.Response;
+
+                if (RejectIfNotAllowed(e.Request, res))
+                {
+                    return;
+                }
 
                 res.AddHeader("Access-Control-Allow-Origin", "*");
                 res.AddHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -1361,6 +1604,9 @@ namespace PepperDash.Essentials.WebSocketServer
             //string filePath = path.Replace(string.Format("?token={0}", token), "");
 
             // if there's no file suffix strip any extra path data after the base href
+            // Note: this used to be `_userAppBaseHref += "/"` inside the condition, which silently appended a
+            // slash to the shared field the first time it was evaluated and changed every later request's
+            // path handling. Compare against a copy instead.
             if (filePath != _userAppBaseHref && !filePath.Contains(".") && (!filePath.EndsWith(_userAppBaseHref) || !filePath.EndsWith(_userAppBaseHref + "/")))
             {
                 var suffix = filePath.Substring(_userAppBaseHref.Length, filePath.Length - _userAppBaseHref.Length);
