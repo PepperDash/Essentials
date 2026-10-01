@@ -1345,8 +1345,9 @@ namespace PepperDash.Essentials.WebSocketServer
                     LogRateLimited("unrecognised", remote, () =>
                         this.LogInformation("Unrecognised request path from {host}: {path}", remote, TruncateForLog(path)));
 
-                    res.StatusCode = 404;
-                    res.Close();
+                    // No reply: nothing legitimate asks for these paths, and a reply is a write that can
+                    // fail on a connection the client has already reset
+                    DropConnection(res);
                 }
             }
             catch (Exception ex)
