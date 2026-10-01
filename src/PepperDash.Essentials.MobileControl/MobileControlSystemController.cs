@@ -1566,6 +1566,11 @@ namespace PepperDash.Essentials
 
             this.LogInformation("BatchDeviceFullStatus: Processing {count} devices", deviceActionPaths.Count);
 
+            // Perf: how long this client's batch handlers take, to separate server time from
+            // transmit time (see MessageToClients) and client time.
+            var batchTimer = System.Diagnostics.Stopwatch.StartNew();
+            var pathCount = deviceActionPaths.Values.Sum(paths => paths?.Count ?? 0);
+
             var tasks = new List<Task>();
 
             foreach (var kvp in deviceActionPaths)
@@ -1621,6 +1626,9 @@ namespace PepperDash.Essentials
                 {
                     this.LogError("BatchDeviceFullStatus: Exception waiting for tasks: {message}", ex.Message);
                 }
+
+                this.LogDebug("Perf: batch for client {clientId} ran {handlerCount} handlers for {deviceCount} devices / {pathCount} paths in {elapsedMs} ms",
+                    clientId, tasks.Count, deviceActionPaths.Count, pathCount, batchTimer.ElapsedMilliseconds);
 
                 SendMessageObject(new MobileControlMessage
                 {
