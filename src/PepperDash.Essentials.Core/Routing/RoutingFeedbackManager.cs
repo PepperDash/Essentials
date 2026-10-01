@@ -394,10 +394,12 @@ namespace PepperDash.Essentials.Core.Routing
             // Audio and video can come from different sources (e.g. breakaway on a matrix), and a
             // purely topological search (GetRouteToSource) only proves a source *could* be routed
             // here, not that it currently is - so it can't be used to report feedback.
+            //
+            // The route descriptors for this port are only ever replaced, never just removed: a release
+            // relies on them to know what to switch off, so a walk that can't name a source (feedback
+            // still settling, or a midpoint that reports it differently) must leave them in place.
             try
             {
-                RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptors(destination, inputPort.Key);
-
                 foreach (var signalType in new[] { eRoutingSignalType.Audio, eRoutingSignalType.Video })
                 {
                     if (!firstTieLine.Type.HasFlag(signalType))
@@ -434,7 +436,7 @@ namespace PepperDash.Essentials.Core.Routing
 
                     var (route, _) = destination.GetRouteToSource(source, signalType, inputPort, sourcePort);
 
-                    RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(route);
+                    RouteDescriptorCollection.DefaultCollection.ReplaceRouteDescriptor(route);
                 }
             }
             catch (Exception ex)

@@ -169,4 +169,85 @@ public class RouteDescriptorCollectionTests
             previous = source.Key;
         }
     }
+
+    // ── ReplaceRouteDescriptor (issue #1496) ────────────────────────────────────────────────────
+
+    private static RouteDescriptor OnHdmiIn1(FakeSource source, FakeSink sink, eRoutingSignalType type) =>
+        new RouteDescriptor(source, sink, sink.HdmiIn1, source.Out, type);
+
+    [Fact]
+    public void ReplaceRouteDescriptor_SwapsTheDescriptorForThatPortAndSignalOnly()
+    {
+        var collection = new RouteDescriptorCollection();
+        var sink = new FakeSink("codec");
+        var laptop = new FakeSource("laptop");
+        var oldAudio = OnHdmiIn1(laptop, sink, eRoutingSignalType.Audio);
+        var oldVideo = OnHdmiIn1(laptop, sink, eRoutingSignalType.Video);
+        var otherPort = new RouteDescriptor(laptop, sink, sink.HdmiIn2, laptop.Out, eRoutingSignalType.Video);
+        collection.AddRouteDescriptor(oldAudio);
+        collection.AddRouteDescriptor(oldVideo);
+        collection.AddRouteDescriptor(otherPort);
+
+        var newVideo = OnHdmiIn1(new FakeSource("bluray"), sink, eRoutingSignalType.Video);
+        collection.ReplaceRouteDescriptor(newVideo).Should().BeTrue();
+
+        collection.Descriptors.Should().BeEquivalentTo(new[] { oldAudio, newVideo, otherPort });
+    }
+
+    [Fact]
+    public void ReplaceRouteDescriptor_KeepsTheExecutedDescriptorWhenTheSourceIsUnchanged()
+    {
+        // Feedback confirming the route that was just made must not swap out the descriptor that
+        // was executed, which holds the output ports' in-use registrations.
+        var collection = new RouteDescriptorCollection();
+        var sink = new FakeSink("codec");
+        var laptop = new FakeSource("laptop");
+        var executed = OnHdmiIn1(laptop, sink, eRoutingSignalType.Video);
+        collection.AddRouteDescriptor(executed);
+        var changed = 0;
+        collection.RouteDescriptorCollectionChanged += (_, _) => changed++;
+
+        collection.ReplaceRouteDescriptor(OnHdmiIn1(laptop, sink, eRoutingSignalType.Video)).Should().BeFalse();
+
+        collection.Descriptors.Should().ContainSingle().Which.Should().BeSameAs(executed);
+        changed.Should().Be(0);
+    }
+
+    [Fact]
+    public void ReplaceRouteDescriptor_IgnoresNull()
+    {
+        var collection = new RouteDescriptorCollection();
+        var sink = new FakeSink("codec");
+        var executed = OnHdmiIn1(new FakeSource("laptop"), sink, eRoutingSignalType.Video);
+        collection.AddRouteDescriptor(executed);
+
+        collection.ReplaceRouteDescriptor(null!).Should().BeFalse();
+
+        collection.Descriptors.Should().ContainSingle().Which.Should().BeSameAs(executed);
+    }
+
+    [Fact]
+    public void AFeedbackPassThatCannotRebuildARoute_LeavesItForTheReleaseToTearDown()
+    {
+        // The #1496 sequence: a port-keyed AudioVideo route is made, feedback for that port arrives
+        // but can't name a source (so nothing is replaced), and then the destination is cleared.
+        var collection = new RouteDescriptorCollection();
+        var matrix = new FakeMatrix();
+        var sink = new FakeSink("zoomRoom");
+        var (audio, video) = AudioVideoRoute(new FakeSource("tx-zoom"), sink, matrix);
+        foreach (var descriptor in new[] { audio, video })
+        {
+            collection.AddRouteDescriptor(descriptor);
+            descriptor.ExecuteRoutes();
+        }
+
+        // Feedback pass with no source for either signal: no replacement is offered.
+
+        var released = collection.RemoveRouteDescriptors(sink, "hdmiIn1");
+        released.Should().BeEquivalentTo(new[] { audio, video });
+        foreach (var descriptor in released)
+            descriptor.ReleaseRoutes(clearRoute: true);
+        matrix.Out1.InUseTracker.InUseCountFeedback.IntValue.Should().Be(0);
+    }
 }
+

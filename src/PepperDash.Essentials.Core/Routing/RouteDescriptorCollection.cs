@@ -164,4 +164,48 @@ public class RouteDescriptorCollection
 
         return removed;
     }
+
+    /// <summary>
+    /// Records <paramref name="replacement"/> as the route for its destination, input port and signal
+    /// type, removing whatever was recorded there before - but only once there is something to put in
+    /// its place. Used to resync the collection with routing feedback without ever leaving a
+    /// destination with no descriptor, which would leave a later release nothing to tear down.
+    /// </summary>
+    /// <remarks>
+    /// When the existing descriptor already names the same source, nothing changes: that descriptor is
+    /// the one that was executed, and it holds the output ports' in-use registrations.
+    /// </remarks>
+    /// <param name="replacement">The descriptor to record. Null is ignored.</param>
+    /// <returns>True if the collection changed.</returns>
+    public bool ReplaceRouteDescriptor(RouteDescriptor replacement)
+    {
+        if (replacement == null)
+        {
+            return false;
+        }
+
+        var existing = RouteDescriptors
+            .Where(rd => rd.Destination == replacement.Destination &&
+                rd.SignalType == replacement.SignalType &&
+                rd.InputPort?.Key == replacement.InputPort?.Key)
+            .ToList();
+
+        if (existing.Count == 1 && existing[0].Source == replacement.Source)
+        {
+            return false;
+        }
+
+        foreach (var descriptor in existing)
+        {
+            RouteDescriptors.Remove(descriptor);
+        }
+
+        RouteDescriptors.Add(replacement);
+        RouteDescriptorCollectionChanged?.Invoke(this, EventArgs.Empty);
+
+        Debug.LogMessage(LogEventLevel.Debug, "Replaced {count} route descriptor(s) for '{destination}':'{inputPortKey}' ({signalType}) with route from {source}",
+            existing.Count, replacement.Destination?.Key, replacement.InputPort?.Key ?? "auto", replacement.SignalType, replacement.Source?.Key);
+
+        return true;
+    }
 }
