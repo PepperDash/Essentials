@@ -598,6 +598,29 @@ namespace PepperDash.Essentials.WebSocketServer
                 System.Text.RegularExpressions.RegexOptions.Multiline);
         }
 
+        /// <summary>
+        /// Requests that every ordinary browser makes and this server has never answered.
+        /// </summary>
+        /// <remarks>
+        /// The app's index.html sets its own &lt;base&gt; from an inline script, but the browser's preload
+        /// scanner requests ./assets/* first, relative to /mc/, so each page load asks for /mc/assets/* and gets a
+        /// 404 before the real requests succeed under /mc/app/assets/. Browsers also ask for /favicon.ico. These
+        /// must not count as unwanted traffic, or a person reloading the app a few times would be blocked.
+        /// </remarks>
+        private static bool IsBenignBrowserRequest(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            var queryStart = path.IndexOf('?');
+            var withoutQuery = queryStart >= 0 ? path.Substring(0, queryStart) : path;
+
+            return withoutQuery.StartsWith("/mc/assets/", StringComparison.Ordinal)
+                || string.Equals(withoutQuery, "/favicon.ico", StringComparison.OrdinalIgnoreCase);
+        }
+
         private const string AutoBlockFileName = "autoBlockedIps.json";
 
         private const int SuspiciousWindowSeconds = 60;
@@ -1844,11 +1867,15 @@ namespace PepperDash.Essentials.WebSocketServer
                 }
                 else
                 {
-                    // All other paths
-                    LogRateLimited("unrecognised", remote, () =>
-                        this.LogInformation("Unrecognised request path from {host}: {path}", remote, TruncateForLog(path)));
+                    // All other paths. Browsers make a couple of these on every page load, so those are neither
+                    // logged at Information nor counted towards an automatic block.
+                    if (!IsBenignBrowserRequest(path))
+                    {
+                        LogRateLimited("unrecognised", remote, () =>
+                            this.LogInformation("Unrecognised request path from {host}: {path}", remote, TruncateForLog(path)));
 
-                    RecordUnwantedRequest(remote);
+                        RecordUnwantedRequest(remote);
+                    }
 
                     if (_parent.Config.DirectServer.DropUnrecognisedRequests == true)
                     {
