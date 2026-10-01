@@ -441,7 +441,7 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
         /// <summary>
-        /// Refuses the request with a 403 if the client is not allowed. Returns true if it was refused.
+        /// Drops the connection without a response if the client is not allowed. Returns true if it was refused.
         /// </summary>
         private bool RejectIfNotAllowed(HttpListenerRequest req, HttpListenerResponse res)
         {
@@ -455,9 +455,30 @@ namespace PepperDash.Essentials.WebSocketServer
             LogRateLimited("rejected", remote, () =>
                 this.LogWarning("Refused HTTP request from {host}: not in the Control Subnet or allowedClientNetworks", remote));
 
-            res.StatusCode = 403;
-            res.Close();
+            DropConnection(res);
             return true;
+        }
+
+        /// <summary>
+        /// Closes the connection without writing a response.
+        /// </summary>
+        /// <remarks>
+        /// Used for requests we are refusing. Writing even a short reply means a send on a socket the other end
+        /// may already have reset, which throws from inside the HTTP stack (seen in the field as
+        /// "Unable to write data to the transport connection: Connection reset by peer" from
+        /// HttpListenerResponse.Close). Abort() writes nothing, so there is nothing to fail.
+        /// </remarks>
+        private void DropConnection(HttpListenerResponse res)
+        {
+            try
+            {
+                res.Abort();
+            }
+            catch (Exception ex)
+            {
+                // The connection is already gone, which is the outcome we wanted
+                this.LogDebug("Exception dropping connection: {message}", ex.Message);
+            }
         }
 
         /// <summary>

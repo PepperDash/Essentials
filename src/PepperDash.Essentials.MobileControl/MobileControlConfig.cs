@@ -82,8 +82,9 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <remarks>
         /// Example: ["192.168.10.0/24", "192.168.5.10/32"]. When the list has any entries, HTTP requests
-        /// (GET, POST, OPTIONS) from any other address receive a 403, except loopback and clients on the
-        /// Control Subnet, which are always allowed. When null or empty, no filtering is done (default).
+        /// (GET, POST, OPTIONS) from any other address have the connection closed without a response,
+        /// except loopback and clients on the Control Subnet, which are always allowed.
+        /// When null or empty, no filtering is done (default).
         /// Invalid entries are logged and skipped, so a list containing only invalid entries still turns
         /// filtering on. Does not apply to websocket connections, which are already gated by a per-client token.
         /// </remarks>
