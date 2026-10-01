@@ -455,6 +455,8 @@ namespace PepperDash.Essentials.WebSocketServer
             LogRateLimited("rejected", remote, () =>
                 this.LogWarning("Refused HTTP request from {host}: not in the Control Subnet or allowedClientNetworks", remote));
 
+            RecordUnwantedRequest(remote);
+
             DropConnection(res);
             return true;
         }
@@ -514,6 +516,499 @@ namespace PepperDash.Essentials.WebSocketServer
             return value.Substring(0, MaxLoggedPathLength) + "...(" + value.Length + " chars)";
         }
 
+        // ------------------------------------------------------------------------------------------------
+        // Automatic blocking of addresses that send a burst of unwanted requests (off unless configured)
+        // ------------------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// Counts events per key inside a sliding window. Not thread-safe: callers lock.
+        /// </summary>
+        private sealed class SlidingWindowCounter
+        {
+            private readonly Dictionary<string, Queue<DateTime>> _events = new Dictionary<string, Queue<DateTime>>();
+            private readonly TimeSpan _window;
+            private readonly int _maxKeys;
+
+            public SlidingWindowCounter(TimeSpan window, int maxKeys)
+            {
+                _window = window;
+                _maxKeys = maxKeys;
+            }
+
+            /// <summary>
+            /// Records an event and returns how many fall inside the window, including this one.
+            /// </summary>
+            public int Record(string key, DateTime now)
+            {
+                Queue<DateTime> queue;
+
+                if (!_events.TryGetValue(key, out queue))
+                {
+                    // Bounded memory. Losing counts only delays a block; it can never cause one.
+                    if (_events.Count >= _maxKeys)
+                    {
+                        _events.Clear();
+                    }
+
+                    queue = new Queue<DateTime>();
+                    _events[key] = queue;
+                }
+
+                queue.Enqueue(now);
+
+                while (queue.Count > 0 && now - queue.Peek() > _window)
+                {
+                    queue.Dequeue();
+                }
+
+                return queue.Count;
+            }
+
+            public void Reset(string key)
+            {
+                _events.Remove(key);
+            }
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex Ipv4Literal = new System.Text.RegularExpressions.Regex(
+            @"^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}\z");
+
+        /// <summary>
+        /// True only for a plain dotted-decimal IPv4 address. Anything that goes into a console command
+        /// has to pass this first.
+        /// </summary>
+        private static bool IsIpv4Literal(string value)
+        {
+            return value != null && Ipv4Literal.IsMatch(value);
+        }
+
+        /// <summary>
+        /// True if the output of listblocked names this address as an entry of its own.
+        /// </summary>
+        private static bool BlockListContains(string listOutput, string address)
+        {
+            if (string.IsNullOrEmpty(listOutput) || !IsIpv4Literal(address))
+            {
+                return false;
+            }
+
+            return System.Text.RegularExpressions.Regex.IsMatch(
+                listOutput,
+                @"(^|\s)" + System.Text.RegularExpressions.Regex.Escape(address) + @"(\s|$)",
+                System.Text.RegularExpressions.RegexOptions.Multiline);
+        }
+
+        private const string AutoBlockFileName = "autoBlockedIps.json";
+
+        private const int SuspiciousWindowSeconds = 60;
+
+        private const int MaxTrackedAddresses = 512;
+
+        private bool _autoBlockEnabled;
+        private bool _autoBlockDryRun;
+        private int _autoBlockThreshold = 10;
+        private TimeSpan _autoBlockDuration = TimeSpan.FromMinutes(30);
+        private int _autoBlockMaxConcurrent = 8;
+        private List<AllowedNetwork> _neverBlockNetworks = new List<AllowedNetwork>();
+        private System.Net.IPAddress _lanIpAddress;
+        private CTimer _autoBlockTimer;
+        private int _expiryRunning;
+
+        private readonly object _autoBlockLock = new object();
+        private readonly SlidingWindowCounter _unwantedRequests = new SlidingWindowCounter(TimeSpan.FromSeconds(SuspiciousWindowSeconds), MaxTrackedAddresses);
+
+        // address -> when Essentials removes the block (UTC). Only blocks Essentials added are ever listed here,
+        // so a block someone added by hand is never removed.
+        private readonly Dictionary<string, DateTime> _autoBlocked = new Dictionary<string, DateTime>();
+
+        private string AutoBlockFilePath
+        {
+            get { return Global.FilePathPrefix + AutoBlockFileName; }
+        }
+
+        private List<AllowedNetwork> ParseNetworks(List<string> entries, string settingName)
+        {
+            var parsed = new List<AllowedNetwork>();
+
+            if (entries == null)
+            {
+                return parsed;
+            }
+
+            foreach (var entry in entries)
+            {
+                AllowedNetwork network;
+
+                if (TryParseCidr(entry, out network))
+                {
+                    parsed.Add(network);
+                    continue;
+                }
+
+                this.LogWarning("Ignoring invalid {setting} entry '{entry}'. Expected CIDR notation like 192.168.10.0/24", settingName, entry);
+            }
+
+            return parsed;
+        }
+
+        private void LoadAutoBlockSettings()
+        {
+            var config = _parent.Config.DirectServer.AutoBlock;
+            var wanted = config != null && config.Enabled;
+
+            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Appliance)
+            {
+                if (wanted)
+                {
+                    this.LogWarning("autoBlock needs a 4-series appliance and is ignored on this platform");
+                }
+
+                return;
+            }
+
+            // Blocks survive a reboot, so anything Essentials added before has to be removed on schedule even if
+            // the setting has since been turned off.
+            LoadAutoBlockedFromDisk();
+
+            if (wanted)
+            {
+                _autoBlockDryRun = config.DryRun;
+                _autoBlockThreshold = Math.Max(3, config.RequestsPerMinute);
+                _autoBlockDuration = TimeSpan.FromMinutes(Math.Min(1440, Math.Max(1, config.BlockMinutes)));
+                _autoBlockMaxConcurrent = Math.Min(64, Math.Max(1, config.MaxConcurrentBlocks));
+                _neverBlockNetworks = ParseNetworks(config.NeverBlock, "autoBlock.neverBlock");
+
+                try
+                {
+                    var lanAdapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetLANAdapter);
+                    _lanIpAddress = System.Net.IPAddress.Parse(CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, lanAdapterId));
+                }
+                catch (Exception ex)
+                {
+                    this.LogDebug("Could not read the LAN address for the auto-block exemptions: {message}", ex.Message);
+                }
+
+                _autoBlockEnabled = true;
+
+                this.LogInformation(
+                    "Auto-block is on{dryRun}: {threshold} unwanted requests in a minute blocks an address for {minutes} minutes (at most {max} at once)",
+                    _autoBlockDryRun ? " (dry run, nothing will be blocked)" : string.Empty,
+                    _autoBlockThreshold, (int)_autoBlockDuration.TotalMinutes, _autoBlockMaxConcurrent);
+            }
+
+            bool outstanding;
+            lock (_autoBlockLock)
+            {
+                outstanding = _autoBlocked.Count > 0;
+            }
+
+            if (_autoBlockEnabled || outstanding)
+            {
+                _autoBlockTimer = new CTimer(CheckAutoBlockExpiry, null, 5000, 30000);
+            }
+        }
+
+        /// <summary>
+        /// The IPv4 form of an address, unwrapping IPv4-mapped IPv6. False for anything else.
+        /// </summary>
+        private static bool TryGetIpv4(System.Net.IPAddress address, out System.Net.IPAddress ipv4)
+        {
+            ipv4 = null;
+
+            if (address == null)
+            {
+                return false;
+            }
+
+            var bytes = address.GetAddressBytes();
+
+            if (bytes.Length == 16 && IsIPv4MappedBytes(bytes))
+            {
+                var v4 = new byte[4];
+                Array.Copy(bytes, 12, v4, 0, 4);
+                ipv4 = new System.Net.IPAddress(v4);
+                return true;
+            }
+
+            if (bytes.Length == 4)
+            {
+                ipv4 = address;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Addresses that are never blocked: this processor, its Control Subnet, loopback and anything the
+        /// installer has listed as trusted.
+        /// </summary>
+        private bool IsExemptFromAutoBlock(System.Net.IPAddress ipv4)
+        {
+            if (System.Net.IPAddress.IsLoopback(ipv4))
+            {
+                return true;
+            }
+
+            if (csIpAddress != null && csSubnetMask != null && ipv4.IsInSameSubnet(csIpAddress, csSubnetMask))
+            {
+                return true;
+            }
+
+            if (ipv4.Equals(csIpAddress) || ipv4.Equals(_lanIpAddress))
+            {
+                return true;
+            }
+
+            var bytes = ipv4.GetAddressBytes();
+
+            foreach (var network in _neverBlockNetworks)
+            {
+                if (IsInNetwork(bytes, network))
+                {
+                    return true;
+                }
+            }
+
+            if (_allowedNetworks != null)
+            {
+                foreach (var network in _allowedNetworks)
+                {
+                    if (IsInNetwork(bytes, network))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Counts a request that no legitimate client sends. Blocks the address once it sends too many.
+        /// </summary>
+        private void RecordUnwantedRequest(System.Net.IPAddress remote)
+        {
+            if (!_autoBlockEnabled)
+            {
+                return;
+            }
+
+            System.Net.IPAddress ipv4;
+
+            if (!TryGetIpv4(remote, out ipv4) || IsExemptFromAutoBlock(ipv4))
+            {
+                return;
+            }
+
+            var address = ipv4.ToString();
+            int count;
+
+            lock (_autoBlockLock)
+            {
+                if (_autoBlocked.ContainsKey(address))
+                {
+                    return;
+                }
+
+                count = _unwantedRequests.Record(address, DateTime.UtcNow);
+
+                if (count < _autoBlockThreshold)
+                {
+                    return;
+                }
+
+                _unwantedRequests.Reset(address);
+            }
+
+            BlockAddress(address, count);
+        }
+
+        private void BlockAddress(string address, int count)
+        {
+            if (!IsIpv4Literal(address))
+            {
+                return;
+            }
+
+            if (_autoBlockDryRun)
+            {
+                LogRateLimited("dryrun", System.Net.IPAddress.Parse(address), () =>
+                    this.LogWarning("[dry run] Would block {address} for {minutes} minutes: {count} unwanted requests within a minute", address, (int)_autoBlockDuration.TotalMinutes, count));
+                return;
+            }
+
+            lock (_autoBlockLock)
+            {
+                if (_autoBlocked.Count >= _autoBlockMaxConcurrent)
+                {
+                    LogRateLimited("autoblock-cap", null, () =>
+                        this.LogWarning("Not blocking {address}: already holding {max} automatic blocks", address, _autoBlockMaxConcurrent));
+                    return;
+                }
+
+                // Recorded before the command runs. If the program stopped between the two, the block would
+                // otherwise outlive it with nobody responsible for removing it.
+                _autoBlocked[address] = DateTime.UtcNow + _autoBlockDuration;
+                SaveAutoBlocked();
+            }
+
+            // The console call can take a moment, so keep it off the request thread
+            CrestronInvoke.BeginInvoke(o => ExecuteBlock(address, count));
+        }
+
+        private void ExecuteBlock(string address, int count)
+        {
+            try
+            {
+                var response = string.Empty;
+                CrestronConsole.SendControlSystemCommand("addblockedip " + address, ref response);
+
+                if (response != null && response.IndexOf("Added IP", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    this.LogWarning("Blocked {address} for {minutes} minutes: {count} unwanted requests within a minute", address, (int)_autoBlockDuration.TotalMinutes, count);
+                    return;
+                }
+
+                this.LogWarning("Could not block {address}. The console said: {response}", address, response == null ? string.Empty : response.Trim());
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Exception blocking {address}: {message}", address, ex.Message);
+            }
+
+            // Not blocked, so Essentials has nothing to remove later
+            lock (_autoBlockLock)
+            {
+                _autoBlocked.Remove(address);
+                SaveAutoBlocked();
+            }
+        }
+
+        private void CheckAutoBlockExpiry(object unused)
+        {
+            // One pass at a time: the console calls can outlast the timer interval
+            if (System.Threading.Interlocked.CompareExchange(ref _expiryRunning, 1, 0) != 0)
+            {
+                return;
+            }
+
+            try
+            {
+                List<string> due;
+
+                lock (_autoBlockLock)
+                {
+                    var now = DateTime.UtcNow;
+                    due = _autoBlocked.Where(kv => kv.Value <= now).Select(kv => kv.Key).ToList();
+                }
+
+                foreach (var address in due)
+                {
+                    RemoveBlock(address);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Exception removing expired blocks: {message}", ex.Message);
+            }
+            finally
+            {
+                System.Threading.Interlocked.Exchange(ref _expiryRunning, 0);
+            }
+        }
+
+        private void RemoveBlock(string address)
+        {
+            if (IsIpv4Literal(address))
+            {
+                var response = string.Empty;
+                CrestronConsole.SendControlSystemCommand("remblockedip " + address, ref response);
+
+                // Confirm it is gone rather than trusting the wording of the reply. If it is still listed the entry
+                // stays and the next pass tries again, so a failed removal is never forgotten.
+                var list = string.Empty;
+                CrestronConsole.SendControlSystemCommand("listblocked", ref list);
+
+                if (BlockListContains(list, address))
+                {
+                    this.LogWarning("{address} is still blocked after trying to remove it. Will retry", address);
+                    return;
+                }
+            }
+
+            lock (_autoBlockLock)
+            {
+                _autoBlocked.Remove(address);
+                SaveAutoBlocked();
+            }
+
+            this.LogInformation("Unblocked {address}: its automatic block expired", address);
+        }
+
+        // Caller holds _autoBlockLock
+        private void SaveAutoBlocked()
+        {
+            try
+            {
+                var path = AutoBlockFilePath;
+
+                if (_autoBlocked.Count == 0)
+                {
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
+
+                    return;
+                }
+
+                var data = _autoBlocked.ToDictionary(kv => kv.Key, kv => kv.Value.ToString("o"));
+                File.WriteAllText(path, JsonConvert.SerializeObject(data, Formatting.Indented));
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Could not save the list of automatic blocks: {message}", ex.Message);
+            }
+        }
+
+        private void LoadAutoBlockedFromDisk()
+        {
+            try
+            {
+                var path = AutoBlockFilePath;
+
+                if (!File.Exists(path))
+                {
+                    return;
+                }
+
+                var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(path));
+
+                if (data == null)
+                {
+                    return;
+                }
+
+                lock (_autoBlockLock)
+                {
+                    foreach (var entry in data)
+                    {
+                        DateTime expiry;
+
+                        if (IsIpv4Literal(entry.Key) && DateTime.TryParse(entry.Value, null, System.Globalization.DateTimeStyles.RoundtripKind, out expiry))
+                        {
+                            _autoBlocked[entry.Key] = expiry.ToUniversalTime();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Could not read the list of automatic blocks: {message}", ex.Message);
+            }
+        }
+
         /// <summary>
         /// Initialize method
         /// </summary>
@@ -525,6 +1020,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 base.Initialize();
 
                 LoadAllowedNetworks();
+
+                LoadAutoBlockSettings();
 
                 _server = new HttpServer(Port, _parent.Config.DirectServer.Secure);
 
@@ -1266,6 +1763,12 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             if (programEventType == eProgramStatusEventType.Stopping)
             {
+                if (_autoBlockTimer != null)
+                {
+                    _autoBlockTimer.Stop();
+                    _autoBlockTimer.Dispose();
+                }
+
                 foreach (var client in UiClients.Values)
                 {
                     if (client != null && client.Context.WebSocket.IsAlive)
@@ -1345,9 +1848,19 @@ namespace PepperDash.Essentials.WebSocketServer
                     LogRateLimited("unrecognised", remote, () =>
                         this.LogInformation("Unrecognised request path from {host}: {path}", remote, TruncateForLog(path)));
 
-                    // No reply: nothing legitimate asks for these paths, and a reply is a write that can
-                    // fail on a connection the client has already reset
-                    DropConnection(res);
+                    RecordUnwantedRequest(remote);
+
+                    if (_parent.Config.DirectServer.DropUnrecognisedRequests == true)
+                    {
+                        // No reply: nothing legitimate asks for these paths, and a reply is a write that can
+                        // fail on a connection the client has already reset
+                        DropConnection(res);
+                    }
+                    else
+                    {
+                        res.StatusCode = 404;
+                        res.Close();
+                    }
                 }
             }
             catch (Exception ex)
