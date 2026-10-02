@@ -493,17 +493,23 @@ namespace PepperDash.Essentials.WebSocketServer
             var key = kind + "|" + (remote?.ToString() ?? "unknown");
             var now = DateTime.UtcNow;
 
-            if (_lastLogged.Count > MaxRateLimitEntries)
+            // Check and update together, or a burst of concurrent requests from one source would each see a
+            // stale timestamp and all log
+            lock (_lastLogged)
             {
-                _lastLogged.Clear();
+                if (_lastLogged.Count > MaxRateLimitEntries)
+                {
+                    _lastLogged.Clear();
+                }
+
+                if (_lastLogged.TryGetValue(key, out var last) && now - last < _logInterval)
+                {
+                    return;
+                }
+
+                _lastLogged[key] = now;
             }
 
-            if (_lastLogged.TryGetValue(key, out var last) && now - last < _logInterval)
-            {
-                return;
-            }
-
-            _lastLogged[key] = now;
             log();
         }
 
@@ -622,7 +628,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 || string.Equals(withoutQuery, "/favicon.ico", StringComparison.OrdinalIgnoreCase);
         }
 
-        private const string AutoBlockFileName = "autoBlockedIps.json";
+        // Used by builds before the file was made per-instance. Read once and then removed.
+        private const string LegacyAutoBlockFileName = "autoBlockedIps.json";
 
         private const int SuspiciousWindowSeconds = 60;
 
@@ -645,9 +652,14 @@ namespace PepperDash.Essentials.WebSocketServer
         // so a block someone added by hand is never removed.
         private readonly Dictionary<string, DateTime> _autoBlocked = new Dictionary<string, DateTime>();
 
+        // One file per instance: each server owns the blocks it added, and more than one controller can be configured
         private string AutoBlockFilePath
         {
-            get { return Global.FilePathPrefix + AutoBlockFileName; }
+            get
+            {
+                var safeKey = new string(Key.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray());
+                return Global.FilePathPrefix + "autoBlockedIps-" + safeKey + ".json";
+            }
         }
 
         private List<AllowedNetwork> ParseNetworks(List<string> entries, string settingName)
@@ -864,6 +876,13 @@ namespace PepperDash.Essentials.WebSocketServer
 
             lock (_autoBlockLock)
             {
+                // Another burst may have crossed the threshold since RecordUnwantedRequest released the lock.
+                // Without this a second ADDBLOCKEDIP would fail as a duplicate and drop the first one's entry.
+                if (_autoBlocked.ContainsKey(address))
+                {
+                    return;
+                }
+
                 if (_autoBlocked.Count >= _autoBlockMaxConcurrent)
                 {
                     LogRateLimited("autoblock-cap", null, () =>
@@ -872,9 +891,16 @@ namespace PepperDash.Essentials.WebSocketServer
                 }
 
                 // Recorded before the command runs. If the program stopped between the two, the block would
-                // otherwise outlive it with nobody responsible for removing it.
+                // otherwise outlive it with nobody responsible for removing it. For the same reason, no record
+                // on disk means no block.
                 _autoBlocked[address] = DateTime.UtcNow + _autoBlockDuration;
-                SaveAutoBlocked();
+
+                if (!SaveAutoBlocked())
+                {
+                    _autoBlocked.Remove(address);
+                    this.LogWarning("Not blocking {address}: the block could not be recorded, so it could not be removed after a restart", address);
+                    return;
+                }
             }
 
             // The console call can take a moment, so keep it off the request thread
@@ -952,7 +978,13 @@ namespace PepperDash.Essentials.WebSocketServer
                 // Confirm it is gone rather than trusting the wording of the reply. If it is still listed the entry
                 // stays and the next pass tries again, so a failed removal is never forgotten.
                 var list = string.Empty;
-                CrestronConsole.SendControlSystemCommand("listblocked", ref list);
+
+                // A failed query leaves the list empty, which would read as "removed"
+                if (!CrestronConsole.SendControlSystemCommand("listblocked", ref list))
+                {
+                    this.LogWarning("Could not confirm {address} was unblocked: listblocked failed. Will retry", address);
+                    return;
+                }
 
                 if (BlockListContains(list, address))
                 {
@@ -970,8 +1002,11 @@ namespace PepperDash.Essentials.WebSocketServer
             this.LogInformation("Unblocked {address}: its automatic block expired", address);
         }
 
-        // Caller holds _autoBlockLock
-        private void SaveAutoBlocked()
+        /// <summary>
+        /// Writes the list of blocks Essentials owns. Returns false if it could not be written.
+        /// </summary>
+        /// <remarks>Caller holds _autoBlockLock.</remarks>
+        private bool SaveAutoBlocked()
         {
             try
             {
@@ -984,34 +1019,84 @@ namespace PepperDash.Essentials.WebSocketServer
                         File.Delete(path);
                     }
 
-                    return;
+                    return true;
                 }
 
+                // Written to a temporary file and then renamed over the real one, so a power loss mid-write cannot
+                // leave a truncated file that loses track of every block
                 var data = _autoBlocked.ToDictionary(kv => kv.Key, kv => kv.Value.ToString("o"));
-                File.WriteAllText(path, JsonConvert.SerializeObject(data, Formatting.Indented));
+                var tempPath = path + ".tmp";
+                File.WriteAllText(tempPath, JsonConvert.SerializeObject(data, Formatting.Indented));
+
+                if (File.Exists(path))
+                {
+                    File.Replace(tempPath, path, null);
+                }
+                else
+                {
+                    File.Move(tempPath, path);
+                }
+
+                return true;
             }
             catch (Exception ex)
             {
                 this.LogError("Could not save the list of automatic blocks: {message}", ex.Message);
+                return false;
             }
         }
 
         private void LoadAutoBlockedFromDisk()
         {
+            var path = AutoBlockFilePath;
+            var legacyPath = Global.FilePathPrefix + LegacyAutoBlockFileName;
+
+            ReadAutoBlockedFile(path);
+
+            if (!File.Exists(legacyPath))
+            {
+                return;
+            }
+
+            // Take over blocks recorded under the old shared file name, then remove it once they are saved here
+            if (ReadAutoBlockedFile(legacyPath))
+            {
+                lock (_autoBlockLock)
+                {
+                    if (!SaveAutoBlocked())
+                    {
+                        return;
+                    }
+                }
+
+                try
+                {
+                    File.Delete(legacyPath);
+                }
+                catch (Exception ex)
+                {
+                    this.LogDebug("Could not remove {path}: {message}", legacyPath, ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the entries in a block-list file to the blocks Essentials owns. Returns true if the file was read.
+        /// </summary>
+        private bool ReadAutoBlockedFile(string path)
+        {
             try
             {
-                var path = AutoBlockFilePath;
-
                 if (!File.Exists(path))
                 {
-                    return;
+                    return false;
                 }
 
                 var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(path));
 
                 if (data == null)
                 {
-                    return;
+                    return true;
                 }
 
                 lock (_autoBlockLock)
@@ -1026,10 +1111,13 @@ namespace PepperDash.Essentials.WebSocketServer
                         }
                     }
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
-                this.LogError("Could not read the list of automatic blocks: {message}", ex.Message);
+                this.LogError("Could not read the list of automatic blocks from {path}: {message}", path, ex.Message);
+                return false;
             }
         }
 
@@ -1053,10 +1141,8 @@ namespace PepperDash.Essentials.WebSocketServer
 
                 _server.OnOptions += Server_OnOptions;
 
-                if (_parent.Config.DirectServer.Logging.EnableRemoteLogging)
-                {
-                    _server.OnPost += Server_OnPost;
-                }
+                // Always subscribed so POST requests go through the allowlist; log forwarding is gated inside
+                _server.OnPost += Server_OnPost;
 
                 if (_parent.Config.DirectServer.Secure)
                 {
@@ -1915,16 +2001,23 @@ namespace PepperDash.Essentials.WebSocketServer
                 AddNoCacheHeaders(res);
 
                 var path = req.RawUrl;
-                var ip = req.RemoteEndPoint.Address.ToString();
+                var remote = req.RemoteEndPoint?.Address;
+                var ip = remote?.ToString();
 
                 this.LogVerbose("POST Request received at path: {path} from host {host}", TruncateForLog(path), ip);
 
-                var body = new StreamReader(req.InputStream).ReadToEnd();
-
                 if (path.StartsWith("/mc/api/log"))
                 {
+                    var body = new StreamReader(req.InputStream).ReadToEnd();
+
                     res.StatusCode = 200;
                     res.Close();
+
+                    // The app posts here whether or not forwarding is on, so this is not an unwanted request
+                    if (!_parent.Config.DirectServer.Logging.EnableRemoteLogging)
+                    {
+                        return;
+                    }
 
                     // remote log collector has no dedicated secure flag; keep it on http regardless of DirectServer.Secure
                     var logRequest = new HttpRequestMessage(HttpMethod.Post, $"http://{_parent.Config.DirectServer.Logging.Host}:{_parent.Config.DirectServer.Logging.Port}/logs")
@@ -1938,15 +2031,23 @@ namespace PepperDash.Essentials.WebSocketServer
 
                     this.LogVerbose("Log data sent to {host}:{port}", _parent.Config.DirectServer.Logging.Host, _parent.Config.DirectServer.Logging.Port);
                 }
-                else if (_parent.Config.DirectServer.DropUnrecognisedRequests == true)
-                {
-                    // Same as an unrecognised GET: no reply, so there is no write to fail on a reset connection
-                    DropConnection(res);
-                }
                 else
                 {
-                    res.StatusCode = 404;
-                    res.Close();
+                    // Treated like an unrecognised GET: logged, counted towards an automatic block, then dropped or 404
+                    LogRateLimited("unrecognised", remote, () =>
+                        this.LogInformation("Unrecognised POST path from {host}: {path}", remote, TruncateForLog(path)));
+
+                    RecordUnwantedRequest(remote);
+
+                    if (_parent.Config.DirectServer.DropUnrecognisedRequests == true)
+                    {
+                        DropConnection(res);
+                    }
+                    else
+                    {
+                        res.StatusCode = 404;
+                        res.Close();
+                    }
                 }
             }
             catch (Exception ex)

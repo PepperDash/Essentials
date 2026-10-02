@@ -139,9 +139,6 @@ namespace PepperDash.Essentials
     }
 
     /// <summary>
-    /// Represents a MobileControlLoggingConfig
-    /// </summary>
-    /// <summary>
     /// Settings for blocking, at the processor, an address that sends a burst of unwanted requests
     /// </summary>
     /// <remarks>
@@ -190,6 +187,9 @@ namespace PepperDash.Essentials
         public List<string> NeverBlock { get; set; }
     }
 
+    /// <summary>
+    /// Represents a MobileControlLoggingConfig
+    /// </summary>
     public class MobileControlLoggingConfig
     {
 
