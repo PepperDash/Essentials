@@ -408,11 +408,6 @@ namespace PepperDash.Essentials.WebSocketServer
                 return false;
             }
 
-            if (System.Net.IPAddress.IsLoopback(remote))
-            {
-                return true;
-            }
-
             var bytes = remote.GetAddressBytes();
 
             // An IPv4 address can arrive as an IPv4-mapped IPv6 address (::ffff:a.b.c.d)
@@ -422,6 +417,12 @@ namespace PepperDash.Essentials.WebSocketServer
                 Array.Copy(bytes, 12, v4, 0, 4);
                 bytes = v4;
                 remote = new System.Net.IPAddress(v4);
+            }
+
+            // After unwrapping: IsLoopback is false for ::ffff:127.0.0.1
+            if (System.Net.IPAddress.IsLoopback(remote))
+            {
+                return true;
             }
 
             if (csIpAddress != null && csSubnetMask != null && remote.IsInSameSubnet(csIpAddress, csSubnetMask))
@@ -1936,6 +1937,11 @@ namespace PepperDash.Essentials.WebSocketServer
                     await LogClient.SendAsync(logRequest);
 
                     this.LogVerbose("Log data sent to {host}:{port}", _parent.Config.DirectServer.Logging.Host, _parent.Config.DirectServer.Logging.Port);
+                }
+                else if (_parent.Config.DirectServer.DropUnrecognisedRequests == true)
+                {
+                    // Same as an unrecognised GET: no reply, so there is no write to fail on a reset connection
+                    DropConnection(res);
                 }
                 else
                 {
