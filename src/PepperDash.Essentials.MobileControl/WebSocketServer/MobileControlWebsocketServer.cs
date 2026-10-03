@@ -346,6 +346,15 @@ namespace PepperDash.Essentials.WebSocketServer
                 return false;
             }
 
+            // Clients in ::ffff:a.b.c.d form are compared as IPv4, so store a mapped entry the same way or it never matches
+            if (bytes.Length == 16 && prefix >= 96 && IsIPv4MappedBytes(bytes))
+            {
+                var v4 = new byte[4];
+                Array.Copy(bytes, 12, v4, 0, 4);
+                bytes = v4;
+                prefix -= 96;
+            }
+
             network = new AllowedNetwork { Address = bytes, PrefixLength = prefix };
             return true;
         }
@@ -647,6 +656,9 @@ namespace PepperDash.Essentials.WebSocketServer
         private CTimer _autoBlockTimer;
         private int _expiryRunning;
 
+        // Set when the state file exists but could not be read. No new blocks and no writes to the file until restart.
+        private bool _autoBlockStateUnreadable;
+
         private readonly object _autoBlockLock = new object();
         private readonly SlidingWindowCounter _unwantedRequests = new SlidingWindowCounter(TimeSpan.FromSeconds(SuspiciousWindowSeconds), MaxTrackedAddresses);
 
@@ -712,7 +724,8 @@ namespace PepperDash.Essentials.WebSocketServer
             // the setting has since been turned off.
             LoadAutoBlockedFromDisk();
 
-            if (wanted)
+            // The HTTP server keeps running; only automatic blocking is held off
+            if (wanted && !_autoBlockStateUnreadable)
             {
                 _autoBlockDryRun = config.DryRun;
                 _autoBlockThreshold = Math.Max(3, config.RequestsPerMinute);
@@ -1039,6 +1052,13 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <remarks>Caller holds _autoBlockLock.</remarks>
         private bool SaveAutoBlocked()
         {
+            // The file on disk may hold records this instance could not load. Writing would replace them with an
+            // incomplete list and lose track of those blocks for good, so leave it untouched for someone to recover.
+            if (_autoBlockStateUnreadable)
+            {
+                return false;
+            }
+
             try
             {
                 var path = AutoBlockFilePath;
@@ -1082,7 +1102,12 @@ namespace PepperDash.Essentials.WebSocketServer
             var path = AutoBlockFilePath;
             var legacyPath = Global.FilePathPrefix + LegacyAutoBlockFileName;
 
-            ReadAutoBlockedFile(path);
+            // A missing file just means no blocks. A file that exists but cannot be read is a different matter.
+            if (File.Exists(path) && !ReadAutoBlockedFile(path))
+            {
+                _autoBlockStateUnreadable = true;
+                this.LogError("{path} could not be read. Automatic blocking is off and the file is left as it is, so blocks it lists will not be removed automatically. Fix or remove the file and restart", path);
+            }
 
             if (!File.Exists(legacyPath))
             {
