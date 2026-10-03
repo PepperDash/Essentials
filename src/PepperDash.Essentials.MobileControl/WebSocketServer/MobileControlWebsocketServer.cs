@@ -425,7 +425,9 @@ namespace PepperDash.Essentials.WebSocketServer
                 return true;
             }
 
-            if (csIpAddress != null && csSubnetMask != null && remote.IsInSameSubnet(csIpAddress, csSubnetMask))
+            // Only compare like with like: IsInSameSubnet throws for an IPv6 client against the IPv4 Control Subnet
+            if (csIpAddress != null && csSubnetMask != null && remote.AddressFamily == csIpAddress.AddressFamily
+                && remote.IsInSameSubnet(csIpAddress, csSubnetMask))
             {
                 return true;
             }
@@ -651,6 +653,10 @@ namespace PepperDash.Essentials.WebSocketServer
         // address -> when Essentials removes the block (UTC). Only blocks Essentials added are ever listed here,
         // so a block someone added by hand is never removed.
         private readonly Dictionary<string, DateTime> _autoBlocked = new Dictionary<string, DateTime>();
+
+        // Addresses whose ADDBLOCKEDIP is queued or running. Expiry skips them, so a delayed command can never run
+        // after its record has been removed and leave a block nobody owns.
+        private readonly HashSet<string> _pendingBlocks = new HashSet<string>();
 
         // One file per instance: each server owns the blocks it added, and more than one controller can be configured
         private string AutoBlockFilePath
@@ -901,10 +907,26 @@ namespace PepperDash.Essentials.WebSocketServer
                     this.LogWarning("Not blocking {address}: the block could not be recorded, so it could not be removed after a restart", address);
                     return;
                 }
+
+                _pendingBlocks.Add(address);
             }
 
             // The console call can take a moment, so keep it off the request thread
-            CrestronInvoke.BeginInvoke(o => ExecuteBlock(address, count));
+            try
+            {
+                CrestronInvoke.BeginInvoke(o => ExecuteBlock(address, count));
+            }
+            catch (Exception ex)
+            {
+                this.LogError("Could not queue the block for {address}: {message}", address, ex.Message);
+
+                lock (_autoBlockLock)
+                {
+                    _pendingBlocks.Remove(address);
+                    _autoBlocked.Remove(address);
+                    SaveAutoBlocked();
+                }
+            }
         }
 
         private void ExecuteBlock(string address, int count)
@@ -916,6 +938,14 @@ namespace PepperDash.Essentials.WebSocketServer
 
                 if (response != null && response.IndexOf("Added IP", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
+                    lock (_autoBlockLock)
+                    {
+                        // The block lasts from when it was actually added, however long the command waited in the queue
+                        _pendingBlocks.Remove(address);
+                        _autoBlocked[address] = DateTime.UtcNow + _autoBlockDuration;
+                        SaveAutoBlocked();
+                    }
+
                     this.LogWarning("Blocked {address} for {minutes} minutes: {count} unwanted requests within a minute", address, (int)_autoBlockDuration.TotalMinutes, count);
                     return;
                 }
@@ -930,6 +960,7 @@ namespace PepperDash.Essentials.WebSocketServer
             // Not blocked, so Essentials has nothing to remove later
             lock (_autoBlockLock)
             {
+                _pendingBlocks.Remove(address);
                 _autoBlocked.Remove(address);
                 SaveAutoBlocked();
             }
@@ -950,7 +981,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 lock (_autoBlockLock)
                 {
                     var now = DateTime.UtcNow;
-                    due = _autoBlocked.Where(kv => kv.Value <= now).Select(kv => kv.Key).ToList();
+                    due = _autoBlocked.Where(kv => kv.Value <= now && !_pendingBlocks.Contains(kv.Key)).Select(kv => kv.Key).ToList();
                 }
 
                 foreach (var address in due)
@@ -2008,16 +2039,19 @@ namespace PepperDash.Essentials.WebSocketServer
 
                 if (path.StartsWith("/mc/api/log"))
                 {
+                    // The app posts here whether or not forwarding is on, so this is not an unwanted request.
+                    // Acknowledged without reading the body, so a large or slow upload costs nothing when it is off.
+                    if (!_parent.Config.DirectServer.Logging.EnableRemoteLogging)
+                    {
+                        res.StatusCode = 200;
+                        res.Close();
+                        return;
+                    }
+
                     var body = new StreamReader(req.InputStream).ReadToEnd();
 
                     res.StatusCode = 200;
                     res.Close();
-
-                    // The app posts here whether or not forwarding is on, so this is not an unwanted request
-                    if (!_parent.Config.DirectServer.Logging.EnableRemoteLogging)
-                    {
-                        return;
-                    }
 
                     // remote log collector has no dedicated secure flag; keep it on http regardless of DirectServer.Secure
                     var logRequest = new HttpRequestMessage(HttpMethod.Post, $"http://{_parent.Config.DirectServer.Logging.Host}:{_parent.Config.DirectServer.Logging.Port}/logs")
