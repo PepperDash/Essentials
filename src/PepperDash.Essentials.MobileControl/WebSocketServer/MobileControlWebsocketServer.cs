@@ -1114,6 +1114,14 @@ namespace PepperDash.Essentials.WebSocketServer
                 return;
             }
 
+            // Its records could never be saved here, so the file would never be deleted, and its blocks would be
+            // removed again on every restart even after someone re-added one by hand. Leave it alone too.
+            if (_autoBlockStateUnreadable)
+            {
+                this.LogError("{path} is also left as it is until {current} can be read", legacyPath, path);
+                return;
+            }
+
             // Take over blocks recorded under the old shared file name, then remove it once they are saved here
             if (ReadAutoBlockedFile(legacyPath))
             {
@@ -1155,16 +1163,28 @@ namespace PepperDash.Essentials.WebSocketServer
                     return true;
                 }
 
+                // All or nothing. Skipping a bad entry would let the next save drop it from the file, and with it the
+                // only record of a block that then never gets removed.
+                var parsed = new Dictionary<string, DateTime>();
+
+                foreach (var entry in data)
+                {
+                    DateTime expiry;
+
+                    if (!IsIpv4Literal(entry.Key) || !DateTime.TryParse(entry.Value, null, System.Globalization.DateTimeStyles.RoundtripKind, out expiry))
+                    {
+                        this.LogError("Could not read the list of automatic blocks from {path}: invalid entry '{address}': '{expiry}'", path, entry.Key, entry.Value);
+                        return false;
+                    }
+
+                    parsed[entry.Key] = expiry.ToUniversalTime();
+                }
+
                 lock (_autoBlockLock)
                 {
-                    foreach (var entry in data)
+                    foreach (var entry in parsed)
                     {
-                        DateTime expiry;
-
-                        if (IsIpv4Literal(entry.Key) && DateTime.TryParse(entry.Value, null, System.Globalization.DateTimeStyles.RoundtripKind, out expiry))
-                        {
-                            _autoBlocked[entry.Key] = expiry.ToUniversalTime();
-                        }
+                        _autoBlocked[entry.Key] = entry.Value;
                     }
                 }
 
