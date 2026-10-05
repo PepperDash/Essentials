@@ -403,6 +403,29 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
         /// <summary>
+        /// True if the address is on the processor's Control Subnet. Unwraps an IPv4-mapped IPv6 address first, and
+        /// only compares addresses of the same family, so an IPv6 client is never tested against the IPv4 Control
+        /// Subnet (IsInSameSubnet throws on a length mismatch).
+        /// </summary>
+        private bool IsOnControlSubnet(System.Net.IPAddress remote)
+        {
+            if (remote == null || csIpAddress == null || csSubnetMask == null)
+            {
+                return false;
+            }
+
+            var bytes = remote.GetAddressBytes();
+            if (bytes.Length == 16 && IsIPv4MappedBytes(bytes))
+            {
+                var v4 = new byte[4];
+                Array.Copy(bytes, 12, v4, 0, 4);
+                remote = new System.Net.IPAddress(v4);
+            }
+
+            return remote.AddressFamily == csIpAddress.AddressFamily && remote.IsInSameSubnet(csIpAddress, csSubnetMask);
+        }
+
+        /// <summary>
         /// True if a request from this address should be served.
         /// </summary>
         private bool IsClientAllowed(System.Net.IPAddress remote)
@@ -434,9 +457,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 return true;
             }
 
-            // Only compare like with like: IsInSameSubnet throws for an IPv6 client against the IPv4 Control Subnet
-            if (csIpAddress != null && csSubnetMask != null && remote.AddressFamily == csIpAddress.AddressFamily
-                && remote.IsInSameSubnet(csIpAddress, csSubnetMask))
+            if (IsOnControlSubnet(remote))
             {
                 return true;
             }
@@ -453,11 +474,33 @@ namespace PepperDash.Essentials.WebSocketServer
         }
 
         /// <summary>
+        /// The remote address, or null if the socket is already gone. Reading RemoteEndPoint on a connection the
+        /// client has already reset throws SocketException ("The socket is not connected") from inside the HTTP
+        /// stack - the ?. operator does not help, because the getter itself throws rather than returning null. A
+        /// scanner that resets every connection would otherwise log one exception and stack trace per request.
+        /// </summary>
+        private static System.Net.IPAddress TryGetRemoteAddress(HttpListenerRequest req)
+        {
+            try
+            {
+                return req.RemoteEndPoint?.Address;
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                return null;
+            }
+            catch (ObjectDisposedException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Drops the connection without a response if the client is not allowed. Returns true if it was refused.
         /// </summary>
         private bool RejectIfNotAllowed(HttpListenerRequest req, HttpListenerResponse res)
         {
-            var remote = req.RemoteEndPoint?.Address;
+            var remote = TryGetRemoteAddress(req);
 
             if (IsClientAllowed(remote))
             {
@@ -1353,7 +1396,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 AddNoCacheHeaders(res);
 
                 var path = req.RawUrl;
-                var remote = req.RemoteEndPoint?.Address;
+                var remote = TryGetRemoteAddress(req);
 
                 // Source address included so a scan can be attributed to a host. Path is truncated
                 // because a hostile request can carry an arbitrarily long one.
@@ -1425,7 +1468,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 AddNoCacheHeaders(res);
 
                 var path = req.RawUrl;
-                var remote = req.RemoteEndPoint?.Address;
+                var remote = TryGetRemoteAddress(req);
                 var ip = remote?.ToString();
 
                 this.LogVerbose("POST Request received at path: {path} from host {host}", TruncateForLog(path), ip);
@@ -1755,10 +1798,10 @@ namespace PepperDash.Essentials.WebSocketServer
 
             this.LogVerbose("Attempting to serve file: {filePath}", filePath);
 
-            var remoteIp = req.RemoteEndPoint.Address;
+            var remoteIp = TryGetRemoteAddress(req);
 
             // Check if the request is coming from the CS LAN and if so, send the CS config instead of the LAN config
-            if (csSubnetMask != null && csIpAddress != null && remoteIp.IsInSameSubnet(csIpAddress, csSubnetMask) && filePath.Contains(appConfigFileName))
+            if (IsOnControlSubnet(remoteIp) && filePath.Contains(appConfigFileName))
             {
                 filePath = filePath.Replace(appConfigFileName, appConfigCsFileName);
             }
