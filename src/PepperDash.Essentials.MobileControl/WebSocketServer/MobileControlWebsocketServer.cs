@@ -549,14 +549,30 @@ namespace PepperDash.Essentials.WebSocketServer
             // stale timestamp and all log
             lock (_lastLogged)
             {
-                if (_lastLogged.Count > MaxRateLimitEntries)
+                if (_lastLogged.TryGetValue(key, out var last))
                 {
-                    _lastLogged.Clear();
+                    // Seen recently: stay quiet until this source's window passes.
+                    if (now - last < _logInterval)
+                    {
+                        return;
+                    }
                 }
-
-                if (_lastLogged.TryGetValue(key, out var last) && now - last < _logInterval)
+                else if (_lastLogged.Count >= MaxRateLimitEntries)
                 {
-                    return;
+                    // Cache full. Drop only entries whose window has already passed - never an active one.
+                    // Clearing the whole cache (the earlier approach) would reset every source's limit, so a
+                    // scan from many addresses would fill it, flush it, and log all over again each cycle.
+                    foreach (var expired in _lastLogged.Where(kv => now - kv.Value >= _logInterval).Select(kv => kv.Key).ToList())
+                    {
+                        _lastLogged.TryRemove(expired, out _);
+                    }
+
+                    // Still full means more than MaxRateLimitEntries distinct sources are inside their window
+                    // right now. Suppress this new source rather than evict an active one.
+                    if (_lastLogged.Count >= MaxRateLimitEntries)
+                    {
+                        return;
+                    }
                 }
 
                 _lastLogged[key] = now;
