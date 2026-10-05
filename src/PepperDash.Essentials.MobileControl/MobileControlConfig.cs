@@ -103,15 +103,6 @@ namespace PepperDash.Essentials
         public bool? DropUnrecognisedRequests { get; set; }
 
         /// <summary>
-        /// Gets or sets the automatic blocking of addresses that send a burst of unwanted requests
-        /// </summary>
-        /// <remarks>
-        /// Absent or "enabled": false (default) means no automatic blocking.
-        /// </remarks>
-        [JsonProperty("autoBlock")]
-        public MobileControlAutoBlockConfig AutoBlock { get; set; }
-
-        /// <summary>
         /// Gets or sets the CSLanUiDeviceKeys
         /// </summary>
         /// <remarks>
@@ -136,55 +127,6 @@ namespace PepperDash.Essentials
         {
             Logging = new MobileControlLoggingConfig();
         }
-    }
-
-    /// <summary>
-    /// Settings for blocking, at the processor, an address that sends a burst of unwanted requests
-    /// </summary>
-    /// <remarks>
-    /// Counts requests for unrecognised paths and requests refused by allowedClientNetworks. When one address
-    /// reaches requestsPerMinute within a minute it is added to the processor's blocked-IP list (a total block,
-    /// every port) and removed again after blockMinutes. The processor's own lockout setting does not apply to
-    /// manual blocks, so Essentials removes only the blocks it added. 4-series appliances only.
-    /// Never blocks loopback, the Control Subnet, the processor's own addresses, allowedClientNetworks or neverBlock.
-    /// </remarks>
-    public class MobileControlAutoBlockConfig
-    {
-        /// <summary>
-        /// Gets or sets whether automatic blocking is on (default false)
-        /// </summary>
-        [JsonProperty("enabled")]
-        public bool Enabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether to only log what would be blocked, without blocking anything
-        /// </summary>
-        [JsonProperty("dryRun")]
-        public bool DryRun { get; set; }
-
-        /// <summary>
-        /// Gets or sets how many unwanted requests from one address within a minute trigger a block (default 10, minimum 3)
-        /// </summary>
-        [JsonProperty("requestsPerMinute")]
-        public int RequestsPerMinute { get; set; } = 10;
-
-        /// <summary>
-        /// Gets or sets how long a block lasts, in minutes (default 30, 1 to 1440)
-        /// </summary>
-        [JsonProperty("blockMinutes")]
-        public int BlockMinutes { get; set; } = 30;
-
-        /// <summary>
-        /// Gets or sets the most blocks Essentials will hold at once (default 8, 1 to 64)
-        /// </summary>
-        [JsonProperty("maxConcurrentBlocks")]
-        public int MaxConcurrentBlocks { get; set; } = 8;
-
-        /// <summary>
-        /// Gets or sets networks (CIDR notation) that are never blocked, for example VPN and monitoring hosts
-        /// </summary>
-        [JsonProperty("neverBlock")]
-        public List<string> NeverBlock { get; set; }
     }
 
     /// <summary>
