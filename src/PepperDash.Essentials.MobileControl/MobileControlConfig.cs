@@ -78,6 +78,31 @@ namespace PepperDash.Essentials
         public bool? AutomaticallyForwardPortToCSLAN { get; set; }
 
         /// <summary>
+        /// Gets or sets the networks (CIDR notation) allowed to make HTTP requests to the direct server
+        /// </summary>
+        /// <remarks>
+        /// Example: ["192.168.10.0/24", "192.168.5.10/32"]. When the list has any entries, HTTP requests
+        /// (GET, POST, OPTIONS) from any other address have the connection closed without a response,
+        /// except loopback and clients on the Control Subnet, which are always allowed.
+        /// When null or empty, no filtering is done (default).
+        /// Invalid entries are logged and skipped, so a list containing only invalid entries still turns
+        /// filtering on. Does not apply to websocket connections, which are already gated by a per-client token.
+        /// </remarks>
+        [JsonProperty("allowedClientNetworks")]
+        public List<string> AllowedClientNetworks { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether a request for a path the server does not handle gets no reply
+        /// </summary>
+        /// <remarks>
+        /// When true the connection is closed without a response. When false or absent (default) the server
+        /// replies 404, as it always has. Replying means writing to a connection the client may already have
+        /// reset, which throws from inside the HTTP stack, so noisy environments may prefer true.
+        /// </remarks>
+        [JsonProperty("dropUnrecognisedRequests")]
+        public bool? DropUnrecognisedRequests { get; set; }
+
+        /// <summary>
         /// Gets or sets the CSLanUiDeviceKeys
         /// </summary>
         /// <remarks>

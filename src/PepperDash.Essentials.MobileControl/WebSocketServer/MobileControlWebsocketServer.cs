@@ -273,6 +273,346 @@ namespace PepperDash.Essentials.WebSocketServer
             CrestronConsole.AddNewConsoleCommand(RemoveAllTokens, "MobileRemoveAllClients", "Removes all clients", ConsoleAccessLevelEnum.AccessOperator);
         }
 
+        private struct AllowedNetwork
+        {
+            public byte[] Address;
+            public int PrefixLength;
+        }
+
+        // null = no filtering configured
+        private List<AllowedNetwork> _allowedNetworks;
+
+        // Last time a rate-limited message was logged, keyed by message kind + source address
+        private readonly ConcurrentDictionary<string, DateTime> _lastLogged = new ConcurrentDictionary<string, DateTime>();
+
+        private static readonly TimeSpan _logInterval = TimeSpan.FromSeconds(60);
+
+        private const int MaxLoggedPathLength = 200;
+
+        private const int MaxRateLimitEntries = 512;
+
+        /// <summary>
+        /// Parses allowedClientNetworks. Invalid entries are logged and skipped.
+        /// </summary>
+        private void LoadAllowedNetworks()
+        {
+            var configured = _parent.Config.DirectServer.AllowedClientNetworks;
+
+            if (configured == null || configured.Count == 0)
+            {
+                _allowedNetworks = null;
+                return;
+            }
+
+            var parsed = new List<AllowedNetwork>();
+
+            foreach (var entry in configured)
+            {
+                if (TryParseCidr(entry, out var network))
+                {
+                    parsed.Add(network);
+                    continue;
+                }
+
+                this.LogWarning("Ignoring invalid allowedClientNetworks entry '{entry}'. Expected CIDR notation like 192.168.10.0/24", entry);
+            }
+
+            _allowedNetworks = parsed;
+
+            this.LogInformation("Restricting HTTP clients to the Control Subnet, loopback and {count} configured network(s)", parsed.Count);
+        }
+
+        private static bool TryParseCidr(string value, out AllowedNetwork network)
+        {
+            network = default(AllowedNetwork);
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            var parts = value.Trim().Split('/');
+
+            if (parts.Length > 2 || !System.Net.IPAddress.TryParse(parts[0], out var address))
+            {
+                return false;
+            }
+
+            var bytes = address.GetAddressBytes();
+            var prefix = bytes.Length * 8;
+
+            if (parts.Length == 2 && (!int.TryParse(parts[1], out prefix) || prefix < 0 || prefix > bytes.Length * 8))
+            {
+                return false;
+            }
+
+            // Clients in ::ffff:a.b.c.d form are compared as IPv4, so store a mapped entry the same way or it never matches
+            if (bytes.Length == 16 && prefix >= 96 && IsIPv4MappedBytes(bytes))
+            {
+                var v4 = new byte[4];
+                Array.Copy(bytes, 12, v4, 0, 4);
+                bytes = v4;
+                prefix -= 96;
+            }
+
+            network = new AllowedNetwork { Address = bytes, PrefixLength = prefix };
+            return true;
+        }
+
+        /// <summary>
+        /// True for ::ffff:a.b.c.d, the form an IPv4 client takes on a dual-stack listener.
+        /// </summary>
+        private static bool IsIPv4MappedBytes(byte[] bytes)
+        {
+            for (var i = 0; i < 10; i++)
+            {
+                if (bytes[i] != 0)
+                {
+                    return false;
+                }
+            }
+
+            return bytes[10] == 0xFF && bytes[11] == 0xFF;
+        }
+
+        private static bool IsInNetwork(byte[] remote, AllowedNetwork network)
+        {
+            if (remote.Length != network.Address.Length)
+            {
+                return false;
+            }
+
+            var fullBytes = network.PrefixLength / 8;
+            var remainingBits = network.PrefixLength % 8;
+
+            for (var i = 0; i < fullBytes; i++)
+            {
+                if (remote[i] != network.Address[i])
+                {
+                    return false;
+                }
+            }
+
+            if (remainingBits == 0)
+            {
+                return true;
+            }
+
+            var mask = (byte)(0xFF << (8 - remainingBits));
+            return (remote[fullBytes] & mask) == (network.Address[fullBytes] & mask);
+        }
+
+        /// <summary>
+        /// True if the address is on the processor's Control Subnet. Unwraps an IPv4-mapped IPv6 address first, and
+        /// only compares addresses of the same family, so an IPv6 client is never tested against the IPv4 Control
+        /// Subnet (IsInSameSubnet throws on a length mismatch).
+        /// </summary>
+        private bool IsOnControlSubnet(System.Net.IPAddress remote)
+        {
+            if (remote == null || csIpAddress == null || csSubnetMask == null)
+            {
+                return false;
+            }
+
+            var bytes = remote.GetAddressBytes();
+            if (bytes.Length == 16 && IsIPv4MappedBytes(bytes))
+            {
+                var v4 = new byte[4];
+                Array.Copy(bytes, 12, v4, 0, 4);
+                remote = new System.Net.IPAddress(v4);
+            }
+
+            return remote.AddressFamily == csIpAddress.AddressFamily && remote.IsInSameSubnet(csIpAddress, csSubnetMask);
+        }
+
+        /// <summary>
+        /// True if a request from this address should be served.
+        /// </summary>
+        private bool IsClientAllowed(System.Net.IPAddress remote)
+        {
+            if (_allowedNetworks == null)
+            {
+                return true;
+            }
+
+            if (remote == null)
+            {
+                return false;
+            }
+
+            var bytes = remote.GetAddressBytes();
+
+            // An IPv4 address can arrive as an IPv4-mapped IPv6 address (::ffff:a.b.c.d)
+            if (bytes.Length == 16 && IsIPv4MappedBytes(bytes))
+            {
+                var v4 = new byte[4];
+                Array.Copy(bytes, 12, v4, 0, 4);
+                bytes = v4;
+                remote = new System.Net.IPAddress(v4);
+            }
+
+            // After unwrapping: IsLoopback is false for ::ffff:127.0.0.1
+            if (System.Net.IPAddress.IsLoopback(remote))
+            {
+                return true;
+            }
+
+            if (IsOnControlSubnet(remote))
+            {
+                return true;
+            }
+
+            foreach (var network in _allowedNetworks)
+            {
+                if (IsInNetwork(bytes, network))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The remote address, or null if the socket is already gone. Reading RemoteEndPoint on a connection the
+        /// client has already reset throws SocketException ("The socket is not connected") from inside the HTTP
+        /// stack - the ?. operator does not help, because the getter itself throws rather than returning null. A
+        /// scanner that resets every connection would otherwise log one exception and stack trace per request.
+        /// </summary>
+        private static System.Net.IPAddress TryGetRemoteAddress(HttpListenerRequest req)
+        {
+            try
+            {
+                return req.RemoteEndPoint?.Address;
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                return null;
+            }
+            catch (ObjectDisposedException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Drops the connection without a response if the client is not allowed. Returns true if it was refused.
+        /// </summary>
+        private bool RejectIfNotAllowed(HttpListenerRequest req, HttpListenerResponse res)
+        {
+            var remote = TryGetRemoteAddress(req);
+
+            if (IsClientAllowed(remote))
+            {
+                return false;
+            }
+
+            LogRateLimited("rejected", remote, () =>
+                this.LogWarning("Refused HTTP request from {host}: not in the Control Subnet or allowedClientNetworks", remote));
+
+            DropConnection(res);
+            return true;
+        }
+
+        /// <summary>
+        /// Closes the connection without writing a response.
+        /// </summary>
+        /// <remarks>
+        /// Used for requests we are refusing. Writing even a short reply means a send on a socket the other end
+        /// may already have reset, which throws from inside the HTTP stack (seen in the field as
+        /// "Unable to write data to the transport connection: Connection reset by peer" from
+        /// HttpListenerResponse.Close). Abort() writes nothing, so there is nothing to fail.
+        /// </remarks>
+        private void DropConnection(HttpListenerResponse res)
+        {
+            try
+            {
+                res.Abort();
+            }
+            catch (Exception ex)
+            {
+                // The connection is already gone, which is the outcome we wanted
+                this.LogDebug("Exception dropping connection: {message}", ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Runs the log action at most once per interval for each (kind, address) pair, so that a scan
+        /// producing hundreds of requests cannot flood the log.
+        /// </summary>
+        private void LogRateLimited(string kind, System.Net.IPAddress remote, Action log)
+        {
+            var key = kind + "|" + (remote?.ToString() ?? "unknown");
+            var now = DateTime.UtcNow;
+
+            // Check and update together, or a burst of concurrent requests from one source would each see a
+            // stale timestamp and all log
+            lock (_lastLogged)
+            {
+                if (_lastLogged.TryGetValue(key, out var last))
+                {
+                    // Seen recently: stay quiet until this source's window passes.
+                    if (now - last < _logInterval)
+                    {
+                        return;
+                    }
+                }
+                else if (_lastLogged.Count >= MaxRateLimitEntries)
+                {
+                    // Cache full. Drop only entries whose window has already passed - never an active one.
+                    // Clearing the whole cache (the earlier approach) would reset every source's limit, so a
+                    // scan from many addresses would fill it, flush it, and log all over again each cycle.
+                    foreach (var expired in _lastLogged.Where(kv => now - kv.Value >= _logInterval).Select(kv => kv.Key).ToList())
+                    {
+                        _lastLogged.TryRemove(expired, out _);
+                    }
+
+                    // Still full means more than MaxRateLimitEntries distinct sources are inside their window
+                    // right now. Suppress this new source rather than evict an active one.
+                    if (_lastLogged.Count >= MaxRateLimitEntries)
+                    {
+                        return;
+                    }
+                }
+
+                _lastLogged[key] = now;
+            }
+
+            log();
+        }
+
+        private static string TruncateForLog(string value)
+        {
+            if (value == null || value.Length <= MaxLoggedPathLength)
+            {
+                return value;
+            }
+
+            return value.Substring(0, MaxLoggedPathLength) + "...(" + value.Length + " chars)";
+        }
+
+        /// <summary>
+        /// Requests that every ordinary browser makes and this server has never answered.
+        /// </summary>
+        /// <remarks>
+        /// The app's index.html sets its own &lt;base&gt; from an inline script, but the browser's preload
+        /// scanner requests ./assets/* first, relative to /mc/, so each page load asks for /mc/assets/* and gets a
+        /// 404 before the real requests succeed under /mc/app/assets/. Browsers also ask for /favicon.ico. These
+        /// are expected, so they are not logged as unrecognised paths.
+        /// </remarks>
+        private static bool IsBenignBrowserRequest(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            var queryStart = path.IndexOf('?');
+            var withoutQuery = queryStart >= 0 ? path.Substring(0, queryStart) : path;
+
+            return withoutQuery.StartsWith("/mc/assets/", StringComparison.Ordinal)
+                || string.Equals(withoutQuery, "/favicon.ico", StringComparison.OrdinalIgnoreCase);
+        }
 
         /// <summary>
         /// Initialize method
@@ -284,16 +624,16 @@ namespace PepperDash.Essentials.WebSocketServer
             {
                 base.Initialize();
 
+                LoadAllowedNetworks();
+
                 _server = new HttpServer(Port, _parent.Config.DirectServer.Secure);
 
                 _server.OnGet += Server_OnGet;
 
                 _server.OnOptions += Server_OnOptions;
 
-                if (_parent.Config.DirectServer.Logging.EnableRemoteLogging)
-                {
-                    _server.OnPost += Server_OnPost;
-                }
+                // Always subscribed so POST requests go through the allowlist; log forwarding is gated inside
+                _server.OnPost += Server_OnPost;
 
                 if (_parent.Config.DirectServer.Secure)
                 {
@@ -1059,6 +1399,12 @@ namespace PepperDash.Essentials.WebSocketServer
             {
                 var req = e.Request;
                 var res = e.Response;
+
+                if (RejectIfNotAllowed(req, res))
+                {
+                    return;
+                }
+
                 res.ContentEncoding = Encoding.UTF8;
 
                 res.AddHeader("Access-Control-Allow-Origin", "*");
@@ -1066,8 +1412,11 @@ namespace PepperDash.Essentials.WebSocketServer
                 AddNoCacheHeaders(res);
 
                 var path = req.RawUrl;
+                var remote = TryGetRemoteAddress(req);
 
-                this.LogVerbose("GET Request received at path: {path}", path);
+                // Source address included so a scan can be attributed to a host. Path is truncated
+                // because a hostile request can carry an arbitrarily long one.
+                this.LogVerbose("GET Request received at path: {path} from host {host}", TruncateForLog(path), remote);
 
                 // Call for user app to join the room with a token
                 if (path.StartsWith("/mc/api/ui/joinroom"))
@@ -1090,9 +1439,25 @@ namespace PepperDash.Essentials.WebSocketServer
                 }
                 else
                 {
-                    // All other paths
-                    res.StatusCode = 404;
-                    res.Close();
+                    // All other paths. Browsers make a couple of these on every page load, so those are not
+                    // logged at Information.
+                    if (!IsBenignBrowserRequest(path))
+                    {
+                        LogRateLimited("unrecognised", remote, () =>
+                            this.LogInformation("Unrecognised request path from {host}: {path}", remote, TruncateForLog(path)));
+                    }
+
+                    if (_parent.Config.DirectServer.DropUnrecognisedRequests == true)
+                    {
+                        // No reply: nothing legitimate asks for these paths, and a reply is a write that can
+                        // fail on a connection the client has already reset
+                        DropConnection(res);
+                    }
+                    else
+                    {
+                        res.StatusCode = 404;
+                        res.Close();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1109,19 +1474,34 @@ namespace PepperDash.Essentials.WebSocketServer
                 var req = e.Request;
                 var res = e.Response;
 
+                if (RejectIfNotAllowed(req, res))
+                {
+                    return;
+                }
+
                 res.AddHeader("Access-Control-Allow-Origin", "*");
 
                 AddNoCacheHeaders(res);
 
                 var path = req.RawUrl;
-                var ip = req.RemoteEndPoint.Address.ToString();
+                var remote = TryGetRemoteAddress(req);
+                var ip = remote?.ToString();
 
-                this.LogVerbose("POST Request received at path: {path} from host {host}", path, ip);
-
-                var body = new StreamReader(req.InputStream).ReadToEnd();
+                this.LogVerbose("POST Request received at path: {path} from host {host}", TruncateForLog(path), ip);
 
                 if (path.StartsWith("/mc/api/log"))
                 {
+                    // The app posts here whether or not forwarding is on, so this is not an unwanted request.
+                    // Acknowledged without reading the body, so a large or slow upload costs nothing when it is off.
+                    if (!_parent.Config.DirectServer.Logging.EnableRemoteLogging)
+                    {
+                        res.StatusCode = 200;
+                        res.Close();
+                        return;
+                    }
+
+                    var body = new StreamReader(req.InputStream).ReadToEnd();
+
                     res.StatusCode = 200;
                     res.Close();
 
@@ -1139,8 +1519,19 @@ namespace PepperDash.Essentials.WebSocketServer
                 }
                 else
                 {
-                    res.StatusCode = 404;
-                    res.Close();
+                    // Treated like an unrecognised GET: logged, then dropped or 404
+                    LogRateLimited("unrecognised", remote, () =>
+                        this.LogInformation("Unrecognised POST path from {host}: {path}", remote, TruncateForLog(path)));
+
+                    if (_parent.Config.DirectServer.DropUnrecognisedRequests == true)
+                    {
+                        DropConnection(res);
+                    }
+                    else
+                    {
+                        res.StatusCode = 404;
+                        res.Close();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1154,6 +1545,11 @@ namespace PepperDash.Essentials.WebSocketServer
             try
             {
                 var res = e.Response;
+
+                if (RejectIfNotAllowed(e.Request, res))
+                {
+                    return;
+                }
 
                 res.AddHeader("Access-Control-Allow-Origin", "*");
                 res.AddHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -1361,7 +1757,10 @@ namespace PepperDash.Essentials.WebSocketServer
             //string filePath = path.Replace(string.Format("?token={0}", token), "");
 
             // if there's no file suffix strip any extra path data after the base href
-            if (filePath != _userAppBaseHref && !filePath.Contains(".") && (!filePath.EndsWith(_userAppBaseHref) || !filePath.EndsWith(_userAppBaseHref += "/")))
+            // Note: this used to be `_userAppBaseHref += "/"` inside the condition, which silently appended a
+            // slash to the shared field the first time it was evaluated and changed every later request's
+            // path handling. Compare against a copy instead.
+            if (filePath != _userAppBaseHref && !filePath.Contains(".") && (!filePath.EndsWith(_userAppBaseHref) || !filePath.EndsWith(_userAppBaseHref + "/")))
             {
                 var suffix = filePath.Substring(_userAppBaseHref.Length, filePath.Length - _userAppBaseHref.Length);
                 if (suffix != "/")
@@ -1415,10 +1814,10 @@ namespace PepperDash.Essentials.WebSocketServer
 
             this.LogVerbose("Attempting to serve file: {filePath}", filePath);
 
-            var remoteIp = req.RemoteEndPoint.Address;
+            var remoteIp = TryGetRemoteAddress(req);
 
             // Check if the request is coming from the CS LAN and if so, send the CS config instead of the LAN config
-            if (csSubnetMask != null && csIpAddress != null && remoteIp.IsInSameSubnet(csIpAddress, csSubnetMask) && filePath.Contains(appConfigFileName))
+            if (IsOnControlSubnet(remoteIp) && filePath.Contains(appConfigFileName))
             {
                 filePath = filePath.Replace(appConfigFileName, appConfigCsFileName);
             }
