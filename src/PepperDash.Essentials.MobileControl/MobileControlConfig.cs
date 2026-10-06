@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Essentials
 {
@@ -218,6 +219,16 @@ namespace PepperDash.Essentials
         /// </summary>
         [JsonProperty("lockoutMessagesByTouchpanel", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, MobileControlLockoutMessageOverride> LockoutMessagesByTouchpanel { get; set; }
+
+        /// <summary>
+        /// Any other properties in the <c>applicationConfig</c>, kept as-is. Essentials doesn't use
+        /// them; they're passed through into the <c>_config.local.json</c> / <c>_config.cs.json</c>
+        /// files the processor writes for the user app on every start, so app-specific settings
+        /// (e.g. a <c>datadog</c> block) can live in the Essentials config instead of being lost
+        /// when those files are regenerated.
+        /// </summary>
+        [JsonExtensionData]
+        public IDictionary<string, JToken> AdditionalProperties { get; set; }
     }
 
     /// <summary>

@@ -12,6 +12,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Prng;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
@@ -626,7 +627,11 @@ namespace PepperDash.Essentials.WebSocketServer
                     },
                     Logging = _parent.Config.ApplicationConfig?.Logging ?? false,
                     PartnerMetadata = _parent.Config.ApplicationConfig?.PartnerMetadata ?? new List<MobileControlPartnerMetadata>(),
-                    LockoutMessagesByTouchpanel = _parent.Config.ApplicationConfig?.LockoutMessagesByTouchpanel ?? new Dictionary<string, MobileControlLockoutMessageOverride>()
+                    LockoutMessagesByTouchpanel = _parent.Config.ApplicationConfig?.LockoutMessagesByTouchpanel ?? new Dictionary<string, MobileControlLockoutMessageOverride>(),
+                    // App-specific settings Essentials doesn't model, passed through unchanged
+                    AdditionalProperties = _parent.Config.ApplicationConfig?.AdditionalProperties != null
+                        ? new Dictionary<string, JToken>(_parent.Config.ApplicationConfig.AdditionalProperties)
+                        : null
                 };
 
                 return config;
