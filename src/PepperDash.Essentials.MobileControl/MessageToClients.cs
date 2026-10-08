@@ -28,8 +28,10 @@ namespace PepperDash.Essentials
     private readonly string _clientId;
 
     // Perf: the batch-sync terminator's time in the transmit queue is logged when it is sent. It is
-    // queued after every reply in its batch, so that wait is how long the batch took to go out.
+    // queued after every reply in its batch, so that wait is how long the batch took to go out. An
+    // aggregated batch is a single message that also marks the sync complete.
     private const string InitialSyncCompleteType = "/system/initialSyncComplete";
+    private const string AggregatedBatchType = "/system/batchDeviceStatus";
     private readonly string _type;
     private readonly long _createdTimestamp = Stopwatch.GetTimestamp();
 
@@ -82,10 +84,10 @@ namespace PepperDash.Essentials
           var sendStart = Stopwatch.GetTimestamp();
           _server.SendMessageToClient(_clientId, _serializedMessage);
 
-          if (_type == InitialSyncCompleteType)
+          if (_type == InitialSyncCompleteType || _type == AggregatedBatchType)
           {
-            _server.LogDebug("Perf: initialSyncComplete sent to client {clientId} after {queueMs:F1} ms in the transmit queue ({sendMs:F1} ms to send)",
-              _clientId, ElapsedMs(_createdTimestamp, sendStart), ElapsedMs(sendStart, Stopwatch.GetTimestamp()));
+            _server.LogDebug("Perf: {type} sent to client {clientId} after {queueMs:F1} ms in the transmit queue ({sendMs:F1} ms to send, {length} chars)",
+              _type, _clientId, ElapsedMs(_createdTimestamp, sendStart), ElapsedMs(sendStart, Stopwatch.GetTimestamp()), _serializedMessage.Length);
           }
 
           return;

@@ -1281,6 +1281,12 @@ namespace PepperDash.Essentials
         /// <param name="o"></param>
         public void SendMessageObject(IMobileControlMessage o)
         {
+            // A reply to an aggregated batch request is collected and sent with the rest of the
+            // batch as one message (see HandleBatchDeviceFullStatus).
+            if (BatchStatusCapture.TryCapture(o))
+            {
+                return;
+            }
 
             if (Config.EnableApiServer)
             {
@@ -1525,6 +1531,14 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            // Optional: reply with one /system/batchDeviceStatus message holding every reply, instead
+            // of one message per messenger followed by /system/initialSyncComplete.
+            var aggregate = content.SelectToken("aggregate")?.Type == JTokenType.Boolean
+                && content.SelectToken("aggregate").Value<bool>();
+            // Optional: echoed back on the completion message, so a client can tell its batches apart.
+            var requestId = content.SelectToken("requestId")?.ToString();
+            var capture = aggregate ? new BatchStatusCapture(clientId) : null;
+
             // Build a dictionary of deviceKey -> list of action paths
             Dictionary<string, List<string>> deviceActionPaths;
 
@@ -1542,11 +1556,7 @@ namespace PepperDash.Essentials
                 if (deviceKeys == null || deviceKeys.Count == 0)
                 {
                     this.LogWarning("BatchDeviceFullStatus: No device keys or devices provided");
-                    SendMessageObject(new MobileControlMessage
-                    {
-                        Type = "/system/initialSyncComplete",
-                        ClientId = clientId
-                    });
+                    CompleteBatch(clientId, requestId, capture);
                     return;
                 }
 
@@ -1556,11 +1566,7 @@ namespace PepperDash.Essentials
             if (deviceActionPaths == null || deviceActionPaths.Count == 0)
             {
                 this.LogWarning("BatchDeviceFullStatus: Empty devices dictionary");
-                SendMessageObject(new MobileControlMessage
-                {
-                    Type = "/system/initialSyncComplete",
-                    ClientId = clientId
-                });
+                CompleteBatch(clientId, requestId, capture);
                 return;
             }
 
@@ -1604,7 +1610,15 @@ namespace PepperDash.Essentials
                         {
                             try
                             {
-                                handler.Action(fullPath, clientId, JToken.FromObject(new { deviceKey }));
+                                var handlerContent = JToken.FromObject(new { deviceKey });
+                                if (capture != null)
+                                {
+                                    capture.Run(() => handler.Action(fullPath, clientId, handlerContent));
+                                }
+                                else
+                                {
+                                    handler.Action(fullPath, clientId, handlerContent);
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -1627,14 +1641,54 @@ namespace PepperDash.Essentials
                     this.LogError("BatchDeviceFullStatus: Exception waiting for tasks: {message}", ex.Message);
                 }
 
-                this.LogDebug("Perf: batch for client {clientId} ran {handlerCount} handlers for {deviceCount} devices / {pathCount} paths in {elapsedMs} ms",
-                    clientId, tasks.Count, deviceActionPaths.Count, pathCount, batchTimer.ElapsedMilliseconds);
+                this.LogDebug("Perf: batch for client {clientId} ran {handlerCount} handlers for {deviceCount} devices / {pathCount} paths in {elapsedMs} ms (aggregate: {aggregate})",
+                    clientId, tasks.Count, deviceActionPaths.Count, pathCount, batchTimer.ElapsedMilliseconds, aggregate);
 
+                CompleteBatch(clientId, requestId, capture);
+            });
+        }
+
+        /// <summary>
+        /// Finishes a batch status request. Aggregated: sends every captured reply in one
+        /// <c>/system/batchDeviceStatus</c> message that also marks the sync complete. Otherwise the
+        /// replies have already been sent, so just send <c>/system/initialSyncComplete</c>.
+        /// </summary>
+        private void CompleteBatch(string clientId, string requestId, BatchStatusCapture capture)
+        {
+            if (capture == null)
+            {
                 SendMessageObject(new MobileControlMessage
                 {
                     Type = "/system/initialSyncComplete",
-                    ClientId = clientId
+                    ClientId = clientId,
+                    Content = requestId != null ? new JObject { ["requestId"] = requestId } : null
                 });
+                return;
+            }
+
+            var captured = capture.Close();
+
+            var aggregatedContent = new JObject
+            {
+                ["messages"] = new JArray(captured.Select(m => new JObject
+                {
+                    ["type"] = m.Type,
+                    ["content"] = m.Content
+                })),
+                ["syncComplete"] = true
+            };
+            if (requestId != null)
+            {
+                aggregatedContent["requestId"] = requestId;
+            }
+
+            this.LogDebug("Perf: batch for client {clientId} aggregated {messageCount} replies into one message", clientId, captured.Count);
+
+            SendMessageObject(new MobileControlMessage
+            {
+                Type = "/system/batchDeviceStatus",
+                ClientId = clientId,
+                Content = aggregatedContent
             });
         }
 
