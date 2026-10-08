@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Threading;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -10,6 +11,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
     public class ITechPasswordMessenger : MessengerBase
     {
         private readonly ITechPassword _room;
+
+        /// <summary>
+        /// The client whose /validateTechPassword request is being handled, for the code that request
+        /// runs. Rooms raise TechPasswordValidateResult during ValidateTechPassword, so the result can
+        /// be sent back to that client alone - a correct PIN must not unlock the tech pages on every
+        /// panel in the room.
+        /// </summary>
+        private static readonly AsyncLocal<string> validatingClientId = new AsyncLocal<string>();
 
         /// <summary>
         /// Constructor for ITechPasswordMessenger
@@ -34,7 +43,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 var password = content.Value<string>("password");
 
-                _room.ValidateTechPassword(password);
+                var previous = validatingClientId.Value;
+                validatingClientId.Value = id;
+                try
+                {
+                    _room.ValidateTechPassword(password);
+                }
+                finally
+                {
+                    validatingClientId.Value = previous;
+                }
             });
 
             AddAction("/setTechPassword", (id, content) =>
@@ -56,7 +74,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     IsValid = args.IsValid
                 };
 
-                PostEventMessage(evt, "passwordValidationResult");
+                // Only to the client that asked, when known. A room that raises the result later,
+                // outside the request, can't be traced back to it, so that falls back to every client.
+                PostEventMessage(evt, "passwordValidationResult", validatingClientId.Value);
             };
         }
 

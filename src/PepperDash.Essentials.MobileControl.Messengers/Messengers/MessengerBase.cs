@@ -336,6 +336,28 @@ namespace PepperDash.Essentials.AppServer.Messengers
         }
 
         /// <summary>
+        /// Helper for posting an event message to one client only.
+        /// </summary>
+        /// <param name="message">The event content.</param>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="clientId">The client to send it to. Null or empty sends it to every client.</param>
+        protected void PostEventMessage(DeviceEventMessageBase message, string eventType, string clientId)
+        {
+            message.Key = _device.Key;
+
+            message.Name = _device.Name;
+
+            message.EventType = eventType;
+
+            AppServerController?.SendMessageObject(new MobileControlMessage
+            {
+                Type = $"/event{MessagePath}/{eventType}",
+                ClientId = string.IsNullOrEmpty(clientId) ? null : clientId,
+                Content = JToken.FromObject(message),
+            });
+        }
+
+        /// <summary>
         /// Helper for posting event message with no content
         /// </summary>
         /// <param name="eventType"></param>
