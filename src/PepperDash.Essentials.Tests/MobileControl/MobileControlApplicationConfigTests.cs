@@ -77,4 +77,13 @@ public class MobileControlApplicationConfigTests
 
         written.Properties().Select(p => p.Name).Should().NotContain(new[] { "datadog", "perf" });
     }
+
+    [Fact]
+    public void PerClientQueues_IsOffUnlessConfigured()
+    {
+        JsonConvert.DeserializeObject<MobileControlConfig>("""{ "directServer": { "enableDirectServer": true } }""")!
+            .DirectServer.PerClientQueues.Should().BeFalse();
+        JsonConvert.DeserializeObject<MobileControlConfig>("""{ "directServer": { "perClientQueues": true } }""")!
+            .DirectServer.PerClientQueues.Should().BeTrue();
+    }
 }

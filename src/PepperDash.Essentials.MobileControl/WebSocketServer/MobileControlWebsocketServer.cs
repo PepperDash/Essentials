@@ -65,6 +65,14 @@ namespace PepperDash.Essentials.WebSocketServer
         private readonly ConcurrentDictionary<string, UiClient> uiClients = new ConcurrentDictionary<string, UiClient>();
 
         /// <summary>
+        /// Per-client transmit queues, used when <see cref="UsePerClientQueues"/> is on. Lazy so that
+        /// only one queue (and send task) is ever created per client, even if two threads race to
+        /// send its first message.
+        /// </summary>
+        private readonly ConcurrentDictionary<string, Lazy<ClientTransmitQueue>> clientQueues =
+            new ConcurrentDictionary<string, Lazy<ClientTransmitQueue>>();
+
+        /// <summary>
         /// Stores pending client registrations using composite key: token-clientId
         /// This ensures the correct client ID is matched even when connections establish out of order
         /// </summary>
@@ -898,6 +906,7 @@ namespace PepperDash.Essentials.WebSocketServer
             c.ConnectionClosed += (o, a) =>
             {
                 uiClients.TryRemove(a.ClientId, out _);
+                RemoveClientQueue(a.ClientId);
                 // Clean up any pending registrations for this token
                 var keysToRemove = pendingClientRegistrations.Keys
                     .Where(k => k.StartsWith($"{key}-"))
@@ -972,6 +981,10 @@ namespace PepperDash.Essentials.WebSocketServer
                 this.LogWarning("Cannot update to unregistered clientId {newClientId} for token {token}", newClientId, tokenKey);
                 return false;
             }
+
+            // Messages queued under the old ID can't be delivered once it changes; a queue for the new
+            // ID is created on its first message.
+            RemoveClientQueue(oldClientId);
 
             // Get the existing client
             if (!uiClients.TryRemove(oldClientId, out var client))
@@ -1600,6 +1613,75 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             this.LogVerbose("Stopping WebSocket Server");
             _server.Stop(CloseStatusCode.Normal, "Server Shutting Down");
+        }
+
+        /// <summary>
+        /// Whether each client has its own transmit queue (<c>directServer.perClientQueues</c>).
+        /// </summary>
+        public bool UsePerClientQueues => _parent.Config.DirectServer?.PerClientQueues == true;
+
+        /// <summary>
+        /// Queues a message for one client's own transmit task. Never blocks.
+        /// </summary>
+        public void EnqueueToClient(string clientId, OutboundClientMessage message)
+        {
+            if (clientId == null)
+            {
+                return;
+            }
+
+            if (!uiClients.ContainsKey(clientId))
+            {
+                this.LogWarning("Unable to find client with ID: {clientId}", clientId);
+                return;
+            }
+
+            GetClientQueue(clientId).Enqueue(message);
+        }
+
+        /// <summary>
+        /// Queues a message for every connected client's own transmit task. Never blocks.
+        /// </summary>
+        public void EnqueueToAllClients(OutboundClientMessage message)
+        {
+            foreach (var client in uiClients)
+            {
+                if (!client.Value.Context.WebSocket.IsAlive)
+                {
+                    continue;
+                }
+
+                GetClientQueue(client.Key).Enqueue(message);
+            }
+        }
+
+        private ClientTransmitQueue GetClientQueue(string clientId) =>
+            clientQueues.GetOrAdd(clientId, id => new Lazy<ClientTransmitQueue>(() => new ClientTransmitQueue(
+                send: payload =>
+                {
+                    // Look the client up at send time, so a reconnect or ID change is picked up.
+                    if (uiClients.TryGetValue(id, out var client))
+                    {
+                        client.Context.WebSocket.Send(payload);
+                    }
+                },
+                canSend: () => uiClients.TryGetValue(id, out var client) && client.Context.WebSocket.IsAlive,
+                onSent: (message, queueMs, sendMs) =>
+                {
+                    if (message.Type == "/system/initialSyncComplete" || message.Type == "/system/batchDeviceStatus")
+                    {
+                        this.LogDebug("Perf: {type} sent to client {clientId} after {queueMs:F1} ms in its own transmit queue ({sendMs:F1} ms to send, {length} chars)",
+                            message.Type, id, queueMs, sendMs, message.Payload.Length);
+                    }
+                },
+                onError: ex => this.LogError("Error sending to client {clientId}: {message}", id, ex.Message)))).Value;
+
+        private void RemoveClientQueue(string clientId)
+        {
+            if (clientId != null && clientQueues.TryRemove(clientId, out var queue) && queue.IsValueCreated)
+            {
+                queue.Value.Dispose();
+            }
         }
 
         /// <summary>

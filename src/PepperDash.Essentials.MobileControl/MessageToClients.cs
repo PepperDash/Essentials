@@ -77,6 +77,26 @@ namespace PepperDash.Essentials
           return;
         }
 
+        if (_server.UsePerClientQueues)
+        {
+          // Hand off to the client's own transmit task; this never blocks, so a slow client can't
+          // hold up messages for anyone else. Its queue logs the timing when the message is sent.
+          var outbound = new OutboundClientMessage(_serializedMessage, _type, _createdTimestamp);
+
+          if (_clientId != null)
+          {
+            _server.LogVerbose("Message TX To client {clientId}: {message}", _clientId, _serializedMessage);
+            _server.EnqueueToClient(_clientId, outbound);
+          }
+          else
+          {
+            _server.LogVerbose("Message TX To all clients: {message}", _serializedMessage);
+            _server.EnqueueToAllClients(outbound);
+          }
+
+          return;
+        }
+
         if (_clientId != null)
         {
           _server.LogVerbose("Message TX To client {clientId}: {message}", _clientId, _serializedMessage);
