@@ -34,6 +34,8 @@ namespace PepperDash.Essentials
     private const string AggregatedBatchType = "/system/batchDeviceStatus";
     private readonly string _type;
     private readonly long _createdTimestamp = Stopwatch.GetTimestamp();
+    // Set once the message is serialized, so serializing isn't counted as time in the queue.
+    private readonly long _serializedTimestamp;
 
     /// <summary>
     /// Message to send to Direct Server Clients.
@@ -45,6 +47,7 @@ namespace PepperDash.Essentials
     {
       _server = server;
       _serializedMessage = JsonConvert.SerializeObject(msg, Formatting.None, SerializerSettings);
+      _serializedTimestamp = Stopwatch.GetTimestamp();
       _clientId = (msg as MobileControlMessage)?.ClientId;
       _type = (msg as MobileControlMessage)?.Type;
     }
@@ -59,6 +62,7 @@ namespace PepperDash.Essentials
     {
       _server = server;
       _serializedMessage = JsonConvert.SerializeObject(msg, Formatting.None, SerializerSettings);
+      _serializedTimestamp = Stopwatch.GetTimestamp();
       _clientId = null;
     }
 
@@ -81,7 +85,8 @@ namespace PepperDash.Essentials
         {
           // Hand off to the client's own transmit task; this never blocks, so a slow client can't
           // hold up messages for anyone else. Its queue logs the timing when the message is sent.
-          var outbound = new OutboundClientMessage(_serializedMessage, _type, _createdTimestamp);
+          var outbound = new OutboundClientMessage(_serializedMessage, _type, _serializedTimestamp,
+            ElapsedMs(_createdTimestamp, _serializedTimestamp));
 
           if (_clientId != null)
           {
@@ -106,8 +111,9 @@ namespace PepperDash.Essentials
 
           if (_type == InitialSyncCompleteType || _type == AggregatedBatchType)
           {
-            _server.LogDebug("Perf: {type} sent to client {clientId} after {queueMs:F1} ms in the transmit queue ({sendMs:F1} ms to send, {length} chars)",
-              _type, _clientId, ElapsedMs(_createdTimestamp, sendStart), ElapsedMs(sendStart, Stopwatch.GetTimestamp()), _serializedMessage.Length);
+            _server.LogDebug("Perf: {type} sent to client {clientId} after {queueMs:F1} ms in the transmit queue ({serializeMs:F1} ms to serialize, {sendMs:F1} ms to send, {length} chars)",
+              _type, _clientId, ElapsedMs(_serializedTimestamp, sendStart), ElapsedMs(_createdTimestamp, _serializedTimestamp),
+              ElapsedMs(sendStart, Stopwatch.GetTimestamp()), _serializedMessage.Length);
           }
 
           return;

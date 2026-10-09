@@ -1670,8 +1670,8 @@ namespace PepperDash.Essentials.WebSocketServer
                 {
                     if (message.Type == "/system/initialSyncComplete" || message.Type == "/system/batchDeviceStatus")
                     {
-                        this.LogDebug("Perf: {type} sent to client {clientId} after {queueMs:F1} ms in its own transmit queue ({sendMs:F1} ms to send, {length} chars)",
-                            message.Type, id, queueMs, sendMs, message.Payload.Length);
+                        this.LogDebug("Perf: {type} sent to client {clientId} after {queueMs:F1} ms in its own transmit queue ({serializeMs:F1} ms to serialize, {sendMs:F1} ms to send, {length} chars)",
+                            message.Type, id, queueMs, message.SerializeMs, sendMs, message.Payload.Length);
                     }
                 },
                 onError: ex => this.LogError("Error sending to client {clientId}: {message}", id, ex.Message),

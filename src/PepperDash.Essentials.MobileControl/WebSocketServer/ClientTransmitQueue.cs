@@ -15,12 +15,14 @@ namespace PepperDash.Essentials.WebSocketServer
         /// </summary>
         /// <param name="payload">The serialized message.</param>
         /// <param name="type">The message type, used only for timing logs. May be null.</param>
-        /// <param name="createdTimestamp">When the message was created (<see cref="Stopwatch.GetTimestamp"/>).</param>
-        public OutboundClientMessage(string payload, string type, long createdTimestamp)
+        /// <param name="createdTimestamp">When the message was ready to queue (<see cref="Stopwatch.GetTimestamp"/>).</param>
+        /// <param name="serializeMs">How long serializing the message took, used only for timing logs.</param>
+        public OutboundClientMessage(string payload, string type, long createdTimestamp, double serializeMs = 0)
         {
             Payload = payload;
             Type = type;
             CreatedTimestamp = createdTimestamp;
+            SerializeMs = serializeMs;
         }
 
         /// <summary>The serialized message.</summary>
@@ -29,8 +31,11 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <summary>The message type, used only for timing logs. May be null.</summary>
         public string Type { get; }
 
-        /// <summary>When the message was created (<see cref="Stopwatch.GetTimestamp"/>).</summary>
+        /// <summary>When the message was ready to queue (<see cref="Stopwatch.GetTimestamp"/>).</summary>
         public long CreatedTimestamp { get; }
+
+        /// <summary>How long serializing the message took, used only for timing logs.</summary>
+        public double SerializeMs { get; }
     }
 
     /// <summary>
