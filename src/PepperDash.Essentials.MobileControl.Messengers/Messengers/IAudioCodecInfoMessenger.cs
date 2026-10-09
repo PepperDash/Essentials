@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -48,7 +47,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     PhoneNumber = _codecInfo.CodecInfo?.PhoneNumber
                 };
 
-                Task.Run(() => PostStatusMessage(state, id));
+                // Sent on the calling thread (handlers already run on a pool thread), so a batch status
+                // request can include it in its aggregated reply.
+                PostStatusMessage(state, id);
             }
             catch (Exception ex)
             {

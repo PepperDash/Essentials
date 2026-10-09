@@ -8,6 +8,7 @@ using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.WebSocketServer;
 using Serilog.Events;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace PepperDash.Essentials
 {
@@ -26,6 +27,16 @@ namespace PepperDash.Essentials
     private readonly string _serializedMessage;
     private readonly string _clientId;
 
+    // Perf: the batch-sync terminator's time in the transmit queue is logged when it is sent. It is
+    // queued after every reply in its batch, so that wait is how long the batch took to go out. An
+    // aggregated batch is a single message that also marks the sync complete.
+    private const string InitialSyncCompleteType = "/system/initialSyncComplete";
+    private const string AggregatedBatchType = "/system/batchDeviceStatus";
+    private readonly string _type;
+    private readonly long _createdTimestamp = Stopwatch.GetTimestamp();
+    // Set once the message is serialized, so serializing isn't counted as time in the queue.
+    private readonly long _serializedTimestamp;
+
     /// <summary>
     /// Message to send to Direct Server Clients.
     /// Serialization occurs here in the caller's thread context (parallel) rather than on the queue thread (sequential).
@@ -36,7 +47,9 @@ namespace PepperDash.Essentials
     {
       _server = server;
       _serializedMessage = JsonConvert.SerializeObject(msg, Formatting.None, SerializerSettings);
+      _serializedTimestamp = Stopwatch.GetTimestamp();
       _clientId = (msg as MobileControlMessage)?.ClientId;
+      _type = (msg as MobileControlMessage)?.Type;
     }
 
     /// <summary>
@@ -49,6 +62,7 @@ namespace PepperDash.Essentials
     {
       _server = server;
       _serializedMessage = JsonConvert.SerializeObject(msg, Formatting.None, SerializerSettings);
+      _serializedTimestamp = Stopwatch.GetTimestamp();
       _clientId = null;
     }
 
@@ -67,11 +81,40 @@ namespace PepperDash.Essentials
           return;
         }
 
+        if (_server.UsePerClientQueues)
+        {
+          // Hand off to the client's own transmit task; this never blocks, so a slow client can't
+          // hold up messages for anyone else. Its queue logs the timing when the message is sent.
+          var outbound = new OutboundClientMessage(_serializedMessage, _type, _serializedTimestamp,
+            ElapsedMs(_createdTimestamp, _serializedTimestamp));
+
+          if (_clientId != null)
+          {
+            _server.LogVerbose("Message TX To client {clientId}: {message}", _clientId, _serializedMessage);
+            _server.EnqueueToClient(_clientId, outbound);
+          }
+          else
+          {
+            _server.LogVerbose("Message TX To all clients: {message}", _serializedMessage);
+            _server.EnqueueToAllClients(outbound);
+          }
+
+          return;
+        }
+
         if (_clientId != null)
         {
           _server.LogVerbose("Message TX To client {clientId}: {message}", _clientId, _serializedMessage);
 
+          var sendStart = Stopwatch.GetTimestamp();
           _server.SendMessageToClient(_clientId, _serializedMessage);
+
+          if (_type == InitialSyncCompleteType || _type == AggregatedBatchType)
+          {
+            _server.LogDebug("Perf: {type} sent to client {clientId} after {queueMs:F1} ms in the transmit queue ({serializeMs:F1} ms to serialize, {sendMs:F1} ms to send, {length} chars)",
+              _type, _clientId, ElapsedMs(_serializedTimestamp, sendStart), ElapsedMs(_createdTimestamp, _serializedTimestamp),
+              ElapsedMs(sendStart, Stopwatch.GetTimestamp()), _serializedMessage.Length);
+          }
 
           return;
         }
@@ -90,6 +133,8 @@ namespace PepperDash.Essentials
       }
     }
     #endregion
+
+    private static double ElapsedMs(long from, long to) => (to - from) * 1000.0 / Stopwatch.Frequency;
   }
 
 }
