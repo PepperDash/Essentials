@@ -42,7 +42,10 @@ public class ITechPasswordMessengerTests
         public string Name => "Room 1";
         public int TechPasswordLength => 4;
         public bool RaiseLater { get; init; }
+        /// <summary>Report results only when <see cref="ReportDeferred"/> is called, like a device callback.</summary>
+        public bool Deferred { get; init; }
         public Task? Later { get; private set; }
+        private readonly Queue<TechPasswordEventArgs> deferred = new();
 
         public event EventHandler<TechPasswordEventArgs>? TechPasswordValidateResult;
         public event EventHandler<EventArgs>? TechPasswordChanged;
@@ -50,7 +53,9 @@ public class ITechPasswordMessengerTests
         public void ValidateTechPassword(string password)
         {
             var args = new TechPasswordEventArgs(password == "1234");
-            if (RaiseLater)
+            if (Deferred)
+                deferred.Enqueue(args);
+            else if (RaiseLater)
                 Later = Task.Run(async () => { await Task.Delay(20); TechPasswordValidateResult?.Invoke(this, args); });
             else
                 TechPasswordValidateResult?.Invoke(this, args);
@@ -58,14 +63,27 @@ public class ITechPasswordMessengerTests
 
         public void SetTechPassword(string oldPassword, string newPassword) => TechPasswordChanged?.Invoke(this, EventArgs.Empty);
 
+        /// <summary>
+        /// Raises the oldest deferred result from a context that doesn't flow from any request, as a
+        /// device callback thread would.
+        /// </summary>
+        public void ReportDeferred()
+        {
+            var args = deferred.Dequeue();
+            Task task;
+            using (ExecutionContext.SuppressFlow())
+                task = Task.Run(() => TechPasswordValidateResult?.Invoke(this, args));
+            task.Wait();
+        }
+
         /// <summary>Raises a result that no client's request asked for.</summary>
         public void RaiseUnprompted(bool isValid) => TechPasswordValidateResult?.Invoke(this, new TechPasswordEventArgs(isValid));
     }
 
-    private static (FakeAppServer server, FakeRoom room) Create(bool raiseLater = false)
+    private static (FakeAppServer server, FakeRoom room) Create(bool raiseLater = false, bool deferred = false)
     {
         var server = new FakeAppServer();
-        var room = new FakeRoom { RaiseLater = raiseLater };
+        var room = new FakeRoom { RaiseLater = raiseLater, Deferred = deferred };
         new ITechPasswordMessenger("room1-techPassword", "/room/room1", room).RegisterWithAppServer(server);
         return (server, room);
     }
@@ -126,12 +144,39 @@ public class ITechPasswordMessengerTests
     }
 
     [Fact]
-    public void AResultNoRequestAskedFor_GoesToEveryClient()
+    public void AResultRaisedOutsideTheRequest_GoesToTheWaitingClientsInOrder()
+    {
+        var (server, room) = Create(deferred: true);
+
+        Validate(server, "7", "1234");
+        Validate(server, "8", "0000");
+        room.ReportDeferred();
+        room.ReportDeferred();
+
+        var results = server.Sent.Where(m => m.Type == "/event/room/room1/passwordValidationResult").ToList();
+        results.Select(m => m.ClientId).Should().Equal("7", "8");
+        results.Select(m => m.Content!["isValid"]!.Value<bool>()).Should().Equal(true, false);
+    }
+
+    [Fact]
+    public void AResultNoRequestAskedFor_IsNotSent()
     {
         var (server, room) = Create();
 
         room.RaiseUnprompted(true);
 
-        ValidationResult(server).ClientId.Should().BeNull();
+        server.Sent.Should().NotContain(m => m.Type == "/event/room/room1/passwordValidationResult");
+    }
+
+    [Fact]
+    public void AnAnsweredRequest_IsNotAnsweredAgain()
+    {
+        var (server, room) = Create();
+
+        Validate(server, "7", "1234");
+        room.RaiseUnprompted(true);
+
+        server.Sent.Where(m => m.Type == "/event/room/room1/passwordValidationResult")
+            .Should().ContainSingle().Which.ClientId.Should().Be("7");
     }
 }
