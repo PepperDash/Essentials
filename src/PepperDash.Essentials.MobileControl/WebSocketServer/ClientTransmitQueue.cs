@@ -55,6 +55,7 @@ namespace PepperDash.Essentials.WebSocketServer
         private readonly Func<bool> _canSend;
         private readonly Action<OutboundClientMessage, double, double> _onSent;
         private readonly Action<Exception> _onError;
+        private readonly Action<OutboundClientMessage> _onDropped;
 
         /// <summary>
         /// Starts a queue that sends each message with <paramref name="send"/>, in order.
@@ -63,16 +64,19 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <param name="canSend">Whether the client can currently receive; messages are dropped while it can't.</param>
         /// <param name="onSent">Optional: called after each send with the message, ms it waited in the queue and ms the send took.</param>
         /// <param name="onError">Optional: called when a send throws. The queue keeps going.</param>
+        /// <param name="onDropped">Optional: called for each message dropped because the client couldn't receive it.</param>
         public ClientTransmitQueue(
             Action<string> send,
             Func<bool> canSend,
             Action<OutboundClientMessage, double, double> onSent = null,
-            Action<Exception> onError = null)
+            Action<Exception> onError = null,
+            Action<OutboundClientMessage> onDropped = null)
         {
             _send = send ?? throw new ArgumentNullException(nameof(send));
             _canSend = canSend ?? (() => true);
             _onSent = onSent;
             _onError = onError;
+            _onDropped = onDropped;
 
             Completion = Task.Run(PumpAsync);
         }
@@ -109,6 +113,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 {
                     if (!_canSend())
                     {
+                        _onDropped?.Invoke(message);
                         continue;
                     }
 

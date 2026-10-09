@@ -103,6 +103,19 @@ public class ClientTransmitQueueTests
     }
 
     [Fact]
+    public async Task ReportsEachDroppedMessage()
+    {
+        var dropped = new ConcurrentQueue<string>();
+        using var queue = new ClientTransmitQueue(_ => { }, () => false, onDropped: m => dropped.Enqueue(m.Type));
+
+        queue.Enqueue(Message("a", "/system/batchDeviceStatus"));
+        queue.Enqueue(Message("b", "/device/x"));
+
+        await Eventually(() => dropped.Count == 2);
+        dropped.Should().Equal("/system/batchDeviceStatus", "/device/x");
+    }
+
+    [Fact]
     public async Task KeepsGoingAfterASendFails()
     {
         var sent = new ConcurrentQueue<string>();

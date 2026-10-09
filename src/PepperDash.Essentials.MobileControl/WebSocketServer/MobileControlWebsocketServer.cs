@@ -1646,7 +1646,7 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             foreach (var client in uiClients)
             {
-                if (!client.Value.Context.WebSocket.IsAlive)
+                if (!IsOpen(client.Value))
                 {
                     continue;
                 }
@@ -1665,7 +1665,7 @@ namespace PepperDash.Essentials.WebSocketServer
                         client.Context.WebSocket.Send(payload);
                     }
                 },
-                canSend: () => uiClients.TryGetValue(id, out var client) && client.Context.WebSocket.IsAlive,
+                canSend: () => uiClients.TryGetValue(id, out var client) && IsOpen(client),
                 onSent: (message, queueMs, sendMs) =>
                 {
                     if (message.Type == "/system/initialSyncComplete" || message.Type == "/system/batchDeviceStatus")
@@ -1674,7 +1674,21 @@ namespace PepperDash.Essentials.WebSocketServer
                             message.Type, id, queueMs, sendMs, message.Payload.Length);
                     }
                 },
-                onError: ex => this.LogError("Error sending to client {clientId}: {message}", id, ex.Message)))).Value;
+                onError: ex => this.LogError("Error sending to client {clientId}: {message}", id, ex.Message),
+                onDropped: message => this.LogWarning("Dropped {type} for client {clientId}: its connection is not open",
+                    message.Type ?? "message", id)))).Value;
+
+        /// <summary>
+        /// Whether a client's connection is open, without the network round trip of
+        /// <c>WebSocket.IsAlive</c>.
+        /// </summary>
+        /// <remarks>
+        /// <c>IsAlive</c> sends a ping and blocks until the pong arrives, giving up after a second. Called
+        /// before every message, that adds a round trip per message, and while the processor is busy a late
+        /// pong makes a connected client look disconnected, so its messages are dropped.
+        /// </remarks>
+        private static bool IsOpen(UiClient client) =>
+            client?.Context?.WebSocket?.ReadyState == WebSocketState.Open;
 
         private void RemoveClientQueue(string clientId)
         {
