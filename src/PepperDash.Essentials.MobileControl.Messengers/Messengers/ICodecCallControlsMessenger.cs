@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
@@ -85,7 +84,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             try
             {
-                Task.Run(() => PostStatusMessage(BuildState(), id));
+                // Sent on the calling thread (handlers already run on a pool thread), so a batch status
+                // request can include it in its aggregated reply.
+                PostStatusMessage(BuildState(), id);
             }
             catch (Exception ex)
             {

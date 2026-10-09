@@ -31,6 +31,26 @@ public class BatchStatusCaptureTests
     }
 
     [Fact]
+    public async Task AReplyFromWorkThatOutlivesTheBatch_IsSentSeparatelyAndReported()
+    {
+        var capture = new BatchStatusCapture("7");
+        using var release = new ManualResetEventSlim();
+        Task<(bool Captured, bool Missed)>? late = null;
+
+        capture.Run(() => late = Task.Run(() =>
+        {
+            release.Wait(TimeSpan.FromSeconds(5));
+            var captured = BatchStatusCapture.TryCapture(Reply("7", "/device/codec-1"), out var missed);
+            return (captured, missed);
+        }));
+
+        capture.Close().Should().BeEmpty();
+        release.Set();
+
+        (await late!).Should().Be((false, true));
+    }
+
+    [Fact]
     public void LeavesOtherClientsMessagesAlone()
     {
         var capture = new BatchStatusCapture("7");

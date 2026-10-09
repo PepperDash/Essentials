@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             _phonebook = device as IAudioCodecPhonebook ?? throw new ArgumentNullException(nameof(device));
 
-            _phonebook.ListChanged += (sender, args) => SendFullStatus();
+            _phonebook.ListChanged += (sender, args) => Task.Run(() => SendFullStatus());
         }
 
         /// <inheritdoc />
@@ -63,7 +63,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
                     PhonebookEntries = _phonebook.PhonebookEntries
                 };
 
-                Task.Run(() => PostStatusMessage(state, id));
+                // Sent on the calling thread (handlers already run on a pool thread), so a batch status
+                // request can include it in its aggregated reply.
+                PostStatusMessage(state, id);
             }
             catch (Exception ex)
             {

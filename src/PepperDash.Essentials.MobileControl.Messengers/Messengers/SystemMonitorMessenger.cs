@@ -52,7 +52,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="e"></param>
         private void SysMon_SystemMonitorPropertiesChanged(object sender, EventArgs e)
         {
-            SendSystemMonitorStatusMessage();
+            // Reading the properties takes a while; keep it off the event's thread.
+            Task.Run(() => SendSystemMonitorStatusMessage());
         }
 
         private void SendFullStatusMessage(string id = null)
@@ -67,9 +68,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void SendSystemMonitorStatusMessage(string id = null)
         {
-            // This takes a while, launch a new thread
-
-            Task.Run(() => PostStatusMessage(JToken.FromObject(new SystemMonitorStateMessage
+            // Sent on the calling thread, so a batch status request can include it in its aggregated
+            // reply. The property-change event calls this on a task of its own.
+            PostStatusMessage(JToken.FromObject(new SystemMonitorStateMessage
             {
                 TimeZone = systemMonitor.TimeZoneFeedback.IntValue,
                 TimeZoneName = systemMonitor.TimeZoneTextFeedback.StringValue,
@@ -77,8 +78,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 SnmpVersion = systemMonitor.SnmpVersionFeedback.StringValue,
                 BacnetVersion = systemMonitor.BaCnetAppVersionFeedback.StringValue,
                 ControllerVersion = systemMonitor.ControllerVersionFeedback.StringValue
-            }), id
-            ));
+            }), id);
         }
 
         /// <inheritdoc />

@@ -1283,9 +1283,16 @@ namespace PepperDash.Essentials
         {
             // A reply to an aggregated batch request is collected and sent with the rest of the
             // batch as one message (see HandleBatchDeviceFullStatus).
-            if (BatchStatusCapture.TryCapture(o))
+            if (BatchStatusCapture.TryCapture(o, out var missedBatch))
             {
                 return;
+            }
+
+            if (missedBatch)
+            {
+                // A status handler replied from work that outlived the batch (typically its own
+                // Task.Run), so this goes out after the aggregated reply instead of inside it.
+                this.LogDebug("Perf: {type} for client {clientId} missed its aggregated batch reply; sending it separately", o.Type, o.ClientId);
             }
 
             if (Config.EnableApiServer)

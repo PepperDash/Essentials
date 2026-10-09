@@ -61,8 +61,21 @@ namespace PepperDash.Essentials
         /// is addressed to that capture's client, and the capture is still open.
         /// </summary>
         /// <returns>True if captured, in which case the caller must not send the message itself.</returns>
-        public static bool TryCapture(IMobileControlMessage message)
+        public static bool TryCapture(IMobileControlMessage message) => TryCapture(message, out _);
+
+        /// <summary>
+        /// Captures <paramref name="message"/> if a capture is active for the current code, the message
+        /// is addressed to that capture's client, and the capture is still open.
+        /// </summary>
+        /// <param name="message">The message to capture.</param>
+        /// <param name="missedBatch">
+        /// True when the message belongs to a batch whose capture has already closed: a handler replied
+        /// from work that outlived it, so the reply goes out after the aggregated message.
+        /// </param>
+        /// <returns>True if captured, in which case the caller must not send the message itself.</returns>
+        public static bool TryCapture(IMobileControlMessage message, out bool missedBatch)
         {
+            missedBatch = false;
             var capture = ambient.Value;
             if (capture == null || message == null || message.ClientId != capture.ClientId)
             {
@@ -73,6 +86,7 @@ namespace PepperDash.Essentials
             {
                 if (capture._closed)
                 {
+                    missedBatch = true;
                     return false;
                 }
 
