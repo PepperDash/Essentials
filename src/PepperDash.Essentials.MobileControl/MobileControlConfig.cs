@@ -73,10 +73,11 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Gives each connected client its own transmit queue and send task, instead of sending to every
         /// client from one shared transmit thread. A client that is slow to receive then only delays its
-        /// own messages, not every other client's. Off by default.
+        /// own messages, not every other client's. On by default; set <c>false</c> to send through the
+        /// shared transmit thread instead.
         /// </summary>
         [JsonProperty("perClientQueues")]
-        public bool PerClientQueues { get; set; }
+        public bool PerClientQueues { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the CSLanUiDeviceKeys

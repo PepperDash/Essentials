@@ -79,11 +79,11 @@ public class MobileControlApplicationConfigTests
     }
 
     [Fact]
-    public void PerClientQueues_IsOffUnlessConfigured()
+    public void PerClientQueues_IsOnUnlessTurnedOff()
     {
         JsonConvert.DeserializeObject<MobileControlConfig>("""{ "directServer": { "enableDirectServer": true } }""")!
-            .DirectServer.PerClientQueues.Should().BeFalse();
-        JsonConvert.DeserializeObject<MobileControlConfig>("""{ "directServer": { "perClientQueues": true } }""")!
             .DirectServer.PerClientQueues.Should().BeTrue();
+        JsonConvert.DeserializeObject<MobileControlConfig>("""{ "directServer": { "perClientQueues": false } }""")!
+            .DirectServer.PerClientQueues.Should().BeFalse();
     }
 }
