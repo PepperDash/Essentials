@@ -1684,8 +1684,10 @@ namespace PepperDash.Essentials.WebSocketServer
         /// </summary>
         /// <remarks>
         /// <c>IsAlive</c> sends a ping and blocks until the pong arrives, giving up after a second. Called
-        /// before every message, that adds a round trip per message, and while the processor is busy a late
-        /// pong makes a connected client look disconnected, so its messages are dropped.
+        /// before every message, that adds a round trip per message (188 for a typical non-aggregated batch
+        /// sync, which made it about four times slower), and while the processor is busy a late pong makes a
+        /// connected client look disconnected, so its messages are dropped. Connections that die without
+        /// closing are still cleaned up by websocket-sharp's once-a-minute sweep.
         /// </remarks>
         private static bool IsOpen(UiClient client) =>
             client?.Context?.WebSocket?.ReadyState == WebSocketState.Open;
@@ -1709,7 +1711,7 @@ namespace PepperDash.Essentials.WebSocketServer
         {
             foreach (var client in uiClients.Values)
             {
-                if (!client.Context.WebSocket.IsAlive)
+                if (!IsOpen(client))
                 {
                     continue;
                 }
@@ -1737,7 +1739,7 @@ namespace PepperDash.Essentials.WebSocketServer
             {
                 var socket = client.Context.WebSocket;
 
-                if (!socket.IsAlive)
+                if (!IsOpen(client))
                 {
                     this.LogError("Unable to send message to client {id}. Client is disconnected: {message}", clientId, message);
                     return;
