@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -45,22 +46,23 @@ namespace PepperDash.Essentials.WebSocketServer
     /// Sending to a websocket blocks until the data is written, and a client that reads slowly (a
     /// panel busy processing the previous messages, or a slow network) keeps it blocked. With one
     /// transmit thread for every client, that delays every other client too. Giving each client its own
-    /// queue means a slow client only delays itself; <see cref="Enqueue"/> never blocks.
+    /// queue means a slow client only delays itself; <see cref="Enqueue"/> never blocks. With a
+    /// capacity set, a client that falls that far behind is reported once through the overflow
+    /// callback (the server disconnects it, and it resyncs on reconnect) instead of the queue growing
+    /// without limit.
     /// </remarks>
     public sealed class ClientTransmitQueue : IDisposable
     {
-        private readonly Channel<OutboundClientMessage> _channel =
-            Channel.CreateUnbounded<OutboundClientMessage>(new UnboundedChannelOptions
-            {
-                SingleReader = true,
-                SingleWriter = false,
-            });
+        private readonly Channel<OutboundClientMessage> _channel;
 
         private readonly Action<string> _send;
         private readonly Func<bool> _canSend;
         private readonly Action<OutboundClientMessage, double, double> _onSent;
         private readonly Action<Exception> _onError;
         private readonly Action<OutboundClientMessage> _onDropped;
+        private readonly Action _onOverflow;
+        private int _overflowed;
+        private volatile bool _disposed;
 
         /// <summary>
         /// Starts a queue that sends each message with <paramref name="send"/>, in order.
@@ -70,13 +72,30 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <param name="onSent">Optional: called after each send with the message, ms it waited in the queue and ms the send took.</param>
         /// <param name="onError">Optional: called when a send throws. The queue keeps going.</param>
         /// <param name="onDropped">Optional: called for each message dropped because the client couldn't receive it.</param>
+        /// <param name="capacity">Most messages that may wait; 0 for no limit. Messages beyond it are refused.</param>
+        /// <param name="onOverflow">Optional: called once, the first time a message is refused because the queue is full.</param>
         public ClientTransmitQueue(
             Action<string> send,
             Func<bool> canSend,
             Action<OutboundClientMessage, double, double> onSent = null,
             Action<Exception> onError = null,
-            Action<OutboundClientMessage> onDropped = null)
+            Action<OutboundClientMessage> onDropped = null,
+            int capacity = 0,
+            Action onOverflow = null)
         {
+            _channel = capacity > 0
+                ? Channel.CreateBounded<OutboundClientMessage>(new BoundedChannelOptions(capacity)
+                {
+                    FullMode = BoundedChannelFullMode.Wait, // TryWrite fails when full; never blocks
+                    SingleReader = true,
+                    SingleWriter = false,
+                })
+                : Channel.CreateUnbounded<OutboundClientMessage>(new UnboundedChannelOptions
+                {
+                    SingleReader = true,
+                    SingleWriter = false,
+                });
+            _onOverflow = onOverflow;
             _send = send ?? throw new ArgumentNullException(nameof(send));
             _canSend = canSend ?? (() => true);
             _onSent = onSent;
@@ -99,14 +118,31 @@ namespace PepperDash.Essentials.WebSocketServer
         /// <summary>
         /// Adds a message to this client's queue. Never blocks.
         /// </summary>
-        /// <returns>False if the queue has been disposed.</returns>
-        public bool Enqueue(OutboundClientMessage message) => _channel.Writer.TryWrite(message);
+        /// <returns>False if the queue has been disposed or is full.</returns>
+        public bool Enqueue(OutboundClientMessage message)
+        {
+            if (_channel.Writer.TryWrite(message))
+            {
+                return true;
+            }
+
+            if (!_disposed && Interlocked.Exchange(ref _overflowed, 1) == 0)
+            {
+                _onOverflow?.Invoke();
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Stops accepting messages. Messages already queued are still sent, unless the client can no
         /// longer receive them.
         /// </summary>
-        public void Dispose() => _channel.Writer.TryComplete();
+        public void Dispose()
+        {
+            _disposed = true;
+            _channel.Writer.TryComplete();
+        }
 
         private async Task PumpAsync()
         {

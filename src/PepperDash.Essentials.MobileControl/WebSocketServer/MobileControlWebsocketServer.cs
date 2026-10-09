@@ -982,16 +982,17 @@ namespace PepperDash.Essentials.WebSocketServer
                 return false;
             }
 
-            // Messages queued under the old ID can't be delivered once it changes; a queue for the new
-            // ID is created on its first message.
-            RemoveClientQueue(oldClientId);
-
             // Get the existing client
             if (!uiClients.TryRemove(oldClientId, out var client))
             {
                 this.LogWarning("Cannot find client with old ID {oldClientId}", oldClientId);
                 return false;
             }
+
+            // Messages queued under the old ID can't be delivered once it changes; a queue for the new
+            // ID is created on its first message. Removed after the client, so a message for the old ID
+            // racing this sees no client and removes any queue it makes (see EnqueueForClient).
+            RemoveClientQueue(oldClientId);
 
             // Update the client's ID
             client.UpdateId(newClientId);
@@ -1636,7 +1637,7 @@ namespace PepperDash.Essentials.WebSocketServer
                 return;
             }
 
-            GetClientQueue(clientId).Enqueue(message);
+            EnqueueForClient(clientId, message);
         }
 
         /// <summary>
@@ -1651,11 +1652,30 @@ namespace PepperDash.Essentials.WebSocketServer
                     continue;
                 }
 
-                GetClientQueue(client.Key).Enqueue(message);
+                EnqueueForClient(client.Key, message);
             }
         }
 
-        private ClientTransmitQueue GetClientQueue(string clientId) =>
+        /// <summary>
+        /// Most messages a client's queue holds. A client this far behind has stopped reading; it is
+        /// disconnected rather than left to grow its queue without limit, and resyncs when it reconnects.
+        /// </summary>
+        private const int ClientQueueCapacity = 1000;
+
+        private void EnqueueForClient(string clientId, OutboundClientMessage message)
+        {
+            var queue = GetClientQueue(clientId);
+            queue.Value.Enqueue(message);
+
+            // The client may have disconnected after the caller found it, and its cleanup may have run
+            // before GetClientQueue made this queue. Nothing would remove it then, so remove it here.
+            if (!uiClients.ContainsKey(clientId))
+            {
+                RemoveClientQueue(clientId, queue);
+            }
+        }
+
+        private Lazy<ClientTransmitQueue> GetClientQueue(string clientId) =>
             clientQueues.GetOrAdd(clientId, id => new Lazy<ClientTransmitQueue>(() => new ClientTransmitQueue(
                 send: payload =>
                 {
@@ -1676,7 +1696,21 @@ namespace PepperDash.Essentials.WebSocketServer
                 },
                 onError: ex => this.LogError("Error sending to client {clientId}: {message}", id, ex.Message),
                 onDropped: message => this.LogWarning("Dropped {type} for client {clientId}: its connection is not open",
-                    message.Type ?? "message", id)))).Value;
+                    message.Type ?? "message", id),
+                capacity: ClientQueueCapacity,
+                onOverflow: () => DisconnectLaggingClient(id))));
+
+        private void DisconnectLaggingClient(string clientId)
+        {
+            this.LogWarning("Client {clientId} has {count} messages waiting and isn't keeping up; disconnecting it so it reconnects and resyncs",
+                clientId, ClientQueueCapacity);
+
+            if (uiClients.TryGetValue(clientId, out var client))
+            {
+                // Async: a client this far behind may not complete a close handshake promptly.
+                client.Context.WebSocket.CloseAsync(CloseStatusCode.Away, "Too far behind; reconnect to resync");
+            }
+        }
 
         /// <summary>
         /// Whether a client's connection is open, without the network round trip of
@@ -1695,6 +1729,18 @@ namespace PepperDash.Essentials.WebSocketServer
         private void RemoveClientQueue(string clientId)
         {
             if (clientId != null && clientQueues.TryRemove(clientId, out var queue) && queue.IsValueCreated)
+            {
+                queue.Value.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Removes <paramref name="queue"/> only if it is still the queue registered for the client.
+        /// </summary>
+        private void RemoveClientQueue(string clientId, Lazy<ClientTransmitQueue> queue)
+        {
+            var entry = new KeyValuePair<string, Lazy<ClientTransmitQueue>>(clientId, queue);
+            if (((ICollection<KeyValuePair<string, Lazy<ClientTransmitQueue>>>)clientQueues).Remove(entry) && queue.IsValueCreated)
             {
                 queue.Value.Dispose();
             }

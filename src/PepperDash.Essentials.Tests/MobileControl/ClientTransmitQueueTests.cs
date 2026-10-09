@@ -154,6 +154,34 @@ public class ClientTransmitQueueTests
     }
 
     [Fact]
+    public void AQueueThatFillsUp_RefusesMoreAndReportsItOnce()
+    {
+        using var release = new ManualResetEventSlim();
+        var overflows = 0;
+        using var queue = new ClientTransmitQueue(_ => release.Wait(Timeout), () => true,
+            capacity: 3, onOverflow: () => Interlocked.Increment(ref overflows));
+
+        var accepted = Enumerable.Range(0, 10).Count(i => queue.Enqueue(Message($"m{i}")));
+
+        accepted.Should().BeInRange(3, 4, "three wait in the queue, and one may already be sending");
+        overflows.Should().Be(1);
+        release.Set();
+    }
+
+    [Fact]
+    public void ADisposedQueue_IsNotReportedAsFull()
+    {
+        var overflows = 0;
+        var queue = new ClientTransmitQueue(_ => { }, () => true,
+            capacity: 3, onOverflow: () => Interlocked.Increment(ref overflows));
+
+        queue.Dispose();
+
+        queue.Enqueue(Message("after-dispose")).Should().BeFalse();
+        overflows.Should().Be(0);
+    }
+
+    [Fact]
     public async Task AfterDisposeItAcceptsNothingAndStops()
     {
         var sent = new ConcurrentQueue<string>();
