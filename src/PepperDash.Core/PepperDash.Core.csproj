@@ -37,7 +37,7 @@
     <None Remove="Properties\**" />
   </ItemGroup>  
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.1" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
     <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.21.128" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4">
       <Aliases>global,NewtonsoftJson</Aliases>
@@ -47,7 +47,7 @@
     <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="SSH.NET" Version="2025.0.0" />
+    <PackageReference Include="SSH.NET" Version="2026.0.0" />
     <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
