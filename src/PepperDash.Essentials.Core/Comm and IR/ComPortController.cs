@@ -80,13 +80,17 @@ namespace PepperDash.Essentials.Core;
 	        }
 			if (Port.Parent is CrestronControlSystem || Port.Parent is CenIoCom102)
 			{
+				var alreadyRegistered = Port.Registered;
 				var result = PortRegistration.RegisterOnce(() => Port.Registered, Port.Register);
 				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
 				{
 					this.LogError($"Cannot register {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
 					return;
 				}
-				this.LogInformation($"Successfully registered {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
+
+				this.LogInformation(alreadyRegistered
+					? $"{Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} was already registered"
+					: $"Successfully registered {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
 			}
 
 			var specResult = Port.SetComPortSpec(Spec);
