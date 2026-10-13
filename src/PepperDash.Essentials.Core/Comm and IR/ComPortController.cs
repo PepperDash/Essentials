@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Core;
 using PepperDash.Core.Logging;
+using PepperDash.Essentials.Core.Devices;
 using Serilog.Events;
 
 
@@ -77,20 +78,9 @@ namespace PepperDash.Essentials.Core;
 	            Debug.LogMessage(LogEventLevel.Information, this, "Configured com Port for this device does not exist.");
 	            return;
 	        }
-        if (Port.Parent is CrestronControlSystem)
-        {
-            var result = Port.Register();
-            if (result != eDeviceRegistrationUnRegistrationResponse.Success)
-            {
-                Debug.LogMessage(LogEventLevel.Information, this, "ERROR: Cannot register Com port: {0}", result);
-                return; // false
-            }
-        }
-
-
 			if (Port.Parent is CrestronControlSystem || Port.Parent is CenIoCom102)
 			{
-				var result = Port.Register();
+				var result = PortRegistration.RegisterOnce(() => Port.Registered, Port.Register);
 				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
 				{
 					this.LogError($"Cannot register {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {result})");
