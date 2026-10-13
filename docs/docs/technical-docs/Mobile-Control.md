@@ -188,13 +188,48 @@ Incoming messages are routed by their `type` prefix:
 
 | Prefix | Handling |
 | --- | --- |
-| `/system/*` | Internal system messages (user code, touchpanel key, room-combination/device-interface changes, initial sync complete, ...) |
+| `/system/*` | Internal system messages (user code, touchpanel key, room-combination/device-interface changes, initial sync complete, aggregated batch status, ...) |
 | `/event/*` | Dispatched to any handlers registered via `addEventHandler(eventType, key, callback)` |
 | `/room/*` | `dispatch(roomsActions.setRoomState(message))` |
 | `/device/*` | `dispatch(devicesActions.setDeviceState(message))` |
 
 Device/room state lives in Redux slices keyed by device/room key, so any component can read the
 latest known state for a given key.
+
+### Requesting device state in batches
+
+Instead of sending one `/device/{key}/fullStatus` request per device, a client sends one
+`/system/batchDeviceFullStatus` request listing every device and status path it wants. The processor
+runs each matching messenger action once and answers when all of them have replied:
+
+```json
+{ "type": "/system/batchDeviceFullStatus", "clientId": "<id>",
+  "content": { "devices": { "display-1": ["/powerStatus", "/inputStatus"], "dsp-1--program": ["/volumeStatus"] },
+               "aggregate": true, "requestId": "batch-lq3x9k-1" } }
+```
+
+* **`devices`** maps each device key to the status paths to request (`/fullStatus`, or narrower
+  per-messenger paths such as `/powerStatus`, `/inputStatus`, `/volumeStatus`, `/commStatus`,
+  `/deviceInfo`). Each `/device/{key}{path}` runs every action registered for it; a path no messenger
+  handles is skipped.
+* **`aggregate`** (optional, default `false`): when `true`, the replies are collected and sent as one
+  `/system/batchDeviceStatus` message, `{ requestId, messages: [{ type, content }, ...], syncComplete: true }`,
+  which a client can apply in a single state update. Without it, each messenger replies on its own and
+  `/system/initialSyncComplete` follows. Builds without aggregation support ignore the flag and reply
+  the old way.
+* **`requestId`** (optional): echoed back on the aggregated reply and on `/system/initialSyncComplete`.
+
+A messenger's reply is captured in the batch only if it is sent while its action is running. A
+messenger that replies from work it starts on another thread (for example `Task.Run`) is still sent,
+but separately, after the aggregated message; the processor logs those at Debug level.
+
+By default each connected client has its own transmit queue (`directServer.perClientQueues`, set to
+`false` to share one transmit thread), so one slow client cannot delay messages to the others. A client
+that falls 1,000 messages behind is disconnected and resyncs when it reconnects.
+
+For the client side of this, including how to update a React app built on
+`@pepperdash/mobile-control-react-app-core`, see
+[Adopting the sync performance improvements in a React app](https://github.com/PepperDash/mobile-control-react-app-core/blob/feat/essentials-v3/docs/sync-performance-app-dev.md).
 
 ### The hook pattern
 
