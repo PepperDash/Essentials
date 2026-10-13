@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 using Serilog.Events;
 
 namespace PepperDash.Essentials.Core.CrestronIO;
@@ -32,7 +33,7 @@ public class GenericRelayDevice : EssentialsBridgeableDevice, ISwitchedOutput
         OutputIsOnFeedback = new BoolFeedback(new Func<bool>(() => RelayOutput.State));
 
         RelayOutput = relay;
-        RelayOutput.Register();
+        RegisterRelay();
 
         RelayOutput.StateChange += RelayOutput_StateChange;
     }
@@ -53,10 +54,24 @@ public class GenericRelayDevice : EssentialsBridgeableDevice, ISwitchedOutput
                 return;
             }
 
-            RelayOutput.Register();
+            RegisterRelay();
 
             RelayOutput.StateChange += RelayOutput_StateChange;
         });
+    }
+
+    /// <summary>
+    /// Registers the relay unless it already is. The processor wrapper (CrestronProcessor) registers
+    /// every relay port, so a configured relay output usually finds its port already registered.
+    /// </summary>
+    private void RegisterRelay()
+    {
+        var result = PortRegistration.RegisterOnce(() => RelayOutput.Registered, RelayOutput.Register);
+
+        if (result != eDeviceRegistrationUnRegistrationResponse.Success)
+        {
+            Debug.LogMessage(LogEventLevel.Warning, this, "Cannot register relay port: {0}", result);
+        }
     }
 
     #region PreActivate
