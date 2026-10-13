@@ -1984,12 +1984,13 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 
 	private string SetCameraPresetNames(IEnumerable<CodecRoomPreset> presets)
 	{
-		return SetCameraPresetNames(presets.Select(p => p.Description).ToList());
+		// Null until a codec has connected and built its preset lists.
+		return SetCameraPresetNames((presets ?? Enumerable.Empty<CodecRoomPreset>()).Select(p => p.Description).ToList());
 	}
 
 	private string SetCameraPresetNames(IEnumerable<CameraPreset> presets)
 	{
-		return SetCameraPresetNames(presets.Select(p => p.Description).ToList());
+		return SetCameraPresetNames((presets ?? Enumerable.Empty<CameraPreset>()).Select(p => p.Description).ToList());
 	}
 
 	private string SetCameraPresetNames(ICollection<string> presets)

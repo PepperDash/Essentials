@@ -27,8 +27,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             _codec = codec ?? throw new ArgumentNullException(nameof(codec));
             _cameraCodec = codec as IHasCodecCameras ?? throw new ArgumentException("codec must implement IHasCodecCameras", nameof(codec));
-    
-            _cameraCodec.CameraSelected += CameraCodec_CameraSelected;
         }
 
         /// <inheritdoc />
@@ -242,11 +240,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
             return camera;
         }
 
+        /// <remarks>
+        /// A codec that hasn't connected yet may not have created its far-end feedback or preset lists
+        /// (the Cisco plugin builds them after its first sync), so any of them can be null.
+        /// </remarks>
         private List<CodecRoomPreset> GetCurrentPresets()
         {
             if (!(_codec is IHasCodecRoomPresets presetsCodec)) return null;
 
-            if (_codec is IHasFarEndCameraControl farEnd && farEnd.ControllingFarEndCameraFeedback.BoolValue)
+            if (_codec is IHasFarEndCameraControl farEnd && farEnd.ControllingFarEndCameraFeedback?.BoolValue == true)
                 return presetsCodec.FarEndRoomPresets;
 
             return presetsCodec.NearEndPresets;
