@@ -27,8 +27,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             _codec = codec ?? throw new ArgumentNullException(nameof(codec));
             _cameraCodec = codec as IHasCodecCameras ?? throw new ArgumentException("codec must implement IHasCodecCameras", nameof(codec));
-    
-            _cameraCodec.CameraSelected += CameraCodec_CameraSelected;
         }
 
         /// <inheritdoc />
