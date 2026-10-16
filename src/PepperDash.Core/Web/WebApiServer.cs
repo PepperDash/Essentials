@@ -94,7 +94,10 @@ namespace PepperDash.Core.Web
 
 			if (_server == null) _server = new HttpCwsServer(BasePath);
 
-			_server.AuthenticateAllRoutes = false;
+			// AuthenticateAllRoutes is 4-series only; the setter throws NotSupportedException on VC-4,
+			// even for false, which aborts Essentials startup.
+			if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
+				_server.AuthenticateAllRoutes = false;
 
 			_server.setProcessName(Key);
 			_server.HttpRequestHandler = new DefaultRequestHandler();

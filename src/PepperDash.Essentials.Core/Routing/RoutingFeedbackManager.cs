@@ -563,11 +563,90 @@ namespace PepperDash.Essentials.Core.Routing
 
         /// <summary>
         /// Traces a route back from a given tie line to find the root source tie line.
-        /// Leverages the existing Extensions.GetRouteToSource method with loop protection.
+        /// Follows the routes the midpoints actually report first, and falls back to route
+        /// discovery only when that cannot give an answer.
         /// </summary>
         /// <param name="tieLine">The starting tie line (typically connected to a sink or midpoint).</param>
         /// <returns>The <see cref="TieLine"/> connected to the original source device, or null if the source cannot be determined.</returns>
         private TieLine GetRootTieLine(TieLine tieLine)
+        {
+            // Route discovery alone answers "which source COULD reach this sink", not "which one
+            // IS routed": behind a switcher nearly every source has a path, so it returns the first
+            // source in device order whatever the switcher is doing. A midpoint that reports its
+            // CurrentRoutes knows the real answer, so ask it first.
+            var routed = TraceRootTieLineByFeedback(tieLine, new HashSet<string>());
+            if (routed != null)
+            {
+                Debug.LogDebug(this,
+                    "Found routed source {source} for {sink} from midpoint feedback",
+                    routed.SourcePort.ParentDevice.Key,
+                    tieLine.DestinationPort.ParentDevice.Key
+                );
+                return routed;
+            }
+
+            return DiscoverRootTieLine(tieLine);
+        }
+
+        /// <summary>
+        /// Walks upstream from <paramref name="tieLine"/> using each midpoint's
+        /// <see cref="IRoutingWithFeedback.CurrentRoutes"/>, the route it is actually carrying.
+        /// </summary>
+        /// <returns>
+        /// The tie line from the source device that is routed through to this tie line, or null if
+        /// any device on the way cannot say what it is routing (no feedback, no current route on
+        /// that output, a loop or a dead end). Null means "unknown" and the caller falls back to
+        /// route discovery. It does not mean "nothing is routed".
+        /// </returns>
+        private TieLine TraceRootTieLineByFeedback(TieLine tieLine, HashSet<string> visited)
+        {
+            try
+            {
+                var upstream = tieLine.SourcePort.ParentDevice;
+
+                if (upstream is IRoutingWithFeedback midpoint)
+                {
+                    if (string.IsNullOrEmpty(midpoint.Key) || !visited.Add(midpoint.Key))
+                        return null;
+
+                    var currentRoute = midpoint.CurrentRoutes?.FirstOrDefault(route =>
+                        route?.OutputPort != null &&
+                        route.InputPort != null &&
+                        route.OutputPort.Key == tieLine.SourcePort.Key &&
+                        route.OutputPort.ParentDevice.Key == tieLine.SourcePort.ParentDevice.Key);
+
+                    if (currentRoute == null)
+                        return null;
+
+                    var nextTieLine = TieLineCollection.Default.FirstOrDefault(tl =>
+                        tl.DestinationPort.Key == currentRoute.InputPort.Key &&
+                        tl.DestinationPort.ParentDevice.Key == currentRoute.InputPort.ParentDevice.Key);
+
+                    return nextTieLine == null ? null : TraceRootTieLineByFeedback(nextTieLine, visited);
+                }
+
+                // A pass-through or switching device that doesn't report its routes can't tell us
+                // which of its inputs is live.
+                if (upstream is IRoutingInputsOutputs)
+                    return null;
+
+                // Output-only device: this tie line comes straight from the source.
+                return upstream is IRoutingOutputs ? tieLine : null;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(this, "Error tracing routed source: {message}", ex.Message);
+                Debug.LogDebug(ex, "StackTrace: ");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Finds a source that can reach the sink of <paramref name="tieLine"/> using
+        /// Extensions.GetRouteToSource with loop protection. This is path discovery, not route
+        /// feedback: it is the fallback when the midpoints can't report what they are routing.
+        /// </summary>
+        private TieLine DiscoverRootTieLine(TieLine tieLine)
         {
             try
             {
