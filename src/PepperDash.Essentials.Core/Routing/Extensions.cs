@@ -501,7 +501,10 @@ namespace PepperDash.Essentials.Core
 
                 Debug.LogVerbose(request.Destination, "Executing full route");
 
-                audioOrSingleRoute.ExecuteRoutes();
+                // GetRouteToSource returns a null audio descriptor when an audioVideo destination has
+                // no audio path (e.g. a display whose audio goes via an AVR). The video half must
+                // still run - it is what switches, and powers on, the display.
+                audioOrSingleRoute?.ExecuteRoutes();
                 videoRoute?.ExecuteRoutes();
             }
             catch (Exception ex)
