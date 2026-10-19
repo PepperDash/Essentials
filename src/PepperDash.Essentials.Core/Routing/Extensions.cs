@@ -31,7 +31,8 @@ public static class Extensions
         {
             { eRoutingSignalType.Audio, new RouteDescriptorCollection() },
             { eRoutingSignalType.Video, new RouteDescriptorCollection() },
-            { eRoutingSignalType.AudioVideo, new RouteDescriptorCollection() }
+            { eRoutingSignalType.AudioVideo, new RouteDescriptorCollection() },
+            { eRoutingSignalType.Usb, new RouteDescriptorCollection() }
         };
 
     /// <summary>

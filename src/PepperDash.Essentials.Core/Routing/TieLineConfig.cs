@@ -101,6 +101,14 @@ namespace PepperDash.Essentials.Core.Config;
 			// Validate signal type compatibility
 			if (OverrideType.HasValue)
 			{
+				// HasFlag(0) is always true, so a zero override would pass the port checks below and
+				// produce a tie line that can carry nothing. Reject it outright.
+				if (OverrideType.Value == 0)
+				{
+					LogError($"Override type for '{SourcePort}' -> '{DestinationPort}' must name at least one signal type");
+					return null;
+				}
+
 				// When override type is specified, both ports must support it
 				if (!sourceOutputPort.Type.HasFlag(OverrideType.Value))
 				{
