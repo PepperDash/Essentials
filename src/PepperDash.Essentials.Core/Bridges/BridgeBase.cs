@@ -20,8 +20,23 @@ namespace PepperDash.Essentials.Core.Bridges;
 /// </summary>
 public abstract class BridgeApi : EssentialsDevice
 {
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="key">Device key</param>
     protected BridgeApi(string key) :
         base(key)
+    {
+
+    }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="key">Device key</param>
+    /// <param name="name">Device name</param>
+    protected BridgeApi(string key, string name) :
+        base(key, name)
     {
 
     }
@@ -39,7 +54,7 @@ public class EiscApiAdvanced : BridgeApi, ICommunicationMonitor
     public BasicTriList Eisc { get; private set; }
 
     public EiscApiAdvanced(DeviceConfig dc, BasicTriList eisc) :
-        base(dc.Key)
+        base(dc.Key, dc.Name)
     {
         JoinMaps = new Dictionary<string, JoinMapBaseAdvanced>();
 
