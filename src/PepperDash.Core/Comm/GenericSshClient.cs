@@ -139,6 +139,12 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
     private bool DisconnectLogged = false;
 
     /// <summary>
+    /// Set when the program is stopping so that no code path restarts the reconnect timer or
+    /// opens a new connection while the processor is tearing the program down.
+    /// </summary>
+    private volatile bool _isProgramStopping;
+
+    /// <summary>
     /// When true, turns off echo for the SSH session
     /// </summary>
     public bool DisableEcho { get; set; }
@@ -194,11 +200,9 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
     {
         if (programEventType == eProgramStatusEventType.Stopping)
         {
-            if (Client != null)
-            {
-                this.LogDebug("Program stopping. Closing connection");
-                Disconnect();
-            }
+            _isProgramStopping = true;
+            this.LogDebug("Program stopping. Closing connection");
+            Disconnect();
         }
     }
 
@@ -215,11 +219,27 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
             return;
         }
 
-        ConnectEnabled = true;
+        if (_isProgramStopping)
+        {
+            this.LogDebug("Skipping connect because program is stopping");
+            return;
+        }
 
         try
         {
             connectLock.Wait();
+
+            // Re-check under the lock: a reconnect callback can pass the check above, block on the
+            // semaphore while the stop handler runs Disconnect(), and otherwise resume into a fresh
+            // Client.Connect() during teardown.
+            if (_isProgramStopping)
+            {
+                this.LogDebug("Skipping connect because program is stopping");
+                return;
+            }
+
+            ConnectEnabled = true;
+
             if (IsConnected)
             {
                 this.LogDebug("Connection already connected.  Exiting Connect");
@@ -277,28 +297,27 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
                 }
                 catch (SshConnectionException e)
                 {
-                    var ie = e.InnerException; // The details are inside!!
-
-                    if (ie is SocketException)
-                    {
-                        this.LogException(ie, "CONNECTION failure: Cannot reach host");
-                    }
+                    // The details are inside, when present - the remote can close the connection
+                    // with no inner exception at all, so ie may be null.
+                    var ie = e.InnerException;
 
                     if (ie is System.Net.Sockets.SocketException socketException)
                     {
-                        this.LogException(ie, "Connection failure: Cannot reach {host} on {port}",
+                        this.LogException(socketException, "Connection failure: Cannot reach {host} on {port}",
                             Hostname, Port);
                     }
-                    if (ie is SshAuthenticationException)
+                    else if (ie is SshAuthenticationException)
                     {
                         this.LogException(ie, "Authentication failure for username {userName}", Username);
                     }
                     else
-                        this.LogException(ie, "Error on connect");
+                    {
+                        this.LogException(ie ?? e, "Error on connect");
+                    }
 
                     DisconnectLogged = true;
                     KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                    if (AutoReconnect)
+                    if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                     {
                         this.LogDebug("Checking autoreconnect: {autoReconnect}, {autoReconnectInterval}ms", AutoReconnect, AutoReconnectIntervalMs);
                         ReconnectTimer.Stop();
@@ -312,7 +331,7 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
 
                     DisconnectLogged = true;
                     KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                    if (AutoReconnect)
+                    if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                     {
                         this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
                         ReconnectTimer.Stop();
@@ -333,7 +352,7 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
 
                     DisconnectLogged = true;
                     KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                    if (AutoReconnect)
+                    if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                     {
                         this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
                         ReconnectTimer.Stop();
@@ -346,7 +365,7 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
                     this.LogException(e, "Unhandled exception on connect");
                     DisconnectLogged = true;
                     KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-                    if (AutoReconnect)
+                    if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
                     {
                         this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
                         ReconnectTimer.Stop();
@@ -371,7 +390,17 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         // Stop trying reconnects, if we are
         ReconnectTimer.Stop();
 
-        KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
+        // Serialise with Connect() so a connect in progress finishes (and is then torn down here)
+        // rather than racing the cleanup and leaving a live client behind.
+        try
+        {
+            connectLock.Wait();
+            KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
+        }
+        finally
+        {
+            connectLock.Release();
+        }
     }
 
     /// <summary>
@@ -487,7 +516,7 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
             {
                 connectLock.Release();
             }
-            if (AutoReconnect && ConnectEnabled)
+            if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
             {
                 this.LogDebug("Checking autoreconnect: {0}, {1}ms", AutoReconnect, AutoReconnectIntervalMs);
                 ReconnectTimer.Stop();
@@ -537,8 +566,12 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
             this.LogError("ObjectDisposedException sending '{message}'. Restarting connection...", text.Trim());
 
             KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-            ReconnectTimer.Stop();
-            ReconnectTimer.Start();
+            if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
+            {
+                ReconnectTimer.Stop();
+                ReconnectTimer.Interval = AutoReconnectIntervalMs;
+                ReconnectTimer.Start();
+            }
         }
         catch (Exception ex)
         {
@@ -572,8 +605,12 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
             this.LogException(ex, "ObjectDisposedException sending {message}", ComTextHelper.GetEscapedText(bytes));
 
             KillClient(SocketStatus.SOCKET_STATUS_CONNECT_FAILED);
-            ReconnectTimer.Stop();
-            ReconnectTimer.Start();
+            if (AutoReconnect && ConnectEnabled && !_isProgramStopping)
+            {
+                ReconnectTimer.Stop();
+                ReconnectTimer.Interval = AutoReconnectIntervalMs;
+                ReconnectTimer.Start();
+            }
         }
         catch (Exception ex)
         {
