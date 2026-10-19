@@ -158,11 +158,9 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         Port = port;
         BufferSize = bufferSize;
 
-        reconnectTimer = new Timer(o =>
-        {
-            if (connectEnabled)
-                Connect();
-        }, null, ThreadingTimeout.Infinite, ThreadingTimeout.Infinite);
+        // ConnectCore checks connectEnabled under the lock, so a callback already running when
+        // Disconnect() fires cannot re-enable retries or reopen the socket.
+        reconnectTimer = new Timer(o => ConnectCore(), null, ThreadingTimeout.Infinite, ThreadingTimeout.Infinite);
     }
 
     /// <summary>
@@ -176,11 +174,9 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         AutoReconnectIntervalMs = 5000;
         BufferSize = 2000;
 
-        reconnectTimer = new Timer(o =>
-        {
-            if (connectEnabled)
-                Connect();
-        }, null, ThreadingTimeout.Infinite, ThreadingTimeout.Infinite);
+        // ConnectCore checks connectEnabled under the lock, so a callback already running when
+        // Disconnect() fires cannot re-enable retries or reopen the socket.
+        reconnectTimer = new Timer(o => ConnectCore(), null, ThreadingTimeout.Infinite, ThreadingTimeout.Infinite);
     }
 
     /// <summary>
@@ -214,6 +210,21 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
     /// </summary>
     public void Connect()
     {
+        lock (stateLock)
+        {
+            connectEnabled = true;
+        }
+
+        ConnectCore();
+    }
+
+    /// <summary>
+    /// Opens the socket if connecting is enabled and no client exists. Shared by <see cref="Connect"/>
+    /// and the reconnect timer; only the former turns connecting on, so a reconnect that lands after
+    /// <see cref="Disconnect"/> is a no-op instead of reopening the socket.
+    /// </summary>
+    private void ConnectCore()
+    {
         if (string.IsNullOrEmpty(Hostname))
         {
             this.LogWarning("No address set");
@@ -234,13 +245,11 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         UdpClient newClient = null;
         CancellationTokenSource newReceiveCancellationTokenSource = null;
         CancellationToken startReceiveToken = default(CancellationToken);
-        var shouldStartReceive = false;
+        var adopted = false;
 
         lock (stateLock)
         {
-            connectEnabled = true;
-
-            if (client != null)
+            if (!connectEnabled || client != null)
                 return;
         }
 
@@ -264,26 +273,36 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
 
                 receiveCancellationTokenSource = newReceiveCancellationTokenSource;
                 client = newClient;
-                ClientStatus = SocketStatus.SOCKET_STATUS_CONNECTED;
+                adopted = true;
+
+                // Capture the token and stop the timer before publishing the status: a ConnectionChange
+                // handler may call Disconnect(), which cancels and disposes the token source.
+                startReceiveToken = newReceiveCancellationTokenSource.Token;
                 reconnectTimer.Change(ThreadingTimeout.Infinite, ThreadingTimeout.Infinite);
-                startReceiveToken = receiveCancellationTokenSource.Token;
-                shouldStartReceive = true;
+
+                ClientStatus = SocketStatus.SOCKET_STATUS_CONNECTED;
             }
 
-            if (shouldStartReceive)
+            // If a handler disconnected us, the token is already cancelled and there is nothing to receive on.
+            if (!startReceiveToken.IsCancellationRequested)
                 StartReceive(startReceiveToken);
         }
         catch (Exception ex)
         {
             this.LogException(ex, "Error connecting UDP client to {host}:{port}", hostname, port);
 
-            if (newClient != null)
-                newClient.Close();
-
-            if (newReceiveCancellationTokenSource != null)
+            // Once adopted, the client and token source belong to the instance and are cleaned up
+            // by Disconnect/HandleDisconnected, not here.
+            if (!adopted)
             {
-                newReceiveCancellationTokenSource.Cancel();
-                newReceiveCancellationTokenSource.Dispose();
+                if (newClient != null)
+                    newClient.Close();
+
+                if (newReceiveCancellationTokenSource != null)
+                {
+                    newReceiveCancellationTokenSource.Cancel();
+                    newReceiveCancellationTokenSource.Dispose();
+                }
             }
 
             lock (stateLock)
@@ -330,6 +349,8 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         if (bytes == null)
             return;
 
+        UdpClient udpClient = null;
+
         try
         {
             this.PrintSentBytes(bytes);
@@ -337,7 +358,7 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
             if (!IsConnected || client == null)
                 Connect();
 
-            var udpClient = client;
+            udpClient = client;
             if (!IsConnected || udpClient == null)
             {
                 this.LogWarning("Cannot send bytes because the client is not connected");
@@ -349,7 +370,7 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         catch (Exception ex)
         {
             this.LogException(ex, "Error sending UDP bytes");
-            HandleDisconnected();
+            HandleDisconnected(udpClient);
         }
     }
 
@@ -359,11 +380,12 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         {
             while (!token.IsCancellationRequested)
             {
+                var udpClient = client;
+                if (udpClient == null)
+                    return;
+
                 try
                 {
-                    var udpClient = client;
-                    if (udpClient == null)
-                        return;
 
                     var result = await udpClient.ReceiveAsync().ConfigureAwait(false);
                     var bytes = result.Buffer;
@@ -400,7 +422,7 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
                             connectionRefusedLogged = true;
                         }
 
-                        HandleDisconnected();
+                        HandleDisconnected(udpClient);
                         return;
                     }
 
@@ -408,7 +430,7 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
 
                     if (AutoReconnect)
                     {
-                        HandleDisconnected();
+                        HandleDisconnected(udpClient);
                         return;
                     }
 
@@ -420,7 +442,7 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
 
                     if (AutoReconnect)
                     {
-                        HandleDisconnected();
+                        HandleDisconnected(udpClient);
                         return;
                     }
 
@@ -430,10 +452,18 @@ public class GenericUdpClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         }, token);
     }
 
-    private void HandleDisconnected()
+    /// <summary>
+    /// Tears down the connection after an I/O failure on <paramref name="failedClient"/>.
+    /// A failure reported for a socket that has already been replaced is ignored, so a stale
+    /// receive loop or send cannot close the healthy replacement.
+    /// </summary>
+    private void HandleDisconnected(UdpClient failedClient)
     {
         lock (stateLock)
         {
+            if (failedClient == null || !ReferenceEquals(client, failedClient))
+                return;
+
             CleanupClient();
             ClientStatus = SocketStatus.SOCKET_STATUS_NO_CONNECT;
             StartReconnectTimer();
