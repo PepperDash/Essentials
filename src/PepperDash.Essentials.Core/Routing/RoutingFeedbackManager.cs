@@ -79,6 +79,9 @@ namespace PepperDash.Essentials.Core.Routing
 
                     foreach (var midpointKey in upstreamMidpoints)
                     {
+                        if (string.IsNullOrEmpty(midpointKey))
+                            continue;
+
                         if (!midpointToSinkInputsMap.TryGetValue(midpointKey, out var inputs))
                         {
                             inputs = new HashSet<RoutingInputPort>();
@@ -133,7 +136,8 @@ namespace PepperDash.Essentials.Core.Routing
 
             if (tieLine.SourcePort.ParentDevice is IRoutingMidpointWithFeedback midpoint)
             {
-                midpoints.Add(midpoint.Key);
+                if (!string.IsNullOrEmpty(midpoint.Key))
+                    midpoints.Add(midpoint.Key);
 
                 // Find upstream TieLines connected to this midpoint's inputs
                 var midpointInputs = (midpoint as IRoutingInputs)?.InputPorts;
@@ -192,6 +196,9 @@ namespace PepperDash.Essentials.Core.Routing
         {
             try
             {
+                if (string.IsNullOrEmpty(midpoint?.Key))
+                    return;
+
                 // Only update affected sinks (performance optimization)
                 if (midpointToSinkInputsMap != null && midpointToSinkInputsMap.TryGetValue(midpoint.Key, out var affectedInputPorts))
                 {
