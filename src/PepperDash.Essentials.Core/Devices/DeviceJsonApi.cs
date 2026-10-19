@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core;
@@ -17,7 +18,10 @@ namespace PepperDash.Essentials.Core;
 public class DeviceJsonApi
 {
     /// <summary>
-    /// Executes a method on a device based on a JSON-formatted command string.
+    /// Executes a method on a device based on a JSON-formatted command string typed at the console.
+    /// String and byte[] parameters have escape sequences (\r, \n, \t, \\, \xHH) expanded so
+    /// non-printable bytes can be entered; other callers of <see cref="DoDeviceAction(DeviceActionWrapper, bool)"/>
+    /// receive their strings unchanged.
     /// </summary>
     /// <param name="json"></param>
     public static void DoDeviceActionWithJson(string json)
@@ -32,7 +36,7 @@ public class DeviceJsonApi
         {
             var action = JsonConvert.DeserializeObject<DeviceActionWrapper>(json);
 
-            DoDeviceAction(action);
+            DoDeviceAction(action, unescapeStrings: true);
         }
         catch (Exception)
         {
@@ -46,7 +50,11 @@ public class DeviceJsonApi
     /// Executes a method on a device based on a JSON-formatted command string, awaiting the result if the method is asynchronous.
     /// </summary>
     /// <param name="action"></param>
-    public static void DoDeviceAction(DeviceActionWrapper action)
+    /// <param name="unescapeStrings">
+    /// When true, string and byte[] parameters have escape sequences (\r, \n, \t, \\, \xHH) expanded.
+    /// Off by default so values arriving from HTTP, Mobile Control or configured actions are passed through verbatim.
+    /// </param>
+    public static void DoDeviceAction(DeviceActionWrapper action, bool unescapeStrings = false)
     {
         var key = action.DeviceKey;
         var obj = FindObjectOnPath(key);
@@ -78,7 +86,7 @@ public class DeviceJsonApi
             }
             var mParams = method.GetParameters();
 
-            var convertedParams = BuildConvertedParams(mParams, action.Params);
+            var convertedParams = BuildConvertedParams(mParams, action.Params, unescapeStrings);
 
             Task.Run(() =>
                 {
@@ -181,21 +189,31 @@ public class DeviceJsonApi
     /// </remarks>
     /// <param name="mParams">The target method's parameters.</param>
     /// <param name="actionParams">The raw parameter values supplied in the action.</param>
+    /// <param name="unescapeStrings">Expand escape sequences in string and byte[] parameters (console input only).</param>
     /// <returns>The converted arguments, in order, ready to pass to Invoke.</returns>
-    private static object[] BuildConvertedParams(ParameterInfo[] mParams, object[] actionParams)
+    private static object[] BuildConvertedParams(ParameterInfo[] mParams, object[] actionParams, bool unescapeStrings = false)
     {
         if (mParams.Length == 1 && mParams[0].ParameterType.IsArray && actionParams.Length != 1)
         {
-            return new[] { ConvertType(actionParams, mParams[0].ParameterType) };
+            return new[] { ConvertType(actionParams, mParams[0].ParameterType, unescapeStrings) };
         }
 
         return mParams
-            .Select((p, i) => ConvertType(actionParams[i], p.ParameterType))
+            .Select((p, i) => ConvertType(actionParams[i], p.ParameterType, unescapeStrings))
             .ToArray();
     }
 
-    private static object ConvertType(object value, Type conversionType)
+    private static object ConvertType(object value, Type conversionType, bool unescapeStrings = false)
     {
+        // A string supplied for a byte[] parameter is the raw payload. From the console, escape
+        // sequences (\r, \n, \t, \xHH) stand in for the non-printable bytes. Handle it before the
+        // generic array case, which would otherwise try to convert the whole string to a single byte.
+        if (conversionType == typeof(byte[]) && value is string byteString)
+        {
+            var payload = unescapeStrings ? UnescapeString(byteString) : byteString;
+            return System.Text.Encoding.GetEncoding(28591).GetBytes(payload);
+        }
+
         if (conversionType.IsArray)
         {
             var elementType = conversionType.GetElementType();
@@ -205,7 +223,7 @@ public class DeviceJsonApi
             if (value is IEnumerable enumerable && !(value is string))
             {
                 var items = enumerable.Cast<object>()
-                    .Select(item => ConvertType(item, elementType))
+                    .Select(item => ConvertType(item, elementType, unescapeStrings))
                     .ToArray();
 
                 var typedArray = Array.CreateInstance(elementType, items.Length);
@@ -215,13 +233,20 @@ public class DeviceJsonApi
 
             // A single scalar value was supplied for an array parameter - wrap it in a single-element array.
             var singleArray = Array.CreateInstance(elementType, 1);
-            singleArray.SetValue(ConvertType(value, elementType), 0);
+            singleArray.SetValue(ConvertType(value, elementType, unescapeStrings), 0);
             return singleArray;
         }
 
         if (!conversionType.IsEnum)
         {
-            return Convert.ChangeType(value, conversionType, System.Globalization.CultureInfo.InvariantCulture);
+            var converted = Convert.ChangeType(value, conversionType, System.Globalization.CultureInfo.InvariantCulture);
+
+            if (unescapeStrings && conversionType == typeof(string) && converted is string s)
+            {
+                return UnescapeString(s);
+            }
+
+            return converted;
         }
 
         var stringValue = Convert.ToString(value);
@@ -232,6 +257,32 @@ public class DeviceJsonApi
                 String.Format("{0} cannot be converted to a string prior to conversion to enum"));
         }
         return Enum.Parse(conversionType, stringValue, true);
+    }
+
+    /// <summary>
+    /// Processes escape sequences in a string, converting sequences like \r, \n, \t, \\ and \xHH
+    /// to their corresponding characters, so non-printable bytes can be passed from the console.
+    /// </summary>
+    private static string UnescapeString(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
+
+        return Regex.Replace(input, @"\\(r|n|t|\\|x[0-9A-Fa-f]{2})", match =>
+        {
+            var seq = match.Groups[1].Value;
+            switch (seq)
+            {
+                case "r": return "\r";
+                case "n": return "\n";
+                case "t": return "\t";
+                case "\\": return "\\";
+                default:
+                    // \xHH hex escape
+                    var hex = seq.Substring(1);
+                    return ((char)Convert.ToInt32(hex, 16)).ToString();
+            }
+        });
     }
 
     /// <summary>
