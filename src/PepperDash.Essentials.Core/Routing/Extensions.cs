@@ -31,7 +31,8 @@ public static class Extensions
         {
             { eRoutingSignalType.Audio, new RouteDescriptorCollection() },
             { eRoutingSignalType.Video, new RouteDescriptorCollection() },
-            { eRoutingSignalType.AudioVideo, new RouteDescriptorCollection() }
+            { eRoutingSignalType.AudioVideo, new RouteDescriptorCollection() },
+            { eRoutingSignalType.Usb, new RouteDescriptorCollection() }
         };
 
     /// <summary>
@@ -526,21 +527,31 @@ public static class Extensions
                     {
                         foreach (var outputPort in source.OutputPorts)
                         {
-                            var (audioOrSingleRoute, videoRoute) = sink.GetRouteToSource(source, inputPort.Type, inputPort, outputPort);
+                            // Only the signal types both ends support can flow between them. Asking for the
+                            // input's type alone made a Video-only output look like a candidate for an
+                            // AudioVideo input's audio route.
+                            var signalType = inputPort.Type & outputPort.Type;
+
+                            if (signalType == 0)
+                            {
+                                continue;
+                            }
+
+                            var (audioOrSingleRoute, videoRoute) = sink.GetRouteToSource(source, signalType, inputPort, outputPort);
 
                             if (audioOrSingleRoute == null && videoRoute == null)
                             {
                                 continue;
                             }
 
-                            if (audioOrSingleRoute != null)
-                            {
-                                // Only add routes that have actual switching steps
-                                if (audioOrSingleRoute.Routes == null || audioOrSingleRoute.Routes.Count == 0)
-                                {
-                                    continue;
-                                }
+                            Debug.LogVerbose("Route mapped: {source}:{output} -> {sink}:{input}, audio/single: {audioRoute}, video: {videoRoute}",
+                                source.Key, outputPort.Key, sink.Key, inputPort.Key, audioOrSingleRoute, videoRoute);
 
+                            // The audio (or single-type) and video descriptors are independent: an AudioVideo request
+                            // can find a video path and no audio path, and that video route must still be registered.
+                            // Only add routes that have actual switching steps.
+                            if (audioOrSingleRoute?.Routes != null && audioOrSingleRoute.Routes.Count > 0)
+                            {
                                 // Add to the appropriate collection(s) based on signal type
                                 // Note: A single route descriptor with combined flags (e.g., AudioVideo) will be added once per matching signal type
                                 if (audioOrSingleRoute.SignalType.HasFlag(eRoutingSignalType.Audio))
@@ -555,16 +566,11 @@ public static class Extensions
                                 {
                                     RouteDescriptors[eRoutingSignalType.Usb].AddRouteDescriptor(audioOrSingleRoute);
                                 }
-                                if (videoRoute != null)
-                                {
-                                    // Only add routes that have actual switching steps
-                                    if (videoRoute.Routes == null || videoRoute.Routes.Count == 0)
-                                    {
-                                        continue;
-                                    }
+                            }
 
-                                    RouteDescriptors[eRoutingSignalType.Video].AddRouteDescriptor(videoRoute);
-                                }
+                            if (videoRoute?.Routes != null && videoRoute.Routes.Count > 0)
+                            {
+                                RouteDescriptors[eRoutingSignalType.Video].AddRouteDescriptor(videoRoute);
                             }
                         }
                     }
