@@ -25,6 +25,8 @@ namespace PepperDash.Essentials.Core;
 
     bool _cecSubscribed;
 
+    readonly object _cecSubscriptionLock = new object();
+
     public CecPortController(string key, Func<EssentialsControlPropertiesConfig, ICec> postActivationFunc,
         EssentialsControlPropertiesConfig config):base(key)
     {
@@ -54,18 +56,24 @@ namespace PepperDash.Essentials.Core;
     /// </summary>
     void TryEnsureCecSubscription()
     {
-        if (_cecSubscribed)
-            return;
-
-        if (Port?.StreamCec == null)
+        // Check, attach and mark under one lock: two concurrent sends after a deferred
+        // subscription could otherwise both see the flag clear and attach the handler twice,
+        // which would raise every received CEC message twice.
+        lock (_cecSubscriptionLock)
         {
-            Debug.LogMessage(LogEventLevel.Warning, this, "StreamCec is not available; CEC feedback is deferred until the device is ready");
-            return;
-        }
+            if (_cecSubscribed)
+                return;
 
-        Port.StreamCec.CecChange += new CecChangeEventHandler(StreamCec_CecChange);
-        _cecSubscribed = true;
-        Debug.LogMessage(LogEventLevel.Information, this, "Subscribed to CEC feedback");
+            if (Port?.StreamCec == null)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, this, "StreamCec is not available; CEC feedback is deferred until the device is ready");
+                return;
+            }
+
+            Port.StreamCec.CecChange += new CecChangeEventHandler(StreamCec_CecChange);
+            _cecSubscribed = true;
+            Debug.LogMessage(LogEventLevel.Information, this, "Subscribed to CEC feedback");
+        }
     }
 
     void StreamCec_CecChange(Cec cecDevice, CecEventArgs args)
