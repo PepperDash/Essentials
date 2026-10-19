@@ -26,10 +26,32 @@ namespace PepperDash.Essentials.Touchpanel
     /// Mobile Control touchpanel controller that provides app control, Zoom integration, 
     /// and mobile control functionality for Crestron touchpanels.
     /// </summary>
-    public class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlCrestronTouchpanelController, ITheme
+    public class MobileControlTouchpanelController : TouchpanelBase, IHasFeedback, ITswAppControl, ITswZoomControl, IDeviceInfoProvider, IMobileControlCrestronTouchpanelController, ITheme, ICommunicationMonitor
     {
         private readonly MobileControlTouchpanelProperties localConfig;
         private IMobileControlRoomMessenger _bridge;
+
+        /// <summary>
+        /// Gets the CommunicationMonitor tracking the panel's online/offline state, so the panel
+        /// shows up on the Health page like any other monitored device.
+        /// </summary>
+        public StatusMonitorBase CommunicationMonitor { get; private set; }
+
+        /// <summary>
+        /// Stands in for the real monitor when no panel object was supplied, so consumers of
+        /// <see cref="ICommunicationMonitor"/> never see a null monitor.
+        /// </summary>
+        private sealed class NullCommunicationMonitor : StatusMonitorBase
+        {
+            public NullCommunicationMonitor(IKeyed parent) : base(parent, 120000, 300000)
+            {
+                Status = MonitorStatus.InError;
+                Message = "Panel is not initialized";
+            }
+
+            public override void Start() { }
+            public override void Stop() { }
+        }
 
         private const string CacheBusterParamName = "cb";
 
@@ -149,6 +171,10 @@ namespace PepperDash.Essentials.Touchpanel
         public MobileControlTouchpanelController(string key, string name, BasicTriListWithSmartObject panel, MobileControlTouchpanelProperties config) : base(key, name, panel, config)
         {
             localConfig = config;
+
+            CommunicationMonitor = panel != null
+                ? new CrestronGenericBaseCommunicationMonitor(this, panel, 120000, 300000)
+                : new NullCommunicationMonitor(this);
 
             AddPostActivationAction(SubscribeForMobileControlUpdates);
 
@@ -390,6 +416,8 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         protected override bool CustomActivate()
         {
+            CommunicationMonitor.Start();
+
             var appMessenger = new ITswAppControlMessenger($"appControlMessenger-{Key}", $"/device/{Key}", this);
 
             var zoomMessenger = new ITswZoomControlMessenger($"zoomControlMessenger-{Key}", $"/device/{Key}", this);
@@ -445,6 +473,17 @@ namespace PepperDash.Essentials.Touchpanel
 
             Panel.OnlineStatusChange -= Panel_OnlineChange;
             Panel.OnlineStatusChange += Panel_OnlineChange;
+        }
+
+        /// <summary>
+        /// Stops the CommunicationMonitor on deactivation.
+        /// </summary>
+        /// <returns>True if deactivation was successful; otherwise, false.</returns>
+        public override bool Deactivate()
+        {
+            CommunicationMonitor.Stop();
+
+            return base.Deactivate();
         }
 
         private void Panel_OnlineChange(GenericBase sender, OnlineOfflineEventArgs args)
