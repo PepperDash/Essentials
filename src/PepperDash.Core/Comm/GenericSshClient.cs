@@ -225,11 +225,21 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
             return;
         }
 
-        ConnectEnabled = true;
-
         try
         {
             connectLock.Wait();
+
+            // Re-check under the lock: a reconnect callback can pass the check above, block on the
+            // semaphore while the stop handler runs Disconnect(), and otherwise resume into a fresh
+            // Client.Connect() during teardown.
+            if (_isProgramStopping)
+            {
+                this.LogDebug("Skipping connect because program is stopping");
+                return;
+            }
+
+            ConnectEnabled = true;
+
             if (IsConnected)
             {
                 this.LogDebug("Connection already connected.  Exiting Connect");
@@ -380,7 +390,17 @@ public class GenericSshClient : Device, ISocketStatusWithStreamDebugging, IAutoR
         // Stop trying reconnects, if we are
         ReconnectTimer.Stop();
 
-        KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
+        // Serialise with Connect() so a connect in progress finishes (and is then torn down here)
+        // rather than racing the cleanup and leaving a live client behind.
+        try
+        {
+            connectLock.Wait();
+            KillClient(SocketStatus.SOCKET_STATUS_BROKEN_LOCALLY);
+        }
+        finally
+        {
+            connectLock.Release();
+        }
     }
 
     /// <summary>
