@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronAuthentication;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
@@ -70,7 +71,10 @@ public class LoginRequestHandler : WebApiBaseRequestHandler
             catch (ArgumentException)
             {
                 context.Response.StatusCode = 401;
-                context.Response.StatusDescription = "Bad Request";
+                context.Response.StatusDescription = "Unauthorized";
+                context.Response.ContentType = "application/json";
+                context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+                context.Response.Write(JsonConvert.SerializeObject(new { Error = "Unauthorized" }, Formatting.Indented), false);
                 context.Response.End();
 
                 return;
@@ -89,7 +93,21 @@ public class LoginRequestHandler : WebApiBaseRequestHandler
             context.Response.StatusDescription = "OK";
             context.Response.ContentType = "application/json";
             context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-            context.Response.Write(JsonConvert.SerializeObject(new { Token = token }, Formatting.Indented), false);
+            // Only return the fields a client needs. The SDK UserToken also carries Password,
+            // ChallengeMessage and ChallengeResponse, which must never leave the processor.
+            context.Response.Write(JsonConvert.SerializeObject(
+                new
+                {
+                    Token = new LoginResponse
+                    {
+                        UserName = token.UserName,
+                        Access = token.Access,
+                        State = token.State,
+                        Groups = token.Groups,
+                        ADConnect = token.ADConnect,
+                        Valid = token.Valid
+                    }
+                }, Formatting.Indented), false);
             context.Response.End();
         }
         catch (System.Exception ex)
@@ -118,4 +136,40 @@ public class LoginRequest
     /// Gets or sets the password.
     /// </summary>
     public string Password { get; set; }
+}
+
+/// <summary>
+/// The subset of <see cref="Authentication.UserToken"/> returned to a client after a successful login.
+/// </summary>
+internal class LoginResponse
+{
+    /// <summary>
+    /// Gets or sets the username.
+    /// </summary>
+    public string UserName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the access level.
+    /// </summary>
+    public Authentication.UserAuthenticationLevelEnum Access { get; set; }
+
+    /// <summary>
+    /// Gets or sets the token authenticated state.
+    /// </summary>
+    public Authentication.eTokenAuthenticatedState State { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of groups.
+    /// </summary>
+    public List<string> Groups { get; set; }
+
+    /// <summary>
+    /// Gets or sets the active directory connection flag.
+    /// </summary>
+    public int ADConnect { get; set; }
+
+    /// <summary>
+    /// Gets or sets the valid flag indicating whether the token is valid.
+    /// </summary>
+    public bool Valid { get; set; }
 }
