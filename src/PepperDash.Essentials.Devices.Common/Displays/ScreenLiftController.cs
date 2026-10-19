@@ -152,6 +152,15 @@ namespace PepperDash.Essentials.Devices.Common.Shades
 
         private void IsCoolingDownFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
+            if (Config.DisableAutoRaiseOnPowerOff)
+            {
+                this.LogDebug(
+                    "Auto-raise on power-off disabled for {type}; leaving position unchanged (manual control only)",
+                    Type
+                );
+                return;
+            }
+
             if (
                 !DisplayDevice.IsCoolingDownFeedback.BoolValue
                 && Type == eScreenLiftControlType.lift
@@ -174,6 +183,15 @@ namespace PepperDash.Essentials.Devices.Common.Shades
         {
             if (DisplayDevice.IsWarmingUpFeedback.BoolValue)
             {
+                if (Config.DisableAutoLowerOnPowerOn)
+                {
+                    this.LogDebug(
+                        "Auto-lower on power-on disabled for {type}; leaving position unchanged (manual control only)",
+                        Type
+                    );
+                    return;
+                }
+
                 Lower();
             }
         }

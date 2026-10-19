@@ -23,6 +23,10 @@ namespace PepperDash.Essentials.Core;
 
     ICec Port;
 
+    bool _cecSubscribed;
+
+    readonly object _cecSubscriptionLock = new object();
+
     public CecPortController(string key, Func<EssentialsControlPropertiesConfig, ICec> postActivationFunc,
         EssentialsControlPropertiesConfig config):base(key)
     {
@@ -32,7 +36,7 @@ namespace PepperDash.Essentials.Core;
         {
             Port = postActivationFunc(config);
 
-            Port.StreamCec.CecChange += StreamCec_CecChange;
+            TryEnsureCecSubscription();
         });            
     }
 
@@ -41,7 +45,35 @@ namespace PepperDash.Essentials.Core;
     {
         Port = port;
 
-        Port.StreamCec.CecChange += new CecChangeEventHandler(StreamCec_CecChange);
+        TryEnsureCecSubscription();
+    }
+
+    /// <summary>
+    /// Subscribes to the CEC change event once <see cref="ICec.StreamCec"/> is available.
+    /// Safe to call repeatedly; the subscription is only wired a single time.
+    /// If StreamCec is null during construction, this is retried when send methods invoke
+    /// this method later.
+    /// </summary>
+    void TryEnsureCecSubscription()
+    {
+        // Check, attach and mark under one lock: two concurrent sends after a deferred
+        // subscription could otherwise both see the flag clear and attach the handler twice,
+        // which would raise every received CEC message twice.
+        lock (_cecSubscriptionLock)
+        {
+            if (_cecSubscribed)
+                return;
+
+            if (Port?.StreamCec == null)
+            {
+                Debug.LogMessage(LogEventLevel.Warning, this, "StreamCec is not available; CEC feedback is deferred until the device is ready");
+                return;
+            }
+
+            Port.StreamCec.CecChange += new CecChangeEventHandler(StreamCec_CecChange);
+            _cecSubscribed = true;
+            Debug.LogMessage(LogEventLevel.Information, this, "Subscribed to CEC feedback");
+        }
     }
 
     void StreamCec_CecChange(Cec cecDevice, CecEventArgs args)
@@ -76,8 +108,9 @@ namespace PepperDash.Essentials.Core;
 
     public void SendText(string text)
     {
-        if (Port == null)
+        if (Port?.StreamCec == null)
             return;
+        TryEnsureCecSubscription();
 			if (StreamDebugging.TxStreamDebuggingIsEnabled)
 				Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} characters of text: '{1}'", text.Length, text);
         Port.StreamCec.Send.StringValue = text;
@@ -85,8 +118,9 @@ namespace PepperDash.Essentials.Core;
 
     public void SendBytes(byte[] bytes)
     {
-        if (Port == null)
+        if (Port?.StreamCec == null)
             return;
+        TryEnsureCecSubscription();
         var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
 			if (StreamDebugging.TxStreamDebuggingIsEnabled)
 				Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));

@@ -10,29 +10,25 @@ namespace PepperDash.Essentials.AppServer.Messengers
     /// <summary>
     /// The device key
     /// </summary>
-    [JsonProperty("key")]
-    /// <summary>
-    /// Gets or sets the Key
-    /// </summary>
+    [JsonProperty("key", NullValueHandling = NullValueHandling.Ignore)]
     public string Key { get; set; }
 
     /// <summary>
     /// The device name
     /// </summary>
-    [JsonProperty("name")]
+    [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
     public string Name { get; set; }
 
     /// <summary>
     /// The type of the message class
     /// </summary>
-    [JsonProperty("messageType")]
+    [JsonProperty("messageType", NullValueHandling = NullValueHandling.Ignore)]
     public string MessageType => GetType().Name;
 
     /// <summary>
     /// Gets or sets the MessageBasePath
     /// </summary>
-    [JsonProperty("messageBasePath")]
-
+    [JsonProperty("messageBasePath", NullValueHandling = NullValueHandling.Ignore)]
     public string MessageBasePath { get; set; }
   }
 
