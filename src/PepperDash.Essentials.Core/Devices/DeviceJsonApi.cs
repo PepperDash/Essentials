@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PepperDash.Essentials.Core;
@@ -196,6 +197,15 @@ public class DeviceJsonApi
 
     private static object ConvertType(object value, Type conversionType)
     {
+        // A string supplied for a byte[] parameter is the raw payload, with escape sequences
+        // (\r, \n, \t, \xHH) standing in for the non-printable bytes. Handle it before the generic
+        // array case, which would otherwise try to convert the whole string to a single byte.
+        if (conversionType == typeof(byte[]) && value is string byteString)
+        {
+            var unescaped = UnescapeString(byteString);
+            return System.Text.Encoding.GetEncoding(28591).GetBytes(unescaped);
+        }
+
         if (conversionType.IsArray)
         {
             var elementType = conversionType.GetElementType();
@@ -221,7 +231,14 @@ public class DeviceJsonApi
 
         if (!conversionType.IsEnum)
         {
-            return Convert.ChangeType(value, conversionType, System.Globalization.CultureInfo.InvariantCulture);
+            var converted = Convert.ChangeType(value, conversionType, System.Globalization.CultureInfo.InvariantCulture);
+
+            if (conversionType == typeof(string) && converted is string s)
+            {
+                return UnescapeString(s);
+            }
+
+            return converted;
         }
 
         var stringValue = Convert.ToString(value);
@@ -232,6 +249,32 @@ public class DeviceJsonApi
                 String.Format("{0} cannot be converted to a string prior to conversion to enum"));
         }
         return Enum.Parse(conversionType, stringValue, true);
+    }
+
+    /// <summary>
+    /// Processes escape sequences in a string, converting sequences like \r, \n, \t, \\ and \xHH
+    /// to their corresponding characters, so non-printable bytes can be passed from the console.
+    /// </summary>
+    private static string UnescapeString(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
+
+        return Regex.Replace(input, @"\\(r|n|t|\\|x[0-9A-Fa-f]{2})", match =>
+        {
+            var seq = match.Groups[1].Value;
+            switch (seq)
+            {
+                case "r": return "\r";
+                case "n": return "\n";
+                case "t": return "\t";
+                case "\\": return "\\";
+                default:
+                    // \xHH hex escape
+                    var hex = seq.Substring(1);
+                    return ((char)Convert.ToInt32(hex, 16)).ToString();
+            }
+        });
     }
 
     /// <summary>
