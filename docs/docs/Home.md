@@ -19,7 +19,7 @@ Or use the links to the right to navigate our documentation.
 
 ## Benefits
 
-- Runs on Crestron 3-Series, **4-Series** and VC-4 Control System platforms
+- Runs on Crestron **4-Series** and VC-4 Control System platforms (3-Series is supported only by Essentials 1.x)
 - Reduced hardware overhead compared to S+ and Simpl solutions
 - Quick development cycle
 - Shared resources made easily available

@@ -14,23 +14,12 @@ Essentials Framework is a collection of C# / Simpl# Pro libraries that can be ut
 
 ## Minimum Requirements
 
-- Essentials Framework runs on any Crestron 3-series processor, **4-series** processor or Crestron's VC-4 platform.
-- To edit and compile the source, Microsoft Visual Studio 2008 Professional with SP1 is required.
-- Crestron's Simpl# Plugin is also required (must be obtained from Crestron).
+- Essentials 2.x runs on Crestron **4-Series** processors and Crestron's VC-4 platform. Crestron 3-Series processors are supported only by Essentials 1.x.
+- The projects are SDK-style and target .NET Framework 4.7.2. Open `PepperDash.Essentials.4Series.sln` in an IDE that builds SDK-style .NET Framework projects, such as Visual Studio 2022.
 
 ## Dependencies
 
-The [PepperDash.Core](https://github.com/PepperDash/PepperDashCore) SIMPL# library is required. It is referenced via nuget. You must have nuget.exe installed and in the `PATH` environment variable to use the following command. Nuget.exe is available at [nuget.org](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe).
-
-### Installing Dependencies
-
-To install dependencies once nuget.exe is installed, run the following command:
-`nuget install .\packages.config -OutputDirectory .\packages -excludeVersion`.
-To verify that the packages installed correctly, open Essentials and make sure that all references are found, then try and build it.
-
-### Installing Different versions of PepperDash Core
-
-If you need a different version of PepperDash Core, use the command `nuget install .\packages.config -OutputDirectory .\packages -excludeVersion -Version {versionToGet}`. Omitting the `-Version` option will pull the version indicated in the packages.config file.
+[PepperDash.Core](src/PepperDash.Core) is part of this repository. The Crestron SDK and other packages are NuGet package references and restore when you build.
 
 ## Utilization
 
