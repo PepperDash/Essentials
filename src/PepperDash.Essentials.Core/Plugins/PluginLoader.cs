@@ -73,6 +73,46 @@ public static class PluginLoader
     private static string TempDirectory => PluginDirectory + Global.DirectorySeparator + "temp";
 
     /// <summary>
+    /// Guards <see cref="PluginReports"/> and <see cref="PluginFileNames"/>, which are written during
+    /// startup and read later from the console and the Web API.
+    /// </summary>
+    private static readonly object PluginReportsLock = new();
+
+    /// <summary>
+    /// What happened to each plugin file during startup, keyed by file name.
+    /// </summary>
+    private static readonly Dictionary<string, PluginLoadReport> PluginReports = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The file each plugin-folder assembly was loaded from, so later stages can report against it.
+    /// </summary>
+    private static readonly Dictionary<LoadedAssembly, string> PluginFileNames = new();
+
+    /// <summary>
+    /// A snapshot of what happened to every plugin file during startup, including those that loaded
+    /// cleanly. Each report is a copy, so it is safe to read while loading continues.
+    /// </summary>
+    public static IReadOnlyList<PluginLoadReport> PluginLoadReports
+    {
+        get
+        {
+            lock (PluginReportsLock)
+            {
+                return PluginReports.Values
+                    .Select(r => r.Clone())
+                    .OrderBy(r => r.FileName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+        }
+    }
+
+    /// <summary>
+    /// A snapshot of the plugin files that recorded at least one issue during startup.
+    /// </summary>
+    public static IReadOnlyList<PluginLoadReport> PluginLoadReportsWithIssues =>
+        PluginLoadReports.Where(r => r.Issues.Count > 0).ToList();
+
+    /// <summary>
     /// Represents a collection of fully qualified type names that are known to be incompatible with the current
     /// application or framework.
     /// </summary>
@@ -203,72 +243,30 @@ public static class PluginLoader
     {
         try
         {
-            List<string> referencedAssemblies = [];
-
-            using FileStream fs = new(filePath, FileMode.Open,
-                    FileAccess.Read, FileShare.ReadWrite);
-            using PEReader peReader = new(fs);
-
-            if (!peReader.HasMetadata)
-                return (false, "Not a valid .NET assembly", referencedAssemblies);
-
-            MetadataReader metadataReader = peReader.GetMetadataReader();
-
-            // Collect assembly references
-            foreach (var assemblyRefHandle in metadataReader.AssemblyReferences)
-            {
-                var assemblyRef = metadataReader.GetAssemblyReference(assemblyRefHandle);
-                string assemblyName = metadataReader.GetString(assemblyRef.Name);
-                referencedAssemblies.Add(assemblyName);
-            }
-
-            // Check for references to known incompatible types
-            foreach (var typeRefHandle in metadataReader.TypeReferences)
-            {
-                var typeRef = metadataReader.GetTypeReference(typeRefHandle);
-                string typeNamespace = metadataReader.GetString(typeRef.Namespace);
-                string typeName = metadataReader.GetString(typeRef.Name);
-
-                string fullTypeName = $"{typeNamespace}.{typeName}";
-                if (KnownIncompatibleTypes.Contains(fullTypeName))
-                {
-                    return (false, $"Uses incompatible type: {fullTypeName}", referencedAssemblies);
-                }
-            }
-
-            // Check for explicit .NET 8 compatibility attribute
-            bool hasNet8Attribute = false;
-            foreach (var customAttributeHandle in metadataReader.GetAssemblyDefinition().GetCustomAttributes())
-            {
-                var customAttribute = metadataReader.GetCustomAttribute(customAttributeHandle);
-                var ctorHandle = customAttribute.Constructor;
-
-                if (ctorHandle.Kind == HandleKind.MemberReference)
-                {
-                    var memberRef = metadataReader.GetMemberReference((MemberReferenceHandle)ctorHandle);
-                    var typeRef = metadataReader.GetTypeReference((TypeReferenceHandle)memberRef.Parent);
-
-                    string typeName = metadataReader.GetString(typeRef.Name);
-                    if (typeName == "Net8CompatibleAttribute" || typeName == "TargetFrameworkAttribute")
-                    {
-                        hasNet8Attribute = true;
-                        break;
-                    }
-                }
-            }
-
-            if (hasNet8Attribute)
-            {
-                return (true, null, referencedAssemblies);
-            }
-
-            // If we can't determine incompatibility, assume it's compatible
-            return (true, null, referencedAssemblies);
+            var info = PluginAssemblyInspector.Inspect(filePath);
+            var (isCompatible, reason) = CheckNet8Compatibility(info);
+            return (isCompatible, reason, info.References.Select(r => r.Name).ToList());
+        }
+        catch (BadImageFormatException)
+        {
+            return (false, "Not a valid .NET assembly", []);
         }
         catch (Exception ex)
         {
-            return (false, $"Error analyzing assembly: {ex.Message}", new List<string>());
+            return (false, $"Error analyzing assembly: {ex.Message}", []);
         }
+    }
+
+    /// <summary>
+    /// Checks already-read metadata for references to types that do not exist on .NET 8.
+    /// </summary>
+    private static (bool IsCompatible, string Reason) CheckNet8Compatibility(PluginBuildInfo info)
+    {
+        var incompatibleType = info.TypeReferences.FirstOrDefault(KnownIncompatibleTypes.Contains);
+
+        return incompatibleType != null
+            ? (false, $"Uses incompatible type: {incompatibleType}")
+            : (true, null);
     }
 
     /// <summary>
@@ -288,20 +286,11 @@ public static class PluginLoader
     /// <see langword="null"/>.</returns>
     private static LoadedAssembly LoadAssembly(string filePath, string requestedBy = null)
     {
+        // The caller has already checked .NET 8 compatibility from the file's metadata.
+        string fileName = Path.GetFileName(filePath);
+
         try
         {
-            // Check .NET 8 compatibility before loading
-            var (isCompatible, reason, references) = IsPluginCompatibleWithNet8(filePath);
-            if (!isCompatible)
-            {
-                string fileName = Path.GetFileName(filePath);
-                Debug.LogMessage(LogEventLevel.Warning, "Assembly '{0}' is not compatible with .NET 8: {1}", fileName, reason);
-                
-                var incompatiblePlugin = new IncompatiblePlugin(fileName, reason, requestedBy);
-                IncompatiblePlugins.Add(incompatiblePlugin);
-                return null;
-            }
-
             var assembly = Assembly.LoadFrom(filePath);
             if (assembly != null)
             {
@@ -313,7 +302,8 @@ public static class PluginLoader
             }
             else
             {
-                Debug.LogMessage(LogEventLevel.Information, "Unable to load assembly: '{0}'", filePath);
+                RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.LoadFailure,
+                    "The assembly could not be loaded.", $"Assembly.LoadFrom returned no assembly for {filePath}.", requestedBy));
             }
             return null;
         }
@@ -328,32 +318,37 @@ public static class PluginLoader
                 
             if (existingAssembly != null)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Assembly '{0}' is already loaded, using existing instance", assemblyName);
                 var assyVersion = GetAssemblyVersion(existingAssembly);
+                RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.LoadFailure,
+                    $"An assembly named {assemblyName} is already loaded, so version {assyVersion} is used instead of this file.",
+                    "Two copies of the same assembly were found. Only one can be loaded, so anything that needs this file's version may fail at runtime.",
+                    requestedBy));
                 var loadedAssembly = new LoadedAssembly(existingAssembly.GetName().Name, assyVersion, existingAssembly);
                 LoadedAssemblies.Add(loadedAssembly);
                 return loadedAssembly;
             }
             
-            Debug.LogMessage(LogEventLevel.Warning, "Assembly with same name already loaded but couldn't find it: {0}", filePath);
+            RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.LoadFailure,
+                $"An assembly named {assemblyName} is already loaded, but it could not be found to reuse.", ex.Message, requestedBy));
             return null;
         }
         catch(Exception ex)
         {
-            string fileName = Path.GetFileName(filePath);
-            
             // Check if this might be a .NET Framework compatibility issue
-            if (ex.Message.Contains("Could not load type") || 
-                ex.Message.Contains("Unable to load one or more of the requested types"))
+            var isTypeLoadProblem = ex.Message.Contains("Could not load type") ||
+                ex.Message.Contains("Unable to load one or more of the requested types");
+
+            if (isTypeLoadProblem)
             {
-                Debug.LogMessage(LogEventLevel.Error, "Error loading assembly {0}: Likely .NET 8 compatibility issue: {1}", 
-                    fileName, ex.Message);
                 IncompatiblePlugins.Add(new IncompatiblePlugin(fileName, ex.Message, requestedBy));
             }
-            else
-            {
-                Debug.LogMessage(ex, "Error loading assembly from {path}", null, filePath);
-            }
+
+            RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error,
+                isTypeLoadProblem ? PluginLoadIssueCategory.TypeLoadFailure : PluginLoadIssueCategory.LoadFailure,
+                isTypeLoadProblem
+                    ? $"Could not load the assembly, likely a .NET 8 compatibility issue: {ex.Message}"
+                    : $"Could not load the assembly: {ex.Message}",
+                ex.ToString(), requestedBy));
             return null;
         }
     }
@@ -446,6 +441,12 @@ public static class PluginLoader
                 }
             }
         }
+
+        var issueCount = PluginLoadReportsWithIssues.Sum(r => r.Issues.Count);
+        if (issueCount > 0)
+        {
+            CrestronConsole.ConsoleCommandResponse("Plugin load issues: {0}. Run 'pluginissues' for details." + CrestronEnvironment.NewLine, issueCount);
+        }
     }
 
     /// <summary>
@@ -500,8 +501,10 @@ public static class PluginLoader
             }
             catch (Exception e)
             {
-                Debug.LogMessage(LogEventLevel.Verbose, "Error with plugin file {0} . Exception: {1}", pluginFile.FullName, e);
-                continue; //catching any load issues and continuing. There will be exceptions loading Crestron .dlls from the cplz Probably should do something different here
+                RecordIssue(pluginFile.Name, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.PackageExtractFailure,
+                    $"Could not move the file into the loadedAssemblies folder: {e.Message}",
+                    "If an older copy is already in loadedAssemblies, that copy is loaded instead. " + e));
+                continue;
             }
         }
 
@@ -542,50 +545,82 @@ public static class PluginLoader
 
         foreach (var zfi in cplzFiles)
         {
-            Directory.CreateDirectory(TempDirectory);
-            var tempDi = new DirectoryInfo(TempDirectory);
+            // Each archive is handled on its own, so one bad .cplz does not stop the others loading.
+            try
+            {
+                Directory.CreateDirectory(TempDirectory);
+                var tempDi = new DirectoryInfo(TempDirectory);
 
-            Debug.LogMessage(LogEventLevel.Information, "Found cplz: {0}. Unzipping into temp plugins directory", zfi.FullName);
-            var result = CrestronZIP.Unzip(zfi.FullName, tempDi.FullName);
-            Debug.LogMessage(LogEventLevel.Information, "UnZip Result: {0}", result.ToString());
+                Debug.LogMessage(LogEventLevel.Information, "Found cplz: {0}. Unzipping into temp plugins directory", zfi.FullName);
+                var result = CrestronZIP.Unzip(zfi.FullName, tempDi.FullName);
+                Debug.LogMessage(LogEventLevel.Information, "UnZip Result: {0}", result.ToString());
 
-            var tempFiles = tempDi.GetFiles("*.dll");
-            foreach (var tempFile in tempFiles)
+                if (result != CrestronZIP.ResultCode.ZR_OK)
+                {
+                    RecordIssue(zfi.Name, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.PackageExtractFailure,
+                        $"Extracting the archive returned {result}.",
+                        "Any files that were extracted are still loaded. Check the archive is not corrupt and re-deploy it if the plugin is missing."));
+                }
+
+                var tempFiles = tempDi.GetFiles("*.dll");
+
+                if (tempFiles.Length == 0)
+                {
+                    RecordIssue(zfi.Name, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.PackageExtractFailure,
+                        "The archive contains no .dll files, so nothing was loaded from it."));
+                }
+
+                foreach (var tempFile in tempFiles)
+                {
+                    try
+                    {
+                        if (!CheckIfAssemblyLoaded(tempFile.Name))
+                        {
+                            string filePath = LoadedPluginsDirectoryPath + Global.DirectorySeparator + tempFile.Name;
+
+                            // Check if there is a previous file in the loadedPlugins directory and delete
+                            if (File.Exists(filePath))
+                            {
+                                Debug.LogMessage(LogEventLevel.Information, "Found existing file in loadedPlugins: {0} Deleting and moving new file to replace it", filePath);
+                                File.Delete(filePath);
+                            }
+
+                            // Move the file
+                            File.Move(tempFile.FullName, filePath);
+                            Debug.LogMessage(LogEventLevel.Verbose, "Moved {0} to {1}", tempFile.FullName, filePath);
+                        }
+                        else
+                        {
+                            Debug.LogMessage(LogEventLevel.Information, "Skipping assembly: {0}.  There is already an assembly with that name loaded.", tempFile.FullName);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        RecordIssue(tempFile.Name, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.PackageExtractFailure,
+                            $"Could not move the file out of {zfi.Name} into the loadedAssemblies folder: {e.Message}",
+                            "If an older copy is already in loadedAssemblies, that copy is loaded instead. " + e, zfi.Name));
+                    }
+                }
+
+                zfi.Delete();
+            }
+            catch (Exception e)
+            {
+                RecordIssue(zfi.Name, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.PackageExtractFailure,
+                    $"Could not extract the archive: {e.Message}", e.ToString()));
+            }
+            finally
             {
                 try
                 {
-                    if (!CheckIfAssemblyLoaded(tempFile.Name))
-                    {
-                        string filePath = string.Empty;
-
-                        filePath = LoadedPluginsDirectoryPath + Global.DirectorySeparator + tempFile.Name;
-
-                        // Check if there is a previous file in the loadedPlugins directory and delete
-                        if (File.Exists(filePath))
-                        {
-                            Debug.LogMessage(LogEventLevel.Information, "Found existing file in loadedPlugins: {0} Deleting and moving new file to replace it", filePath);
-                            File.Delete(filePath);
-                        }
-
-                        // Move the file
-                        File.Move(tempFile.FullName, filePath);
-                        Debug.LogMessage(LogEventLevel.Verbose, "Moved {0} to {1}", tempFile.FullName, filePath);
-                    }
-                    else
-                    {
-                        Debug.LogMessage(LogEventLevel.Information, "Skipping assembly: {0}.  There is already an assembly with that name loaded.", tempFile.FullName);
-                    }
+                    if (Directory.Exists(TempDirectory))
+                        Directory.Delete(TempDirectory, true);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogMessage(LogEventLevel.Verbose, "Assembly {0} is not a custom assembly. Exception: {1}", tempFile.FullName, e);
-                    continue; //catching any load issues and continuing. There will be exceptions loading Crestron .dlls from the cplz Probably should do something different here
+                    Debug.LogMessage(LogEventLevel.Warning, "Unable to delete temp plugins directory {0}: {1}", TempDirectory, e.Message);
                 }
             }
-
-            // Delete the .cplz and the temp directory
-            Directory.Delete(TempDirectory, true);
-            zfi.Delete();
         }
 
         Debug.LogMessage(LogEventLevel.Information, "Done with .cplz archives");
@@ -606,25 +641,69 @@ public static class PluginLoader
 
         Debug.LogMessage(LogEventLevel.Verbose, "Found {0} plugin assemblies to load", pluginFiles.Length);
 
-        // First, check compatibility of all assemblies before loading any
-        var assemblyCompatibility = new Dictionary<string, (bool IsCompatible, string Reason, List<string> References)>();
-        
+        // First, read every assembly's metadata before loading any of them: check .NET 8 compatibility,
+        // and compare how each was built against what is running.
+        var availableAssemblies = GetAvailableAssemblyVersions();
+        var assemblyCompatibility = new Dictionary<string, (bool IsCompatible, string Reason)>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var pluginFile in pluginFiles)
         {
             string fileName = pluginFile.Name;
-            assemblyCompatibility[fileName] = IsPluginCompatibleWithNet8(pluginFile.FullName);
+
+            lock (PluginReportsLock)
+            {
+                GetOrCreateReport(fileName);
+            }
+
+            try
+            {
+                var info = PluginAssemblyInspector.Inspect(pluginFile.FullName);
+
+                lock (PluginReportsLock)
+                {
+                    var report = GetOrCreateReport(fileName);
+                    report.AssemblyName = info.AssemblyName;
+                    report.Version = info.DisplayVersion;
+
+                    foreach (var pair in info.BuiltAgainst)
+                    {
+                        report.BuiltAgainst[pair.Key] = pair.Value;
+                    }
+                }
+
+                assemblyCompatibility[fileName] = CheckNet8Compatibility(info);
+
+                // Version mismatches are reported but never stop the plugin loading.
+                foreach (var issue in PluginVersionChecker.Check(info, Global.AssemblyVersion, availableAssemblies))
+                {
+                    RecordIssue(fileName, issue);
+                }
+            }
+            catch (BadImageFormatException)
+            {
+                assemblyCompatibility[fileName] = (false, "Not a valid .NET assembly");
+            }
+            catch (Exception ex)
+            {
+                assemblyCompatibility[fileName] = (false, $"Error analyzing assembly: {ex.Message}");
+            }
         }
         
         // Now load compatible assemblies and track incompatible ones
         foreach (var pluginFile in pluginFiles)
         {
             string fileName = pluginFile.Name;
-            var (isCompatible, reason, _) = assemblyCompatibility[fileName];
+            var (isCompatible, reason) = assemblyCompatibility[fileName];
             
             if (!isCompatible)
             {
-                Debug.LogMessage(LogEventLevel.Warning, "Assembly '{0}' is not compatible with .NET 8: {1}", fileName, reason);
                 IncompatiblePlugins.Add(new IncompatiblePlugin(fileName, reason, null));
+                RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error,
+                    reason.StartsWith("Uses incompatible type", StringComparison.Ordinal)
+                        ? PluginLoadIssueCategory.IncompatibleApi
+                        : PluginLoadIssueCategory.LoadFailure,
+                    $"Not compatible with .NET 8: {reason}",
+                    "The assembly was not loaded."));
                 continue;
             }
             
@@ -634,10 +713,86 @@ public static class PluginLoader
             if (loadedAssembly != null)
             {
                 LoadedPluginFolderAssemblies.Add(loadedAssembly);
+
+                lock (PluginReportsLock)
+                {
+                    PluginFileNames[loadedAssembly] = fileName;
+                }
             }
         }
 
         Debug.LogMessage(LogEventLevel.Information, "All Plugins Loaded.");
+    }
+
+    /// <summary>
+    /// Collects the assembly versions a plugin will actually run against, by simple name. Assemblies
+    /// already in the AppDomain win, then the versions Essentials itself was compiled against (which
+    /// covers Crestron SDK assemblies that have not been loaded yet), then the program directory.
+    /// </summary>
+    private static Dictionary<string, Version> GetAvailableAssemblyVersions()
+    {
+        var versions = new Dictionary<string, Version>(StringComparer.OrdinalIgnoreCase);
+
+        void AddIfMissing(string name, Version version)
+        {
+            if (!string.IsNullOrEmpty(name) && version != null && !versions.ContainsKey(name))
+                versions[name] = version;
+        }
+
+        var domainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        foreach (var assembly in domainAssemblies)
+        {
+            try
+            {
+                var name = assembly.GetName();
+                AddIfMissing(name.Name, name.Version);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "Unable to read the name of a loaded assembly: {0}", ex.Message);
+            }
+        }
+
+        foreach (var assembly in domainAssemblies)
+        {
+            try
+            {
+                if (!PluginVersionChecker.EssentialsAssemblyNames.Contains(assembly.GetName().Name))
+                    continue;
+
+                foreach (var reference in assembly.GetReferencedAssemblies())
+                {
+                    AddIfMissing(reference.Name, reference.Version);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogMessage(LogEventLevel.Verbose, "Unable to read the references of a loaded assembly: {0}", ex.Message);
+            }
+        }
+
+        try
+        {
+            foreach (var file in Directory.GetFiles(Global.ApplicationDirectoryPathPrefix, "*.dll"))
+            {
+                try
+                {
+                    var name = AssemblyName.GetAssemblyName(file);
+                    AddIfMissing(name.Name, name.Version);
+                }
+                catch (Exception)
+                {
+                    // Native libraries in the program folder have no assembly name
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogMessage(LogEventLevel.Verbose, "Unable to read program directory assemblies: {0}", ex.Message);
+        }
+
+        return versions;
     }
 
     /// <summary>
@@ -656,6 +811,8 @@ public static class PluginLoader
             // Skip if assembly is null (can happen if we had loading issues)
             if (loadedAssembly == null || loadedAssembly.Assembly == null)
                 continue;
+
+            var pluginFileName = FileNameFor(loadedAssembly);
             
             // iteratate this assembly's classes, looking for "LoadPlugin()" methods
             try
@@ -669,37 +826,48 @@ public static class PluginLoader
                 }
                 catch (ReflectionTypeLoadException e)
                 {
-                    Debug.LogMessage(LogEventLevel.Error, "Unable to get types for assembly {0}: {1}",
-                        loadedAssembly.Name, e.Message);
-                    
+                    MarkTypesFailedToLoad(pluginFileName);
+
+                    var otherLoaderErrors = new List<string>();
+
                     // Check if any of the loader exceptions are due to missing assemblies
-                    foreach (var loaderEx in e.LoaderExceptions)
+                    foreach (var loaderEx in e.LoaderExceptions.Where(x => x != null))
                     {
-                        if (loaderEx is FileNotFoundException fileNotFoundEx)
+                        if (loaderEx is FileNotFoundException fileNotFoundEx && !string.IsNullOrEmpty(fileNotFoundEx.FileName))
                         {
                             string missingAssembly = fileNotFoundEx.FileName;
-                            if (!string.IsNullOrEmpty(missingAssembly))
-                            {
-                                Debug.LogMessage(LogEventLevel.Warning, "Assembly {0} requires missing dependency: {1}", 
-                                    loadedAssembly.Name, missingAssembly);
-                                
-                                // Add to incompatible plugins with dependency information
-                                IncompatiblePlugins.Add(new IncompatiblePlugin(
-                                    Path.GetFileName(missingAssembly), 
-                                    $"Missing dependency required by {loadedAssembly.Name}", 
-                                    loadedAssembly.Name));
-                            }
+
+                            // Add to incompatible plugins with dependency information
+                            IncompatiblePlugins.Add(new IncompatiblePlugin(
+                                Path.GetFileName(missingAssembly), 
+                                $"Missing dependency required by {loadedAssembly.Name}", 
+                                loadedAssembly.Name));
+
+                            RecordIssue(pluginFileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.MissingDependency,
+                                $"Missing dependency: {missingAssembly}",
+                                "Deploy the missing assembly alongside the plugin, or include it in the plugin's .cplz. " + fileNotFoundEx.Message));
+                        }
+                        else
+                        {
+                            otherLoaderErrors.Add(loaderEx.Message);
                         }
                     }
-                    
-                    Debug.LogMessage(LogEventLevel.Verbose, e.StackTrace);
+
+                    if (otherLoaderErrors.Count > 0 || e.LoaderExceptions.All(x => x == null))
+                    {
+                        RecordIssue(pluginFileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.TypeLoadFailure,
+                            $"Could not read the assembly's types: {e.Message}",
+                            string.Join(Environment.NewLine, otherLoaderErrors.Distinct())));
+                    }
+
                     continue;
                 }
                 catch (TypeLoadException e)
                 {
-                    Debug.LogMessage(LogEventLevel.Error, "Unable to get types for assembly {0}: {1}",
-                        loadedAssembly.Name, e.Message);
-                    Debug.LogMessage(LogEventLevel.Verbose, e.StackTrace);
+                    MarkTypesFailedToLoad(pluginFileName);
+
+                    RecordIssue(pluginFileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.TypeLoadFailure,
+                        $"Could not read the assembly's types: {e.Message}", e.ToString()));
                     
                     // Add to incompatible plugins if this is likely a .NET 8 compatibility issue
                     if (e.Message.Contains("Could not load type") || 
@@ -722,26 +890,32 @@ public static class PluginLoader
                             continue;
                         }
 
+                        lock (PluginReportsLock)
+                        {
+                            GetOrCreateReport(pluginFileName).FactoryTypesFound++;
+                        }
+
                         var plugin = (IPluginDeviceFactory)Activator.CreateInstance(type);
                         LoadCustomPlugin(plugin, loadedAssembly);
                     }
-                    catch (NotSupportedException)
+                    catch (NotSupportedException ex)
                     {
-                        //this happens for dlls that aren't PD dlls, like ports of Mono classes into S#. Swallowing.                               
+                        // This happens for dlls that aren't PD dlls, like ports of Mono classes into S#.
+                        RecordIssue(pluginFileName, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.FactoryFailure,
+                            $"Plugin factory {type.FullName} is not supported on this platform: {ex.Message}", ex.ToString()));
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError("Load Plugin not found. {assemblyName}.{typeName} is not a plugin factory. Exception: {exception}",
-                            loadedAssembly.Name, type.Name, ex.Message);
+                        RecordIssue(pluginFileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.FactoryFailure,
+                            $"Plugin factory {type.FullName} could not be loaded: {ex.Message}", ex.ToString()));
                         continue;
                     }
                 }
             }
             catch (Exception e)
             {
-                Debug.LogMessage(LogEventLevel.Information, "Error Loading assembly {0}: {1}",
-                    loadedAssembly.Name, e.Message);
-                Debug.LogMessage(LogEventLevel.Verbose, "{0}", e.StackTrace);
+                RecordIssue(pluginFileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.LoadFailure,
+                    $"Error loading the assembly's plugin types: {e.Message}", e.ToString()));
                 
                 // Add to incompatible plugins if this is likely a .NET 8 compatibility issue
                 if (e.Message.Contains("Could not load type") || 
@@ -822,9 +996,9 @@ public static class PluginLoader
 
         if (!passed)
         {
-            Debug.LogInformation(
-                "\r\n********************\r\n\tPlugin indicates minimum Essentials version {minimumEssentialsVersion}.  Dependency check failed.  Skipping Plugin {pluginName}\r\n********************",
-                deviceFactory.MinimumEssentialsFrameworkVersion, loadedAssembly.Name);
+            RecordIssue(FileNameFor(loadedAssembly), new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.MinimumVersionNotMet,
+                $"Plugin factory {deviceFactory.GetType().FullName} requires Essentials {deviceFactory.MinimumEssentialsFrameworkVersion} or later, but {Global.AssemblyVersion} is running. Dependency check failed, so the factory was skipped.",
+                "Upgrade Essentials, or deploy a version of the plugin built for this Essentials."));
             return;
         }
         else
@@ -891,24 +1065,110 @@ public static class PluginLoader
                 // Load the types from any custom plugin assemblies
                 LoadCustomPluginTypes();
             }
-            
-            // Report on incompatible plugins
-            if (IncompatiblePlugins.Count > 0)
+
+            FinalizePluginStatuses();
+
+            // Each issue was logged as it was found; this points at where to read them all together.
+            var withIssues = PluginLoadReportsWithIssues;
+            if (withIssues.Count > 0)
             {
-                Debug.LogMessage(LogEventLevel.Warning, "Found {0} incompatible plugins:", IncompatiblePlugins.Count);
-                foreach (var plugin in IncompatiblePlugins)
-                {
-                    if (plugin.TriggeredBy != "Direct load")
-                    {
-                        Debug.LogMessage(LogEventLevel.Warning, "  - {0}: {1} (Required by: {2})", 
-                            plugin.Name, plugin.Reason, plugin.TriggeredBy);
-                    }
-                    else
-                    {
-                        Debug.LogMessage(LogEventLevel.Warning, "  - {0}: {1}", 
-                            plugin.Name, plugin.Reason);
-                    }
-                }
+                Debug.LogMessage(LogEventLevel.Warning,
+                    "Plugin loading finished with {issueCount} issue(s) ({errorCount} error(s)) in {fileCount} file(s). Run 'pluginissues' at the console or GET /api/pluginLoadIssues for details.",
+                    withIssues.Sum(r => r.Issues.Count),
+                    withIssues.Sum(r => r.Issues.Count(i => i.Severity == PluginLoadIssueSeverity.Error)),
+                    withIssues.Count);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Records an issue against a plugin file and logs it at the issue's severity.
+    /// </summary>
+    private static void RecordIssue(string fileName, PluginLoadIssue issue)
+    {
+        lock (PluginReportsLock)
+        {
+            GetOrCreateReport(fileName).AddIssue(issue);
+        }
+
+        var level = issue.Severity == PluginLoadIssueSeverity.Error ? LogEventLevel.Error : LogEventLevel.Warning;
+
+        if (issue.TriggeredBy != "Direct load")
+        {
+            Debug.LogMessage(level, "Plugin {pluginFile}: [{category}] {message} (required by {triggeredBy})",
+                fileName, issue.Category, issue.Message, issue.TriggeredBy);
+        }
+        else
+        {
+            Debug.LogMessage(level, "Plugin {pluginFile}: [{category}] {message}", fileName, issue.Category, issue.Message);
+        }
+
+        if (!string.IsNullOrEmpty(issue.Detail))
+        {
+            Debug.LogMessage(LogEventLevel.Debug, "Plugin {pluginFile} detail: {detail}", fileName, issue.Detail);
+        }
+    }
+
+    /// <summary>
+    /// Returns the report for a file, creating it if needed. Call while holding <see cref="PluginReportsLock"/>.
+    /// </summary>
+    private static PluginLoadReport GetOrCreateReport(string fileName)
+    {
+        if (!PluginReports.TryGetValue(fileName, out var report))
+        {
+            report = new PluginLoadReport(fileName);
+            PluginReports[fileName] = report;
+        }
+
+        return report;
+    }
+
+    /// <summary>
+    /// The plugin file an assembly was loaded from, falling back to its assembly name.
+    /// </summary>
+    private static string FileNameFor(LoadedAssembly loadedAssembly)
+    {
+        lock (PluginReportsLock)
+        {
+            return PluginFileNames.TryGetValue(loadedAssembly, out var fileName)
+                ? fileName
+                : loadedAssembly.Name + ".dll";
+        }
+    }
+
+    private static void MarkTypesFailedToLoad(string fileName)
+    {
+        lock (PluginReportsLock)
+        {
+            GetOrCreateReport(fileName).TypesFailedToLoad = true;
+        }
+    }
+
+    /// <summary>
+    /// Sets each plugin file's final status once every load stage has run.
+    /// </summary>
+    private static void FinalizePluginStatuses()
+    {
+        lock (PluginReportsLock)
+        {
+            foreach (var pair in PluginFileNames)
+            {
+                var report = GetOrCreateReport(pair.Value);
+
+                if (EssentialsPluginAssemblies.Contains(pair.Key))
+                    report.Status = PluginLoadStatus.Loaded;
+                else if (report.TypesFailedToLoad)
+                    report.Status = PluginLoadStatus.Failed;
+                else if (report.FactoryTypesFound > 0)
+                    report.Status = PluginLoadStatus.Skipped;
+                else
+                    report.Status = PluginLoadStatus.LoadedAsLibrary;
+            }
+
+            // Anything never loaded into the AppDomain failed somewhere earlier
+            foreach (var report in PluginReports.Values.Where(r => r.Status == PluginLoadStatus.Pending))
+            {
+                report.Status = PluginLoadStatus.Failed;
             }
         }
     }

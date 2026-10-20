@@ -235,6 +235,11 @@ public class EssentialsWebApi : EssentialsDevice
             {
                 Name = "Get Initialization Exceptions",
                 RouteHandler = new GetInitializationExceptionsRequestHandler()
+            },
+            new HttpCwsRoute("pluginLoadIssues")
+            {
+                Name = "Get Plugin Load Issues",
+                RouteHandler = new GetPluginLoadIssuesRequestHandler()
             }
         };
 

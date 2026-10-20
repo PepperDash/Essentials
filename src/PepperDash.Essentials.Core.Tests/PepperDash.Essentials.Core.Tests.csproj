@@ -39,4 +39,22 @@
     <Compile Include="..\PepperDash.Essentials.Core\Secrets\SecretsIndex.cs"
              Link="Secrets\SecretsIndex.cs" />
   </ItemGroup>
+
+  <!--
+    The plugin load diagnostics are split so the version parsing, metadata inspection, version check
+    and console formatting have no Crestron references and can be tested here. PluginLoader itself,
+    which wires them into the load sequence, needs a processor.
+  -->
+  <ItemGroup>
+    <Compile Include="..\PepperDash.Essentials.Core\Plugins\PluginLoadIssue.cs" Link="Plugins\PluginLoadIssue.cs" />
+    <Compile Include="..\PepperDash.Essentials.Core\Plugins\EssentialsVersion.cs" Link="Plugins\EssentialsVersion.cs" />
+    <Compile Include="..\PepperDash.Essentials.Core\Plugins\PluginAssemblyInspector.cs" Link="Plugins\PluginAssemblyInspector.cs" />
+    <Compile Include="..\PepperDash.Essentials.Core\Plugins\PluginVersionChecker.cs" Link="Plugins\PluginVersionChecker.cs" />
+    <Compile Include="..\PepperDash.Essentials.Core\Plugins\PluginLoadReportFormatter.cs" Link="Plugins\PluginLoadReportFormatter.cs" />
+  </ItemGroup>
+
+  <!-- Stamps this test assembly the way the Essentials NuGet packages stamp a plugin, so PluginAssemblyInspectorTests can read it back -->
+  <ItemGroup>
+    <AssemblyMetadata Include="PepperDash.Essentials.BuiltAgainst:PepperDashEssentials" Value="3.0.0-rc.42" />
+  </ItemGroup>
 </Project>
