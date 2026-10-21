@@ -114,6 +114,88 @@ namespace MyPlugin
 }
 ```
 
+## Plugin Load Diagnostics
+
+Before Essentials loads a plugin, it reads the plugin's metadata to see what the plugin was built against, and compares that with what is running. Everything that goes wrong while loading plugins is recorded, logged, and available afterwards from the console and the Web API.
+
+### What is checked
+
+- **Essentials version.** The `PepperDashEssentials` and `PepperDash.Essentials.Core` NuGet packages add an `AssemblyMetadata` attribute to every project that references them, recording the exact package version, for example `PepperDash.Essentials.BuiltAgainst:PepperDashEssentials = 3.0.0-rc.16`. Plugins get this automatically when they are rebuilt; no changes are needed. If the plugin was built against a newer Essentials than the one running, a warning is recorded.
+- **Plugins built before the stamp existed.** Essentials falls back to the version of the Essentials assemblies the plugin references. Those carry only `major.minor.patch`, so a difference between two prereleases of the same version cannot be seen.
+- **Shared dependencies, including the Crestron SDK.** If the plugin references a newer version of an assembly that is already present, such as `Crestron.SimplSharpPro.UI 2.21.274.0` when Essentials was built against `2.21.128.0`, a warning is recorded. Essentials and its plugins should be built against the same Crestron SDK version.
+
+These checks only warn. A plugin with a version mismatch is still loaded, as it always has been.
+
+Local developer builds (`-local`), `0.x` versions, and prereleases with different labels (a feature-branch build against an `rc`) are not compared.
+
+To leave the stamp out of a project, set:
+
+```xml
+<PepperDashEssentialsSkipVersionStamp>true</PepperDashEssentialsSkipVersionStamp>
+```
+
+### What is recorded
+
+Each problem is logged when it happens, at Warning or Error, and kept in memory with the plugin file it belongs to. Besides the version checks above, that includes plugins that use APIs missing on .NET 8, assemblies that fail to load, missing dependencies, types that cannot be read, plugin factories that throw, factories skipped because `MinimumEssentialsFrameworkVersion` is not met, development factories whose `DevelopmentEssentialsFrameworkVersions` list does not include the running build, duplicate assemblies (a copy already loaded from another file, or an Essentials assembly bundled in a plugin that the program already provides), and `.cplz` archives that cannot be extracted. A `.cplz` that cannot be extracted no longer stops the remaining plugins from loading.
+
+Each plugin file also gets a status:
+
+| Status | Meaning |
+| --- | --- |
+| `Loaded` | The assembly loaded and at least one plugin factory was registered. |
+| `LoadedAsLibrary` | The assembly loaded and has no plugin factory. It is a library another plugin uses. |
+| `Skipped` | The file was not used: none of its plugin factories were registered, or it duplicates an assembly the program already provides. |
+| `Failed` | The assembly could not be loaded. |
+
+### Reading the results
+
+At the console:
+
+```
+pluginissues
+pluginissues verbose
+```
+
+`verbose` adds the detail for each issue, such as the exception or how to fix it. `reportversions` also prints the issue count.
+
+From the Web API:
+
+```
+GET /cws/app01/api/pluginLoadIssues
+GET /cws/app01/api/pluginLoadIssues?all=true
+```
+
+On Virtual Control the base path is `/cws/api`. The response lists the plugin files with issues; add `?all=true` to include the ones that loaded cleanly:
+
+```json
+{
+  "EssentialsVersion": "3.0.0-rc.11",
+  "IssueCount": 2,
+  "ErrorCount": 0,
+  "Plugins": [
+    {
+      "FileName": "MyPlugin.dll",
+      "AssemblyName": "MyPlugin",
+      "Version": "1.0.0",
+      "BuiltAgainst": { "PepperDashEssentials": "3.0.0-rc.16" },
+      "Status": "Loaded",
+      "Issues": [
+        {
+          "Severity": "Warning",
+          "Category": "BuiltAgainstNewerEssentials",
+          "Message": "Built against PepperDashEssentials 3.0.0-rc.16, but Essentials 3.0.0-rc.11 is running.",
+          "Detail": "...",
+          "TriggeredBy": "Direct load",
+          "TimestampUtc": "2026-10-20T14:02:11Z"
+        }
+      ]
+    }
+  ]
+}
+```
+
+The Essentials web config app shows the same information on its Plugin Load Issues page.
+
 ## SIMPL Bridging
 
 Optionally, if your plugin device needs to be able to bridge to a SIMPL program over EISC, and there isn't already an existing bridge class in the Essentials Framework, you can write a new bridge class in your plugin. However, in order for the Essentials Application to be able to us that new bridge, the bridge must implement the ```IBridgeAdvanced``` interface with the required ```LinkToApi()``` Extension method.

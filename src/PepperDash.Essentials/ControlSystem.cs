@@ -191,6 +191,10 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
             CrestronConsole.AddNewConsoleCommand(PrintInitializationExceptions,
                 "getinitexceptions", "Reports any exceptions that occurred during initialization", ConsoleAccessLevelEnum.AccessOperator);
 
+            // Crestron rejects help text over 79 bytes by throwing, which would abort startup here
+            CrestronConsole.AddNewConsoleCommand(PrintPluginLoadIssues,
+                "pluginissues", "Reports plugin load problems. Add 'verbose' for details", ConsoleAccessLevelEnum.AccessOperator);
+
             DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
 
             if (!Debug.DoNotLoadConfigOnNextBoot)
@@ -930,6 +934,24 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
         }
 
         Debug.LogMessage(LogEventLevel.Information, "All Rooms Loaded.");
+    }
+
+    private void PrintPluginLoadIssues(string args)
+    {
+        args ??= string.Empty;
+
+        if (args.Contains("?"))
+        {
+            CrestronConsole.ConsoleCommandResponse("Usage: pluginissues [verbose]\r\n");
+            CrestronConsole.ConsoleCommandResponse("Reports plugins that failed to load, were skipped, or were built against newer Essentials or SDK versions than are running.\r\n");
+            return;
+        }
+
+        var verbose = args.Trim().Equals("verbose", StringComparison.OrdinalIgnoreCase);
+
+        // Passed as an argument, not the format string: issue text can contain braces from exception messages
+        CrestronConsole.ConsoleCommandResponse("{0}",
+            PluginLoadReportFormatter.Format(PluginLoader.PluginLoadReports, Global.AssemblyVersion, verbose));
     }
 
     private void PrintInitializationExceptions(string args)
