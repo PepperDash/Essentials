@@ -191,8 +191,9 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
             CrestronConsole.AddNewConsoleCommand(PrintInitializationExceptions,
                 "getinitexceptions", "Reports any exceptions that occurred during initialization", ConsoleAccessLevelEnum.AccessOperator);
 
+            // Crestron rejects help text over 79 bytes by throwing, which would abort startup here
             CrestronConsole.AddNewConsoleCommand(PrintPluginLoadIssues,
-                "pluginissues", "Reports plugins that failed to load or reported problems. Add 'verbose' for details", ConsoleAccessLevelEnum.AccessOperator);
+                "pluginissues", "Reports plugin load problems. Add 'verbose' for details", ConsoleAccessLevelEnum.AccessOperator);
 
             DeviceManager.AddDevice(new EssentialsWebApi("essentialsWebApi", "Essentials Web API"));
 
