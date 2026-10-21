@@ -64,13 +64,19 @@ public static class PluginVersionChecker
         if (running == null || !running.IsComparable)
             return null;
 
-        // A plugin can reference more than one Essentials package directly. Report the newest one.
+        // A plugin can reference more than one Essentials package directly. Report the newest one that
+        // is actually newer than running. Stamps that can't be compared (e.g. a -local build) are left
+        // out first, or one could win "newest" and hide a comparable stamp that is newer than running.
         EssentialsVersion newest = null;
         string newestPackage = null;
 
         foreach (var pair in info.BuiltAgainst)
         {
             if (!EssentialsVersion.TryParse(pair.Value, out var stamped))
+                continue;
+
+            var comparison = EssentialsVersion.CompareForCompatibility(stamped, running);
+            if (comparison == null || comparison <= 0)
                 continue;
 
             if (newest == null || stamped.CompareTo(newest) > 0)
@@ -80,9 +86,7 @@ public static class PluginVersionChecker
             }
         }
 
-        var comparison = EssentialsVersion.CompareForCompatibility(newest, running);
-
-        if (comparison == null || comparison <= 0)
+        if (newest == null)
             return null;
 
         return new PluginLoadIssue(
@@ -143,6 +147,37 @@ public static class PluginVersionChecker
                 $"References {reference.Name} {reference.Version}, but {available} is loaded.",
                 $"The plugin was compiled against a newer {reference.Name} than the one available. Calls into anything added after {available} will fail at runtime with a MissingMethodException or TypeLoadException. The plugin was still loaded.{sdkNote}");
         }
+    }
+
+    /// <summary>
+    /// Explains why a plugin factory failed its Essentials version check, so the report points at the
+    /// right fix. A development factory that lists the builds it accepts is rejected when the running
+    /// build is not in that list, even if its minimum version is met; mirrors
+    /// <c>Global.IsRunningDevelopmentVersion</c>.
+    /// </summary>
+    /// <param name="factoryName">The factory's type name.</param>
+    /// <param name="minimumVersion">The factory's <c>MinimumEssentialsFrameworkVersion</c>.</param>
+    /// <param name="developmentVersions">The development factory's accepted builds, or null for a normal factory.</param>
+    /// <param name="runningEssentialsVersion">The running Essentials version.</param>
+    public static PluginLoadIssue DescribeFactoryRejection(string factoryName, string minimumVersion,
+        IReadOnlyCollection<string> developmentVersions, string runningEssentialsVersion)
+    {
+        if (developmentVersions != null && !developmentVersions.Contains(runningEssentialsVersion))
+        {
+            var accepted = developmentVersions.Count > 0 ? string.Join(", ", developmentVersions) : "(none listed)";
+
+            return new PluginLoadIssue(
+                PluginLoadIssueSeverity.Error,
+                PluginLoadIssueCategory.DevelopmentBuildNotListed,
+                $"Plugin factory {factoryName} is a development build that only loads on Essentials {accepted}, but {runningEssentialsVersion} is running, so the factory was skipped.",
+                "Run one of the listed Essentials builds, or deploy a release build of the plugin, which checks MinimumEssentialsFrameworkVersion instead of an exact build.");
+        }
+
+        return new PluginLoadIssue(
+            PluginLoadIssueSeverity.Error,
+            PluginLoadIssueCategory.MinimumVersionNotMet,
+            $"Plugin factory {factoryName} requires Essentials {minimumVersion} or later, but {runningEssentialsVersion} is running. Dependency check failed, so the factory was skipped.",
+            "Upgrade Essentials, or deploy a version of the plugin built for this Essentials.");
     }
 
     private static bool IsCrestronSdkAssembly(string name) =>

@@ -141,4 +141,59 @@ public class PluginVersionCheckerTests
             PluginLoadIssueCategory.NewerDependencyReference
         });
     }
+
+    [Fact]
+    public void ANonComparableStampDoesNotHideANewerComparableOne()
+    {
+        // The -local stamp sorts newest but can't be compared; the rc.16 stamp is still newer than running
+        var info = Plugin("3.0.0-rc.16");
+        info.BuiltAgainst["PepperDash.Essentials.Core"] = "3.1.0-local";
+
+        var issues = PluginVersionChecker.Check(info, "3.0.0-rc.11", NoAssemblies);
+
+        issues.Should().ContainSingle().Which.Message.Should().Contain("PepperDashEssentials 3.0.0-rc.16");
+    }
+
+    [Fact]
+    public void OnlyNonComparableStamps_NoIssue()
+    {
+        var info = Plugin("3.1.0-local");
+
+        PluginVersionChecker.Check(info, "3.0.0-rc.11", NoAssemblies).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DevelopmentFactoryNotListingTheRunningBuild_IsReportedAsSuch()
+    {
+        var issue = PluginVersionChecker.DescribeFactoryRejection(
+            "My.DevFactory", "3.0.0", new[] { "3.0.0-rc.9", "3.0.0-rc.10" }, "3.0.0-rc.11");
+
+        issue.Category.Should().Be(PluginLoadIssueCategory.DevelopmentBuildNotListed);
+        issue.Message.Should().Contain("3.0.0-rc.9, 3.0.0-rc.10").And.Contain("3.0.0-rc.11");
+        issue.Detail.Should().NotContain("Upgrade Essentials");
+    }
+
+    [Fact]
+    public void DevelopmentFactoryWithAnEmptyList_IsReportedAsNotListed()
+    {
+        PluginVersionChecker.DescribeFactoryRejection("My.DevFactory", "3.0.0", Array.Empty<string>(), "3.0.0-rc.11")
+            .Message.Should().Contain("(none listed)");
+    }
+
+    [Fact]
+    public void DevelopmentFactoryListingTheRunningBuild_FailedOnItsMinimumVersion()
+    {
+        var issue = PluginVersionChecker.DescribeFactoryRejection(
+            "My.DevFactory", "3.9.0", new[] { "3.0.0-rc.11" }, "3.0.0-rc.11");
+
+        issue.Category.Should().Be(PluginLoadIssueCategory.MinimumVersionNotMet);
+        issue.Message.Should().Contain("requires Essentials 3.9.0");
+    }
+
+    [Fact]
+    public void RegularFactory_FailedOnItsMinimumVersion()
+    {
+        PluginVersionChecker.DescribeFactoryRejection("My.Factory", "3.9.0", null, "3.0.0-rc.11")
+            .Category.Should().Be(PluginLoadIssueCategory.MinimumVersionNotMet);
+    }
 }

@@ -136,7 +136,7 @@ To leave the stamp out of a project, set:
 
 ### What is recorded
 
-Each problem is logged when it happens, at Warning or Error, and kept in memory with the plugin file it belongs to. Besides the version checks above, that includes plugins that use APIs missing on .NET 8, assemblies that fail to load, missing dependencies, types that cannot be read, plugin factories that throw, factories skipped because `MinimumEssentialsFrameworkVersion` is not met, and `.cplz` archives that cannot be extracted. A `.cplz` that cannot be extracted no longer stops the remaining plugins from loading.
+Each problem is logged when it happens, at Warning or Error, and kept in memory with the plugin file it belongs to. Besides the version checks above, that includes plugins that use APIs missing on .NET 8, assemblies that fail to load, missing dependencies, types that cannot be read, plugin factories that throw, factories skipped because `MinimumEssentialsFrameworkVersion` is not met, development factories whose `DevelopmentEssentialsFrameworkVersions` list does not include the running build, duplicate assemblies (a copy already loaded from another file, or an Essentials assembly bundled in a plugin that the program already provides), and `.cplz` archives that cannot be extracted. A `.cplz` that cannot be extracted no longer stops the remaining plugins from loading.
 
 Each plugin file also gets a status:
 
@@ -144,7 +144,7 @@ Each plugin file also gets a status:
 | --- | --- |
 | `Loaded` | The assembly loaded and at least one plugin factory was registered. |
 | `LoadedAsLibrary` | The assembly loaded and has no plugin factory. It is a library another plugin uses. |
-| `Skipped` | The assembly loaded, but none of its plugin factories were registered. |
+| `Skipped` | The file was not used: none of its plugin factories were registered, or it duplicates an assembly the program already provides. |
 | `Failed` | The assembly could not be loaded. |
 
 ### Reading the results

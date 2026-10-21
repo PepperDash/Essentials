@@ -295,6 +295,19 @@ public static class PluginLoader
             if (assembly != null)
             {
                 var assyVersion = GetAssemblyVersion(assembly);
+
+                // LoadFrom returns an already-loaded assembly with the same identity rather than loading
+                // this file, even when it came from somewhere else (e.g. a different prerelease build
+                // with the same assembly version). Report which binary is actually in use.
+                var loadedFrom = string.IsNullOrEmpty(assembly.Location) ? null : Path.GetFullPath(assembly.Location);
+                if (loadedFrom != null && !string.Equals(loadedFrom, Path.GetFullPath(filePath), StringComparison.Ordinal))
+                {
+                    RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.DuplicateAssembly,
+                        $"An assembly with the same identity is already loaded from {loadedFrom}, so version {assyVersion} from there is used instead of this file.",
+                        "Only one copy of an assembly can be loaded. Remove the duplicate, or make sure both copies are the same build.",
+                        requestedBy));
+                }
+
                 var loadedAssembly = new LoadedAssembly(assembly.GetName().Name, assyVersion, assembly);
                 LoadedAssemblies.Add(loadedAssembly);
                 Debug.LogMessage(LogEventLevel.Information, "Loaded assembly '{0}', version {1}", loadedAssembly.Name, loadedAssembly.Version);
@@ -319,7 +332,7 @@ public static class PluginLoader
             if (existingAssembly != null)
             {
                 var assyVersion = GetAssemblyVersion(existingAssembly);
-                RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.LoadFailure,
+                RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.DuplicateAssembly,
                     $"An assembly named {assemblyName} is already loaded, so version {assyVersion} is used instead of this file.",
                     "Two copies of the same assembly were found. Only one can be loaded, so anything that needs this file's version may fail at runtime.",
                     requestedBy));
@@ -496,7 +509,7 @@ public static class PluginLoader
                 }
                 else
                 {
-                    Debug.LogMessage(LogEventLevel.Information, "Skipping assembly: {0}.  There is already an assembly with that name loaded.", pluginFile.FullName);
+                    RecordProgramAssemblyDuplicate(pluginFile.Name, null);
                 }
             }
             catch (Exception e)
@@ -591,7 +604,7 @@ public static class PluginLoader
                         }
                         else
                         {
-                            Debug.LogMessage(LogEventLevel.Information, "Skipping assembly: {0}.  There is already an assembly with that name loaded.", tempFile.FullName);
+                            RecordProgramAssemblyDuplicate(tempFile.Name, zfi.Name);
                         }
                     }
                     catch (Exception e)
@@ -1000,9 +1013,11 @@ public static class PluginLoader
 
         if (!passed)
         {
-            RecordIssue(FileNameFor(loadedAssembly), new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.MinimumVersionNotMet,
-                $"Plugin factory {deviceFactory.GetType().FullName} requires Essentials {deviceFactory.MinimumEssentialsFrameworkVersion} or later, but {Global.AssemblyVersion} is running. Dependency check failed, so the factory was skipped.",
-                "Upgrade Essentials, or deploy a version of the plugin built for this Essentials."));
+            RecordIssue(FileNameFor(loadedAssembly), PluginVersionChecker.DescribeFactoryRejection(
+                deviceFactory.GetType().FullName,
+                deviceFactory.MinimumEssentialsFrameworkVersion,
+                developmentDeviceFactory?.DevelopmentEssentialsFrameworkVersions,
+                Global.AssemblyVersion));
             return;
         }
         else
@@ -1137,6 +1152,30 @@ public static class PluginLoader
             return PluginFileNames.TryGetValue(loadedAssembly, out var fileName)
                 ? fileName
                 : loadedAssembly.Name + ".dll";
+        }
+    }
+
+    /// <summary>
+    /// Records a plugin file that was not used because the running program already provides an
+    /// assembly of that name, e.g. a plugin that bundles its own PepperDashCore.dll.
+    /// </summary>
+    /// <param name="fileName">The skipped file.</param>
+    /// <param name="archiveName">The .cplz it came from, or null for a DLL dropped straight into the plugins folder.</param>
+    private static void RecordProgramAssemblyDuplicate(string fileName, string archiveName)
+    {
+        var programCopy = LoadedAssemblies.FirstOrDefault(a => a.Name.Equals(fileName));
+        var version = string.IsNullOrEmpty(programCopy?.Version) ? "the program's copy" : $"version {programCopy.Version}";
+
+        RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.DuplicateAssembly,
+            archiveName != null
+                ? $"The copy bundled in {archiveName} was ignored because the program already provides {fileName} ({version})."
+                : $"Ignored because the program already provides {fileName} ({version}).",
+            "Plugins should reference Essentials with ExcludeAssets=runtime rather than ship its assemblies. The plugin runs against the program's copy, so a bundled copy from a different build can cause MissingMethodException or TypeLoadException.",
+            archiveName));
+
+        lock (PluginReportsLock)
+        {
+            GetOrCreateReport(fileName).Status = PluginLoadStatus.Skipped;
         }
     }
 

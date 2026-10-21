@@ -75,7 +75,19 @@ public enum PluginLoadIssueCategory
     /// <summary>
     /// The plugin file could not be moved into place or extracted from its .cplz.
     /// </summary>
-    PackageExtractFailure
+    PackageExtractFailure,
+
+    /// <summary>
+    /// Another copy of this assembly is already loaded or is part of the running program, so this file
+    /// was not used.
+    /// </summary>
+    DuplicateAssembly,
+
+    /// <summary>
+    /// A development plugin factory lists the Essentials builds it loads on, and the running build is
+    /// not one of them, so it was skipped.
+    /// </summary>
+    DevelopmentBuildNotListed
 }
 
 /// <summary>
@@ -99,7 +111,8 @@ public enum PluginLoadStatus
     LoadedAsLibrary,
 
     /// <summary>
-    /// The assembly loaded, but none of its plugin device factories were registered.
+    /// The file was not used: none of its plugin device factories were registered, or it duplicates an
+    /// assembly the program already provides.
     /// </summary>
     Skipped,
 
