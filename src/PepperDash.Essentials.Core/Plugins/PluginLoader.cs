@@ -906,8 +906,12 @@ public static class PluginLoader
                     }
                     catch (Exception ex)
                     {
+                        // Activator.CreateInstance wraps anything the factory's constructor throws, so report the
+                        // plugin's own exception rather than "Exception has been thrown by the target of an invocation"
+                        var cause = ex is TargetInvocationException { InnerException: not null } wrapped ? wrapped.InnerException : ex;
+
                         RecordIssue(pluginFileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.FactoryFailure,
-                            $"Plugin factory {type.FullName} could not be loaded: {ex.Message}", ex.ToString()));
+                            $"Plugin factory {type.FullName} could not be loaded: {cause.GetType().Name}: {cause.Message}", ex.ToString()));
                         continue;
                     }
                 }
