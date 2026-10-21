@@ -322,27 +322,42 @@ public static class PluginLoader
         }
         catch(FileLoadException ex) when (ex.Message.Contains("Assembly with same name is already loaded"))
         {
-            // Get the assembly name from the file path
-            string assemblyName = Path.GetFileNameWithoutExtension(filePath);
-            
-            // Try to find the already loaded assembly
+            // The file name and the assembly name can differ, so read the identity from the file itself
+            string assemblyName;
+            try
+            {
+                assemblyName = AssemblyName.GetAssemblyName(filePath).Name;
+            }
+            catch (Exception)
+            {
+                assemblyName = Path.GetFileNameWithoutExtension(filePath);
+            }
+
             var existingAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .FirstOrDefault(a => a.GetName().Name.Equals(assemblyName, StringComparison.OrdinalIgnoreCase));
-                
+
             if (existingAssembly != null)
             {
                 var assyVersion = GetAssemblyVersion(existingAssembly);
+                var location = string.IsNullOrEmpty(existingAssembly.Location) ? "another file" : existingAssembly.Location;
+
                 RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Warning, PluginLoadIssueCategory.DuplicateAssembly,
-                    $"An assembly named {assemblyName} is already loaded, so version {assyVersion} is used instead of this file.",
-                    "Two copies of the same assembly were found. Only one can be loaded, so anything that needs this file's version may fail at runtime.",
+                    $"An assembly named {assemblyName} is already loaded from {location}, so version {assyVersion} is used instead of this file.",
+                    "Only one copy of an assembly can be loaded. Remove the duplicate, or make sure both copies are the same build.",
                     requestedBy));
-                var loadedAssembly = new LoadedAssembly(existingAssembly.GetName().Name, assyVersion, existingAssembly);
-                LoadedAssemblies.Add(loadedAssembly);
-                return loadedAssembly;
+
+                lock (PluginReportsLock)
+                {
+                    GetOrCreateReport(fileName).Status = PluginLoadStatus.Skipped;
+                }
+
+                // The loaded copy is already being processed from its own file. Returning it here would
+                // scan its plugin factories a second time.
+                return null;
             }
-            
+
             RecordIssue(fileName, new PluginLoadIssue(PluginLoadIssueSeverity.Error, PluginLoadIssueCategory.LoadFailure,
-                $"An assembly named {assemblyName} is already loaded, but it could not be found to reuse.", ex.Message, requestedBy));
+                $"An assembly named {assemblyName} is already loaded, but it could not be found.", ex.Message, requestedBy));
             return null;
         }
         catch(Exception ex)
