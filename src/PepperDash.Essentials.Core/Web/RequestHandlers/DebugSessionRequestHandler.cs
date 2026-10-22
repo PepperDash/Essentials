@@ -181,6 +181,9 @@ public class DebugSessionRequestHandler : WebApiBaseRequestHandler
 
         var port = Debug.WebsocketSink.Port;
 
+        // Ends an HTTP polling session too, and releases any poll still waiting
+        Debug.WebsocketSink.PollBuffer.Deactivate();
+
         Task.Run(() => Debug.WebsocketSink.StopServer());
 
         // Remove port forwarding if CS LAN exists — null when this processor has no control subnet

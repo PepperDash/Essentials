@@ -9,6 +9,7 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using PepperDash.Core;
+using PepperDash.Core.Web;
 using PepperDash.Essentials.Core.Routing;
 using Serilog.Events;
 using WebSocketSharp;
@@ -50,8 +51,70 @@ public class RoutingFeedbackWebsocket : IKeyed
         NullValueHandling = NullValueHandling.Ignore
     };
 
+    // Whether the routing event handlers are attached. They stay attached while the WebSocket server
+    // runs or a client is polling.
+    private bool _subscribed;
+    private readonly object _subscriptionLock = new object();
+    private Timer _pollIdleTimer;
+
     /// <inheritdoc/>
     public string Key => "RoutingFeedbackWebsocket";
+
+    /// <summary>
+    /// Routing messages for clients that poll over HTTP instead of connecting to the WebSocket, for
+    /// example on a Virtual Control server whose firewall blocks the WebSocket port. Collects only while
+    /// a client is polling.
+    /// </summary>
+    public PolledMessageBuffer PollBuffer { get; } = new PolledMessageBuffer(500, TimeSpan.FromSeconds(60));
+
+    /// <summary>
+    /// Starts collecting routing messages for a polling client and returns the snapshot to start from.
+    /// </summary>
+    /// <param name="cursor">The ID to pass as <c>since</c> on the first poll.</param>
+    /// <returns>The full routing state, in the same form the WebSocket sends on connect.</returns>
+    public string StartPolling(out long cursor)
+    {
+        EnsureSubscribed();
+
+        // Take the cursor before building the snapshot, so a change made in between is delivered again
+        // rather than lost. Every routing message carries absolute state, so a repeat is harmless.
+        cursor = PollBuffer.Activate();
+
+        lock (_subscriptionLock)
+        {
+            if (_pollIdleTimer == null)
+            {
+                _pollIdleTimer = new Timer(PollBuffer.IdleTimeout.TotalMilliseconds / 2) { AutoReset = true };
+                _pollIdleTimer.Elapsed += (s, e) => StopWhenIdle();
+                _pollIdleTimer.Start();
+            }
+        }
+
+        return GetSnapshotMessage();
+    }
+
+    /// <summary>
+    /// Stops collecting routing messages for polling clients.
+    /// </summary>
+    public void StopPolling()
+    {
+        PollBuffer.Deactivate();
+        StopWhenIdle();
+    }
+
+    private void StopWhenIdle()
+    {
+        lock (_subscriptionLock)
+        {
+            if (PollBuffer.IsActive) return;
+
+            _pollIdleTimer?.Stop();
+            _pollIdleTimer?.Dispose();
+            _pollIdleTimer = null;
+
+            if (!IsRunning) UnsubscribeFromRoutingEvents();
+        }
+    }
 
     /// <summary>
     /// Gets the port number on which the server is currently running.
@@ -155,7 +218,7 @@ public class RoutingFeedbackWebsocket : IKeyed
             _httpsServer.Start();
 
             RoutingFeedbackClient.Owner = this;
-            SubscribeToRoutingEvents();
+            EnsureSubscribed();
 
             Debug.LogMessage(LogEventLevel.Information, "Routing Feedback WebSocket ready at {url}", this, Url);
         }
@@ -171,8 +234,6 @@ public class RoutingFeedbackWebsocket : IKeyed
     /// </summary>
     public void StopServer()
     {
-        UnsubscribeFromRoutingEvents();
-
         try
         {
             if (_httpsServer == null || !_httpsServer.IsListening)
@@ -185,6 +246,14 @@ public class RoutingFeedbackWebsocket : IKeyed
         catch (Exception ex)
         {
             Debug.LogError(ex, "Routing Feedback WebSocket failed to stop: {message}", this, ex.Message);
+        }
+        finally
+        {
+            // Polling clients still need the events
+            lock (_subscriptionLock)
+            {
+                if (!PollBuffer.IsActive) UnsubscribeFromRoutingEvents();
+            }
         }
     }
 
@@ -263,8 +332,19 @@ public class RoutingFeedbackWebsocket : IKeyed
         return JsonConvert.SerializeObject(snapshot, JsonSettings);
     }
 
+    private void EnsureSubscribed()
+    {
+        lock (_subscriptionLock)
+        {
+            if (_subscribed) return;
+
+            SubscribeToRoutingEvents();
+        }
+    }
+
     private void SubscribeToRoutingEvents()
     {
+        _subscribed = true;
         _tileChildren = RoutingGraphHelpers.BuildTileChildMap();
 
         var midpointDevices = DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>();
@@ -300,6 +380,8 @@ public class RoutingFeedbackWebsocket : IKeyed
 
     private void UnsubscribeFromRoutingEvents()
     {
+        _subscribed = false;
+
         var midpointDevices = DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>();
         foreach (var device in midpointDevices)
         {
@@ -484,9 +566,12 @@ public class RoutingFeedbackWebsocket : IKeyed
 
     private void Broadcast(string message)
     {
-        if (_httpsServer == null || !_httpsServer.IsListening) return;
+        PollBuffer.Add(message);
 
-        var service = _httpsServer.WebSocketServices[_path];
+        var server = _httpsServer;
+        if (server == null || !server.IsListening) return;
+
+        var service = server.WebSocketServices[_path];
         if (service == null) return;
 
         service.Sessions.Broadcast(message);

@@ -165,6 +165,11 @@ public class EssentialsWebApi : EssentialsDevice
                 Name = "DebugSession",
                 RouteHandler = new DebugSessionRequestHandler()
             },
+            new HttpCwsRoute("debugSession/messages")
+            {
+                Name = "DebugSessionMessages",
+                RouteHandler = new DebugSessionMessagesRequestHandler()
+            },
             new HttpCwsRoute("doNotLoadConfigOnNextBoot")
             {
                 Name = "DoNotLoadConfigOnNextBoot",
@@ -199,6 +204,11 @@ public class EssentialsWebApi : EssentialsDevice
             {
                 Name = "Routing Feedback WebSocket Session",
                 RouteHandler = new RoutingFeedbackSessionRequestHandler()
+            },
+            new HttpCwsRoute("routingFeedbackSession/messages")
+            {
+                Name = "Routing Feedback Messages",
+                RouteHandler = new RoutingFeedbackMessagesRequestHandler()
             },
             new HttpCwsRoute("routingCommand")
             {

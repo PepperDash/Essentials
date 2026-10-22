@@ -16,6 +16,7 @@ using System.IO;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 using WebSocketSharp.Net;
+using PepperDash.Core.Web;
 
 namespace PepperDash.Core;
 
@@ -123,6 +124,13 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
 
     /// <inheritdoc/>
     public string Key => "DebugWebsocketSink";
+
+    /// <summary>
+    /// Log messages for clients that poll over HTTP instead of connecting to the WebSocket, for example
+    /// on a Virtual Control server whose firewall blocks the WebSocket port. Collects only while a
+    /// client is polling.
+    /// </summary>
+    public PolledMessageBuffer PollBuffer { get; } = new PolledMessageBuffer(1000, TimeSpan.FromSeconds(60));
 
     private readonly ITextFormatter _textFormatter;
 
@@ -248,12 +256,22 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
     /// <param name="logEvent">The log event to be formatted and broadcasted. Cannot be null.</param>
     public void Emit(LogEvent logEvent)
     {
-        if (_httpsServer == null || !_httpsServer.IsListening) return;
+        // StopServer can null the field from another thread, so work from one reference
+        var server = _httpsServer;
+        var listening = server != null && server.IsListening;
+        var polling = PollBuffer.IsActive;
+
+        if (!listening && !polling) return;
 
         var sw = new StringWriter();
         _textFormatter.Format(logEvent, sw);
+        var message = sw.ToString();
 
-        _httpsServer.WebSocketServices[_path].Sessions.Broadcast(sw.ToString());
+        if (polling)
+            PollBuffer.Add(message);
+
+        if (listening)
+            server.WebSocketServices[_path]?.Sessions.Broadcast(message);
     }
 
     /// <summary>
