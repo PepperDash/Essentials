@@ -18,6 +18,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers;
 public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
 {
     private static readonly RoutingFeedbackWebsocket _instance = new RoutingFeedbackWebsocket();
+
+    /// <summary>
+    /// The routing feedback service shared by the WebSocket session and HTTP polling routes.
+    /// </summary>
+    internal static RoutingFeedbackWebsocket Instance => _instance;
     private CTimer _portForwardTimeoutTimer;
     private readonly object _timerLock = new object();
 
@@ -165,6 +170,7 @@ public class RoutingFeedbackSessionRequestHandler : WebApiBaseRequestHandler
 
         var port = _instance.Port;
 
+        _instance.StopPolling();
         _instance.StopServer();
 
         // Remove port forwarding if CS LAN exists — null when this processor has no control subnet
