@@ -51,6 +51,7 @@
     <Compile Include="..\PepperDash.Essentials.Core\Plugins\PluginAssemblyInspector.cs" Link="Plugins\PluginAssemblyInspector.cs" />
     <Compile Include="..\PepperDash.Essentials.Core\Plugins\PluginVersionChecker.cs" Link="Plugins\PluginVersionChecker.cs" />
     <Compile Include="..\PepperDash.Essentials.Core\Plugins\PluginLoadReportFormatter.cs" Link="Plugins\PluginLoadReportFormatter.cs" />
+    <Compile Include="..\PepperDash.Essentials.Core\Web\ProgramHtmlPaths.cs" Link="Web\ProgramHtmlPaths.cs" />
   </ItemGroup>
 
   <!-- Stamps this test assembly the way the Essentials NuGet packages stamp a plugin, so PluginAssemblyInspectorTests can read it back -->

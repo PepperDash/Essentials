@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Web;
 using Serilog.Events;
 
 namespace PepperDash.Essentials;
@@ -25,7 +26,11 @@ internal static class AssetLoader
     /// <param name="filePathPrefix">
     /// The program's runtime working directory (e.g. <c>/nvram/program1/</c>).
     /// </param>
-    internal static void Load(string applicationDirectoryPath, string filePathPrefix)
+    /// <param name="virtualControl">
+    /// True when running on Virtual Control (VC-4), where the HTML folder sits one level above the file
+    /// path prefix rather than two. See <see cref="ProgramHtmlPaths"/>.
+    /// </param>
+    internal static void Load(string applicationDirectoryPath, string filePathPrefix, bool virtualControl = false)
     {
         var applicationDirectory = new DirectoryInfo(applicationDirectoryPath);
         Debug.LogMessage(LogEventLevel.Information,
@@ -33,8 +38,8 @@ internal static class AssetLoader
             applicationDirectory.FullName, filePathPrefix);
 
         ExtractAssetsZip(applicationDirectory, filePathPrefix);
-        ExtractHtmlAssetsZip(applicationDirectory, filePathPrefix);
-        ExtractDevToolsZip(applicationDirectory, filePathPrefix);
+        ExtractHtmlAssetsZip(applicationDirectory, filePathPrefix, virtualControl);
+        ExtractDevToolsZip(applicationDirectory, filePathPrefix, virtualControl);
         MoveConfigurationFile(applicationDirectory, filePathPrefix);
     }
 
@@ -93,7 +98,7 @@ internal static class AssetLoader
             File.Delete(file.FullName);
     }
 
-    private static void ExtractHtmlAssetsZip(DirectoryInfo applicationDirectory, string filePathPrefix)
+    private static void ExtractHtmlAssetsZip(DirectoryInfo applicationDirectory, string filePathPrefix, bool virtualControl)
     {
         var htmlZipFiles = applicationDirectory.GetFiles("htmlassets*.zip");
 
@@ -105,15 +110,11 @@ internal static class AssetLoader
         if (htmlZipFiles.Length == 1)
         {
             var htmlZipFile = htmlZipFiles[0];
-            var programDir = new DirectoryInfo(
-                filePathPrefix.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-            var userOrNvramDir = programDir.Parent;
-            var rootDir = userOrNvramDir?.Parent;
-            if (rootDir == null)
+            var htmlDir = ProgramHtmlPaths.GetHtmlRoot(filePathPrefix, virtualControl);
+            if (htmlDir == null)
                 throw new Exception(
                     $"Unable to determine root directory for html extraction. Current path: {filePathPrefix}");
 
-            var htmlDir = Path.Combine(rootDir.FullName, "html");
             var htmlRoot = Path.GetFullPath(htmlDir);
             if (!htmlRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) &&
                 !htmlRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
@@ -158,7 +159,7 @@ internal static class AssetLoader
             File.Delete(file.FullName);
     }
 
-    private static void ExtractDevToolsZip(DirectoryInfo applicationDirectory, string filePathPrefix)
+    private static void ExtractDevToolsZip(DirectoryInfo applicationDirectory, string filePathPrefix, bool virtualControl)
     {
         var devToolsZipFiles = applicationDirectory.GetFiles("essentials-devtools*.zip");
 
@@ -170,15 +171,11 @@ internal static class AssetLoader
         if (devToolsZipFiles.Length == 1)
         {
             var devToolsZipFile = devToolsZipFiles[0];
-            var programDir = new DirectoryInfo(
-                filePathPrefix.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-            var userOrNvramDir = programDir.Parent;
-            var rootDir = userOrNvramDir?.Parent;
-            if (rootDir == null)
+            var debugDir = ProgramHtmlPaths.GetDevToolsRoot(filePathPrefix, virtualControl);
+            if (debugDir == null)
                 throw new Exception(
                     $"Unable to determine root directory for debug html extraction. Current path: {filePathPrefix}");
 
-            var debugDir = Path.Combine(rootDir.FullName, "html", "debug");
             var debugRoot = Path.GetFullPath(debugDir);
             if (!debugRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) &&
                 !debugRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))

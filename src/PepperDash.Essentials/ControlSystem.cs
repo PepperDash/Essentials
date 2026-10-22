@@ -978,6 +978,7 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
 
 
     internal static void LoadAssets(string applicationDirectoryPath, string filePathPrefix) =>
-        AssetLoader.Load(applicationDirectoryPath, filePathPrefix);
+        AssetLoader.Load(applicationDirectoryPath, filePathPrefix,
+            CrestronEnvironment.DevicePlatform == eDevicePlatform.Server);
 }
 
