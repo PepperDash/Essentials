@@ -262,11 +262,30 @@ public class WebApiServer : IKeyName
 		try
 		{
 			var req = args.Context?.Request;
+
+			if (IsStreamPoll(req?.Path)) return;
+
 			this.LogVerbose("ReceivedRequestEventHandler: {Method} {Path}", req?.HttpMethod, req?.Path);
 		}
 		catch (Exception ex)
 		{
 			this.LogException(ex, "ReceivedRequestEventHandler Exception Message: {0}", ex.Message);
 		}
+	}
+
+	/// <summary>
+	/// True for the routes clients poll for the debug console and routing feedback streams
+	/// (<c>debugSession/messages</c>, <c>routingFeedbackSession/messages</c>). Logging those requests
+	/// would put a line in the debug stream for every poll, which wakes the waiting debug poll at once
+	/// and turns long polling into a busy loop.
+	/// </summary>
+	public static bool IsStreamPoll(string path)
+	{
+		if (string.IsNullOrEmpty(path)) return false;
+
+		var trimmed = path.TrimEnd('/');
+
+		return trimmed.EndsWith("/debugSession/messages", StringComparison.OrdinalIgnoreCase)
+			|| trimmed.EndsWith("/routingFeedbackSession/messages", StringComparison.OrdinalIgnoreCase);
 	}
 }
