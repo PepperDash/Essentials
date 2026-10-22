@@ -31,10 +31,8 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
     private HttpServer _httpsServer;
 
     private readonly string _path = "/debug/join/";
-    private const string _certificateName = "selfCres";
-    private const string _certificatePassword = "cres12345";
-    private static string CertPath =>
-        $"{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}{_certificateName}.pfx";
+    private const string _certificatePassword = PepperDash.Core.Web.ProcessorCertificate.Password;
+    private static string CertPath => PepperDash.Core.Web.ProcessorCertificate.FilePath;
 
     /// <summary>
     /// Gets the port number on which the HTTPS server is currently running.
@@ -225,8 +223,7 @@ public class DebugWebsocketSink : ILogEventSink, IKeyed
 
             using var cert = request.CreateSelfSigned(notBefore, notAfter);
 
-            var separator = Path.DirectorySeparatorChar;
-            var outputPath = string.Format("{0}user{1}{2}.pfx", separator, separator, _certificateName);
+            var outputPath = CertPath;
 
             var pfxBytes = cert.Export(X509ContentType.Pfx, _certificatePassword);
             File.WriteAllBytes(outputPath, pfxBytes);

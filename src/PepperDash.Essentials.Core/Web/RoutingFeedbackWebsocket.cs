@@ -25,12 +25,10 @@ public class RoutingFeedbackWebsocket : IKeyed
 {
     private HttpServer _httpsServer;
     private readonly string _path = "/routing/join/";
-    private const string _certificateName = "selfCres";
-    private const string _certificatePassword = "cres12345";
+    private const string _certificatePassword = PepperDash.Core.Web.ProcessorCertificate.Password;
     private const long DEBOUNCE_MS = 200;
 
-    private static string CertPath =>
-        $"{Path.DirectorySeparatorChar}user{Path.DirectorySeparatorChar}{_certificateName}.pfx";
+    private static string CertPath => PepperDash.Core.Web.ProcessorCertificate.FilePath;
 
     private readonly Dictionary<string, Timer> _debounceTimers = new Dictionary<string, Timer>();
 

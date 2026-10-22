@@ -41,9 +41,7 @@ namespace PepperDash.Essentials.WebSocketServer
         private readonly string appConfigFileName = "_config.local.json";
         private readonly string appConfigCsFileName = "_config.cs.json";
 
-        private const string certificateName = "selfCres";
-
-        private const string certificatePassword = "cres12345";
+        private const string certificatePassword = PepperDash.Core.Web.ProcessorCertificate.Password;
 
         /// <summary>
         /// Where the key is the join token and the value is the room key
@@ -648,12 +646,12 @@ namespace PepperDash.Essentials.WebSocketServer
                     // HttpServer.SslConfiguration is read-only in the websocket-sharp version
                     // this branch builds against. Reading it is only valid because the server
                     // above was constructed secure - it throws otherwise.
-                    // Forward slashes: 4-Series is Linux, and the certificate is handed to
-                    // OpenSSL, which does not translate a Windows-style path. The backslash
-                    // form fails with "error:10000080:BIO routines::no such file" and takes
-                    // the whole direct server down with it.
+                    // The shared certificate's path for this platform: /user on a 4-series, the room's user
+                    // folder on VC-4. It uses the runtime's separator, which is '/' on both (both are Linux);
+                    // OpenSSL does not translate a Windows-style path, and the backslash form fails with
+                    // "error:10000080:BIO routines::no such file" and takes the whole direct server down.
                     _server.SslConfiguration.ServerCertificate =
-                        new X509Certificate2($"/user/{certificateName}.pfx", certificatePassword, X509KeyStorageFlags.EphemeralKeySet);
+                        new X509Certificate2(PepperDash.Core.Web.ProcessorCertificate.FilePath, certificatePassword, X509KeyStorageFlags.EphemeralKeySet);
                     _server.SslConfiguration.ClientCertificateRequired = false;
                     _server.SslConfiguration.CheckCertificateRevocation = false;
                     _server.SslConfiguration.EnabledSslProtocols = SslProtocols.Tls12;
