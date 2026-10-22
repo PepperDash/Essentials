@@ -152,32 +152,25 @@ public class ServeDebugAppRequestHandler : WebApiBaseRequestHandler
     /// Resolves the absolute path of the /HTML/debug folder on the processor.
     /// </summary>
     /// <remarks>
-    /// <c>Global.FilePathPrefix</c> is <c>{root}/user/programX/</c> (or equivalent), so walking up
-    /// two parents gives the processor root that contains the <c>html</c> folder. This mirrors the
-    /// two-hop strategy used by <c>AssetLoader.ExtractDevToolsZip</c>, so serving and extraction
-    /// always resolve to the same directory.
+    /// Uses <see cref="ProgramHtmlPaths"/>, the same resolution <c>AssetLoader</c> extracts the Dev Tools
+    /// to, so serving and extraction always agree: <c>{root}/html/debug</c> on a 4-series appliance and
+    /// the room's own <c>html/debug</c> on Virtual Control.
     /// </remarks>
     private static string GetHtmlDebugPath()
     {
         try
         {
-            var separators = new[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar };
-            var programDir = new DirectoryInfo(Global.FilePathPrefix.TrimEnd(separators));
+            var debugPath = ProgramHtmlPaths.GetDevToolsRoot(Global.FilePathPrefix,
+                CrestronEnvironment.DevicePlatform == eDevicePlatform.Server);
 
-            // Walk up two levels: {root}/user/programX/ -> {root}/user/ -> {root}
-            // This matches the path calculation used in AssetLoader.ExtractDevToolsZip.
-            var userOrNvramDir = programDir.Parent;
-            var rootDir = userOrNvramDir?.Parent;
-
-            if (rootDir == null)
+            if (debugPath == null)
             {
                 Debug.LogMessage(LogEventLevel.Error,
                     "ServeDebugAppRequestHandler: Cannot resolve HTML root from FilePathPrefix '{prefix:l}'",
                     Global.FilePathPrefix);
-                return null;
             }
 
-            return System.IO.Path.Combine(rootDir.FullName, "html", "debug");
+            return debugPath;
         }
         catch (Exception ex)
         {

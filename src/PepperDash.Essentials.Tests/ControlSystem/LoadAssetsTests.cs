@@ -331,4 +331,47 @@ public sealed class LoadAssetsTests : IDisposable
 
         File.ReadAllText(Path.Combine(_filePathPrefix, fileName)).Should().Be(content);
     }
+
+    // ---------------------------------------------------------------------------
+    // Virtual Control: the file path prefix is {room}/User/, so HTML content belongs in the room's
+    // own html folder, not in the folder that holds every room.
+    // ---------------------------------------------------------------------------
+
+    [Fact]
+    public void LoadAssets_VirtualControl_DevToolsExtractToTheRoomsHtmlFolder()
+    {
+        var roomDir = Path.Combine(_rootDir, "RunningPrograms", "DEMOV3");
+        var vc4Prefix = Path.Combine(roomDir, "User") + Path.DirectorySeparatorChar;
+        Directory.CreateDirectory(vc4Prefix);
+        WriteToAppDir("essentials-devtools.zip", ZipWithFile("index.html", "<html/>"));
+
+        AssetLoader.Load(_appDir, vc4Prefix, virtualControl: true);
+
+        File.Exists(Path.Combine(roomDir, "html", "debug", "index.html")).Should().BeTrue();
+        Directory.Exists(Path.Combine(_rootDir, "RunningPrograms", "html")).Should().BeFalse(
+            "the folder above the rooms is shared by every room on the server");
+    }
+
+    [Fact]
+    public void LoadAssets_VirtualControl_HtmlAssetsExtractToTheRoomsHtmlFolder()
+    {
+        var roomDir = Path.Combine(_rootDir, "RunningPrograms", "DEMOV3");
+        var vc4Prefix = Path.Combine(roomDir, "User") + Path.DirectorySeparatorChar;
+        Directory.CreateDirectory(vc4Prefix);
+        WriteToAppDir("htmlassets.zip", ZipWithFile("index.html", "<html/>"));
+
+        AssetLoader.Load(_appDir, vc4Prefix, virtualControl: true);
+
+        File.Exists(Path.Combine(roomDir, "html", "index.html")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void LoadAssets_Appliance_DevToolsStillExtractToTheProcessorHtmlFolder()
+    {
+        WriteToAppDir("essentials-devtools.zip", ZipWithFile("index.html", "<html/>"));
+
+        AssetLoader.Load(_appDir, _filePathPrefix);
+
+        File.Exists(Path.Combine(_rootDir, "html", "debug", "index.html")).Should().BeTrue();
+    }
 }
