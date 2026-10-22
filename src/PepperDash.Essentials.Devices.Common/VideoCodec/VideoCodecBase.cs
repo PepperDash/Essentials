@@ -39,10 +39,6 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 	protected const int MaxParticipants = 50;
 	private readonly byte[] _clearBytes = XSigHelpers.ClearOutputs();
 
-	private readonly IHasDirectory _directoryCodec;
-	private readonly BasicTriList _directoryTrilist;
-	private readonly VideoCodecControllerJoinMap _directoryJoinmap;
-
 	/// <summary>
 	/// Time format specifier for any time-related XSigs.
 	/// This should be set by the inheriting class based on the expected format of the codec (e.g. "hh:mm:ss" or "mm:ss")
@@ -68,7 +64,7 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 		SharingSourceFeedback = new StringFeedback("sharingSource", SharingSourceFeedbackFunc);
 		SharingContentIsOnFeedback = new BoolFeedback("sharingContentIsOn", SharingContentIsOnFeedbackFunc);
 
-		MeetingsToDisplayFeedback = new IntFeedback(() => MeetingsToDisplay);
+		MeetingsToDisplayFeedback = new IntFeedback("meetingsToDisplay", () => MeetingsToDisplay);
 
 		InputPorts = new RoutingPortCollection<RoutingInputPort>();
 		OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
@@ -1137,9 +1133,8 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 
 		trilist.SetUShortSigAction(joinMap.DirectorySelectRow.JoinNumber, (i) => SelectDirectoryEntry(codec, i, trilist, joinMap));
 
-		//Special Change for protected directory clear
-
-		trilist.SetBoolSigAction(joinMap.DirectoryClearSelected.JoinNumber, (b) => SelectDirectoryEntry(_directoryCodec, 0, _directoryTrilist, _directoryJoinmap));
+		// Clears the selection by selecting row 0. Uses this method's arguments, as DirectorySelectRow does above.
+		trilist.SetBoolSigAction(joinMap.DirectoryClearSelected.JoinNumber, (b) => SelectDirectoryEntry(codec, 0, trilist, joinMap));
 
 		// Report feedback for number of contact methods for selected contact
 
