@@ -85,6 +85,41 @@ Will print out the merged config object
 
 When the value is set to true, Essentials will pause when starting up, to allow for a developer to attach to the running process from an IDE for purposes of step debugging.  Once attached, issuing the command `go:[slot]` will cause the configuration file to be read and the program to initialize.  This value gets set to false when the `go` command is issues.
 
+### `applogfilecap:[slot] [sizeBytes] [retainedCount]`
+
+Views or sets the Serilog rolling debug file limits. With no arguments or `?`, displays help and the configured values. Available in SIMPL# Pro at operator access level.
+
+| Platform | Default per-file limit | Default retained files |
+| --- | --- | --- |
+| Appliance | 4 MiB (4194304 bytes) | 7 |
+| Server | 16 MiB (16777216 bytes) | 14 |
+
+Files roll daily **and** when the size limit is reached. The retained count covers the current file and older rolled files, including size rolls within the same day. The approximate storage budget is the per-file limit times the retained count; Serilog can exceed the per-file limit by a single log event, so leave free-space headroom.
+
+`sizeBytes` must be an integer from 65536 through 2147483647. The optional `retainedCount` must be an integer from 1 through 2147483647; omitting it keeps the configured count. Invalid values or extra arguments are rejected without changing settings.
+
+Settings persist in the local CrestronDataStore as `FileLogSizeLimitBytes` and `FileLogRetainedCount`. Missing or below-minimum stored values are replaced with the platform defaults at startup. Datastore errors are reported; if storing the count fails after the size succeeds, only the size has changed. **Restart the program to apply saved changes**; the displayed configured values do not change the active sink until restart.
+
+```sh
+applogfilecap:1                  // View configured values and help
+applogfilecap:1 4194304 7        // Store a 4 MiB limit and retain 7 files
+applogfilecap:1 8388608          // Store an 8 MiB limit, keeping the configured count
+```
+
+These settings affect only the rolling `global-log*.log` files under the program/room's `user/debug` directory. They do not limit the separate removable-drive CrestronLogger sink (#1508), other logs, or overall disk usage.
+
+#### Lab verification
+
+Use a spare program slot and disposable media, not production storage:
+
+1. With the two datastore keys absent, start the program and verify the platform defaults above. Restart and confirm they persist.
+2. Try `applogfilecap:1 ?`, no arguments, and whitespace-only input; each should show help/current configuration without writes.
+3. Try `65535 7`, `-1 7`, `abc 7`, `2147483648 7`, `65536 0`, `65536 2147483648`, and `65536 7 extra`; each should reject the input and leave both settings unchanged.
+4. Set `65536 2` (also try leading/trailing whitespace and a tab between arguments), then set only `131072`; confirm the count remains 2. Restart and verify both values persist.
+5. Generate debug file output in the lab until several size rolls occur; verify rolling continues within the same day and only two matching files remain. Allow for one-event size overshoot.
+6. With lab datastore access, seed below-minimum values (size 1, count 0), restart, and verify default repair/persistence. Where datastore fault injection is available, check that read/write failures are reported without preventing logger startup, and console writes do not report success on failure.
+7. Restore the desired production limits and restart.
+
 ### DeviceManager Console Commands
 
 The following console commands all perform actions on devices that have been registered with the `PepperDash.Essentials.Core.DeviceManager` static class
