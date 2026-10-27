@@ -330,6 +330,13 @@ namespace PepperDash.Core
                 if (result == CrestronDataStore.CDS_ERROR.CDS_SUCCESS && value >= minimum)
                     return value;
 
+                if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS &&
+                    result != CrestronDataStore.CDS_ERROR.CDS_RECORD_NOT_FOUND)
+                {
+                    CrestronConsole.PrintLine($"Unable to retrieve {storeKey}: {result}. Using default without changing storage.");
+                    return defaultValue;
+                }
+
                 result = CrestronDataStoreStatic.SetLocalIntValue(storeKey, defaultValue);
                 if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
                     CrestronConsole.PrintLine($"Unable to store default for {storeKey}: {result}");
