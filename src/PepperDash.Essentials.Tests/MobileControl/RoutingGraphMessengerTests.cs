@@ -14,6 +14,7 @@ namespace PepperDash.Essentials.Tests.MobileControl;
 /// The routing graph messenger gives a touchpanel the same graph, live routes and routing commands
 /// that the Dev Tools app gets from the web API.
 /// </summary>
+[Collection(GlobalRoutingStateCollection.Name)]
 public sealed class RoutingGraphMessengerTests : IDisposable
 {
     private sealed class FakeAppServer : IMobileControl
@@ -118,12 +119,38 @@ public sealed class RoutingGraphMessengerTests : IDisposable
         }
     }
 
+    /// <summary>A multiview device whose layout can be set and cleared, raising LayoutChanged.</summary>
+    private sealed class FakeMultiview : IRoutingSinkWithLayoutState
+    {
+        public FakeMultiview(string key)
+        {
+            Key = key;
+            Out = new RoutingOutputPort("out", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, "out", this);
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort> { Out };
+        }
+
+        public string Key { get; }
+        public string Name => Key;
+        public RoutingOutputPort Out { get; }
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; }
+        public Dictionary<int, IRoutingSinkWithFeedback> WindowTileSinks { get; } = new();
+        public MultiviewLayoutState? CurrentLayout { get; private set; }
+        public event EventHandler<MultiviewLayoutStateEventArgs>? LayoutChanged;
+
+        public void SetLayout(MultiviewLayoutState? layout)
+        {
+            CurrentLayout = layout;
+            LayoutChanged?.Invoke(this, new MultiviewLayoutStateEventArgs(layout!));
+        }
+    }
+
     private const string Path = "/device/routingGraph";
 
     private readonly string _id = Guid.NewGuid().ToString("N")[..8];
     private readonly FakeSource _source;
     private readonly FakeMatrix _matrix;
     private readonly FakeSink _sink;
+    private readonly FakeMultiview _multiview;
     private readonly List<TieLine> _tieLines;
     private readonly FakeAppServer _server = new();
 
@@ -132,12 +159,14 @@ public sealed class RoutingGraphMessengerTests : IDisposable
         _source = new FakeSource($"laptop-{_id}");
         _matrix = new FakeMatrix($"matrix-{_id}");
         _sink = new FakeSink($"display-{_id}");
+        _multiview = new FakeMultiview($"multiview-{_id}");
 
         // Outside a running program, DeviceManager only accepts devices once Initialize has run.
         typeof(DeviceManager).GetProperty(nameof(DeviceManager.AddDeviceEnabled))!.SetValue(null, true);
         DeviceManager.AddDevice(_source);
         DeviceManager.AddDevice(_matrix);
         DeviceManager.AddDevice(_sink);
+        DeviceManager.AddDevice(_multiview);
 
         _tieLines = new List<TieLine>
         {
@@ -156,6 +185,7 @@ public sealed class RoutingGraphMessengerTests : IDisposable
         DeviceManager.RemoveDevice(_source);
         DeviceManager.RemoveDevice(_matrix);
         DeviceManager.RemoveDevice(_sink);
+        DeviceManager.RemoveDevice(_multiview);
     }
 
     private void Send(string action, string clientId, JObject? content = null) =>
@@ -256,6 +286,56 @@ public sealed class RoutingGraphMessengerTests : IDisposable
         });
         unknownPort["statusCode"]!.Value<int>().Should().Be(422);
         unknownPort["response"]!["error"]!["code"]!.ToString().Should().Be("portNotFound");
+    }
+
+    [Theory]
+    [MemberData(nameof(NonObjectBodies))]
+    public void RoutingCommand_WithANonObjectBody_RepliesWithA400(JToken body)
+    {
+        _server.Handler!(Path + "/routingCommand", "7", body);
+
+        var reply = SentOfType(RoutingGraphMessenger.CommandResultType).Should().ContainSingle().Which;
+        reply.ClientId.Should().Be("7");
+        reply.Content!["statusCode"]!.Value<int>().Should().Be(400);
+        reply.Content!["response"]!["status"]!.ToString().Should().Be("error");
+    }
+
+    public static TheoryData<JToken> NonObjectBodies() => new()
+    {
+        new JArray(),
+        JValue.CreateNull(),
+        new JValue("sinkRoute"),
+    };
+
+    [Fact]
+    public void FullStatus_GivesAMultiviewWithNoLayoutAnEmptyOne()
+    {
+        // Not null: the client reads null as "no change" and would keep showing the last layout.
+        Send("/fullStatus", "7");
+
+        var layout = SentOfType(Path).Single().Content!["layouts"]![_multiview.Key]!;
+        layout.Type.Should().Be(JTokenType.Object);
+        layout["tiles"]!.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task AClearedLayout_IsSentAsAnEmptyLayout()
+    {
+        Send("/fullStatus", "7");
+        _multiview.SetLayout(new MultiviewLayoutState
+        {
+            CanvasWidth = 1920,
+            CanvasHeight = 1080,
+            Tiles = { new MultiviewTileState { TileNumber = 1, Width = 960, Height = 540 } }
+        });
+        var withLayout = await NextRoutesUpdate(1);
+        withLayout["layouts"]![_multiview.Key]!["tiles"]!.Should().ContainSingle();
+        var sent = SentOfType(Path).Count;
+
+        _multiview.SetLayout(null);
+
+        var cleared = await NextRoutesUpdate(sent);
+        cleared["layouts"]![_multiview.Key]!["tiles"]!.Should().BeEmpty();
     }
 
     [Fact]

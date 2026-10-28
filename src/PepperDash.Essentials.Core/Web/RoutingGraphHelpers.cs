@@ -232,8 +232,9 @@ public static class RoutingGraphHelpers
     /// <param name="tileChildren">The tile-sink map from <see cref="BuildTileChildMap"/>; tile-sink
     /// routes are reported under their parent's key with a qualified port key.</param>
     /// <param name="includeUnrouted">When true, every midpoint and sink gets an entry, with an empty
-    /// list when nothing is routed. A client that merges each snapshot into the previous one needs
-    /// this to see a route cleared.</param>
+    /// list when nothing is routed, and every multiview device gets a layout, an empty one when it
+    /// has none. A client that merges each snapshot into the previous one needs this to see a route
+    /// or layout cleared.</param>
     public static RoutingSnapshot BuildRoutingSnapshot(
         Dictionary<string, TileChildInfo> tileChildren,
         bool includeUnrouted = false)
@@ -300,11 +301,23 @@ public static class RoutingGraphHelpers
             });
         }
 
+        var layouts = BuildMultiviewLayoutSnapshot();
+        if (includeUnrouted)
+        {
+            // An empty layout rather than null: a Mobile Control client reads a null value as "no
+            // change" when it merges a status, so it would keep drawing the old layout.
+            foreach (var device in DeviceManager.AllDevices.OfType<IRoutingSinkWithLayoutState>())
+            {
+                if (!layouts.ContainsKey(device.Key))
+                    layouts[device.Key] = new MultiviewLayoutState();
+            }
+        }
+
         return new RoutingSnapshot
         {
             MidpointRoutes = midpointRoutes,
             SinkRoutes = sinkRoutes,
-            Layouts = BuildMultiviewLayoutSnapshot()
+            Layouts = layouts
         };
     }
 }

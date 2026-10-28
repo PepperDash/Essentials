@@ -83,14 +83,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         private void RunRoutingCommand(string clientId, JToken content)
         {
-            var requestId = content?["requestId"]?.ToString();
+            // Only an object can carry a requestId. Anything else (an array, a bare value, null) still
+            // goes through deserialization and validation, so the sender gets the web API's 400.
+            var requestId = (content as JObject)?["requestId"]?.ToString();
 
             RoutingCommandRequest request;
             try
             {
                 request = content?.ToObject<RoutingCommandRequest>();
             }
-            catch (JsonException ex)
+            catch (Exception ex) when (ex is JsonException || ex is ArgumentException)
             {
                 ReplyToCommand(clientId, requestId, 400, new RoutingCommandResponse
                 {
