@@ -260,71 +260,14 @@ public class RoutingFeedbackWebsocket : IKeyed
     /// </summary>
     internal string GetSnapshotMessage()
     {
-        var midpointRoutes = new Dictionary<string, List<MidpointRouteDto>>();
-        var sinkRoutes = new Dictionary<string, List<SinkRouteDto>>();
-
-        // Collect midpoint current routes
-        var midpointDevices = DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>();
-        foreach (var device in midpointDevices)
-        {
-            if (device.CurrentRoutes == null || device.CurrentRoutes.Count == 0)
-                continue;
-
-            midpointRoutes[device.Key] = device.CurrentRoutes
-                .Where(r => r.InputPort != null)
-                .Select(r => new MidpointRouteDto
-                {
-                    InputPortKey = r.InputPort.Key,
-                    OutputPortKey = r.OutputPort?.Key,
-                    SignalType = (r.SignalType ?? r.InputPort.Type).ToString()
-                })
-                .ToList();
-        }
-
-        // Collect sink current sources directly from each sink's own current-source bookkeeping
-        // (ICurrentSources, part of IRoutingSinkWithFeedback), which is authoritative regardless of
-        // whether the route was made via a tie line (ReleaseAndMakeRoute) or a device-specific bulk
-        // API (e.g. IHasDynamicMultiviewLayout.ApplyDynamicLayout) that never touches
-        // TieLineCollection/RouteDescriptorCollection at all.
-        var sinkDevices = DeviceManager.AllDevices.OfType<IRoutingSinkWithFeedback>();
-        foreach (var device in sinkDevices)
-        {
-            if (device.CurrentInputPort == null)
-                continue;
-
-            var sourceKey = RoutingGraphHelpers.GetCurrentSourceKey(device);
-            if (string.IsNullOrEmpty(sourceKey))
-                continue;
-
-            var deviceKey = device.Key;
-            var inputPortKey = device.CurrentInputPort.Key;
-
-            if (_tileChildren.TryGetValue(deviceKey, out var tileInfo))
-            {
-                deviceKey = tileInfo.Parent.Key;
-                inputPortKey = RoutingGraphHelpers.QualifyTilePortKey(tileInfo.TileNumber, inputPortKey);
-            }
-
-            if (!sinkRoutes.TryGetValue(deviceKey, out var routes))
-            {
-                routes = new List<SinkRouteDto>();
-                sinkRoutes[deviceKey] = routes;
-            }
-
-            routes.Add(new SinkRouteDto
-            {
-                InputPortKey = inputPortKey,
-                SourceDeviceKey = sourceKey,
-                SignalType = device.CurrentInputPort.Type.ToString()
-            });
-        }
+        var routes = RoutingGraphHelpers.BuildRoutingSnapshot(_tileChildren);
 
         var snapshot = new RoutingSnapshotDto
         {
             Type = "snapshot",
-            MidpointRoutes = midpointRoutes,
-            SinkRoutes = sinkRoutes,
-            Layouts = RoutingGraphHelpers.BuildMultiviewLayoutSnapshot()
+            MidpointRoutes = routes.MidpointRoutes,
+            SinkRoutes = routes.SinkRoutes,
+            Layouts = routes.Layouts
         };
 
         return JsonConvert.SerializeObject(snapshot, JsonSettings);
@@ -406,13 +349,13 @@ public class RoutingFeedbackWebsocket : IKeyed
         {
             var routes = midpoint.CurrentRoutes?
                 .Where(r => r.InputPort != null)
-                .Select(r => new MidpointRouteDto
+                .Select(r => new MidpointRouteInfo
                 {
                     InputPortKey = r.InputPort.Key,
                     OutputPortKey = r.OutputPort?.Key,
                     SignalType = (r.SignalType ?? r.InputPort.Type).ToString()
                 })
-                .ToList() ?? new List<MidpointRouteDto>();
+                .ToList() ?? new List<MidpointRouteInfo>();
 
             var msg = new MidpointRouteChangedDto
             {
@@ -595,8 +538,8 @@ public class RoutingFeedbackWebsocket : IKeyed
     private class RoutingSnapshotDto
     {
         public string Type { get; set; }
-        public Dictionary<string, List<MidpointRouteDto>> MidpointRoutes { get; set; }
-        public Dictionary<string, List<SinkRouteDto>> SinkRoutes { get; set; }
+        public Dictionary<string, List<MidpointRouteInfo>> MidpointRoutes { get; set; }
+        public Dictionary<string, List<SinkRouteInfo>> SinkRoutes { get; set; }
         public Dictionary<string, MultiviewLayoutState> Layouts { get; set; }
     }
 
@@ -611,27 +554,13 @@ public class RoutingFeedbackWebsocket : IKeyed
     {
         public string Type { get; set; }
         public string DeviceKey { get; set; }
-        public List<MidpointRouteDto> Routes { get; set; }
+        public List<MidpointRouteInfo> Routes { get; set; }
     }
 
     private class SinkInputChangedDto
     {
         public string Type { get; set; }
         public string DeviceKey { get; set; }
-        public string InputPortKey { get; set; }
-        public string SourceDeviceKey { get; set; }
-        public string SignalType { get; set; }
-    }
-
-    private class MidpointRouteDto
-    {
-        public string InputPortKey { get; set; }
-        public string OutputPortKey { get; set; }
-        public string SignalType { get; set; }
-    }
-
-    private class SinkRouteDto
-    {
         public string InputPortKey { get; set; }
         public string SourceDeviceKey { get; set; }
         public string SignalType { get; set; }

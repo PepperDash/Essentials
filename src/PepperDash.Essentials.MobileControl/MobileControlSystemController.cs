@@ -248,6 +248,12 @@ namespace PepperDash.Essentials
                 AddDeviceMessenger(actionMessenger);
             });
 
+            AddPreActivationAction(() =>
+            {
+                var routingGraphMessenger = new RoutingGraphMessenger("routingGraphMessenger-" + Key, "/device/routingGraph");
+                AddDeviceMessenger(routingGraphMessenger);
+            });
+
             AddPreActivationAction(() => AddWebApiPaths());
 
             AddPreActivationAction(() =>

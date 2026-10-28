@@ -18,6 +18,7 @@ namespace PepperDash.Essentials.Tests.Routing;
 /// <c>CrestronEnvironment.ProgramStatusEventHandler</c> - which intermittently hangs off a processor.
 /// Replacement itself is covered by <c>RouteDescriptorCollectionTests</c>.
 /// </remarks>
+[Collection(GlobalRoutingStateCollection.Name)]
 public sealed class RoutingFeedbackManagerTests : IDisposable
 {
     private sealed class FakeSource : IRoutingSource
