@@ -223,4 +223,88 @@ public static class RoutingGraphHelpers
 
         return result;
     }
+
+    /// <summary>
+    /// Builds the current routes of every midpoint and sink, plus the multiview layouts. Shared by
+    /// <see cref="RoutingFeedbackWebsocket"/> (snapshot on connect) and the Mobile Control routing
+    /// graph messenger.
+    /// </summary>
+    /// <param name="tileChildren">The tile-sink map from <see cref="BuildTileChildMap"/>; tile-sink
+    /// routes are reported under their parent's key with a qualified port key.</param>
+    /// <param name="includeUnrouted">When true, every midpoint and sink gets an entry, with an empty
+    /// list when nothing is routed. A client that merges each snapshot into the previous one needs
+    /// this to see a route cleared.</param>
+    public static RoutingSnapshot BuildRoutingSnapshot(
+        Dictionary<string, TileChildInfo> tileChildren,
+        bool includeUnrouted = false)
+    {
+        var midpointRoutes = new Dictionary<string, List<MidpointRouteInfo>>();
+        var sinkRoutes = new Dictionary<string, List<SinkRouteInfo>>();
+
+        foreach (var device in DeviceManager.AllDevices.OfType<IRoutingMidpointWithFeedback>())
+        {
+            if (device.CurrentRoutes == null || device.CurrentRoutes.Count == 0)
+            {
+                if (includeUnrouted)
+                    midpointRoutes[device.Key] = new List<MidpointRouteInfo>();
+                continue;
+            }
+
+            midpointRoutes[device.Key] = device.CurrentRoutes
+                .Where(r => r.InputPort != null)
+                .Select(r => new MidpointRouteInfo
+                {
+                    InputPortKey = r.InputPort.Key,
+                    OutputPortKey = r.OutputPort?.Key,
+                    SignalType = (r.SignalType ?? r.InputPort.Type).ToString()
+                })
+                .ToList();
+        }
+
+        // Read each sink's own current-source bookkeeping (ICurrentSources, part of
+        // IRoutingSinkWithFeedback), which is authoritative regardless of whether the route was made
+        // via a tie line (ReleaseAndMakeRoute) or a device-specific bulk API (e.g.
+        // IHasDynamicMultiviewLayout.ApplyDynamicLayout) that never touches
+        // TieLineCollection/RouteDescriptorCollection at all.
+        foreach (var device in DeviceManager.AllDevices.OfType<IRoutingSinkWithFeedback>())
+        {
+            var deviceKey = device.Key;
+            var tileNumber = tileChildren.TryGetValue(deviceKey, out var tileInfo) ? tileInfo.TileNumber : (int?)null;
+            if (tileNumber != null)
+                deviceKey = tileInfo.Parent.Key;
+
+            if (!sinkRoutes.TryGetValue(deviceKey, out var routes))
+            {
+                routes = new List<SinkRouteInfo>();
+                if (includeUnrouted)
+                    sinkRoutes[deviceKey] = routes;
+            }
+
+            if (device.CurrentInputPort == null)
+                continue;
+
+            var sourceKey = GetCurrentSourceKey(device);
+            if (string.IsNullOrEmpty(sourceKey))
+                continue;
+
+            var inputPortKey = device.CurrentInputPort.Key;
+            if (tileNumber != null)
+                inputPortKey = QualifyTilePortKey(tileNumber.Value, inputPortKey);
+
+            sinkRoutes[deviceKey] = routes;
+            routes.Add(new SinkRouteInfo
+            {
+                InputPortKey = inputPortKey,
+                SourceDeviceKey = sourceKey,
+                SignalType = device.CurrentInputPort.Type.ToString()
+            });
+        }
+
+        return new RoutingSnapshot
+        {
+            MidpointRoutes = midpointRoutes,
+            SinkRoutes = sinkRoutes,
+            Layouts = BuildMultiviewLayoutSnapshot()
+        };
+    }
 }

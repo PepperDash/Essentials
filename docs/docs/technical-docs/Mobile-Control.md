@@ -152,6 +152,25 @@ Rooms typically implement `IMobileControlRoomMessenger` and register a room-leve
 `/room/{roomKey}` path (via a `MobileControlBridgeBase`/`MobileControlEssentialsRoomBridge`), in
 addition to any per-device messengers.
 
+### The routing graph messenger
+
+`MobileControlSystemController` always registers a `RoutingGraphMessenger` at
+`/device/routingGraph`. It gives a client the same routing view as the Dev Tools app gets from the
+web API (`routingDevicesAndTieLines`, the routing feedback socket and `routingCommand`), so a
+touchpanel can show and change any route in the system:
+
+| Send | Reply |
+|---|---|
+| `/device/routingGraph/fullStatus` | A `/device/routingGraph` status to that client: `devices` (with their ports), `tieLines`, `midpointRoutes`, `sinkRoutes` and `layouts` |
+| `/device/routingGraph/routingCommand` with a `routingCommand` body plus a `requestId` | `/event/device/routingGraph/commandResult` to that client only: `{ requestId, statusCode, response }`, where `statusCode` and `response` are what the web API would return |
+
+After `fullStatus`, the client gets a new `midpointRoutes` / `sinkRoutes` / `layouts` status whenever
+a route or layout changes. Every midpoint and sink is listed, with an empty list when nothing is
+routed, because the client merges each status into the last.
+
+Any connected client can send `routingCommand`, as with the per-device `route` actions, so restrict
+it in the UI (for example behind the tech PIN).
+
 ## Client-side architecture (React)
 
 `@pepperdash/mobile-control-react-app-core` provides the client building blocks used by apps like

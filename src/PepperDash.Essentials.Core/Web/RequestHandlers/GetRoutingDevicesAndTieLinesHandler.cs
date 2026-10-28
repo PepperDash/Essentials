@@ -26,6 +26,22 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
         /// <param name="context"></param>
         protected override void HandleGet(HttpCwsContext context)
         {
+            var jsonResponse = JsonConvert.SerializeObject(BuildRoutingSystemInfo(), Formatting.Indented);
+
+            context.Response.StatusCode = 200;
+            context.Response.StatusDescription = "OK";
+            context.Response.ContentType = "application/json";
+            context.Response.ContentEncoding = Encoding.UTF8;
+            context.Response.Write(jsonResponse, false);
+            context.Response.End();
+        }
+
+        /// <summary>
+        /// Builds the routing devices, tie lines and current routes this endpoint returns. Also used by
+        /// the Mobile Control routing graph messenger.
+        /// </summary>
+        public static RoutingSystemInfo BuildRoutingSystemInfo()
+        {
             var devices = new List<RoutingDeviceInfo>();
 
             // Tile-sink children of an IRoutingSinkWithLayouts device (e.g. a multiview decoder's
@@ -175,7 +191,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                     })]
                 }).ToList();
 
-            var response = new RoutingSystemInfo
+            return new RoutingSystemInfo
             {
                 Devices = devices,
                 TieLines = tielines,
@@ -183,15 +199,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
                 SinkCurrentSources = BuildSinkCurrentSources(tileChildren),
                 MultiviewLayouts = RoutingGraphHelpers.BuildMultiviewLayoutSnapshot()
             };
-
-            var jsonResponse = JsonConvert.SerializeObject(response, Formatting.Indented);
-
-            context.Response.StatusCode = 200;
-            context.Response.StatusDescription = "OK";
-            context.Response.ContentType = "application/json";
-            context.Response.ContentEncoding = Encoding.UTF8;
-            context.Response.Write(jsonResponse, false);
-            context.Response.End();
         }
 
         /// <summary>
