@@ -842,7 +842,7 @@ public static class PluginLoader
 
             var pluginFileName = FileNameFor(loadedAssembly);
             
-            // iteratate this assembly's classes, looking for "LoadPlugin()" methods
+            // iterate this assembly's classes, looking for IPluginDeviceFactory implementations
             try
             {
                 var assy = loadedAssembly.Assembly;

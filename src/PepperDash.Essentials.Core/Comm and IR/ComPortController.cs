@@ -105,6 +105,31 @@ namespace PepperDash.Essentials.Core;
 		}
 
 		/// <summary>
+		/// Applies a new com spec to the already registered port
+		/// </summary>
+		/// <param name="spec">COM port specification</param>
+		/// <returns>true if the spec was applied</returns>
+		public bool SetComPortSpec(ComPort.ComPortSpec spec)
+		{
+			if (Port == null)
+			{
+				this.LogError("Unable to set comspec for {key}. Com port does not exist", Key);
+				return false;
+			}
+
+			var specResult = Port.SetComPortSpec(spec);
+			if (specResult != 0)
+			{
+				this.LogError($"Cannot set comspec for {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {specResult})");
+				return false;
+			}
+
+			Spec = spec;
+			this.LogInformation($"Successfully set comspec for {Key} using {Port.Parent.GetType().Name}-comport-{Port.ID} (result == {specResult})");
+			return true;
+		}
+
+		/// <summary>
 		/// Destructor
 		/// </summary>
 		~ComPortController()

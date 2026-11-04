@@ -29,7 +29,13 @@ public static class JoinMapHelper
         if (string.IsNullOrEmpty(joinMapKey))
             return null;
 
-        var joinMap = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
+        var joinMaps = ConfigReader.ConfigObject.JoinMaps;
+
+        if (joinMaps == null || !joinMaps.TryGetValue(joinMapKey, out var joinMap) || joinMap == null)
+        {
+            Debug.LogMessage(LogEventLevel.Warning, "Join map key '{joinMapKey}' not found in config joinMaps. Using the default join map", joinMapKey);
+            return null;
+        }
 
         return joinMap.ToString();
     }

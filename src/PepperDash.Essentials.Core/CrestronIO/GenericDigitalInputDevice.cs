@@ -44,11 +44,17 @@ namespace PepperDash.Essentials.Core.CrestronIO
         {
             invertState = string.Equals(config.CircuitType, "NC", StringComparison.OrdinalIgnoreCase);
 
-            InputStateFeedback = new BoolFeedback("inputState", () => invertState ? !inputPort.State : inputPort.State);
+            InputStateFeedback = new BoolFeedback("inputState", () => inputPort != null && (invertState ? !inputPort.State : inputPort.State));
 
             AddPostActivationAction(() =>
             {
                 inputPort = postActivationFunc(config);
+
+                if (inputPort == null)
+                {
+                    this.LogError("Unable to find digital input port {port} on device {portDevice}. Input will not be registered", config.PortNumber, config.PortDeviceKey);
+                    return;
+                }
 
                 inputPort.Register();
 
