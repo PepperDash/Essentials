@@ -127,6 +127,8 @@ public static class Debug
 
     private static Timer consoleDebugTimer;
 
+    private static int _consoleDebugTimeoutMin = defaultConsoleDebugTimeoutMin;
+
     /// <summary>
     /// When true, the IncludedExcludedKeys dict will contain keys to include. 
     /// When false (default), IncludedExcludedKeys will contain keys to exclude.
@@ -135,7 +137,10 @@ public static class Debug
 
     //static bool ExcludeNoKeyMessages;
 
-    private static readonly Dictionary<string, object> IncludedExcludedKeys;
+    private static readonly Dictionary<string, object> IncludedExcludedKeys = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+    // Guards IncludedExcludedKeys and _excludeAllMode, which the console changes while other threads log
+    private static readonly object _keyFilterLock = new object();
 
     private static readonly LoggerConfiguration _defaultLoggerConfiguration;
 
@@ -170,8 +175,9 @@ public static class Debug
                 // Only quiet the console back down. A level of Warning or higher is left alone.
                 if (consoleLoggingLevelSwitch.MinimumLevel >= LogEventLevel.Information) return;
 
+                var timeoutMin = _consoleDebugTimeoutMin;
                 SetDebugLevel(LogEventLevel.Information);
-                _console?.ConsoleCommandResponse($"Console debug level reset to {LogEventLevel.Information} after timeout of {defaultConsoleDebugTimeoutMin} minutes");
+                _console?.ConsoleCommandResponse($"Console debug level reset to {LogEventLevel.Information} after timeout of {timeoutMin} minutes");
             };
 
             var defaultConsoleLevel = GetStoredLogEventLevel(LevelStoreKey);
@@ -203,7 +209,12 @@ public static class Debug
             _defaultLoggerConfiguration = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
-                .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}")), levelSwitch: consoleLoggingLevelSwitch)
+                // appdebugfilter applies to the console sink only
+                .WriteTo.Logger(lc => lc
+                    .MinimumLevel.Verbose()
+                    .Filter.ByIncludingOnly(ConsoleKeyFilterAllows)
+                    .WriteTo.Sink(new DebugConsoleSink(new ExpressionTemplate("[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}"))),
+                    levelSwitch: consoleLoggingLevelSwitch)
                 .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,
                     rollingInterval: RollingInterval.Day,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
@@ -238,8 +249,6 @@ public static class Debug
 
             _console?.PrintLine(msg);
             LogMessage(LogEventLevel.Information, msg);
-
-            IncludedExcludedKeys = new Dictionary<string, object>();
 
             if (_environment?.RuntimeEnvironment == PdCore.RuntimeEnvironment.SimplSharpPro)
             {
@@ -561,6 +570,7 @@ public static class Debug
             _console?.ConsoleCommandResponse($"{level} not valid. Setting level to {logLevel}");
 
             SetDebugLevel(logLevel, timeout);
+            return;
         }
 
         SetDebugLevel(logLevel, timeout);
@@ -574,6 +584,7 @@ public static class Debug
     public static void SetDebugLevel(LogEventLevel level, int timeout = defaultConsoleDebugTimeoutMin)
     {
         consoleDebugTimer.Stop();
+        _consoleDebugTimeoutMin = timeout;
         consoleDebugTimer.Interval = timeout * 60000;
         consoleDebugTimer.Start();
 
@@ -654,6 +665,35 @@ public static class Debug
     }
 
     /// <summary>
+    /// Whether a console log event passes the appdebugfilter settings
+    /// </summary>
+    internal static bool ConsoleKeyFilterAllows(LogEvent logEvent)
+    {
+        string key = null;
+        if (logEvent.Properties.TryGetValue("Key", out var value) && value is ScalarValue sv)
+            key = sv.Value as string;
+
+        lock (_keyFilterLock)
+        {
+            return KeyFilterAllows(key, _excludeAllMode, IncludedExcludedKeys.ContainsKey);
+        }
+    }
+
+    /// <summary>
+    /// appdebugfilter decision. Messages with no key always pass. In the default mode every key
+    /// passes except the listed ones; after -all only the listed keys pass.
+    /// </summary>
+    /// <param name="key">device key on the message, or null</param>
+    /// <param name="excludeAllMode">true after -all</param>
+    /// <param name="isListed">whether a key is in the include/exclude list</param>
+    internal static bool KeyFilterAllows(string key, bool excludeAllMode, Func<string, bool> isListed)
+    {
+        if (string.IsNullOrEmpty(key)) return true;
+
+        return excludeAllMode ? isListed(key) : !isListed(key);
+    }
+
+    /// <summary>
     /// Splits appdebugfilter arguments on whitespace, dropping empty entries
     /// </summary>
     internal static string[] SplitFilterKeys(string items)
@@ -670,7 +710,7 @@ public static class Debug
         var str = items.Trim();
         if (str == "?")
         {
-            CrestronConsole.ConsoleCommandResponse("Usage:\r APPDEBUGFILTER key1 key2 key3....\r " +
+            _console?.ConsoleCommandResponse("Usage:\r APPDEBUGFILTER key1 key2 key3....\r " +
                 "+all: at beginning puts filter into 'default include' mode\r" +
                 "      All keys that follow will be excluded from output.\r" +
                 "-all: at beginning puts filter into 'default exclude all' mode.\r" +
@@ -681,59 +721,62 @@ public static class Debug
             return;
         }
         var keys = SplitFilterKeys(str);
-        foreach (var keyToken in keys)
+        lock (_keyFilterLock)
         {
-            var lkey = keyToken.ToLower();
-            if (lkey == "+all")
+            foreach (var keyToken in keys)
             {
-                IncludedExcludedKeys.Clear();
-                _excludeAllMode = false;
-            }
-            else if (lkey == "-all")
-            {
-                IncludedExcludedKeys.Clear();
-                _excludeAllMode = true;
-            }
-            //else if (lkey == "+nokey")
-            //{
-            //    ExcludeNoKeyMessages = false;
-            //}
-            //else if (lkey == "-nokey")
-            //{
-            //    ExcludeNoKeyMessages = true;
-            //}
-            else
-            {
-                string key;
-                if (lkey.StartsWith("-"))
+                var lkey = keyToken.ToLower();
+                if (lkey == "+all")
                 {
-                    key = lkey.Substring(1);
-                    // if in exclude all mode, we need to remove this from the inclusions
-                    if (_excludeAllMode)
-                    {
-                        if (IncludedExcludedKeys.ContainsKey(key))
-                            IncludedExcludedKeys.Remove(key);
-                    }
-                    // otherwise include all mode, add to the exclusions
-                    else
-                    {
-                        IncludedExcludedKeys[key] = new object();
-                    }
+                    IncludedExcludedKeys.Clear();
+                    _excludeAllMode = false;
                 }
-                else if (lkey.StartsWith("+"))
+                else if (lkey == "-all")
                 {
-                    key = lkey.Substring(1);
-                    // if in exclude all mode, we need to add this as inclusion
-                    if (_excludeAllMode)
+                    IncludedExcludedKeys.Clear();
+                    _excludeAllMode = true;
+                }
+                //else if (lkey == "+nokey")
+                //{
+                //    ExcludeNoKeyMessages = false;
+                //}
+                //else if (lkey == "-nokey")
+                //{
+                //    ExcludeNoKeyMessages = true;
+                //}
+                else
+                {
+                    string key;
+                    if (lkey.StartsWith("-"))
                     {
-
-                        IncludedExcludedKeys[key] = new object();
+                        key = lkey.Substring(1);
+                        // if in exclude all mode, we need to remove this from the inclusions
+                        if (_excludeAllMode)
+                        {
+                            if (IncludedExcludedKeys.ContainsKey(key))
+                                IncludedExcludedKeys.Remove(key);
+                        }
+                        // otherwise include all mode, add to the exclusions
+                        else
+                        {
+                            IncludedExcludedKeys[key] = new object();
+                        }
                     }
-                    // otherwise include all mode, remove this from exclusions
-                    else
+                    else if (lkey.StartsWith("+"))
                     {
-                        if (IncludedExcludedKeys.ContainsKey(key))
-                            IncludedExcludedKeys.Remove(key);
+                        key = lkey.Substring(1);
+                        // if in exclude all mode, we need to add this as inclusion
+                        if (_excludeAllMode)
+                        {
+
+                            IncludedExcludedKeys[key] = new object();
+                        }
+                        // otherwise include all mode, remove this from exclusions
+                        else
+                        {
+                            if (IncludedExcludedKeys.ContainsKey(key))
+                                IncludedExcludedKeys.Remove(key);
+                        }
                     }
                 }
             }

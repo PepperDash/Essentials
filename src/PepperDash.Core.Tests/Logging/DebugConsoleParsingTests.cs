@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Serilog.Events;
+using Serilog.Parsing;
 using Xunit;
 
 namespace PepperDash.Core.Tests.Logging;
@@ -64,5 +65,49 @@ public class DebugConsoleParsingTests
     public void SplitFilterKeys_Empty_ReturnsNoKeys()
     {
         Debug.SplitFilterKeys("   ").Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(null, false, true)]
+    [InlineData(null, true, true)]
+    [InlineData("", true, true)]
+    [InlineData("display-1", false, false)]
+    [InlineData("codec-1", false, true)]
+    [InlineData("display-1", true, true)]
+    [InlineData("codec-1", true, false)]
+    public void KeyFilterAllows_FollowsIncludeExcludeMode(string? key, bool excludeAllMode, bool expected)
+    {
+        Debug.KeyFilterAllows(key!, excludeAllMode, k => k == "display-1").Should().Be(expected);
+    }
+
+    [Fact]
+    public void ConsoleKeyFilterAllows_AppliesConsoleFilterCommands()
+    {
+        try
+        {
+            Debug.SetDebugFilterFromConsole("-display-1");
+            Debug.ConsoleKeyFilterAllows(EventWithKey("Display-1")).Should().BeFalse("excluded keys match case-insensitively");
+            Debug.ConsoleKeyFilterAllows(EventWithKey("codec-1")).Should().BeTrue();
+            Debug.ConsoleKeyFilterAllows(EventWithKey(null)).Should().BeTrue("messages with no key always pass");
+
+            Debug.SetDebugFilterFromConsole("-all +codec-1");
+            Debug.ConsoleKeyFilterAllows(EventWithKey("codec-1")).Should().BeTrue();
+            Debug.ConsoleKeyFilterAllows(EventWithKey("display-1")).Should().BeFalse();
+            Debug.ConsoleKeyFilterAllows(EventWithKey(null)).Should().BeTrue();
+
+            Debug.SetDebugFilterFromConsole("+all");
+            Debug.ConsoleKeyFilterAllows(EventWithKey("display-1")).Should().BeTrue();
+        }
+        finally
+        {
+            Debug.SetDebugFilterFromConsole("+all");
+        }
+    }
+
+    private static LogEvent EventWithKey(string? key)
+    {
+        return new LogEvent(DateTimeOffset.Now, LogEventLevel.Information, null,
+            new MessageTemplateParser().Parse("test"),
+            new[] { new LogEventProperty("Key", new ScalarValue(key)) });
     }
 }
