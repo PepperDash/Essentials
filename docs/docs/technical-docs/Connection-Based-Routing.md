@@ -231,7 +231,7 @@ its replacement:
 
 **Base building-block interfaces** (unchanged):
 
-* `IRoutingSource` - marker interface for a device that originates a signal path; extends `IRoutingOutputs`.
+* `IRoutingSource` - marker interface for a device that originates a signal path; extends `IRoutingOutputs` and `IKeyName`.
 * `IRoutingOutputs` - exposes `RoutingPortCollection<RoutingOutputPort> OutputPorts`.
 * `IRoutingInputs` - exposes `RoutingPortCollection<RoutingInputPort> InputPorts`.
 
@@ -253,12 +253,13 @@ its replacement:
 
 #### Current source tracking (`ICurrentSources`)
 
-`ICurrentSources` is a new interface (implemented by `IRoutingSinkWithFeedback`) that reports which
-source is actually feeding a sink right now, per signal type:
+`ICurrentSources` (`PepperDash.Essentials.Core.Routing`) is a new interface (extended by
+`IRoutingSinkWithFeedback`) that reports which source is actually feeding a sink right now, per signal type:
 
 * `Dictionary<eRoutingSignalType, IRoutingSource> CurrentSources { get; }`
 * `Dictionary<eRoutingSignalType, string> CurrentSourceKeys { get; }`
 * `event EventHandler<CurrentSourcesChangedEventArgs> CurrentSourcesChanged`
+* `void SetCurrentSource(eRoutingSignalType signalType, IRoutingSource sourceDevice)`
 
 A new `RoutingFeedbackManager` subscribes to `RouteChanged` on every `IRoutingMidpointWithFeedback`
 and `InputChanged` on every `IRoutingSinkWithFeedback` in the system, traces each change back through
@@ -287,13 +288,28 @@ real time - this is what powers the live routing diagram in the
 [essentials-devtools](https://github.com/PepperDash/essentials-devtools).
 
 A client starts (or reuses) a session by sending an HTTP `GET` to the `routingFeedbackSession` API
-route (e.g. `https://[processor-ip]/cws/[appId]/api/routingFeedbackSession`), which starts the
+route (e.g. `https://[processor-ip]/cws/app01/api/routingFeedbackSession` on a 4-series processor, or
+`https://[server]/VirtualControl/Rooms/[roomId]/cws/api/routingFeedbackSession` on VC-4), which starts the
 WebSocket server on a random high port (if not already running), forwards that port on the CS LAN
 adapter if present, and returns a JSON body with the connection URL(s):
 
 ```json
-{ "url": "wss://[processor-ip]:[port]/routing/join/", "fallbackUrl": "wss://..." }
+{
+  "url": "wss://[processor-ip]:[port]/routing/join",
+  "fallbackUrl": "wss://...",
+  "selectedNetwork": "lan",
+  "networks": [ { "id": "lan", "label": "...", "host": "...", "url": "wss://..." } ],
+  "port": 65400,
+  "path": "/routing/join"
+}
 ```
+
+`url` is for the network the request came in on, unless the client asks for one with
+`?network=lan|cslan|current`; `networks` lists every network the socket can be reached on. A `POST` to
+the same route stops the session. A client that can't reach the WebSocket port (for example a browser
+outside a VC-4 server's firewall) can poll `routingFeedbackSession/messages` instead: the first `GET`
+returns the snapshot and a cursor, and `GET routingFeedbackSession/messages?since=<id>&wait=<ms>`
+returns the changes after it.
 
 Once connected, the client receives a `snapshot` message describing every midpoint route, sink
 input, and multiview layout currently active, followed by incremental update messages (each

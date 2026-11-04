@@ -10,15 +10,7 @@ Configuration is central to Essentials. On this page we will cover configuration
 
 ## Framework Libraries
 
-The table below is meant to serve as a guide to understand the basic organization of code concepts within the various libraries that make up the architecture.
-
-_Todo, try a text-based table:_
-
-![Table](~/docs/images/arch-table.PNG)
-
-The diagram below shows the reference dependencies that exist between the different component libraries that make up the Essentials Framework.
-
-![Architecture drawing](~/docs/images/arch-high-level.png)
+See [Essentials architecture](~/docs/technical-docs/Arch-summary.md) for a table of what each library contains and a diagram of the references between them.
 
 ### Architecture
 
@@ -54,11 +46,11 @@ This flat structure ensures that every device in a system exists in one place an
 
 #### Architecture drawing
 
-![Architecture overview](~/docs/images/arch-overview.png)
+See the [architecture drawing](~/docs/technical-docs/Arch-1.md#architecture-drawing).
 
 #### Essentials Configurable System Lifecycle
 
-![Lifecycle](~/docs/images/lifecycle.png)
+See [Essentials Configurable System Lifecycle](~/docs/technical-docs/Arch-lifecycle.md).
 
 ### Activation phases additional topics and examples (OTHER DOCS)
 
@@ -82,9 +74,9 @@ At the heart of the Essentials framework is the configuration system. While not 
 - sourceLists (object) Used by one or more rooms to represent list(s) of sources for those rooms
 - tieLines (array) Used by the routing system to discover routing between sources and displays
 
-In addition, a downloaded Portal config file will most likely be in a template/system form, meaning that the file contains two main objects, representing the template configuration and its system-level overrides. Other metadata, such as Portal UUIDs or URLs may be present.
+In addition, a downloaded Portal config file may be in the older (v1) template/system form, meaning that the file contains two main objects, representing the template configuration and its system-level overrides. A v2 Portal config is already merged and has no `template`/`system` objects. Other metadata, such as Portal UUIDs or URLs may be present.
 
-At startup, the configuration file is read, and a ReadyEvent is fired. Upon being ready, that configuration is loaded by the ConfigReader.LoadConfig() method. The template and system are merged into a single configuration object, and that object is then deserialized into configuration wrapper classes that define most of the structure of the program to be built. (Custom configuration objects were built to allow for better type handling rather than using JToken methods to parse out error-prone property names.)
+At startup, after plugins are loaded, the configuration file is read and loaded by the `ConfigReader.LoadConfig()` method. If the file is in template/system form, the template and system are merged into a single configuration object, and that object is then deserialized into configuration wrapper classes that define most of the structure of the program to be built. (Custom configuration objects were built to allow for better type handling rather than using JToken methods to parse out error-prone property names.)
 
 For example, a `DeviceConfig` object:
 
@@ -117,40 +109,28 @@ namespace PepperDash.Essentials.Core.Config
 
 _Every_ `Device` present must adhere to those five properties plus a properties object. The properties object will have its own deserialization helpers, depending on what its structure is.
 
-Once the ConfigReader has successfully read and deserialized the config file, then `ControlSystem.Load()` is called. This does the following in order:
+Once the ConfigReader has read and deserialized the config file, then `ControlSystem.Load()` is called. This does the following in order:
 
 1. Loads Devices
-2. Loads TieLines
-3. Loads Rooms
-4. Loads LogoServer
-5. Activation sequence
+2. Loads Rooms
+3. Activation sequence (`DeviceManager.ActivateAll()`)
+4. Loads TieLines
 
-This ordering ensures that all devices are at least present before building tie lines and rooms. Rooms can be built without their required devices being present. In principle, this could break from the loosely-coupled goal we have described, but it is the clearest way to build the system in code. The goal is still to build a room class that doesn't have functional dependencies on devices that may not be ready for use.
+This ordering ensures that all devices are at least present before building rooms and tie lines. Rooms can be built without their required devices being present. In principle, this could break from the loosely-coupled goal we have described, but it is the clearest way to build the system in code. The goal is still to build a room class that doesn't have functional dependencies on devices that may not be ready for use.
 
-In each device/room step, a device factory process is called. We call subsequent device factory methods in the various libraries that make up Essentials until one of them returns a functional device. This allows us to break up the factory process into individual libraries, and not have a huge list of types and build procedures. Here's part of the code:
+In each device/room step, a device factory process is called. Each library and plugin registers its device types with `PepperDash.Essentials.Core.DeviceFactory` through classes that implement `IDeviceFactory` (usually by deriving from `EssentialsDeviceFactory<T>` or `EssentialsPluginDeviceFactory<T>`). `DeviceFactory.GetDevice()` looks up the factory registered for the config's `type` and calls it. This allows us to break up the factory process into individual libraries, and not have a huge list of types and build procedures. Here's part of the code:
 
 ```cs
-// Try local factories first
-var newDev = DeviceFactory.GetDevice(devConf);
+var newDev = Core.DeviceFactory.GetDevice(devConf);
 
-if (newDev == null)
-    newDev = BridgeFactory.GetDevice(devConf);
-
-// Then associated library factories
-if (newDev == null)
-    newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
-if (newDev == null)
-    newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
-if (newDev == null)
-    newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
-if (newDev == null)
-    newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
+if (newDev != null)
+    DeviceManager.AddDevice(newDev);
 ```
 
 In each respective factory, or device constructor, the configuration's properties object is either converted to a config object or read from using `JToken` methods. This builds the device which may be ready to go, or may require activation as described above.
 
-A similar process is carried out for rooms, but as of now, the room types are so few that they are all handled in the `ControlSystem.LoadRooms()` method.
+The same process is carried out for rooms in the `ControlSystem.LoadRooms()` method; room types are registered with `DeviceFactory` just like device types.
 
-_This process will soon be enhanced by a plug-in mechanism that will drill into dynamically-loaded DLLs and load types from factories in those libraries. This is where custom essentials systems will grow from._
+Plugins loaded from the `plugins` folder register their factories the same way, which is where custom Essentials systems grow from. See [Plugins](~/docs/technical-docs/Plugins.md).
 
-After those five steps, the system will be running and ready to use.
+After those steps, the system will be running and ready to use.

@@ -12,6 +12,10 @@ At a high level, the idea is to define a template of all of the common configura
 
 ## Top Level Object Structure (Double Config)
 
+Essentials loads a single file matching `*configurationFile*.json`. It looks first in the `LocalConfig` folder under the program's user folder (`/user/programX/` on a processor, `User/` on VC-4) and, if none is found there, in the user folder itself. If more than one matching file is found in a folder, the config is not loaded.
+
+In the user folder, a file with both `template` and `system` objects is merged as described below, and a file without them (for example, one already merged by Portal) is used as-is, with the structure shown for `template` and `system`. A file in `LocalConfig` is never merged: it must already be a merged config, so put a double config in the user folder, not `LocalConfig`.
+
 ```cs
 {
     // This object is deserialized to type PepperDash.Essentials.Core.Config.EssentialsConfig
@@ -19,18 +23,22 @@ At a high level, the idea is to define a template of all of the common configura
     "system_url":"", // For Portal use only
     "template_url":"", // For Portal use only
     "template":{
-        // This object is deserialized to type PepperDash.Essentials.Core.EssentialsConfig
+        // This object is deserialized to type PepperDash.Essentials.Core.Config.EssentialsConfig
         // For most manually generated configuration, only define data here.  Leave system empty
     },
     "system":{
-        // This object is deserialized to type PepperDash.Essentials.Core.EssentialsConfig
+        // This object is deserialized to type PepperDash.Essentials.Core.Config.EssentialsConfig
         // Any data here will be overlayed on top of the data in template.  In the case of duplicate values
         // the value in system will be overwrite any value in template
+    },
+    "versions":{
+        // This object is deserialized to type PepperDash.Essentials.Core.Config.VersionData
+        // Optional version metadata ("essentials", "userInterfaces", "touchpanelWrapperApp", "packages")
     }
 }
 ```
 
-## Object Structure for `template` and `system` (`PepperDash.Essentials.Core.EssentialsConfig`)
+## Object Structure for `template` and `system` (`PepperDash.Essentials.Core.Config.EssentialsConfig`)
 
 ``` js
 {
@@ -46,16 +54,29 @@ At a high level, the idea is to define a template of all of the common configura
         // This object is deserialized to type List<PepperDash.Essentials.Core.Config.DeviceConfig>
         // An array of rooms.  These are not automatically deserialized
      ],
-     "tielines":[
+     "tieLines":[
+        // This object is deserialized to type List<PepperDash.Essentials.Core.Config.TieLineConfig>
         // An array of tie lines that describe the connections between routing ports on devices
+        // When merging, the template tie lines are used if present; otherwise the system tie lines
      ],
      "sourceLists":{
         // This object is deserialized to type Dictionary<string, Dictionary<string, PepperDash.Essentials.Core.SourceListItem>>
         // An object that contains a collection
      },
+     "destinationLists":{
+        // This object is deserialized to type Dictionary<string, Dictionary<string, PepperDash.Essentials.Core.DestinationListItem>>
+     },
+     "audioControlPointLists":{
+        // This object is deserialized to type Dictionary<string, PepperDash.Essentials.Core.Config.AudioControlPointListItem>
+     },
+     "cameraLists":{
+        // This object is deserialized to type Dictionary<string, Dictionary<string, PepperDash.Essentials.Core.CameraListItem>>
+     },
      "joinMaps":{
-        // This object is deserialized to type Dictionary<string, string> where the value is a serialized class that inherits from JoinMapBase to be deserialized later
+        // This object is deserialized to type Dictionary<string, JObject>, where the value is the join map data to be deserialized later
+        // Keyed by join map key: a bridge's device entry selects an override with its "joinMapKey" property, so an entry with no joinMapKey uses the default join map
         // Used to define custom join maps for bridging devices to SIMPL
+        // When merging, only the template join maps are used
      }
 }
 ```
@@ -126,9 +147,9 @@ The devices array is meant to hold a series of device objects.  The basic devic
     "key": "someUniqueString",  // *required* a unique string
     "name": "A friendly Name",  // *required* a friendly name meant for display to users
     "type": "exampleType",      // *required* the type identifier for this object.  
-    "group": "exampleGroup",    // *required* the group identifier for this object.  This really equates to a category for the device,
+    "group": "exampleGroup",    // the group identifier for this object.  This really equates to a category for the device,
                                 // such as "lighting" or "displays" and may be deprecated in future in favor of "category"
-    "uid":0,                    // *required* a unique numeric identifier for each device
+    "uid":0,                    // a unique numeric identifier for each device
     "properties": {             // *required* an object where the configurable properties of the device are contained
         "control": {            // an object to contain all of the properties to connect to and control the device
             "method": "ssh",    // the control method used by this device
@@ -148,7 +169,7 @@ The devices array is meant to hold a series of device objects.  The basic devic
 Some additional details about specific properties that are important to note:
 
 * "key": This value needs to be unique in the array of devices objects
-* "uid": This value also needs to be unique for reasons related to configuration tools and template/system merging
+* "uid": This value also needs to be unique for reasons related to configuration tools and Fusion static assets
 * "type": Think of this as a way to identify what specific module you might associate with this device.  In Essentials, this value is used to determine what class will be instantiated for the device (ex. "necmpsx" or "samsungMdc" for two types of displays)
 * "properties":  This object is used to store both specific and miscellaneous data about the device.
   * Specific data, like that shown above in the "control" object has a pre-defined structure.
@@ -196,7 +217,7 @@ The control object inside properties has some reserved properties that are used 
 
 ## Device Merging
 
-The following examples illustrate how the device key and uid properties affect how devices are merged together in a double configuration scenario.  In order for a template device and a system device to merge, they must have the same key and uid values
+The following examples illustrate how the device key and uid properties affect how devices are merged together in a double configuration scenario.  In order for a template device and a system device to merge, they must have the same key value. A system device with no matching template device is not added to the merged configuration
 
 ```JSON
 {

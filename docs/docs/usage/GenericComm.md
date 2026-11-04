@@ -16,8 +16,8 @@ Consider the following example.
             {
                 "key": "processor",
                 "uid": 0,
-                "type": "pro3",
-                "name": "pro3",
+                "type": "cp4n",
+                "name": "cp4n",
                 "group": "processor",
                 "supportedConfigModes": [
                     "compliance",
@@ -51,7 +51,7 @@ Consider the following example.
                             "stopBits": 1
                         },
                         "controlPortNumber": 1,
-                        "controlPortDevKey": "processor",
+                        "controlPortDevKey": "processor"
                     }
                 }
             },
@@ -109,7 +109,7 @@ Consider the following example.
 
 ## GenericComm Configuration Explanation
 
-This configuration is meant for a Pro3 device, and instantiates one comport and one SSH session and links them to an eisc bridge to another processor slot on ipid 3.  Let's break down the ```Comport-1``` device.
+This configuration is meant for a CP4N device, and instantiates one comport and one SSH session and links them to an eisc bridge to another processor slot on ipid 3.  Let's break down the ```Comport-1``` device.
 
 ```JSON
 {
@@ -195,7 +195,7 @@ namespace PepperDash.Core
 }
 ```
 
-These enumerations are not case sensitive.  Not all methods are valid for a ```genericComm``` device.  For a comport, the only valid type would be ```Com```.  For a direct network socket, valid options are ```Ssh```, ```Tcpip```, ```Telnet```, ```UdpClient```, and ```Udp```.
+These enumerations are not case sensitive.  Not all methods are valid for a ```genericComm``` device.  For a comport, the only valid type would be ```Com```.  For a direct network socket, valid options are ```Ssh```, ```Tcpip```, ```SecureTcpIp```, ```UdpClient```, and ```Udp```.  ```Cec``` is also supported for a CEC port.  ```Telnet``` is not currently implemented and will not create a port.
 
 ##### ComParams
 
@@ -283,19 +283,19 @@ A ```Com``` device requires a ```comParams``` object to set the properties of th
 2
 ```
 
-Additionally, a ```control``` object for a physical hardware port needs to map to that physical port.  This is accomplished by utilizing the ```controlPortDevKey``` and ```port``` properties.
+Additionally, a ```control``` object for a physical hardware port needs to map to that physical port.  This is accomplished by utilizing the ```controlPortDevKey``` and ```controlPortNumber``` properties.
 
 **```controlPortDevKey```**
 
 This property maps to the ```key``` of the device upon which the port resides.
 
-**```port```**
+**```controlPortNumber```**
 
-This property maps to the number of the port on the device you have mapped the relay device to.  Even if the device has only a single port, ```port``` must be defined.
+This property maps to the number of the port on the device you have mapped the comport device to.  Even if the device has only a single port, ```controlPortNumber``` must be defined.
 
 ##### TcpSshParams
 
-A ```Ssh```, ```TcpIp```, ```UdpClient```, or ```Udp``` device requires a ```tcpSshProperties``` object to set the propeties of the socket.
+A ```Ssh```, ```TcpIp```, ```SecureTcpIp```, ```UdpClient```, or ```Udp``` device requires a ```tcpSshProperties``` object to set the propeties of the socket.
 
 ```Json
 {
@@ -345,27 +345,27 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         [JoinName("TextReceived")]
         public JoinDataComplete TextReceived = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Text Received From Remote Device", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Text Received From Remote Device", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("SendText")]
         public JoinDataComplete SendText = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Text Sent To Remote Device", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Text Sent To Remote Device", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("SetPortConfig")]
         public JoinDataComplete SetPortConfig = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Set Port Config", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Set Port Config", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("Connect")]
         public JoinDataComplete Connect = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Connect", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Connect", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("Connected")]
         public JoinDataComplete Connected = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Connected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Connected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("Status")]
         public JoinDataComplete Status = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata() { Description = "Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
 
         public IBasicCommunicationJoinMap(uint joinStart)
@@ -380,10 +380,10 @@ namespace PepperDash.Essentials.Core.Bridges
 
 ```SendText``` is for any strings you wish to send **TO** the connected device.
 
-```Connect``` connects to a remote socket device on the rising edge of the signal.
+```Connect``` connects to a remote socket device while the signal is high, and disconnects when it goes low.
 
 ```Connected``` represents the current connection state.  High for Connected, low for Disconnected.
 
 ```Status``` is an analog value that is representative of the connection states as reported by the SIMPL TCP/IP socket symbol.
 
-All of the preceeding joins are set to join ```1```.  The second serial input join is reserved for ```2```.  It allows you to send a ```comparams``` json object as a string, utilizing the same format mentioned previously in this document.  Doing so will override the configured comport specifications.
+All of the preceeding joins are set to join ```1```.  The second serial input join is reserved for ```2```.  It accepts a ```control``` json object as a string, utilizing the same format mentioned previously in this document.  For a serial (com port) device, the `comParams` in the received value are applied to the port straight away, changing its com specifications. Other changes, such as the control method or TCP/SSH settings, can't be applied while the program runs; they're logged as not applied. To change them, edit the config file and restart the program.

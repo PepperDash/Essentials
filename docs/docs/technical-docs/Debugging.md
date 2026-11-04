@@ -1,61 +1,51 @@
 # Methods of Debugging
 
-1. You can use Visual Studio step debugging
-   - Pros:
-     - Detailed real time debugging into with breakpoints and object inspection
-   - Cons:
-     - Doesn't really work remotely
-     - On processors with Control Subnet, you must be connected to the CS interface to use step debugging. Often not practical or possible.
-     - No logging
-     - Using breakpoints stops the program and can interrupt system usage
-     - Requires the running application to be built in debug mode, not release mode
-2. You can use the Debug class features build into the PepperDash.Core library.
-   - Pros:
-     - Can be easily enabled from console
-     - Allows for setting the level of verbosity
-     - Works when troubleshooting remotely and doesn't require a connection to the CS interface of the processor.
-     - Allows for logging to the Crestron error log or a custom log stored on removable media
-     - Works regardless of build type setting (debug/release)
-     - Can easily identify which class instance is generating console messages
-     - Can use console commands to view the state of public properties on devices
-     - Can use console commands to call methods on devices
-     - Doesn't stop the program
-   - Cons:
-     - No detailed object inspection in real time
-     - Only prints console statements already in code
-     - When enabled at the highest level of verbosity, it can produce a significant amount of data in console. Can be hard to find messages easily.
-     - No current mechanism to filter messages by device. (can be filtered by 3rd party tools easily, though)
-     - Not very effective in debugging applications running on the VC-4 platform as only log messages get printed to the Syslog
+Use the Debug class features built into the PepperDash.Core library.
+
+- Pros:
+  - Can be easily enabled from console
+  - Allows for setting the level of verbosity
+  - Works when troubleshooting remotely and doesn't require a connection to the CS interface of the processor.
+  - Allows for logging to the Crestron error log, a rolling log file on the processor, and a websocket debug console
+  - Works regardless of build type setting (debug/release)
+  - Can easily identify which class instance is generating console messages, and filter console messages by device key (`appdebugfilter`)
+  - Can use console commands to view the state of public properties on devices
+  - Can use console commands to call methods on devices
+  - Doesn't stop the program
+- Cons:
+  - No detailed object inspection in real time
+  - Only prints console statements already in code
+  - When enabled at the highest level of verbosity, it can produce a significant amount of data in console. Can be hard to find messages easily.
+  - On VC-4 there is no program console to watch; use the log files or the live log in [Essentials Developer Tools](~/docs/usage/Developer-Tools.md) instead
 
 ## How to use the PepperDash.Core Debug Class
 
 The majority of interaction is done via console, preferably via an SSH session through Crestron Toolbox, PuTTy or any other suitable application.
 
-In code, the most useful method is `Debug.Console()` which has several overloads. All variations take an integer value for the level (0-2) as the first argument. Level 0 will ALWAYS print. Level 1 is for typical debug messages and level 2 is for verbose debugging. In cases where the overloads that accept a `Debug.ErrorLogLevel` parameter are used, the message will ALWAYS be logged, but will only print to console if the current debug level is the same or higher than the level set in the `Debug.Console()` statement.
+In code, logging is done with the Serilog-based methods on the `Debug` class in the `PepperDash.Core` namespace: `Debug.LogVerbose()`, `Debug.LogDebug()`, `Debug.LogInformation()`, `Debug.LogWarning()`, `Debug.LogError()` and `Debug.LogFatal()`, or `Debug.LogMessage()` with a Serilog `LogEventLevel`. Each takes a message template and optional arguments, and there are overloads that take an `IKeyed` (such as a device) and/or an `Exception`. Devices can also use the extension methods of the same names, for example `this.LogInformation(...)`. A message is written to each output (console, error log, log file, websocket) only if its level is at or above the minimum level set for that output.
 
 All statements printed to console are prefixed by a timestamp which can be greatly helpful in debugging order of operations.
 
 ```cs
-// The most basic use, sets the level (0) and the message to print.
-Debug.Console(0, "Hello World");
-// prints: [timestamp]App 1:Hello World
+// The most basic use, sets the level and the message to print.
+Debug.LogInformation("Hello World");
+// prints: [timestamp][INFO][App 1] Hello World
 
-// The string parameter has a built in string.Format() that takes params object[] items
+// The message is a Serilog message template that takes params object[] items
 string world = "World";
-Debug.Console(0, "Hello {0}", world);
-// prints: [timestamp]App 1:Hello World
+Debug.LogInformation("Hello {world}", world);
+// prints: [timestamp][INFO][App 1] Hello World
 
-// This overload takes an IKeyed as the second parameter and the resulting statement will
-// print the Key of the device in console to help identify the class instance the message
-// originated from
-Debug.Console(0, this, "Hello World");
-// prints: [timestamp]App 1:[deviceKey]Hello World
+// The overloads (and extension methods) that take an IKeyed print the Key of the device
+// in console to help identify the class instance the message originated from
+this.LogInformation("Hello World");
+// prints: [timestamp][INFO][App 1][deviceKey] Hello World
 
-// Each of the above overloads has a corresponding variant that takes an argument to indicate
-// the level of error to log the message at as well as printing to console
-Debug.Console(0, Debug.ErrorLogLevel.Notice, "Hello World");
-// prints: [timestamp]App 1:Hello World
+// Overloads that take an Exception print the exception after the message
+this.LogError(ex, "Hello World");
 ```
+
+Log files are written in compact JSON to `user/debug/app{N}/` under the application root on a processor, or `user/debug/room{roomId}/` on VC-4. A new file (`global-log{yyyyMMdd}.log`) is started each day, and 30 days (60 on VC-4) are kept. The `debugappurl` console command prints the URL of [Essentials Developer Tools](~/docs/usage/Developer-Tools.md) (`/cws/debug`), whose Debug Console shows the live log and can filter it by level and device.
 
 ## Console Commands
 
@@ -89,23 +79,45 @@ When the value is set to true, Essentials will pause when starting up, to allow 
 
 The following console commands all perform actions on devices that have been registered with the `PepperDash.Essentials.Core.DeviceManager` static class
 
-### `Appdebug:[slot][0-2]`
+### `Appdebug:[slot] [sink (optional)] [level] [timeoutMinutes (optional)]`
 
-Gets or sets the current debug level where 0 is the lowest setting and 2 is the most verbose
+Gets or sets the minimum log level. With no arguments, prints the current level for each sink.
 
-### `getjoinmap:[slot] [bridgeKey][deviceKey (optional)]
+- `sink` is one of `console` (the default), `errorlog`, `websocket`, `file` or `all`.
+- `level` is a level name, `Verbose`, `Debug`, `Information`, `Warning`, `Error` or `Fatal` (not case-sensitive), or a number: `0` = Information, `1` = Debug, `2` = Verbose, `3` = Warning, `4` = Error, `5` = Fatal. The numbers 0-2 mean the same as in Essentials 2.x.
+- `timeoutMinutes` applies to the console (and `all`). After it (default 120 minutes), a console level of `Debug` or `Verbose` resets to `Information`, so verbose logging isn't left on by accident.
 
-For use with SIMPL Bridging.  Prints the join map for the specified bridge.  If a device key is specified, only the joins for that device will be printed.
+`appdebug:[slot] ?` prints the usage.
 
 Example:
 
 ```sh
-RMC3>appdebug:1 // Gets current level
-RMC3>AppDebug level = 0
+RMC4>appdebug:1 // Gets current levels
+Console log level = Information
+File log level = Information
+Error log level = Information
+Websocket log level = Information
 
-RMC3>appdebug:1 1 // Sets level to 1 (all messages level 1 or lower will print)
-RMC3>[Application 1], Debug level set to 1
+RMC4>appdebug:1 debug // Sets console level to Debug (Debug and higher will print)
+[Application 1], Debug level set to Debug
+
+RMC4>appdebug:1 2 30 // Sets console level to Verbose for 30 minutes
+[Application 1], Debug level set to Verbose
 ```
+
+### `Appdebugfilter:[slot] [+/-keys]`
+
+Filters the console output by device key; the log file, error log and websocket outputs are not filtered. By default every key is shown, and `-key` hides a device's messages while `+key` shows them again. Start with `-all` to hide every key except the ones you then add with `+key`; `+all` clears the filter. Messages without a device key always print. `appdebugfilter:[slot] ?` prints the usage.
+
+```sh
+RMC4>appdebugfilter:1 -display-1        // Hide display-1's messages
+RMC4>appdebugfilter:1 -all +codec-1     // Show only codec-1's messages
+RMC4>appdebugfilter:1 +all              // Show every key again
+```
+
+### `getjoinmap:[slot] [bridgeKey] [deviceKey (optional)]`
+
+For use with SIMPL Bridging.  Prints the join map for the specified bridge.  If a device key is specified, only the joins for that device will be printed.
 
 ### `Devlist:[slot]`
 
@@ -149,9 +161,9 @@ RMC3>[16:34:05.819]App 1:28 Devices registered with Device Mangager:
 [16:34:05.848]App 1:  [tcp-1] Generic TCP 1
 [16:34:05.849]App 1:  [tcp-1-tcp]
 ```
-### `Setdevicestreamdebug:[slot][devicekey][both/rx/tx/off]`
+### `Setdevicestreamdebug:[slot] [devicekey] [both/rx/tx/off] [timeoutMinutes (optional)]`
 
-Enables debug for communication on a single device
+Enables debug for communication on a single device. Stream debugging turns off after `timeoutMinutes` (default 30).
 
 Example:
 
@@ -270,5 +282,3 @@ RMC3>devjson:1 {"deviceKey":"cec-1-cec", "methodName":"SendText", "params": ["he
 // This would simulate receiving data on the CEC port of the DM-TX-201-C's HDMI input
 RMC3>devjson:1 {"deviceKey":"cec-1-cec", "methodName":"SimulateReceive", "params": ["hello citizen of Earth\r"]}
 ```
-
-For additional examples, see this [file](https://github.com/PepperDash/Essentials/blob/main/devjson%20commands.json).
