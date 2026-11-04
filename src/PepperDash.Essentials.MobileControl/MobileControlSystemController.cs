@@ -222,8 +222,9 @@ namespace PepperDash.Essentials
                 );
             }
 
+            // serverUrl is optional when only the direct server is used
             Host = config.ServerUrl;
-            if (!Host.StartsWith("http"))
+            if (!string.IsNullOrEmpty(Host) && !Host.StartsWith("http"))
             {
                 Host = "https://" + Host;
             }
@@ -1045,6 +1046,14 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            if (string.IsNullOrEmpty(Host))
+            {
+                this.LogWarning(
+                    "serverUrl not set in config.  Cancelling attempt to register to server."
+                );
+                return;
+            }
+
             var result = CreateWebsocket();
 
             if (!result)
@@ -1060,6 +1069,12 @@ namespace PepperDash.Essentials
         {
             lock (_wsCriticalSection)
             {
+                if (_wsClient2 == null)
+                {
+                    this.LogWarning("Websocket client not created. Check that enableApiServer is true and serverUrl is set.");
+                    return;
+                }
+
                 // set to 99999 to let things work on 4-Series
                 if (
                     (CrestronEnvironment.ProgramCompatibility & eCrestronSeries.Series4)
