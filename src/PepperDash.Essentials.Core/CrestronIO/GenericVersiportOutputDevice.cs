@@ -26,7 +26,7 @@ public class GenericVersiportDigitalOutputDevice : EssentialsBridgeableDevice, I
     {
         get
         {
-            return () => OutputPort.DigitalOut;
+            return () => OutputPort != null && OutputPort.DigitalOut;
         }
     }
 
@@ -38,6 +38,12 @@ public class GenericVersiportDigitalOutputDevice : EssentialsBridgeableDevice, I
         AddPostActivationAction(() =>
         {
             OutputPort = postActivationFunc(config);
+
+            if (OutputPort == null)
+            {
+                this.LogError("Unable to find versiport {port} on device {portDevice}. Output will not be registered", config.PortNumber, config.PortDeviceKey);
+                return;
+            }
 
             OutputPort.Register();
 
@@ -71,6 +77,12 @@ public class GenericVersiportDigitalOutputDevice : EssentialsBridgeableDevice, I
     /// <param name="state">value to set the output to</param>
     public void SetOutput(bool state)
     {
+            if (OutputPort == null)
+            {
+                this.LogError("Unable to set output. Versiport not found");
+                return;
+            }
+
             if (OutputPort.SupportsDigitalOutput)
             {
                 Debug.LogMessage(LogEventLevel.Information, this, "Passed the Check");

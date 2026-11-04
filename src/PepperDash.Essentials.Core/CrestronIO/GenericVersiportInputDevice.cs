@@ -34,7 +34,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// <summary>
         /// Get partition state
         /// </summary>
-        public bool PartitionPresent => !inputPort.DigitalIn;
+        public bool PartitionPresent => inputPort != null && !inputPort.DigitalIn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GenericVersiportDigitalInputDevice"/> class.
@@ -49,12 +49,18 @@ namespace PepperDash.Essentials.Core.CrestronIO
             var circuitType = string.IsNullOrEmpty(config.CircuitType) ? "NO" : config.CircuitType;
             invertState = circuitType.Equals("NC", StringComparison.OrdinalIgnoreCase);
 
-            InputStateFeedback = new BoolFeedback("inputState", () => invertState ? !inputPort.DigitalIn : inputPort.DigitalIn);
-            PartitionPresentFeedback = new BoolFeedback("partitionPresent", () => !inputPort.DigitalIn);
+            InputStateFeedback = new BoolFeedback("inputState", () => inputPort != null && (invertState ? !inputPort.DigitalIn : inputPort.DigitalIn));
+            PartitionPresentFeedback = new BoolFeedback("partitionPresent", () => PartitionPresent);
 
             AddPostActivationAction(() =>
             {
                 inputPort = postActivationFunc(config);
+
+                if (inputPort == null)
+                {
+                    this.LogError("Unable to find versiport {port} on device {portDevice}. Input will not be registered", config.PortNumber, config.PortDeviceKey);
+                    return;
+                }
 
                 inputPort.Register();
 

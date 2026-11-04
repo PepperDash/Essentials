@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Config;
@@ -52,11 +53,25 @@ public class GenericComm : ReconfigurableBridgableDevice
 
     public void SetPortConfig(string portConfig)
     {
-        // TODO: Deserialize new EssentialsControlPropertiesConfig and handle as necessary
         try
         {
-            PropertiesConfig = JsonConvert.DeserializeObject<EssentialsControlPropertiesConfig>
+            var newConfig = JsonConvert.DeserializeObject<EssentialsControlPropertiesConfig>
                 (portConfig);
+
+            if (newConfig == null)
+                return;
+
+            PropertiesConfig = newConfig;
+
+            // Only a serial com spec can be applied to the existing port. Changing the method or
+            // TCP/SSH settings would mean rebuilding the comm stack, so those are not applied.
+            if (CommPort is ComPortController comPort && newConfig.ComParams.HasValue)
+            {
+                comPort.SetComPortSpec(newConfig.ComParams.Value);
+                return;
+            }
+
+            this.LogWarning("SetPortConfig: only comParams for a serial port can be applied at runtime. The new port config was not applied");
         }
         catch (Exception e)
         {
