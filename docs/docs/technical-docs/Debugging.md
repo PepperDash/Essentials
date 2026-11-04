@@ -8,7 +8,7 @@ Use the Debug class features built into the PepperDash.Core library.
   - Works when troubleshooting remotely and doesn't require a connection to the CS interface of the processor.
   - Allows for logging to the Crestron error log, a rolling log file on the processor, and a websocket debug console
   - Works regardless of build type setting (debug/release)
-  - Can easily identify which class instance is generating console messages
+  - Can easily identify which class instance is generating console messages, and filter console messages by device key (`appdebugfilter`)
   - Can use console commands to view the state of public properties on devices
   - Can use console commands to call methods on devices
   - Doesn't stop the program
@@ -16,7 +16,6 @@ Use the Debug class features built into the PepperDash.Core library.
   - No detailed object inspection in real time
   - Only prints console statements already in code
   - When enabled at the highest level of verbosity, it can produce a significant amount of data in console. Can be hard to find messages easily.
-  - No current mechanism to filter messages by device. (can be filtered by 3rd party tools easily, though)
   - On VC-4 there is no program console to watch; use the log files or the live log in Essentials Dev Tools instead
 
 ## How to use the PepperDash.Core Debug Class
@@ -104,6 +103,16 @@ RMC4>appdebug:1 debug // Sets console level to Debug (Debug and higher will prin
 
 RMC4>appdebug:1 2 30 // Sets console level to Verbose for 30 minutes
 [Application 1], Debug level set to Verbose
+```
+
+### `Appdebugfilter:[slot] [+/-keys]`
+
+Filters the console output by device key; the log file, error log and websocket outputs are not filtered. By default every key is shown, and `-key` hides a device's messages while `+key` shows them again. Start with `-all` to hide every key except the ones you then add with `+key`; `+all` clears the filter. Messages without a device key always print. `appdebugfilter:[slot] ?` prints the usage.
+
+```sh
+RMC4>appdebugfilter:1 -display-1        // Hide display-1's messages
+RMC4>appdebugfilter:1 -all +codec-1     // Show only codec-1's messages
+RMC4>appdebugfilter:1 +all              // Show every key again
 ```
 
 ### `getjoinmap:[slot] [bridgeKey] [deviceKey (optional)]`
