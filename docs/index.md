@@ -10,6 +10,7 @@ Essentials is a collection of C# libraries that can be used in many ways. It is 
 
 - [Download an Essentials build or clone the repo](~/docs/Get-started.md)
 - [Get started](~/docs/Get-started.md)
+- [Essentials Developer Tools](~/docs/usage/Developer-Tools.md), the web app for inspecting and troubleshooting a running program
 - [YouTube Video Series Playlist](https://youtube.com/playlist?list=PLKOoNNwgPFZdV5wDEBDZxTHu1KROspaBu)
 - [Discord Server](https://discord.gg/6Vh3ssDdPs)
 

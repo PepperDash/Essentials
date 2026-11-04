@@ -16,7 +16,7 @@ Use the Debug class features built into the PepperDash.Core library.
   - No detailed object inspection in real time
   - Only prints console statements already in code
   - When enabled at the highest level of verbosity, it can produce a significant amount of data in console. Can be hard to find messages easily.
-  - On VC-4 there is no program console to watch; use the log files or the live log in Essentials Dev Tools instead
+  - On VC-4 there is no program console to watch; use the log files or the live log in [Essentials Developer Tools](~/docs/usage/Developer-Tools.md) instead
 
 ## How to use the PepperDash.Core Debug Class
 
@@ -45,7 +45,7 @@ this.LogInformation("Hello World");
 this.LogError(ex, "Hello World");
 ```
 
-Log files are written in compact JSON to `user/debug/app{N}/` under the application root on a processor, or `user/debug/room{roomId}/` on VC-4. A new file (`global-log{yyyyMMdd}.log`) is started each day, and 30 days (60 on VC-4) are kept. The `debugappurl` console command prints the URL of the Developer Tools web app (`/cws/debug`), which can show the live log.
+Log files are written in compact JSON to `user/debug/app{N}/` under the application root on a processor, or `user/debug/room{roomId}/` on VC-4. A new file (`global-log{yyyyMMdd}.log`) is started each day, and 30 days (60 on VC-4) are kept. The `debugappurl` console command prints the URL of [Essentials Developer Tools](~/docs/usage/Developer-Tools.md) (`/cws/debug`), whose Debug Console shows the live log and can filter it by level and device.
 
 ## Console Commands
 
