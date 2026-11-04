@@ -1,6 +1,6 @@
 # Essentials Developer Tools
 
-Essentials Developer Tools (Dev Tools) is a web app for inspecting and troubleshooting a running Essentials program from a browser. It ships with Essentials: the Essentials v3 `.cpz` includes it, and the program serves it from the processor or VC-4 room it runs on. There's nothing to install.
+Essentials Developer Tools (Dev Tools) is a web app for inspecting and troubleshooting a running Essentials program from a browser. It ships with Essentials: the Essentials v3 release `.cpz` (from GitHub Releases) includes it, and the program serves it from the processor or VC-4 room it runs on, so there's nothing to install. A `.cpz` you build from source doesn't include it; see [How it's loaded](#how-its-loaded).
 
 Dev Tools is open source, at [PepperDash/essentials-devtools](https://github.com/PepperDash/essentials-devtools). Its documentation, including tutorials, how-to guides and a reference for every page, is in that repository's [docs folder](https://github.com/PepperDash/essentials-devtools/tree/main/docs), and the same pages are built into the app under **Help**.
 
@@ -45,6 +45,6 @@ The processor or server uses a self-signed certificate, so the browser shows a s
 
 ## How it's loaded
 
-The Essentials `.cpz` contains an `essentials-devtools*.zip`. When the program starts and finds that zip in its application folder (where the `.cpz` was loaded), Essentials unzips it into the `html/debug` folder, then deletes the zip. On a 4-series processor that folder is `/html/debug`; on VC-4 it's the room's own `html/debug` folder. Essentials serves the app from there at `/cws/debug`. To load a different Dev Tools version, put its `essentials-devtools-[version].zip` in the application folder and restart the program; only one `essentials-devtools*.zip` may be present.
+The release `.cpz` contains an `essentials-devtools*.zip`, which the release build adds. When the program starts and finds that zip in its application folder (where the `.cpz` was loaded), Essentials unzips it into the `html/debug` folder, then deletes the zip. On a 4-series processor that folder is `/html/debug`; on VC-4 it's the room's own `html/debug` folder. Essentials serves the app from there at `/cws/debug`. A `.cpz` built from source with `dotnet build` has no Dev Tools zip. To add Dev Tools, or load a different version, download `essentials-devtools-[version].zip` from the [Dev Tools releases](https://github.com/PepperDash/essentials-devtools/releases), and unzip its contents into the `html/debug` folder described above, replacing what's there. The program reads that folder on each request, so there's no need to restart it; just reload Dev Tools in the browser.
 
 Dev Tools gets everything it shows from the Essentials web API, served by the `essentialsWebApi` device that Essentials adds at startup. See the Dev Tools [API Endpoints reference](https://github.com/PepperDash/essentials-devtools/blob/main/docs/reference/api-endpoints.md) for the routes it uses.

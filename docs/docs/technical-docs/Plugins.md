@@ -228,4 +228,7 @@ For additional info see the [SIMPL-Bridging article](~/docs/usage/SIMPL-Bridging
 
 Fork this repository when starting a new plugin. Plugins reference Essentials through the `PepperDashEssentials` NuGet package, so set the package version to the Essentials build that contains any dependencies that your plugin may rely on.
 
+> [!NOTE]
+> The template currently targets Essentials 2.x (`net472`, `PepperDashEssentials` 2.x); its migration to v3 is in progress. To use it for a v3 plugin, change the project's `TargetFramework` to `net8` and its `PepperDashEssentials` package reference to a 3.x version, then fix any API changes the build reports.
+
 [Essentials Plugin Template Repository](https://github.com/PepperDash/EssentialsPluginTemplate)

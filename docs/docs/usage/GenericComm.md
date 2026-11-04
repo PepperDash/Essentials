@@ -386,4 +386,4 @@ namespace PepperDash.Essentials.Core.Bridges
 
 ```Status``` is an analog value that is representative of the connection states as reported by the SIMPL TCP/IP socket symbol.
 
-All of the preceeding joins are set to join ```1```.  The second serial input join is reserved for ```2```.  It accepts a ```control``` json object as a string, utilizing the same format mentioned previously in this document.  Note that the received value is currently only stored; it is not applied to the port, so it will not change the configured comport specifications.
+All of the preceeding joins are set to join ```1```.  The second serial input join is reserved for ```2```.  It accepts a ```control``` json object as a string, utilizing the same format mentioned previously in this document.  For a serial (com port) device, the `comParams` in the received value are applied to the port straight away, changing its com specifications. Other changes, such as the control method or TCP/SSH settings, can't be applied while the program runs; they're logged as not applied. To change them, edit the config file and restart the program.

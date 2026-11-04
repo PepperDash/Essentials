@@ -14,7 +14,7 @@ At a high level, the idea is to define a template of all of the common configura
 
 Essentials loads a single file matching `*configurationFile*.json`. It looks first in the `LocalConfig` folder under the program's user folder (`/user/programX/` on a processor, `User/` on VC-4) and, if none is found there, in the user folder itself. If more than one matching file is found in a folder, the config is not loaded.
 
-A file with both `template` and `system` objects is merged as described below. A file without them (for example, one already merged by Portal) is used as-is, with the structure shown for `template` and `system`.
+In the user folder, a file with both `template` and `system` objects is merged as described below, and a file without them (for example, one already merged by Portal) is used as-is, with the structure shown for `template` and `system`. A file in `LocalConfig` is never merged: it must already be a merged config, so put a double config in the user folder, not `LocalConfig`.
 
 ```cs
 {
@@ -73,7 +73,8 @@ A file with both `template` and `system` objects is merged as described below. A
         // This object is deserialized to type Dictionary<string, Dictionary<string, PepperDash.Essentials.Core.CameraListItem>>
      },
      "joinMaps":{
-        // This object is deserialized to type Dictionary<string, JObject>, keyed by device key, where the value is the join map data to be deserialized later
+        // This object is deserialized to type Dictionary<string, JObject>, where the value is the join map data to be deserialized later
+        // Keyed by join map key: a bridge's device entry selects an override with its "joinMapKey" property, so an entry with no joinMapKey uses the default join map
         // Used to define custom join maps for bridging devices to SIMPL
         // When merging, only the template join maps are used
      }

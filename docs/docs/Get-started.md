@@ -33,7 +33,7 @@ Essentials v3 builds are published as pre-releases (tags `v3.0.0-rc.*`) on [Gith
 3. Copy a configuration file to the `/user/program1/` folder. The file name must contain `configurationFile` and end in `.json`. Essentials v3 has no built-in room types, so a room in the configuration needs a room plugin in the `plugins` folder. For a complete working example that needs no hardware, see the [Essentials v3 demo](https://pepperdash.github.io/EssentialsDemoConfig/).
 4. Reset the program via console `progreset -p:1`. The program will load the configuration file.
 
-Once Essentials is running, open [Essentials Developer Tools](~/docs/usage/Developer-Tools.md) in a browser at `https://[processor-ip]/cws/debug/` to see its devices, config, routing and live log. Dev Tools ships with Essentials, so there's nothing else to load.
+Once Essentials is running, open [Essentials Developer Tools](~/docs/usage/Developer-Tools.md) in a browser at `https://[processor-ip]/cws/debug/` to see its devices, config, routing and live log. Dev Tools is bundled in the release `.cpz` downloads; if you built Essentials yourself, load Dev Tools as described on that page.
 
 The following console commands also show what's going on:
 
