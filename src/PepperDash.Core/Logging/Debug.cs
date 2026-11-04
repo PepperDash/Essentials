@@ -2,6 +2,7 @@ extern alias NewtonsoftJson;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Timers;
@@ -166,6 +167,9 @@ public static class Debug
             consoleDebugTimer = new Timer(defaultConsoleDebugTimeoutMin * 60000) { AutoReset = false };
             consoleDebugTimer.Elapsed += (s, e) =>
             {
+                // Only quiet the console back down. A level of Warning or higher is left alone.
+                if (consoleLoggingLevelSwitch.MinimumLevel >= LogEventLevel.Information) return;
+
                 SetDebugLevel(LogEventLevel.Information);
                 _console?.ConsoleCommandResponse($"Console debug level reset to {LogEventLevel.Information} after timeout of {defaultConsoleDebugTimeoutMin} minutes");
             };
@@ -244,7 +248,7 @@ public static class Debug
                     PdCore.ConsoleAccessLevel.AccessOperator);
 
                 _console?.AddNewConsoleCommand(SetDebugFromConsole, "appdebug",
-                    "appdebug:P [0-5]: Sets the application's console debug message level",
+                    $"appdebug:P [sink] [level] [timeoutMinutes]: Sets the application's debug message level. level: {LogLevelHelp}. appdebug:P ? for details",
                     PdCore.ConsoleAccessLevel.AccessOperator);
 
                 _console?.AddNewConsoleCommand(ShowDebugLog, "appdebuglog",
@@ -429,8 +433,8 @@ public static class Debug
                 "Used to set the minimum level of debug messages:\r\n" +
                 "Usage: appdebug:P [sink] [level] [timeoutMinutes]\r\n" +
                 "  sink (optional): console (default), errorlog, websocket, file, all\r\n" +
-                "  timeoutMinutes (optional, console sink only): level resets to Information after this many minutes (default 120)\r\n" +
-                $"  level: {string.Join(", ", _logLevels.Values)}");
+                "  timeoutMinutes (optional, console sink only): a level more verbose than Information resets to Information after this many minutes (default 120)\r\n" +
+                $"  level: {LogLevelHelp}");
                 return;
             }
 
@@ -473,9 +477,9 @@ public static class Debug
             // Parse the level
             LogEventLevel level;
 
-            if (!Enum.TryParse(levelToken, true, out level))
+            if (!TryParseLogLevel(levelToken, out level))
             {
-                _console?.ConsoleCommandResponse($"Error: Unable to parse '{levelToken}' to valid log level. Valid levels: {string.Join(", ", _logLevels.Values)}");
+                _console?.ConsoleCommandResponse($"Error: Unable to parse '{levelToken}' to valid log level. Valid levels: {LogLevelHelp}");
                 return;
             }
 
@@ -509,6 +513,38 @@ public static class Debug
         {
             _console?.ConsoleCommandResponse("Usage: appdebug:P [sink] [level] [timeoutMinutes]");
         }
+    }
+
+    /// <summary>
+    /// Describes the accepted console log levels, e.g. "0 = Information, 1 = Debug, ...".
+    /// </summary>
+    internal static string LogLevelHelp =>
+        string.Join(", ", _logLevels.OrderBy(l => l.Key).Select(l => $"{l.Key} = {l.Value}"))
+        + " (or the level name)";
+
+    /// <summary>
+    /// Parses a console log level. Numbers use the legacy <see cref="_logLevels"/> map
+    /// (0 = Information, 1 = Debug, 2 = Verbose, 3 = Warning, 4 = Error, 5 = Fatal), not the
+    /// Serilog enum values. Level names are matched case-insensitively.
+    /// </summary>
+    internal static bool TryParseLogLevel(string token, out LogEventLevel level)
+    {
+        level = LogEventLevel.Information;
+
+        if (string.IsNullOrWhiteSpace(token)) return false;
+
+        token = token.Trim();
+
+        if (uint.TryParse(token, out var number))
+            return _logLevels.TryGetValue(number, out level);
+
+        var name = Enum.GetNames(typeof(LogEventLevel))
+            .FirstOrDefault(n => n.Equals(token, StringComparison.OrdinalIgnoreCase));
+
+        if (name == null) return false;
+
+        level = (LogEventLevel)Enum.Parse(typeof(LogEventLevel), name);
+        return true;
     }
 
     /// <summary>
@@ -618,6 +654,14 @@ public static class Debug
     }
 
     /// <summary>
+    /// Splits appdebugfilter arguments on whitespace, dropping empty entries
+    /// </summary>
+    internal static string[] SplitFilterKeys(string items)
+    {
+        return (items ?? string.Empty).Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+    }
+
+    /// <summary>
     /// Callback for console command
     /// </summary>
     /// <param name="items"></param>
@@ -636,7 +680,7 @@ public static class Debug
                 "(nokey settings are independent of all other settings)");
             return;
         }
-        var keys = Regex.Split(str, @"\s*");
+        var keys = SplitFilterKeys(str);
         foreach (var keyToken in keys)
         {
             var lkey = keyToken.ToLower();
