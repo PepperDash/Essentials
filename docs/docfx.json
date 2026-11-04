@@ -7,11 +7,14 @@
           "src": "../",
           "files": [
             "src/**/*.csproj"
+          ],
+          "exclude": [
+            "src/**/*.Tests.csproj"
           ]
         }
       ],
       "properties": {
-        "TargetFramework": "net472"
+        "TargetFramework": "net8"
       },
       "dest": "api",
       "namespaceLayout": "nested",
@@ -46,8 +49,8 @@
       "modern"
     ],
     "globalMetadata": {
-      "_appName": "PepperDash Essentials",
-      "_appTitle": "PepperDash Essentials",
+      "_appName": "PepperDash Essentials v3",
+      "_appTitle": "PepperDash Essentials v3",
       "_enableSearch": true,
       "_appLogoPath": "docs/images/favicon-32x32.png",
       "_appFaviconPath": "docs/images/favicon.ico",
