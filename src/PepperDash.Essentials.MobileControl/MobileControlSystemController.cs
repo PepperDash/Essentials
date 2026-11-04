@@ -477,7 +477,8 @@ namespace PepperDash.Essentials
             }
 
             // API server path has no per-client room mapping here, so keep broadcasting to it.
-            if (Config.EnableApiServer)
+            // Without a serverUrl there's no API server connection (see SendMessageObject).
+            if (Config.EnableApiServer && !string.IsNullOrEmpty(Host))
             {
                 _transmitToServerQueue.Enqueue(
                     new TransmitMessage(
