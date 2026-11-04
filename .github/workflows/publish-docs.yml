@@ -1,10 +1,14 @@
 name: Publish Docs
 
-# Trigger the action on push to main
+# One site, built from both release lines: v3 (release branch) at /v3/ and v2 (main branch) at
+# /v2/. A Pages deploy replaces the whole site, so every run builds both, whichever branch was
+# pushed. Keep this file the same on main and release.
 on:
   push:
-    branches:      
+    branches:
       - main
+      - release
+  workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -17,7 +21,7 @@ permissions:
 concurrency:
   group: "pages"
   cancel-in-progress: false
-  
+
 jobs:
   publish-docs:
     environment:
@@ -25,21 +29,47 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
+    - name: Checkout v3 (release)
       uses: actions/checkout@v6
+      with:
+        ref: release
+        path: v3
+    - name: Checkout v2 (main)
+      uses: actions/checkout@v6
+      with:
+        ref: main
+        path: v2
     - name: Dotnet Setup
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.x
 
     - run: dotnet tool update -g docfx
-    - run: docfx ./docs/docfx.json
+    - run: docfx v3/docs/docfx.json -o "$GITHUB_WORKSPACE/site/v3"
+    - run: docfx v2/docs/docfx.json -o "$GITHUB_WORKSPACE/site/v2"
+
+    # The site root sends visitors to the current docs. Pages that used to live at the root (the
+    # v2 site, before versioning) redirect to the same page under /v2/, so old links keep working.
+    - name: Add root redirects
+      working-directory: site
+      run: |
+        redirect() {
+          printf '<!doctype html><html><head><meta charset="utf-8"><title>Redirecting</title><link rel="canonical" href="%s"><meta http-equiv="refresh" content="0; url=%s"><script>location.replace("%s" + location.hash)</script></head><body><a href="%s">This page has moved.</a></body></html>\n' "$2" "$2" "$2" "$2" > "$1"
+        }
+        redirect index.html v3/
+        (cd v2 && find . -name '*.html' ! -path ./index.html) | while read -r page; do
+          page="${page#./}"
+          dir="$(dirname "$page")"
+          up=""
+          [ "$dir" != "." ] && up="$(echo "$dir" | sed 's#[^/][^/]*#..#g')/"
+          mkdir -p "$dir"
+          redirect "$page" "${up}v2/$page"
+        done
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        # Upload entire repository
-        path: './docs/_site'
+        path: './site'
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
