@@ -1316,7 +1316,8 @@ namespace PepperDash.Essentials
                 this.LogDebug("Perf: {type} for client {clientId} missed its aggregated batch reply; sending it separately", o.Type, o.ClientId);
             }
 
-            if (Config.EnableApiServer)
+            // Without a serverUrl there's no API server connection, so only the direct server gets messages
+            if (Config.EnableApiServer && !string.IsNullOrEmpty(Host))
             {
 
                 _transmitToServerQueue.Enqueue(new TransmitMessage(o, _wsClient2));

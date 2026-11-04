@@ -104,6 +104,28 @@ public class DebugConsoleParsingTests
         }
     }
 
+    [Fact]
+    public void ConsoleKeyFilterAllows_DoesNotDependOnCulture()
+    {
+        // Turkish lowercases "I" to a dotless "ı", which would stop "-INPUT-1" matching key "INPUT-1"
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("tr-TR");
+
+            Debug.SetDebugFilterFromConsole("-INPUT-1");
+            Debug.ConsoleKeyFilterAllows(EventWithKey("INPUT-1")).Should().BeFalse();
+
+            Debug.SetDebugFilterFromConsole("-ALL +INPUT-1");
+            Debug.ConsoleKeyFilterAllows(EventWithKey("INPUT-1")).Should().BeTrue();
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+            Debug.SetDebugFilterFromConsole("+all");
+        }
+    }
+
     private static LogEvent EventWithKey(string? key)
     {
         return new LogEvent(DateTimeOffset.Now, LogEventLevel.Information, null,

@@ -725,7 +725,8 @@ public static class Debug
         {
             foreach (var keyToken in keys)
             {
-                var lkey = keyToken.ToLower();
+                // Invariant, so a key matches whatever the console thread's culture is
+                var lkey = keyToken.ToLowerInvariant();
                 if (lkey == "+all")
                 {
                     IncludedExcludedKeys.Clear();
