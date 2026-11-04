@@ -18,7 +18,7 @@ Some of the main advantages are:
 
 ## Implementation
 
-Bridges are devices that are defined within the devices array in the config file. They are unique devices with a specialized purpose: to act as a bridge between Essentials Devices and applications programmed traditionally in SIMPL Windows. This is accomplished by instantiating a Three Series Intersystem Communication symbol within the bridge device, and linking its Boolean/Ushort/String inputs and outputs to actions on one or multiple Essentials device(s). The definition for which joins map to which actions is defined within the device to be bridged to in a class that derives from JoinMapBase.
+Bridges are devices that are defined within the devices array in the config file. They are unique devices with a specialized purpose: to act as a bridge between Essentials Devices and applications programmed traditionally in SIMPL Windows. This is accomplished by instantiating an Ethernet Intersystem Communication (EISC) object within the bridge device, and linking its Boolean/Ushort/String inputs and outputs to actions on one or multiple Essentials device(s). The definition for which joins map to which actions is defined within the device to be bridged to in a class that derives from JoinMapBaseAdvanced.
 
 Let's consider the following Essentials Configuration:
 
@@ -32,8 +32,8 @@ Let's consider the following Essentials Configuration:
             {
                 "key": "processor",
                 "uid": 1,
-                "type": "pro3",
-                "name": "PRO3 w/o cards",
+                "type": "cp4n",
+                "name": "CP4N",
                 "group": "processor",
                 "supportedConfigModes": [
                     "essentials"
@@ -106,7 +106,7 @@ Let's consider the following Essentials Configuration:
                 "uid": 4,
                 "name": "BridgeToDevices",
                 "group": "api",
-                "type": "eiscApi",
+                "type": "eiscApiAdvanced",
                 "properties": {
                     "control": {
                         "tcpSshProperties": {
@@ -135,15 +135,22 @@ Let's consider the following Essentials Configuration:
 
 We have four Essentials Devices configured:
 
-1. Pro3 with a Key of "processor"
+1. CP4N with a Key of "processor"
 
-1. Panasonic Display with a Key of "panasonicDisplay01"
+1. Panasonic Display with a Key of "panasonicDisplay01" (the `PanasonicThefDisplay` type is not built into Essentials v3, so it must be provided by a plugin)
 
 1. Com port with a Key of "vtcComPort"
 
 1. Bridge with a Key of "deviceBridge"
 
-We want to have access to the com port for VTC Control from SIMPL Windows and we want to control the display from SIMPL Windows. To accomplish this, we have created a bridge device and added the devices to be bridged to the "devices" array on the bridge. As you can see we define the device key and the join start, which will determine which joins we will use on the resulting EISC to interact with the devices. In the Bridge control properties we defined ipid 03, and we will need a corresponding Ethernet System Intercommunication in the SIMPL Windows program at ipid 03.
+We want to have access to the com port for VTC Control from SIMPL Windows and we want to control the display from SIMPL Windows. To accomplish this, we have created a bridge device and added the devices to be bridged to the "devices" array on the bridge. As you can see we define the device key and the join start, which will determine which joins we will use on the resulting EISC to interact with the devices. In the Bridge control properties we defined ipid 03, and we will need a corresponding Ethernet System Intercommunication in the SIMPL Windows program at ipid 03. Each entry in the "devices" array may also include an optional `joinMapKey`, which refers to an entry in the top-level `joinMaps` object of the configuration file and is used to override the device's default join map. A bridge can also link rooms that support bridging through an optional "rooms" array, whose entries use `roomKey`, `joinStart` and `joinMapKey`.
+
+The bridge `type` determines which kind of EISC is created:
+
+* `eiscApiAdvanced` (or `eiscApiAdv`): an EISC to the IP address in `tcpSshProperties.address` at the configured `ipid`. Use `127.0.0.2` to reach another program slot on the same 4-series processor.
+* `eiscApiAdvancedServer`: an EISC server at the configured `ipid`.
+* `eiscApiAdvancedClient`: an EISC client to the IP address in `tcpSshProperties.address` at the configured `ipid`.
+* `vcEiscApiAdvanced` (or `vcEiscApiAdv`): for VC-4, an EISC to another VC-4 room. Instead of an address, set `roomId` in the `control` object to the Room ID of the program you are bridging to. The bridge will not be built if `roomId` is missing.
 
 Now that our devices have been built, we can refer to the device join maps to see which joins correspond to which actions.
 
@@ -156,66 +163,66 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         [JoinName("Name")]
         public JoinDataComplete Name = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("PowerOff")]
         public JoinDataComplete PowerOff = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Power Off", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Power Off", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("PowerOn")]
         public JoinDataComplete PowerOn = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Power On", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Power On", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("IsTwoWayDisplay")]
         public JoinDataComplete IsTwoWayDisplay = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Is Two Way Display", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Is Two Way Display", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("VolumeUp")]
         public JoinDataComplete VolumeUp = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Volume Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Volume Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("VolumeLevel")]
         public JoinDataComplete VolumeLevel = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Volume Level", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata() { Description = "Volume Level", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("VolumeDown")]
         public JoinDataComplete VolumeDown = new JoinDataComplete(new JoinData() { JoinNumber = 6, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Volume Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Volume Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("VolumeMute")]
         public JoinDataComplete VolumeMute = new JoinDataComplete(new JoinData() { JoinNumber = 7, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Volume Mute", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Volume Mute", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("VolumeMuteOn")]
         public JoinDataComplete VolumeMuteOn = new JoinDataComplete(new JoinData() { JoinNumber = 8, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Volume Mute On", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Volume Mute On", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("VolumeMuteOff")]
         public JoinDataComplete VolumeMuteOff = new JoinDataComplete(new JoinData() { JoinNumber = 9, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Volume Mute Off", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Volume Mute Off", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("InputSelectOffset")]
         public JoinDataComplete InputSelectOffset = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 10 },
-            new JoinMetadata() { Label = "Input Select", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Input Select", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("InputNamesOffset")]
         public JoinDataComplete InputNamesOffset = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 10 },
-            new JoinMetadata() { Label = "Input Names Offset", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Input Names Offset", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("InputSelect")]
         public JoinDataComplete InputSelect = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Input Select", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata() { Description = "Input Select", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("ButtonVisibilityOffset")]
         public JoinDataComplete ButtonVisibilityOffset = new JoinDataComplete(new JoinData() { JoinNumber = 41, JoinSpan = 10 },
-            new JoinMetadata() { Label = "Button Visibility Offset", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.DigitalSerial });
+            new JoinMetadata() { Description = "Button Visibility Offset", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.DigitalSerial });
 
         [JoinName("IsOnline")]
         public JoinDataComplete IsOnline = new JoinDataComplete(new JoinData() { JoinNumber = 50, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Is Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Is Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
         public DisplayControllerJoinMap(uint joinStart)
-            : base(joinStart, typeof(CameraControllerJoinMap))
+            : base(joinStart, typeof(DisplayControllerJoinMap))
         {
         }
     }
@@ -239,27 +246,27 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         [JoinName("TextReceived")]
         public JoinDataComplete TextReceived = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Text Received From Remote Device", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Text Received From Remote Device", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("SendText")]
         public JoinDataComplete SendText = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Text Sent To Remote Device", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Text Sent To Remote Device", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("SetPortConfig")]
         public JoinDataComplete SetPortConfig = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Set Port Config", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Set Port Config", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("Connect")]
         public JoinDataComplete Connect = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Connect", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Connect", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("Connected")]
         public JoinDataComplete Connected = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Connected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Connected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("Status")]
         public JoinDataComplete Status = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata() { Description = "Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
 
         public IBasicCommunicationJoinMap(uint joinStart)
@@ -276,7 +283,7 @@ To control diplay power from SIMPL Windows, we would connect Digital Signals to 
 To utilize the com port device, we would connect Serial Signals (VTC_TX$ and VTC_RX$) to join 51 on the EISC.
 
 You can refer to our [SIMPL Windows Bridging Example](https://github.com/PepperDash/EssentialsSIMPLWindowsBridgeExample) for a more complex example.  
-Example device config: <https://github.com/PepperDash/Essentials/blob/main/PepperDashEssentials/Example%20Configuration/SIMPLBridging/SIMPLBridgeExample_configurationFile.json>
+Example device config: <https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials/Example%20Configuration/SIMPLBridging/SIMPLBridgeExample_configurationFile.json>
 
 ## Notes
 
@@ -298,7 +305,7 @@ Example device config: <https://github.com/PepperDash/Essentials/blob/main/Peppe
 
 2. You have a floor of conference rooms that all share some centralized hardware like DSP, AV Routing and a shared CEN-GWEXER gateway with multiple GLS-OIR-CSM-EX-BATT occupancy sensors. All the shared hardware can be defined in the Essentials configuration and bridged over an EISC to each program that needs access. The same device can even be exposed to multiple programs over different EISCs.
 
-3. You have a SIMPL program that works for many room types, but because some rooms have different models of processors than others (CP3/CP3N/AV3/PRO3/DMPS3 variants), you have to maintain several versions of the program, compiled for each processor model to maintain access to features like the System Monitor slot. You can use Essentials running in a slot on a processor to expose the System Monitor and many other features of the processor, regardless of model. Now you only need to maintain a single SIMPL program defined for your most complex processor application (ex. PRO3)
+3. You have a SIMPL program that works for many room types, but because some rooms have different models of processors than others (CP4/CP4N/RMC4/PRO4 variants), you have to maintain several versions of the program, compiled for each processor model to maintain access to features like the System Monitor slot. You can use Essentials running in a slot on a processor to expose the System Monitor and many other features of the processor, regardless of model. Now you only need to maintain a single SIMPL program defined for your most complex processor application (ex. PRO4)
 
 ## Join Map Documentation
 
@@ -308,104 +315,106 @@ Example device config: <https://github.com/PepperDash/Essentials/blob/main/Peppe
 
 Please note that these joinmaps _may_ be using a deprecated implementation. The implementation is valid but nonetheless frowned upon for new features and plugins.
 
+In Essentials v3, the AirMedia, DM, DMPS, HD-MD and GLS occupancy sensor device drivers are not part of Essentials itself. Their join map classes remain in Essentials Core so plugins can reuse them.
+
 ### AirMediaController
 
 > supports: AM-200, AM-300
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/AirMediaControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/AirMediaControllerJoinMap.cs>
 
 ### AppleTvController
 
 > supports: IR control of Apple TV
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/AppleTvJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/AppleTvJoinMap.cs>
 
 ### CameraControlBase
 
 > supports: any camera that derives from CameraBase
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/CameraControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/CameraControllerJoinMap.cs>
 
 ### DisplayController
 
 > supports: IR controlled displays, any two way display driver that derives from PepperDash.Essentials.Core.DisplayBase
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/DisplayControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/DisplayControllerJoinMap.cs>
 
 ### DmChasisController
 
 > supports: All DM-MD-8x8/16x16/32x32 chassis, with or w/o DM-CPU3 Card
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/DmChassisControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/DmChassisControllerJoinMap.cs>
 
 ### DmRmcController
 
 > supports: All DM-RMC devices
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/DmRmcControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/DmRmcControllerJoinMap.cs>
 
 ### DmTxController
 
 > supports: All Dm-Tx devices
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/DmTxControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/DmTxControllerJoinMap.cs>
 
 ### DmpsAudioOutputController
 
 > supports: Program, Aux1, Aux2 outputs of all DMPS3 Control Systems
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/DmpsAudioOutputControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/DmpsAudioOutputControllerJoinMap.cs>
 
 ### DmpsRoutingController
 
 > supports: Av routing for all DMPS3 Control Systems
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/DmpsRoutingControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/DmpsRoutingControllerJoinMap.cs>
 
 ### GenericRelayController
 
 > supports: Any relay port on a Crestron Control System or Dm Endpoint
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/GenericRelayControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/GenericRelayControllerJoinMap.cs>
 
 ### GenericLightingJoinMap
 
 > supports: Devices derived from PepperDash.Essentials.Core.Lighting.LightingBase
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/GenericLightingJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/GenericLightingJoinMap.cs>
 
 ### GlsOccupancySensorBase
 
 > supports: Any Crestron GLS-Type Occupancy sensor - single/dual type
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/GlsOccupancySensorBaseJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/GlsOccupancySensorBaseJoinMap.cs>
 
 ### HdMdxxxCEController
 
 > supports: HD-MD-400-C-E, HD-MD-300-C-E, HD-MD-200-C-E, HD-MD-200-C-1G-E-B/W
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/HdMdxxxCEControllerJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/HdMdxxxCEControllerJoinMap.cs>
 
 ### IBasicCommunication
 
 > supports: Any COM Port on a Control System or Dm Endpoint device, TCP Client, SSH Client, or UDP Server
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/IBasicCommunicationJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/IBasicCommunicationJoinMap.cs>
 
 ### IDigitalInput
 
 > supports: Any Digital Input on a Control System, or DM Endpoint device
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/IDigitalInputJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/IDigitalInputJoinMap.cs>
 
 ### SystemMonitorController
 
-> supports: Exposing the system monitor slot for any Control System
+> supports: Exposing the system monitor slot for any Control System (not available on VC-4)
 
-<https://github.com/PepperDash/Essentials/blob/main/essentials-framework/Essentials%20Core/PepperDashEssentialsBase/Bridges/JoinMaps/SystemMonitorJoinMap.cs>
+<https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials.Core/Bridges/JoinMaps/SystemMonitorJoinMap.cs>
 
 ## Example SIMPL Windows Program
 
-We've provided an [example program](https://github.com/PepperDash/EssentialsSIMPLWindowsBridgeExample) for SIMPL Windows that works with the provided example Essentials configuration file [SIMPLBridgeExample_configurationFile.json](https://github.com/PepperDash/Essentials/blob/main/PepperDashEssentials/Example%20Configuration/SIMPLBridging/SIMPLBridgeExample_configurationFile.json). Load Essentials and the example SIMPL program to two slots on the same processor and you can get a better idea of how to take advantage of SIMPL Windows bridging.
+We've provided an [example program](https://github.com/PepperDash/EssentialsSIMPLWindowsBridgeExample) for SIMPL Windows that works with the provided example Essentials configuration file [SIMPLBridgeExample_configurationFile.json](https://github.com/PepperDash/Essentials/blob/essentials-3x/src/PepperDash.Essentials/Example%20Configuration/SIMPLBridging/SIMPLBridgeExample_configurationFile.json). Load Essentials and the example SIMPL program to two slots on the same processor and you can get a better idea of how to take advantage of SIMPL Windows bridging.
 
 Next: [Essentials architecture](~/docs/technical-docs/Arch-summary.md)

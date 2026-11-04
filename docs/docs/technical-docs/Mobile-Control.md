@@ -28,15 +28,18 @@ sync in real time.
 
 ### Direct Server vs. Edge Server
 
-Mobile Control supports two (non-exclusive) transport modes, configured on the `MobileControlConfig`
-device:
+Mobile Control supports two (non-exclusive) transport modes, configured in the `properties`
+(`MobileControlConfig`) of the Mobile Control device (type `mobilecontrol`; `appserver` and
+`webserver` are aliases):
 
-* **Direct Server** - `MobileControlWebsocketServer` runs an HTTPS WebSocket server directly on the
-  processor hardware. Clients on the same network connect straight to the processor - lowest
+* **Direct Server** (`directServer.enableDirectServer: true`) - `MobileControlWebsocketServer` runs an
+  HTTP/WebSocket server directly on the processor hardware (HTTPS/WSS when `directServer.Secure` is
+  `true`). Clients on the same network connect straight to the processor - lowest
   latency, no external dependency. This is what `mobile-control-react-app-core`'s local dev flow
   and the deployed `mcUserApp` React app use.
-* **Edge Server** (API server / cloud gateway) - the processor instead makes an *outbound* WebSocket
-  connection to an external Mobile Control server, which relays messages between it and remote
+* **Edge Server** (API server / cloud gateway; `enableApiServer`, default `true`, with the server at
+  `serverUrl`) - the processor instead makes an *outbound* WebSocket connection to an external Mobile
+  Control server, which relays messages between it and remote
   clients. Useful when clients can't reach the processor directly (e.g. no local network access).
 
 Both modes can be enabled simultaneously; outgoing messages are queued and sent down whichever
@@ -49,7 +52,7 @@ Direct Server:
 
 * **Path**: `/mc/api/ui/join/` (`_wsPath`)
 * **Port**: `50000 + <program slot number>` by default (e.g. program slot 2 → port `50002`), or a
-  custom port from config
+  custom port from `directServer.port`
 * **User app**: static files are served from `/user/programX/mcUserApp` (`_appPath`) at the base
   href `/mc/app` (`_userAppBaseHref`) - this is exactly the `mcUserApp` deployment directory used
   when [deploying](../Get-started.md) a built React app.
@@ -65,11 +68,16 @@ room/UI-client slot it's joining:
    ```
    This prints the Direct Server port, any existing UI-client tokens, and full connect URLs (e.g.
    `http://[ip]:[port]/mc/app?token=[token]`). New tokens can also be added dynamically
-   (`mobileadduiclient:[programSlot] [roomKey]`) - see the console command's help text for details.
-2. **Join a room** - the client calls `GET {apiPath}/ui/joinroom?token={token}` over HTTPS, which
-   validates the token and returns room data including a generated `clientId`.
+   (`mobileadduiclient:[programSlot] [roomKey] [grantCode]`) - see the console command's help text for
+   details. These console commands are only registered on a 4-series processor; on VC-4, get the same
+   information from the Essentials web API (`GET .../api/device/{mcKey}/info`) and add a client with
+   `POST .../api/devices/{mcKey}-directServer/client` and a `{ "roomKey", "grantCode" }` body.
+2. **Join a room** - the client calls `GET {apiPath}/ui/joinroom?token={token}` (i.e.
+   `/mc/api/ui/joinroom` on the Direct Server), which validates the token and returns room data
+   including a generated `clientId`.
 3. **Open the WebSocket** - the client connects to
-   `wss://[processor-ip]:[port]/mc/api/ui/join/{token}?clientId={clientId}`.
+   `ws://[processor-ip]:[port]/mc/api/ui/join/{token}?clientId={clientId}` (`wss://` when the Direct
+   Server is secure).
 
 Each connected client is tracked as a `UiClient`; disconnecting removes its subscriptions from
 every messenger it was subscribed to.
@@ -106,6 +114,8 @@ public class IHasStartMeetingMessenger : MessengerBase
     // ...
     protected override void RegisterActions()
     {
+        base.RegisterActions();
+
         AddAction("/fullStatus", (id, content) => SendFullStatus(id));
 
         AddAction("/startMeeting", (id, content) =>
@@ -122,35 +132,44 @@ public class IHasStartMeetingMessenger : MessengerBase
 * The messenger is constructed with a **base `MessagePath`** (e.g. `/device/zoomRoom1`) and calls
   `AddAction(subPath, handler)` for each supported action, relative to that base path.
 * `RegisterWithAppServer(IMobileControl appServerController)` registers the messenger's
-  `HandleMessage` callback with the system controller via `IMobileControl.AddAction<T>(...)`.
+  `HandleMessage` callback with the system controller via `IMobileControl.AddAction<T>(...)`, then
+  calls `RegisterActions()`. You don't normally call it yourself: hand the messenger to
+  `IMobileControl.AddDeviceMessenger(...)` and the system controller registers it when it initializes.
 * When an incoming message's `type` starts with the messenger's `MessagePath`, `HandleMessage`
   strips that prefix (leaving e.g. `/startMeeting`) and dispatches to the matching registered
   action. The sending client is automatically added to that messenger's subscriber list, so it
   receives future unsolicited feedback from it.
 * To push state out, messengers call `PostStatusMessage(DeviceStateMessageBase message, clientId)` -
   omitting `clientId` broadcasts to every subscribed client; passing one targets a single client
-  (e.g. replying to a `/fullStatus` request).
+  (e.g. replying to a `/fullStatus` request). One-off events go out with `PostEventMessage(...)`, typed
+  `/event{MessagePath}/{eventType}`.
 
 ### How devices opt in
 
 `EssentialsDevice.CustomActivate()` calls a virtual `CreateMobileControlMessengers()` hook once all
-devices have activated. A device (or a room) overrides this method to look up the `IMobileControl`
-device and construct/register whichever messengers it needs:
+devices have activated. The default implementation calls
+`IMobileControl.AddDefaultMessengersForDevice(this)`, which creates the built-in messenger for every
+interface the device implements (falling back to a `GenericMessenger`) at `/device/{deviceKey}`, so most
+devices need no Mobile Control code at all. A device that needs a custom messenger overrides the hook,
+calls the base implementation to keep the defaults, and adds its own messenger:
 
 ```csharp
 protected override void CreateMobileControlMessengers()
 {
+    base.CreateMobileControlMessengers();
+
     var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
     if (mc == null) return;
 
-    var messenger = new IHasStartMeetingMessenger("zoomRoom1-startMeeting", "/device/zoomRoom1", this);
-    messenger.RegisterWithAppServer(mc);
+    var messenger = new MyDeviceMessenger($"{Key}-myDevice", $"/device/{Key}", this);
+    mc.AddDeviceMessenger(messenger);
 }
 ```
 
-Rooms typically implement `IMobileControlRoomMessenger` and register a room-level messenger at a
-`/room/{roomKey}` path (via a `MobileControlBridgeBase`/`MobileControlEssentialsRoomBridge`), in
-addition to any per-device messengers.
+Rooms get a room-level messenger at `/room/{roomKey}` the same way: the default messengers for an
+`IEssentialsRoom` include a `MobileControlEssentialsRoomBridge` (a `MobileControlBridgeBase`, which
+implements `IMobileControlRoomMessenger`), and any messenger made for a room's interfaces shares that
+`/room/{roomKey}` path.
 
 ### The routing graph messenger
 

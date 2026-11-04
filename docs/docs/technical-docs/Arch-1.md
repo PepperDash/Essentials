@@ -36,6 +36,59 @@ This flat structure ensures that every device in a system exists in one place an
 
 ## Architecture drawing
 
-![Architecture overview](~/docs/images/arch-overview.png)
+The drawing below shows a typical small room. Every box on the left is a device in the `DeviceManager`, side by side in the same flat collection. Dotted arrows show which devices a device looks up by key; solid arrows show connections to hardware and UI clients.
+
+```mermaid
+flowchart LR
+    subgraph DM["Devices in DeviceManager"]
+        Room["Room<br/>(from a room plugin)"]
+        Fusion["Fusion room"]
+        Display["Display"]
+        DisplayCom["COM port<br/>comm device"]
+        Codec["Video codec<br/>(from a plugin)"]
+        CodecSsh["SSH client<br/>comm device"]
+        Stb["Set top box<br/>(IR)"]
+        Matrix["Matrix switcher"]
+        MC["Mobile Control"]
+        Messengers["Messengers<br/>(one per device interface)"]
+        Panel["Touchpanel controller<br/>(mctsw1070)"]
+    end
+
+    subgraph HW["Physical hardware"]
+        Ports["Processor COM and IR ports"]
+        DisplayHw["Display"]
+        CodecHw["Codec"]
+        StbHw["Set top box"]
+    end
+
+    subgraph Clients["UI clients"]
+        Browser["Web browser"]
+        Tsw["TSW panel running<br/>the wrapper app"]
+    end
+
+    Room -.-> Display
+    Room -.-> Codec
+    Room -.-> Matrix
+    Fusion -.-> Room
+    Display -.-> DisplayCom
+    Codec -.-> CodecSsh
+    Messengers -.-> Room
+    Messengers -.-> Display
+    Messengers -.-> Codec
+    MC --- Messengers
+    Panel -.-> MC
+
+    DisplayCom --> Ports
+    Stb --> Ports
+    Ports -- "RS-232" --> DisplayHw
+    Ports -- "IR" --> StbHw
+    CodecSsh -- "Network" --> CodecHw
+
+    MC -- "Web UI and WebSocket" --> Browser
+    MC -- "Web UI and WebSocket" --> Tsw
+    Panel -- "IP ID: sends the UI address" --> Tsw
+```
+
+Routing doesn't appear in the drawing because it isn't a connection between devices: when a route is requested, the routing system follows the configured tie lines and looks up each device along the way by key, as described above. A device that needs a port, such as the display's COM port or the codec's SSH client, gets it from the `CommFactory`, which also adds it to the `DeviceManager`. Mobile Control builds a messenger for each interface a device implements, which is how UI clients see and control the devices.
 
 Next: [Configurable lifecycle](~/docs/technical-docs/Arch-lifecycle.md)

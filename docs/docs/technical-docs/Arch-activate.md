@@ -34,20 +34,24 @@ Note: It is best-practice in Essentials to not write arbitrarily-timed startup s
 ```cs
 protected override bool CustomActivate()
 {
-    Debug.Console(0, this, "Final activation. Setting up actions and feedbacks");
+    this.LogInformation("Final activation. Setting up actions and feedbacks");
     SetupFunctions();
     SetupFeedbacks();
 
     EISC.SigChange += EISC_SigChange;
     ...
+
+    return base.CustomActivate();
 }
 ```
+
+If your class derives from `EssentialsDevice`, call `base.CustomActivate()` as shown. `EssentialsDevice.CustomActivate()` is where the device's Mobile Control messengers are created.
 
 ## 4. Post-activation
 
 This phase is used primarily to handle any logic in a device that might be dependent on another device, and we need to ensure that we have waited for the dependent device to be activated first.  For example, if we look at the `MicrophonePrivacyController` class, this is a "virtual" device whose purpose is to control the mute state of microphones from one or more contact closure inputs as well as provide feedback via different colored LEDs as to the current mute state.  This virtual-device doesn't actually represent any sort of physical hardware device, but rather relies on associating itself with other devices that represent digital inputs and relays as well as whatever device is responsible for preforming the actual muting of the microphones.
 
-We can see in the example below that during the `CustomActivate()` phase, we define a post-activation action via a lambda in `AddPostActivationAction()` that will execute during the post-activation phase.  The purpose here is to check the state of the microphone mute and set the state of the relays that control the LEDs accordingly.  We need to do this as a post-activation action because we need to make sure that the devices PrivacyDevice, RedLedRelay and GreenLedRelay are fully activated before we can attempt to interact with them.
+We can see in the example below that during the `CustomActivate()` phase, we define a post-activation action via a lambda in `AddPostActivationAction()` that will execute during the post-activation phase.  The purpose here is to subscribe to the privacy device's mute feedback so the relays that control the LEDs follow the microphone mute state.  We need to do this as a post-activation action because we need to make sure that the PrivacyDevice has been set up before we can attempt to interact with it. The initial check of the mute state, which drives the RedLedRelay and GreenLedRelay, is left to `Initialize()` (see [Device Initialization](#device-initialization) below).
 
 ### **Example**
 
@@ -65,16 +69,15 @@ protected override bool CustomActivate()
     if (greenLed != null)
         GreenLedRelay = greenLed;
     else
-        Debug.Console(0, this, "Unable to add Green LED device");
+        this.LogInformation("Unable to add Green LED device");
 
     var redLed = DeviceManager.GetDeviceForKey(Config.RedLedRelay.DeviceKey) as GenericRelayDevice;
     if (redLed != null)
         RedLedRelay = redLed;
     else
-        Debug.Console(0, this, "Unable to add Red LED device");
+        this.LogInformation("Unable to add Red LED device");
 
     AddPostActivationAction(() => {
-        CheckPrivacyMode();
         PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange -= PrivacyModeIsOnFeedback_OutputChange;
         PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange += PrivacyModeIsOnFeedback_OutputChange;
     });
@@ -82,6 +85,11 @@ protected override bool CustomActivate()
     initialized = true;
 
     return base.CustomActivate();
+}
+
+protected override void Initialize()
+{
+    CheckPrivacyMode();
 }
 
 void CheckPrivacyMode()
@@ -99,21 +107,21 @@ void CheckPrivacyMode()
 
 ## Activation exceptions
 
-Each of the three activation phases operates in a try/catch block for each device.  This way if one device has a fatal failure during activation, the failure will be logged and the system can continue to activate. This allows the developer to chase down multiple issues per load while testing, or to fix configuration omissions/errors as a group rather than one-at-a-time. A program can theoretically be fully-initialized and have many or all devices fail. We generally do not want to depend on exception handling to log device failures. Construction and activation code should have plenty of null checks, parameter validity checks, and debugging output to prevent exceptions from occurring. `String.IsEmptyOrNull(myString)` and `if(myObject == null)` are your friends. Invite them often.
+Each of the three activation phases operates in a try/catch block for each device.  This way if one device has a fatal failure during activation, the failure will be logged and the system can continue to activate. This allows the developer to chase down multiple issues per load while testing, or to fix configuration omissions/errors as a group rather than one-at-a-time. A program can theoretically be fully-initialized and have many or all devices fail. We generally do not want to depend on exception handling to log device failures. Construction and activation code should have plenty of null checks, parameter validity checks, and debugging output to prevent exceptions from occurring. `string.IsNullOrEmpty(myString)` and `if(myObject == null)` are your friends. Invite them often.
 
 ## Interdependence
 
 In any real-world system, devices and business logic need to talk to each other, otherwise, what's the point of all this coding? When creating your classes and configuration, it is best practice to _try_ not to "plug" one device into another during construction or activation. For example your touchpanel controller class has a `Display1` property that holds the display-1 object. Rather, it may be better to refer to the device as it is stored in the `DeviceManager` when it's needed using the static `DeviceManager.GetDeviceForKey(key)` method to get a reference to the device, which can be cast using various interfaces/class types, and then interacted with.  This prevents objects from being referenced in places where the developer may later forget to dereference them, causing memory leak.  This will become more important as Essentials becomes more able to be reconfigured at runtime.
 
-As an example, [connection-based routing](~/docs/technical-docs/Connection-based-routing.md#essentials-connection-based-routing) uses these methods.  When a route is requested, the collection of tielines and devices is searched for the devices and paths necessary to complete a route, but there are no devices or tie lines that are object-referenced in running code.  It can all be torn down and reconfigured without any memory-management dereferencing, setting things to null.
+As an example, [connection-based routing](~/docs/technical-docs/Connection-Based-Routing.md#essentials-connection-based-routing) uses these methods.  When a route is requested, the collection of tielines and devices is searched for the devices and paths necessary to complete a route, but there are no devices or tie lines that are object-referenced in running code.  It can all be torn down and reconfigured without any memory-management dereferencing, setting things to null.
 
 ## Device Initialization
 
-Once the `DeviceManager` has completed the activation phase cycle for all devices, the devices themselves can be initialized.  The `EssentialsDevice` class subscribes to the `DeviceManager.AllDevicesActivated` event and invokes the virtual `Initialize()` method on `Device` in a separate thread.  This allows all devices to concurrently initialize in parallel threads. 
+Once the `DeviceManager` has completed the activation phase cycle for all devices, the devices themselves can be initialized.  The `EssentialsDevice` class subscribes to the `DeviceManager.AllDevicesActivated` event and invokes the virtual `Initialize()` method on `Device` on a separate thread (`Task.Run`).  This allows all devices to concurrently initialize in parallel threads. When a device's `Initialize()` returns, its `IsInitialized` property is set to `true`, and once every `EssentialsDevice` is initialized, `DeviceManager` fires its `AllDevicesInitialized` event. 
 
 The main task that should be undertaken in the `Initialize()` method for any 3rd party device class, it to begin communication with the device via its API.  Ideally, no class that communicates with a 3rd party device outside the program should attempt to start communicating before this point.
 
-### Example (from `PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec`)
+### Example (adapted from an older version of the Cisco codec, which is now the `epi-videoCodec-ciscoExtended` plugin)
 ```cs
         protected override void Initialize()
         {

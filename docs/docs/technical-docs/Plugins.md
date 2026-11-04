@@ -1,14 +1,12 @@
 # What are Essentials Plugins?
 
-**Note : this entry updates a deprecated method - for information related to that deprecated method, see [Plugins - Deprecated](~/docs/Plugins-Deprecated.md)**
-
 ***
 * [YouTube Video - Loading Plugins in PepperDash Essentials](https://youtu.be/NA64iyNNAgE)
 * [YouTube Video - Build Your Own Plugin, Part 1](https://youtu.be/m2phC8g3Kfk)
 * [YouTube Video - Build Your Own Plugin, Part 2](https://youtu.be/2_PrWRk6Gy0)
 ***
 
-Plugins are SIMPL# Pro libraries that reference the Essentials Framework and can be loaded into an Essentials Application at runtime to extend functionality beyond what the Essentials Framework provides on its own.
+Plugins are SIMPL# Pro (.NET 8) libraries that reference the Essentials Framework and can be loaded into an Essentials Application at runtime to extend functionality beyond what the Essentials Framework provides on its own.
 
 ## Why Use Plugins?
 
@@ -20,13 +18,33 @@ Essentials is meant to be a lightweight framework and an extensible basis for de
 
 ## How do Plugins Work?
 
-One or more plugins can be loaded to the /user/ProgramX/plugins as .dlls or .cplz packages. When the Essentials Application starts, it looks for any .cplz files, unzips them and then iterates any .dll assemblies in that folder and loads them. Once the plugin assemblies are loaded the Essentials Application will then attempt to load a configuration file and construct items as defined in the file. Those items can be defined in either the Essentials Framework or in any of the loaded plugin assemblies.
+One or more plugins can be loaded to the plugins folder as .dlls or .cplz packages. On a 4-series processor this is `/user/programX/plugins`; on VC-4 it is the room's `User/plugins` folder. When the Essentials Application starts, if the plugins folder exists, it moves any .dll files from it into `plugins/loadedAssemblies`, unzips any .cplz files it finds anywhere under the user folder (`/user/programX` or `User`) into the same place, and then loads the .dll assemblies in `loadedAssemblies`. Once the plugin assemblies are loaded the Essentials Application will then attempt to load a configuration file and construct items as defined in the file. Those items can be defined in either the Essentials Framework or in any of the loaded plugin assemblies.
 
-![Architecture drawing](~/docs/images/Plugin%20Load%20Sequence.png)
+```mermaid
+flowchart TD
+    Start(["PluginLoader.LoadPlugins()"]) --> Exists{"plugins folder<br/>exists?"}
+    Exists -- No --> Config(["Continue: read the config file"])
+    Exists -- Yes --> Move["Move .dll files from plugins<br/>into plugins/loadedAssemblies<br/>(skipping assemblies already loaded)"]
+    Move --> Unzip["Unzip every .cplz under the user folder<br/>into plugins/loadedAssemblies"]
+    Unzip --> EachDll["For each .dll in loadedAssemblies"]
+    EachDll --> Compatible{"Built for .NET 8, and its<br/>Essentials references are<br/>available in this version?"}
+    Compatible -- No --> Issue1["Record a plugin load issue<br/>and skip the file"]
+    Compatible -- Yes --> LoadAsm["Load the assembly"]
+    LoadAsm --> EachType["For each type in each loaded plugin assembly"]
+    EachType --> IsFactory{"Implements<br/>IPluginDeviceFactory?"}
+    IsFactory -- No --> EachType
+    IsFactory -- Yes --> MinVersion{"Running Essentials version is at least<br/>MinimumEssentialsFrameworkVersion?"}
+    MinVersion -- No --> Issue2["Record a plugin load issue<br/>and skip the factory"]
+    MinVersion -- Yes --> Register["Register each of the factory's TypeNames<br/>with DeviceFactory"]
+    Register --> Report["Set each plugin's load status, and warn if there were<br/>issues (see pluginissues)"]
+    Issue1 --> Report
+    Issue2 --> Report
+    Report --> Config
+```
 
 ## What Must be Implemented in a Plugin for it to Work?
 
-All plugin assemblies must contain a class which inherits from ```EssentialsPluginDeviceFactory<T>```, where ```<T>``` is a class which inherits from ```PepperDash.Essentials.Core.EssentialsDevice```
+All plugin assemblies must contain a class which inherits from ```EssentialsPluginDeviceFactory<T>``` (or otherwise implements ```IPluginDeviceFactory```), where ```<T>``` is a class which inherits from ```PepperDash.Essentials.Core.EssentialsDevice```. The device class ```<T>``` must have a ```[Description("...")]``` attribute (```PepperDash.Essentials.Core.DescriptionAttribute```); the loader reads it when registering each type name, and the factory fails to load without it.
 
 Within this class, we will define some metadata for the plugin and define which constructor to use
 for instantiating each class as defined by type.
@@ -51,7 +69,7 @@ namespace MyPlugin
         {
             // This string is used to define the minimum version of the
             // Essentials Framework required for this plugin
-            MinimumEssentialsFrameworkVersion = "1.5.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0";
 
             // This string is used to define all valid type names for
             // this plugin.  This string is case insensitive
@@ -70,8 +88,8 @@ namespace MyPlugin
             // describing the failure.
             if (props == null)
             {
-                Debug.Console(0, "No valid property data for 'SomeDevice' - Verify Configuration.");
-                Debug.Console(0, dc.Properties.ToString());
+                Debug.LogError("No valid property data for 'SomeDevice' - Verify Configuration.");
+                Debug.LogError("{properties}", dc.Properties.ToString());
                 return null;
             }
             return new SomeDevice(dc.Key, dc.Name, props);
@@ -85,7 +103,7 @@ namespace MyPlugin
         {
             // This string is used to define the minimum version of the
             // Essentials Framework required for this plugin
-            MinimumEssentialsFrameworkVersion = "1.5.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0";
 
             // This string is used to define all valid type names for
             // this plugin.  This string is case insensitive
@@ -104,8 +122,8 @@ namespace MyPlugin
             // describing the failure.
             if (props == null)
             {
-                Debug.Console(0, "No valid property data for 'OtherDevice' - Verify Configuration.");
-                Debug.Console(0, dc.Properties.ToString());
+                Debug.LogError("No valid property data for 'OtherDevice' - Verify Configuration.");
+                Debug.LogError("{properties}", dc.Properties.ToString());
                 return null;
             }
             return new OtherDevice(dc.Key, dc.Name, props);
@@ -198,16 +216,16 @@ The Essentials web config app shows the same information on its Plugin Load Issu
 
 ## SIMPL Bridging
 
-Optionally, if your plugin device needs to be able to bridge to a SIMPL program over EISC, and there isn't already an existing bridge class in the Essentials Framework, you can write a new bridge class in your plugin. However, in order for the Essentials Application to be able to us that new bridge, the bridge must implement the ```IBridgeAdvanced``` interface with the required ```LinkToApi()``` Extension method.
+Optionally, if your plugin device needs to be able to bridge to a SIMPL program over EISC, and there isn't already an existing bridge class in the Essentials Framework, you can write a new bridge class in your plugin. However, in order for the Essentials Application to be able to us that new bridge, the device must implement the ```IBridgeAdvanced``` interface and its ```LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)``` method.
 
 If you are writing code for a bridgeable device, you should be inheriting from ```EssentialsBridgeableDevice```, which inherits from the already-required ```EssentialsDevice``` and implements ```IBridgeAdvanced```.
 
-Often though, you may find that a bridge class already exists in the Essentials Framework that you can leverage. For example, if you were writing a plugin to support a new display model that isn't already in the Essentials Framework, you would define a class in your plugin that inherits from PepperDash.Essentials.Core.DisplayBase. If you're only implementing the standard display control functions such as power/input/volume control, then the existing bridge class `DisplayControllerBridge` can be used. If you needed to add additional functions to the bridge, then you would need to write your own bridge in the plugin.
+Often though, you may find that a bridge class already exists in the Essentials Framework that you can leverage. For example, if you were writing a plugin to support a new display model that isn't already in the Essentials Framework, you would define a class in your plugin that inherits from `PepperDash.Essentials.Devices.Common.Displays.DisplayBase` (or `TwoWayDisplayBase`). If you're only implementing the standard display control functions such as power/input/volume control, then your `LinkToApi` can call the existing `LinkDisplayToApi` method on `DisplayBase`, which uses the `DisplayControllerJoinMap`. If you needed to add additional functions to the bridge, then you would need to write your own bridge in the plugin.
 
-For additional info see the [SIMPL-Bridging article](~/docs/SIMPL-Bridging.md).
+For additional info see the [SIMPL-Bridging article](~/docs/usage/SIMPL-Bridging-Updated.md).
 
 ## Template Essentials Plugin Repository
 
-Fork this repository when starting a new plugin. The template repository uses the essentials-builds repository as a submodule. This allows the plugin to reference a specific build version of Essentials. You must make sure that you checkout the correct build of the Essentials-Builds repo that contains any dependencies that your plugin may rely on.
+Fork this repository when starting a new plugin. Plugins reference Essentials through the `PepperDashEssentials` NuGet package, so set the package version to the Essentials build that contains any dependencies that your plugin may rely on.
 
 [Essentials Plugin Template Repository](https://github.com/PepperDash/EssentialsPluginTemplate)
