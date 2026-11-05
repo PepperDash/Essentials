@@ -13,13 +13,19 @@ namespace PepperDash.Essentials.Touchpanel
     /// </summary>
     /// <remarks>
     /// <list type="bullet">
-    /// <item><see cref="IHasInCallFeedback"/>: Teams Rooms is in a meeting.</item>
-    /// <item><see cref="IPrivacy"/>: the conference microphone mute.</item>
-    /// <item><see cref="IBasicVolumeWithFeedback"/>: the conference speaker volume and mute. The level is passed
-    /// through as the engine reports it; its range is not documented.</item>
+    /// <item><see cref="IHasInCallFeedback"/>: Teams Rooms is in a meeting. The MessengerFactoryRegistry has no
+    /// messenger for this interface, so the state does not reach Mobile Control clients by itself; a room plugin reads
+    /// <see cref="InCallFeedback"/> straight from the device.</item>
+    /// <item><see cref="IPrivacy"/>: the conference microphone mute (its messenger is added automatically).</item>
+    /// <item><see cref="IBasicVolumeWithFeedback"/>: the conference speaker volume and mute (its messenger is added
+    /// automatically). The level is passed through as the engine reports it; its range is not documented. If Mobile
+    /// Control faders assume 0 to 65535 and the engine reports something else, scale it here or implement
+    /// <c>IBasicVolumeWithFeedbackAdvanced</c> with a <c>MaxVolumeLevel</c> once the range is known.</item>
     /// </list>
     /// Not yet run against hardware. The engine has no application-control signals, so the
-    /// <see cref="ITswAppControl"/> methods only log.
+    /// <see cref="ITswAppControl"/> methods only log, and no <c>ITswAppControlMessenger</c> is registered: it would
+    /// give clients a "switch to Teams" button that does nothing. Add the messenger together with a real
+    /// <see cref="OpenApp"/> once the engine signal is known.
     /// </remarks>
     public class MobileControlUcEngineController : MobileControlTouchpanelController, IHasInCallFeedback, IPrivacy, IBasicVolumeWithFeedback
     {
@@ -73,6 +79,10 @@ namespace PepperDash.Essentials.Touchpanel
                 InCallFeedback, PrivacyModeIsOnFeedback, MuteFeedback, VolumeLevelFeedback
             };
 
+            // Also list them in the base Feedbacks, so anything that enumerates IHasFeedback.Feedbacks (the Dev Tools
+            // Devices page) shows them.
+            Feedbacks.AddRange(TeamsFeedbacks);
+
             // A feedback only raises OutputChange when its value changed, so any extender change refreshes them all.
             System4.DeviceExtenderSigChange += (e, a) =>
             {
@@ -91,18 +101,6 @@ namespace PepperDash.Essentials.Touchpanel
             // Extenders must be marked used before the engine registers (TouchpanelBase registers in pre-activation).
             System4.Use();
             Audio.Use();
-        }
-
-        /// <summary>
-        /// Registers the app-control messenger, which the base class adds only for TSW panels with an app.
-        /// </summary>
-        protected override bool CustomActivate()
-        {
-            var mc = DeviceManager.AllDevices.OfType<IMobileControl>().FirstOrDefault();
-
-            mc?.AddDeviceMessenger(new ITswAppControlMessenger($"appControlMessenger-{Key}", $"/device/{Key}", this));
-
-            return base.CustomActivate();
         }
 
         private void UpdateTeamsFeedbacks()

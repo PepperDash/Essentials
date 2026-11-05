@@ -64,5 +64,6 @@
 * CEN-RFGWEX/GWEXER
 * GLS-ODT/OIR-C-CN Occupancy Sensors
 * TSW-XXX series touchpanels
+* Crestron UC-ENGINE-FLEX-TEAMS (Microsoft Teams Rooms) as a Mobile Control panel (`mcucengineflexteams`)
 * XPanel for SmartGraphics
 * Fusion Room and Assets
