@@ -50,7 +50,7 @@ The device types built into Essentials v3 are listed below with their config `ty
 * Relay outputs, digital inputs and Versiports (`relayoutput`, `digitalinput`, `versiportinput`, `versiportanaloginput`, `versiportoutput`)
 * COM ports and generic TCP/IP communication (`genericComm`)
 * IR ports (`genericIrController`)
-* TSW/TS touchpanels, XPanel, DGE-1000 and the Crestron App, through Mobile Control (`mctsw550`, `mctsw750`, `mctsw1050`, `mctsw560`, `mctsw760`, `mctsw1060`, `mctsw570`, `mctsw770`, `mcts770`, `mctsw1070`, `mcts1070`, `mctsw1080`, `mcts1080`, `mcxpanel`, `mcdge1000`, `mccrestronapp`)
+* TSW/TS touchpanels, XPanel, DGE-1000 and the Crestron App, through Mobile Control (`mctsw550`, `mctsw750`, `mctsw1050`, `mctsw560`, `mctsw760`, `mctsw1060`, `mctsw570`, `mctsw770`, `mcts770`, `mctsw1070`, `mcts1070`, `mctsw1080`, `mcts1080`, `mcxpanel`, `mcdge1000`, `mccrestronapp`), and a Crestron UC-ENGINE-FLEX-TEAMS (Microsoft Teams Rooms) as the panel (`mcucengineflexteams`)
 * Internal card cage (`internalcardcage`) [(via plugin)](https://github.com/PepperDash/epi-crestron-io)
 * Fusion Room and Assets (`fusionRoom`)
 * Mobile Control, which serves the web UI and connects UI clients to the system (`mobilecontrol`)

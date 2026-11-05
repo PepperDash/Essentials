@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.UC;
 using Crestron.SimplSharpPro.UI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -776,7 +777,7 @@ namespace PepperDash.Essentials.Touchpanel
         /// <summary>
         /// HideOpenApp method
         /// </summary>
-        public void HideOpenApp()
+        public virtual void HideOpenApp()
         {
             if (Panel is TswX70Base x70Panel)
             {
@@ -794,7 +795,7 @@ namespace PepperDash.Essentials.Touchpanel
         /// <summary>
         /// OpenApp method
         /// </summary>
-        public void OpenApp()
+        public virtual void OpenApp()
         {
             if (Panel is TswX70Base x70Panel)
             {
@@ -812,7 +813,7 @@ namespace PepperDash.Essentials.Touchpanel
         /// <summary>
         /// CloseOpenApp method
         /// </summary>
-        public void CloseOpenApp()
+        public virtual void CloseOpenApp()
         {
             if (Panel is TswX70Base x70Panel)
             {
@@ -906,7 +907,7 @@ namespace PepperDash.Essentials.Touchpanel
         /// </summary>
         public MobileControlTouchpanelControllerFactory()
         {
-            TypeNames = new List<string>() { "mccrestronapp", "mctsw550", "mctsw750", "mctsw1050", "mctsw560", "mctsw760", "mctsw1060", "mctsw570", "mctsw770", "mcts770", "mctsw1070", "mcts1070", "mctsw1080", "mcts1080", "mcxpanel", "mcdge1000" };
+            TypeNames = new List<string>() { "mccrestronapp", "mctsw550", "mctsw750", "mctsw1050", "mctsw560", "mctsw760", "mctsw1060", "mctsw570", "mctsw770", "mcts770", "mctsw1070", "mcts1070", "mctsw1080", "mcts1080", "mcxpanel", "mcdge1000", "mcucengineflexteams" };
             MinimumEssentialsFrameworkVersion = "2.0.0";
 
             factories = new Dictionary<string, Func<uint, CrestronControlSystem, string, BasicTriListWithSmartObject>>
@@ -933,7 +934,8 @@ namespace PepperDash.Essentials.Touchpanel
                 {"ts1070", (id, controlSystem, projectName) => new Ts1070(id, controlSystem)},
                 {"tsw1080", (id, controlSystem, projectName) => new Tsw1080(id, controlSystem)},
                 {"ts1080", (id, controlSystem, projectName) => new Ts1080(id, controlSystem)},
-                {"dge1000", (id, controlSystem, projectName) => new Dge1000(id, controlSystem)}
+                {"dge1000", (id, controlSystem, projectName) => new Dge1000(id, controlSystem)},
+                {"ucengineflexteams", (id, controlSystem, projectName) => new UcEngineFlexTeams(id, controlSystem)}
             };
         }
 
@@ -955,6 +957,13 @@ namespace PepperDash.Essentials.Touchpanel
             if (panel == null)
             {
                 Debug.LogError("Unable to create Touchpanel for type {type}. Touchpanel Controller WILL NOT function correctly", dc.Type);
+            }
+
+            if (panel is UcEngineFlexTeams engine)
+            {
+                Debug.LogDebug("Factory Attempting to create new MobileControlUcEngineController");
+
+                return new MobileControlUcEngineController(dc.Key, dc.Name, engine, props);
             }
 
             Debug.LogDebug("Factory Attempting to create new MobileControlTouchpanelController");
