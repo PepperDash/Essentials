@@ -14,8 +14,8 @@ Consider the following example.
             {
                 "key": "processor",
                 "uid": 0,
-                "type": "pro3",
-                "name": "pro3",
+                "type": "cp4n",
+                "name": "cp4n",
                 "group": "processor",
                 "supportedConfigModes": [
                     "compliance",
@@ -86,7 +86,7 @@ Consider the following example.
 
 ## RelayOutput Configuration Explanation
 
-This configuration is meant for a Pro3 device, and instantiates two relay ports and links them to an eisc bridge to another processor slot on ipid 3.  Let's break down the ```Relay-1``` device.
+This configuration is meant for a CP4N device, and instantiates two relay ports and links them to an eisc bridge to another processor slot on ipid 3.  Let's break down the ```Relay-1``` device.
 
 ```JSON
 {
@@ -150,7 +150,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("Relay")]
         public JoinDataComplete Relay = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Device Relay State Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Device Relay State Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
 
         public GenericRelayControllerJoinMap(uint joinStart)

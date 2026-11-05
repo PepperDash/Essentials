@@ -94,8 +94,8 @@ Build and preview the docFx site locally to verify your changes:
 # Navigate to the docs directory
 cd docs
 
-# Build the documentation
-docfx build
+# Build the documentation (API reference and articles)
+docfx docfx.json
 
 # Serve the site locally
 docfx serve _site

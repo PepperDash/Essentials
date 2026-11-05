@@ -12,4 +12,6 @@ Follow the links below for examples of bridging to hardware and network resource
 
 **[Digital Input Bridging](~/docs/usage/DigitalInput.md)**
 
+**[IR Driver Bridging](~/docs/usage/IR-Driver-Bridging.md)**
+
 **[Card Frame Bridging](~/docs/CardFrame.md)**

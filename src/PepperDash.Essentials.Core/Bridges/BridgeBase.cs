@@ -112,7 +112,7 @@ public class EiscApiAdvanced : BridgeApi, ICommunicationMonitor
             }
 
             Debug.LogMessage(LogEventLevel.Information, this,
-                    "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
+                    "{0} is not compatible with this bridge type. Please use 'eiscApiAdvanced' instead, or update the device.",
                     device.Key);
         }
     }
@@ -265,7 +265,7 @@ public class EiscApiAdvanced : BridgeApi, ICommunicationMonitor
                     }
                 case "analog":
                     {
-                        var uo = Eisc.BooleanOutput[join].UserObject as Action<ushort>;
+                        var uo = Eisc.UShortOutput[join].UserObject as Action<ushort>;
                         if (uo != null)
                         {
                             Debug.LogMessage(LogEventLevel.Verbose, this, "Executing Action: {0}", uo.ToString());
@@ -276,7 +276,7 @@ public class EiscApiAdvanced : BridgeApi, ICommunicationMonitor
                     }
                 case "serial":
                     {
-                        var uo = Eisc.BooleanOutput[join].UserObject as Action<string>;
+                        var uo = Eisc.StringOutput[join].UserObject as Action<string>;
                         if (uo != null)
                         {
                             Debug.LogMessage(LogEventLevel.Verbose, this, "Executing Action: {0}", uo.ToString());

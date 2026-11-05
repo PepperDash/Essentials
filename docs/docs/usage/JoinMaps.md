@@ -4,20 +4,20 @@ A join map is a class that defines the list of joins accessible to an `Essential
 
 ## Why use a Join Map?
 
-A join map is necessary to bridge joins across an EISC bridge from Essentials to a SIMPL program. Join maps can be overriden in a configuration as necessary, but by default each device has a standard join map that publishes joins as a function of the joinOffset property of the device within a given Essentials Bridge. Join maps are reusable and extensible. Several join maps for standard device types already exist within Essentials, and those can be utilized for plugin creation without creation of a new join map. Utilizing standard join maps allows you to create a consistent API between device types that allows switching of devices via config without any new SIMPL or SIMPL#Pro code being written.
+A join map is necessary to bridge joins across an EISC bridge from Essentials to a SIMPL program. Join maps can be overriden in a configuration as necessary, but by default each device has a standard join map that publishes joins as a function of the `joinStart` property of the device within a given Essentials Bridge. Join maps are reusable and extensible. Several join maps for standard device types already exist within Essentials, and those can be utilized for plugin creation without creation of a new join map. Utilizing standard join maps allows you to create a consistent API between device types that allows switching of devices via config without any new SIMPL or SIMPL#Pro code being written.
 
 ## How Join maps Work
 
 Whenever you instantiate a device and link that device to an EISC bridge utilizing your configuration in Essentials, the method `LinkToApi()` is called. This method matches various methods, feedbacks, and properties to joins on the EISC bridge in order to create a consistent API for communication to SIMPL.
 
-Whenever `LinkToApi()` is called, it creates a new instance of the device's joinMap class on demand. The constructor of that joinMap creates an object containing the join metadata, adds any configured join offsets to the standard join map, and adds all associated joins to a global join list that can be easily referenced from the command line.
+Whenever `LinkToApi()` is called, it creates a new instance of the device's joinMap class on demand. The constructor of that joinMap creates an object containing the join metadata, offsets the standard join map by the configured `joinStart`, and adds all associated joins to a global join list that can be easily referenced from the command line.
 
 There are several components for each join within a join map.
 
 ```cs
 [JoinName("Online")]
         public JoinDataComplete Online = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Reports Online Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Reports Online Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 ```
 
 ### Attribute
@@ -36,21 +36,21 @@ JoinData() { JoinNumber = 1, JoinSpan = 1 };
 
 `JoinData` contains the pertinent information for the bridge. JoinData contains the information that the bridge utilizes to create each associated connection from the EISC to the methods, properties, and feedbacks associated with a device.
 
-`JoinNumber` is the 1-based index of the join you wish to tie to a given method, property, or feedback. This join, combined with the offset defined in the brdige's configuration for a device, will give you the SIMPL EISC join linked to the given data.
+`JoinNumber` is the 1-based index of the join you wish to tie to a given method, property, or feedback. This join, combined with the `joinStart` defined in the brdige's configuration for a device, will give you the SIMPL EISC join linked to the given data. A `joinStart` of 1 leaves the join numbers unchanged.
 
 `JoinSpan` determines a number of associated joins. Perhaps you have a list of Camera Presets, or a list of inputs. You can create one single join map entry and define the span of all associated join types.
 
-A `JoinData` object with a `JoinNumber` of 11 and a `JoinSpan` of 10 and a `joinOffset` of 0 is associated with joins 11-20 on the EISC.
+A `JoinData` object with a `JoinNumber` of 11 and a `JoinSpan` of 10 and a `joinStart` of 1 is associated with joins 11-20 on the EISC.
 
 ### JoinMetadata
 
 ```cs
-JoinMetadata() { Label = "Reports Online Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital }
+JoinMetadata() { Description = "Reports Online Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital }
 ```
 
 `JoinMetadata` provides the data reported when the `getjoinmap` command is used.
 
-`Label` is the description of the what this join does.
+`Description` is the description of the what this join does.
 
 `JoinCapabilities` is represented by an enum defining the direction that the data is flowing for this join. Appropriate values are:
 
@@ -60,7 +60,10 @@ public enum eJoinCapabilities
         None = 0,
         ToSIMPL = 1,
         FromSIMPL = 2,
-        ToFromSIMPL = ToSIMPL | FromSIMPL
+        ToFromSIMPL = ToSIMPL | FromSIMPL,
+        ToFusion = 4,
+        FromFusion = 8,
+        ToFromFusion = ToFusion | FromFusion,
     }
 ```
 
@@ -82,7 +85,7 @@ public enum eJoinType
 
 ### JoinDataComplete
 
-```chsarp
+```cs
 JoinDataComplete(JoinData data, JoinMetadata metadata);
 ```
 
@@ -99,27 +102,27 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         [JoinName("TextReceived")]
         public JoinDataComplete TextReceived = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Text Received From Remote Device", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Text Received From Remote Device", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("SendText")]
         public JoinDataComplete SendText = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Text Sent To Remote Device", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Text Sent To Remote Device", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("SetPortConfig")]
         public JoinDataComplete SetPortConfig = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Set Port Config", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata() { Description = "Set Port Config", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("Connect")]
         public JoinDataComplete Connect = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Connect", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Connect", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("Connected")]
         public JoinDataComplete Connected = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Connected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Connected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("Status")]
         public JoinDataComplete Status = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata() { Description = "Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
 
         public IBasicCommunicationJoinMap(uint joinStart)
@@ -137,19 +140,29 @@ A mechanism for printing join maps to console from a running Essentials program 
 Given a single Generic Communication device with a `joinStart` of 11 and a key of "Com-1", defined on a bridge with a key of "Bridge-1" and IPID of A0, the command `getjoinmap Bridge-1 Com-1` would return:
 
 ```sh
-Join Map for device 'Com-1' on EISC 'Bridge-1':
-GenericComm:
+Join map for device 'Com-1' on EISC 'Bridge-1':
+# IBasicCommunicationJoinMap
 
-Digitals:
-Found 2 Digital Joins
-Join Number: '11' | JoinSpan: '1' | Label : 'Connect' | Type: 'Digital' | Capabilities : 'FromSimpl'
-Join Number: '11' | JoinSpan: '1' | Label : 'Connected' | Type: 'Digital' | Capabilities : 'ToSimpl'
-Analogs:
-Found 1 Analog Joins
-Join Number: '11' | JoinSpan: '1' | Label : 'Status' | Type: 'Analog' | Capabilities : 'ToSimpl'
-Serials:
-Found 3 Serial Joins
-Join Number: '11' | JoinSpan: '1' | Label : 'Text Received From Remote Device' | Type: 'Serial' | Capabilities : 'FromSimpl'
-Join Number: '11' | JoinSpan: '1' | Label : 'Text Sent To Remote Device' | Type: 'Serial' | Capabilities : 'ToSimpl'
-Join Number: '12' | JoinSpan: '1' | Label : 'Set Port Config' | Type: 'Serial' | Capabilities : 'FromSimpl'
+## Digitals
+
+| Join Number | Join Span | Description | Type                | Capabilities |
+| ----------- | --------- | ----------- | ------------------- | ------------ |
+| 11          | 1         | Connect     | Digital             | FromSIMPL    |
+| 11          | 1         | Connected   | Digital             | ToSIMPL      |
+
+## Analogs
+
+| Join Number | Join Span | Description | Type                | Capabilities |
+| ----------- | --------- | ----------- | ------------------- | ------------ |
+| 11          | 1         | Status      | Analog              | ToSIMPL      |
+
+## Serials
+
+| Join Number | Join Span | Description                      | Type                | Capabilities |
+| ----------- | --------- | -------------------------------- | ------------------- | ------------ |
+| 11          | 1         | Text Received From Remote Device | Serial              | ToSIMPL      |
+| 11          | 1         | Text Sent To Remote Device       | Serial              | FromSIMPL    |
+| 12          | 1         | Set Port Config                  | Serial              | FromSIMPL    |
 ```
+
+`getjoinmap Bridge-1` with no device key prints the join maps for every device on the bridge. `getjoinmapmarkdown` takes the same arguments and writes the same tables to Markdown files in the `joinMaps` folder of the program's file directory.

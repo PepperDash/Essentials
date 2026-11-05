@@ -85,7 +85,7 @@
       {
         "key": "eisc-1A",
         "uid": 4,
-        "type": "eiscApi",
+        "type": "eiscApiAdvanced",
         "group": "api",
         "properties": {
           "control": {

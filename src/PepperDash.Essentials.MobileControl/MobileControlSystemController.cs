@@ -222,8 +222,9 @@ namespace PepperDash.Essentials
                 );
             }
 
+            // serverUrl is optional when only the direct server is used
             Host = config.ServerUrl;
-            if (!Host.StartsWith("http"))
+            if (!string.IsNullOrEmpty(Host) && !Host.StartsWith("http"))
             {
                 Host = "https://" + Host;
             }
@@ -460,7 +461,60 @@ namespace PepperDash.Essentials
             EventArgs eventArgs
         )
         {
-            SendMessageObject(new MobileControlMessage { Type = "/system/roomCombinationChanged" });
+            // Only notify clients whose room actually participates in the combiner. Broadcasting to
+            // every client reloads panels that aren't part of the combine (e.g. a control-room DGE),
+            // stranding them on a disconnected app shell.
+            var memberRoomKeys = _roomCombiner?.Rooms?
+                .Select(r => r.Key)
+                .Where(k => !string.IsNullOrEmpty(k))
+                .ToList();
+
+            if (memberRoomKeys == null || memberRoomKeys.Count == 0)
+            {
+                // Membership unknown - fall back to previous broadcast behavior.
+                SendMessageObject(new MobileControlMessage { Type = "/system/roomCombinationChanged" });
+                return;
+            }
+
+            // API server path has no per-client room mapping here, so keep broadcasting to it.
+            // Without a serverUrl there's no API server connection (see SendMessageObject).
+            if (Config.EnableApiServer && !string.IsNullOrEmpty(Host))
+            {
+                _transmitToServerQueue.Enqueue(
+                    new TransmitMessage(
+                        new MobileControlMessage { Type = "/system/roomCombinationChanged" },
+                        _wsClient2
+                    )
+                );
+            }
+
+            if (
+                Config.DirectServer != null
+                && Config.DirectServer.EnableDirectServer
+                && _directServer != null
+            )
+            {
+                foreach (var client in _directServer.UiClients)
+                {
+                    var roomKey = client.Value?.RoomKey;
+
+                    if (string.IsNullOrEmpty(roomKey) || !memberRoomKeys.Contains(roomKey))
+                    {
+                        continue;
+                    }
+
+                    _transmitToClientsQueue.Enqueue(
+                        new MessageToClients(
+                            new MobileControlMessage
+                            {
+                                Type = "/system/roomCombinationChanged",
+                                ClientId = client.Key
+                            },
+                            _directServer
+                        )
+                    );
+                }
+            }
         }
 
         /// <summary>
@@ -1045,6 +1099,14 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            if (string.IsNullOrEmpty(Host))
+            {
+                this.LogWarning(
+                    "serverUrl not set in config.  Cancelling attempt to register to server."
+                );
+                return;
+            }
+
             var result = CreateWebsocket();
 
             if (!result)
@@ -1060,6 +1122,12 @@ namespace PepperDash.Essentials
         {
             lock (_wsCriticalSection)
             {
+                if (_wsClient2 == null)
+                {
+                    this.LogWarning("Websocket client not created. Check that enableApiServer is true and serverUrl is set.");
+                    return;
+                }
+
                 // set to 99999 to let things work on 4-Series
                 if (
                     (CrestronEnvironment.ProgramCompatibility & eCrestronSeries.Series4)
@@ -1301,7 +1369,8 @@ namespace PepperDash.Essentials
                 this.LogDebug("Perf: {type} for client {clientId} missed its aggregated batch reply; sending it separately", o.Type, o.ClientId);
             }
 
-            if (Config.EnableApiServer)
+            // Without a serverUrl there's no API server connection, so only the direct server gets messages
+            if (Config.EnableApiServer && !string.IsNullOrEmpty(Host))
             {
 
                 _transmitToServerQueue.Enqueue(new TransmitMessage(o, _wsClient2));

@@ -54,9 +54,20 @@ Essentials uses dependency injection concepts in its start up phase. Simply, mos
 
 ### Device Factory, Codec example
 
-![Communication Device factory](~/docs/images/comm-device-factory.png)
+A device's factory builds its communication first, then hands it to the device. For example, a video codec plugin whose config has SSH `control` properties:
 
-The DeviceManager will contain two new devices after this: The Cisco codec, and the codec's `GenericSshClient`. This enables easier debugging of the client using console methods. Some devices like this codec will also have a `StatusMonitorBase` device, for Fusion and other reporting.
+```mermaid
+flowchart LR
+    Config["Device config<br/>key: videoCodec-1<br/>type: (the plugin's codec type)<br/>properties.control: method ssh,<br/>address, port, username, password"]
+    Config -- "1. control properties" --> CommFactory["CommFactory.CreateCommForDevice()"]
+    CommFactory -- "creates" --> Ssh["GenericSshClient<br/>(IBasicCommunication)"]
+    CommFactory -- "adds" --> DM[("DeviceManager")]
+    Ssh -- "2. injected into the constructor" --> Codec["Codec device"]
+    Config -- "other properties" --> Codec
+    Codec -- "3. returned by the factory,<br/>then added" --> DM
+```
+
+The DeviceManager will contain two new devices after this: the codec, and the codec's `GenericSshClient`. This enables easier debugging of the client using console methods. Some devices like this codec will also have a `StatusMonitorBase` device, for Fusion and other reporting.
 
 > `ComPortController` is `IBasicCommunication` as well, but methods like `Connect()` and `Disconnect()` do nothing on these types.
 

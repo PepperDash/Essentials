@@ -7,7 +7,7 @@
 A base class, defined in the PepperDash.Core library (`PepperDash.Core.Device`).  It can represent a physical device, or a virtual device or behaviour.  Generally, most new classes defined in the Essentials ecosystem should derive from Device.
 
 **DeviceManager**
-A static class (`PepperDash.Core.Essentials.DeviceManager`) that contains an unordered collection of Devices.  Devices are added/registered to the DeviceManager and later can be retrieved as references by Key.
+A static class (`PepperDash.Essentials.Core.DeviceManager`) that contains an unordered collection of Devices.  Devices are added/registered to the DeviceManager and later can be retrieved as references by Key.
 
 **Essentials Application**
 A Crestron SIMPL# Pro application that is made up of the Essentials Framework and any optionally any number of Essentials Plugins
@@ -22,4 +22,4 @@ SIMPL# Pro libraries that reference the Essentials Framework and are loaded at r
 An important interface defined in PepperDash.Core that requires a string property named Key, whose value must be unique.
 
 **PepperDash.Core**
-A SIMPL# utility library referenced by Essentials Framework.
+A utility library referenced by Essentials Framework. In v3 it is built from this repository (`src/PepperDash.Core`).

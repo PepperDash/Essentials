@@ -1,6 +1,6 @@
 # DigitalInput
 
-Digital Inputs can be bridged directly to SIMPL from any device that is both inlcuded within essentials and has a relay.
+Digital Inputs can be bridged directly to SIMPL from any device that is both inlcuded within essentials and has a digital input.
 
 Consider the following example.
 
@@ -14,8 +14,8 @@ Consider the following example.
             {
                 "key": "processor",
                 "uid": 0,
-                "type": "pro3",
-                "name": "pro3",
+                "type": "cp4n",
+                "name": "cp4n",
                 "group": "processor",
                 "supportedConfigModes": [
                     "compliance",
@@ -86,9 +86,9 @@ Consider the following example.
 }
 ```
 
-## RelayOutput Configuration Explanation
+## DigitalInput Configuration Explanation
 
-This configuration is meant for a Pro3 device, and instantiates two relay ports and links them to an eisc bridge to another processor slot on ipid 3.  Let's break down the ```DigitalInput-1``` device.
+This configuration is meant for a CP4N device, and instantiates two digital inputs and links them to an eisc bridge to another processor slot on ipid 3.  Let's break down the ```DigitalInput-1``` device.
 
 ```JSON
 {
@@ -123,7 +123,7 @@ Utilized in certain Essentials devices.  In this case, the value is unimportant.
 
 **```Type```**
 
-The Type is the identifier for a specific type of device in Essentials.  A list of all valid types can be reported by using the consolecommand ```gettypes``` in Essentials.  In this case, the type is ```digitalInput```.  This type is valid for any instance of a Relay Output.
+The Type is the identifier for a specific type of device in Essentials.  A list of all valid types can be reported by using the consolecommand ```gettypes``` in Essentials.  In this case, the type is ```digitalInput```.  This type is valid for any instance of a Digital Input.  For a Versiport I/O port configured as a digital input, use the type ```versiportInput``` instead; it takes the same properties and uses the same join map.
 
 **```Properties```**
 
@@ -131,19 +131,23 @@ These are the properties essential to the instantiation of the identified type.
 
 ### Properties
 
-There are two properties relevant to the instantiation of a relay device.
+There are two required properties relevant to the instantiation of a digital input device.
 
 **```portDeviceKey```**
 
-This property maps to the ```key``` of the device upon which the relay resides.
+This property maps to the ```key``` of the device upon which the digital input resides.
 
 **```portNumber```**
 
-This property maps to the number of the relay on the device you have mapped the relay device to.  Even if the device has only a single relay, ```portNumber``` must be defined.
+This property maps to the number of the digital input on the device you have mapped the digital input device to.  Even if the device has only a single digital input, ```portNumber``` must be defined.
 
 **```disablePullUpResistor```**
 
-This is a boolean value, therefore it is a case-sensitive ```true``` or ```false``` utilized to determine if the pullup resistor on the digital input will be disabled or not.
+This is a boolean value, therefore it is a case-sensitive ```true``` or ```false``` utilized to determine if the pullup resistor on the input will be disabled or not.  It is only applied by ```versiportInput``` devices; ```digitalInput``` devices ignore it.
+
+**```circuitType```**
+
+Optional.  Either ```"NO"``` (normally open, the default) or ```"NC"``` (normally closed).  When set to ```"NC"```, the reported input state is inverted.
 
 ### The JoinMap
 
@@ -157,7 +161,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("InputState")]
         public JoinDataComplete InputState = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Room Email Url", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Input State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
 
         public IDigitalInputJoinMap(uint joinStart)

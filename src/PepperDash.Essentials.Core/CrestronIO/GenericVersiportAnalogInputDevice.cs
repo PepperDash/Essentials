@@ -41,12 +41,18 @@ namespace PepperDash.Essentials.Core.CrestronIO
         public GenericVersiportAnalogInputDevice(string key, string name, Func<IOPortConfig, Versiport> postActivationFunc, IOPortConfig config) :
             base(key, name)
         {
-            InputValueFeedback = new IntFeedback("inputValue", () => inputPort.AnalogIn);
-            InputMinimumChangeFeedback = new IntFeedback("inputMinimumChange", () => inputPort.AnalogMinChange);
+            InputValueFeedback = new IntFeedback("inputValue", () => inputPort?.AnalogIn ?? 0);
+            InputMinimumChangeFeedback = new IntFeedback("inputMinimumChange", () => inputPort?.AnalogMinChange ?? 0);
 
             AddPostActivationAction(() =>
             {
                 inputPort = postActivationFunc(config);
+
+                if (inputPort == null)
+                {
+                    this.LogError("Unable to find versiport {port} on device {portDevice}. Input will not be registered", config.PortNumber, config.PortDeviceKey);
+                    return;
+                }
 
                 inputPort.Register();
 
@@ -68,6 +74,12 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// <param name="value">valid values range from 0 - 65535, representing the full 100% range of the processor voltage source.  Check processor documentation for details</param>        
         public void SetMinimumChange(ushort value)
         {
+            if (inputPort == null)
+            {
+                this.LogError("Unable to set minimum change. Versiport not found");
+                return;
+            }
+
             inputPort.AnalogMinChange = value;
         }
 

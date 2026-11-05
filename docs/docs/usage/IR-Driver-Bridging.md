@@ -43,10 +43,14 @@
 
 Both methods will bridge the IR signals with `Standard Command` defined in the IR file.  
 
-The `useBridgeJoinMap` property implements `GenericIrControllerJoinMap.cs` to standardized IR driver `Standard Command` signal joins.  This allows users to swap IR drivers that implement `Standard Command` while bridging IR signals consistently between drivers.  For example, when `useBridgeJoinMap` is present, channel up will be mapped to join-22 + device `joinstart` for any IR driver that has the signal marked as `Standard Command`.
+The `useBridgeJoinMap` property implements `GenericIrControllerJoinMap.cs` to standardized IR driver `Standard Command` signal joins.  This allows users to swap IR drivers that implement `Standard Command` while bridging IR signals consistently between drivers.  For example, when `useBridgeJoinMap` is `true`, channel up (`CH+`) will be mapped to join 22, offset by the device `joinStart` (join 22 with a `joinStart` of 1), for any IR driver that has the signal marked as `Standard Command`.  Only the joins whose command exists in the loaded IR file are linked.
+
+Without `useBridgeJoinMap`, the `Standard Command` signals are mapped sequentially, one join per command in the order the loaded IR driver reports them, starting at the device `joinStart`.
 
 
 ## GenericIrControllerJoinMap (Example)
+
+The table below shows the joins linked for one IR driver. The full `GenericIrControllerJoinMap` also defines joins for commands such as `F_SKIP` (6), `R_SKIP` (7), `RECORD` (8), `*` (24), `#` (25), `PLAY_PAUSE` (29), `HOME` (40), `OPTIONS`, `RETURN`, `DVR`, `ON_DEMAND` (50-53), `F_SRCH`, `R_SRCH`, `TRACK+`, `TRACK-` (56-59), and `RED`, `GREEN`, `YELLOW`, `BLUE` (65-68).
 
 ### Digitals
 
