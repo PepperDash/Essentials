@@ -5,7 +5,8 @@
       {
         "releaseRules": [
           { "scope": "force-patch", "release": "patch" },
-          { "scope": "no-release", "release": false }
+          { "scope": "no-release", "release": false },
+          { "type": "docs", "subject": "say which trunks are limited to their major version", "release": false }
         ]
       }
     ],
