@@ -49,6 +49,12 @@ public class SecretProviderInfo
     [JsonProperty("maxValueLength")]
     public int MaxValueLength { get; set; }
 
+    /// <summary>
+    /// Gets or sets the unit the length limits are counted in: "characters" or "bytes" (UTF-8).
+    /// </summary>
+    [JsonProperty("lengthUnit")]
+    public string LengthUnit { get; set; }
+
     /// <summary>Gets or sets whether the provider encrypts values at rest.</summary>
     [JsonProperty("encrypted")]
     public bool Encrypted { get; set; }

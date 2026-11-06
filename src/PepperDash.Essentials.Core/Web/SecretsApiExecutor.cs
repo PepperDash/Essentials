@@ -54,6 +54,7 @@ public static class SecretsApiExecutor
                     MaxValueLength = (pair.Value as IEnumerableSecretProvider)?.MaxValueLength
                         ?? SecretProviderGuards.MaxValueLength,
                     Encrypted = (pair.Value as IEnumerableSecretProvider)?.Encrypted ?? false,
+                    LengthUnit = (pair.Value as IEnumerableSecretProvider)?.LengthUnit ?? "characters",
                     MaxTotalLength = (pair.Value as IEnumerableSecretProvider)?.MaxTotalLength,
                     MaxSecrets = (pair.Value as IEnumerableSecretProvider)?.MaxSecrets
                 })
