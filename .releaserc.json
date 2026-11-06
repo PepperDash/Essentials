@@ -24,9 +24,9 @@
     ]
   ],  
   "branches": [
-    "main",
-    {"name": "development", "prerelease": "beta", "channel": "beta"},
-    {"name": "release", "prerelease": "rc", "channel": "rc"},
+    {"name": "essentials-1x", "range": "1.x", "channel": false},
+    {"name": "essentials-2x", "range": "2.x", "channel": false},
+    "essentials-3x",
     {
       "name": "replace-me-feature-branch",
       "prerelease": "replace-me-prerelease",
