@@ -64,6 +64,26 @@ public static class SecretsIndex
     public static bool IsReservedKey(string key)
         => !string.IsNullOrEmpty(key) && key.StartsWith(HeaderKey, StringComparison.Ordinal);
 
+    /// <summary>
+    /// True only for the records the index itself writes: the header and its chunks.
+    /// </summary>
+    /// <remarks>
+    /// Narrower than <see cref="IsReservedKey"/>, which matches any key with the prefix.
+    /// </remarks>
+    public static bool IsIndexRecord(string key)
+    {
+        if (string.Equals(key, HeaderKey, StringComparison.Ordinal))
+            return true;
+
+        for (var i = 0; i < MaxChunks; i++)
+        {
+            if (string.Equals(key, ChunkKey(i), StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
     /// <remarks>
     /// <c>EscapeNonAscii</c> guarantees one character per byte, so the chunk arithmetic is correct
     /// however the Data Store counts its 1600-character limit.

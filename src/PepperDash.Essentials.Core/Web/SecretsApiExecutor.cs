@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Crestron.SimplSharp;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 
@@ -50,12 +51,16 @@ public static class SecretsApiExecutor
                     Scope = (pair.Value as IEnumerableSecretProvider)?.Scope.ToString().ToLowerInvariant(),
                     EnumerationSupported = pair.Value is IEnumerableSecretProvider,
                     MaxKeyLength = SecretProviderGuards.DocumentedMaxKeyLength,
-                    MaxValueLength = SecretProviderGuards.MaxValueLength
+                    MaxValueLength = (pair.Value as IEnumerableSecretProvider)?.MaxValueLength
+                        ?? SecretProviderGuards.MaxValueLength,
+                    Encrypted = (pair.Value as IEnumerableSecretProvider)?.Encrypted ?? false,
+                    MaxTotalLength = (pair.Value as IEnumerableSecretProvider)?.MaxTotalLength,
+                    MaxSecrets = (pair.Value as IEnumerableSecretProvider)?.MaxSecrets
                 })
                 .OrderBy(info => info.Key, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            return (200, new SecretsProvidersResponse { Providers = providers });
+            return (200, new SecretsProvidersResponse { Providers = providers, ProgramName = ProgramName });
         }
         catch (Exception ex)
         {
@@ -271,7 +276,7 @@ public static class SecretsApiExecutor
         SecretCommandRequest request,
         bool allowExisting)
     {
-        var validation = ValidateKeyAndValue(request.Key, request.Value);
+        var validation = ValidateKeyAndValue(provider, request.Key, request.Value);
         if (validation != null)
             return validation.Value;
 
@@ -289,7 +294,7 @@ public static class SecretsApiExecutor
         IEnumerableSecretProvider provider,
         SecretCommandRequest request)
     {
-        var validation = ValidateKeyAndValue(request.Key, request.Value);
+        var validation = ValidateKeyAndValue(provider, request.Key, request.Value);
         if (validation != null)
             return validation.Value;
 
@@ -677,7 +682,7 @@ public static class SecretsApiExecutor
                 Applied = false
             };
 
-            var validation = SecretProviderGuards.ValidateWrite(entry.Key, entry.Value);
+            var validation = provider.ValidateWrite(entry.Key, entry.Value);
             if (validation != null)
             {
                 result.Action = "invalid";
@@ -909,11 +914,84 @@ public static class SecretsApiExecutor
         });
     }
 
+    // ─── Storage usage ───────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Reads the processor's Data Store usage with the DATASTORESTATUS console command.
+    /// </summary>
+    /// <remarks>
+    /// Read-only. The SDK has no call that reports usage, so this reads the console command, as
+    /// Essentials does for other processor details. Appliances only; on a server (VC-4) usage is
+    /// reported as unavailable.
+    /// </remarks>
+    public static (int StatusCode, SecretsStorageResponse Response) GetStorage()
+    {
+        var response = new SecretsStorageResponse
+        {
+            ProgramName = ProgramName,
+            Usage = new List<DataStoreUsageInfo>()
+        };
+
+        try
+        {
+            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Appliance)
+            {
+                response.Error = Error("notSupported", "Data Store usage is only available on a processor.");
+                return (200, response);
+            }
+
+            var output = string.Empty;
+            if (!CrestronConsole.SendControlSystemCommand("datastorestatus", ref output))
+            {
+                response.Error = Error("commandFailed", "The processor did not run DATASTORESTATUS.");
+                return (200, response);
+            }
+
+            response.Usage = DataStoreStatus.Parse(output)
+                .Select(row => new DataStoreUsageInfo
+                {
+                    Store = row.Store,
+                    Owner = row.Owner,
+                    Records = row.Records,
+                    Bytes = row.Bytes,
+                    PercentUsed = row.PercentUsed
+                })
+                .ToList();
+            response.Available = true;
+            return (200, response);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogMessage(ex, "Error reading Data Store usage: {Exception}");
+            response.Error = Error("executionError", ex.Message);
+            return (500, response);
+        }
+    }
+
+    /// <summary>
+    /// This program's name, which the Data Store uses as the owner of its records.
+    /// </summary>
+    private static string ProgramName
+    {
+        get
+        {
+            try
+            {
+                return InitialParametersClass.ProgramIDTag;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    private static (int, SecretCommandResponse)? ValidateKeyAndValue(string key, string value)
+    private static (int, SecretCommandResponse)? ValidateKeyAndValue(
+        IEnumerableSecretProvider provider, string key, string value)
     {
-        var result = SecretProviderGuards.ValidateWrite(key, value);
+        var result = provider.ValidateWrite(key, value);
         if (result != null)
         {
             var field = result.ErrorCode == "emptyValue" || result.ErrorCode == "valueTooLong"
@@ -940,6 +1018,9 @@ public static class SecretsApiExecutor
         "CDS_MAX_RECORDS" => "storeFull",
         "CDS_DATABASE_NOT_FOUND" => "storeUnavailable",
         "CDS_DATABASE_ERROR" => "storeUnavailable",
+        // Crestron secure storage (CrestronSecureStorageSecretsProvider).
+        "DeviceUnavailable" or "keyListWriteFailed" => "storeUnavailable",
+        "keyListFull" or "tooManySecrets" or "totalTooLarge" or "dataStoreFull" => "storeFull",
         null => "executionError",
         _ => cdsError
     };
@@ -954,8 +1035,9 @@ public static class SecretsApiExecutor
         "CDS_NAME_TOO_BIG" or "CDS_STRING_TOO_BIG" => 400,
         "CDS_RECORD_NOT_FOUND" => 404,
         "CDS_ACCESS_DENIED" => 403,
-        "CDS_MAX_RECORDS" => 507,
-        "CDS_DATABASE_NOT_FOUND" or "CDS_DATABASE_ERROR" => 503,
+        "CDS_MAX_RECORDS" or "keyListFull" or "tooManySecrets" or "totalTooLarge" or "dataStoreFull" => 507,
+        "CDS_DATABASE_NOT_FOUND" or "CDS_DATABASE_ERROR" or "DeviceUnavailable" or "keyListWriteFailed" => 503,
+        "reservedKey" => 400,
         _ => 500
     };
 

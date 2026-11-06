@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.Core;
 
 /// <summary>
-/// Which Crestron Data Store space a provider reads and writes.
+/// Which storage space a provider reads and writes.
 /// </summary>
 public enum SecretStoreScope
 {
@@ -63,6 +63,42 @@ public interface IEnumerableSecretProvider : ISecretProvider
     /// </summary>
     /// <returns>The length, or -1 when the record does not exist.</returns>
     int GetSecretLength(string key);
+
+    /// <summary>
+    /// Gets the longest value, in characters, this provider accepts.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to the Data Store limit. A default member rather than a new required one, so an
+    /// existing implementation keeps compiling.
+    /// </remarks>
+    int MaxValueLength => SecretProviderGuards.MaxValueLength;
+
+    /// <summary>
+    /// Gets a value indicating whether this provider encrypts values at rest. The Data Store
+    /// providers do not.
+    /// </summary>
+    bool Encrypted => false;
+
+    /// <summary>
+    /// Gets the most bytes this provider stores in total, or null when it sets no total.
+    /// </summary>
+    int? MaxTotalLength => null;
+
+    /// <summary>
+    /// Gets the most secrets this provider holds, or null when it sets no count.
+    /// </summary>
+    int? MaxSecrets => null;
+
+    /// <summary>
+    /// Checks a key and value against this provider's rules, writing nothing.
+    /// </summary>
+    /// <returns>Null when the write is acceptable; otherwise the failure the write would return.</returns>
+    /// <remarks>
+    /// Lets callers such as a bulk import reject a whole batch before writing any of it. Defaults
+    /// to the Data Store rules, so an existing implementation keeps compiling.
+    /// </remarks>
+    SecretStoreResult ValidateWrite(string key, string value)
+        => SecretProviderGuards.ValidateWrite(key, value, MaxValueLength);
 }
 
 /// <summary>
