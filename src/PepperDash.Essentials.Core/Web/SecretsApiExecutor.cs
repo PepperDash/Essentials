@@ -50,7 +50,8 @@ public static class SecretsApiExecutor
                     Scope = (pair.Value as IEnumerableSecretProvider)?.Scope.ToString().ToLowerInvariant(),
                     EnumerationSupported = pair.Value is IEnumerableSecretProvider,
                     MaxKeyLength = SecretProviderGuards.DocumentedMaxKeyLength,
-                    MaxValueLength = SecretProviderGuards.MaxValueLength
+                    MaxValueLength = (pair.Value as IEnumerableSecretProvider)?.MaxValueLength
+                        ?? SecretProviderGuards.MaxValueLength
                 })
                 .OrderBy(info => info.Key, StringComparer.OrdinalIgnoreCase)
                 .ToList();
@@ -271,7 +272,7 @@ public static class SecretsApiExecutor
         SecretCommandRequest request,
         bool allowExisting)
     {
-        var validation = ValidateKeyAndValue(request.Key, request.Value);
+        var validation = ValidateKeyAndValue(provider, request.Key, request.Value);
         if (validation != null)
             return validation.Value;
 
@@ -289,7 +290,7 @@ public static class SecretsApiExecutor
         IEnumerableSecretProvider provider,
         SecretCommandRequest request)
     {
-        var validation = ValidateKeyAndValue(request.Key, request.Value);
+        var validation = ValidateKeyAndValue(provider, request.Key, request.Value);
         if (validation != null)
             return validation.Value;
 
@@ -677,7 +678,7 @@ public static class SecretsApiExecutor
                 Applied = false
             };
 
-            var validation = SecretProviderGuards.ValidateWrite(entry.Key, entry.Value);
+            var validation = SecretProviderGuards.ValidateWrite(entry.Key, entry.Value, provider.MaxValueLength);
             if (validation != null)
             {
                 result.Action = "invalid";
@@ -911,9 +912,10 @@ public static class SecretsApiExecutor
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    private static (int, SecretCommandResponse)? ValidateKeyAndValue(string key, string value)
+    private static (int, SecretCommandResponse)? ValidateKeyAndValue(
+        IEnumerableSecretProvider provider, string key, string value)
     {
-        var result = SecretProviderGuards.ValidateWrite(key, value);
+        var result = SecretProviderGuards.ValidateWrite(key, value, provider.MaxValueLength);
         if (result != null)
         {
             var field = result.ErrorCode == "emptyValue" || result.ErrorCode == "valueTooLong"
@@ -940,6 +942,9 @@ public static class SecretsApiExecutor
         "CDS_MAX_RECORDS" => "storeFull",
         "CDS_DATABASE_NOT_FOUND" => "storeUnavailable",
         "CDS_DATABASE_ERROR" => "storeUnavailable",
+        // Crestron secure storage (CrestronSecureStorageSecretsProvider).
+        "DeviceUnavailable" => "storeUnavailable",
+        "keyListFull" or "tooManySecrets" => "storeFull",
         null => "executionError",
         _ => cdsError
     };
@@ -954,8 +959,9 @@ public static class SecretsApiExecutor
         "CDS_NAME_TOO_BIG" or "CDS_STRING_TOO_BIG" => 400,
         "CDS_RECORD_NOT_FOUND" => 404,
         "CDS_ACCESS_DENIED" => 403,
-        "CDS_MAX_RECORDS" => 507,
-        "CDS_DATABASE_NOT_FOUND" or "CDS_DATABASE_ERROR" => 503,
+        "CDS_MAX_RECORDS" or "keyListFull" or "tooManySecrets" => 507,
+        "CDS_DATABASE_NOT_FOUND" or "CDS_DATABASE_ERROR" or "DeviceUnavailable" => 503,
+        "reservedKey" => 400,
         _ => 500
     };
 

@@ -84,6 +84,13 @@ internal static class SecretProviderGuards
     /// Validates a key and value for a write. Returns null when both are acceptable.
     /// </summary>
     public static SecretStoreResult ValidateWrite(string key, string value)
+        => ValidateWrite(key, value, MaxValueLength);
+
+    /// <summary>
+    /// Validates a key and value for a write against a provider's own value limit. Returns null when
+    /// both are acceptable.
+    /// </summary>
+    public static SecretStoreResult ValidateWrite(string key, string value, int maxValueLength)
     {
         var keyResult = ValidateKeyForWrite(key);
         if (keyResult != null)
@@ -98,12 +105,12 @@ internal static class SecretProviderGuards
                 "A secret value is required. Use delete to remove a secret.");
         }
 
-        if (value.Length > MaxValueLength)
+        if (value.Length > maxValueLength)
         {
             // Length only - never any part of the value.
             return SecretStoreResult.Fail(
                 "valueTooLong",
-                $"The value is {value.Length} characters; the Crestron Data Store limit is {MaxValueLength}.");
+                $"The value is {value.Length} characters; this provider's limit is {maxValueLength}.");
         }
 
         return null;

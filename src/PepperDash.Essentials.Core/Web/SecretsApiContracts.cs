@@ -45,7 +45,7 @@ public class SecretProviderInfo
     [JsonProperty("maxKeyLength")]
     public int MaxKeyLength { get; set; }
 
-    /// <summary>Gets or sets the Data Store value length limit.</summary>
+    /// <summary>Gets or sets this provider's value length limit, in characters.</summary>
     [JsonProperty("maxValueLength")]
     public int MaxValueLength { get; set; }
 }

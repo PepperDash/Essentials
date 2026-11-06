@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace PepperDash.Essentials.Core;
 
 /// <summary>
-/// Which Crestron Data Store space a provider reads and writes.
+/// Which storage space a provider reads and writes.
 /// </summary>
 public enum SecretStoreScope
 {
@@ -63,6 +63,15 @@ public interface IEnumerableSecretProvider : ISecretProvider
     /// </summary>
     /// <returns>The length, or -1 when the record does not exist.</returns>
     int GetSecretLength(string key);
+
+    /// <summary>
+    /// Gets the longest value, in characters, this provider accepts.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to the Data Store limit. A default member rather than a new required one, so an
+    /// existing implementation keeps compiling.
+    /// </remarks>
+    int MaxValueLength => SecretProviderGuards.MaxValueLength;
 }
 
 /// <summary>

@@ -46,6 +46,19 @@ public static class SecretsManager
 
             AddSecretProvider("CrestronGlobalSecrets", new CrestronGlobalSecretsProvider("CrestronGlobalSecrets"));
 
+            // Encrypted storage, where the firmware supports it. Nothing to configure.
+            if (CrestronSecureStorageSecretsProvider.Supported)
+            {
+                AddSecretProvider(CrestronSecureStorageSecretsProvider.DefaultKey,
+                    new CrestronSecureStorageSecretsProvider(CrestronSecureStorageSecretsProvider.DefaultKey));
+            }
+            else
+            {
+                Debug.LogMessage(LogEventLevel.Information,
+                    "Crestron secure storage is not supported on this processor; secrets provider '{0}' is not available",
+                    CrestronSecureStorageSecretsProvider.DefaultKey);
+            }
+
             CrestronConsole.AddNewConsoleCommand(SetSecretProcess, "setsecret",
                 "Adds secret to secrets provider",
                 ConsoleAccessLevelEnum.AccessOperator);
