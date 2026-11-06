@@ -123,6 +123,9 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
     public bool Encrypted => true;
 
     /// <inheritdoc />
+    public string LengthUnit => "bytes";
+
+    /// <inheritdoc />
     public int? MaxTotalLength => MaxSecureTotalLength;
 
     /// <inheritdoc />

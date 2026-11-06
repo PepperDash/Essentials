@@ -74,6 +74,12 @@ public interface IEnumerableSecretProvider : ISecretProvider
     int MaxValueLength => SecretProviderGuards.MaxValueLength;
 
     /// <summary>
+    /// Gets the unit <see cref="MaxValueLength"/> and <see cref="MaxTotalLength"/> are counted in:
+    /// "characters" (the Data Store's limit) or "bytes" (UTF-8).
+    /// </summary>
+    string LengthUnit => "characters";
+
+    /// <summary>
     /// Gets a value indicating whether this provider encrypts values at rest. The Data Store
     /// providers do not.
     /// </summary>
