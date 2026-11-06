@@ -678,7 +678,7 @@ public static class SecretsApiExecutor
                 Applied = false
             };
 
-            var validation = SecretProviderGuards.ValidateWrite(entry.Key, entry.Value, provider.MaxValueLength);
+            var validation = provider.ValidateWrite(entry.Key, entry.Value);
             if (validation != null)
             {
                 result.Action = "invalid";
@@ -915,7 +915,7 @@ public static class SecretsApiExecutor
     private static (int, SecretCommandResponse)? ValidateKeyAndValue(
         IEnumerableSecretProvider provider, string key, string value)
     {
-        var result = SecretProviderGuards.ValidateWrite(key, value, provider.MaxValueLength);
+        var result = provider.ValidateWrite(key, value);
         if (result != null)
         {
             var field = result.ErrorCode == "emptyValue" || result.ErrorCode == "valueTooLong"
@@ -943,7 +943,7 @@ public static class SecretsApiExecutor
         "CDS_DATABASE_NOT_FOUND" => "storeUnavailable",
         "CDS_DATABASE_ERROR" => "storeUnavailable",
         // Crestron secure storage (CrestronSecureStorageSecretsProvider).
-        "DeviceUnavailable" => "storeUnavailable",
+        "DeviceUnavailable" or "keyListWriteFailed" => "storeUnavailable",
         "keyListFull" or "tooManySecrets" => "storeFull",
         null => "executionError",
         _ => cdsError
@@ -960,7 +960,7 @@ public static class SecretsApiExecutor
         "CDS_RECORD_NOT_FOUND" => 404,
         "CDS_ACCESS_DENIED" => 403,
         "CDS_MAX_RECORDS" or "keyListFull" or "tooManySecrets" => 507,
-        "CDS_DATABASE_NOT_FOUND" or "CDS_DATABASE_ERROR" or "DeviceUnavailable" => 503,
+        "CDS_DATABASE_NOT_FOUND" or "CDS_DATABASE_ERROR" or "DeviceUnavailable" or "keyListWriteFailed" => 503,
         "reservedKey" => 400,
         _ => 500
     };

@@ -72,6 +72,17 @@ public interface IEnumerableSecretProvider : ISecretProvider
     /// existing implementation keeps compiling.
     /// </remarks>
     int MaxValueLength => SecretProviderGuards.MaxValueLength;
+
+    /// <summary>
+    /// Checks a key and value against this provider's rules, writing nothing.
+    /// </summary>
+    /// <returns>Null when the write is acceptable; otherwise the failure the write would return.</returns>
+    /// <remarks>
+    /// Lets callers such as a bulk import reject a whole batch before writing any of it. Defaults
+    /// to the Data Store rules, so an existing implementation keeps compiling.
+    /// </remarks>
+    SecretStoreResult ValidateWrite(string key, string value)
+        => SecretProviderGuards.ValidateWrite(key, value, MaxValueLength);
 }
 
 /// <summary>

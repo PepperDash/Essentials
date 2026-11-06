@@ -41,6 +41,21 @@ public class SecretsIndexTests
         SecretsIndex.IsReservedKey(key).Should().Be(expected);
     }
 
+    [Theory]
+    [InlineData("__essSecretsIdx", true)]
+    [InlineData("__essSecretsIdx00", true)]
+    [InlineData("__essSecretsIdx15", true)]
+    [InlineData("__essSecretsIdx16", false)]
+    [InlineData("__essSecretsIdxKeys", false)]
+    [InlineData("__essSecretsIdxOther00", false)]
+    [InlineData("__essSecretsIdx0", false)]
+    [InlineData("displayPassword", false)]
+    [InlineData("", false)]
+    public void IsIndexRecord_matches_only_the_header_and_chunks(string key, bool expected)
+    {
+        SecretsIndex.IsIndexRecord(key).Should().Be(expected);
+    }
+
     [Fact]
     public void Chunk_and_header_keys_fit_the_32_character_data_store_limit()
     {

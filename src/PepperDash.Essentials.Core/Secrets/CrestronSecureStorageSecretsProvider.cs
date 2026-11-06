@@ -81,6 +81,9 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
 
     private const string RecordType = "String";
 
+    /// <summary>Error code for an unavailable store; the Secrets API maps it to storeUnavailable.</summary>
+    private const string DeviceUnavailable = "DeviceUnavailable";
+
     private readonly object _sync = new object();
 
     /// <inheritdoc />
@@ -186,13 +189,18 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
     }
 
     /// <inheritdoc />
-    public SecretStoreResult WriteSecret(string key, string value)
+    /// <remarks>
+    /// Everything here is checked before storage is touched: the Data Store rules, this provider's
+    /// key and UTF-8 byte limits, and reserved names. The Secrets API's index records are the only
+    /// reserved-prefix keys accepted.
+    /// </remarks>
+    public SecretStoreResult ValidateWrite(string key, string value)
     {
         var guard = SecretProviderGuards.ValidateWrite(key, value, MaxValueLength);
         if (guard != null)
             return guard;
 
-        if (IsRegistryKey(key))
+        if (SecretsIndex.IsReservedKey(key) && !SecretsIndex.IsIndexRecord(key))
             return ReservedKey(key);
 
         if (key.Length > MaxSecureKeyLength)
@@ -201,22 +209,36 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
                 String.Format("The key is {0} characters; this provider's limit is {1}.", key.Length, MaxSecureKeyLength));
         }
 
-        var bytes = Encoding.UTF8.GetBytes(value);
-        if (bytes.Length > MaxValueLength)
+        var byteCount = Encoding.UTF8.GetByteCount(value);
+        if (byteCount > MaxValueLength)
         {
             // Length only - never any part of the value.
             return SecretStoreResult.Fail("valueTooLong",
-                String.Format("The value is {0} bytes as UTF-8; this provider's limit is {1}.", bytes.Length, MaxValueLength));
+                String.Format("The value is {0} bytes as UTF-8; this provider's limit is {1}.", byteCount, MaxValueLength));
         }
+
+        return null;
+    }
+
+    /// <inheritdoc />
+    public SecretStoreResult WriteSecret(string key, string value)
+    {
+        var invalid = ValidateWrite(key, value);
+        if (invalid != null)
+            return invalid;
+
+        var bytes = Encoding.UTF8.GetBytes(value);
 
         lock (_sync)
         {
             // Checked before the secret is written, so a refused key leaves nothing behind. A key
             // already in the list is an overwrite and adds nothing.
-            TryReadRegistry(out var listed, out _);
+            if (!TryReadRegistry(out var listed, out var listError) && listError == DeviceUnavailable)
+                return Fail(eCrestronSecureStorageStatus.DeviceUnavailable, key);
+
             var withKey = SecureStorageKeyRegistry.WithKey(listed, key);
-            if (withKey != null && !SecretsIndex.IsReservedKey(key)
-                && withKey.Count(listedKey => !SecretsIndex.IsReservedKey(listedKey)) > MaxSecureSecrets)
+            if (withKey != null && !SecretsIndex.IsIndexRecord(key)
+                && withKey.Count(listedKey => !SecretsIndex.IsIndexRecord(listedKey)) > MaxSecureSecrets)
             {
                 return SecretStoreResult.Fail("tooManySecrets",
                     String.Format("{0} holds at most {1} secrets; delete one before adding another.", Key, MaxSecureSecrets));
@@ -249,10 +271,19 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
 
             Flush();
 
+            // A new key that isn't in the list is invisible to listing and to the secret count, so
+            // the write only counts once the list holds it. Otherwise it is removed again.
+            if (!UpdateRegistry(key, add: true))
+            {
+                CrestronSecureStorage.Delete(key, GlobalStore);
+                Flush();
+                Debug.LogMessage(LogEventLevel.Warning, this, "Secure storage saved {0}:{1} but its key list could not be updated; the secret was removed", Key, key);
+                return SecretStoreResult.Fail("keyListWriteFailed",
+                    String.Format("The key list for {0} could not be updated, so '{1}' was not saved.", Key, key));
+            }
+
             // Length only - useful for diagnosing a truncated or empty write, and not the value.
             Debug.LogMessage(LogEventLevel.Information, this, "Set secret {0}:{1} ({2} characters)", Key, key, value.Length);
-
-            UpdateRegistry(key, add: true);
             return SecretStoreResult.Ok();
         }
     }
@@ -315,6 +346,14 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
         errorCode = null;
 
         var status = Retrieve(SecureStorageKeyRegistry.RecordKey, out var json);
+        if (status == eCrestronSecureStorageStatus.DeviceUnavailable)
+        {
+            // The store itself is down, so an empty list here would be a false "no secrets" -
+            // and pruning the index against it would drop entries for secrets that exist.
+            errorCode = DeviceUnavailable;
+            return false;
+        }
+
         if (status != eCrestronSecureStorageStatus.Ok)
         {
             // Secure storage has no "not found" status, so a list that was never written and one
@@ -333,41 +372,47 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
     }
 
     /// <summary>
-    /// Adds or removes a key from the key list. Must be called under <see cref="_sync"/>.
+    /// Adds or removes a key from the key list, and reads the list back. Must be called under
+    /// <see cref="_sync"/>.
     /// </summary>
+    /// <returns>True when the list holds the change, including when nothing needed changing.</returns>
     /// <remarks>
-    /// The secret has already been written or deleted, and the secret is what matters. A failure
-    /// here is logged rather than returned - reporting the write as failed would invite a retry of
-    /// a write that already happened.
+    /// A failure is logged here. <see cref="WriteSecret"/> undoes a new secret the list can't hold;
+    /// after a delete the secret is already gone, so a stale entry is only a stale listing.
     /// </remarks>
-    private void UpdateRegistry(string key, bool add)
+    private bool UpdateRegistry(string key, bool add)
     {
-        TryReadRegistry(out var keys, out _);
+        if (!TryReadRegistry(out var keys, out var listError) && listError == DeviceUnavailable)
+        {
+            Debug.LogMessage(LogEventLevel.Warning, this, "Secure storage is unavailable; the key list for {0} was not updated after changing {1}", Key, key);
+            return false;
+        }
 
         var updated = add
             ? SecureStorageKeyRegistry.WithKey(keys, key)
             : SecureStorageKeyRegistry.WithoutKey(keys, key);
 
         if (updated == null)
-            return;
+            return true;
 
         var json = SecureStorageKeyRegistry.Serialize(updated);
         if (Encoding.UTF8.GetByteCount(json) > MaxValueLength)
         {
             Debug.LogMessage(LogEventLevel.Warning, this, "The key list for {0} would exceed {1} bytes; it was not updated after changing {2}", Key, MaxValueLength, key);
-            return;
+            return false;
         }
 
         var status = CrestronSecureStorage.Store(
             SecureStorageKeyRegistry.RecordKey, GlobalStore, Encoding.UTF8.GetBytes(json), Entropy(SecureStorageKeyRegistry.RecordKey));
 
-        if (status == eCrestronSecureStorageStatus.Ok)
+        if (status == eCrestronSecureStorageStatus.Ok && ReadsBack(SecureStorageKeyRegistry.RecordKey, json))
         {
             Flush();
-            return;
+            return true;
         }
 
         Debug.LogMessage(LogEventLevel.Warning, this, "Unable to update the key list for {0} after changing {1} - {2}", Key, key, status);
+        return false;
     }
 
     private void Flush()
