@@ -30,6 +30,8 @@ public sealed class CrestronConsoleAdapter : PdCore.ICrestronConsole
         };
 
         // Wrap Action<string> in a lambda — Crestron's delegate is not a standard Action<string>.
-        CrestronConsole.AddNewConsoleCommand(s => callback(s), command, helpText, crestronLevel);
+        // Crestron throws on help text over 79 bytes; fit it so a long help string can't abort
+        // the caller (commands are registered from static constructors such as Debug's).
+        CrestronConsole.AddNewConsoleCommand(s => callback(s), command, ConsoleHelpText.Fit(helpText), crestronLevel);
     }
 }

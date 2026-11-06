@@ -249,5 +249,81 @@ public class RouteDescriptorCollectionTests
             descriptor.ReleaseRoutes(clearRoute: true);
         matrix.Out1.InUseTracker.InUseCountFeedback.IntValue.Should().Be(0);
     }
+
+    [Fact]
+    public void ConcurrentRoutingFromSeveralThreads_LeavesTheCollectionConsistent()
+    {
+        // When a room combination scenario changes, every member room runs its default route on its
+        // own thread at the same moment, while routing feedback enumerates the collection. Before the
+        // collection was locked, overlapping List<T> Add/Remove left null slots, and from then on every
+        // add, release and lookup threw NullReferenceException until the program restarted.
+        var collection = new RouteDescriptorCollection();
+        const int rooms = 6;
+        const int sinksPerRoom = 4;
+        const int iterations = 500;
+
+        var sinks = Enumerable.Range(0, rooms)
+            .Select(r => Enumerable.Range(0, sinksPerRoom).Select(s => new FakeSink($"room{r}-display{s}")).ToArray())
+            .ToArray();
+        var sources = new[] { new FakeSource("source1"), new FakeSource("source2"), new FakeSource("source3") };
+
+        var errors = new System.Collections.Concurrent.ConcurrentQueue<Exception>();
+        using var stop = new System.Threading.CancellationTokenSource();
+
+        // A reader standing in for routing feedback and the console/web route listings.
+        var reader = System.Threading.Tasks.Task.Run(() =>
+        {
+            while (!stop.IsCancellationRequested)
+            {
+                try
+                {
+                    foreach (var descriptor in collection.Descriptors)
+                    {
+                        _ = descriptor.Destination.Key;
+                    }
+                    _ = collection.GetRouteDescriptorForDestination(sinks[0][0]);
+                }
+                catch (Exception e)
+                {
+                    errors.Enqueue(e);
+                }
+            }
+        });
+
+        // One writer per room: release each display, then route it to a new source, over and over.
+        var writers = Enumerable.Range(0, rooms).Select(r => System.Threading.Tasks.Task.Run(() =>
+        {
+            for (var i = 0; i < iterations; i++)
+            {
+                try
+                {
+                    var source = sources[(r + i) % sources.Length];
+                    foreach (var sink in sinks[r])
+                    {
+                        collection.RemoveRouteDescriptors(sink, "hdmiIn1");
+                        collection.AddRouteDescriptor(OnHdmiIn1(source, sink, eRoutingSignalType.Video));
+                        collection.ReplaceRouteDescriptor(OnHdmiIn1(source, sink, eRoutingSignalType.Audio));
+                    }
+                }
+                catch (Exception e)
+                {
+                    errors.Enqueue(e);
+                }
+            }
+        })).ToArray();
+
+        System.Threading.Tasks.Task.WaitAll(writers);
+        stop.Cancel();
+        reader.Wait();
+
+        errors.Should().BeEmpty();
+        var final = collection.Descriptors.ToList();
+        final.Should().NotContainNulls();
+        // Each display ends with exactly its last Video and Audio descriptor.
+        final.Should().HaveCount(rooms * sinksPerRoom * 2);
+        foreach (var room in sinks)
+            foreach (var sink in room)
+                final.Count(d => d.Destination == sink).Should().Be(2);
+    }
 }
 
