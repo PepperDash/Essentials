@@ -68,6 +68,13 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
     public const int MaxSecureTotalLength = 6144;
 
     /// <summary>
+    /// Highest Data Store use, in percent of the program name's quota, a write may leave behind.
+    /// The quota is shared by every program with this name, so the per-provider total alone
+    /// can't keep it under 100%.
+    /// </summary>
+    public const int MaxDataStorePercent = 95;
+
+    /// <summary>
     /// Room kept in <see cref="MaxSecureTotalLength"/> for the index to record a new secret.
     /// </summary>
     private const int IndexReserve = 512;
@@ -288,6 +295,19 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
                         Key, MaxSecureTotalLength, total));
             }
 
+            // The quota is per program name and shared with every program of that name, so check
+            // the processor's real usage too. Crestron does not refuse a write over the quota.
+            var existing = Retrieve(key, out var current) == eCrestronSecureStorageStatus.Ok && current != null
+                ? Encoding.UTF8.GetByteCount(current)
+                : 0;
+            var added = bytes.Length - existing + (SecretsIndex.IsIndexRecord(key) ? 0 : IndexReserve);
+            if (!DataStoreHasRoom(added, out var projected))
+            {
+                return SecretStoreResult.Fail("dataStoreFull",
+                    String.Format("This would take the processor's Data Store for {0} to about {1:0}% of its quota (limit {2}%); delete secrets first.",
+                        InitialParametersClass.ProgramIDTag, projected, MaxDataStorePercent));
+            }
+
             var status = CrestronSecureStorage.Store(Tag(key), GlobalStore, bytes, Entropy(key));
             if (status != eCrestronSecureStorageStatus.Ok)
                 return Fail(status, key);
@@ -353,6 +373,41 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
         => !String.IsNullOrWhiteSpace(key) && Retrieve(key, out var value) == eCrestronSecureStorageStatus.Ok
             ? value.Length
             : -1;
+
+    /// <summary>
+    /// Whether the program's Data Store would stay at or under <see cref="MaxDataStorePercent"/>
+    /// after adding <paramref name="addedBytes"/>, from the DATASTORESTATUS console command.
+    /// </summary>
+    /// <remarks>
+    /// When usage can't be read (not an appliance, or the command or its output fails), the write
+    /// is allowed and the provider's own caps still apply.
+    /// </remarks>
+    private bool DataStoreHasRoom(long addedBytes, out double projected)
+    {
+        projected = 0;
+        try
+        {
+            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Appliance)
+                return true;
+
+            var output = string.Empty;
+            if (!CrestronConsole.SendControlSystemCommand("datastorestatus", ref output)
+                || output.IndexOf("SIMPLLOCAL", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                Debug.LogMessage(LogEventLevel.Debug, this, "Data Store usage could not be read; writing without the usage check");
+                return true;
+            }
+
+            projected = DataStoreStatus.ProjectedLocalPercent(
+                DataStoreStatus.Parse(output), InitialParametersClass.ProgramIDTag, addedBytes);
+            return projected <= MaxDataStorePercent;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogMessage(LogEventLevel.Debug, this, "Data Store usage check failed: {0}", ex.Message);
+            return true;
+        }
+    }
 
     /// <summary>
     /// Bytes held by every listed record other than <paramref name="except"/>, which is about to be

@@ -85,6 +85,40 @@ public static class DataStoreStatus
 
         return rows;
     }
+
+    /// <summary>
+    /// The quota assumed when usage alone can't give it: about 10,000 bytes, measured on an RMC4
+    /// (2,921 bytes = 29%, 7,563 = 75%, 11,421 = 114%) and rounded down, so a projection errs high.
+    /// </summary>
+    public const long MeasuredQuotaBytes = 10000;
+
+    /// <summary>
+    /// The percent of a program's local quota it would use after adding <paramref name="addedBytes"/>.
+    /// </summary>
+    /// <remarks>
+    /// The quota is worked out from the program's own row (bytes / percent) once the percent is
+    /// large enough for its rounding not to matter; otherwise <see cref="MeasuredQuotaBytes"/>.
+    /// A program with no row yet has used nothing.
+    /// </remarks>
+    public static double ProjectedLocalPercent(IList<DataStoreUsage> rows, string owner, long addedBytes)
+    {
+        DataStoreUsage row = null;
+        foreach (var candidate in rows ?? new List<DataStoreUsage>())
+        {
+            if (candidate.Store == "local" && string.Equals(candidate.Owner, owner, StringComparison.Ordinal))
+            {
+                row = candidate;
+                break;
+            }
+        }
+
+        var used = row?.Bytes ?? 0;
+        var quota = row != null && row.PercentUsed >= 10
+            ? row.Bytes * 100.0 / row.PercentUsed
+            : MeasuredQuotaBytes;
+
+        return (used + addedBytes) * 100.0 / quota;
+    }
 }
 
 /// <summary>One program's usage of one Data Store space.</summary>

@@ -74,4 +74,31 @@ public class DataStoreStatusTests
         DataStoreStatus.Parse("\tPepperDashEssentials\t  6 records\t 2921 bytes\t 29% used\r\n")
             .Should().BeEmpty();
     }
+
+    [Fact]
+    public void Projects_usage_from_the_programs_own_row()
+    {
+        var rows = DataStoreStatus.Parse(TwoPrograms);
+
+        // 3,661 bytes = 36%, so the quota is about 10,169 bytes.
+        DataStoreStatus.ProjectedLocalPercent(rows, "PepperDashEssentials", 4096)
+            .Should().BeApproximately((3661 + 4096) * 100.0 / (3661 * 100.0 / 36), 0.01);
+    }
+
+    [Fact]
+    public void Uses_the_measured_quota_when_the_percent_is_too_small_to_trust()
+    {
+        var rows = DataStoreStatus.Parse(TwoPrograms);
+
+        // CdsScopeProbe: 289 bytes = 2%, too coarse to derive a quota from.
+        DataStoreStatus.ProjectedLocalPercent(rows, "CdsScopeProbe", 1000)
+            .Should().BeApproximately((289 + 1000) * 100.0 / DataStoreStatus.MeasuredQuotaBytes, 0.01);
+    }
+
+    [Fact]
+    public void A_program_with_no_row_has_used_nothing()
+    {
+        DataStoreStatus.ProjectedLocalPercent(DataStoreStatus.Parse(TwoPrograms), "NewProgram", 2000)
+            .Should().BeApproximately(20.0, 0.01);
+    }
 }

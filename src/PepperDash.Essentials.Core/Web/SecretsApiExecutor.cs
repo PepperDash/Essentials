@@ -1020,7 +1020,7 @@ public static class SecretsApiExecutor
         "CDS_DATABASE_ERROR" => "storeUnavailable",
         // Crestron secure storage (CrestronSecureStorageSecretsProvider).
         "DeviceUnavailable" or "keyListWriteFailed" => "storeUnavailable",
-        "keyListFull" or "tooManySecrets" or "totalTooLarge" => "storeFull",
+        "keyListFull" or "tooManySecrets" or "totalTooLarge" or "dataStoreFull" => "storeFull",
         null => "executionError",
         _ => cdsError
     };
@@ -1035,7 +1035,7 @@ public static class SecretsApiExecutor
         "CDS_NAME_TOO_BIG" or "CDS_STRING_TOO_BIG" => 400,
         "CDS_RECORD_NOT_FOUND" => 404,
         "CDS_ACCESS_DENIED" => 403,
-        "CDS_MAX_RECORDS" or "keyListFull" or "tooManySecrets" or "totalTooLarge" => 507,
+        "CDS_MAX_RECORDS" or "keyListFull" or "tooManySecrets" or "totalTooLarge" or "dataStoreFull" => 507,
         "CDS_DATABASE_NOT_FOUND" or "CDS_DATABASE_ERROR" or "DeviceUnavailable" or "keyListWriteFailed" => 503,
         "reservedKey" => 400,
         _ => 500
