@@ -13,10 +13,8 @@ namespace PepperDash.Essentials.Tests.Routing;
 /// so every device here has a key unique to the test instance and is cleaned up afterwards.
 /// </summary>
 /// <remarks>
-/// Only the path where the walk finds no source is tested here. Any path that rebuilds a route calls
-/// <c>Extensions.GetRouteToSource</c>, whose static constructor subscribes to the real Crestron SDK's
-/// <c>CrestronEnvironment.ProgramStatusEventHandler</c> - which intermittently hangs off a processor.
-/// Replacement itself is covered by <c>RouteDescriptorCollectionTests</c>.
+/// Only the path where the walk finds no source is tested here. Replacement itself is covered by
+/// <c>RouteDescriptorCollectionTests</c>, and making a route by <c>ReleaseAndMakeRouteTests</c>.
 /// </remarks>
 [Collection(GlobalRoutingStateCollection.Name)]
 public sealed class RoutingFeedbackManagerTests : IDisposable

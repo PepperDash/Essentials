@@ -10,10 +10,21 @@ internal class FakeCrestronEnvironment : ICrestronEnvironment
     public uint ApplicationNumber { get; set; } = 1;
     public uint RoomId { get; set; } = 0;
 
+    private readonly object _handlersLock = new();
+    private int _programStatusHandlers;
+
+    /// <summary>How many handlers are subscribed to <see cref="ProgramStatusChanged"/>.</summary>
+    public int ProgramStatusHandlerCount
+    {
+        get { lock (_handlersLock) return _programStatusHandlers; }
+    }
+
+    // Counted, never raised: a Stopping event would dispose every GenericQueue in the process,
+    // including the routing queue other tests rely on.
     public event EventHandler<ProgramStatusEventArgs>? ProgramStatusChanged
     {
-        add { }
-        remove { }
+        add { lock (_handlersLock) _programStatusHandlers++; }
+        remove { lock (_handlersLock) _programStatusHandlers--; }
     }
 
     public event EventHandler<PepperDashEthernetEventArgs>? EthernetEventReceived
@@ -28,10 +39,23 @@ internal class FakeCrestronEnvironment : ICrestronEnvironment
 
 internal class NoOpCrestronConsole : ICrestronConsole
 {
+    private readonly object _commandsLock = new();
+    private readonly HashSet<string> _commands = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Whether a console command with this name has been added.</summary>
+    public bool HasCommand(string command)
+    {
+        lock (_commandsLock) return _commands.Contains(command);
+    }
+
     public void PrintLine(string message) { }
     public void Print(string message) { }
     public void ConsoleCommandResponse(string message) { }
-    public void AddNewConsoleCommand(Action<string> _, string __, string ___, ConsoleAccessLevel ____) { }
+
+    public void AddNewConsoleCommand(Action<string> _, string command, string __, ConsoleAccessLevel ___)
+    {
+        lock (_commandsLock) _commands.Add(command);
+    }
 }
 
 internal class InMemoryCrestronDataStore : ICrestronDataStore

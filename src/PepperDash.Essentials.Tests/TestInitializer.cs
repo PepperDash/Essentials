@@ -11,16 +11,22 @@ namespace PepperDash.Essentials.Tests;
 /// </summary>
 internal static class TestInitializer
 {
+    /// <summary>The environment registered for every test in this assembly.</summary>
+    internal static FakeCrestronEnvironment Environment { get; } = new()
+    {
+        DevicePlatform = DevicePlatform.Server,
+        RuntimeEnvironment = RuntimeEnvironment.Other,
+    };
+
+    /// <summary>The console registered for every test in this assembly.</summary>
+    internal static NoOpCrestronConsole Console { get; } = new();
+
     [ModuleInitializer]
     internal static void Initialize()
     {
         DebugServiceRegistration.Register(
-            new FakeCrestronEnvironment
-            {
-                DevicePlatform = DevicePlatform.Server,
-                RuntimeEnvironment = RuntimeEnvironment.Other,
-            },
-            new NoOpCrestronConsole(),
+            Environment,
+            Console,
             new InMemoryCrestronDataStore());
     }
 }

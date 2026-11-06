@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using PepperDash.Core;
 using Serilog.Events;
+using PdCore = PepperDash.Core.Abstractions;
 
 
 namespace PepperDash.Essentials.Core;
@@ -54,28 +56,49 @@ public static class DeviceManager
     /// <remarks>This method sets up the control system for device management by enabling the addition of
     /// devices  and registering a series of console commands for interacting with devices. These commands allow 
     /// operators to list device statuses, feedbacks, and managed devices, as well as perform actions  such as
-    /// simulating communication, debugging device streams, and accessing device properties and methods.</remarks>
-    /// <param name="cs">The <see cref="CrestronControlSystem"/> instance representing the control system to initialize.</param>
+    /// simulating communication, debugging device streams, and accessing device properties and methods.
+    ///
+    /// The commands go to the <see cref="PdCore.ICrestronConsole"/> registered with
+    /// <see cref="PdCore.DebugServiceRegistration"/>, or straight to the Crestron console if none is.
+    /// Neither the control system nor the Crestron SDK is needed, so a test that has registered fakes
+    /// can call <c>Initialize(null)</c> to allow adding devices (and again after <see cref="ActivateAll"/>
+    /// to allow it again).</remarks>
+    /// <param name="cs">The <see cref="CrestronControlSystem"/> instance representing the control system to initialize. Not used; may be null.</param>
     public static void Initialize(CrestronControlSystem cs)
     {
         AddDeviceEnabled = true;
 
-        CrestronConsole.AddNewConsoleCommand(ListDeviceCommStatuses, "devcommstatus", "Lists the communication status of all devices",
-            ConsoleAccessLevelEnum.AccessOperator);
-        CrestronConsole.AddNewConsoleCommand(ListDeviceFeedbacks, "devfb", "Lists current feedbacks",
-            ConsoleAccessLevelEnum.AccessOperator);
-        CrestronConsole.AddNewConsoleCommand(ListDevices, "devlist", "Lists current managed devices",
-            ConsoleAccessLevelEnum.AccessOperator);
-        CrestronConsole.AddNewConsoleCommand(DeviceJsonApi.DoDeviceActionWithJson, "devjson", "",
-            ConsoleAccessLevelEnum.AccessOperator);
-        CrestronConsole.AddNewConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetProperties(s)), "devprops", "", ConsoleAccessLevelEnum.AccessOperator);
-        CrestronConsole.AddNewConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetMethods(s)), "devmethods", "", ConsoleAccessLevelEnum.AccessOperator);
-        CrestronConsole.AddNewConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetApiMethods(s)), "apimethods", "", ConsoleAccessLevelEnum.AccessOperator);
-        CrestronConsole.AddNewConsoleCommand(SimulateComReceiveOnDevice, "devsimreceive",
-            "Simulates incoming data on a com device", ConsoleAccessLevelEnum.AccessOperator);
+        AddConsoleCommand(ListDeviceCommStatuses, "devcommstatus", "Lists the communication status of all devices");
+        AddConsoleCommand(ListDeviceFeedbacks, "devfb", "Lists current feedbacks");
+        AddConsoleCommand(ListDevices, "devlist", "Lists current managed devices");
+        AddConsoleCommand(DeviceJsonApi.DoDeviceActionWithJson, "devjson", "");
+        AddConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetProperties(s)), "devprops", "");
+        AddConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetMethods(s)), "devmethods", "");
+        AddConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetApiMethods(s)), "apimethods", "");
+        AddConsoleCommand(SimulateComReceiveOnDevice, "devsimreceive", "Simulates incoming data on a com device");
 
-        CrestronConsole.AddNewConsoleCommand(SetDeviceStreamDebugging, "setdevicestreamdebug", "set comm debug [deviceKey] [off/rx/tx/both] ([minutes])", ConsoleAccessLevelEnum.AccessOperator);
-        CrestronConsole.AddNewConsoleCommand(s => DisableAllDeviceStreamDebugging(), "disableallstreamdebug", "disables stream debugging on all devices", ConsoleAccessLevelEnum.AccessOperator);
+        AddConsoleCommand(SetDeviceStreamDebugging, "setdevicestreamdebug", "set comm debug [deviceKey] [off/rx/tx/both] ([minutes])");
+        AddConsoleCommand(s => DisableAllDeviceStreamDebugging(), "disableallstreamdebug", "disables stream debugging on all devices");
+    }
+
+    /// <summary>Adds an operator-level console command (see <see cref="Initialize"/>).</summary>
+    private static void AddConsoleCommand(Action<string> callback, string command, string helpText)
+    {
+        var console = PdCore.DebugServiceRegistration.Console;
+        if (console == null)
+        {
+            AddCrestronConsoleCommand(callback, command, helpText);
+            return;
+        }
+
+        console.AddNewConsoleCommand(callback, command, helpText, PdCore.ConsoleAccessLevel.AccessOperator);
+    }
+
+    // Kept out of AddConsoleCommand, and never inlined, so compiling it doesn't load CrestronConsole.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void AddCrestronConsoleCommand(Action<string> callback, string command, string helpText)
+    {
+        CrestronConsole.AddNewConsoleCommand(s => callback(s), command, helpText, ConsoleAccessLevelEnum.AccessOperator);
     }
 
     /// <summary>
