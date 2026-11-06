@@ -162,7 +162,7 @@ public sealed class RoutingGraphMessengerTests : IDisposable
         _multiview = new FakeMultiview($"multiview-{_id}");
 
         // Outside a running program, DeviceManager only accepts devices once Initialize has run.
-        typeof(DeviceManager).GetProperty(nameof(DeviceManager.AddDeviceEnabled))!.SetValue(null, true);
+        DeviceManager.Initialize(null!);
         DeviceManager.AddDevice(_source);
         DeviceManager.AddDevice(_matrix);
         DeviceManager.AddDevice(_sink);

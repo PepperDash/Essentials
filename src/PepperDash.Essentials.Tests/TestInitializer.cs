@@ -18,12 +18,15 @@ internal static class TestInitializer
         RuntimeEnvironment = RuntimeEnvironment.Other,
     };
 
+    /// <summary>The console registered for every test in this assembly.</summary>
+    internal static NoOpCrestronConsole Console { get; } = new();
+
     [ModuleInitializer]
     internal static void Initialize()
     {
         DebugServiceRegistration.Register(
             Environment,
-            new NoOpCrestronConsole(),
+            Console,
             new InMemoryCrestronDataStore());
     }
 }
