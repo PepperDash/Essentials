@@ -37,8 +37,10 @@ smooth process when submitting a patch:
   goal. For example, do not make unnecessary indentation changes; but don't go
   out of your way to make the patch so minimal that it isn't easy to read,
   either. Consider the reviewer's perspective.
-- Before submission, please squash your commits to using a message that starts
-  with the issue number and a description of the changes.
+- Write commit messages as [Conventional Commits], such as
+  `fix: handle a missing serverUrl` or `feat: add a screen lift device`. Releases
+  are made from them: `fix:` makes a patch release and `feat:` a minor release.
+  Reference the issue the change addresses.
 - Isolate multiple patches from each other. If you wish to make several
   independent patches, do so in separate, smaller pull requests that can be
   reviewed more easily.
@@ -47,14 +49,27 @@ smooth process when submitting a patch:
   accept this feedback constructively, and not as a rejection of your proposed
   change.
   
-## GitFlow Branch Model
-This repository adheres to the [GitFlow](https://nvie.com/posts/a-successful-git-branching-model/) branch model and is intitialized for GitFlow to make for consistent branch name prefixes.  Please take time to familiarize yourself with this model.
+## Branches
 
-- `master` will contain the latest stable version of the framework and release builds will be created from tagged commits on `master`.
-- HotFix/Patch Pull Requests should target `master` as the base branch.
-- All other Pull Requests (bug fixes, enhancements, etc.) should target `development` as the base branch.
-- `release/vX.Y.X` branches will be used for release candidates when moving new features from `development` to `master`.  
-  Beta builds will be created from tagged commits on release candidate branches.
+Essentials uses trunk-based development. Each major version has one long-lived
+trunk branch, and all work is merged into it through short-lived branches:
+
+| Branch | Essentials version | Target framework |
+|---|---|---|
+| `essentials-3x` (the default branch) | 3.x | .NET 8 |
+| `essentials-2x` | 2.x | .NET Framework 4.7.2 |
+| `essentials-1x` | 1.x | .NET Compact Framework 3.5 |
+
+- Branch from the trunk for the version you're changing (`essentials-3x` for
+  most work), with a prefix such as `feature/` or `fix/` followed by a
+  descriptive name, e.g. `feature/add-awesomeness` or `fix/really-big-oops`.
+- Keep the branch small and up to date with its trunk, and open the Pull Request
+  against that same trunk.
+- A fix that's needed in more than one version gets a Pull Request into each
+  trunk.
+- Releases are made automatically from each trunk by [semantic-release], which
+  keeps each trunk's version numbers within its major version. Pushes to other
+  branches make pre-release builds named after the branch.
 
 ## Review
 
@@ -107,4 +122,6 @@ Furthermore, your contributing to this project does not create an employer-emplo
 
 [issues]: https://github.com/PepperDash/Essentials/issues
 [repository]: https://github.com/PepperDash/Essentials
-[LICENSE]: https://github.com/PepperDash/Essentials/blob/master/LICENSE.md
+[LICENSE]: https://github.com/PepperDash/Essentials/blob/HEAD/LICENSE.md
+[Conventional Commits]: https://www.conventionalcommits.org/
+[semantic-release]: https://semantic-release.gitbook.io/
