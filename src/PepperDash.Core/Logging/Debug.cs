@@ -256,8 +256,7 @@ public static class Debug
                     "donotloadonnextboot:P [true/false]: Should the application load on next boot",
                     PdCore.ConsoleAccessLevel.AccessOperator);
 
-                _console?.AddNewConsoleCommand(SetDebugFromConsole, "appdebug",
-                    $"appdebug:P [sink] [level] [timeoutMinutes]: Sets the application's debug message level. level: {LogLevelHelp}. appdebug:P ? for details",
+                _console?.AddNewConsoleCommand(SetDebugFromConsole, "appdebug", AppDebugHelp,
                     PdCore.ConsoleAccessLevel.AccessOperator);
 
                 _console?.AddNewConsoleCommand(ShowDebugLog, "appdebuglog",
@@ -523,6 +522,12 @@ public static class Debug
             _console?.ConsoleCommandResponse("Usage: appdebug:P [sink] [level] [timeoutMinutes]");
         }
     }
+
+    /// <summary>
+    /// One-line help for the appdebug console command. The Crestron console rejects help text
+    /// over 79 bytes, so the level list lives in "appdebug:P ?" (see SetDebugFromConsole).
+    /// </summary>
+    internal const string AppDebugHelp = "appdebug:P [sink] [level] [timeoutMinutes]: Set debug level. ? for details";
 
     /// <summary>
     /// Describes the accepted console log levels, e.g. "0 = Information, 1 = Debug, ...".
