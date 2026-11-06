@@ -30,6 +30,17 @@ namespace PepperDash.Essentials.Core.Config;
 		public static EssentialsConfig ConfigObject { get; private set; }
 
         /// <summary>
+        /// Uses <paramref name="config"/> as the loaded config, in place of reading the config file -
+        /// for tests, and for anything that builds its config in code.
+        /// </summary>
+        /// <param name="config">The config to use.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="config"/> is null.</exception>
+        public static void LoadConfig(EssentialsConfig config)
+        {
+            ConfigObject = config ?? throw new ArgumentNullException(nameof(config));
+        }
+
+        /// <summary>
         /// LoadConfig2 method
         /// </summary>
 		public static bool LoadConfig()

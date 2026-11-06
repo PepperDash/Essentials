@@ -39,10 +39,23 @@ internal class FakeCrestronEnvironment : ICrestronEnvironment
 
 internal class NoOpCrestronConsole : ICrestronConsole
 {
+    private readonly object _commandsLock = new();
+    private readonly HashSet<string> _commands = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Whether a console command with this name has been added.</summary>
+    public bool HasCommand(string command)
+    {
+        lock (_commandsLock) return _commands.Contains(command);
+    }
+
     public void PrintLine(string message) { }
     public void Print(string message) { }
     public void ConsoleCommandResponse(string message) { }
-    public void AddNewConsoleCommand(Action<string> _, string __, string ___, ConsoleAccessLevel ____) { }
+
+    public void AddNewConsoleCommand(Action<string> _, string command, string __, ConsoleAccessLevel ___)
+    {
+        lock (_commandsLock) _commands.Add(command);
+    }
 }
 
 internal class InMemoryCrestronDataStore : ICrestronDataStore
