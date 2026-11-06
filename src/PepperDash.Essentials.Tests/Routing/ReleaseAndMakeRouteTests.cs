@@ -50,19 +50,28 @@ public sealed class ReleaseAndMakeRouteTests : IDisposable
         public event EventHandler<CurrentSourcesChangedEventArgs>? CurrentSourcesChanged;
 #pragma warning restore CS0067
 
-        public object? SelectedInput { get; private set; }
-        public ManualResetEventSlim Switched { get; } = new();
+        public List<object> SelectedInputs { get; } = new();
+
+        /// <summary>
+        /// Set by the last step of a route: an AudioVideo request switches audio then video, then
+        /// records the audio source then the video source. Signalling any earlier would let the test
+        /// finish, and dispose this, while the route is still running.
+        /// </summary>
+        public ManualResetEventSlim RouteCompleted { get; } = new();
 
         public void ExecuteSwitch(object inputSelector)
         {
-            SelectedInput = inputSelector;
-            Switched.Set();
+            lock (SelectedInputs) SelectedInputs.Add(inputSelector);
         }
 
         public void SetCurrentSource(eRoutingSignalType signalType, IRoutingSource sourceDevice)
         {
             CurrentSources[signalType] = sourceDevice;
             CurrentSourceKeys[signalType] = sourceDevice?.Key!;
+
+            // The release before the route clears both sources with null; only the route sets one.
+            if (signalType == eRoutingSignalType.Video && sourceDevice != null)
+                RouteCompleted.Set();
         }
     }
 
@@ -83,7 +92,7 @@ public sealed class ReleaseAndMakeRouteTests : IDisposable
     {
         lock (TieLineCollection.Default) TieLineCollection.Default.Remove(_tieLine);
         RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptors(_display);
-        _display.Switched.Dispose();
+        _display.RouteCompleted.Dispose();
     }
 
     [Fact]
@@ -91,7 +100,9 @@ public sealed class ReleaseAndMakeRouteTests : IDisposable
     {
         _display.ReleaseAndMakeRoute(_codec, eRoutingSignalType.AudioVideo);
 
-        _display.Switched.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue("the route queue should run the route");
-        _display.SelectedInput.Should().Be("hdmiIn1Selector");
+        _display.RouteCompleted.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue("the route queue should run the route");
+        _display.SelectedInputs.Should().Equal(new object[] { "hdmiIn1Selector", "hdmiIn1Selector" }, "the audio and video halves each switch the display");
+        _display.CurrentSources[eRoutingSignalType.Audio].Should().BeSameAs(_codec);
+        _display.CurrentSources[eRoutingSignalType.Video].Should().BeSameAs(_codec);
     }
 }
