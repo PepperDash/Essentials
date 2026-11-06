@@ -52,6 +52,16 @@ public class SecretProviderInfo
     /// <summary>Gets or sets whether the provider encrypts values at rest.</summary>
     [JsonProperty("encrypted")]
     public bool Encrypted { get; set; }
+
+    /// <summary>
+    /// Gets or sets the most bytes the provider stores in total, or null when it sets no total.
+    /// </summary>
+    [JsonProperty("maxTotalLength", NullValueHandling = NullValueHandling.Ignore)]
+    public int? MaxTotalLength { get; set; }
+
+    /// <summary>Gets or sets the most secrets the provider holds, or null when it sets no count.</summary>
+    [JsonProperty("maxSecrets", NullValueHandling = NullValueHandling.Ignore)]
+    public int? MaxSecrets { get; set; }
 }
 
 /// <summary>Response for the providers endpoint.</summary>
@@ -61,9 +71,62 @@ public class SecretsProvidersResponse
     [JsonProperty("providers")]
     public List<SecretProviderInfo> Providers { get; set; }
 
+    /// <summary>
+    /// Gets or sets this program's name. The Data Store keeps local records, and the "owner" of
+    /// every record, per program name: programs with the same name share them.
+    /// </summary>
+    [JsonProperty("programName", NullValueHandling = NullValueHandling.Ignore)]
+    public string ProgramName { get; set; }
+
     /// <summary>Gets or sets the failure detail when the request could not be served.</summary>
     [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
     public SecretsApiError Error { get; set; }
+}
+
+// ─── Storage usage ───────────────────────────────────────────────────────────
+
+/// <summary>The processor's Data Store usage, from DATASTORESTATUS.</summary>
+public class SecretsStorageResponse
+{
+    /// <summary>Gets or sets this program's name, which its own rows carry as owner.</summary>
+    [JsonProperty("programName", NullValueHandling = NullValueHandling.Ignore)]
+    public string ProgramName { get; set; }
+
+    /// <summary>Gets or sets whether usage could be read on this processor.</summary>
+    [JsonProperty("available")]
+    public bool Available { get; set; }
+
+    /// <summary>Gets or sets one row per program name per store.</summary>
+    [JsonProperty("usage")]
+    public List<DataStoreUsageInfo> Usage { get; set; }
+
+    /// <summary>Gets or sets the failure detail when usage could not be read.</summary>
+    [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
+    public SecretsApiError Error { get; set; }
+}
+
+/// <summary>One program's usage of one Data Store space.</summary>
+public class DataStoreUsageInfo
+{
+    /// <summary>Gets or sets "local" or "global".</summary>
+    [JsonProperty("store")]
+    public string Store { get; set; }
+
+    /// <summary>Gets or sets the program name the usage is kept under.</summary>
+    [JsonProperty("owner")]
+    public string Owner { get; set; }
+
+    /// <summary>Gets or sets the number of records.</summary>
+    [JsonProperty("records")]
+    public int Records { get; set; }
+
+    /// <summary>Gets or sets the bytes used.</summary>
+    [JsonProperty("bytes")]
+    public long Bytes { get; set; }
+
+    /// <summary>Gets or sets the percentage of the quota used, as Crestron reports it; can exceed 100.</summary>
+    [JsonProperty("percentUsed")]
+    public int PercentUsed { get; set; }
 }
 
 // ─── Listing ─────────────────────────────────────────────────────────────────

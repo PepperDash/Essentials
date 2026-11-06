@@ -236,6 +236,11 @@ public class EssentialsWebApi : EssentialsDevice
                 Name = "Get Secrets Template",
                 RouteHandler = new SecretsTemplateRequestHandler()
             },
+            new HttpCwsRoute("secrets/storage")
+            {
+                Name = "Get Secrets Storage Usage",
+                RouteHandler = new SecretsStorageRequestHandler()
+            },
             new HttpCwsRoute("secrets")
             {
                 Name = "List Secrets",

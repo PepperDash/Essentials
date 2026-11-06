@@ -80,6 +80,16 @@ public interface IEnumerableSecretProvider : ISecretProvider
     bool Encrypted => false;
 
     /// <summary>
+    /// Gets the most bytes this provider stores in total, or null when it sets no total.
+    /// </summary>
+    int? MaxTotalLength => null;
+
+    /// <summary>
+    /// Gets the most secrets this provider holds, or null when it sets no count.
+    /// </summary>
+    int? MaxSecrets => null;
+
+    /// <summary>
     /// Checks a key and value against this provider's rules, writing nothing.
     /// </summary>
     /// <returns>Null when the write is acceptable; otherwise the failure the write would return.</returns>

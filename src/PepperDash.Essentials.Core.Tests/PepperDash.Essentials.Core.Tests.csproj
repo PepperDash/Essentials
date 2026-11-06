@@ -40,6 +40,8 @@
              Link="Secrets\SecretsIndex.cs" />
     <Compile Include="..\PepperDash.Essentials.Core\Secrets\SecureStorageKeyRegistry.cs"
              Link="Secrets\SecureStorageKeyRegistry.cs" />
+    <Compile Include="..\PepperDash.Essentials.Core\Secrets\DataStoreStatus.cs"
+             Link="Secrets\DataStoreStatus.cs" />
   </ItemGroup>
 
   <!--

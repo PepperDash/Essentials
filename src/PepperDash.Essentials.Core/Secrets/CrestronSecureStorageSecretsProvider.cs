@@ -8,7 +8,7 @@ using Serilog.Events;
 namespace PepperDash.Essentials.Core;
 
 /// <summary>
-/// Stores secrets encrypted, in Crestron secure storage's local (per-program-slot) space.
+/// Stores secrets encrypted, in Crestron secure storage's local space, kept apart per program number.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -22,8 +22,10 @@ namespace PepperDash.Essentials.Core;
 /// it shows only keys written through this provider.
 /// </para>
 /// <para>
-/// Each value is stored with its own key as the supplemental encryption key, the same call pattern
-/// as PepperDash's OAuth client library, so values written by that pattern read back here.
+/// Local secure storage lives in the Data Store, which keeps records per program name: programs
+/// with the same name (two Essentials programs, say) share them, and other programs can list the
+/// record names but not read them. So each secret is stored under this program's number as well
+/// as its key (see <see cref="Tag"/>), and each Essentials program sees only its own.
 /// </para>
 /// <para>
 /// A secret value is never logged. Anything written to the log reaches the processor's error log,
@@ -42,21 +44,33 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Crestron documents no size limit for secure storage. These limits are set from what the
-    /// provider is for, not from what the processor accepts: an RSA private key in PEM form
-    /// (1,679 characters for 2048-bit, about 3,300 for 4096-bit) or a certificate chain of a few
-    /// certificates. 8,192 holds either.
+    /// Secure storage keeps its records in the program's local Data Store, which has a quota of
+    /// about 10,000 bytes per program name (the DATASTORESTATUS console command shows bytes and
+    /// percent used). Crestron does not refuse a write over the quota: on an RMC4 (firmware
+    /// 2.8006.00110) one 8,192-byte secret took the program to 114%, and writes of tens of
+    /// kilobytes left the Data Store unusable until a factory restore.
     /// </para>
     /// <para>
-    /// Large secure storage writes on an RMC4 (firmware 2.8006.00110) produced CrestronDataStore errors
-    /// and left the processor's local Data Store unusable for every program until a factory restore.
-    /// Keep these limits small; do not raise them without a need for the larger value.
+    /// So the limits leave room for everything else the program stores there. 4,096 holds an RSA
+    /// private key in PEM form (1,679 characters for 2048-bit, about 3,300 for 4096-bit) or a
+    /// certificate. Do not raise these limits without a need for the larger value.
     /// </para>
     /// <para>
     /// Every write is also read back (see <see cref="WriteSecret"/>).
     /// </para>
     /// </remarks>
-    public const int MaxSecureValueLength = 8192;
+    public const int MaxSecureValueLength = 4096;
+
+    /// <summary>
+    /// Most bytes this provider stores in total: its secrets, the Secrets API's index records and its
+    /// own key list. About 60% of the program's Data Store quota (see <see cref="MaxSecureValueLength"/>).
+    /// </summary>
+    public const int MaxSecureTotalLength = 6144;
+
+    /// <summary>
+    /// Room kept in <see cref="MaxSecureTotalLength"/> for the index to record a new secret.
+    /// </summary>
+    private const int IndexReserve = 512;
 
     /// <summary>
     /// Longest key accepted, in characters. The key is the secure storage tag and its encryption
@@ -72,10 +86,10 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
     /// The Secrets API's own index records (<see cref="SecretsIndex.IsReservedKey"/>) do not count;
     /// <see cref="SecretsIndex.MaxChunks"/> bounds them.
     /// </remarks>
-    public const int MaxSecureSecrets = 16;
+    public const int MaxSecureSecrets = 8;
 
     /// <summary>
-    /// Secure storage's flag for the local, per-program space rather than the global one.
+    /// Secure storage's flag for the local space (kept per program name) rather than the global one.
     /// </summary>
     private const bool GlobalStore = false;
 
@@ -100,6 +114,12 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
 
     /// <inheritdoc />
     public bool Encrypted => true;
+
+    /// <inheritdoc />
+    public int? MaxTotalLength => MaxSecureTotalLength;
+
+    /// <inheritdoc />
+    public int? MaxSecrets => MaxSecureSecrets;
 
     /// <summary>
     /// Gets a value indicating whether this processor's firmware supports Crestron secure storage.
@@ -249,13 +269,26 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
 
             // The key list is a secure storage record too, so it gets the same value cap. With the
             // key and count limits it stays far below it; this is the backstop.
-            if (withKey != null && Encoding.UTF8.GetByteCount(SecureStorageKeyRegistry.Serialize(withKey)) > MaxValueLength)
+            var listAfter = SecureStorageKeyRegistry.Serialize(withKey ?? listed);
+            if (withKey != null && Encoding.UTF8.GetByteCount(listAfter) > MaxValueLength)
             {
                 return SecretStoreResult.Fail("keyListFull",
                     String.Format("The list of keys for {0} has reached its {1}-byte limit; delete a secret before adding another.", Key, MaxValueLength));
             }
 
-            var status = CrestronSecureStorage.Store(key, GlobalStore, bytes, Entropy(key));
+            // Everything this provider stores shares the program's Data Store quota, so the total is
+            // capped too: every listed record, the key list, and room for the index to record this
+            // secret. Lengths only - no value is logged.
+            var total = StoredBytesExcept(listed, key) + Encoding.UTF8.GetByteCount(listAfter) + bytes.Length
+                + (SecretsIndex.IsIndexRecord(key) ? 0 : IndexReserve);
+            if (total > MaxSecureTotalLength)
+            {
+                return SecretStoreResult.Fail("totalTooLarge",
+                    String.Format("{0} holds at most {1} bytes in total, and this would make about {2}; delete or shorten a secret first.",
+                        Key, MaxSecureTotalLength, total));
+            }
+
+            var status = CrestronSecureStorage.Store(Tag(key), GlobalStore, bytes, Entropy(key));
             if (status != eCrestronSecureStorageStatus.Ok)
                 return Fail(status, key);
 
@@ -264,7 +297,7 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
             // looking like a successful write.
             if (!ReadsBack(key, value))
             {
-                CrestronSecureStorage.Delete(key, GlobalStore);
+                CrestronSecureStorage.Delete(Tag(key), GlobalStore);
                 Flush();
                 UpdateRegistry(key, add: false);
                 Debug.LogMessage(LogEventLevel.Warning, this, "Secure storage accepted {0}:{1} ({2} bytes) but could not read it back; it was removed", Key, key, bytes.Length);
@@ -278,7 +311,7 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
             // the write only counts once the list holds it. Otherwise it is removed again.
             if (!UpdateRegistry(key, add: true))
             {
-                CrestronSecureStorage.Delete(key, GlobalStore);
+                CrestronSecureStorage.Delete(Tag(key), GlobalStore);
                 Flush();
                 Debug.LogMessage(LogEventLevel.Warning, this, "Secure storage saved {0}:{1} but its key list could not be updated; the secret was removed", Key, key);
                 return SecretStoreResult.Fail("keyListWriteFailed",
@@ -303,7 +336,7 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
 
         lock (_sync)
         {
-            var status = CrestronSecureStorage.Delete(key, GlobalStore);
+            var status = CrestronSecureStorage.Delete(Tag(key), GlobalStore);
             if (status != eCrestronSecureStorageStatus.Ok)
                 return Fail(status, key);
 
@@ -321,6 +354,25 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
             ? value.Length
             : -1;
 
+    /// <summary>
+    /// Bytes held by every listed record other than <paramref name="except"/>, which is about to be
+    /// replaced. A record that can't be read counts as nothing.
+    /// </summary>
+    private long StoredBytesExcept(System.Collections.Generic.IEnumerable<string> keys, string except)
+    {
+        long total = 0;
+        foreach (var listedKey in keys)
+        {
+            if (String.Equals(listedKey, except, StringComparison.Ordinal))
+                continue;
+
+            if (Retrieve(listedKey, out var stored) == eCrestronSecureStorageStatus.Ok && stored != null)
+                total += Encoding.UTF8.GetByteCount(stored);
+        }
+
+        return total;
+    }
+
     private bool ReadsBack(string key, string expected)
         => Retrieve(key, out var actual) == eCrestronSecureStorageStatus.Ok
             && String.Equals(actual, expected, StringComparison.Ordinal);
@@ -329,7 +381,7 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
     {
         value = null;
 
-        var status = CrestronSecureStorage.Retrieve(key, GlobalStore, Entropy(key), out var data);
+        var status = CrestronSecureStorage.Retrieve(Tag(key), GlobalStore, Entropy(key), out var data);
         if (status != eCrestronSecureStorageStatus.Ok)
             return status;
 
@@ -406,7 +458,7 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
         }
 
         var status = CrestronSecureStorage.Store(
-            SecureStorageKeyRegistry.RecordKey, GlobalStore, Encoding.UTF8.GetBytes(json), Entropy(SecureStorageKeyRegistry.RecordKey));
+            Tag(SecureStorageKeyRegistry.RecordKey), GlobalStore, Encoding.UTF8.GetBytes(json), Entropy(SecureStorageKeyRegistry.RecordKey));
 
         if (status == eCrestronSecureStorageStatus.Ok && ReadsBack(SecureStorageKeyRegistry.RecordKey, json))
         {
@@ -437,5 +489,19 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
             String.Format("Crestron secure storage returned {0} for '{1}'.", status, key));
     }
 
-    private static byte[] Entropy(string key) => Encoding.UTF8.GetBytes(key);
+    /// <summary>
+    /// The secure storage tag for a key: the key with this program's number in front, e.g.
+    /// "1:iotKey".
+    /// </summary>
+    /// <remarks>
+    /// The Data Store keeps local records per program name, and programs with the same name, such
+    /// as two Essentials programs, share them. The program number keeps each program's secrets,
+    /// key list and index apart, the same way Mobile Control names its token record
+    /// ("{ProgramNumber}:{Key}-tokens"). Callers, configs and the Secrets API use the plain key.
+    /// </remarks>
+    private static string Tag(string key)
+        => String.Format("{0}:{1}", InitialParametersClass.ApplicationNumber, key);
+
+    /// <summary>Supplemental encryption key for a value: the tagged key.</summary>
+    private static byte[] Entropy(string key) => Encoding.UTF8.GetBytes(Tag(key));
 }

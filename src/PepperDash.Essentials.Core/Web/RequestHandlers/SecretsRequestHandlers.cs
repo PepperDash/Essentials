@@ -149,6 +149,19 @@ public class SecretsProvidersRequestHandler : SecretsRequestHandlerBase
 }
 
 /// <summary>
+/// Reports the processor's Data Store usage per program name, from DATASTORESTATUS.
+/// </summary>
+public class SecretsStorageRequestHandler : SecretsRequestHandlerBase
+{
+    /// <inheritdoc />
+    protected override void HandleGet(HttpCwsContext context)
+    {
+        var (status, response) = SecretsApiExecutor.GetStorage();
+        WriteResponse(context, status, response);
+    }
+}
+
+/// <summary>
 /// Lists the keys a provider holds. Never returns a value.
 /// </summary>
 public class SecretsListRequestHandler : SecretsRequestHandlerBase
