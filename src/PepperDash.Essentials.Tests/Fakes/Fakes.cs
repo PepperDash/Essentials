@@ -10,10 +10,21 @@ internal class FakeCrestronEnvironment : ICrestronEnvironment
     public uint ApplicationNumber { get; set; } = 1;
     public uint RoomId { get; set; } = 0;
 
+    private readonly object _handlersLock = new();
+    private int _programStatusHandlers;
+
+    /// <summary>How many handlers are subscribed to <see cref="ProgramStatusChanged"/>.</summary>
+    public int ProgramStatusHandlerCount
+    {
+        get { lock (_handlersLock) return _programStatusHandlers; }
+    }
+
+    // Counted, never raised: a Stopping event would dispose every GenericQueue in the process,
+    // including the routing queue other tests rely on.
     public event EventHandler<ProgramStatusEventArgs>? ProgramStatusChanged
     {
-        add { }
-        remove { }
+        add { lock (_handlersLock) _programStatusHandlers++; }
+        remove { lock (_handlersLock) _programStatusHandlers--; }
     }
 
     public event EventHandler<PepperDashEthernetEventArgs>? EthernetEventReceived

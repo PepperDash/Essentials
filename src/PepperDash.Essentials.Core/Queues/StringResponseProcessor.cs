@@ -1,5 +1,4 @@
 ﻿using System;
-using Crestron.SimplSharp;
 using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Queues;
@@ -16,13 +15,7 @@ public sealed class StringResponseProcessor : IKeyed, IDisposable
         _processStringAction = processStringAction;
         _queue = new GenericQueue(key);
 
-        CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
-        {
-            if (programEvent != eProgramStatusEventType.Stopping)
-                return;
-
-            Dispose();
-        };
+        ProgramStop.Subscribe(Dispose);
     }
 
     /// <summary>
@@ -68,7 +61,7 @@ public sealed class StringResponseProcessor : IKeyed, IDisposable
     public void Dispose()
     {
         Dispose(true);
-        CrestronEnvironment.GC.SuppressFinalize(this);
+        GC.SuppressFinalize(this);
     }
 
     private void Dispose(bool disposing)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using Crestron.SimplSharp;
 using PepperDash.Core;
 using Serilog.Events;
 
@@ -163,13 +162,7 @@ public class GenericQueue : IQueue<IQueueMessage>
         _delayEnabled = pacing > 0;
         _delayTime = pacing;
 
-        CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
-        {
-            if (programEvent != eProgramStatusEventType.Stopping)
-                return;
-
-            Dispose(true);
-        };
+        ProgramStop.Subscribe(() => Dispose(true));
     }
 
     /// <summary>
@@ -244,7 +237,7 @@ public class GenericQueue : IQueue<IQueueMessage>
     public void Dispose()
     {
         Dispose(true);
-        CrestronEnvironment.GC.SuppressFinalize(this);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
