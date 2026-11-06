@@ -98,6 +98,9 @@ public class CrestronSecureStorageSecretsProvider : IEnumerableSecretProvider
     /// <inheritdoc />
     public int MaxValueLength => MaxSecureValueLength;
 
+    /// <inheritdoc />
+    public bool Encrypted => true;
+
     /// <summary>
     /// Gets a value indicating whether this processor's firmware supports Crestron secure storage.
     /// </summary>

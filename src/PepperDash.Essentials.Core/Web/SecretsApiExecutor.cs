@@ -51,7 +51,8 @@ public static class SecretsApiExecutor
                     EnumerationSupported = pair.Value is IEnumerableSecretProvider,
                     MaxKeyLength = SecretProviderGuards.DocumentedMaxKeyLength,
                     MaxValueLength = (pair.Value as IEnumerableSecretProvider)?.MaxValueLength
-                        ?? SecretProviderGuards.MaxValueLength
+                        ?? SecretProviderGuards.MaxValueLength,
+                    Encrypted = (pair.Value as IEnumerableSecretProvider)?.Encrypted ?? false
                 })
                 .OrderBy(info => info.Key, StringComparer.OrdinalIgnoreCase)
                 .ToList();

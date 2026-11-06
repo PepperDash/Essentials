@@ -74,6 +74,12 @@ public interface IEnumerableSecretProvider : ISecretProvider
     int MaxValueLength => SecretProviderGuards.MaxValueLength;
 
     /// <summary>
+    /// Gets a value indicating whether this provider encrypts values at rest. The Data Store
+    /// providers do not.
+    /// </summary>
+    bool Encrypted => false;
+
+    /// <summary>
     /// Checks a key and value against this provider's rules, writing nothing.
     /// </summary>
     /// <returns>Null when the write is acceptable; otherwise the failure the write would return.</returns>
