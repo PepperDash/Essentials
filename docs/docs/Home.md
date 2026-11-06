@@ -43,17 +43,24 @@ Essentials is an open-source project and we encourage collaboration on this comm
 
 ### Open-source-collaborative workflow
 
-The `main` branch always contain the latest stable version. The `development` branch is used for most development efforts.
+Essentials uses trunk-based development. Each major version has one long-lived trunk branch, and all work is merged into it through short-lived branches:
 
-[GitFlow](https://nvie.com/posts/a-successful-git-branching-model/) will be used as the workflow for this collaborative project. To contribute, follow this process:
+| Branch | Essentials version | Target framework |
+|---|---|---|
+| `essentials-3x` (the default branch) | 3.x | .NET 8 |
+| `essentials-2x` | 2.x | .NET Framework 4.7.2 |
+| `essentials-1x` | 1.x | .NET Compact Framework 3.5 |
+
+Releases are made automatically from each trunk by [semantic-release](https://semantic-release.gitbook.io/). The release type comes from the commit messages, so they follow [Conventional Commits](https://www.conventionalcommits.org/): `fix:` makes a patch release, `feat:` a minor release. `essentials-2x` and `essentials-1x` are limited to their major version, but `essentials-3x` isn't, so a breaking change (a commit with a `BREAKING CHANGE:` footer; the `feat!:` shorthand isn't recognized) merged into it releases 4.0.0. Starting a new major version also means a new trunk and a release config change, so agree it with the maintainers first.
+
+To contribute, follow this process:
 
 1. Fork this repository ([More Info](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks))
-2. Create a branch using standard GitFlow branch prefixes (feature/hotfix) followed by a descriptive name.
-   - Example: `feature/add-awesomeness` or `hotfix/really-big-oops`
-   - When working on a new feature or bugfix, branch from the `development` branch. When working on a hotfix, branch from `main`.
-3. Make commits as necessary (often is better). And use concise, descriptive language, leveraging issue notation and/or [Closing Keywords](https://help.github.com/articles/closing-issues-using-keywords) to ensure any issues addressed by your work are referenced accordingly.
-4. When the scope of the work for your branch is complete, make sure to rebase your branch in case further progress has been made since the repo was forked
-5. Create a Pull Request to pull your branch into the appropriate branch in the main repository.
+2. Create a short-lived branch from the trunk for the version you're changing (`essentials-3x` for most work), named with a prefix such as `feature/` or `fix/` followed by a descriptive name.
+   - Example: `feature/add-awesomeness` or `fix/really-big-oops`
+3. Make commits as necessary (often is better), with Conventional Commits messages such as `fix: handle a missing serverUrl`. Use concise, descriptive language, leveraging issue notation and/or [Closing Keywords](https://help.github.com/articles/closing-issues-using-keywords) to ensure any issues addressed by your work are referenced accordingly.
+4. Keep the branch small and up to date with its trunk, so it can be merged soon.
+5. Create a Pull Request to merge your branch into the same trunk branch in the main repository.
 6. Your Pull Request will be reviewed by our team and evaluated for inclusion into the main repository.
 
 Next: [Get started](~/docs/Get-started.md)
