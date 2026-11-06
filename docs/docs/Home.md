@@ -51,7 +51,7 @@ Essentials uses trunk-based development. Each major version has one long-lived t
 | `essentials-2x` | 2.x | .NET Framework 4.7.2 |
 | `essentials-1x` | 1.x | .NET Compact Framework 3.5 |
 
-Releases are made automatically from each trunk by [semantic-release](https://semantic-release.gitbook.io/), which keeps each branch's version numbers within its major version. The release type comes from the commit messages, so they follow [Conventional Commits](https://www.conventionalcommits.org/): `fix:` makes a patch release, `feat:` a minor release.
+Releases are made automatically from each trunk by [semantic-release](https://semantic-release.gitbook.io/). The release type comes from the commit messages, so they follow [Conventional Commits](https://www.conventionalcommits.org/): `fix:` makes a patch release, `feat:` a minor release. `essentials-2x` and `essentials-1x` are limited to their major version, but `essentials-3x` isn't, so a breaking change (a commit with a `BREAKING CHANGE:` footer; the `feat!:` shorthand isn't recognized) merged into it releases 4.0.0. Starting a new major version also means a new trunk and a release config change, so agree it with the maintainers first.
 
 To contribute, follow this process:
 

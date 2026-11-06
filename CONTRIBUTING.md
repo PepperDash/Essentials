@@ -67,9 +67,15 @@ trunk branch, and all work is merged into it through short-lived branches:
   against that same trunk.
 - A fix that's needed in more than one version gets a Pull Request into each
   trunk.
-- Releases are made automatically from each trunk by [semantic-release], which
-  keeps each trunk's version numbers within its major version. Pushes to other
-  branches make pre-release builds named after the branch.
+- Releases are made automatically from each trunk by [semantic-release]. Pushes to
+  other branches make pre-release builds named after the branch.
+- `essentials-2x` and `essentials-1x` are limited to their major version: a
+  breaking change there fails to release rather than becoming a new major.
+  `essentials-3x` isn't limited, so a breaking change merged into it releases
+  4.0.0. A breaking change is a commit with a `BREAKING CHANGE:` footer; the
+  `feat!:` shorthand isn't recognized. Starting a new major version also means
+  a new trunk and a release config change, so agree it with the maintainers
+  first.
 
 ## Review
 
