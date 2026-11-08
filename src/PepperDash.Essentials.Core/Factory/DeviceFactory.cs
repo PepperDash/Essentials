@@ -188,48 +188,42 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <remarks>This method attempts to create a device using the type specified in the <paramref name="dc"/>
         /// parameter. If the type corresponds to a registered factory method, the device is created and returned. If the
-        /// type is unrecognized or an exception occurs, the method logs the error and returns <see
-        /// langword="null"/>.</remarks>
+        /// type is unrecognized, the method logs a warning and returns <see langword="null"/>. If the factory method
+        /// throws an exception while creating the device, that exception is allowed to propagate to the caller so that
+        /// the real cause of the failure can be reported, rather than being masked as an unknown device type.</remarks>
         /// <param name="dc">The configuration object containing the key, name, type, and properties required to create the device.</param>
         /// <returns>An instance of a device that implements <see cref="IKeyed"/>, or <see langword="null"/> if the device type is
-        /// not recognized or an error occurs during creation.</returns>
+        /// not recognized.</returns>
+        /// <exception cref="Exception">Thrown when the registered factory method for the device type throws an exception while creating the
+        /// device. Callers should catch and log this exception to report the actual cause of the failure.</exception>
         public static IKeyed GetDevice(DeviceConfig dc)
         {
-            try
+            var localDc = new DeviceConfig(dc);
+
+            var properties = localDc.Properties;
+
+            var typeName = localDc.Type.ToLower();
+
+            if (properties is JObject jObject)
             {
-                var localDc = new DeviceConfig(dc);
+                var jProp = jObject.Properties();
 
-                var key = localDc.Key;
-                var name = localDc.Name;
-                var type = localDc.Type;
-                var properties = localDc.Properties;
-
-                var typeName = localDc.Type.ToLower();
-
-                if (properties is JObject jObject)
-                {
-                    var jProp = jObject.Properties();
-
-                    CheckForSecrets(jProp);
-                }
-
-                if (!FactoryMethods.TryGetValue(typeName, out var wrapper))
-                {
-                    Debug.LogWarning("Device type '{typeName}' not found in DeviceFactory", typeName);
-                    return null;
-                }
-
-                Debug.LogInformation("Loading '{type}' from {assemblyName}", typeName, wrapper.Type.Assembly.FullName);
-
-                // Check for types that have been added by plugin dlls.
-                return wrapper.FactoryMethod(localDc);
+                CheckForSecrets(jProp);
             }
-            catch (Exception ex)
+
+            if (!FactoryMethods.TryGetValue(typeName, out var wrapper))
             {
-                Debug.LogError(ex, "Exception occurred while creating device {key}: {message}", dc.Key, ex.Message);
-                Debug.LogDebug(ex, "Exception details: {stackTrace}", ex.StackTrace);
+                Debug.LogWarning("Device type '{typeName}' not found in DeviceFactory", typeName);
                 return null;
             }
+
+            Debug.LogInformation("Loading '{type}' from {assemblyName}", typeName, wrapper.Type.Assembly.FullName);
+
+            // Check for types that have been added by plugin dlls.
+            // Any exception thrown by the factory method is intentionally not caught here, so that it
+            // propagates to the caller and can be logged with the real cause of the failure, rather than
+            // being reported as an unknown device type.
+            return wrapper.FactoryMethod(localDc);
         }
 
         /// <summary>
