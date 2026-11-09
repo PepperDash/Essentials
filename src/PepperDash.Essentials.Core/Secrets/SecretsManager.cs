@@ -368,7 +368,6 @@ namespace PepperDash.Essentials.Core
 
             var key = args[1];
 
-            provider.SetSecret(key, "");
             response = provider.SetSecret(key, "")
                 ? $"Secret successfully deleted for {provider.Key}:{key}"
                 : $"Unable to delete secret for {provider.Key}:{key}";

@@ -16,11 +16,13 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         event EventHandler<EventArgs> RoomCombinationScenarioChanged;
 
+
         /// <summary>
         /// The current room combination scenario
         /// </summary>
         [JsonProperty("currentScenario")]
         IRoomCombinationScenario CurrentScenario { get; }
+
 
         /// <summary>
         /// When true, indicates the current mode is auto mode
@@ -83,6 +85,56 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="scenarioKey"></param>
         void SetRoomCombinationScenario(string scenarioKey);
+    }
+
+    /// <summary>
+    /// Optional extension for room combiners that provide operation lifecycle status.
+    /// </summary>
+    public interface IEssentialsRoomCombinerWithOperationStatus : IEssentialsRoomCombiner
+    {
+        /// <summary>
+        /// Indicates that the room combination operation status has changed.
+        /// </summary>
+        event EventHandler<EventArgs> CombinationOperationStatusChanged;
+
+        /// <summary>
+        /// Gets the current room combination operation status.
+        /// </summary>
+        [JsonProperty("combinationOperation")]
+        CombinationOperationStatus CombinationOperation { get; }
+    }
+
+    /// <summary>
+    /// Defines lifecycle states for a room combination operation.
+    /// </summary>
+    public enum CombinationOperationState
+    {
+        Idle,
+        InProgress,
+        Completed,
+        Failed,
+        TimedOut
+    }
+
+    /// <summary>
+    /// Represents room combination operation status details.
+    /// </summary>
+    public class CombinationOperationStatus
+    {
+        [JsonProperty("operationId", NullValueHandling = NullValueHandling.Ignore)]
+        public string OperationId { get; set; }
+
+        [JsonProperty("scenarioKey", NullValueHandling = NullValueHandling.Ignore)]
+        public string ScenarioKey { get; set; }
+
+        [JsonProperty("startedUtc", NullValueHandling = NullValueHandling.Ignore)]
+        public string StartedUtc { get; set; }
+
+        [JsonProperty("state")]
+        public CombinationOperationState State { get; set; }
+
+        [JsonProperty("message", NullValueHandling = NullValueHandling.Ignore)]
+        public string Message { get; set; }
     }
 
     /// <summary>
