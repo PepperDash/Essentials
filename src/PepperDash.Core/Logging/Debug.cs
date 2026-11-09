@@ -26,6 +26,20 @@ namespace PepperDash.Core
         private static readonly string WebSocketLevelStoreKey = "WebsocketDebugLevel";
         private static readonly string ErrorLogLevelStoreKey = "ErrorLogDebugLevel";
         private static readonly string FileLevelStoreKey = "FileDebugLevel";
+        private static readonly string FileSizeLimitStoreKey = "FileLogSizeLimitBytes";
+        private static readonly string FileRetainedCountStoreKey = "FileLogRetainedCount";
+        private const int MinFileSizeLimitBytes = 65536;
+        private const int MinRetainedFileCount = 1;
+
+        /// <summary>
+        /// Configured per-file size limit in bytes. Changes take effect after program restart.
+        /// </summary>
+        public static long LogFileSizeLimitBytes { get; private set; }
+
+        /// <summary>
+        /// Configured retained file count. Changes take effect after program restart.
+        /// </summary>
+        public static int LogRetainedFileCountLimit { get; private set; }
 
         private static readonly Dictionary<uint, LogEventLevel> _logLevels = new Dictionary<uint, LogEventLevel>()
         {
@@ -157,6 +171,12 @@ namespace PepperDash.Core
                 ? "{@t:fff}ms [{@l:u4}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}"
                 : "[{@t:yyyy-MM-dd HH:mm:ss.fff}][{@l:u4}][{App}]{#if Key is not null}[{Key}]{#end} {@m}{#if @x is not null}\r\n{@x}{#end}";
 
+            var isAppliance = CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance;
+            LogFileSizeLimitBytes = GetStoredIntValue(FileSizeLimitStoreKey,
+                isAppliance ? 4 * 1024 * 1024 : 16 * 1024 * 1024, MinFileSizeLimitBytes);
+            LogRetainedFileCountLimit = GetStoredIntValue(FileRetainedCountStoreKey,
+                isAppliance ? 7 : 14, MinRetainedFileCount);
+
             _defaultLoggerConfiguration = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
@@ -166,8 +186,10 @@ namespace PepperDash.Core
                 .WriteTo.Sink(new DebugErrorLogSink(new ExpressionTemplate(errorLogTemplate)), levelSwitch: _errorLogLevelSwitch)
                 .WriteTo.File(new RenderedCompactJsonFormatter(), logFilePath,
                     rollingInterval: RollingInterval.Day,
+                    fileSizeLimitBytes: LogFileSizeLimitBytes,
+                    rollOnFileSizeLimit: true,
                     restrictedToMinimumLevel: LogEventLevel.Debug,
-                    retainedFileCountLimit: CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? 7 : 14,
+                    retainedFileCountLimit: LogRetainedFileCountLimit,
                     levelSwitch: _fileLogLevelSwitch
                 );
 
@@ -223,6 +245,9 @@ namespace PepperDash.Core
                     ConsoleAccessLevelEnum.AccessOperator);
                 CrestronConsole.AddNewConsoleCommand(SetDebugFilterFromConsole, "appdebugfilter",
                     "appdebugfilter [params]", ConsoleAccessLevelEnum.AccessOperator);
+                CrestronConsole.AddNewConsoleCommand(SetLogFileCapFromConsole, "applogfilecap",
+                    "applogfilecap:P [sizeBytes] [retainedCount]: View/store log limits; restart required",
+                    ConsoleAccessLevelEnum.AccessOperator);
             }
 
             CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
@@ -294,6 +319,100 @@ namespace PepperDash.Core
             {
                 CrestronConsole.PrintLine($"Exception retrieving log level for {levelStoreKey}: {ex.Message}");
                 return LogEventLevel.Information;
+            }
+        }
+
+        private static int GetStoredIntValue(string storeKey, int defaultValue, int minimum)
+        {
+            try
+            {
+                var result = CrestronDataStoreStatic.GetLocalIntValue(storeKey, out int value);
+                if (result == CrestronDataStore.CDS_ERROR.CDS_SUCCESS && value >= minimum)
+                    return value;
+
+                if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS &&
+                    result != CrestronDataStore.CDS_ERROR.CDS_RECORD_NOT_FOUND)
+                {
+                    CrestronConsole.PrintLine($"Unable to retrieve {storeKey}: {result}. Using default without changing storage.");
+                    return defaultValue;
+                }
+
+                result = CrestronDataStoreStatic.SetLocalIntValue(storeKey, defaultValue);
+                if (result != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+                    CrestronConsole.PrintLine($"Unable to store default for {storeKey}: {result}");
+            }
+            catch (Exception ex)
+            {
+                CrestronConsole.PrintLine($"Exception retrieving/storing {storeKey}: {ex.Message}");
+            }
+
+            return defaultValue;
+        }
+
+        /// <summary>
+        /// Views or persists rolling file limits for the next program restart.
+        /// </summary>
+        public static void SetLogFileCapFromConsole(string command)
+        {
+            var trimmed = command?.Trim() ?? string.Empty;
+            if (trimmed == "?" || trimmed.Length == 0)
+            {
+                CrestronConsole.ConsoleCommandResponse(
+                    "Usage: applogfilecap:P [sizeBytes] [retainedCount]\r\n" +
+                    $"  sizeBytes: integer {MinFileSizeLimitBytes} to {int.MaxValue} (bytes per file)\r\n" +
+                    $"  retainedCount: integer {MinRetainedFileCount} to {int.MaxValue} (optional; keeps configured count)\r\n" +
+                    $"Configured: sizeBytes = {LogFileSizeLimitBytes}, retainedCount = {LogRetainedFileCountLimit}\r\n" +
+                    "Settings persist in CrestronDataStore and take effect after program restart.\r\n");
+                return;
+            }
+
+            var tokens = trimmed.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length > 2)
+            {
+                CrestronConsole.ConsoleCommandResponse("Too many arguments. Usage: applogfilecap:P [sizeBytes] [retainedCount].\r\n");
+                return;
+            }
+
+            if (!int.TryParse(tokens[0], out int sizeBytes) || sizeBytes < MinFileSizeLimitBytes)
+            {
+                CrestronConsole.ConsoleCommandResponse($"Invalid sizeBytes. Must be an integer from {MinFileSizeLimitBytes} to {int.MaxValue}.\r\n");
+                return;
+            }
+
+            var retained = LogRetainedFileCountLimit;
+            if (tokens.Length == 2 && (!int.TryParse(tokens[1], out retained) || retained < MinRetainedFileCount))
+            {
+                CrestronConsole.ConsoleCommandResponse($"Invalid retainedCount. Must be an integer from {MinRetainedFileCount} to {int.MaxValue}.\r\n");
+                return;
+            }
+
+            try
+            {
+                var sizeResult = CrestronDataStoreStatic.SetLocalIntValue(FileSizeLimitStoreKey, sizeBytes);
+                if (sizeResult != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+                {
+                    CrestronConsole.ConsoleCommandResponse($"Unable to store sizeBytes: {sizeResult}. No settings changed.\r\n");
+                    return;
+                }
+
+                LogFileSizeLimitBytes = sizeBytes;
+                var countResult = CrestronDataStoreStatic.SetLocalIntValue(FileRetainedCountStoreKey, retained);
+                if (countResult != CrestronDataStore.CDS_ERROR.CDS_SUCCESS)
+                {
+                    CrestronConsole.ConsoleCommandResponse(
+                        $"sizeBytes stored, but unable to store retainedCount: {countResult}. Retained count unchanged. Restart required.\r\n");
+                    return;
+                }
+
+                LogRetainedFileCountLimit = retained;
+                CrestronConsole.ConsoleCommandResponse(
+                    $"File log cap stored: sizeBytes = {sizeBytes}, retainedCount = {retained}.\r\n" +
+                    "Takes effect after program restart.\r\n");
+            }
+            catch (Exception ex)
+            {
+                CrestronConsole.ConsoleCommandResponse(
+                    $"Unable to store all file log limits: {ex.Message}. Use applogfilecap:P to view configured values; saved changes require restart.\r\n");
             }
         }
 
