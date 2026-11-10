@@ -30,8 +30,10 @@ namespace PepperDash.Essentials.Touchpanel
     /// <para>
     /// The Teams Rooms "auto screen share" setting is on the engine's system extender. Set <c>autoScreenShare</c> in the
     /// device properties to apply it whenever the engine comes online, or call <see cref="SetAutoScreenShare"/> (a room
-    /// action can, for example at the start of the day). The engine takes the setting as a string signal and
-    /// "true" or "false" is what is written; that format has not been confirmed on hardware.
+    /// action can, for example at the start of the day). The engine takes the setting as a write-only string signal:
+    /// the SDK documents no value format and nothing is reported back. The Teams Rooms XML config documents
+    /// <c>AutoScreenShare</c> as a boolean (samples use both 1/0 and true/false), so "true" or "false" is written, or "1" or
+    /// "0" with <c>autoScreenShareFormat: "numeric"</c>. Which literal the engine accepts has not been confirmed on hardware.
     /// </para>
     /// </remarks>
     public class MobileControlUcEngineController : MobileControlTouchpanelController, IHasInCallFeedback, IPrivacy, IBasicVolumeWithFeedback
@@ -46,6 +48,7 @@ namespace PepperDash.Essentials.Touchpanel
         private UcEngineFlexTeamsSystemReservedSigs SystemSettings => engine.ExtenderUcEngineTeamsSystemReservedSigs;
 
         private readonly bool? autoScreenShare;
+        private readonly bool autoScreenShareNumeric;
 
         // The project frame show/hide signals live on the meeting-room extender.
         private CcsUcCodec300LyncReservedSigs Project => engine.ExtenderMeetingRoomReservedSigs;
@@ -84,6 +87,7 @@ namespace PepperDash.Essentials.Touchpanel
         {
             this.engine = engine;
             autoScreenShare = config?.AutoScreenShare;
+            autoScreenShareNumeric = string.Equals(config?.AutoScreenShareFormat, "numeric", System.StringComparison.OrdinalIgnoreCase);
 
             InCallFeedback = new BoolFeedback($"{Key}-inCall", () => System4.MtrApplicationInMeetingFeedback.BoolValue);
             PrivacyModeIsOnFeedback = new BoolFeedback($"{Key}-privacyModeIsOn", () => Audio.ConferenceMicMuteOnFeedback.BoolValue);
@@ -132,15 +136,17 @@ namespace PepperDash.Essentials.Touchpanel
         }
 
         /// <summary>
-        /// Sets the Teams Rooms "auto screen share" setting. Written to the engine as the string "true" or "false";
-        /// that format is an assumption that has not been confirmed on hardware, so the engine's own value shows in
-        /// the verbose "Teams System extender args" log.
+        /// Sets the Teams Rooms "auto screen share" setting. Written to the engine as the string "true" or "false"
+        /// ("1" or "0" with <c>autoScreenShareFormat: "numeric"</c>). The signal is write-only and its format is not
+        /// documented or confirmed on hardware, so check the Teams Rooms settings page after setting it.
         /// </summary>
         /// <param name="on">True to share the screen automatically, false to turn it off.</param>
         public void SetAutoScreenShare(bool on)
         {
-            this.LogInformation("Setting Teams auto screen share to {value}", on);
-            SystemSettings.MtrApplicationAutoScreenShare.StringValue = on ? "true" : "false";
+            var value = autoScreenShareNumeric ? (on ? "1" : "0") : (on ? "true" : "false");
+
+            this.LogInformation("Setting Teams auto screen share: writing '{value}' to MtrApplicationAutoScreenShare", value);
+            SystemSettings.MtrApplicationAutoScreenShare.StringValue = value;
         }
 
         private void ApplyAutoScreenShare()

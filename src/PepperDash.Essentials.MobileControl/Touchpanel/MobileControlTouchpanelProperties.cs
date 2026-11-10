@@ -49,9 +49,18 @@ public class MobileControlTouchpanelProperties : CrestronTouchpanelPropertiesCon
     /// <summary>
     /// UC-ENGINE-FLEX-TEAMS only. When set, the Teams Rooms "auto screen share" setting is written to this value when the
     /// engine comes online (and again whenever it comes back online). When omitted the setting is left alone.
-    /// The engine takes it as a string signal; "true" or "false" is written, which is an untested assumption.
+    /// The engine takes it as a write-only string signal (the SDK documents no value format and the engine reports nothing
+    /// back); "true" or "false" is written unless <see cref="AutoScreenShareFormat"/> says otherwise. Not confirmed on hardware.
     /// </summary>
     [JsonProperty("autoScreenShare", NullValueHandling = NullValueHandling.Ignore)]
     public bool? AutoScreenShare { get; set; }
+
+    /// <summary>
+    /// UC-ENGINE-FLEX-TEAMS only. How <see cref="AutoScreenShare"/> is written to the engine: "bool" (the default) writes
+    /// "true" or "false", "numeric" writes "1" or "0". The Teams Rooms XML config takes both forms, and which one the engine
+    /// accepts is not confirmed, so this is the fallback to try if "bool" has no effect.
+    /// </summary>
+    [JsonProperty("autoScreenShareFormat", NullValueHandling = NullValueHandling.Ignore)]
+    public string AutoScreenShareFormat { get; set; }
 }
 
