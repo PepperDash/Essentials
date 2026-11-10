@@ -45,5 +45,13 @@ public class MobileControlTouchpanelProperties : CrestronTouchpanelPropertiesCon
     /// </summary>
     [JsonProperty("theme")]
     public string Theme { get; set; } = "light";
+
+    /// <summary>
+    /// UC-ENGINE-FLEX-TEAMS only. When set, the Teams Rooms "auto screen share" setting is written to this value when the
+    /// engine comes online (and again whenever it comes back online). When omitted the setting is left alone.
+    /// The engine takes it as a string signal; "true" or "false" is written, which is an untested assumption.
+    /// </summary>
+    [JsonProperty("autoScreenShare", NullValueHandling = NullValueHandling.Ignore)]
+    public bool? AutoScreenShare { get; set; }
 }
 

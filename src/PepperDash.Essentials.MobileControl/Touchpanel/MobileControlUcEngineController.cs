@@ -27,6 +27,12 @@ namespace PepperDash.Essentials.Touchpanel
     /// switches back to Teams: <see cref="OpenApp"/> (switch to Teams) hides the project and <see cref="HideOpenApp"/>
     /// and <see cref="CloseOpenApp"/> show it again. The app-control messenger is registered so Mobile Control clients
     /// can send them.
+    /// <para>
+    /// The Teams Rooms "auto screen share" setting is on the engine's system extender. Set <c>autoScreenShare</c> in the
+    /// device properties to apply it whenever the engine comes online, or call <see cref="SetAutoScreenShare"/> (a room
+    /// action can, for example at the start of the day). The engine takes the setting as a string signal and
+    /// "true" or "false" is what is written; that format has not been confirmed on hardware.
+    /// </para>
     /// </remarks>
     public class MobileControlUcEngineController : MobileControlTouchpanelController, IHasInCallFeedback, IPrivacy, IBasicVolumeWithFeedback
     {
@@ -35,6 +41,11 @@ namespace PepperDash.Essentials.Touchpanel
         private UcEngineFlexTeamsSystem4ReservedSigs System4 => engine.ExtenderUcEngineTeamsSystem4ReservedSigs;
 
         private UcEngineAudioRsvdSigs Audio => engine.ExtenderUcEngineTeamsAudioReservedSigs;
+
+        // The Teams Rooms application settings (auto screen share and so on).
+        private UcEngineFlexTeamsSystemReservedSigs SystemSettings => engine.ExtenderUcEngineTeamsSystemReservedSigs;
+
+        private readonly bool? autoScreenShare;
 
         // The project frame show/hide signals live on the meeting-room extender.
         private CcsUcCodec300LyncReservedSigs Project => engine.ExtenderMeetingRoomReservedSigs;
@@ -72,6 +83,7 @@ namespace PepperDash.Essentials.Touchpanel
             : base(key, name, engine, config)
         {
             this.engine = engine;
+            autoScreenShare = config?.AutoScreenShare;
 
             InCallFeedback = new BoolFeedback($"{Key}-inCall", () => System4.MtrApplicationInMeetingFeedback.BoolValue);
             PrivacyModeIsOnFeedback = new BoolFeedback($"{Key}-privacyModeIsOn", () => Audio.ConferenceMicMuteOnFeedback.BoolValue);
@@ -100,12 +112,40 @@ namespace PepperDash.Essentials.Touchpanel
                 UpdateTeamsFeedbacks();
             };
 
-            engine.OnlineStatusChange += (d, a) => UpdateTeamsFeedbacks();
+            SystemSettings.DeviceExtenderSigChange += (e, a) =>
+            {
+                this.LogVerbose("Teams System extender args: {event}:{sig}:{type}:{boolValue}:{ushortValue}:{stringValue}", a.Event, a.Sig, a.Sig.Type, a.Sig.BoolValue, a.Sig.UShortValue, a.Sig.StringValue);
+            };
+
+            engine.OnlineStatusChange += (d, a) =>
+            {
+                UpdateTeamsFeedbacks();
+
+                if (a.DeviceOnLine) ApplyAutoScreenShare();
+            };
 
             // Extenders must be marked used before the engine registers (TouchpanelBase registers in pre-activation).
             System4.Use();
             Audio.Use();
             Project.Use();
+            SystemSettings.Use();
+        }
+
+        /// <summary>
+        /// Sets the Teams Rooms "auto screen share" setting. Written to the engine as the string "true" or "false";
+        /// that format is an assumption that has not been confirmed on hardware, so the engine's own value shows in
+        /// the verbose "Teams System extender args" log.
+        /// </summary>
+        /// <param name="on">True to share the screen automatically, false to turn it off.</param>
+        public void SetAutoScreenShare(bool on)
+        {
+            this.LogInformation("Setting Teams auto screen share to {value}", on);
+            SystemSettings.MtrApplicationAutoScreenShare.StringValue = on ? "true" : "false";
+        }
+
+        private void ApplyAutoScreenShare()
+        {
+            if (autoScreenShare.HasValue) SetAutoScreenShare(autoScreenShare.Value);
         }
 
         private void UpdateTeamsFeedbacks()
@@ -125,7 +165,12 @@ namespace PepperDash.Essentials.Touchpanel
 
             mc?.AddDeviceMessenger(new ITswAppControlMessenger($"appControlMessenger-{Key}", $"/device/{Key}", this));
 
-            return base.CustomActivate();
+            var result = base.CustomActivate();
+
+            // The engine may already be online by the time the device activates.
+            if (engine.IsOnline) ApplyAutoScreenShare();
+
+            return result;
         }
 
         /// <summary>
