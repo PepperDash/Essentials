@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Core.Intersystem;
 using PepperDash.Core.Intersystem.Tokens;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Bridges.JoinMaps;
@@ -1144,57 +1145,103 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 
 		if (codec.DirectoryRoot != null)
 		{
-			var contactsCount = codec.DirectoryRoot.CurrentDirectoryResults.Where(c => c.ParentFolderId.Equals("root")).ToList().Count;
-			trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)contactsCount);
-			Debug.LogMessage(LogEventLevel.Verbose, this, ">>> contactsCount: {0}", contactsCount);
+			try
+			{
+				var contactsCount = CountRootDirectoryEntries(codec.DirectoryRoot);
+				trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)contactsCount);
+				Debug.LogMessage(LogEventLevel.Verbose, this, ">>> contactsCount: {0}", contactsCount);
 
-			var clearBytes = XSigHelpers.ClearOutputs();
+				var clearBytes = XSigHelpers.ClearOutputs();
 
-			trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
-				Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
-			var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot,
-				codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
+				trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
+					Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
+				var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot,
+					codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
 
-			Debug.LogMessage(LogEventLevel.Verbose, this, "Directory XSig Length: {0}", directoryXSig.Length);
+				Debug.LogMessage(LogEventLevel.Verbose, this, "Directory XSig Length: {0}", directoryXSig.Length);
 
-			trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
+				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
+			}
+			catch (Exception ex)
+			{
+				this.LogError(ex, "Error linking initial directory results to bridge: {0}", ex.Message);
+			}
 		}
 
 		codec.DirectoryResultReturned += (sender, args) =>
 		{
-			var isRoot = codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false;
-			var argsCount = isRoot
-				? args.Directory.CurrentDirectoryResults.Where(a => a.ParentFolderId.Equals("root")).ToList().Count
-				: args.Directory.CurrentDirectoryResults.Count;
+			// This handler runs synchronously inside the plugin's event dispatch. Never let an
+			// exception escape back into the plugin that raised the event, or its phonebook
+			// state machine can be left half-updated (see issue #1475).
+			try
+			{
+				var directory = args != null ? args.Directory : null;
+				var isRoot = codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false;
+				var argsCount = isRoot
+					? CountRootDirectoryEntries(directory)
+					: CountDirectoryEntries(directory);
 
-			trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)argsCount);
-			Debug.LogMessage(LogEventLevel.Verbose, this, ">>> argsCount: {0}", argsCount);
+				trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)argsCount);
+				Debug.LogMessage(LogEventLevel.Verbose, this, ">>> argsCount: {0}", argsCount);
 
-			var clearBytes = XSigHelpers.ClearOutputs();
+				var clearBytes = XSigHelpers.ClearOutputs();
 
-			trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
-				Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
-			var directoryXSig = UpdateDirectoryXSig(args.Directory,
-					codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
-			Debug.LogMessage(LogEventLevel.Verbose, this, "Directory XSig Length: {0}", directoryXSig.Length);
+				trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
+					Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
+				var directoryXSig = UpdateDirectoryXSig(directory, isRoot);
+				Debug.LogMessage(LogEventLevel.Verbose, this, "Directory XSig Length: {0}", directoryXSig.Length);
 
-			trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
+				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
+			}
+			catch (Exception ex)
+			{
+				this.LogError(ex, "Error handling DirectoryResultReturned: {0}", ex.Message);
+			}
 		};
 
 		trilist.OnlineStatusChange += (device, args) =>
 		{
 			if (!args.DeviceOnLine) return;
 
-			var clearBytes = XSigHelpers.ClearOutputs();
-			trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
-				Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
-			var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
-			trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
+			try
+			{
+				var clearBytes = XSigHelpers.ClearOutputs();
+				trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
+					Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
+				var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
+				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
+			}
+			catch (Exception ex)
+			{
+				this.LogError(ex, "Error updating directory entries on bridge online: {0}", ex.Message);
+			}
 		};
+	}
+
+	/// <summary>
+	/// Counts the non-null entries in a directory whose parent folder is the root.
+	/// Tolerates a null directory, a null result list, null items, and items with a null ParentFolderId.
+	/// </summary>
+	private static int CountRootDirectoryEntries(CodecDirectory directory)
+	{
+		if (directory == null || directory.CurrentDirectoryResults == null) return 0;
+
+		return directory.CurrentDirectoryResults.Count(a => a != null && a.ParentFolderId == "root");
+	}
+
+	/// <summary>
+	/// Counts the non-null entries in a directory. Tolerates a null directory and a null result list.
+	/// </summary>
+	private static int CountDirectoryEntries(CodecDirectory directory)
+	{
+		if (directory == null || directory.CurrentDirectoryResults == null) return 0;
+
+		return directory.CurrentDirectoryResults.Count(a => a != null);
 	}
 
 	private void SelectDirectoryEntry(IHasDirectory codec, ushort i, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 	{
+		if (codec.CurrentDirectoryResult == null || codec.CurrentDirectoryResult.CurrentDirectoryResults == null) return;
 		if (i > codec.CurrentDirectoryResult.CurrentDirectoryResults.Count) return;
 		_selectedDirectoryItem = i == 0 ? null : codec.CurrentDirectoryResult.CurrentDirectoryResults[i - 1];
 		trilist.SetUshort(joinMap.DirectorySelectRowFeedback.JoinNumber, i);
@@ -1330,19 +1377,25 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 	private string UpdateDirectoryXSig(CodecDirectory directory, bool isRoot)
 	{
 		var xSigMaxIndex = 1023;
-		var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count > xSigMaxIndex
+
+		// An empty or missing directory produces an empty XSig rather than throwing
+		var results = directory != null && directory.CurrentDirectoryResults != null
+			? directory.CurrentDirectoryResults
+			: new List<DirectoryItem>();
+
+		var tokenArray = new XSigToken[results.Count > xSigMaxIndex
 			? xSigMaxIndex
-			: directory.CurrentDirectoryResults.Count];
+			: results.Count];
 
-		Debug.LogMessage(LogEventLevel.Verbose, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot, directory.CurrentDirectoryResults.Count, tokenArray.Length);
+		Debug.LogMessage(LogEventLevel.Verbose, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot, results.Count, tokenArray.Length);
 
-		var contacts = directory.CurrentDirectoryResults.Count > xSigMaxIndex
-			? directory.CurrentDirectoryResults.Take(xSigMaxIndex)
-			: directory.CurrentDirectoryResults;
+		var contacts = results.Count > xSigMaxIndex
+			? results.Take(xSigMaxIndex)
+			: results;
 
 		var contactsToDisplay = isRoot
-			? contacts.Where(c => c.ParentFolderId == "root")
-			: contacts.Where(c => c.ParentFolderId != "root");
+			? contacts.Where(c => c != null && c.ParentFolderId == "root")
+			: contacts.Where(c => c != null && c.ParentFolderId != "root");
 
 		var counterIndex = 1;
 		foreach (var entry in contactsToDisplay)
@@ -1897,7 +1950,15 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 	{
 		codec.CallHistory.RecentCallsListHasChanged += (o, a) =>
 			{
-				UpdateCallHistory(codec, trilist, joinMap);
+				// Runs inside the plugin's event dispatch; don't let exceptions escape back into it
+				try
+				{
+					UpdateCallHistory(codec, trilist, joinMap);
+				}
+				catch (Exception ex)
+				{
+					this.LogError(ex, "Error handling RecentCallsListHasChanged: {0}", ex.Message);
+				}
 			};
 
 		// Selected item action and feedback
@@ -1953,9 +2014,11 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 		uint index = 0;
 		for (uint i = 0; i < maxItems && i < codec.CallHistory.RecentCalls.Count; i++)
 		{
-			trilist.SetString(joinMap.RecentCallNamesStart.JoinNumber + i, codec.CallHistory.RecentCalls[(int)i].Name);
-			trilist.SetString(joinMap.RecentCallTimesStart.JoinNumber + i, codec.CallHistory.RecentCalls[(int)i].StartTime.ToShortTimeString());
-			trilist.SetUshort(joinMap.RecentCallOccurrenceType.JoinNumber + i, (ushort)codec.CallHistory.RecentCalls[(int)i].OccurrenceType);
+			var recentCall = codec.CallHistory.RecentCalls[(int)i];
+
+			trilist.SetString(joinMap.RecentCallNamesStart.JoinNumber + i, recentCall != null ? recentCall.Name : string.Empty);
+			trilist.SetString(joinMap.RecentCallTimesStart.JoinNumber + i, recentCall != null ? recentCall.StartTime.ToShortTimeString() : string.Empty);
+			trilist.SetUshort(joinMap.RecentCallOccurrenceType.JoinNumber + i, recentCall != null ? (ushort)recentCall.OccurrenceType : (ushort)0);
 			//i++;
 			index = i;
 		}
