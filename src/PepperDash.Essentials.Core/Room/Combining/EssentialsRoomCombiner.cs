@@ -415,6 +415,13 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     /// partitions.</remarks>
     public void SetManualMode()
     {
+        // Already in Manual Mode: do nothing, so the current scenario's partition states are kept (#1551).
+        if (!IsInAutoMode)
+        {
+            this.LogDebug("Already in Manual Mode");
+            return;
+        }
+
         IsInAutoMode = false;
 
         foreach (var partition in Partitions)

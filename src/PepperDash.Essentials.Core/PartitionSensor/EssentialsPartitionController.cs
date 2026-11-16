@@ -112,6 +112,15 @@ public class EssentialsPartitionController : IPartitionController
 
     public void SetManualMode()
     {
+        // Already in Manual Mode: keep the manual partition state. Re-reading the sensor here would
+        // overwrite it and make the combiner re-evaluate the scenario (#1551).
+        // PartitionPresentFeedback is null only on the first call, from the constructor.
+        if (!IsInAutoMode && PartitionPresentFeedback != null)
+        {
+            Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"{Key} is already in Manual Mode", this);
+            return;
+        }
+
         Debug.LogMessage(Serilog.Events.LogEventLevel.Verbose, $"Setting {Key} to Manual Mode", this);
 
         IsInAutoMode = false;
