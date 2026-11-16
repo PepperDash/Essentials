@@ -51,6 +51,9 @@ public static class DeviceManager
 
     private static List<Action> _runWhenTieLinesLoaded = new();
 
+    // Incremented by every reset, so a notification in progress can tell it was torn down.
+    private static int _tieLinesGeneration;
+
     private static readonly object _deviceLock = new();
 
     //public static List<Device> Devices { get { return _Devices; } }
@@ -247,21 +250,43 @@ public static class DeviceManager
     /// actions waiting in <see cref="RunWhenTieLinesLoaded"/>. Called by the control system once it has
     /// loaded the tie lines (including when the config has none).
     /// </summary>
+    /// <remarks>
+    /// If a teardown (<see cref="DeactivateAll"/> or <see cref="Initialize"/>) happens while this runs,
+    /// for example from a handler, the handlers and actions not yet started are skipped: they belong to
+    /// devices that have just been deactivated. The check is made before each one, so a teardown on
+    /// another thread can still overlap the one that is running.
+    /// </remarks>
     public static void NotifyTieLinesLoaded()
     {
         List<Action> waiting;
+        int generation;
         lock (_tieLinesLock)
         {
             TieLinesLoaded = true;
             waiting = _runWhenTieLinesLoaded;
             _runWhenTieLinesLoaded = new();
+            generation = _tieLinesGeneration;
         }
 
-        AllTieLinesLoaded?.Invoke(null, EventArgs.Empty);
+        var handlers = AllTieLinesLoaded?.GetInvocationList() ?? Array.Empty<Delegate>();
+        foreach (EventHandler<EventArgs> handler in handlers)
+        {
+            if (!IsTieLinesGeneration(generation)) return;
+            handler(null, EventArgs.Empty);
+        }
 
         foreach (var action in waiting)
         {
+            if (!IsTieLinesGeneration(generation)) return;
             action();
+        }
+    }
+
+    private static bool IsTieLinesGeneration(int generation)
+    {
+        lock (_tieLinesLock)
+        {
+            return _tieLinesGeneration == generation;
         }
     }
 
@@ -293,6 +318,8 @@ public static class DeviceManager
         {
             TieLinesLoaded = false;
             _runWhenTieLinesLoaded = new();
+            // Stops a NotifyTieLinesLoaded that is running from starting any more handlers or actions.
+            _tieLinesGeneration++;
         }
     }
 

@@ -132,6 +132,47 @@ public sealed class DeviceManagerTests : IDisposable
     }
 
     [Fact]
+    public void A_TeardownWhileNotifying_SkipsTheActionsNotYetRun()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = new List<string>();
+        DeviceManager.RunWhenTieLinesLoaded(() =>
+        {
+            ran.Add("first");
+            DeviceManager.DeactivateAll(); // e.g. a teardown started from an earlier action
+        });
+        DeviceManager.RunWhenTieLinesLoaded(() => ran.Add("second"));
+
+        DeviceManager.NotifyTieLinesLoaded();
+
+        ran.Should().Equal("first");
+        DeviceManager.TieLinesLoaded.Should().BeFalse();
+    }
+
+    [Fact]
+    public void A_TeardownFromAnAllTieLinesLoadedHandler_SkipsTheWaitingActionsAndLaterHandlers()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = new List<string>();
+        DeviceManager.RunWhenTieLinesLoaded(() => ran.Add("action"));
+        EventHandler<EventArgs> tearDown = (_, _) => { ran.Add("handler 1"); DeviceManager.DeactivateAll(); };
+        EventHandler<EventArgs> later = (_, _) => ran.Add("handler 2");
+        DeviceManager.AllTieLinesLoaded += tearDown;
+        DeviceManager.AllTieLinesLoaded += later;
+        try
+        {
+            DeviceManager.NotifyTieLinesLoaded();
+        }
+        finally
+        {
+            DeviceManager.AllTieLinesLoaded -= tearDown;
+            DeviceManager.AllTieLinesLoaded -= later;
+        }
+
+        ran.Should().Equal("handler 1");
+    }
+
+    [Fact]
     public void Initialize_ResetsTheTieLines()
     {
         DeviceManager.Initialize(null!);
