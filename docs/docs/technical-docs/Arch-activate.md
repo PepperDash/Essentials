@@ -121,16 +121,6 @@ Once the `DeviceManager` has completed the activation phase cycle for all device
 
 The main task that should be undertaken in the `Initialize()` method for any 3rd party device class, it to begin communication with the device via its API.  Ideally, no class that communicates with a 3rd party device outside the program should attempt to start communicating before this point.
 
-## Routing at startup
-
-Tie lines are loaded from config only after the activation phases (`DeviceManager.ActivateAll()`), because devices may create ports or child devices while activating. A route made before then finds no path and does nothing, and neither `AllDevicesActivated` nor `AllDevicesInitialized` guarantees the tie lines exist: the first fires before they load, and the second can fire either side of it.
-
-A device that routes at startup, for example a room bringing itself up as soon as its codec reports ready, should wrap that work in `DeviceManager.RunWhenTieLinesLoaded(...)`. The action runs once the tie lines are loaded, or at once if they already are. `DeviceManager.AllTieLinesLoaded` is raised at the same point, and `DeviceManager.AreTieLinesLoaded` tells whether it has happened yet.
-
-- Actions waiting for the load run on the startup thread, one at a time, after the `AllTieLinesLoaded` handlers. Keep them short and don't block.
-- A callback that throws is logged and the others still run. An action run at once, because the tie lines were already loaded, throws to its caller.
-- A teardown (`DeviceManager.DeactivateAll()`, `DeviceManager.Initialize()`) drops actions that haven't run, and each load signals once.
-
 ### Example (adapted from an older version of the Cisco codec, which is now the `epi-videoCodec-ciscoExtended` plugin)
 ```cs
         protected override void Initialize()
@@ -166,6 +156,18 @@ A device that routes at startup, for example a room bringing itself up as soon a
                 prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter;
         }
 ```
+
+## Routing at startup
+
+Tie lines are loaded from config only after the activation phases (`DeviceManager.ActivateAll()`), because devices may create ports or child devices while activating. A route made before then finds no path and does nothing, and neither `AllDevicesActivated` nor `AllDevicesInitialized` guarantees the tie lines exist: the first fires before they load, and the second can fire either side of it.
+
+A device that routes at startup, for example a room bringing itself up as soon as its codec reports ready, should wrap that work in `DeviceManager.RunWhenTieLinesLoaded(...)`. The action runs once the tie lines are loaded, or at once if they already are. `DeviceManager.AllTieLinesLoaded` is raised at the same point, and `DeviceManager.AreTieLinesLoaded` tells whether it has happened yet.
+
+- Actions that were waiting run on the thread running the load, one at a time, after the `AllTieLinesLoaded` handlers. Keep them short and don't block.
+- An action added once the tie lines are loaded runs at once on the caller's thread, even while the handlers are still running, and an exception from it goes to the caller.
+- A waiting callback that throws is logged, listed by the `getinitexceptions` console command, and the others still run.
+- Waiting actions are dropped at a teardown (`DeviceManager.DeactivateAll()`, `DeviceManager.Initialize()`) and at the start of each load. Each load signals once.
+- `DeviceManager.NotifyTieLinesLoaded()` is called by the Essentials control system. A device shouldn't call it; a test harness can, to stand in for the control system.
 
 ## The goal
 

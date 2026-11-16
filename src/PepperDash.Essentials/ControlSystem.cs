@@ -495,9 +495,10 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
     /// </summary>
     void Load()
     {
-        // Each load signals its own tie lines loaded (a reload, e.g. the go command or the web API's
-        // config load, doesn't always tear down first).
+        // Each load signals its own tie lines loaded. A reload (the go command, the web API's config
+        // load) doesn't tear down first, so the previous load's state would otherwise carry over.
         DeviceManager.ResetTieLinesLoaded();
+        DeviceManager.InitializationExceptionsTarget = this;
 
         LoadDevices();
         LoadRooms();

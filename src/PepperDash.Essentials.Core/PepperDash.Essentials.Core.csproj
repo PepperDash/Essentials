@@ -32,8 +32,12 @@
     <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <!-- DeviceManager.NotifyTieLinesLoaded / ResetTieLinesLoaded are for the control system only (#1568). -->
-    <InternalsVisibleTo Include="PepperDashEssentials" />
-    <InternalsVisibleTo Include="PepperDash.Essentials.Tests" />
+    <!-- DeviceManager.ResetTieLinesLoaded is for the control system and its tests only (#1568). -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PepperDashEssentials</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PepperDash.Essentials.Tests</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 </Project>
