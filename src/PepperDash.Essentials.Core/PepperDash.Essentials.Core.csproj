@@ -31,4 +31,9 @@
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Core\PepperDash.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- DeviceManager.NotifyTieLinesLoaded / ResetTieLinesLoaded are for the control system only (#1568). -->
+    <InternalsVisibleTo Include="PepperDashEssentials" />
+    <InternalsVisibleTo Include="PepperDash.Essentials.Tests" />
+  </ItemGroup>
 </Project>

@@ -495,6 +495,10 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
     /// </summary>
     void Load()
     {
+        // Each load signals its own tie lines loaded (a reload, e.g. the go command or the web API's
+        // config load, doesn't always tear down first).
+        DeviceManager.ResetTieLinesLoaded();
+
         LoadDevices();
         LoadRooms();
 
@@ -584,6 +588,20 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
     /// </summary>
     public void LoadTieLines()
     {
+        try
+        {
+            LoadTieLinesFromConfig();
+        }
+        finally
+        {
+            // Devices activated before this; let those waiting to route know the tie lines are loaded
+            // (#1568). In a finally so they're never left waiting, even if mapping the routes throws.
+            DeviceManager.NotifyTieLinesLoaded();
+        }
+    }
+
+    private void LoadTieLinesFromConfig()
+    {
         // In the future, we can't necessarily just clear here because devices
         // might be making their own internal sources/tie lines
 
@@ -591,8 +609,6 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
 
         if (ConfigReader.ConfigObject?.TieLines == null)
         {
-            // No tie lines to load: they are as loaded as they will be.
-            DeviceManager.NotifyTieLinesLoaded();
             return;
         }
 
@@ -624,9 +640,6 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
         {
             routingFeedbackManager.BuildMidpointSinkMap();
         }
-
-        // Devices activated before this; let those waiting to route know the tie lines exist (#1568).
-        DeviceManager.NotifyTieLinesLoaded();
     }
 
 

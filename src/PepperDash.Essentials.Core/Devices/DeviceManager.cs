@@ -34,18 +34,23 @@ public static class DeviceManager
     public static event EventHandler<EventArgs> AllDevicesInitialized;
 
     /// <summary>
-    /// Event raised once the tie lines from config have been loaded. Devices are activated before
-    /// the tie lines load, so a route made during activation can find no path; a device that routes
-    /// at startup can wait for this. Use <see cref="RunWhenTieLinesLoaded"/> to also cover the case
-    /// where the tie lines are already loaded.
+    /// Event raised once per load, after the control system has loaded the tie lines from config
+    /// (also when the config has none). Devices are activated before the tie lines load, so a route
+    /// made during or right after activation can find no path; a device that routes at startup can
+    /// wait for this. Prefer <see cref="RunWhenTieLinesLoaded"/>, which also covers the case where
+    /// the tie lines are already loaded.
     /// </summary>
+    /// <remarks>
+    /// Handlers run synchronously on the startup thread, one at a time, before the actions waiting in
+    /// <see cref="RunWhenTieLinesLoaded"/>. A handler that throws is logged and the rest still run.
+    /// </remarks>
     public static event EventHandler<EventArgs> AllTieLinesLoaded;
 
     /// <summary>
-    /// True once the tie lines from config have been loaded (<see cref="NotifyTieLinesLoaded"/>).
-    /// Reset by <see cref="Initialize"/> and <see cref="DeactivateAll"/>, as a teardown clears the tie lines.
+    /// True once the tie lines from config have been loaded for the current load. False again at the
+    /// start of the next load and at a teardown (<see cref="Initialize"/>, <see cref="DeactivateAll"/>).
     /// </summary>
-    public static bool TieLinesLoaded { get; private set; }
+    public static bool AreTieLinesLoaded { get; private set; }
 
     private static readonly object _tieLinesLock = new();
 
@@ -234,6 +239,10 @@ public static class DeviceManager
     /// </summary>
     public static void DeactivateAll()
     {
+        // Reset first: from here on, tie-lines-loaded callbacks that haven't started are skipped
+        // rather than run against devices being deactivated.
+        ResetTieLinesLoaded();
+
         lock (_deviceLock)
         {
             foreach (var d in Devices.Values.OfType<Device>())
@@ -241,28 +250,30 @@ public static class DeviceManager
                 d.Deactivate();
             }
         }
-
-        ResetTieLinesLoaded();
     }
 
     /// <summary>
     /// Marks the tie lines from config as loaded, raises <see cref="AllTieLinesLoaded"/>, and runs the
-    /// actions waiting in <see cref="RunWhenTieLinesLoaded"/>. Called by the control system once it has
-    /// loaded the tie lines (including when the config has none).
+    /// actions waiting in <see cref="RunWhenTieLinesLoaded"/>. Called by the control system once per
+    /// load, after it has loaded the tie lines (including when the config has none). A second call in
+    /// the same load does nothing.
     /// </summary>
     /// <remarks>
-    /// If a teardown (<see cref="DeactivateAll"/> or <see cref="Initialize"/>) happens while this runs,
-    /// for example from a handler, the handlers and actions not yet started are skipped: they belong to
-    /// devices that have just been deactivated. The check is made before each one, so a teardown on
-    /// another thread can still overlap the one that is running.
+    /// Each handler and action that throws is logged and the rest still run. If a teardown
+    /// (<see cref="DeactivateAll"/> or <see cref="Initialize"/>) happens while this runs, for example
+    /// from a handler, the handlers and actions not yet started are skipped: they belong to devices
+    /// that have just been deactivated. The check is made before each one, so a teardown on another
+    /// thread can still overlap the one that is running.
     /// </remarks>
-    public static void NotifyTieLinesLoaded()
+    internal static void NotifyTieLinesLoaded()
     {
         List<Action> waiting;
         int generation;
         lock (_tieLinesLock)
         {
-            TieLinesLoaded = true;
+            if (AreTieLinesLoaded) return;
+
+            AreTieLinesLoaded = true;
             waiting = _runWhenTieLinesLoaded;
             _runWhenTieLinesLoaded = new();
             generation = _tieLinesGeneration;
@@ -272,13 +283,27 @@ public static class DeviceManager
         foreach (EventHandler<EventArgs> handler in handlers)
         {
             if (!IsTieLinesGeneration(generation)) return;
-            handler(null, EventArgs.Empty);
+            RunTieLinesLoadedCallback(() => handler(null, EventArgs.Empty), "AllTieLinesLoaded handler");
         }
 
         foreach (var action in waiting)
         {
             if (!IsTieLinesGeneration(generation)) return;
-            action();
+            RunTieLinesLoadedCallback(action, "RunWhenTieLinesLoaded action");
+        }
+    }
+
+    // One failing device's startup callback mustn't stop the others or fail the load, as with activation.
+    private static void RunTieLinesLoadedCallback(Action callback, string kind)
+    {
+        try
+        {
+            callback();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(ex, "Error in a tie-lines-loaded callback ({kind}, {method}); continuing with the rest",
+                kind, $"{callback.Method.DeclaringType?.FullName}.{callback.Method.Name}");
         }
     }
 
@@ -291,18 +316,28 @@ public static class DeviceManager
     }
 
     /// <summary>
-    /// Runs <paramref name="action"/> once the tie lines from config are loaded: now if they already
-    /// are, otherwise when <see cref="NotifyTieLinesLoaded"/> runs. Unlike subscribing to
-    /// <see cref="AllTieLinesLoaded"/>, this can't miss a load that happened before the call.
-    /// Actions still waiting at a teardown (<see cref="DeactivateAll"/>) are dropped.
+    /// Runs <paramref name="action"/> once the tie lines from config are loaded: at once if they
+    /// already are, otherwise when the control system has loaded them. Unlike subscribing to
+    /// <see cref="AllTieLinesLoaded"/>, this can't miss a load that happened before the call. Use it
+    /// for anything a device does at startup that routes.
     /// </summary>
+    /// <remarks>
+    /// <para>The action runs synchronously: on the caller's thread if the tie lines are already loaded
+    /// (an exception then goes to the caller), otherwise on the startup thread while the program is
+    /// still loading, after the <see cref="AllTieLinesLoaded"/> handlers and in the order the actions
+    /// were added (an exception is then logged and the rest still run). Don't block in it.</para>
+    /// <para>An action still waiting at a teardown (<see cref="Initialize"/> or <see cref="DeactivateAll"/>)
+    /// is dropped. There is no way to remove one otherwise.</para>
+    /// </remarks>
+    /// <param name="action">What to run once the tie lines are loaded.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="action"/> is null.</exception>
     public static void RunWhenTieLinesLoaded(Action action)
     {
         if (action == null) throw new ArgumentNullException(nameof(action));
 
         lock (_tieLinesLock)
         {
-            if (!TieLinesLoaded)
+            if (!AreTieLinesLoaded)
             {
                 _runWhenTieLinesLoaded.Add(action);
                 return;
@@ -312,11 +347,15 @@ public static class DeviceManager
         action();
     }
 
-    private static void ResetTieLinesLoaded()
+    /// <summary>
+    /// Marks the tie lines as not loaded and drops the actions waiting for them. Called at a teardown
+    /// and by the control system at the start of each load, so each load signals once.
+    /// </summary>
+    internal static void ResetTieLinesLoaded()
     {
         lock (_tieLinesLock)
         {
-            TieLinesLoaded = false;
+            AreTieLinesLoaded = false;
             _runWhenTieLinesLoaded = new();
             // Stops a NotifyTieLinesLoaded that is running from starting any more handlers or actions.
             _tieLinesGeneration++;
