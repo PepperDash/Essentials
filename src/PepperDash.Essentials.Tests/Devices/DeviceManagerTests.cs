@@ -55,4 +55,139 @@ public sealed class DeviceManagerTests : IDisposable
 
         DeviceManager.GetDeviceForKey(_device.Key).Should().BeSameAs(_device);
     }
+
+    // ---- Tie lines loaded (#1568): devices activate before the tie lines load ----
+
+    [Fact]
+    public void RunWhenTieLinesLoaded_WaitsUntilTheTieLinesAreLoaded()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = 0;
+
+        DeviceManager.RunWhenTieLinesLoaded(() => ran++);
+        ran.Should().Be(0, "the tie lines aren't loaded yet");
+
+        DeviceManager.NotifyTieLinesLoaded();
+
+        ran.Should().Be(1);
+        DeviceManager.TieLinesLoaded.Should().BeTrue();
+    }
+
+    [Fact]
+    public void RunWhenTieLinesLoaded_RunsAtOnceWhenTheTieLinesAreAlreadyLoaded()
+    {
+        DeviceManager.Initialize(null!);
+        DeviceManager.NotifyTieLinesLoaded();
+        var ran = 0;
+
+        DeviceManager.RunWhenTieLinesLoaded(() => ran++);
+
+        ran.Should().Be(1);
+    }
+
+    [Fact]
+    public void RunWhenTieLinesLoaded_RunsEachActionOnce()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = 0;
+        DeviceManager.RunWhenTieLinesLoaded(() => ran++);
+
+        DeviceManager.NotifyTieLinesLoaded();
+        DeviceManager.NotifyTieLinesLoaded();
+
+        ran.Should().Be(1);
+    }
+
+    [Fact]
+    public void NotifyTieLinesLoaded_RaisesAllTieLinesLoaded()
+    {
+        DeviceManager.Initialize(null!);
+        var raised = 0;
+        EventHandler<EventArgs> handler = (_, _) => raised++;
+        DeviceManager.AllTieLinesLoaded += handler;
+        try
+        {
+            DeviceManager.NotifyTieLinesLoaded();
+        }
+        finally
+        {
+            DeviceManager.AllTieLinesLoaded -= handler;
+        }
+
+        raised.Should().Be(1);
+    }
+
+    [Fact]
+    public void DeactivateAll_ResetsTheTieLinesAndDropsWaitingActions()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = 0;
+        DeviceManager.RunWhenTieLinesLoaded(() => ran++);
+
+        DeviceManager.DeactivateAll();
+        DeviceManager.TieLinesLoaded.Should().BeFalse("a teardown clears the tie lines");
+        DeviceManager.NotifyTieLinesLoaded();
+
+        ran.Should().Be(0, "an action from before the teardown belongs to a torn-down device");
+    }
+
+    [Fact]
+    public void A_TeardownWhileNotifying_SkipsTheActionsNotYetRun()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = new List<string>();
+        DeviceManager.RunWhenTieLinesLoaded(() =>
+        {
+            ran.Add("first");
+            DeviceManager.DeactivateAll(); // e.g. a teardown started from an earlier action
+        });
+        DeviceManager.RunWhenTieLinesLoaded(() => ran.Add("second"));
+
+        DeviceManager.NotifyTieLinesLoaded();
+
+        ran.Should().Equal("first");
+        DeviceManager.TieLinesLoaded.Should().BeFalse();
+    }
+
+    [Fact]
+    public void A_TeardownFromAnAllTieLinesLoadedHandler_SkipsTheWaitingActionsAndLaterHandlers()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = new List<string>();
+        DeviceManager.RunWhenTieLinesLoaded(() => ran.Add("action"));
+        EventHandler<EventArgs> tearDown = (_, _) => { ran.Add("handler 1"); DeviceManager.DeactivateAll(); };
+        EventHandler<EventArgs> later = (_, _) => ran.Add("handler 2");
+        DeviceManager.AllTieLinesLoaded += tearDown;
+        DeviceManager.AllTieLinesLoaded += later;
+        try
+        {
+            DeviceManager.NotifyTieLinesLoaded();
+        }
+        finally
+        {
+            DeviceManager.AllTieLinesLoaded -= tearDown;
+            DeviceManager.AllTieLinesLoaded -= later;
+        }
+
+        ran.Should().Equal("handler 1");
+    }
+
+    [Fact]
+    public void Initialize_ResetsTheTieLines()
+    {
+        DeviceManager.Initialize(null!);
+        DeviceManager.NotifyTieLinesLoaded();
+
+        DeviceManager.Initialize(null!);
+
+        DeviceManager.TieLinesLoaded.Should().BeFalse();
+    }
+
+    [Fact]
+    public void RunWhenTieLinesLoaded_RejectsNull()
+    {
+        var act = () => DeviceManager.RunWhenTieLinesLoaded(null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
 }

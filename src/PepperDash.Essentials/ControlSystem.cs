@@ -591,6 +591,8 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
 
         if (ConfigReader.ConfigObject?.TieLines == null)
         {
+            // No tie lines to load: they are as loaded as they will be.
+            DeviceManager.NotifyTieLinesLoaded();
             return;
         }
 
@@ -622,6 +624,9 @@ public class ControlSystem : CrestronControlSystem, ILoadConfig, IInitialization
         {
             routingFeedbackManager.BuildMidpointSinkMap();
         }
+
+        // Devices activated before this; let those waiting to route know the tie lines exist (#1568).
+        DeviceManager.NotifyTieLinesLoaded();
     }
 
 
