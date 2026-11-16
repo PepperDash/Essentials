@@ -157,6 +157,18 @@ The main task that should be undertaken in the `Initialize()` method for any 3rd
         }
 ```
 
+## Routing at startup
+
+Tie lines are loaded from config only after the activation phases (`DeviceManager.ActivateAll()`), because devices may create ports or child devices while activating. A route made before then finds no path and does nothing, and neither `AllDevicesActivated` nor `AllDevicesInitialized` guarantees the tie lines exist: the first fires before they load, and the second can fire either side of it.
+
+A device that routes at startup, for example a room bringing itself up as soon as its codec reports ready, should wrap that work in `DeviceManager.RunWhenTieLinesLoaded(...)`. The action runs once the tie lines are loaded, or at once if they already are. `DeviceManager.AllTieLinesLoaded` is raised at the same point, and `DeviceManager.AreTieLinesLoaded` tells whether it has happened yet.
+
+- Actions that were waiting run on the thread running the load, one at a time, after the `AllTieLinesLoaded` handlers. Keep them short and don't block.
+- An action added once the tie lines are loaded runs at once on the caller's thread, even while the handlers are still running, and an exception from it goes to the caller.
+- A waiting callback that throws is logged, listed by the `getinitexceptions` console command, and the others still run.
+- Waiting actions are dropped at a teardown (`DeviceManager.DeactivateAll()`, `DeviceManager.Initialize()`) and at the start of each load. Each load signals once.
+- `DeviceManager.NotifyTieLinesLoaded()` is called by the Essentials control system. A device shouldn't call it; a test harness can, to stand in for the control system.
+
 ## The goal
 
 Robust C#-based system code should not depend on "order" or "time" to get running.  We do not need to manage the order of our startup in this environment.  Our Room class may come alive before our DSP and or Codec, and the Room is responsible for handling things when those devices become available. The UI layer is responsible for blocking the UI or providing status when the Room's requirements are coming alive, or if something has gone away. We use events or `Feedbacks` to notify dependents that other devices/classes are ready or not, but we do not prevent continued construction/activation of the system when many of these events don't happen, or don't happen in a timely fashion.  This removes the need for startup management, which is often prolonged and consumes _tons_ of developer/installer time.  A fully-loaded Essentials system may go through activation in several seconds, with all devices concurrently getting themselves going, where legacy code may take 10 minutes.

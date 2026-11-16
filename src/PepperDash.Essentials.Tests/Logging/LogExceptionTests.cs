@@ -14,6 +14,8 @@ namespace PepperDash.Essentials.Tests.Logging;
 /// LogException writes two entries: an Error with the caller's message plus the exception's message,
 /// then a Verbose entry with the stack trace.
 /// </summary>
+// Serialized with DeviceManagerTests, which also replaces the global logger to read what it logs.
+[Collection(GlobalRoutingStateCollection.Name)]
 public sealed class LogExceptionTests : IDisposable
 {
     private sealed class CaptureSink : ILogEventSink
@@ -41,7 +43,8 @@ public sealed class LogExceptionTests : IDisposable
 
     // Debug.ResetLoggerConfiguration can't be used to restore the default logger: it builds a logger from
     // the default configuration a second time, which Serilog refuses. A logger with no sinks is
-    // enough here, since no other test reads the global log.
+    // enough here: the only other test reading the global log (DeviceManagerTests) sets its own logger
+    // and runs in the same collection, so not at the same time.
     public void Dispose() => Debug.UpdateLoggerConfiguration(new LoggerConfiguration().MinimumLevel.Verbose());
 
     /// <summary>This device's entries (other tests may be logging at the same time).</summary>

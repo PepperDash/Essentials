@@ -33,11 +33,14 @@ flowchart TD
         end
 
         Act3 --> TieLines["Build tie lines from config"]
+        TieLines --> TieLinesLoaded["AllTieLinesLoaded event, then the<br/>RunWhenTieLinesLoaded actions"]
     end
 
     Act3 -. "AllDevicesActivated event" .-> Init["Each EssentialsDevice runs<br/>Initialize() on a background task"]
-    TieLines --> Done(["Program initialization complete"])
+    TieLinesLoaded --> Done(["Program initialization complete"])
 ```
+
+Tie lines are built after activation, so a device that routes during or right after activation should wait for them with `DeviceManager.RunWhenTieLinesLoaded` (see [Routing at startup](~/docs/technical-docs/Arch-activate.md#routing-at-startup)).
 
 The activation phases are covered in more detail on the [next page](~/docs/technical-docs/Arch-activate.md), and plugin loading on the [Plugins](~/docs/technical-docs/Plugins.md) page.
 

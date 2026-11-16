@@ -7,6 +7,7 @@ using System.Threading;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Serilog.Events;
 using PdCore = PepperDash.Core.Abstractions;
 
@@ -34,18 +35,30 @@ public static class DeviceManager
     public static event EventHandler<EventArgs> AllDevicesInitialized;
 
     /// <summary>
-    /// Event raised once the tie lines from config have been loaded. Devices are activated before
-    /// the tie lines load, so a route made during activation can find no path; a device that routes
-    /// at startup can wait for this. Use <see cref="RunWhenTieLinesLoaded"/> to also cover the case
-    /// where the tie lines are already loaded.
+    /// Event raised once per load, after the control system has loaded the tie lines from config
+    /// (also when the config has none). Devices are activated before the tie lines load, so a route
+    /// made during or right after activation can find no path; a device that routes at startup can
+    /// wait for this. Prefer <see cref="RunWhenTieLinesLoaded"/>, which also covers the case where
+    /// the tie lines are already loaded.
     /// </summary>
+    /// <remarks>
+    /// Handlers run synchronously on the thread running the load, one at a time, before the actions
+    /// waiting in <see cref="RunWhenTieLinesLoaded"/>. A handler that throws is logged (and listed by
+    /// the <c>getinitexceptions</c> console command) and the rest still run.
+    /// </remarks>
     public static event EventHandler<EventArgs> AllTieLinesLoaded;
 
     /// <summary>
-    /// True once the tie lines from config have been loaded (<see cref="NotifyTieLinesLoaded"/>).
-    /// Reset by <see cref="Initialize"/> and <see cref="DeactivateAll"/>, as a teardown clears the tie lines.
+    /// True once the control system has finished loading the tie lines for the current load (also if
+    /// loading them failed, so nothing is left waiting). False again at the start of the next load and
+    /// at a teardown (<see cref="Initialize"/>, <see cref="DeactivateAll"/>).
     /// </summary>
-    public static bool TieLinesLoaded { get; private set; }
+    public static bool AreTieLinesLoaded { get; private set; }
+
+    // Where a caught tie-lines-loaded callback failure is recorded (for getinitexceptions). Set by the
+    // control system; null off a processor. Not read through Global, whose static constructor needs
+    // the Crestron data store and so can't run off a processor.
+    internal static IInitializationExceptions InitializationExceptionsTarget { get; set; }
 
     private static readonly object _tieLinesLock = new();
 
@@ -234,6 +247,10 @@ public static class DeviceManager
     /// </summary>
     public static void DeactivateAll()
     {
+        // Reset first: from here on, tie-lines-loaded callbacks that haven't started are skipped
+        // rather than run against devices being deactivated.
+        ResetTieLinesLoaded();
+
         lock (_deviceLock)
         {
             foreach (var d in Devices.Values.OfType<Device>())
@@ -241,20 +258,22 @@ public static class DeviceManager
                 d.Deactivate();
             }
         }
-
-        ResetTieLinesLoaded();
     }
 
     /// <summary>
     /// Marks the tie lines from config as loaded, raises <see cref="AllTieLinesLoaded"/>, and runs the
-    /// actions waiting in <see cref="RunWhenTieLinesLoaded"/>. Called by the control system once it has
-    /// loaded the tie lines (including when the config has none).
+    /// actions waiting in <see cref="RunWhenTieLinesLoaded"/>. A second call in the same load does nothing.
     /// </summary>
     /// <remarks>
-    /// If a teardown (<see cref="DeactivateAll"/> or <see cref="Initialize"/>) happens while this runs,
-    /// for example from a handler, the handlers and actions not yet started are skipped: they belong to
-    /// devices that have just been deactivated. The check is made before each one, so a teardown on
-    /// another thread can still overlap the one that is running.
+    /// <para>For the Essentials control system, which calls it once per load after loading the tie lines
+    /// (including when the config has none), and for test harnesses that stand in for it, e.g. to test
+    /// a device that waits with <see cref="RunWhenTieLinesLoaded"/>. Devices shouldn't call it: an early
+    /// call releases every waiter before the tie lines exist.</para>
+    /// <para>Each handler and action that throws is logged and the rest still run. If a teardown
+    /// (<see cref="DeactivateAll"/> or <see cref="Initialize"/>) happens while this runs, for example
+    /// from a handler, the handlers and actions not yet started are skipped: they belong to devices
+    /// that have just been deactivated. The check is made before each one, so a teardown on another
+    /// thread can still overlap the one that is running.</para>
     /// </remarks>
     public static void NotifyTieLinesLoaded()
     {
@@ -262,7 +281,9 @@ public static class DeviceManager
         int generation;
         lock (_tieLinesLock)
         {
-            TieLinesLoaded = true;
+            if (AreTieLinesLoaded) return;
+
+            AreTieLinesLoaded = true;
             waiting = _runWhenTieLinesLoaded;
             _runWhenTieLinesLoaded = new();
             generation = _tieLinesGeneration;
@@ -272,13 +293,34 @@ public static class DeviceManager
         foreach (EventHandler<EventArgs> handler in handlers)
         {
             if (!IsTieLinesGeneration(generation)) return;
-            handler(null, EventArgs.Empty);
+            RunTieLinesLoadedCallback(handler, () => handler(null, EventArgs.Empty), "AllTieLinesLoaded handler");
         }
 
         foreach (var action in waiting)
         {
             if (!IsTieLinesGeneration(generation)) return;
-            action();
+            RunTieLinesLoadedCallback(action, action, "RunWhenTieLinesLoaded action");
+        }
+    }
+
+    // One failing device's startup callback mustn't stop the others or fail the load, as with activation.
+    // The failure is logged against the subscriber (source), and listed by getinitexceptions.
+    private static void RunTieLinesLoadedCallback(Delegate source, Action invoke, string kind)
+    {
+        try
+        {
+            invoke();
+        }
+        catch (Exception ex)
+        {
+            InitializationExceptionsTarget?.InitializationExceptions?.Add(ex);
+
+            var method = $"{source.Method.DeclaringType?.FullName}.{source.Method.Name}";
+            const string message = "Error in a tie-lines-loaded callback ({kind:l}, {method:l}); continuing with the rest";
+            if (source.Target is IKeyed device)
+                Debug.LogMessage(LogEventLevel.Error, ex, device, message, kind, method);
+            else
+                Debug.LogMessage(LogEventLevel.Error, ex, message, kind, method);
         }
     }
 
@@ -291,18 +333,30 @@ public static class DeviceManager
     }
 
     /// <summary>
-    /// Runs <paramref name="action"/> once the tie lines from config are loaded: now if they already
-    /// are, otherwise when <see cref="NotifyTieLinesLoaded"/> runs. Unlike subscribing to
-    /// <see cref="AllTieLinesLoaded"/>, this can't miss a load that happened before the call.
-    /// Actions still waiting at a teardown (<see cref="DeactivateAll"/>) are dropped.
+    /// Runs <paramref name="action"/> once the tie lines from config are loaded: at once if they
+    /// already are, otherwise when the control system has loaded them. Unlike subscribing to
+    /// <see cref="AllTieLinesLoaded"/>, this can't miss a load that happened before the call. Use it
+    /// for anything a device does at startup that routes.
     /// </summary>
+    /// <remarks>
+    /// <para>The action runs synchronously. If the tie lines are already loaded it runs at once on the
+    /// caller's thread, and an exception goes to the caller. That includes a call made while the
+    /// <see cref="AllTieLinesLoaded"/> handlers are still running. Otherwise it waits, then runs on the
+    /// thread running the load, after the handlers and in the order the waiting actions were added;
+    /// an exception is then logged (and listed by <c>getinitexceptions</c>) and the rest still run.
+    /// Don't block in it.</para>
+    /// <para>An action still waiting at a teardown (<see cref="Initialize"/> or <see cref="DeactivateAll"/>)
+    /// or at the start of the next load is dropped. There is no way to remove one otherwise.</para>
+    /// </remarks>
+    /// <param name="action">What to run once the tie lines are loaded.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="action"/> is null.</exception>
     public static void RunWhenTieLinesLoaded(Action action)
     {
         if (action == null) throw new ArgumentNullException(nameof(action));
 
         lock (_tieLinesLock)
         {
-            if (!TieLinesLoaded)
+            if (!AreTieLinesLoaded)
             {
                 _runWhenTieLinesLoaded.Add(action);
                 return;
@@ -312,11 +366,15 @@ public static class DeviceManager
         action();
     }
 
-    private static void ResetTieLinesLoaded()
+    /// <summary>
+    /// Marks the tie lines as not loaded and drops the actions waiting for them. Called at a teardown
+    /// and by the control system at the start of each load, so each load signals once.
+    /// </summary>
+    internal static void ResetTieLinesLoaded()
     {
         lock (_tieLinesLock)
         {
-            TieLinesLoaded = false;
+            AreTieLinesLoaded = false;
             _runWhenTieLinesLoaded = new();
             // Stops a NotifyTieLinesLoaded that is running from starting any more handlers or actions.
             _tieLinesGeneration++;

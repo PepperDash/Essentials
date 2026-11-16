@@ -1,7 +1,12 @@
+using System.Collections.Concurrent;
 using FluentAssertions;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Xunit;
+using Debug = PepperDash.Core.Debug;
 
 namespace PepperDash.Essentials.Tests.Devices;
 
@@ -21,7 +26,12 @@ public sealed class DeviceManagerTests : IDisposable
 
     private readonly Keyed _device = new($"deviceManagerTests-{Guid.NewGuid():N}");
 
-    public void Dispose() => DeviceManager.RemoveDevice(_device);
+    public void Dispose()
+    {
+        DeviceManager.RemoveDevice(_device);
+        // Leave the static tie-lines state as a fresh program would have it, for the next test.
+        DeviceManager.Initialize(null!);
+    }
 
     [Fact]
     public void Initialize_AllowsAddingDevices()
@@ -70,7 +80,7 @@ public sealed class DeviceManagerTests : IDisposable
         DeviceManager.NotifyTieLinesLoaded();
 
         ran.Should().Be(1);
-        DeviceManager.TieLinesLoaded.Should().BeTrue();
+        DeviceManager.AreTieLinesLoaded.Should().BeTrue();
     }
 
     [Fact]
@@ -125,7 +135,7 @@ public sealed class DeviceManagerTests : IDisposable
         DeviceManager.RunWhenTieLinesLoaded(() => ran++);
 
         DeviceManager.DeactivateAll();
-        DeviceManager.TieLinesLoaded.Should().BeFalse("a teardown clears the tie lines");
+        DeviceManager.AreTieLinesLoaded.Should().BeFalse("a teardown clears the tie lines");
         DeviceManager.NotifyTieLinesLoaded();
 
         ran.Should().Be(0, "an action from before the teardown belongs to a torn-down device");
@@ -146,7 +156,7 @@ public sealed class DeviceManagerTests : IDisposable
         DeviceManager.NotifyTieLinesLoaded();
 
         ran.Should().Equal("first");
-        DeviceManager.TieLinesLoaded.Should().BeFalse();
+        DeviceManager.AreTieLinesLoaded.Should().BeFalse();
     }
 
     [Fact]
@@ -180,7 +190,7 @@ public sealed class DeviceManagerTests : IDisposable
 
         DeviceManager.Initialize(null!);
 
-        DeviceManager.TieLinesLoaded.Should().BeFalse();
+        DeviceManager.AreTieLinesLoaded.Should().BeFalse();
     }
 
     [Fact]
@@ -189,5 +199,228 @@ public sealed class DeviceManagerTests : IDisposable
         var act = () => DeviceManager.RunWhenTieLinesLoaded(null!);
 
         act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void NotifyTieLinesLoaded_AThrowingActionDoesNotStopTheRest()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = new List<string>();
+        DeviceManager.RunWhenTieLinesLoaded(() => throw new InvalidOperationException("one device's startup failed"));
+        DeviceManager.RunWhenTieLinesLoaded(() => ran.Add("second"));
+
+        var act = () => DeviceManager.NotifyTieLinesLoaded();
+
+        act.Should().NotThrow("a failing callback is logged, not thrown into the load");
+        ran.Should().Equal("second");
+    }
+
+    [Fact]
+    public void NotifyTieLinesLoaded_AThrowingHandlerDoesNotStopTheRest()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = new List<string>();
+        DeviceManager.RunWhenTieLinesLoaded(() => ran.Add("action"));
+        EventHandler<EventArgs> throwing = (_, _) => throw new InvalidOperationException("handler failed");
+        EventHandler<EventArgs> later = (_, _) => ran.Add("handler 2");
+        DeviceManager.AllTieLinesLoaded += throwing;
+        DeviceManager.AllTieLinesLoaded += later;
+        try
+        {
+            DeviceManager.NotifyTieLinesLoaded();
+        }
+        finally
+        {
+            DeviceManager.AllTieLinesLoaded -= throwing;
+            DeviceManager.AllTieLinesLoaded -= later;
+        }
+
+        ran.Should().Equal("handler 2", "action");
+    }
+
+    [Fact]
+    public void RunWhenTieLinesLoaded_WhenAlreadyLoaded_ThrowsToTheCaller()
+    {
+        DeviceManager.Initialize(null!);
+        DeviceManager.NotifyTieLinesLoaded();
+
+        var act = () => DeviceManager.RunWhenTieLinesLoaded(() => throw new InvalidOperationException("failed"));
+
+        act.Should().Throw<InvalidOperationException>("it runs on the caller's thread then");
+    }
+
+    [Fact]
+    public void RunWhenTieLinesLoaded_CalledFromACallback_RunsAtOnce()
+    {
+        DeviceManager.Initialize(null!);
+        var ran = new List<string>();
+        DeviceManager.RunWhenTieLinesLoaded(() =>
+        {
+            DeviceManager.RunWhenTieLinesLoaded(() => ran.Add("nested"));
+            ran.Add("outer done");
+        });
+
+        DeviceManager.NotifyTieLinesLoaded();
+
+        ran.Should().Equal("nested", "outer done");
+    }
+
+    [Fact]
+    public void NotifyTieLinesLoaded_ASecondCallInTheSameLoadDoesNothing()
+    {
+        DeviceManager.Initialize(null!);
+        var raised = 0;
+        EventHandler<EventArgs> handler = (_, _) => raised++;
+        DeviceManager.AllTieLinesLoaded += handler;
+        try
+        {
+            DeviceManager.NotifyTieLinesLoaded();
+            DeviceManager.NotifyTieLinesLoaded();
+        }
+        finally
+        {
+            DeviceManager.AllTieLinesLoaded -= handler;
+        }
+
+        raised.Should().Be(1);
+    }
+
+    [Fact]
+    public void ResetTieLinesLoaded_StartsANewLoad_WhichSignalsAgain()
+    {
+        // As ControlSystem.Load() does at the start of each load, including a reload without a teardown.
+        DeviceManager.Initialize(null!);
+        DeviceManager.NotifyTieLinesLoaded();
+        var raised = 0;
+        var ran = 0;
+        EventHandler<EventArgs> handler = (_, _) => raised++;
+        DeviceManager.AllTieLinesLoaded += handler;
+        try
+        {
+            DeviceManager.ResetTieLinesLoaded();
+            DeviceManager.RunWhenTieLinesLoaded(() => ran++);
+            ran.Should().Be(0, "the new load's tie lines aren't loaded yet");
+
+            DeviceManager.NotifyTieLinesLoaded();
+        }
+        finally
+        {
+            DeviceManager.AllTieLinesLoaded -= handler;
+        }
+
+        raised.Should().Be(1);
+        ran.Should().Be(1);
+    }
+
+    private sealed class TieLinesAwareDevice : Device
+    {
+        public TieLinesAwareDevice(string key) : base(key) { }
+
+        public bool? TieLinesLoadedWhenDeactivated { get; private set; }
+
+        public override bool Deactivate()
+        {
+            TieLinesLoadedWhenDeactivated = DeviceManager.AreTieLinesLoaded;
+            return true;
+        }
+    }
+
+    [Fact]
+    public void DeactivateAll_ResetsTheTieLinesBeforeDeactivatingDevices()
+    {
+        DeviceManager.Initialize(null!);
+        var device = new TieLinesAwareDevice($"tieLinesAware-{Guid.NewGuid():N}");
+        DeviceManager.AddDevice(device);
+        try
+        {
+            DeviceManager.NotifyTieLinesLoaded();
+
+            DeviceManager.DeactivateAll();
+
+            device.TieLinesLoadedWhenDeactivated.Should().BeFalse(
+                "callbacks that haven't started must already be stopped while devices are deactivated");
+        }
+        finally
+        {
+            DeviceManager.RemoveDevice(device);
+        }
+    }
+
+    // ---- What a failing tie-lines-loaded callback logs ----
+
+    private sealed class CaptureSink : ILogEventSink
+    {
+        public ConcurrentQueue<LogEvent> Events { get; } = new();
+        public void Emit(LogEvent logEvent) => Events.Enqueue(logEvent);
+    }
+
+    /// <summary>A device whose startup work fails, subscribed with its own methods.</summary>
+    private sealed class FailingStartupDevice : IKeyed
+    {
+        public FailingStartupDevice(string key) => Key = key;
+        public string Key { get; }
+        public void StartUp() => throw new InvalidOperationException("startup failed");
+        public void OnTieLinesLoaded(object? sender, EventArgs e) => throw new InvalidOperationException("handler failed");
+    }
+
+    private static List<LogEvent> LogDuring(Action act, string deviceKey)
+    {
+        var sink = new CaptureSink();
+        Debug.UpdateLoggerConfiguration(new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .Enrich.FromLogContext()
+            .WriteTo.Sink(sink));
+        try
+        {
+            act();
+        }
+        finally
+        {
+            Debug.UpdateLoggerConfiguration(new LoggerConfiguration().MinimumLevel.Verbose());
+        }
+
+        return sink.Events
+            .Where(e => e.Properties.TryGetValue("Key", out var key) && key.ToString().Trim('"') == deviceKey)
+            .ToList();
+    }
+
+    [Fact]
+    public void AFailingAction_IsLoggedAsAnError_AgainstItsDeviceAndMethod()
+    {
+        DeviceManager.Initialize(null!);
+        var device = new FailingStartupDevice($"failingStartup-{Guid.NewGuid():N}");
+        DeviceManager.RunWhenTieLinesLoaded(device.StartUp);
+
+        var entries = LogDuring(DeviceManager.NotifyTieLinesLoaded, device.Key);
+
+        var entry = entries.Should().ContainSingle().Subject;
+        entry.Level.Should().Be(LogEventLevel.Error);
+        entry.Exception.Should().BeOfType<InvalidOperationException>();
+        entry.RenderMessage().Should().Contain("RunWhenTieLinesLoaded action")
+            .And.Contain($"{nameof(FailingStartupDevice)}.{nameof(FailingStartupDevice.StartUp)}")
+            .And.NotContain("\"", "the fields are rendered as plain text");
+    }
+
+    [Fact]
+    public void AFailingHandler_IsLoggedAgainstTheSubscriber_NotDeviceManager()
+    {
+        DeviceManager.Initialize(null!);
+        var device = new FailingStartupDevice($"failingHandler-{Guid.NewGuid():N}");
+        DeviceManager.AllTieLinesLoaded += device.OnTieLinesLoaded;
+        List<LogEvent> entries;
+        try
+        {
+            entries = LogDuring(DeviceManager.NotifyTieLinesLoaded, device.Key);
+        }
+        finally
+        {
+            DeviceManager.AllTieLinesLoaded -= device.OnTieLinesLoaded;
+        }
+
+        var entry = entries.Should().ContainSingle().Subject;
+        entry.Level.Should().Be(LogEventLevel.Error);
+        entry.RenderMessage().Should().Contain("AllTieLinesLoaded handler")
+            .And.Contain($"{nameof(FailingStartupDevice)}.{nameof(FailingStartupDevice.OnTieLinesLoaded)}")
+            .And.NotContain(nameof(DeviceManager) + "+");
     }
 }
