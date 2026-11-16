@@ -33,6 +33,24 @@ public static class DeviceManager
     /// </summary>
     public static event EventHandler<EventArgs> AllDevicesInitialized;
 
+    /// <summary>
+    /// Event raised once the tie lines from config have been loaded. Devices are activated before
+    /// the tie lines load, so a route made during activation can find no path; a device that routes
+    /// at startup can wait for this. Use <see cref="RunWhenTieLinesLoaded"/> to also cover the case
+    /// where the tie lines are already loaded.
+    /// </summary>
+    public static event EventHandler<EventArgs> AllTieLinesLoaded;
+
+    /// <summary>
+    /// True once the tie lines from config have been loaded (<see cref="NotifyTieLinesLoaded"/>).
+    /// Reset by <see cref="Initialize"/> and <see cref="DeactivateAll"/>, as a teardown clears the tie lines.
+    /// </summary>
+    public static bool TieLinesLoaded { get; private set; }
+
+    private static readonly object _tieLinesLock = new();
+
+    private static List<Action> _runWhenTieLinesLoaded = new();
+
     private static readonly object _deviceLock = new();
 
     //public static List<Device> Devices { get { return _Devices; } }
@@ -67,6 +85,7 @@ public static class DeviceManager
     public static void Initialize(CrestronControlSystem cs)
     {
         AddDeviceEnabled = true;
+        ResetTieLinesLoaded();
 
         AddConsoleCommand(ListDeviceCommStatuses, "devcommstatus", "Lists the communication status of all devices");
         AddConsoleCommand(ListDeviceFeedbacks, "devfb", "Lists current feedbacks");
@@ -218,6 +237,62 @@ public static class DeviceManager
             {
                 d.Deactivate();
             }
+        }
+
+        ResetTieLinesLoaded();
+    }
+
+    /// <summary>
+    /// Marks the tie lines from config as loaded, raises <see cref="AllTieLinesLoaded"/>, and runs the
+    /// actions waiting in <see cref="RunWhenTieLinesLoaded"/>. Called by the control system once it has
+    /// loaded the tie lines (including when the config has none).
+    /// </summary>
+    public static void NotifyTieLinesLoaded()
+    {
+        List<Action> waiting;
+        lock (_tieLinesLock)
+        {
+            TieLinesLoaded = true;
+            waiting = _runWhenTieLinesLoaded;
+            _runWhenTieLinesLoaded = new();
+        }
+
+        AllTieLinesLoaded?.Invoke(null, EventArgs.Empty);
+
+        foreach (var action in waiting)
+        {
+            action();
+        }
+    }
+
+    /// <summary>
+    /// Runs <paramref name="action"/> once the tie lines from config are loaded: now if they already
+    /// are, otherwise when <see cref="NotifyTieLinesLoaded"/> runs. Unlike subscribing to
+    /// <see cref="AllTieLinesLoaded"/>, this can't miss a load that happened before the call.
+    /// Actions still waiting at a teardown (<see cref="DeactivateAll"/>) are dropped.
+    /// </summary>
+    public static void RunWhenTieLinesLoaded(Action action)
+    {
+        if (action == null) throw new ArgumentNullException(nameof(action));
+
+        lock (_tieLinesLock)
+        {
+            if (!TieLinesLoaded)
+            {
+                _runWhenTieLinesLoaded.Add(action);
+                return;
+            }
+        }
+
+        action();
+    }
+
+    private static void ResetTieLinesLoaded()
+    {
+        lock (_tieLinesLock)
+        {
+            TieLinesLoaded = false;
+            _runWhenTieLinesLoaded = new();
         }
     }
 
