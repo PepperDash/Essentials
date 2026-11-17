@@ -10,6 +10,12 @@ namespace PepperDash.Essentials.Tests.Room;
 /// The room combiner applies its startup scenario only once the tie lines are loaded, and applies
 /// one scenario change at a time (#1570).
 /// </summary>
+/// <remarks>
+/// A combiner subscribes to the static <see cref="DeviceManager.AllDevicesInitialized"/> and can't
+/// unsubscribe, so combiners built by earlier tests run their startup handlers again on each later
+/// <see cref="DeviceManager.ActivateAll"/> in this collection. That's harmless here: assertions are
+/// made only against each test's own combiner and action devices.
+/// </remarks>
 [Collection(GlobalRoutingStateCollection.Name)]
 public sealed class EssentialsRoomCombinerTests : IDisposable
 {
@@ -162,6 +168,15 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
         }
 
         public void RunDivided() => Log.Enqueue("divided");
+
+        public TaskCompletionSource DividedGate { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task RunDividedHeld()
+        {
+            Log.Enqueue("divided:start");
+            await DividedGate.Task;
+            Log.Enqueue("divided:end");
+        }
     }
 
     [Fact]
@@ -187,15 +202,15 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
     }
 
     [Fact]
-    public async Task A_StuckScenarioChange_DoesNotBlockLaterChangesPastTheTimeout()
+    public async Task A_StuckScenarioChange_IsGivenUpOnPastTheTimeout_AndLaterChangesStillQueue()
     {
         var actions = Add(new ScenarioActions(NewKey("scenarioActions")));
-        var combiner = ManualCombiner(actions.Key, nameof(ScenarioActions.RunCombined), nameof(ScenarioActions.RunDivided),
-            combinationOperationTimeoutSeconds: 1);
+        var combiner = ManualCombiner(actions.Key, nameof(ScenarioActions.RunCombined), nameof(ScenarioActions.RunDividedHeld),
+            combinationOperationTimeoutSeconds: 2);
         DeviceManager.NotifyTieLinesLoaded();
         try
         {
-            // 'combined' never finishes its activation action.
+            // 'combined' never finishes its activation action (until the cleanup below).
             _ = combiner.DetermineRoomCombinationScenario();
 
             combiner.Partitions.Single().SetPartitionStatePresent();
@@ -203,14 +218,25 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
 
             actions.Log.Should().Equal(new[] { "combined:start" }, "it first waits for the change in progress");
 
+            // Past the timeout the stuck change is given up on, and 'divided' starts (held in its action).
+            SpinWait.SpinUntil(() => actions.Log.Contains("divided:start"), Timeout).Should().BeTrue();
+
+            combiner.Partitions.Single().SetPartitionStateNotPresent();
+            var third = combiner.DetermineRoomCombinationScenario();
+
+            actions.Log.Should().Equal(new[] { "combined:start", "divided:start" },
+                "a later change still waits for the change in progress, not just for the stuck one");
+
+            actions.DividedGate.SetResult();
             await second.WaitAsync(Timeout);
 
-            actions.Log.Should().Equal("combined:start", "divided");
-            combiner.CurrentScenario!.Key.Should().Be("divided");
+            SpinWait.SpinUntil(() => actions.Log.Count == 4, Timeout).Should().BeTrue();
+            actions.Log.Should().Equal("combined:start", "divided:start", "divided:end", "combined:start");
         }
         finally
         {
             actions.CombinedGate.TrySetResult();
+            actions.DividedGate.TrySetResult();
         }
     }
 }

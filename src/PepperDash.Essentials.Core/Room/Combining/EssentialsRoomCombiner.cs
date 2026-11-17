@@ -80,11 +80,21 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
 
     // Serializes choosing and applying a scenario (#1570). Changes start from timers, the startup
-    // handler and API calls on different threads, and applying one awaits its actions.
-    private readonly SemaphoreSlim _scenarioChange = new SemaphoreSlim(1, 1);
+    // handler and API calls on different threads, and applying one awaits its actions. A change stuck
+    // past the combination operation timeout has its gate abandoned and replaced, so later changes
+    // queue on the new gate and the stuck one releasing its old gate affects nobody.
+    private sealed class ScenarioChangeGate
+    {
+        public const long Abandoned = -1;
 
-    // When the change holding _scenarioChange took it (UTC ticks); 0 while no change holds it.
-    private long _scenarioChangeStartedTicks;
+        public readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
+
+        // Stopwatch timestamp when the change holding Semaphore took it; 0 while it's free (or just
+        // taken and not yet stamped); Abandoned once the gate has been replaced.
+        public long HeldSince;
+    }
+
+    private ScenarioChangeGate _scenarioChangeGate = new ScenarioChangeGate();
 
     private Timer _combinationOperationTimeoutTimer;
 
@@ -279,56 +289,76 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
 
         await WhenTieLinesLoaded();
 
-        var acquired = await WaitForScenarioChange();
+        var (gate, heldSince) = await EnterScenarioChange();
         try
         {
             await DetermineAndChangeScenario();
         }
         finally
         {
-            if (acquired)
+            ExitScenarioChange(gate, heldSince);
+        }
+    }
+
+    // Takes the current scenario change gate, waiting for the change holding it for up to the
+    // combination operation timeout, counted from when that change took it (a monotonic clock, so a
+    // clock change can't make it look stuck). A change past that is treated as stuck, e.g. an
+    // activation action that never completes: its gate is abandoned and replaced, once, and the
+    // waiting changes queue on the new gate. Returns the gate taken and its HeldSince stamp.
+    private async Task<(ScenarioChangeGate gate, long heldSince)> EnterScenarioChange()
+    {
+        var timeout = _combinationOperationTimeoutSeconds * System.Diagnostics.Stopwatch.Frequency;
+
+        while (true)
+        {
+            var gate = Volatile.Read(ref _scenarioChangeGate);
+            var heldSince = Interlocked.Read(ref gate.HeldSince);
+
+            if (heldSince == ScenarioChangeGate.Abandoned)
             {
-                Interlocked.Exchange(ref _scenarioChangeStartedTicks, 0);
-                _scenarioChange.Release();
+                // Being replaced by the change that abandoned it; read the new gate.
+                await Task.Yield();
+                continue;
+            }
+
+            var remaining = heldSince == 0
+                ? timeout
+                : timeout - (System.Diagnostics.Stopwatch.GetTimestamp() - heldSince);
+
+            var wait = TimeSpan.FromSeconds((double)Math.Max(remaining, 0) / System.Diagnostics.Stopwatch.Frequency);
+
+            if (await gate.Semaphore.WaitAsync(wait))
+            {
+                var stamp = System.Diagnostics.Stopwatch.GetTimestamp();
+                if (Interlocked.CompareExchange(ref gate.HeldSince, stamp, 0) == 0)
+                {
+                    return (gate, stamp);
+                }
+
+                // Abandoned while this change waited (its stuck holder finally released it).
+                gate.Semaphore.Release();
+                continue;
+            }
+
+            // Timed out. Abandon the gate only if the same change still holds it; if it has moved
+            // on, wait for whichever change holds it now.
+            if (heldSince != 0
+                && Interlocked.CompareExchange(ref gate.HeldSince, ScenarioChangeGate.Abandoned, heldSince) == heldSince)
+            {
+                Volatile.Write(ref _scenarioChangeGate, new ScenarioChangeGate());
+
+                this.LogError(
+                    "A room combination scenario change has been in progress for over {timeoutSeconds}s; no longer waiting for it",
+                    _combinationOperationTimeoutSeconds);
             }
         }
     }
 
-    // Takes _scenarioChange, waiting for the change holding it for up to the combination operation
-    // timeout, counted from when that change started. A change past it is treated as stuck (e.g. an
-    // activation action that never completes): this one then goes ahead without the lock, rather than
-    // every later change waiting on the stuck one. Returns whether the lock was taken.
-    private async Task<bool> WaitForScenarioChange()
+    private static void ExitScenarioChange(ScenarioChangeGate gate, long heldSince)
     {
-        var timeout = TimeSpan.FromSeconds(_combinationOperationTimeoutSeconds);
-
-        while (true)
-        {
-            var started = Interlocked.Read(ref _scenarioChangeStartedTicks);
-            var remaining = started == 0
-                ? timeout
-                : timeout - (DateTime.UtcNow - new DateTime(started, DateTimeKind.Utc));
-
-            if (remaining < TimeSpan.Zero)
-            {
-                remaining = TimeSpan.Zero;
-            }
-
-            if (await _scenarioChange.WaitAsync(remaining))
-            {
-                Interlocked.Exchange(ref _scenarioChangeStartedTicks, DateTime.UtcNow.Ticks);
-                return true;
-            }
-
-            // Timed out. If a newer change took the lock in the meantime, wait for that one instead.
-            if (Interlocked.Read(ref _scenarioChangeStartedTicks) == started)
-            {
-                this.LogError(
-                    "A room combination scenario change has been in progress for over {timeoutSeconds}s; changing the scenario without waiting for it",
-                    _combinationOperationTimeoutSeconds);
-                return false;
-            }
-        }
+        // Leaves an abandoned gate marked abandoned; releasing it then affects nobody.
+        Interlocked.CompareExchange(ref gate.HeldSince, 0, heldSince);
+        gate.Semaphore.Release();
     }
 
     // Completes at once if the tie lines are loaded. Otherwise it completes when they are, and the
@@ -340,7 +370,7 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         return loaded.Task;
     }
 
-    // Call only while holding _scenarioChange, so the partition states are read and the scenario
+    // Call only while holding the scenario change gate, so the partition states are read and the scenario
     // applied without another change in between.
     private async Task DetermineAndChangeScenario()
     {

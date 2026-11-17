@@ -32,7 +32,8 @@ public static class DeviceManager
     /// <summary>
     /// Event raised at most once per activation, when every <see cref="EssentialsDevice"/> has finished
     /// its initialization (which runs on the thread pool after <see cref="AllDevicesActivated"/>).
-    /// Devices initialize only once, so an activation with no newly added device doesn't raise it.
+    /// A device raises its <see cref="EssentialsDevice.Initialized"/> only the first time it
+    /// initializes, so an activation that adds no new device doesn't raise it.
     /// </summary>
     /// <remarks>
     /// Raised on a thread-pool thread, in no fixed order with the tie-line load: the tie lines may
