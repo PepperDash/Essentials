@@ -79,7 +79,9 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
 
     private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
 
-    private Mutex _scenarioChange = new Mutex();
+    // Serializes choosing and applying a scenario (#1570). Changes start from timers, the startup
+    // handler and API calls on different threads, and applying one awaits its actions.
+    private readonly SemaphoreSlim _scenarioChange = new SemaphoreSlim(1, 1);
 
     private Timer _combinationOperationTimeoutTimer;
 
@@ -162,14 +164,16 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         {
             InitializeOperationStatusProviders();
 
-            if (IsInAutoMode)
+            // Devices can finish initializing before the tie lines load (#1570). Either way the
+            // scenario is applied by DetermineRoomCombinationScenario, which waits for them.
+            if (!IsInAutoMode)
             {
-                DetermineRoomCombinationScenario();
-            }
-            else
-            {
+                // Sets the partitions to the default scenario's states. When they already match,
+                // no partition change starts a scenario change, so start one here either way (#1572).
                 SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
             }
+
+            _ = DetermineRoomCombinationScenario();
         };
     }
 
@@ -246,16 +250,67 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     }
 
     /// <summary>
-    /// Determines the current room combination scenario based on the state of the partition sensors
+    /// Determines the current room combination scenario based on the state of the partition sensors.
+    /// Waits until the tie lines are loaded, then for a change already in progress to finish.
+    /// Internal for tests.
     /// </summary>
-    private async Task DetermineRoomCombinationScenario()
+    /// <remarks>
+    /// Every scenario change comes through here: at startup, after a partition change (sensor or
+    /// manual) and from <see cref="SetAutoMode"/>. A scenario's activation actions and
+    /// <see cref="RoomCombinationScenarioChanged"/> subscribers can route, and a route made before the
+    /// tie lines load finds no path (#1570).
+    /// <para>A change waits for the one in progress however long it takes, so an action that never
+    /// completes holds up later changes too (the combination operation status still reports
+    /// <see cref="CombinationOperationState.TimedOut"/>). Never throws: a failure is logged against the
+    /// combiner, as callers such as the debounce timer can't observe it.</para>
+    /// </remarks>
+    internal async Task DetermineRoomCombinationScenario()
     {
-        if (_scenarioChangeDebounceTimer != null)
+        try
         {
-            _scenarioChangeDebounceTimer.Dispose();
-            _scenarioChangeDebounceTimer = null;
-        }
+            if (_scenarioChangeDebounceTimer != null)
+            {
+                _scenarioChangeDebounceTimer.Dispose();
+                _scenarioChangeDebounceTimer = null;
+            }
 
+            // Before taking the semaphore: a wait dropped at a teardown never completes, and mustn't hold it.
+            if (!DeviceManager.AreTieLinesLoaded)
+            {
+                this.LogDebug("Waiting for the tie lines to load before changing the room combination scenario");
+            }
+
+            await WhenTieLinesLoaded();
+
+            await _scenarioChange.WaitAsync();
+            try
+            {
+                await DetermineAndChangeScenario();
+            }
+            finally
+            {
+                _scenarioChange.Release();
+            }
+        }
+        catch (Exception ex)
+        {
+            this.LogException(ex, "Error determining the room combination scenario");
+        }
+    }
+
+    // Completes at once if the tie lines are loaded. Otherwise it completes when they are, and the
+    // caller continues on the thread pool rather than on the thread running the load.
+    private static Task WhenTieLinesLoaded()
+    {
+        var loaded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        DeviceManager.RunWhenTieLinesLoaded(() => loaded.TrySetResult(true));
+        return loaded.Task;
+    }
+
+    // Called while holding _scenarioChange, so the partition states are read and the scenario applied
+    // without another change in between.
+    private async Task DetermineAndChangeScenario()
+    {
         this.LogInformation("Determining Combination Scenario");
 
         var currentScenario = RoomCombinationScenarios.FirstOrDefault((s) =>
@@ -268,11 +323,17 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
                 // get the partition by key
                 var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionState.PartitionKey));
 
+                // A partition key the combiner doesn't have is ignored (#1573).
+                if (partition == null)
+                {
+                    continue;
+                }
+
                 this.LogDebug("Expected State: {partitionPresent} Actual State: {partitionState}", partitionState.PartitionPresent, partition.PartitionPresentFeedback.BoolValue);
 
-                if (partition != null && partitionState.PartitionPresent != partition.PartitionPresentFeedback.BoolValue)
+                if (partitionState.PartitionPresent != partition.PartitionPresentFeedback.BoolValue)
                 {
-                    // the partition can't be found or the state doesn't match
+                    // the state doesn't match
                     return false;
                 }
             }
@@ -404,7 +465,7 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
             partition.SetAutoMode();
         }
 
-        DetermineRoomCombinationScenario();
+        _ = DetermineRoomCombinationScenario();
     }
 
     /// <summary>

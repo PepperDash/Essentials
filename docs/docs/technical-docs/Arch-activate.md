@@ -117,7 +117,7 @@ As an example, [connection-based routing](~/docs/technical-docs/Connection-Based
 
 ## Device Initialization
 
-Once the `DeviceManager` has completed the activation phase cycle for all devices, the devices themselves can be initialized.  The `EssentialsDevice` class subscribes to the `DeviceManager.AllDevicesActivated` event and invokes the virtual `Initialize()` method on `Device` on a separate thread (`Task.Run`).  This allows all devices to concurrently initialize in parallel threads. When a device's `Initialize()` returns, its `IsInitialized` property is set to `true`, and once every `EssentialsDevice` is initialized, `DeviceManager` fires its `AllDevicesInitialized` event. 
+Once the `DeviceManager` has completed the activation phase cycle for all devices, the devices themselves can be initialized.  The `EssentialsDevice` class subscribes to the `DeviceManager.AllDevicesActivated` event and invokes the virtual `Initialize()` method on `Device` on a separate thread (`Task.Run`).  This allows all devices to concurrently initialize in parallel threads. When a device's `Initialize()` returns, its `IsInitialized` property is set to `true`, and once every `EssentialsDevice` is initialized, `DeviceManager` fires its `AllDevicesInitialized` event, at most once per activation, on a thread-pool thread.
 
 The main task that should be undertaken in the `Initialize()` method for any 3rd party device class, it to begin communication with the device via its API.  Ideally, no class that communicates with a 3rd party device outside the program should attempt to start communicating before this point.
 
@@ -168,6 +168,8 @@ A device that routes at startup, for example a room bringing itself up as soon a
 - A waiting callback that throws is logged, listed by the `getinitexceptions` console command, and the others still run.
 - Waiting actions are dropped at a teardown (`DeviceManager.DeactivateAll()`, `DeviceManager.Initialize()`) and at the start of each load. Each load signals once.
 - `DeviceManager.NotifyTieLinesLoaded()` is called by the Essentials control system. A device shouldn't call it; a test harness can, to stand in for the control system.
+
+The room combiner waits the same way: a scenario change, whose activation actions and `RoomCombinationScenarioChanged` subscribers may route, waits until the tie lines are loaded, then continues on the thread pool rather than the load thread. That covers its startup scenario and a partition change made before the tie lines load. A host or test harness that builds a room combiner must call `NotifyTieLinesLoaded()`, or the combiner never applies a scenario.
 
 ## The goal
 

@@ -346,6 +346,58 @@ public sealed class DeviceManagerTests : IDisposable
         }
     }
 
+    // ---- All devices initialized is raised once (#1570) ----
+
+    private sealed class InitializingDevice : EssentialsDevice
+    {
+        private readonly Func<bool>? _initializeAfter;
+
+        public InitializingDevice(string key, Func<bool>? initializeAfter = null) : base(key)
+            => _initializeAfter = initializeAfter;
+
+        protected override void Initialize()
+        {
+            if (_initializeAfter != null)
+                SpinWait.SpinUntil(_initializeAfter, TimeSpan.FromSeconds(5));
+        }
+    }
+
+    [Fact]
+    public void AllDevicesInitialized_IsRaisedOnce_WhenTheLastDevicesFinishTogether()
+    {
+        DeviceManager.Initialize(null!);
+        var first = new InitializingDevice($"initFirst-{Guid.NewGuid():N}");
+        var second = new InitializingDevice($"initSecond-{Guid.NewGuid():N}", () => first.IsInitialized);
+
+        // Runs before DeviceManager's handler for the first device (subscribed by AddDevice) and holds
+        // it until the second device is initialized too, so both of DeviceManager's handlers see every
+        // device initialized.
+        first.Initialized += (_, _) => SpinWait.SpinUntil(() => second.IsInitialized, TimeSpan.FromSeconds(5));
+        DeviceManager.AddDevice(first);
+        DeviceManager.AddDevice(second);
+
+        using var bothHandled = new CountdownEvent(2);
+        first.Initialized += (_, _) => bothHandled.Signal();
+        second.Initialized += (_, _) => bothHandled.Signal();
+
+        var raised = 0;
+        EventHandler<EventArgs> handler = (_, _) => Interlocked.Increment(ref raised);
+        DeviceManager.AllDevicesInitialized += handler;
+        try
+        {
+            DeviceManager.ActivateAll();
+
+            bothHandled.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue("both devices initialize");
+            raised.Should().Be(1);
+        }
+        finally
+        {
+            DeviceManager.AllDevicesInitialized -= handler;
+            DeviceManager.RemoveDevice(first);
+            DeviceManager.RemoveDevice(second);
+        }
+    }
+
     // ---- What a failing tie-lines-loaded callback logs ----
 
     private sealed class CaptureSink : ILogEventSink
