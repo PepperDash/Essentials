@@ -80,12 +80,8 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
 
     // Serializes choosing and applying a scenario (#1570). Changes start from timers, the startup
-    // handler and API calls on different threads, and applying one awaits its actions. A change holds
-    // it for at most the combination operation timeout (see DetermineRoomCombinationScenario).
+    // handler and API calls on different threads, and applying one awaits its actions.
     private readonly SemaphoreSlim _scenarioChange = new SemaphoreSlim(1, 1);
-
-    // Numbers each change as it takes _scenarioChange, so one given up on can tell a later one started.
-    private int _scenarioChangeNumber;
 
     private Timer _combinationOperationTimeoutTimer;
 
@@ -170,14 +166,14 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
 
             // Devices can finish initializing before the tie lines load (#1570). Either way the
             // scenario is applied by DetermineRoomCombinationScenario, which waits for them.
-            if (IsInAutoMode)
+            if (!IsInAutoMode)
             {
-                _ = DetermineRoomCombinationScenario();
-            }
-            else
-            {
+                // Sets the partitions to the default scenario's states. When they already match,
+                // no partition change starts a scenario change, so start one here either way (#1572).
                 SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
             }
+
+            _ = DetermineRoomCombinationScenario();
         };
     }
 
@@ -255,68 +251,50 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
 
     /// <summary>
     /// Determines the current room combination scenario based on the state of the partition sensors.
-    /// Waits until the tie lines are loaded, then for a change already in progress to finish or reach
-    /// the combination operation timeout. Internal for tests.
+    /// Waits until the tie lines are loaded, then for a change already in progress to finish.
+    /// Internal for tests.
     /// </summary>
     /// <remarks>
     /// Every scenario change comes through here: at startup, after a partition change (sensor or
     /// manual) and from <see cref="SetAutoMode"/>. A scenario's activation actions and
     /// <see cref="RoomCombinationScenarioChanged"/> subscribers can route, and a route made before the
     /// tie lines load finds no path (#1570).
-    /// <para>A change that hasn't finished after the combination operation timeout, e.g. because an
-    /// action never completes or blocks, stops holding up later changes: it logs an error and lets the
-    /// next change start. It isn't cancelled. Once a later change has started, the stuck one won't set
-    /// the current scenario, start activating it or raise <see cref="RoomCombinationScenarioChanged"/>,
-    /// but the deactivation or activation it was stuck in still runs its remaining actions if it
-    /// completes.</para>
+    /// <para>A change waits for the one in progress however long it takes, so an action that never
+    /// completes holds up later changes too (the combination operation status still reports
+    /// <see cref="CombinationOperationState.TimedOut"/>). Never throws: a failure is logged against the
+    /// combiner, as callers such as the debounce timer can't observe it.</para>
     /// </remarks>
     internal async Task DetermineRoomCombinationScenario()
     {
-        if (_scenarioChangeDebounceTimer != null)
-        {
-            _scenarioChangeDebounceTimer.Dispose();
-            _scenarioChangeDebounceTimer = null;
-        }
-
-        // Before taking the semaphore: a wait dropped at a teardown never completes, and mustn't hold it.
-        if (!DeviceManager.AreTieLinesLoaded)
-        {
-            this.LogDebug("Waiting for the tie lines to load before changing the room combination scenario");
-        }
-
-        await WhenTieLinesLoaded();
-
-        await _scenarioChange.WaitAsync();
         try
         {
-            // Supersedes any earlier change given up on, even if this one finds nothing to change.
-            var changeNumber = Interlocked.Increment(ref _scenarioChangeNumber);
-
-            // On the thread pool, so the timeout applies even if an action blocks synchronously.
-            var change = Task.Run(() => DetermineAndChangeScenario(changeNumber));
-
-            using (var timeout = new CancellationTokenSource())
+            if (_scenarioChangeDebounceTimer != null)
             {
-                var finished = await Task.WhenAny(
-                    change,
-                    Task.Delay(TimeSpan.FromSeconds(_combinationOperationTimeoutSeconds), timeout.Token));
-
-                timeout.Cancel();
-
-                if (finished != change)
-                {
-                    this.LogError(
-                        "A room combination scenario change has been in progress for over {timeoutSeconds}s; no longer waiting for it",
-                        _combinationOperationTimeoutSeconds);
-                    return;
-                }
+                _scenarioChangeDebounceTimer.Dispose();
+                _scenarioChangeDebounceTimer = null;
             }
 
-            await change;
+            // Before taking the semaphore: a wait dropped at a teardown never completes, and mustn't hold it.
+            if (!DeviceManager.AreTieLinesLoaded)
+            {
+                this.LogDebug("Waiting for the tie lines to load before changing the room combination scenario");
+            }
+
+            await WhenTieLinesLoaded();
+
+            await _scenarioChange.WaitAsync();
+            try
+            {
+                await DetermineAndChangeScenario();
+            }
+            finally
+            {
+                _scenarioChange.Release();
+            }
         }
-        finally
+        catch (Exception ex)
         {
-            _scenarioChange.Release();
+            this.LogException(ex, "Error determining the room combination scenario");
         }
     }
 
@@ -330,8 +308,8 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     }
 
     // Called while holding _scenarioChange, so the partition states are read and the scenario applied
-    // without another change in between (unless this one is given up on; see changeNumber).
-    private async Task DetermineAndChangeScenario(int changeNumber)
+    // without another change in between.
+    private async Task DetermineAndChangeScenario()
     {
         this.LogInformation("Determining Combination Scenario");
 
@@ -345,11 +323,17 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
                 // get the partition by key
                 var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionState.PartitionKey));
 
+                // A partition key the combiner doesn't have is ignored (#1573).
+                if (partition == null)
+                {
+                    continue;
+                }
+
                 this.LogDebug("Expected State: {partitionPresent} Actual State: {partitionState}", partitionState.PartitionPresent, partition.PartitionPresentFeedback.BoolValue);
 
-                if (partition != null && partitionState.PartitionPresent != partition.PartitionPresentFeedback.BoolValue)
+                if (partitionState.PartitionPresent != partition.PartitionPresentFeedback.BoolValue)
                 {
-                    // the partition can't be found or the state doesn't match
+                    // the state doesn't match
                     return false;
                 }
             }
@@ -360,14 +344,11 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         if (currentScenario != null)
         {
             this.LogInformation("Found combination Scenario {scenarioKey}", currentScenario.Key);
-            await ChangeScenario(currentScenario, changeNumber);
+            await ChangeScenario(currentScenario);
         }
     }
 
-    // True once a later change has started, i.e. this one was given up on after the timeout.
-    private bool IsSuperseded(int changeNumber) => Volatile.Read(ref _scenarioChangeNumber) != changeNumber;
-
-    private async Task ChangeScenario(IRoomCombinationScenario newScenario, int changeNumber)
+    private async Task ChangeScenario(IRoomCombinationScenario newScenario)
     {
         if (newScenario == _currentScenario)
         {
@@ -392,9 +373,6 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
                 await _currentScenario.Deactivate();
             }
 
-            // Given up on while deactivating: a later change owns the scenario now.
-            if (IsSuperseded(changeNumber)) return;
-
             _currentScenario = newScenario;
 
             // Activate the new scenario
@@ -403,8 +381,6 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
                 Debug.LogMessage(LogEventLevel.Debug, $"Current Scenario: {_currentScenario.Name}", this);
                 await _currentScenario.Activate();
             }
-
-            if (IsSuperseded(changeNumber)) return;
 
             RoomCombinationScenarioChanged?.Invoke(this, new EventArgs());
 
@@ -489,7 +465,7 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
             partition.SetAutoMode();
         }
 
-        DetermineRoomCombinationScenario();
+        _ = DetermineRoomCombinationScenario();
     }
 
     /// <summary>
