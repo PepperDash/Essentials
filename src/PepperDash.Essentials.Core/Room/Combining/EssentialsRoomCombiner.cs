@@ -83,6 +83,9 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     // handler and API calls on different threads, and applying one awaits its actions.
     private readonly SemaphoreSlim _scenarioChange = new SemaphoreSlim(1, 1);
 
+    // When the change holding _scenarioChange took it (UTC ticks); 0 while no change holds it.
+    private long _scenarioChangeStartedTicks;
+
     private Timer _combinationOperationTimeoutTimer;
 
     private const int DefaultCombinationOperationTimeoutSeconds = 300;
@@ -251,8 +254,8 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
 
     /// <summary>
     /// Determines the current room combination scenario based on the state of the partition sensors.
-    /// Waits until the tie lines are loaded, then for a change already in progress to finish.
-    /// Internal for tests.
+    /// Waits until the tie lines are loaded, then for a change already in progress to finish (for up
+    /// to the combination operation timeout, counted from when that change started). Internal for tests.
     /// </summary>
     /// <remarks>
     /// Every scenario change comes through here: at startup, after a partition change (sensor or
@@ -269,16 +272,62 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         }
 
         // Before taking the lock: a wait dropped at a teardown never completes, and mustn't hold it.
+        if (!DeviceManager.AreTieLinesLoaded)
+        {
+            this.LogDebug("Waiting for the tie lines to load before changing the room combination scenario");
+        }
+
         await WhenTieLinesLoaded();
 
-        await _scenarioChange.WaitAsync();
+        var acquired = await WaitForScenarioChange();
         try
         {
             await DetermineAndChangeScenario();
         }
         finally
         {
-            _scenarioChange.Release();
+            if (acquired)
+            {
+                Interlocked.Exchange(ref _scenarioChangeStartedTicks, 0);
+                _scenarioChange.Release();
+            }
+        }
+    }
+
+    // Takes _scenarioChange, waiting for the change holding it for up to the combination operation
+    // timeout, counted from when that change started. A change past it is treated as stuck (e.g. an
+    // activation action that never completes): this one then goes ahead without the lock, rather than
+    // every later change waiting on the stuck one. Returns whether the lock was taken.
+    private async Task<bool> WaitForScenarioChange()
+    {
+        var timeout = TimeSpan.FromSeconds(_combinationOperationTimeoutSeconds);
+
+        while (true)
+        {
+            var started = Interlocked.Read(ref _scenarioChangeStartedTicks);
+            var remaining = started == 0
+                ? timeout
+                : timeout - (DateTime.UtcNow - new DateTime(started, DateTimeKind.Utc));
+
+            if (remaining < TimeSpan.Zero)
+            {
+                remaining = TimeSpan.Zero;
+            }
+
+            if (await _scenarioChange.WaitAsync(remaining))
+            {
+                Interlocked.Exchange(ref _scenarioChangeStartedTicks, DateTime.UtcNow.Ticks);
+                return true;
+            }
+
+            // Timed out. If a newer change took the lock in the meantime, wait for that one instead.
+            if (Interlocked.Read(ref _scenarioChangeStartedTicks) == started)
+            {
+                this.LogError(
+                    "A room combination scenario change has been in progress for over {timeoutSeconds}s; changing the scenario without waiting for it",
+                    _combinationOperationTimeoutSeconds);
+                return false;
+            }
         }
     }
 

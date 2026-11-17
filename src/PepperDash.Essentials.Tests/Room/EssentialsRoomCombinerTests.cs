@@ -62,7 +62,8 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
     // scenarios: "combined" (p1 not present) and "divided" (p1 present). Not activated, so it has no
     // startup scenario; PostActivate sets up the partition.
     private static EssentialsRoomCombiner ManualCombiner(
-        string? actionDeviceKey = null, string? combinedAction = null, string? dividedAction = null)
+        string? actionDeviceKey = null, string? combinedAction = null, string? dividedAction = null,
+        int? combinationOperationTimeoutSeconds = null)
     {
         var props = Props(
             Scenario("combined", new() { new PartitionState { PartitionKey = "p1", PartitionPresent = false } },
@@ -71,6 +72,7 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
                 actionDeviceKey, dividedAction));
         props.defaultToManualMode = true;
         props.Partitions = new() { new PartitionConfig { Key = "p1", Name = "p1", DeviceKey = NewKey("noSensor"), AdjacentRoomKeys = new() } };
+        props.CombinationOperationTimeoutSeconds = combinationOperationTimeoutSeconds;
 
         var combiner = new EssentialsRoomCombiner(NewKey("combiner"), props);
         combiner.PostActivate();
@@ -182,5 +184,33 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
 
         actions.Log.Should().Equal("combined:start", "combined:end", "divided");
         combiner.CurrentScenario!.Key.Should().Be("divided");
+    }
+
+    [Fact]
+    public async Task A_StuckScenarioChange_DoesNotBlockLaterChangesPastTheTimeout()
+    {
+        var actions = Add(new ScenarioActions(NewKey("scenarioActions")));
+        var combiner = ManualCombiner(actions.Key, nameof(ScenarioActions.RunCombined), nameof(ScenarioActions.RunDivided),
+            combinationOperationTimeoutSeconds: 1);
+        DeviceManager.NotifyTieLinesLoaded();
+        try
+        {
+            // 'combined' never finishes its activation action.
+            _ = combiner.DetermineRoomCombinationScenario();
+
+            combiner.Partitions.Single().SetPartitionStatePresent();
+            var second = combiner.DetermineRoomCombinationScenario();
+
+            actions.Log.Should().Equal(new[] { "combined:start" }, "it first waits for the change in progress");
+
+            await second.WaitAsync(Timeout);
+
+            actions.Log.Should().Equal("combined:start", "divided");
+            combiner.CurrentScenario!.Key.Should().Be("divided");
+        }
+        finally
+        {
+            actions.CombinedGate.TrySetResult();
+        }
     }
 }
