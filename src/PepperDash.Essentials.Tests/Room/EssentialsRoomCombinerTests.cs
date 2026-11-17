@@ -45,17 +45,21 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
     }
 
     private static RoomCombinationScenarioConfig Scenario(
-        string key, List<PartitionState> partitionStates, string? actionDeviceKey = null, string? actionMethod = null) => new()
+        string key, List<PartitionState> partitionStates, string? actionDeviceKey = null, string? actionMethod = null,
+        string? deactivationMethod = null) => new()
     {
         Key = key,
         Name = key,
         PartitionStates = partitionStates,
         UiMap = new(),
-        ActivationActions = actionDeviceKey == null
-            ? new()
-            : new() { new DeviceActionWrapper { DeviceKey = actionDeviceKey, MethodName = actionMethod } },
-        DeactivationActions = new(),
+        ActivationActions = Actions(actionDeviceKey, actionMethod),
+        DeactivationActions = Actions(actionDeviceKey, deactivationMethod),
     };
+
+    private static List<DeviceActionWrapper> Actions(string? deviceKey, string? method) =>
+        deviceKey == null || method == null
+            ? new()
+            : new() { new DeviceActionWrapper { DeviceKey = deviceKey, MethodName = method } };
 
     private static EssentialsRoomCombinerPropertiesConfig Props(params RoomCombinationScenarioConfig[] scenarios) => new()
     {
@@ -72,11 +76,11 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
     // startup scenario; PostActivate sets up the partition.
     private static EssentialsRoomCombiner ManualCombiner(
         string? actionDeviceKey = null, string? combinedAction = null, string? dividedAction = null,
-        int? combinationOperationTimeoutSeconds = null)
+        int? combinationOperationTimeoutSeconds = null, string? combinedDeactivation = null)
     {
         var props = Props(
             Scenario("combined", new() { new PartitionState { PartitionKey = "p1", PartitionPresent = false } },
-                actionDeviceKey, combinedAction),
+                actionDeviceKey, combinedAction, combinedDeactivation),
             Scenario("divided", new() { new PartitionState { PartitionKey = "p1", PartitionPresent = true } },
                 actionDeviceKey, dividedAction));
         props.defaultToManualMode = true;
@@ -180,6 +184,25 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
             await DividedGate.Task;
             Log.Enqueue("divided:end");
         }
+
+        // Blocks its thread rather than returning a Task. Bounded, so a regression fails rather than hangs.
+        public ManualResetEventSlim BlockGate { get; } = new();
+
+        public void RunCombinedBlocking()
+        {
+            Log.Enqueue("combined:blocking");
+            BlockGate.Wait(TimeSpan.FromSeconds(15));
+            Log.Enqueue("combined:end");
+        }
+
+        public TaskCompletionSource DeactivateGate { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task DeactivateCombinedHeld()
+        {
+            Log.Enqueue("combined:deactivate:start");
+            await DeactivateGate.Task;
+            Log.Enqueue("combined:deactivate:end");
+        }
     }
 
     [Fact]
@@ -190,7 +213,8 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
         DeviceManager.NotifyTieLinesLoaded();
 
         var first = combiner.DetermineRoomCombinationScenario();
-        actions.Log.Should().Equal(new[] { "combined:start" }, "'combined' is held in its activation action");
+        // The change runs on the thread pool; 'combined' is then held in its activation action.
+        SpinWait.SpinUntil(() => actions.Log.Contains("combined:start"), Timeout).Should().BeTrue();
 
         combiner.Partitions.Single().SetPartitionStatePresent();
         var second = combiner.DetermineRoomCombinationScenario();
@@ -215,6 +239,7 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
         {
             // 'combined' never finishes its activation action (until the cleanup below).
             _ = combiner.DetermineRoomCombinationScenario();
+            SpinWait.SpinUntil(() => actions.Log.Contains("combined:start"), StuckTestTimeout).Should().BeTrue();
 
             combiner.Partitions.Single().SetPartitionStatePresent();
             var second = combiner.DetermineRoomCombinationScenario();
@@ -240,6 +265,70 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
         {
             actions.CombinedGate.TrySetResult();
             actions.DividedGate.TrySetResult();
+        }
+    }
+
+    [Fact]
+    public async Task An_ActionThatBlocks_IsGivenUpOnPastTheTimeout()
+    {
+        var actions = Add(new ScenarioActions(NewKey("scenarioActions")));
+        var combiner = ManualCombiner(actions.Key, nameof(ScenarioActions.RunCombinedBlocking), nameof(ScenarioActions.RunDivided),
+            combinationOperationTimeoutSeconds: 3);
+        DeviceManager.NotifyTieLinesLoaded();
+        try
+        {
+            // Returns although the action blocks: the change runs on the thread pool.
+            _ = combiner.DetermineRoomCombinationScenario();
+            SpinWait.SpinUntil(() => actions.Log.Contains("combined:blocking"), StuckTestTimeout).Should().BeTrue();
+
+            combiner.Partitions.Single().SetPartitionStatePresent();
+            await combiner.DetermineRoomCombinationScenario().WaitAsync(StuckTestTimeout);
+
+            actions.Log.Should().Equal(new[] { "combined:blocking", "divided" },
+                "past the timeout the blocked change is given up on, while it's still blocked");
+            combiner.CurrentScenario!.Key.Should().Be("divided");
+        }
+        finally
+        {
+            actions.BlockGate.Set();
+        }
+    }
+
+    [Fact]
+    public async Task A_ChangeGivenUpOn_DoesNotOverwriteALaterOne()
+    {
+        var actions = Add(new ScenarioActions(NewKey("scenarioActions")));
+        var combiner = ManualCombiner(actions.Key, combinedAction: null, dividedAction: nameof(ScenarioActions.RunDivided),
+            combinationOperationTimeoutSeconds: 3, combinedDeactivation: nameof(ScenarioActions.DeactivateCombinedHeld));
+        DeviceManager.NotifyTieLinesLoaded();
+        try
+        {
+            await combiner.DetermineRoomCombinationScenario().WaitAsync(Timeout);
+            combiner.CurrentScenario!.Key.Should().Be("combined");
+
+            var changed = 0;
+            combiner.RoomCombinationScenarioChanged += (_, _) => Interlocked.Increment(ref changed);
+
+            // 'combined' -> 'divided' gets stuck deactivating 'combined', and is given up on.
+            combiner.Partitions.Single().SetPartitionStatePresent();
+            await combiner.DetermineRoomCombinationScenario().WaitAsync(StuckTestTimeout);
+            actions.Log.Should().Equal("combined:deactivate:start");
+
+            // The partition is back: 'combined' is still current, so there's nothing to change.
+            combiner.Partitions.Single().SetPartitionStateNotPresent();
+            await combiner.DetermineRoomCombinationScenario().WaitAsync(Timeout);
+
+            // The stuck change completes its deactivation late; it must not go on to apply 'divided'.
+            actions.DeactivateGate.SetResult();
+            SpinWait.SpinUntil(() => actions.Log.Contains("combined:deactivate:end"), Timeout).Should().BeTrue();
+            SpinWait.SpinUntil(() => actions.Log.Contains("divided") || changed > 0, TimeSpan.FromSeconds(1))
+                .Should().BeFalse("a later change has started");
+
+            combiner.CurrentScenario!.Key.Should().Be("combined");
+        }
+        finally
+        {
+            actions.DeactivateGate.TrySetResult();
         }
     }
 }

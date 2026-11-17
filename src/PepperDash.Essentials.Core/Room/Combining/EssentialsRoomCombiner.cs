@@ -84,6 +84,9 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     // it for at most the combination operation timeout (see DetermineRoomCombinationScenario).
     private readonly SemaphoreSlim _scenarioChange = new SemaphoreSlim(1, 1);
 
+    // Numbers each change as it takes _scenarioChange, so one given up on can tell a later one started.
+    private int _scenarioChangeNumber;
+
     private Timer _combinationOperationTimeoutTimer;
 
     private const int DefaultCombinationOperationTimeoutSeconds = 300;
@@ -261,10 +264,11 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     /// <see cref="RoomCombinationScenarioChanged"/> subscribers can route, and a route made before the
     /// tie lines load finds no path (#1570).
     /// <para>A change that hasn't finished after the combination operation timeout, e.g. because an
-    /// activation action never completes, stops holding up later changes: it logs an error and lets the
-    /// next change start. It isn't cancelled, though. If its action completes later, it still runs that
-    /// scenario's remaining actions and raises <see cref="RoomCombinationScenarioChanged"/>, even
-    /// though another scenario may be current by then.</para>
+    /// action never completes or blocks, stops holding up later changes: it logs an error and lets the
+    /// next change start. It isn't cancelled. Once a later change has started, the stuck one won't set
+    /// the current scenario, start activating it or raise <see cref="RoomCombinationScenarioChanged"/>,
+    /// but the deactivation or activation it was stuck in still runs its remaining actions if it
+    /// completes.</para>
     /// </remarks>
     internal async Task DetermineRoomCombinationScenario()
     {
@@ -285,7 +289,11 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         await _scenarioChange.WaitAsync();
         try
         {
-            var change = DetermineAndChangeScenario();
+            // Supersedes any earlier change given up on, even if this one finds nothing to change.
+            var changeNumber = Interlocked.Increment(ref _scenarioChangeNumber);
+
+            // On the thread pool, so the timeout applies even if an action blocks synchronously.
+            var change = Task.Run(() => DetermineAndChangeScenario(changeNumber));
 
             using (var timeout = new CancellationTokenSource())
             {
@@ -321,9 +329,9 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         return loaded.Task;
     }
 
-    // Call only while holding _scenarioChange, so the partition states are read and the scenario
-    // applied without another change in between.
-    private async Task DetermineAndChangeScenario()
+    // Called while holding _scenarioChange, so the partition states are read and the scenario applied
+    // without another change in between (unless this one is given up on; see changeNumber).
+    private async Task DetermineAndChangeScenario(int changeNumber)
     {
         this.LogInformation("Determining Combination Scenario");
 
@@ -352,11 +360,14 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         if (currentScenario != null)
         {
             this.LogInformation("Found combination Scenario {scenarioKey}", currentScenario.Key);
-            await ChangeScenario(currentScenario);
+            await ChangeScenario(currentScenario, changeNumber);
         }
     }
 
-    private async Task ChangeScenario(IRoomCombinationScenario newScenario)
+    // True once a later change has started, i.e. this one was given up on after the timeout.
+    private bool IsSuperseded(int changeNumber) => Volatile.Read(ref _scenarioChangeNumber) != changeNumber;
+
+    private async Task ChangeScenario(IRoomCombinationScenario newScenario, int changeNumber)
     {
         if (newScenario == _currentScenario)
         {
@@ -381,6 +392,9 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
                 await _currentScenario.Deactivate();
             }
 
+            // Given up on while deactivating: a later change owns the scenario now.
+            if (IsSuperseded(changeNumber)) return;
+
             _currentScenario = newScenario;
 
             // Activate the new scenario
@@ -389,6 +403,8 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
                 Debug.LogMessage(LogEventLevel.Debug, $"Current Scenario: {_currentScenario.Name}", this);
                 await _currentScenario.Activate();
             }
+
+            if (IsSuperseded(changeNumber)) return;
 
             RoomCombinationScenarioChanged?.Invoke(this, new EventArgs());
 
