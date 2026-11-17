@@ -58,6 +58,25 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
 
     private static string NewKey(string prefix) => $"{prefix}-{Guid.NewGuid():N}";
 
+    // A manual combiner with one partition ("p1", no sensor, so it starts not present) and two
+    // scenarios: "combined" (p1 not present) and "divided" (p1 present). Not activated, so it has no
+    // startup scenario; PostActivate sets up the partition.
+    private static EssentialsRoomCombiner ManualCombiner(
+        string? actionDeviceKey = null, string? combinedAction = null, string? dividedAction = null)
+    {
+        var props = Props(
+            Scenario("combined", new() { new PartitionState { PartitionKey = "p1", PartitionPresent = false } },
+                actionDeviceKey, combinedAction),
+            Scenario("divided", new() { new PartitionState { PartitionKey = "p1", PartitionPresent = true } },
+                actionDeviceKey, dividedAction));
+        props.defaultToManualMode = true;
+        props.Partitions = new() { new PartitionConfig { Key = "p1", Name = "p1", DeviceKey = NewKey("noSensor"), AdjacentRoomKeys = new() } };
+
+        var combiner = new EssentialsRoomCombiner(NewKey("combiner"), props);
+        combiner.PostActivate();
+        return combiner;
+    }
+
     // ---- The startup scenario waits for the tie lines ----
 
     [Fact]
@@ -103,6 +122,24 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
         combiner.CurrentScenario!.Key.Should().Be("divided");
     }
 
+    [Fact]
+    public async Task A_PartitionChange_BeforeTheTieLinesLoad_IsAppliedOnceTheyAre()
+    {
+        var combiner = ManualCombiner();
+
+        combiner.Partitions.Single().SetPartitionStatePresent();
+        // What the partition change's debounce timer runs.
+        var change = combiner.DetermineRoomCombinationScenario();
+
+        change.IsCompleted.Should().BeFalse("the tie lines aren't loaded yet");
+        combiner.CurrentScenario.Should().BeNull();
+
+        DeviceManager.NotifyTieLinesLoaded();
+
+        await change.WaitAsync(Timeout);
+        combiner.CurrentScenario!.Key.Should().Be("divided");
+    }
+
     // ---- One scenario change at a time ----
 
     private sealed class ScenarioActions : IKeyed
@@ -129,18 +166,8 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
     public async Task A_ScenarioChange_WaitsForTheOneInProgress()
     {
         var actions = Add(new ScenarioActions(NewKey("scenarioActions")));
-        var props = Props(
-            Scenario("combined", new() { new PartitionState { PartitionKey = "p1", PartitionPresent = false } },
-                actions.Key, nameof(ScenarioActions.RunCombined)),
-            Scenario("divided", new() { new PartitionState { PartitionKey = "p1", PartitionPresent = true } },
-                actions.Key, nameof(ScenarioActions.RunDivided)));
-        props.defaultToManualMode = true;
-        // No sensor device: the partition is manual, and starts not present.
-        props.Partitions = new() { new PartitionConfig { Key = "p1", Name = "p1", DeviceKey = NewKey("noSensor"), AdjacentRoomKeys = new() } };
-
-        // Not activated, so there's no startup scenario; PostActivate sets up the partition.
-        var combiner = new EssentialsRoomCombiner(NewKey("combiner"), props);
-        combiner.PostActivate();
+        var combiner = ManualCombiner(actions.Key, nameof(ScenarioActions.RunCombined), nameof(ScenarioActions.RunDivided));
+        DeviceManager.NotifyTieLinesLoaded();
 
         var first = combiner.DetermineRoomCombinationScenario();
         actions.Log.Should().Equal(new[] { "combined:start" }, "'combined' is held in its activation action");

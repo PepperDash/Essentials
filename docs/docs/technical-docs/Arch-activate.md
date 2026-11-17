@@ -163,7 +163,7 @@ Tie lines are loaded from config only after the activation phases (`DeviceManage
 
 A device that routes at startup, for example a room bringing itself up as soon as its codec reports ready, should wrap that work in `DeviceManager.RunWhenTieLinesLoaded(...)`. The action runs once the tie lines are loaded, or at once if they already are. `DeviceManager.AllTieLinesLoaded` is raised at the same point, and `DeviceManager.AreTieLinesLoaded` tells whether it has happened yet.
 
-The room combiner works this way: it applies its startup scenario, whose activation actions and `RoomCombinationScenarioChanged` subscribers may route, once every device is initialized and the tie lines are loaded.
+The room combiner works this way: a scenario change, whose activation actions and `RoomCombinationScenarioChanged` subscribers may route, waits until the tie lines are loaded. That covers its startup scenario and a partition change made before the tie lines load.
 
 - Actions that were waiting run on the thread running the load, one at a time, after the `AllTieLinesLoaded` handlers. Keep them short and don't block.
 - An action added once the tie lines are loaded runs at once on the caller's thread, even while the handlers are still running, and an exception from it goes to the caller.

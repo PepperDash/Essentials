@@ -164,23 +164,17 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         {
             InitializeOperationStatusProviders();
 
-            // Devices can finish initializing before the tie lines load, and a scenario's activation
-            // actions and RoomCombinationScenarioChanged subscribers can route (#1570). Wait for the
-            // tie lines too, then leave the load thread, as this ran on the thread pool before.
-            DeviceManager.RunWhenTieLinesLoaded(() => Task.Run(ApplyStartupScenario));
+            // Devices can finish initializing before the tie lines load (#1570). Either way the
+            // scenario is applied by DetermineRoomCombinationScenario, which waits for them.
+            if (IsInAutoMode)
+            {
+                _ = DetermineRoomCombinationScenario();
+            }
+            else
+            {
+                SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
+            }
         };
-    }
-
-    private void ApplyStartupScenario()
-    {
-        if (IsInAutoMode)
-        {
-            _ = DetermineRoomCombinationScenario();
-        }
-        else
-        {
-            SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
-        }
     }
 
     private void CreateScenarios()
@@ -257,8 +251,15 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
 
     /// <summary>
     /// Determines the current room combination scenario based on the state of the partition sensors.
-    /// Waits for a change already in progress to finish first. Internal for tests.
+    /// Waits until the tie lines are loaded, then for a change already in progress to finish.
+    /// Internal for tests.
     /// </summary>
+    /// <remarks>
+    /// Every scenario change comes through here: at startup, after a partition change (sensor or
+    /// manual) and from <see cref="SetAutoMode"/>. A scenario's activation actions and
+    /// <see cref="RoomCombinationScenarioChanged"/> subscribers can route, and a route made before the
+    /// tie lines load finds no path (#1570).
+    /// </remarks>
     internal async Task DetermineRoomCombinationScenario()
     {
         if (_scenarioChangeDebounceTimer != null)
@@ -266,6 +267,9 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
             _scenarioChangeDebounceTimer.Dispose();
             _scenarioChangeDebounceTimer = null;
         }
+
+        // Before taking the lock: a wait dropped at a teardown never completes, and mustn't hold it.
+        await WhenTieLinesLoaded();
 
         await _scenarioChange.WaitAsync();
         try
@@ -276,6 +280,15 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         {
             _scenarioChange.Release();
         }
+    }
+
+    // Completes at once if the tie lines are loaded. Otherwise it completes when they are, and the
+    // caller continues on the thread pool rather than on the thread running the load.
+    private static Task WhenTieLinesLoaded()
+    {
+        var loaded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        DeviceManager.RunWhenTieLinesLoaded(() => loaded.TrySetResult(true));
+        return loaded.Task;
     }
 
     // Call only while holding _scenarioChange, so the partition states are read and the scenario
