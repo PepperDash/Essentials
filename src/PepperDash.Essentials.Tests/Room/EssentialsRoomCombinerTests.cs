@@ -21,6 +21,9 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
 
+    // Longer, as the stuck-change test waits out a 3s combination operation timeout.
+    private static readonly TimeSpan StuckTestTimeout = TimeSpan.FromSeconds(10);
+
     private readonly List<IKeyed> _added = new();
 
     public EssentialsRoomCombinerTests() => DeviceManager.Initialize(null!);
@@ -206,7 +209,7 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
     {
         var actions = Add(new ScenarioActions(NewKey("scenarioActions")));
         var combiner = ManualCombiner(actions.Key, nameof(ScenarioActions.RunCombined), nameof(ScenarioActions.RunDividedHeld),
-            combinationOperationTimeoutSeconds: 2);
+            combinationOperationTimeoutSeconds: 3);
         DeviceManager.NotifyTieLinesLoaded();
         try
         {
@@ -219,7 +222,7 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
             actions.Log.Should().Equal(new[] { "combined:start" }, "it first waits for the change in progress");
 
             // Past the timeout the stuck change is given up on, and 'divided' starts (held in its action).
-            SpinWait.SpinUntil(() => actions.Log.Contains("divided:start"), Timeout).Should().BeTrue();
+            SpinWait.SpinUntil(() => actions.Log.Contains("divided:start"), StuckTestTimeout).Should().BeTrue();
 
             combiner.Partitions.Single().SetPartitionStateNotPresent();
             var third = combiner.DetermineRoomCombinationScenario();
@@ -228,9 +231,9 @@ public sealed class EssentialsRoomCombinerTests : IDisposable
                 "a later change still waits for the change in progress, not just for the stuck one");
 
             actions.DividedGate.SetResult();
-            await second.WaitAsync(Timeout);
+            await second.WaitAsync(StuckTestTimeout);
 
-            SpinWait.SpinUntil(() => actions.Log.Count == 4, Timeout).Should().BeTrue();
+            SpinWait.SpinUntil(() => actions.Log.Count == 4, StuckTestTimeout).Should().BeTrue();
             actions.Log.Should().Equal("combined:start", "divided:start", "divided:end", "combined:start");
         }
         finally

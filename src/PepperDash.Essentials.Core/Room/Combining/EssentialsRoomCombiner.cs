@@ -80,21 +80,9 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
 
     // Serializes choosing and applying a scenario (#1570). Changes start from timers, the startup
-    // handler and API calls on different threads, and applying one awaits its actions. A change stuck
-    // past the combination operation timeout has its gate abandoned and replaced, so later changes
-    // queue on the new gate and the stuck one releasing its old gate affects nobody.
-    private sealed class ScenarioChangeGate
-    {
-        public const long Abandoned = -1;
-
-        public readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
-
-        // Stopwatch timestamp when the change holding Semaphore took it; 0 while it's free (or just
-        // taken and not yet stamped); Abandoned once the gate has been replaced.
-        public long HeldSince;
-    }
-
-    private ScenarioChangeGate _scenarioChangeGate = new ScenarioChangeGate();
+    // handler and API calls on different threads, and applying one awaits its actions. A change holds
+    // it for at most the combination operation timeout (see DetermineRoomCombinationScenario).
+    private readonly SemaphoreSlim _scenarioChange = new SemaphoreSlim(1, 1);
 
     private Timer _combinationOperationTimeoutTimer;
 
@@ -264,14 +252,19 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
 
     /// <summary>
     /// Determines the current room combination scenario based on the state of the partition sensors.
-    /// Waits until the tie lines are loaded, then for a change already in progress to finish (for up
-    /// to the combination operation timeout, counted from when that change started). Internal for tests.
+    /// Waits until the tie lines are loaded, then for a change already in progress to finish or reach
+    /// the combination operation timeout. Internal for tests.
     /// </summary>
     /// <remarks>
     /// Every scenario change comes through here: at startup, after a partition change (sensor or
     /// manual) and from <see cref="SetAutoMode"/>. A scenario's activation actions and
     /// <see cref="RoomCombinationScenarioChanged"/> subscribers can route, and a route made before the
     /// tie lines load finds no path (#1570).
+    /// <para>A change that hasn't finished after the combination operation timeout, e.g. because an
+    /// activation action never completes, stops holding up later changes: it logs an error and lets the
+    /// next change start. It isn't cancelled, though. If its action completes later, it still runs that
+    /// scenario's remaining actions and raises <see cref="RoomCombinationScenarioChanged"/>, even
+    /// though another scenario may be current by then.</para>
     /// </remarks>
     internal async Task DetermineRoomCombinationScenario()
     {
@@ -281,7 +274,7 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
             _scenarioChangeDebounceTimer = null;
         }
 
-        // Before taking the lock: a wait dropped at a teardown never completes, and mustn't hold it.
+        // Before taking the semaphore: a wait dropped at a teardown never completes, and mustn't hold it.
         if (!DeviceManager.AreTieLinesLoaded)
         {
             this.LogDebug("Waiting for the tie lines to load before changing the room combination scenario");
@@ -289,76 +282,34 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
 
         await WhenTieLinesLoaded();
 
-        var (gate, heldSince) = await EnterScenarioChange();
+        await _scenarioChange.WaitAsync();
         try
         {
-            await DetermineAndChangeScenario();
+            var change = DetermineAndChangeScenario();
+
+            using (var timeout = new CancellationTokenSource())
+            {
+                var finished = await Task.WhenAny(
+                    change,
+                    Task.Delay(TimeSpan.FromSeconds(_combinationOperationTimeoutSeconds), timeout.Token));
+
+                timeout.Cancel();
+
+                if (finished != change)
+                {
+                    this.LogError(
+                        "A room combination scenario change has been in progress for over {timeoutSeconds}s; no longer waiting for it",
+                        _combinationOperationTimeoutSeconds);
+                    return;
+                }
+            }
+
+            await change;
         }
         finally
         {
-            ExitScenarioChange(gate, heldSince);
+            _scenarioChange.Release();
         }
-    }
-
-    // Takes the current scenario change gate, waiting for the change holding it for up to the
-    // combination operation timeout, counted from when that change took it (a monotonic clock, so a
-    // clock change can't make it look stuck). A change past that is treated as stuck, e.g. an
-    // activation action that never completes: its gate is abandoned and replaced, once, and the
-    // waiting changes queue on the new gate. Returns the gate taken and its HeldSince stamp.
-    private async Task<(ScenarioChangeGate gate, long heldSince)> EnterScenarioChange()
-    {
-        var timeout = _combinationOperationTimeoutSeconds * System.Diagnostics.Stopwatch.Frequency;
-
-        while (true)
-        {
-            var gate = Volatile.Read(ref _scenarioChangeGate);
-            var heldSince = Interlocked.Read(ref gate.HeldSince);
-
-            if (heldSince == ScenarioChangeGate.Abandoned)
-            {
-                // Being replaced by the change that abandoned it; read the new gate.
-                await Task.Yield();
-                continue;
-            }
-
-            var remaining = heldSince == 0
-                ? timeout
-                : timeout - (System.Diagnostics.Stopwatch.GetTimestamp() - heldSince);
-
-            var wait = TimeSpan.FromSeconds((double)Math.Max(remaining, 0) / System.Diagnostics.Stopwatch.Frequency);
-
-            if (await gate.Semaphore.WaitAsync(wait))
-            {
-                var stamp = System.Diagnostics.Stopwatch.GetTimestamp();
-                if (Interlocked.CompareExchange(ref gate.HeldSince, stamp, 0) == 0)
-                {
-                    return (gate, stamp);
-                }
-
-                // Abandoned while this change waited (its stuck holder finally released it).
-                gate.Semaphore.Release();
-                continue;
-            }
-
-            // Timed out. Abandon the gate only if the same change still holds it; if it has moved
-            // on, wait for whichever change holds it now.
-            if (heldSince != 0
-                && Interlocked.CompareExchange(ref gate.HeldSince, ScenarioChangeGate.Abandoned, heldSince) == heldSince)
-            {
-                Volatile.Write(ref _scenarioChangeGate, new ScenarioChangeGate());
-
-                this.LogError(
-                    "A room combination scenario change has been in progress for over {timeoutSeconds}s; no longer waiting for it",
-                    _combinationOperationTimeoutSeconds);
-            }
-        }
-    }
-
-    private static void ExitScenarioChange(ScenarioChangeGate gate, long heldSince)
-    {
-        // Leaves an abandoned gate marked abandoned; releasing it then affects nobody.
-        Interlocked.CompareExchange(ref gate.HeldSince, 0, heldSince);
-        gate.Semaphore.Release();
     }
 
     // Completes at once if the tie lines are loaded. Otherwise it completes when they are, and the
@@ -370,7 +321,7 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         return loaded.Task;
     }
 
-    // Call only while holding the scenario change gate, so the partition states are read and the scenario
+    // Call only while holding _scenarioChange, so the partition states are read and the scenario
     // applied without another change in between.
     private async Task DetermineAndChangeScenario()
     {
