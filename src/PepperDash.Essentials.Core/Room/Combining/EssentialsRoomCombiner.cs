@@ -79,7 +79,9 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
 
     private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
 
-    private Mutex _scenarioChange = new Mutex();
+    // Serializes choosing and applying a scenario (#1570). Changes start from timers, the startup
+    // handler and API calls on different threads, and applying one awaits its actions.
+    private readonly SemaphoreSlim _scenarioChange = new SemaphoreSlim(1, 1);
 
     private Timer _combinationOperationTimeoutTimer;
 
@@ -162,15 +164,23 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
         {
             InitializeOperationStatusProviders();
 
-            if (IsInAutoMode)
-            {
-                DetermineRoomCombinationScenario();
-            }
-            else
-            {
-                SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
-            }
+            // Devices can finish initializing before the tie lines load, and a scenario's activation
+            // actions and RoomCombinationScenarioChanged subscribers can route (#1570). Wait for the
+            // tie lines too, then leave the load thread, as this ran on the thread pool before.
+            DeviceManager.RunWhenTieLinesLoaded(() => Task.Run(ApplyStartupScenario));
         };
+    }
+
+    private void ApplyStartupScenario()
+    {
+        if (IsInAutoMode)
+        {
+            _ = DetermineRoomCombinationScenario();
+        }
+        else
+        {
+            SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
+        }
     }
 
     private void CreateScenarios()
@@ -246,9 +256,10 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
     }
 
     /// <summary>
-    /// Determines the current room combination scenario based on the state of the partition sensors
+    /// Determines the current room combination scenario based on the state of the partition sensors.
+    /// Waits for a change already in progress to finish first. Internal for tests.
     /// </summary>
-    private async Task DetermineRoomCombinationScenario()
+    internal async Task DetermineRoomCombinationScenario()
     {
         if (_scenarioChangeDebounceTimer != null)
         {
@@ -256,6 +267,21 @@ public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombinerW
             _scenarioChangeDebounceTimer = null;
         }
 
+        await _scenarioChange.WaitAsync();
+        try
+        {
+            await DetermineAndChangeScenario();
+        }
+        finally
+        {
+            _scenarioChange.Release();
+        }
+    }
+
+    // Call only while holding _scenarioChange, so the partition states are read and the scenario
+    // applied without another change in between.
+    private async Task DetermineAndChangeScenario()
+    {
         this.LogInformation("Determining Combination Scenario");
 
         var currentScenario = RoomCombinationScenarios.FirstOrDefault((s) =>

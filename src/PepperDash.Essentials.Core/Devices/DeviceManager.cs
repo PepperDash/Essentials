@@ -30,8 +30,14 @@ public static class DeviceManager
     public static event EventHandler<EventArgs> AllDevicesRegistered;
 
     /// <summary>
-    /// Event raised when all devices have been initialized
+    /// Event raised once per activation, when every <see cref="EssentialsDevice"/> has finished its
+    /// initialization (which runs on the thread pool after <see cref="AllDevicesActivated"/>).
     /// </summary>
+    /// <remarks>
+    /// Raised on a thread-pool thread, in no fixed order with the tie-line load: the tie lines may
+    /// not be loaded yet. Startup work that routes should also wait with
+    /// <see cref="RunWhenTieLinesLoaded"/>.
+    /// </remarks>
     public static event EventHandler<EventArgs> AllDevicesInitialized;
 
     /// <summary>
@@ -69,6 +75,11 @@ public static class DeviceManager
 
     private static readonly object _deviceLock = new();
 
+    private static readonly object _allDevicesInitializedLock = new();
+
+    // Set once AllDevicesInitialized has been raised for the current activation.
+    private static bool _allDevicesInitializedRaised;
+
     //public static List<Device> Devices { get { return _Devices; } }
     //static List<Device> _Devices = new List<Device>();
 
@@ -102,6 +113,7 @@ public static class DeviceManager
     {
         AddDeviceEnabled = true;
         ResetTieLinesLoaded();
+        ResetAllDevicesInitialized();
 
         AddConsoleCommand(ListDeviceCommStatuses, "devcommstatus", "Lists the communication status of all devices");
         AddConsoleCommand(ListDeviceFeedbacks, "devfb", "Lists current feedbacks");
@@ -141,6 +153,9 @@ public static class DeviceManager
     /// </summary>
     public static void ActivateAll()
     {
+        // Each activation raises AllDevicesInitialized once its devices have initialized.
+        ResetAllDevicesInitialized();
+
         OnAllDevicesRegistered();
 
         lock (_deviceLock)
@@ -203,15 +218,30 @@ public static class DeviceManager
         } // end lock
     }
 
+    // Each device's Initialized is raised on its own thread-pool thread (EssentialsDevice), so two
+    // devices finishing together could both see every device initialized and raise
+    // AllDevicesInitialized twice (#1570). Checked and set under a lock, it's raised once per activation.
     private static void DeviceManager_Initialized(object sender, EventArgs e)
     {
-        var allInitialized = Devices.Values.OfType<EssentialsDevice>().All(d => d.IsInitialized);
-
-        if (allInitialized)
+        lock (_allDevicesInitializedLock)
         {
-            Debug.LogMessage(LogEventLevel.Information, "****All Devices Initalized****");
+            if (_allDevicesInitializedRaised) return;
 
-            OnAllDevicesInitialized();
+            if (!Devices.Values.OfType<EssentialsDevice>().All(d => d.IsInitialized)) return;
+
+            _allDevicesInitializedRaised = true;
+        }
+
+        Debug.LogMessage(LogEventLevel.Information, "****All Devices Initalized****");
+
+        OnAllDevicesInitialized();
+    }
+
+    private static void ResetAllDevicesInitialized()
+    {
+        lock (_allDevicesInitializedLock)
+        {
+            _allDevicesInitializedRaised = false;
         }
     }
 

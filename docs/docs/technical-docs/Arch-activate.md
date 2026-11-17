@@ -117,7 +117,7 @@ As an example, [connection-based routing](~/docs/technical-docs/Connection-Based
 
 ## Device Initialization
 
-Once the `DeviceManager` has completed the activation phase cycle for all devices, the devices themselves can be initialized.  The `EssentialsDevice` class subscribes to the `DeviceManager.AllDevicesActivated` event and invokes the virtual `Initialize()` method on `Device` on a separate thread (`Task.Run`).  This allows all devices to concurrently initialize in parallel threads. When a device's `Initialize()` returns, its `IsInitialized` property is set to `true`, and once every `EssentialsDevice` is initialized, `DeviceManager` fires its `AllDevicesInitialized` event. 
+Once the `DeviceManager` has completed the activation phase cycle for all devices, the devices themselves can be initialized.  The `EssentialsDevice` class subscribes to the `DeviceManager.AllDevicesActivated` event and invokes the virtual `Initialize()` method on `Device` on a separate thread (`Task.Run`).  This allows all devices to concurrently initialize in parallel threads. When a device's `Initialize()` returns, its `IsInitialized` property is set to `true`, and once every `EssentialsDevice` is initialized, `DeviceManager` fires its `AllDevicesInitialized` event, once per activation, on a thread-pool thread.
 
 The main task that should be undertaken in the `Initialize()` method for any 3rd party device class, it to begin communication with the device via its API.  Ideally, no class that communicates with a 3rd party device outside the program should attempt to start communicating before this point.
 
@@ -162,6 +162,8 @@ The main task that should be undertaken in the `Initialize()` method for any 3rd
 Tie lines are loaded from config only after the activation phases (`DeviceManager.ActivateAll()`), because devices may create ports or child devices while activating. A route made before then finds no path and does nothing, and neither `AllDevicesActivated` nor `AllDevicesInitialized` guarantees the tie lines exist: the first fires before they load, and the second can fire either side of it.
 
 A device that routes at startup, for example a room bringing itself up as soon as its codec reports ready, should wrap that work in `DeviceManager.RunWhenTieLinesLoaded(...)`. The action runs once the tie lines are loaded, or at once if they already are. `DeviceManager.AllTieLinesLoaded` is raised at the same point, and `DeviceManager.AreTieLinesLoaded` tells whether it has happened yet.
+
+The room combiner works this way: it applies its startup scenario, whose activation actions and `RoomCombinationScenarioChanged` subscribers may route, once every device is initialized and the tie lines are loaded.
 
 - Actions that were waiting run on the thread running the load, one at a time, after the `AllTieLinesLoaded` handlers. Keep them short and don't block.
 - An action added once the tie lines are loaded runs at once on the caller's thread, even while the handlers are still running, and an exception from it goes to the caller.
