@@ -1,3 +1,8 @@
+// This file is also compiled into PepperDash.Essentials.Core.Tests, which enables nullable
+// reference types. Core does not, so the annotations here would be read inconsistently between the
+// two. Disabling explicitly keeps the behaviour identical in both, and is a no-op in Core.
+#nullable disable
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -35,6 +40,11 @@ public class MethodNameParams
             return MethodInfo.GetParameters().Select(NameType.FromParameter);
         }
     }
+
+    /// <summary>
+    /// The short name of the method's return type, e.g. "Void", "Boolean", "String" or "Task`1"
+    /// </summary>
+    public string ReturnType { get { return MethodInfo.ReturnType.Name; } }
 
     /// <summary>
     /// Constructor

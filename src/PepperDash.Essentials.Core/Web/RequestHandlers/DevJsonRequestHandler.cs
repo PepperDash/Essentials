@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
@@ -74,10 +75,19 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers;
 
             Debug.LogMessage(LogEventLevel.Verbose, "Device Action Wrapper: {@wrapper}", null, daw);
 
-				DeviceJsonApi.DoDeviceAction(daw);
+				var result = DeviceJsonApi.DoDeviceActionWithResult(daw);
 
 				context.Response.StatusCode = 200;
 				context.Response.StatusDescription = "OK";
+
+				// A method that returns a value reports it, or its error, as JSON; a void method keeps the empty body
+				if (result != null)
+				{
+					context.Response.ContentType = "application/json";
+					context.Response.ContentEncoding = Encoding.UTF8;
+					context.Response.Write(result.ToJson(), false);
+				}
+
 				context.Response.End();
 			}
 			catch (Exception ex)
