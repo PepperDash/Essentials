@@ -1,0 +1,31 @@
+# .github/workflows/anthropic-wif-test.yml
+name: anthropic-wif-test
+on: push
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  call-claude:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch GitHub OIDC token
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const token = await core.getIDToken('https://api.anthropic.com');
+            core.setSecret(token);
+            core.exportVariable('JWT', token);
+      - name: Exchange for an Anthropic access token
+        run: |
+          curl -sS https://api.anthropic.com/v1/oauth/token \
+            -H "content-type: application/json" \
+            --data @- <<JSON | jq 'with_entries(if (.key | test("token$")) then .value = "<redacted>" else . end)'
+          {
+            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "assertion": "$JWT",
+            "federation_rule_id": "fdrl_01VUQofdpSy6jxPMZqgyA4rA",
+            "organization_id": "a0b53fdd-c7bd-42a8-9ae6-b98ab519c2a8",
+            "service_account_id": "svac_01BQiyoptNZk8Ztojdm7AR3w",
+            "workspace_id": "wrkspc_01JRawFJGjHDTXBTnsMrDiTs"
+          }
+          JSON
