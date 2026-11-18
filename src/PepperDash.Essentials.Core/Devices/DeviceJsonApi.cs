@@ -581,60 +581,6 @@ public class PropertyNameType
 }
 
 /// <summary>
-/// Helper class for serializing methods with their name and parameters. The MethodInfo is ignored for JSON serialization.
-/// </summary>
-public class MethodNameParams
-{
-    /// <summary>
-    /// The MethodInfo for the method being represented. This is ignored for JSON serialization.
-    /// </summary>
-    [JsonIgnore]
-    public MethodInfo MethodInfo { get; private set; }
-
-    /// <summary>
-    /// The name of the method
-    /// </summary>
-    public string Name { get { return MethodInfo.Name; } }
-
-    /// <summary>
-    /// The parameters of the method, represented as an array of NameType objects with the parameter name and type.
-    /// </summary>
-    public IEnumerable<NameType> Params
-    {
-        get
-        {
-            return MethodInfo.GetParameters().Select(p =>
-                new NameType { Name = p.Name, Type = p.ParameterType.Name });
-        }
-    }
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="info"></param>
-    public MethodNameParams(MethodInfo info)
-    {
-        MethodInfo = info;
-    }
-}
-
-/// <summary>
-/// Helper class for serializing a name and type pair, used for method parameters in MethodNameParams.
-/// </summary>
-public class NameType
-{
-    /// <summary>
-    /// The name of the parameter
-    /// </summary>
-    public string Name { get; set; }
-
-    /// <summary>
-    /// The type of the parameter
-    /// </summary>
-    public string Type { get; set; }
-}
-
-/// <summary>
 /// Attribute to mark methods as part of the JSON API. Only methods marked with this attribute will be returned by GetApiMethods and intended to be called through the JSON API.
 /// </summary>
 [AttributeUsage(AttributeTargets.All)]
