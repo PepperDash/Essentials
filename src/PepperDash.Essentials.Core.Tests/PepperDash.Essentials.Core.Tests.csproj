@@ -58,6 +58,16 @@
     <Compile Include="..\PepperDash.Essentials.Core\Web\ProgramHtmlPaths.cs" Link="Web\ProgramHtmlPaths.cs" />
   </ItemGroup>
 
+  <!--
+    The method and parameter descriptions served by devmethods and deviceMethods, and the result reporting for
+    devjson and deviceCommands, have no Crestron references and can be tested here. DeviceJsonApi itself,
+    which finds the device and writes to the console, needs a processor.
+  -->
+  <ItemGroup>
+    <Compile Include="..\PepperDash.Essentials.Core\Devices\MethodNameParams.cs" Link="Devices\MethodNameParams.cs" />
+    <Compile Include="..\PepperDash.Essentials.Core\Devices\DeviceMethodResult.cs" Link="Devices\DeviceMethodResult.cs" />
+  </ItemGroup>
+
   <!-- Stamps this test assembly the way the Essentials NuGet packages stamp a plugin, so PluginAssemblyInspectorTests can read it back -->
   <ItemGroup>
     <AssemblyMetadata Include="PepperDash.Essentials.BuiltAgainst:PepperDashEssentials" Value="3.0.0-rc.42" />
