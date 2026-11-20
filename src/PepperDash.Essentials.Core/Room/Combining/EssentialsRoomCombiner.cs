@@ -133,14 +133,14 @@ namespace PepperDash.Essentials.Core
             // connected and initialized
             DeviceManager.AllDevicesInitialized += (o, a) =>
             {
-                if (IsInAutoMode)
+                if (!IsInAutoMode)
                 {
-                    DetermineRoomCombinationScenario();
-                }
-                else
-                {
+                    // Sets the partitions to the default scenario's states. When they already match,
+                    // no partition change starts a scenario change, so determine it here either way (#1572).
                     SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
                 }
+
+                DetermineRoomCombinationScenario();
             };
         }
 
