@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Crestron.SimplSharp;
 using PepperDash.Core;
-using Serilog.Events;
 
 namespace PepperDash.Essentials.Core
 {
@@ -42,46 +40,48 @@ namespace PepperDash.Essentials.Core
 		}
 
 		/// <summary>
-		/// Dumps the feedbacks to the console
+		/// Dumps the feedbacks to the console, as the reply to the console command being run (devfb)
 		/// </summary>
 		/// <param name="source"></param>
 		/// <param name="getCurrentStates"></param>
 		public static void DumpFeedbacksToConsole(this IHasFeedback source, bool getCurrentStates)
 		{
-			Type t = source.GetType();
-			// get the properties and set them into a new collection of NameType wrappers
-			var props = t.GetProperties().Select(p => new PropertyNameType(p, t));
-
 			var feedbacks = source.Feedbacks;
 
 			if (feedbacks == null || feedbacks.Count == 0)
 			{
-				Debug.LogMessage(LogEventLevel.Information, source, "\n\nAvailable feedbacks:");
-				foreach (var f in feedbacks)
+				DeviceManager.ConsoleCommandResponse("No available feedbacks\r\n");
+				return;
+			}
+
+			DeviceManager.ConsoleCommandResponse("Available feedbacks:\r\n");
+
+			// Sort feedbacks by type first, then by key
+			var sortedFeedbacks = feedbacks.OrderBy(f => GetFeedbackTypeName(f)).ThenBy(f => string.IsNullOrEmpty(f.Key) ? "" : f.Key);
+
+			foreach (var feedback in sortedFeedbacks)
+			{
+				string value = "";
+				string type = "";
+				if (getCurrentStates)
 				{
-					string val = "";
-					string type = "";
-					if (getCurrentStates)
+					if (feedback is BoolFeedback)
 					{
-						if (f is BoolFeedback)
-						{
-							val = f.BoolValue.ToString();
-							type = "boolean";
-						}
-						else if (f is IntFeedback)
-						{
-							val = f.IntValue.ToString();
-							type = "integer";
-						}
-						else if (f is StringFeedback)
-						{
-							val = f.StringValue;
-							type = "string";
-						}
+						value = feedback.BoolValue.ToString();
+						type = "boolean";
 					}
-					Debug.LogMessage(LogEventLevel.Information, "{0,-12} {1, -25} {2}", type,
-						(string.IsNullOrEmpty(f.Key) ? "-no key-" : f.Key), val);
+					else if (feedback is IntFeedback)
+					{
+						value = feedback.IntValue.ToString();
+						type = "integer";
+					}
+					else if (feedback is StringFeedback)
+					{
+						value = feedback.StringValue;
+						type = "string";
+					}
 				}
+				DeviceManager.ConsoleCommandResponse($"  {type,-12} {(string.IsNullOrEmpty(feedback.Key) ? "-no key-" : feedback.Key),-25} {value}\r\n");
 			}
 		}
 	}

@@ -66,6 +66,85 @@ public sealed class DeviceManagerTests : IDisposable
         DeviceManager.GetDeviceForKey(_device.Key).Should().BeSameAs(_device);
     }
 
+    // ---- devlist and devfb answer the command, as on 2.x (#1582, #1540) ----
+
+    private sealed class FeedbackDevice : IHasFeedback
+    {
+        public FeedbackDevice(string key, params Feedback[] feedbacks)
+        {
+            Key = key;
+            foreach (var feedback in feedbacks)
+            {
+                feedback.FireUpdate();
+                Feedbacks.Add(feedback);
+            }
+        }
+
+        public string Key { get; }
+        public FeedbackCollection<Feedback> Feedbacks { get; } = new();
+    }
+
+    [Fact]
+    public void Devlist_AnswersTheCommand_NotThroughTheLog()
+    {
+        DeviceManager.Initialize(null!);
+        DeviceManager.AddDevice(_device);
+
+        var reply = TestInitializer.Console.RunCommand("devlist");
+
+        reply.Should().MatchRegex(@"^\d+ Devices registered with Device Manager:\r\n");
+        reply.Should().Contain($"  [{_device.Key}] ---\r\n", "a device without a name shows ---");
+    }
+
+    [Fact]
+    public void Devfb_ListsTheFeedbacksOfADeviceThatHasThem()
+    {
+        DeviceManager.Initialize(null!);
+        var device = new FeedbackDevice($"feedbackDevice-{Guid.NewGuid():N}",
+            new IntFeedback("volume", () => 40), new BoolFeedback("power", () => true));
+        DeviceManager.AddDevice(device);
+        try
+        {
+            var reply = TestInitializer.Console.RunCommand("devfb", device.Key);
+
+            reply.Should().Be(
+                "Available feedbacks:\r\n" +
+                "  boolean      power                     True\r\n" +
+                "  integer      volume                    40\r\n",
+                "sorted by type, then key");
+        }
+        finally
+        {
+            DeviceManager.RemoveDevice(device);
+        }
+    }
+
+    [Fact]
+    public void Devfb_SaysSoForADeviceWithoutFeedbacks()
+    {
+        DeviceManager.Initialize(null!);
+        var device = new FeedbackDevice($"noFeedbacks-{Guid.NewGuid():N}");
+        DeviceManager.AddDevice(device);
+        try
+        {
+            TestInitializer.Console.RunCommand("devfb", device.Key).Should().Be("No available feedbacks\r\n");
+        }
+        finally
+        {
+            DeviceManager.RemoveDevice(device);
+        }
+    }
+
+    [Fact]
+    public void Devfb_SaysSoForAnUnknownDevice_OrOneWithoutFeedbacksInterface()
+    {
+        DeviceManager.Initialize(null!);
+        DeviceManager.AddDevice(_device);
+
+        TestInitializer.Console.RunCommand("devfb", "noSuchDevice").Should().Be("Device 'noSuchDevice' not found\r\n");
+        TestInitializer.Console.RunCommand("devfb", _device.Key).Should().Be($"Device '{_device.Key}' does not have visible feedbacks\r\n");
+    }
+
     // ---- Tie lines loaded (#1568): devices activate before the tie lines load ----
 
     [Fact]
