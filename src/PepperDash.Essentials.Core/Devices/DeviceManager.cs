@@ -151,6 +151,31 @@ public static class DeviceManager
     }
 
     /// <summary>
+    /// Answers the console command being run, on the console it was typed on, whatever the console log level: through
+    /// the console registered with <see cref="PdCore.DebugServiceRegistration"/>, or the Crestron console if none is
+    /// (as <see cref="AddConsoleCommand"/> registers them).
+    /// </summary>
+    /// <param name="message">The text to print, with its own line endings.</param>
+    internal static void ConsoleCommandResponse(string message)
+    {
+        var console = PdCore.DebugServiceRegistration.Console;
+        if (console == null)
+        {
+            CrestronConsoleCommandResponse(message);
+            return;
+        }
+
+        console.ConsoleCommandResponse(message);
+    }
+
+    // Never inlined, so compiling ConsoleCommandResponse doesn't load CrestronConsole.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void CrestronConsoleCommandResponse(string message)
+    {
+        CrestronConsole.ConsoleCommandResponse(message);
+    }
+
+    /// <summary>
     /// Calls activate steps on all Device class items
     /// </summary>
     public static void ActivateAll()
@@ -434,16 +459,19 @@ public static class DeviceManager
     //    }
     //}
 
+    // devlist and devfb answer the command (as on 2.x: a00d186c, 3db274ac), not through the log: a log line prints only
+    // at the console's log level, with a log prefix, and isn't the command's reply.
     private static void ListDevices(string s)
     {
-        Debug.LogMessage(LogEventLevel.Information, "{0} Devices registered with Device Manager:", Devices.Count);
+        ConsoleCommandResponse($"{Devices.Count} Devices registered with Device Manager:\r\n");
+
         var sorted = Devices.Values.ToList();
         sorted.Sort((a, b) => a.Key.CompareTo(b.Key));
 
         foreach (var d in sorted)
         {
             var name = d is IKeyName ? (d as IKeyName).Name : "---";
-            Debug.LogMessage(LogEventLevel.Information, "  [{0}] {1}", d.Key, name);
+            ConsoleCommandResponse($"  [{d.Key}] {name}\r\n");
         }
     }
 
@@ -452,12 +480,12 @@ public static class DeviceManager
         var dev = GetDeviceForKey(devKey);
         if (dev == null)
         {
-            Debug.LogMessage(LogEventLevel.Information, "Device '{0}' not found", devKey);
+            ConsoleCommandResponse($"Device '{devKey}' not found\r\n");
             return;
         }
         if (!(dev is IHasFeedback statusDev))
         {
-            Debug.LogMessage(LogEventLevel.Information, "Device '{0}' does not have visible feedbacks", devKey);
+            ConsoleCommandResponse($"Device '{devKey}' does not have visible feedbacks\r\n");
             return;
         }
         statusDev.DumpFeedbacksToConsole(true);
