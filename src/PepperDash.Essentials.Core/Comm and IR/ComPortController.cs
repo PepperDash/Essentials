@@ -150,16 +150,14 @@ namespace PepperDash.Essentials.Core;
         if (bytesHandler != null)
         {
             var bytes = Encoding.GetEncoding(28591).GetBytes(s);
-				if (StreamDebugging.RxStreamDebuggingIsEnabled)
-					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", ComTextHelper.GetEscapedText(bytes));
+				this.PrintReceivedBytes(bytes);
             bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
 				eventSubscribed = true;
         }
         var textHandler = TextReceived;
         if (textHandler != null)
         {
-				if (StreamDebugging.RxStreamDebuggingIsEnabled)
-					Debug.LogMessage(LogEventLevel.Information, this, "Received: '{0}'", s);
+				this.PrintReceivedText(s);
             textHandler(this, new GenericCommMethodReceiveTextArgs(s));
 				eventSubscribed = true;
         }
@@ -186,8 +184,7 @@ namespace PepperDash.Essentials.Core;
 			if (Port == null)
 				return;
 
-        if (StreamDebugging.TxStreamDebuggingIsEnabled)
-            Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} characters of text: '{1}'", text.Length, text);
+        this.PrintSentText(text);
         Port.Send(text);
 		}
 
@@ -199,8 +196,7 @@ namespace PepperDash.Essentials.Core;
 			if (Port == null)
 				return;
 			var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
-        if (StreamDebugging.TxStreamDebuggingIsEnabled)
-            Debug.LogMessage(LogEventLevel.Information, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+        this.PrintSentBytes(bytes);
 
 			Port.Send(text);
 		}

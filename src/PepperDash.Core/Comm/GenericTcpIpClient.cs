@@ -405,10 +405,7 @@ public class GenericTcpIpClient : Device, ISocketStatusWithStreamDebugging, IAut
                 var bytesHandler = BytesReceived;
                 if (bytesHandler != null)
                 {
-                    if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                    {
-                        this.LogInformation("Received {1} bytes: '{0}'", ComTextHelper.GetEscapedText(bytes), bytes.Length);
-                    }
+                    this.PrintReceivedBytes(bytes);
                     bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
                 }
                 var textHandler = TextReceived;
@@ -416,10 +413,7 @@ public class GenericTcpIpClient : Device, ISocketStatusWithStreamDebugging, IAut
                 {
                     var str = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
 
-                    if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                    {
-                        this.LogInformation("Received {1} characters of text: '{0}'", ComTextHelper.GetDebugText(str), str.Length);
-                    }
+                    this.PrintReceivedText(str);
 
                     textHandler(this, new GenericCommMethodReceiveTextArgs(str));
                 }
@@ -435,8 +429,7 @@ public class GenericTcpIpClient : Device, ISocketStatusWithStreamDebugging, IAut
     {
         var bytes = Encoding.GetEncoding(28591).GetBytes(text);
         // Check debug level before processing byte array
-        if (StreamDebugging.TxStreamDebuggingIsEnabled)
-            this.LogInformation("Sending {0} characters of text: '{1}'", text.Length, ComTextHelper.GetDebugText(text));
+        this.PrintSentText(text);
         if (_client != null)
             _client.SendData(bytes, bytes.Length);
     }
@@ -460,8 +453,7 @@ public class GenericTcpIpClient : Device, ISocketStatusWithStreamDebugging, IAut
     /// <param name="bytes"></param>
     public void SendBytes(byte[] bytes)
     {
-        if (StreamDebugging.TxStreamDebuggingIsEnabled)
-            this.LogInformation("Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+        this.PrintSentBytes(bytes);
         if (_client != null)
             _client.SendData(bytes, bytes.Length);
     }
