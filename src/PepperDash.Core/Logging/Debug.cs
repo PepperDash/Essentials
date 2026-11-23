@@ -106,7 +106,9 @@ public static class Debug
     /// </summary>
     public static bool DoNotLoadConfigOnNextBoot { get; private set; }
 
-    private static DebugContextCollection _contexts;
+    // Created here: LoadMemory(), which used to create it, is commented out (c98b48ff), and SetDeviceDebugSettings
+    // threw a NullReferenceException on every setdevicestreamdebug
+    private static DebugContextCollection _contexts = new();
 
     private const int SaveTimeoutMs = 30000;
 
