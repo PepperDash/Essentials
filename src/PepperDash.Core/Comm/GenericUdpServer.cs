@@ -267,17 +267,13 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
             var bytesHandler = BytesReceived;
             if (bytesHandler != null)
             {
-                if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                {
-                    this.LogInformation("Received {1} bytes: '{0}'", ComTextHelper.GetEscapedText(bytes), bytes.Length);
-                }
+                this.PrintReceivedBytes(bytes);
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
             }
             var textHandler = TextReceived;
             if (textHandler != null)
             {
-                if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                    this.LogInformation("Received {1} characters of text: '{0}'", ComTextHelper.GetDebugText(str), str.Length);
+                this.PrintReceivedText(str);
                 textHandler(this, new GenericCommMethodReceiveTextArgs(str));
             }
         }
@@ -301,8 +297,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
 
         if (IsConnected && Server != null)
         {
-            if (StreamDebugging.TxStreamDebuggingIsEnabled)
-                this.LogVerbose("Sending {0} characters of text: '{1}'", text.Length, ComTextHelper.GetDebugText(text));
+            this.PrintSentText(text);
 
             Server.SendData(bytes, bytes.Length);
         }
@@ -314,8 +309,7 @@ public class GenericUdpServer : Device, ISocketStatusWithStreamDebugging
     /// <param name="bytes"></param>
     public void SendBytes(byte[] bytes)
     {
-        if (StreamDebugging.TxStreamDebuggingIsEnabled)
-            this.LogInformation("Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+        this.PrintSentBytes(bytes);
 
         if (IsConnected && Server != null)
             Server.SendData(bytes, bytes.Length);
