@@ -1,0 +1,51 @@
+name: PepperDash Release Metadata
+
+# Regenerates the metadata for an existing release or withdraws it from Portal (a manual run, which
+# GitHub only offers once this file is on the default branch), and withdraws a release from Portal
+# when its GitHub release is deleted. A deleted release runs this file from its tagged commit, so it
+# only withdraws releases tagged after this file was added; withdraw older ones with a manual run.
+# New releases get their metadata from the build workflow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The release tag, e.g. v3.1.0'
+        required: true
+        type: string
+      mode:
+        description: 'publish regenerates and registers the metadata; withdraw removes the release from Portal'
+        required: true
+        type: choice
+        options: [publish, withdraw]
+        default: publish
+  release:
+    types: [deleted]
+
+jobs:
+  metadata:
+    if: github.event_name == 'workflow_dispatch'
+    uses: PepperDash/workflow-templates/.github/workflows/pepperdash-metadata.yml@main
+    permissions:
+      contents: write   # attach pepperdash-metadata.json to the release
+      id-token: write   # GitHub OIDC tokens for UDM and the AI agent
+    secrets: inherit    # ANTHROPIC_API_KEY for the AI agent, only if the org doesn't use workload identity federation
+    with:
+      tag: ${{ inputs.tag }}
+      mode: ${{ inputs.mode }}
+      kind: essentials
+      package-id: PepperDashEssentials
+
+  withdraw:
+    if: github.event_name == 'release'
+    uses: PepperDash/workflow-templates/.github/workflows/pepperdash-metadata.yml@main
+    # GitHub checks every job in the called workflow against these before the run starts, and its
+    # publish job asks for contents: write, even though only its withdraw job runs here
+    permissions:
+      contents: write
+      id-token: write
+    with:
+      tag: ${{ github.event.release.tag_name }}
+      mode: withdraw
+      kind: essentials
+      package-id: PepperDashEssentials
