@@ -1,13 +1,13 @@
 name: Publish Docs
 
-# One site, built from both release lines: v3 (release branch) at /v3/ and v2 (main branch) at
-# /v2/. A Pages deploy replaces the whole site, so every run builds both, whichever branch was
-# pushed. Keep this file the same on main and release.
+# One site, built from both trunks: v3 (essentials-3x) at /v3/ and v2 (essentials-2x) at /v2/. A
+# Pages deploy replaces the whole site, so every run builds both, whichever branch was pushed. Keep
+# this file the same on essentials-3x and essentials-2x.
 on:
   push:
     branches:
-      - main
-      - release
+      - essentials-3x
+      - essentials-2x
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -29,15 +29,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout v3 (release)
+    - name: Checkout v3 (essentials-3x)
       uses: actions/checkout@v6
       with:
-        ref: release
+        ref: essentials-3x
         path: v3
-    - name: Checkout v2 (main)
+    - name: Checkout v2 (essentials-2x)
       uses: actions/checkout@v6
       with:
-        ref: main
+        ref: essentials-2x
         path: v2
     - name: Dotnet Setup
       uses: actions/setup-dotnet@v5
