@@ -354,6 +354,59 @@
         },
         "referenceData": "declared"
       }
+    },
+    "av4": {
+      "schema": {},
+      "label": "AV4",
+      "interfaces": [
+        "IControlSystem"
+      ],
+      "controlPorts": {
+        "cresnet": {
+          "label": "Cresnet",
+          "count": 1
+        },
+        "relay": {
+          "label": "Relay",
+          "count": 8
+        },
+        "versiport": {
+          "label": "VersiPort",
+          "count": 8
+        },
+        "com": {
+          "label": "COM",
+          "count": 6
+        },
+        "ir": {
+          "label": "IR",
+          "count": 8
+        }
+      },
+      "description": "AV4 Control Processor",
+      "deviceKind": "device",
+      "catalog": {
+        "category": {
+          "id": "processor",
+          "name": "Processor"
+        },
+        "models": [
+          {
+            "id": "crestron-av4",
+            "name": "AV4",
+            "manufacturer": {
+              "id": "crestron",
+              "name": "Crestron"
+            }
+          }
+        ],
+        "match": {
+          "source": "sidecar",
+          "confidence": "high",
+          "evidence": "Declared in .pepperdash/type-names.json"
+        },
+        "referenceData": "declared"
+      }
     }
   }
 }
