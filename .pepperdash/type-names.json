@@ -1,0 +1,306 @@
+{
+  "$schema": "https://raw.githubusercontent.com/PepperDash/workflow-templates/main/schemas/pepperdash-type-names.v1.schema.json",
+  "typeNames": {
+    "cp4n": {
+      "schema": {},
+      "label": "CP4N",
+      "interfaces": [
+        "IControlSystem"
+      ],
+      "controlPorts": {
+        "cresnet": {
+          "label": "Cresnet",
+          "count": 1
+        },
+        "relay": {
+          "label": "Relay",
+          "count": 8
+        },
+        "versiport": {
+          "label": "VersiPort",
+          "count": 8
+        },
+        "com": {
+          "label": "COM",
+          "count": 3
+        },
+        "ir": {
+          "label": "IR",
+          "count": 8
+        }
+      },
+      "description": "CP4N Control Processor",
+      "deviceKind": "device",
+      "catalog": {
+        "category": {
+          "id": "processor",
+          "name": "Processor"
+        },
+        "models": [
+          {
+            "id": "crestron-cp4n",
+            "name": "CP4N",
+            "manufacturer": {
+              "id": "crestron",
+              "name": "Crestron"
+            }
+          }
+        ],
+        "match": {
+          "source": "sidecar",
+          "confidence": "high",
+          "evidence": "Declared in .pepperdash/type-names.json"
+        },
+        "referenceData": "declared"
+      }
+    },
+    "cp4": {
+      "schema": {},
+      "label": "CP4",
+      "interfaces": [
+        "IControlSystem"
+      ],
+      "controlPorts": {
+        "cresnet": {
+          "label": "Cresnet",
+          "count": 1
+        },
+        "relay": {
+          "label": "Relay",
+          "count": 4
+        },
+        "versiport": {
+          "label": "VersiPort",
+          "count": 8
+        },
+        "com": {
+          "label": "COM",
+          "count": 2
+        },
+        "ir": {
+          "label": "IR",
+          "count": 4
+        }
+      },
+      "description": "CP4 Control Processor",
+      "deviceKind": "device",
+      "catalog": {
+        "category": {
+          "id": "processor",
+          "name": "Processor"
+        },
+        "models": [
+          {
+            "id": "crestron-cp4",
+            "name": "CP4",
+            "manufacturer": {
+              "id": "crestron",
+              "name": "Crestron"
+            }
+          }
+        ],
+        "match": {
+          "source": "sidecar",
+          "confidence": "high",
+          "evidence": "Declared in .pepperdash/type-names.json"
+        },
+        "referenceData": "declared"
+      }
+    },
+    "dinAp4": {
+      "schema": {},
+      "label": "DIN-AP4",
+      "interfaces": [
+        "IControlSystem"
+      ],
+      "controlPorts": {
+        "cresnet": {
+          "label": "Cresnet",
+          "count": 1
+        },
+        "relay": {
+          "label": "Relay",
+          "count": 8
+        },
+        "versiport": {
+          "label": "VersiPort",
+          "count": 8
+        },
+        "com": {
+          "label": "COM",
+          "count": 3
+        },
+        "ir": {
+          "label": "IR",
+          "count": 8
+        }
+      },
+      "description": "DIN-AP4 Control Processor",
+      "deviceKind": "device",
+      "catalog": {
+        "category": {
+          "id": "processor",
+          "name": "Processor"
+        },
+        "models": [
+          {
+            "id": "crestron-din-ap4",
+            "name": "DIN-AP4",
+            "manufacturer": {
+              "id": "crestron",
+              "name": "Crestron"
+            }
+          }
+        ],
+        "match": {
+          "source": "sidecar",
+          "confidence": "high",
+          "evidence": "Declared in .pepperdash/type-names.json"
+        },
+        "referenceData": "declared"
+      }
+    },
+    "VC-4": {
+      "schema": {},
+      "label": "VC-4",
+      "interfaces": [
+        "IControlSystem"
+      ],
+      "description": "VC-4 Virtual Control Processor",
+      "deviceKind": "device",
+      "catalog": {
+        "category": {
+          "id": "processor",
+          "name": "Processor"
+        },
+        "models": [
+          {
+            "id": "crestron-vc-4",
+            "name": "VC-4",
+            "manufacturer": {
+              "id": "crestron",
+              "name": "Crestron"
+            }
+          }
+        ],
+        "match": {
+          "source": "sidecar",
+          "confidence": "high",
+          "evidence": "Declared in .pepperdash/type-names.json"
+        },
+        "referenceData": "declared"
+      }
+    },
+    "mc4": {
+      "schema": {},
+      "label": "MC4",
+      "interfaces": [
+        "IControlSystem",
+        "IExGateway"
+      ],
+      "controlPorts": {
+        "cresnet": {
+          "label": "Cresnet",
+          "count": 1
+        },
+        "infinetEx": {
+          "label": "InfinetEX",
+          "count": 1
+        },
+        "relay": {
+          "label": "Relay",
+          "count": 2
+        },
+        "versiport": {
+          "label": "VersiPort",
+          "count": 2
+        },
+        "com": {
+          "label": "COM",
+          "count": 1
+        },
+        "ir": {
+          "label": "IR",
+          "count": 4
+        }
+      },
+      "description": "MC4 Control Processor",
+      "deviceKind": "device",
+      "catalog": {
+        "category": {
+          "id": "processor",
+          "name": "Processor"
+        },
+        "models": [
+          {
+            "id": "crestron-mc4",
+            "name": "MC4",
+            "manufacturer": {
+              "id": "crestron",
+              "name": "Crestron"
+            }
+          }
+        ],
+        "match": {
+          "source": "sidecar",
+          "confidence": "high",
+          "evidence": "Declared in .pepperdash/type-names.json"
+        },
+        "referenceData": "declared"
+      }
+    },
+    "rmc4": {
+      "schema": {},
+      "label": "RMC4",
+      "interfaces": [
+        "IControlSystem"
+      ],
+      "controlPorts": {
+        "cresnet": {
+          "label": "Cresnet",
+          "count": 1
+        },
+        "relay": {
+          "label": "Relay",
+          "count": 2
+        },
+        "digitalInputs": {
+          "label": "Digtal Inputs",
+          "count": 2
+        },
+        "com": {
+          "label": "COM",
+          "count": 1
+        },
+        "ir": {
+          "label": "IR",
+          "count": 2
+        }
+      },
+      "description": "RMC4 Room Media Controller",
+      "deviceKind": "device",
+      "catalog": {
+        "category": {
+          "id": "processor",
+          "name": "Processor"
+        },
+        "models": [
+          {
+            "id": "crestron-rmc4",
+            "name": "RMC4",
+            "manufacturer": {
+              "id": "crestron",
+              "name": "Crestron"
+            }
+          }
+        ],
+        "match": {
+          "source": "sidecar",
+          "confidence": "high",
+          "evidence": "Declared in .pepperdash/type-names.json"
+        },
+        "referenceData": "declared"
+      }
+    }
+  }
+}
