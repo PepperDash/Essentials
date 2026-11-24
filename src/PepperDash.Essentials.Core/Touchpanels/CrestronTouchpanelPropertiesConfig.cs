@@ -14,7 +14,8 @@ public class CrestronTouchpanelPropertiesConfig
     public EssentialsControlPropertiesConfig ControlProperties { get; set; }
 
     /// <summary>
-    /// The panel's IP ID, as a hex string ("03").
+    /// Essentials 3.x doesn't read this top-level IP ID.
+    /// Set control.ipId to the panel's IP ID as a hex string ("03").
     /// </summary>
     [JsonProperty("ipId", NullValueHandling = NullValueHandling.Ignore)]
     public string IpId { get; set; }
