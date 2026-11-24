@@ -67,7 +67,7 @@
         },
         "relay": {
           "label": "Relay",
-          "count": 4
+          "count": 8
         },
         "versiport": {
           "label": "VersiPort",
@@ -75,11 +75,11 @@
         },
         "com": {
           "label": "COM",
-          "count": 2
+          "count": 3
         },
         "ir": {
           "label": "IR",
-          "count": 4
+          "count": 8
         }
       },
       "description": "CP4 Control Processor",
@@ -120,7 +120,7 @@
         },
         "relay": {
           "label": "Relay",
-          "count": 8
+          "count": 4
         },
         "versiport": {
           "label": "VersiPort",
@@ -128,11 +128,11 @@
         },
         "com": {
           "label": "COM",
-          "count": 3
+          "count": 2
         },
         "ir": {
           "label": "IR",
-          "count": 8
+          "count": 4
         }
       },
       "description": "DIN-AP4 Control Processor",
@@ -288,6 +288,59 @@
           {
             "id": "crestron-rmc4",
             "name": "RMC4",
+            "manufacturer": {
+              "id": "crestron",
+              "name": "Crestron"
+            }
+          }
+        ],
+        "match": {
+          "source": "sidecar",
+          "confidence": "high",
+          "evidence": "Declared in .pepperdash/type-names.json"
+        },
+        "referenceData": "declared"
+      }
+    },
+    "pro4": {
+      "schema": {},
+      "label": "PRO4",
+      "interfaces": [
+        "IControlSystem"
+      ],
+      "controlPorts": {
+        "cresnet": {
+          "label": "Cresnet",
+          "count": 1
+        },
+        "relay": {
+          "label": "Relay",
+          "count": 8
+        },
+        "versiport": {
+          "label": "VersiPort",
+          "count": 8
+        },
+        "com": {
+          "label": "COM",
+          "count": 6
+        },
+        "ir": {
+          "label": "IR",
+          "count": 8
+        }
+      },
+      "description": "PRO4 Control Processor",
+      "deviceKind": "device",
+      "catalog": {
+        "category": {
+          "id": "processor",
+          "name": "Processor"
+        },
+        "models": [
+          {
+            "id": "crestron-pro4",
+            "name": "PRO4",
             "manufacturer": {
               "id": "crestron",
               "name": "Crestron"
