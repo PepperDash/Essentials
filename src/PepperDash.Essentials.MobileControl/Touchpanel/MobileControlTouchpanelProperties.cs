@@ -29,8 +29,8 @@ public class MobileControlTouchpanelProperties : CrestronTouchpanelPropertiesCon
 
 
     /// <summary>
-    /// This panel is the room's Zoom Rooms controller. Mobile Control gives the room's configuration this
-    /// panel's key as its Zoom Room controller.
+    /// Mark this panel as the system-wide Zoom Rooms controller. Enable this on at most one panel.
+    /// When exactly one panel is marked, Mobile Control uses its key in every room's configuration.
     /// </summary>
     [JsonProperty("zoomRoomController")]
     public bool ZoomRoomController { get; set; } = false;
