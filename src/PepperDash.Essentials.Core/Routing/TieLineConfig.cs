@@ -102,13 +102,13 @@ namespace PepperDash.Essentials.Core.Config
 			if (OverrideType.HasValue)
 			{
 				// When override type is specified, both ports must support it
-				if (!sourceOutputPort.Type.HasFlag(OverrideType.Value))
+				if (!PortSupportsOverride(sourceOutputPort.Type, OverrideType.Value))
 				{
 					LogError($"Override type '{OverrideType.Value}' is not supported by source port '{SourcePort}' (type: {sourceOutputPort.Type})");
 					return null;
 				}
 
-				if (!destinationInputPort.Type.HasFlag(OverrideType.Value))
+				if (!PortSupportsOverride(destinationInputPort.Type, OverrideType.Value))
 				{
 					LogError($"Override type '{OverrideType.Value}' is not supported by destination port '{DestinationPort}' (type: {destinationInputPort.Type})");
 					return null;
@@ -125,6 +125,23 @@ namespace PepperDash.Essentials.Core.Config
 			}
 
 			return new TieLine(sourceOutputPort, destinationInputPort, OverrideType);
+		}
+
+		/// <summary>
+		/// Returns true when a port of type <paramref name="portType"/> can carry <paramref name="overrideType"/>.
+		/// SecondaryAudio is audio on a separate routing layer (for example a switcher's breakaway audio outputs),
+		/// so a port that carries Audio also accepts a SecondaryAudio override. Without this, a source with a plain
+		/// AudioVideo output (laptop, generic source, soft codec) could not feed a switcher's SecondaryAudio-only
+		/// outputs, which worked before tie lines were validated.
+		/// </summary>
+		private static bool PortSupportsOverride(eRoutingSignalType portType, eRoutingSignalType overrideType)
+		{
+			var required = overrideType;
+
+			if (required.HasFlag(eRoutingSignalType.SecondaryAudio) && !portType.HasFlag(eRoutingSignalType.SecondaryAudio))
+				required = (required & ~eRoutingSignalType.SecondaryAudio) | eRoutingSignalType.Audio;
+
+			return portType.HasFlag(required);
 		}
 
 		/// <summary>
