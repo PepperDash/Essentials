@@ -1305,20 +1305,21 @@ public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingSource,
 			if (arrayIndex >= maxMethods * offset)
 				break;
 
-			//serials
-			tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, method.Number);
-			tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 2, method.ContactMethodId.ToString());
-			tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, method.Device.ToString());
+			//serials (array slots are 0-based; serial join numbers stay 1-based)
+			tokenArray[arrayIndex] = new XSigSerialToken(stringIndex + 1, method.Number);
+			tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 2, method.ContactMethodId.ToString());
+			tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 3, method.Device.ToString());
 
 			arrayIndex += offset;
 			stringIndex += maxStrings;
 		}
 
-		while (arrayIndex < maxMethods)
+		// clear every unused method row, up to the full array size
+		while (arrayIndex < maxMethods * offset)
 		{
-			tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, String.Empty);
-			tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 2, String.Empty);
-			tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, String.Empty);
+			tokenArray[arrayIndex] = new XSigSerialToken(stringIndex + 1, String.Empty);
+			tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 2, String.Empty);
+			tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 3, String.Empty);
 
 			arrayIndex += offset;
 			stringIndex += maxStrings;
