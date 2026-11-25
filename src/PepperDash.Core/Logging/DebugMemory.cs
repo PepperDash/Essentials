@@ -93,7 +93,10 @@ public class DebugContextCollection
     /// <returns></returns>
     public object GetDebugSettingsForKey(string deviceKey)
     {
-        return DeviceDebugSettings[deviceKey];
+        lock (_deviceDebugSettingsLock)
+        {
+            return DeviceDebugSettings.TryGetValue(deviceKey, out var settings) ? settings : null;
+        }
     }
 }
 
