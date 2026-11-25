@@ -1,3 +1,4 @@
+using System.Text;
 using PepperDash.Core.Abstractions;
 
 namespace PepperDash.Essentials.Tests.Fakes;
@@ -40,21 +41,46 @@ internal class FakeCrestronEnvironment : ICrestronEnvironment
 internal class NoOpCrestronConsole : ICrestronConsole
 {
     private readonly object _commandsLock = new();
-    private readonly HashSet<string> _commands = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Action<string>> _commands = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The replies of the command <see cref="RunCommand"/> is running, on this flow only.</summary>
+    private readonly AsyncLocal<StringBuilder?> _reply = new();
 
     /// <summary>Whether a console command with this name has been added.</summary>
     public bool HasCommand(string command)
     {
-        lock (_commandsLock) return _commands.Contains(command);
+        lock (_commandsLock) return _commands.ContainsKey(command);
+    }
+
+    /// <summary>
+    /// Runs a console command that was added, as typed at the console (<c>devfb</c> with <c>avr</c>), and returns
+    /// what it answered with <see cref="ConsoleCommandResponse"/>. Log messages aren't part of the reply.
+    /// </summary>
+    public string RunCommand(string command, string args = "")
+    {
+        Action<string> callback;
+        lock (_commandsLock) callback = _commands[command];
+        var reply = new StringBuilder();
+        _reply.Value = reply;
+        try
+        {
+            callback(args);
+        }
+        finally
+        {
+            _reply.Value = null;
+        }
+
+        return reply.ToString();
     }
 
     public void PrintLine(string message) { }
     public void Print(string message) { }
-    public void ConsoleCommandResponse(string message) { }
+    public void ConsoleCommandResponse(string message) => _reply.Value?.Append(message);
 
-    public void AddNewConsoleCommand(Action<string> _, string command, string __, ConsoleAccessLevel ___)
+    public void AddNewConsoleCommand(Action<string> callback, string command, string __, ConsoleAccessLevel ___)
     {
-        lock (_commandsLock) _commands.Add(command);
+        lock (_commandsLock) _commands[command] = callback;
     }
 }
 
