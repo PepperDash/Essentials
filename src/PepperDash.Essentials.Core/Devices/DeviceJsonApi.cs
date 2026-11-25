@@ -36,7 +36,12 @@ public class DeviceJsonApi
         {
             var action = JsonConvert.DeserializeObject<DeviceActionWrapper>(json);
 
-            DoDeviceAction(action, unescapeStrings: true);
+            var result = DoDeviceActionWithResult(action, unescapeStrings: true);
+
+            if (result != null)
+            {
+                CrestronConsole.ConsoleCommandResponse("\r\n{0}", result.ToConsoleLine());
+            }
         }
         catch (Exception)
         {
@@ -56,12 +61,32 @@ public class DeviceJsonApi
     /// </param>
     public static void DoDeviceAction(DeviceActionWrapper action, bool unescapeStrings = false)
     {
+        InvokeDeviceAction(action, unescapeStrings, waitForResult: false);
+    }
+
+    /// <summary>
+    /// Executes a method on a device like <see cref="DoDeviceAction(DeviceActionWrapper, bool)"/>, and when the method
+    /// returns a value, waits up to <see cref="DeviceMethodResult.DefaultTimeout"/> for it (awaiting a returned Task).
+    /// Used by devjson and deviceCommands to report the value to the caller.
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="unescapeStrings">
+    /// When true, string and byte[] parameters have escape sequences (\r, \n, \t, \\, \xHH) expanded.
+    /// </param>
+    /// <returns>The method's value, error or timeout; null for a void method, or when the method couldn't be called</returns>
+    public static DeviceMethodResult DoDeviceActionWithResult(DeviceActionWrapper action, bool unescapeStrings = false)
+    {
+        return InvokeDeviceAction(action, unescapeStrings, waitForResult: true);
+    }
+
+    private static DeviceMethodResult InvokeDeviceAction(DeviceActionWrapper action, bool unescapeStrings, bool waitForResult)
+    {
         var key = action.DeviceKey;
         var obj = FindObjectOnPath(key);
         if (obj == null)
         {
             CrestronConsole.ConsoleCommandResponse("Unable to find object at path {0}", key);
-            return;
+            return null;
         }
 
         if (action.Params == null)
@@ -82,32 +107,58 @@ public class DeviceJsonApi
                 CrestronConsole.ConsoleCommandResponse(
                     "Unable to find method with name {0} and that matches parameters {1}", action.MethodName,
                     action.Params);
-                return;
+                return null;
             }
             var mParams = method.GetParameters();
 
             var convertedParams = BuildConvertedParams(mParams, action.Params, unescapeStrings);
 
-            Task.Run(() =>
+            if (!waitForResult || method.ReturnType == typeof(void))
+            {
+                Task.Run(() =>
+                    {
+                        try
+                        {
+                            Debug.LogMessage(LogEventLevel.Verbose, "Calling method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+                            method.Invoke(obj, convertedParams);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogMessage(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+                        }
+                    });
+
+                CrestronConsole.ConsoleCommandResponse("Method {0} successfully called on device {1}", method.Name,
+                    action.DeviceKey);
+
+                return null;
+            }
+
+            // Still run the method off the caller's thread, so a slow method can't hold it past the timeout
+            var work = Task.Run(async () =>
                 {
                     try
                     {
                         Debug.LogMessage(LogEventLevel.Verbose, "Calling method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
-                        method.Invoke(obj, convertedParams);
+                        return await DeviceMethodResult.InvokeAsync(() => method.Invoke(obj, convertedParams), method.ReturnType).ConfigureAwait(false);
                     }
                     catch (Exception e)
                     {
                         Debug.LogMessage(e, "Error invoking method {methodName} on device {deviceKey}", null, method.Name, action.DeviceKey);
+                        throw;
                     }
                 });
 
             CrestronConsole.ConsoleCommandResponse("Method {0} successfully called on device {1}", method.Name,
                 action.DeviceKey);
+
+            return DeviceMethodResult.Wait(work, DeviceMethodResult.DefaultTimeout);
         }
         catch (Exception ex)
         {
             CrestronConsole.ConsoleCommandResponse("Unable to call method with name {0}. {1}", action.MethodName,
                 ex.Message);
+            return null;
         }
     }
 
@@ -578,60 +629,6 @@ public class PropertyNameType
         PropInfo = info;
         Parent = parent;
     }
-}
-
-/// <summary>
-/// Helper class for serializing methods with their name and parameters. The MethodInfo is ignored for JSON serialization.
-/// </summary>
-public class MethodNameParams
-{
-    /// <summary>
-    /// The MethodInfo for the method being represented. This is ignored for JSON serialization.
-    /// </summary>
-    [JsonIgnore]
-    public MethodInfo MethodInfo { get; private set; }
-
-    /// <summary>
-    /// The name of the method
-    /// </summary>
-    public string Name { get { return MethodInfo.Name; } }
-
-    /// <summary>
-    /// The parameters of the method, represented as an array of NameType objects with the parameter name and type.
-    /// </summary>
-    public IEnumerable<NameType> Params
-    {
-        get
-        {
-            return MethodInfo.GetParameters().Select(p =>
-                new NameType { Name = p.Name, Type = p.ParameterType.Name });
-        }
-    }
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="info"></param>
-    public MethodNameParams(MethodInfo info)
-    {
-        MethodInfo = info;
-    }
-}
-
-/// <summary>
-/// Helper class for serializing a name and type pair, used for method parameters in MethodNameParams.
-/// </summary>
-public class NameType
-{
-    /// <summary>
-    /// The name of the parameter
-    /// </summary>
-    public string Name { get; set; }
-
-    /// <summary>
-    /// The type of the parameter
-    /// </summary>
-    public string Type { get; set; }
 }
 
 /// <summary>
